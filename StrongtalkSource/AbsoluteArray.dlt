@@ -1,0 +1,20 @@
+Delta define: #AbsoluteArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'Array[E]' instanceVariables: ''))) !
+
+(Delta mirrorFor: #AbsoluteArray) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #AbsoluteArray) group: 'base'!
+
+(Delta mirrorFor: #AbsoluteArray)
+comment: 
+'This class is like Array, except that it cannot have subclasses or subtypes.
+This involves special treatment by the VM and the type system.  This information can
+be used by the compiler to generate more efficient code.  You should ONLY use this
+in situations where 
+    1) polymorphism is completely unimportant
+    2) absolutely maximum performance is needed.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+

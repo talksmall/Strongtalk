@@ -1,0 +1,43 @@
+Delta define: #SuperclassClauseLocator as: (
+(Class subclassOf: 'DeltaLocator[ClassMirror | MixinDeclMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #SuperclassClauseLocator) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SuperclassClauseLocator) group: 'ast'!
+
+(Delta mirrorFor: #SuperclassClauseLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SuperclassClauseLocator) methodsFor: 'locator matching' !
+
+
+matchesLocator: l <DeltaLocator[Mirror]> ^ <Boolean>
+	^l matchesSuperclassLocator: self!
+
+matchesSuperclassLocator: l  <SuperclassClauseLocator> ^ <Boolean>
+
+^self matchesDefinitionLocator: l! !
+
+! (Delta mirrorFor: #SuperclassClauseLocator) methodsFor: 'accessing' !
+
+
+ast ^ <ClassId | GenericApplicationClassType | MixinInvocationNode>
+
+^(Type for: self mirror reflectee) superclassType!
+
+name ^ <Str>
+
+^self definitionName, ' superclass'!
+
+parseTree  ^ <ParseTree[ClassId | GenericApplicationClassType]>
+	^DeltaParser new parseClassOrMixinExpr: self source 
+										within: self mirror scope 
+										ifError: [:s <Str> :i <Int> | self error: s].
+	!
+
+source ^ <Str>
+
+^self mirror superclassTypeString! !
+

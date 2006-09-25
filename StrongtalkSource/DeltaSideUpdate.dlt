@@ -1,0 +1,190 @@
+Delta define: #DeltaSideUpdate as: (
+(Class subclassOf: 'DeltaSideUpdateBehavior' instanceVariables: 'superclassType supportedProtocol classDecl klass mirror messages methods selfTV selfPublicTV typeOfInstances relevantTVs scope invocationCache loopMarker ')) !
+
+(Delta mirrorFor: #DeltaSideUpdate) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaSideUpdate) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSideUpdate)
+comment: 
+'Concrete class representing a side.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSideUpdate) methodsFor: 'Unclassified' !
+
+
+addRelevantTypeVar: tv <TypeVar>
+
+self relevantTypeVars add: tv.
+self supportedProtocol isNil
+  ifFalse:[self supportedProtocol addRelevantTypeVar: tv].!
+
+asMixinSide ^ <MixinSide>
+
+^self!
+
+basicLocator
+	self isMetaSide
+		ifTrue: [^self classDecl instanceSide basicLocator isMetaSide: true]
+		ifFalse: [^DeltaBasicMixinLocator new id: self name; isMetaSide: false]!
+
+classDecl ^ <DeltaClassUpdate>
+    ^classDecl!
+
+classDecl: cd <DeltaClassUpdate > ^ <Self>
+    classDecl := cd!
+
+clearCaches
+
+self relevantTVs:  nil.!
+
+hasMethodsLoaded ^ <Boolean>
+
+^methods isNil not
+!
+
+heirScope ^ <Scope>
+    ^self scope delta!
+
+initialize
+
+loopMarker := false.
+super initialize.
+self invocationCache: (IdentityDictionary[ObjectType, ObjectType] new).!
+
+initializeWithin: lexicalScope <Scope>
+
+loopMarker := false.
+super initializeWith: lexicalScope.
+self invocationCache: (IdentityDictionary[ObjectType, ObjectType] new).!
+
+invocationCache ^ <Dict[ObjectType, ObjectType]>
+
+^invocationCache!
+
+invocationCache: c <VarDict[ObjectType, ObjectType]>
+
+invocationCache := c!
+
+klass
+
+^klass!
+
+klass: k
+"Transcript show: 'SideUpdate>>klass'; cr."
+klass := k.
+self isMetaSide ifFalse:[self scope at: #Instance put: self selfTV]
+                         ifTrue:[
+                                   self selfTV isMeta: true.
+                                   self selfPublicTV isMeta: true.
+                                   self scope at: #Instance put: self selfClassTV.
+                                   self scope at: #PublicInstance put: self selfPublicClassTV.
+                                   self selfTV dual: self selfClassTV.
+                                   self selfClassTV dual: self selfTV.
+                                   self selfPublicTV dual: self selfPublicClassTV.
+                                   self selfPublicClassTV dual: self selfPublicTV.
+                                   ].
+"Whatever class is linked to me, must have my type var in its scope"!
+
+localScope ^ <Scope>
+    ^self heirScope delta!
+
+lookupTypeOfInstances ^ <ObjectType>
+
+| key <ObjectType> result   <ObjectType> |
+
+^loopMarker 
+   ifFalse:[
+                 loopMarker := true.
+                 key := self superclassType asProtocol canonicalRep.
+                 result := self invocationCache at: key 
+                        ifAbsent:[self invocationCache at: key
+                                                                  put: self typeOfInstances].
+                 loopMarker := false.
+                 result.
+                 ]
+  ifTrue:[typeOfInstances := super typeOfInstances].!
+
+messages ^ <Dict[Symbol,Message]>
+
+messages isNil ifTrue:[self mirror createMethodTypeStructure].
+    ^messages!
+
+messages: ms<Dict[Symbol,Message]>
+    messages := ms!
+
+methods ^ <Dict[Symbol,Method]>
+
+methods isNil ifTrue:[self mirror createMethodTypeStructure].
+    ^methods!
+
+methods: ms<Dict[Symbol,Method]>
+    methods := ms!
+
+mirror ^ <Mirror>
+
+mirror isNil ifTrue:[mirror :=super mirror].
+^mirror!
+
+relevantTVs ^ <Set[TypeVar]>
+
+^relevantTVs!
+
+relevantTVs: rtvs <Set[TypeVar]>
+
+relevantTVs := rtvs!
+
+relevantTypeVars ^ <Set[TypeVar]>
+
+self relevantTVs isNil
+   ifTrue:[self relevantTVs: super relevantTypeVars].
+^self relevantTVs.!
+
+scope ^<Scope>
+    ^scope!
+
+scope: s <Scope>
+    scope := s!
+
+selfPublicTV ^ <TypeVar>
+    ^selfPublicTV!
+
+selfPublicTV: stv <TypeVar>
+    selfPublicTV := stv.
+    self localScope at: #PublicSelf put:  stv.!
+
+selfTV ^ <TypeVar>
+    ^selfTV!
+
+selfTV: stv <TypeVar>
+    selfTV := stv.
+    self localScope at: #Self put:  stv.!
+
+superclassType ^ <ClassNode>
+    ^superclassType!
+
+superclassType: st <ClassNode > ^ <Self>
+    
+superclassType := st.
+self heirScope  base: st heirScope.
+"  (DeltaScopeReference for: st accessBlk: [:x | x heirScope])."
+"self scope at: #super put: (DeltaSuperVar new name: #super type: nil)."!
+
+supportedProtocol ^ <Protocol>
+    ^supportedProtocol!
+
+supportedProtocol: p <Protocol > ^ <Self>
+    supportedProtocol := p.!
+
+typeOfInstances ^ <ObjectType>
+"This method returns and caches the public protocol of the side. The actual 
+construction of the value is handled by super's version of the
+method. "
+
+    ^typeOfInstances isNil
+   ifTrue:[
+              typeOfInstances := self lookupTypeOfInstances.
+              ]
+   ifFalse:[typeOfInstances].! !
+

@@ -1,0 +1,221 @@
+Delta define: #Image as: (
+(Class subclassOf: 'Glyph' instanceVariables: 'win32Image <HBITMAP>
+			"The device independent bitmap"
+
+medium <Medium>
+fastBitmap <HBITMAP>
+			"A cached device-dependent version of the bitmap appropriate
+				for the most recent medium, lazily built and used for speed"
+
+allocation <Rect>
+alignmentPoint <Point>
+			"The offset from the upper left corner of the origin"
+renderingCanvas <Canvas>
+		')) !
+
+(Delta mirrorFor: #Image) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Image) group: 'ui'!
+
+(Delta mirrorFor: #Image)
+comment: 
+'Images are color bitmaps.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
+'!
+
+! (Delta mirrorFor: #Image) classSide methodsFor: 'instance creation' !
+
+
+fromFile: file <FilePath> ^<Instance>
+
+	"For now, this only can read Win32 .bmp files"
+	^self fromWin32File: file!
+
+fromFile: file <FilePath> ifFail: blk <[^X def]> ^<Instance | X>
+	"Load an image from a file"
+
+	"For now, this only can read Win32 .bmp files"
+	^self fromWin32File: file ifFail: [ ^blk value]!
+
+fromWin32File: file <FilePath> ^<Instance>
+	"Load an image from a Win32 .bmp file"
+
+	^self fromWin32File: file ifFail: [ self error: 'Error reading Image file' ]!
+
+fromWin32File: file <FilePath> ifFail: blk <[^X def]> ^<Instance | X>
+	"Load an image from a Win32 .bmp file"
+
+	^self new win32Image: (HBITMAP fromWin32File: file ifFail: [^blk value])!
+
+named: nm <Str> inLibrary: l <ExternalLibrary>  ^<Image>
+
+	^self new win32Image: (l imageAt: nm)!
+
+tempWithExtent: ext <Point> in: medium <Medium> ^<Instance>
+	"create a temporary bitmap appropriate for the specified medium"
+
+	|  medcan <Canvas> bmap <HBITMAP> |
+	medcan := medium newCanvas.
+	bmap :=
+		{{<gdi HBITMAP CreateCompatibleBitmap>
+			hdc: medcan win32Handle
+			width: ext x asInteger
+			height: ext y asInteger
+		}}.
+	bmap isNull
+		ifTrue: [	bmap := nil.
+						Win32 handleError ].
+	medcan release.
+	^self new fastWin32Image: bmap; medium: medium! !
+
+! (Delta mirrorFor: #Image) methodsFor: 'restricted-win32' !
+
+
+fastWin32Image: b <HBITMAP>
+
+	self win32Image: b.
+	fastBitmap := b!
+
+medium: m  <Medium>
+
+	medium := m!
+
+win32Image ^<HBITMAP>
+
+	^win32Image!
+
+win32Image: b <HBITMAP>
+
+	win32Image := b! !
+
+! (Delta mirrorFor: #Image) methodsFor: 'accessing' !
+
+
+alignLowerLeft
+
+	self alignmentPoint: 0 @ self extent y!
+
+alignmentPoint ^<Point>
+
+	alignmentPoint isNil
+		ifTrue: [ alignmentPoint := Point origin ].
+	^alignmentPoint!
+
+alignmentPoint: p <Point>
+
+	alignmentPoint := p.
+	allocation := nil.!
+
+extent ^<Point>
+
+	^self win32Image extent!
+
+newCanvas ^<Canvas>
+	"Build and return a new canvas that will draw into the receiver's fast bitmap"
+
+	| medcan <Canvas> can <Canvas> |
+	medcan := self medium newCanvas.
+	can := HDC bufferingFor: medcan buffer: (self fastBitmapFor: medcan on: self medium).
+	medcan release.
+	^can!
+
+renderingCanvas ^<Canvas>
+
+	^renderingCanvas!
+
+renderingCanvas: can <Canvas>
+
+	renderingCanvas := can! !
+
+! (Delta mirrorFor: #Image) methodsFor: 'geometry-local' !
+
+
+allocationFor: context <VisualGlyph>  ^<Region>
+
+	^self allocation!
+
+naturalIn: m <Medium>  ^<Region>
+
+	^self allocation! !
+
+! (Delta mirrorFor: #Image) methodsFor: 'private' !
+
+
+allocation  ^<Rect>
+
+	allocation isNil
+		ifTrue: [ allocation := (Point origin corner: self extent) relativeTo: self alignmentPoint. ].
+	^allocation!
+
+fastBitmapFor: can <Canvas> on: m <Medium>  ^<HBITMAP>
+
+	(medium = m and: [ fastBitmap notNil ])
+		ifFalse: [	| ext <Point> tmpcan <Canvas> medcan <Canvas> |
+						ext := self extent.
+						medium := m.
+						medcan := m newCanvas.
+						fastBitmap :=
+							{{<gdi HBITMAP CreateCompatibleBitmap>
+								hdc: medcan win32Handle
+								width: ext x
+								height: ext y
+							}}.
+						fastBitmap isNull
+							ifTrue: [	fastBitmap := nil.
+											Win32 handleError ].
+						tmpcan := (HDC newLike: medcan)
+							drawIntoBitmap: fastBitmap.
+						tmpcan displayRawWin32Image: self win32Image rasterOp: UI ropCopy.
+						tmpcan release.
+						medcan release.	].
+	^fastBitmap!
+
+isRectangularAndOpaque ^<Boolean>
+
+	^true!
+
+isSurelyRigid ^<Boolean>
+
+	^true!
+
+medium ^<Medium>
+
+	^medium! !
+
+! (Delta mirrorFor: #Image) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas> for: context <VisualGlyph>
+
+	can atOffset: self allocation origin
+		do: [	self renderingCanvas isNil
+					ifTrue: [	can displayRawWin32Image:
+												(self fastBitmapFor: can on: context medium)
+											rasterOp: UI ropCopy	]
+					ifFalse: [ can bitBlt: self renderingCanvas
+											extent: self extent
+											op: UI ropCopy	]
+				]! !
+
+! (Delta mirrorFor: #Image) methodsFor: 'control' !
+
+
+destroy
+
+	"%todo: need to add finalization to this class to invoke this automatically"
+	renderingCanvas notNil
+		ifTrue: [ renderingCanvas release ].
+	win32Image win32DeleteObject.
+	(fastBitmap notNil and: [ win32Image @~= fastBitmap ])
+		ifTrue: [ fastBitmap win32DeleteObject ].
+	win32Image := nil.
+	fastBitmap := nil!
+
+finalize
+
+	self destroy! !
+

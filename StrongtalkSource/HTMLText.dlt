@@ -1,0 +1,86 @@
+Delta define: #HTMLText as: (
+(Class subclassOf: 'HTMLNode' instanceVariables: 'text <Str>
+	"end-of-lines are explicitly imbedded in the strings as
+		cr characters."')) !
+
+(Delta mirrorFor: #HTMLText) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #HTMLText) group: 'HTML'!
+
+(Delta mirrorFor: #HTMLText)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #HTMLText) classSide methodsFor: 'instance creation' !
+
+
+for: s <Str> ^<Instance>
+
+	^self new initText: s! !
+
+! (Delta mirrorFor: #HTMLText) methodsFor: 'initialization' !
+
+
+initText: s <Str>
+
+	text := s! !
+
+! (Delta mirrorFor: #HTMLText) methodsFor: 'accessing' !
+
+
+text ^<Str>
+
+	^text! !
+
+! (Delta mirrorFor: #HTMLText) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	self text do:
+		[ :c <Character> |
+			self buildChar: c for: builder.		].
+	"every text entity has an implicit break char at the end.
+		We NEED this!!"
+	"builder addBreakChar: Character space."!
+
+textOn: strm <CharOutputStream>
+
+	strm putAll: 
+		(self text collect:
+			[ :c <Character> |
+				c = Character cr
+					ifTrue: [ Character space ]
+					ifFalse: [ c ]
+			]
+		)! !
+
+! (Delta mirrorFor: #HTMLText) methodsFor: 'private' !
+
+
+buildChar: c <Character> for: builder <HTMLBuilder>
+
+	(self isWhitespace: c)
+		ifTrue: [ builder addBreakChar: Character space ]
+		ifFalse: [	c isPrintable
+								ifTrue: [ builder addChar: c ].
+							
+							"give hyphens a zero-width break"
+							c = $-
+								ifTrue: [ builder addBreak: (Glue xRigid: 0) ].
+						]!
+
+isWhitespace: c <Character> ^<Boolean>
+
+	^c == Character space
+		or: [ c == Character tab
+		or: [ c == Character cr ]] ! !
+
+! (Delta mirrorFor: #HTMLText) methodsFor: 'iterating' !
+
+
+linksDo: blk <[ElementA]>
+
+	"no links"! !
+

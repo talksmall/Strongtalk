@@ -1,0 +1,167 @@
+Delta define: #DeltaReferenceGatherer as: (
+(Class subclassOf: 'DeltaASTTool' instanceVariables: 'references ')) !
+
+(Delta mirrorFor: #DeltaReferenceGatherer) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaReferenceGatherer) group: 'ast'!
+
+(Delta mirrorFor: #DeltaReferenceGatherer)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaReferenceGatherer) methodsFor: 'Unclassified' !
+
+
+assignmentNode: node <DeltaAssignment > ^ <Self>
+
+node var apply: self.
+node expr apply: self.!
+
+blockApplicationTypeNode: node <BlockApplicationType > ^ <Self>
+
+self genericApplicationTypeNode: node!
+
+blockNode: node <DeltaBlock > ^ <Self>
+    node body apply: self.!
+
+cascadedSendNode: node <DeltaCascadedSend > ^ <Self>
+
+node msg apply: self.
+node prevSend apply: self.!
+
+codeBodyNode: node <CodeBody>
+
+node temporaries do:[:tmp  <VarDecl>  | tmp apply: self.].
+node statements do:[:stmt  <Statement> | stmt apply: self.].!
+
+dllCallNode: node
+     self deltaHack.!
+
+genericApplicationExpressionNode: node
+
+node target apply: self.
+node actuals do:[:actual  <ObjectType>  | actual apply: self].!
+
+genericApplicationTypeNode: node
+
+node target apply: self.
+node actuals do:[:actual  <ObjectType>  | actual apply: self].!
+
+guaranteedNode: node
+ 
+node expr apply: self.
+node declaredType apply: self.!
+
+initialize
+
+self references: Set[Symbol] new.!
+
+literalNode: node <DeltaLiteral > ^ <Self>
+    
+
+"Should we do something for the case where the type of a literal changes?"!
+
+messageNode: node <DeltaMessage > ^ <Self>
+
+node args do:[:arg  <Expression> | arg apply: self].!
+
+methodNode: node <DeltaMethod > ^ <Self>
+
+node type apply: self.
+node body isNil ifFalse:[node body apply: self].!
+
+msgSignatureNode: node <DeltaMsgSignature > ^ <Self>
+
+    node domain do: [ :d <DeltaType>  | d apply: self.].
+    node range apply: self.!
+
+normalSendNode: node
+
+node recv apply: self.
+node msg apply: self.!
+
+note: n <Symbol>
+
+(DeltaGlobals at: n ifAbsent:[^self]).
+self references add: n.!
+
+parameterNode: node <DeltaParameter > ^ <Self>
+
+self varNode: node!
+
+polyMsgSignatureNode: node <PolyMsgSignature > ^ <Self>
+
+    node formals do: [ :d <TypeVar>  | d apply: self.].
+    node body apply: self.!
+
+primitiveCallNode: node
+
+node recv isNil ifFalse:[node recv apply: self].
+node msg apply: self.!
+
+primitiveNode: node <DeltaPrimitive > ^ <Self>
+    ^ self primitiveCallNode: node!
+
+protocolMergeNode: node <ProtocolMerge>
+
+node type1 apply: self.
+node type2 apply: self.!
+
+protocolOverrideNode: node
+
+node type1 apply: self.
+node type2 apply: self.!
+
+refNode: node <DeltaRef > ^ <Self>
+
+self note: node name.!
+
+references ^ <OrdCltn[Symbol]>
+
+^references!
+
+references: r <OrdCltn[Symbol]> ^ <OrdCltn[Symbol]>
+
+references := r!
+
+returnStatNode: node <DeltaReturnStat > ^ <Self>
+
+node expr apply: self.!
+
+statementListNode: node <DeltaStatementList > ^ <Self>
+
+node code apply: self.!
+
+temporaryNode: node <DeltaTemporary > ^ <Self>
+
+self varNode: node.!
+
+tupleTypeNode: node <TupleType > ^ <Self>
+
+self genericApplicationTypeNode: node!
+
+typeErrorNode: node <DeltaTypeError > ^ <Self>
+!
+
+typeIdNode: node <DeltaTypeId > ^ <Self>
+
+self note: node name.!
+
+typeVarNode: node <TypeVar> 
+
+node declaredBound apply: self.!
+
+unaryTypeExprNode: node <DeltaUnaryTypeExpr > ^ <Self>
+
+node target apply: self.!
+
+unionTypeNode: node
+
+node type1 apply: self.
+node type2 apply: self.!
+
+varNode: node <DeltaTemporary > ^ <Self>
+
+node type apply: self.! !
+

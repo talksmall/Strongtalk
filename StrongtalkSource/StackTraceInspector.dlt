@@ -1,0 +1,126 @@
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>')) !
+
+(Delta mirrorFor: #StackTraceInspector) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #StackTraceInspector) group: 'outliner'!
+
+(Delta mirrorFor: #StackTraceInspector)
+comment: 
+'Display for process stack trace (abort, continue, and command line debug possible).
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'instance creation' !
+
+
+on: p <Process> ^ <Instance>
+
+	^self new initProcess: p! !
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	| stack <Array[Activation]> col <Column[Visual]> start <Int> |
+	stack := self process activationStack.
+	col := Column[Visual] new.
+	start := 1 + self process processError topFramesIgnored.
+	
+	"Add first activation open"
+	self assert: [ start < stack size ].
+	col add: ((ActivationOutliner on: (stack at: start)) open: true; imbeddedVisual) .
+	start+1 to: stack size do: [ :i <Int> |
+		| a <Activation> |
+		a := stack at: i.
+		a isBlockValueActivation
+			ifFalse: [	col add: (ActivationOutliner on: a) imbeddedVisual ]
+	].
+	^col
+!
+
+process: p <Process>
+
+	process := p! !
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private-initialization' !
+
+
+initProcess: p <Process>
+
+	self assert: [ p processError notNil ].
+	self process: p.
+! !
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'accessing' !
+
+
+process ^ <Process>
+
+	^process!
+
+windowTitle ^ <Str>
+
+	^self process processError name! !
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'menus' !
+
+
+hasMenu ^ <Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self processMenu!
+
+processMenu ^ <Menu>
+
+	^Menu new
+		name: '&Process';
+		add: (MenuAction new
+					name: '&Abort';
+					action: [ self abortProcess ] );
+		add: (MenuAction new
+					name: '&Continue';
+					active: [ self process processError continuable ];
+					action: [ self continueProcess ] );
+		add: (MenuAction new
+					name: '&Transfer to console debugger';
+					action: [ self transferToConsoleDebugger ] )
+! !
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+
+
+abortProcess
+
+	"Process get aborted by default when stack trace inspector is closed"
+	self requestCloseIfTopWindow.
+
+!
+
+closeRequest: toClose <[]>
+
+	"Abort inspected process when window closes"
+	self process isNil
+		ifFalse: [	self process terminate ].
+	super closeRequest: toClose!
+
+continueProcess
+
+	self process resume.
+	self process: nil.		"Don't terminate process when window closes"
+	self requestCloseIfTopWindow.
+!
+
+transferToConsoleDebugger
+
+	self process stopInEvaluator.
+	self process: nil.		"Don't terminate process when window closes"
+	self requestCloseIfTopWindow.
+! !
+

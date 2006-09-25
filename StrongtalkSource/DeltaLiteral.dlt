@@ -1,0 +1,36 @@
+Delta define: #DeltaLiteral as: (
+(Class subclassOf: 'DeltaExpression' instanceVariables: 'value ')) !
+
+(Delta mirrorFor: #DeltaLiteral) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaLiteral) group: 'ast'!
+
+(Delta mirrorFor: #DeltaLiteral)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaLiteral) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool literalNode: self!
+
+isLiteralNode ^ <Boolean>
+    ^ true!
+
+name ^ <Symbol>
+    ^self value printString asSymbol!
+
+type ^ <ObjectType>
+    ^DeltaTypeId new setId: self typeName; scope: DeltaGlobals!
+
+typeName ^ <Symbol>
+    self subclassResponsibility!
+
+value ^ <Object>
+    ^ value!
+
+value: aValue <Object > ^ <Self>
+    value := aValue! !
+

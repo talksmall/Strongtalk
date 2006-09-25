@@ -1,0 +1,2279 @@
+Delta define: #DeltaHCode as: (
+(Class subclassOf: 'Object' instanceVariables: 'code last ')) !
+
+(Delta mirrorFor: #DeltaHCode) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaHCode) group: 'ast'!
+
+(Delta mirrorFor: #DeltaHCode)
+comment: 
+'HCode represents hybrid code as an ordered collection of
+	bytes (Integers) and oop''s (non-Integers). Each oop is represented
+	by four consecutive entries of itself, making up the four bytes
+	used for the oop in the VM.
+		The index of the last HCode is held in the instVar last and may be
+	used for optimization purposes. last <= 0 indicates no available or
+	no valid last HCode.
+	
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaHCode) classSide methodsFor: 'Unclassified' !
+
+
+new
+    ^ super new initialize! !
+
+! (Delta mirrorFor: #DeltaHCode) methodsFor: 'Unclassified' !
+
+
+addByte: b
+    "Private. Adds b to the code."
+    code add: (DeltaBytecode code: b)!
+
+addOop: o
+    "Private. Adds o aligned to the code."
+    self align.
+    4 timesRepeat: [code add: o]!
+
+addWord: w
+    "Private. Adds w aligned to the code.
+    Should rethink this - byte ordering dependent."
+    | t |
+    self assert: [w isInteger].
+    self align.
+    "little endian machine"
+    t := w.
+    4 timesRepeat: [
+        self addByte: t \\ 256.
+        t := t // 256
+    ]!
+
+align
+	| size |
+    "Aligns on 4 byte word."
+	self deltaHack.		"The instance variable is only needed because the bytecodecompiler erroneously evaluates the receiver expression in loops for each iteration."
+	size := code size negated \\ 4.
+	size timesRepeat: [self addByte: 16rFF]
+!
+
+allocate_temp_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r0C.
+!
+
+allocate_temp_2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r0D.
+!
+
+allocate_temp_3
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r0E.
+!
+
+allocate_temp_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r0F byte: b1.
+!
+
+and_byte_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r72 byte: b1.
+!
+
+and_word_word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r7A word: w1.
+!
+
+associationOopsDo: aBlock
+	| e |
+	1 to: code size do: [ :i |
+		(self holdsOopAt: i) ifTrue: [
+			e := self at: i.
+			e isOop ifTrue: [
+				e isAssociationOop
+					ifTrue: [ aBlock value: e ]
+					ifFalse: [ e isMethodOop ifTrue: [e associationOopsDo: aBlock ]]]]]
+"
+    code do: [ :e | (e isSmallInteger or: [e isCharacter]) ifFalse: [
+        e isAssociationOop
+            ifTrue: [ aBlock value: e ]
+            ifFalse: [ e isMethodOop ifTrue: [e associationOopsDo: aBlock ]]]]
+"!
+
+at: index
+
+	"Return element at position index. If element is not an oop, return actual byte value."
+	| e |
+	e := code at: index.
+	e class == DeltaBytecode ifTrue: [^e code].
+	^e!
+
+byte: b
+    self setLast.
+    self addByte: b!
+
+byte: b1 byte: b2
+    self setLast.
+    self addByte: b1.
+    self addByte: b2!
+
+byte: b1 byte: b2 byte: b3
+    self setLast.
+    self addByte: b1.
+    self addByte: b2.
+    self addByte: b3!
+
+byte: b1 byte: b2 byte: b3 byte: b4
+    self setLast.
+    self addByte: b1.
+    self addByte: b2.
+    self addByte: b3.
+	self addByte: b4!
+
+byte: b1 byte: b2 bytes: bs
+    self assert: [bs isCollection].
+    self setLast.
+    self addByte: b1.
+    self addByte: b2.
+    bs do: [ :b | self addByte: b]!
+
+byte: b1 byte: b2 oop: o2
+    self setLast.
+    self addByte: b1.
+    self addByte: b2.
+    self addOop: o2!
+
+byte: b1 byte: b2 oop: o1 oop: o2
+	self setLast.
+	self addByte: b1.
+	self addByte: b2.
+	self addOop: o1.
+	self addOop: o2!
+
+byte: b1 byte: b2 word: w
+	self setLast.
+	self addByte: b1.
+	self addByte: b2.
+	self addWord: w!
+
+byte: b oop: o
+    self setLast.
+    self addByte: b.
+    self addOop: o!
+
+byte: b oop: o1 oop: o2
+    self setLast.
+    self addByte: b.
+    self addOop: o1.
+    self addOop: o2!
+
+byte: b1 oop: o1 oop: o2 word: w byte: b2
+    self setLast.
+    self addByte: b1.
+    self addOop: o1.
+    self addOop: o2.
+    self addWord: w.
+    self addByte:  b2!
+
+byte: b oop: o word: w
+    self setLast.
+    self addByte: b.
+    self addOop: o.
+    self addWord: w!
+
+byte: b word: w
+    self setLast.
+    self addByte: b.
+    self addWord: w!
+
+byte: b1 word: w1 word: w2
+	self setLast.
+	self addByte: b1.
+	self addWord: w1.
+	self addWord: w2!
+
+byteAt: p
+    self assert: [ (self holdsOopAt: p) not ].
+    ^ (code at: p) code!
+
+byteAt: p put: b
+    self assert: [ (self holdsOopAt: p) not ].
+    self assert: [(0 <= b) & (b < 256)].
+    code at: p put: (DeltaBytecode code: b)!
+
+codeForPrimitive: selector
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	selector = #primitiveAdd:ifFail:		ifTrue: [ ^ 16rE0 ].
+	selector = #primitiveSubtract:ifFail:		ifTrue: [ ^ 16rE1 ].
+	selector = #primitiveMultiply:ifFail:		ifTrue: [ ^ 16rE2 ].
+	selector = #primitiveSmallIntegerEqual:ifFail:		ifTrue: [ ^ 16rE6 ].
+	selector = #primitiveSmallIntegerNotEqual:ifFail:		ifTrue: [ ^ 16rE7 ].
+	selector = #primitiveLessThan:ifFail:		ifTrue: [ ^ 16rE8 ].
+	selector = #primitiveLessThanOrEqual:ifFail:		ifTrue: [ ^ 16rE9 ].
+	selector = #primitiveGreaterThan:ifFail:		ifTrue: [ ^ 16rEA ].
+	selector = #primitiveGreaterThanOrEqual:ifFail:		ifTrue: [ ^ 16rEB ].
+	selector = #primitiveBitAnd:ifFail:		ifTrue: [ ^ 16rF6 ].
+	selector = #primitiveBitOr:ifFail:		ifTrue: [ ^ 16rF7 ].
+	selector = #primitiveBitXor:ifFail:		ifTrue: [ ^ 16rF8 ].
+	selector = #primitiveRawBitShift:ifFail:		ifTrue: [ ^ 16rF9 ].
+	^ nil
+!
+
+copy_1_into_context_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r69 byte: b1.
+!
+
+copy_2_into_context_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r6A byte: b1 byte: b2.
+!
+
+copy_n_into_context_byte: b1 bytes: s1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r6B byte: b1 bytes: s1.
+!
+
+copy_n_into_context_bytes: s1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r6B bytes: s1.
+!
+
+copy_self_1_into_context_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r6D byte: b1.
+!
+
+copy_self_2_into_context_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r6E byte: b1 byte: b2.
+!
+
+copy_self_into_context
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r6C.
+!
+
+copy_self_n_into_context_byte: b1 bytes: s1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r6F byte: b1 bytes: s1.
+!
+
+copy_self_n_into_context_bytes: s1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r6F bytes: s1.
+!
+
+dll_call_async_oop: o1 oop: o2 word: w1 byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rC4 oop: o1 oop: o2 word: w1 byte: b1.
+!
+
+dll_call_sync_oop: o1 oop: o2 word: w1 byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rB4 oop: o1 oop: o2 word: w1 byte: b1.
+!
+
+double_equal
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rEE.
+!
+
+double_tilde
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rEF.
+!
+
+fastFileOutOn: aStream
+    | i n x |
+    i := 1.
+    n := code size.
+    self assert: [n \\ 4 = 0]. "code size is multiple of a (32 bit) word."
+    [i <= n] whileTrue: [
+        x := code at: i.
+       (self holdsOopAt: i) ifFalse: [
+        aStream nextPut: $4.
+        aStream nextPut: (x code asCharacter).
+        i := i + 1
+      ]  ifTrue: [
+        aStream nextPut: $5.
+        x fastFileOutOn: aStream.
+        i := i + 4
+        ]
+    ]!
+
+fileOutOn: boot
+    | i n x |
+    i := 1.
+    n := code size.
+    self assert: [n \\ 4 = 0]. "code size is multiple of a (32 bit) word."
+    [i <= n] whileTrue: [
+        x := code at: i.
+        (code holdsOopAt: i)
+            ifTrue: [boot fileOutField: 'o' contents: x. i := i + 4]
+            ifFalse: [boot fileOutByte: x code. i := i + 1]
+    ]!
+
+float_abs
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 2
+!
+
+float_add
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 11
+!
+
+float_allocate_byte: b1 byte: b2 byte: b3
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r30 byte: b1 byte: b2 byte: b3.
+!
+
+float_binary_op_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r36 byte: b1 byte: b2.
+!
+
+float_binary_op_to_oop_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r38 byte: b1 byte: b2.
+!
+
+float_cos
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 7
+!
+
+float_divide
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 14
+!
+
+float_exp
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 9
+!
+
+float_floatify_pop_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r31 byte: b1.
+!
+
+float_is_equal
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 19
+!
+
+float_is_greater
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 23
+!
+
+float_is_greater_equal
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 24
+!
+
+float_is_less
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 21
+!
+
+float_is_less_equal
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 22
+!
+
+float_is_not_equal
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 20
+!
+
+float_is_not_zero
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 17
+!
+
+float_is_zero
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 16
+!
+
+float_ln
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 10
+!
+
+float_modulo
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 15
+!
+
+float_move_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r32 byte: b1 byte: b2.
+!
+
+float_multiply
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 13
+!
+
+float_negated
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 3
+!
+
+float_nullary_op_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r34 byte: b1 byte: b2.
+!
+
+float_one
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 1
+!
+
+float_oopify
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 18
+!
+
+float_set_byte: b1 oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r33 byte: b1 oop: o1.
+!
+
+float_sin
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 6
+!
+
+float_sqrt
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 5
+!
+
+float_squared
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 4
+!
+
+float_subtract
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 12
+!
+
+float_tan
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 8
+!
+
+float_unary_op_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r35 byte: b1 byte: b2.
+!
+
+float_unary_op_to_oop_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r37 byte: b1 byte: b2.
+!
+
+float_zero
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	^ 0
+!
+
+getLast
+    "Answers the last HCode or -1 if HCode is invalid (e.g. after a label)."
+    ^
+        last > 0
+            ifTrue: [(code at: last) code]
+            ifFalse: [-1]!
+
+halt
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rFF.
+!
+
+has_classVar_access
+	"
+	does nothing for now - eventually should keep track of classVar accesses
+	"!
+
+has_inline_cache
+	"
+	does nothing for now - eventually should keep track of inline caches
+	"!
+
+has_instVar_access
+	"
+	does nothing for now - eventually should keep track of instVar accesses
+	"!
+
+holdsOopAt: index
+
+	"Is the element at position index a bytecode or an oop?"
+
+	^(code at: index) class ~~ DeltaBytecode!
+
+ifFalse_byte_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r71 byte: b1 byte: b2.
+!
+
+ifFalse_word_byte: b1 word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r79 byte: b1 word: w1.
+!
+
+ifTrue_byte_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r70 byte: b1 byte: b2.
+!
+
+ifTrue_word_byte: b1 word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r78 byte: b1 word: w1.
+!
+
+initialize
+    "Private."
+    code := OrderedCollection new.
+    self killLast!
+
+install_new_context_block_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r5D.
+!
+
+install_new_context_block_2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r5E.
+!
+
+install_new_context_block_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r5F byte: b1.
+!
+
+install_new_context_method_0
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r4C.
+!
+
+install_new_context_method_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r4D.
+!
+
+install_new_context_method_2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r4E.
+!
+
+install_new_context_method_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r4F byte: b1.
+!
+
+instr: i
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	| h l |
+	h := i // 16r10.
+	l := i \\ 16r10.
+
+	h = 16r0 ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'push_temp_0' ].
+		l = 16r1	ifTrue:	[ ^ 'push_temp_1' ].
+		l = 16r2	ifTrue:	[ ^ 'push_temp_2' ].
+		l = 16r3	ifTrue:	[ ^ 'push_temp_3' ].
+		l = 16r4	ifTrue:	[ ^ 'push_temp_4' ].
+		l = 16r5	ifTrue:	[ ^ 'push_temp_5' ].
+		l = 16r7	ifTrue:	[ ^ 'push_temp_n' ].
+		l = 16r8	ifTrue:	[ ^ 'push_arg_1' ].
+		l = 16r9	ifTrue:	[ ^ 'push_arg_2' ].
+		l = 16rA	ifTrue:	[ ^ 'push_arg_3' ].
+		l = 16rB	ifTrue:	[ ^ 'push_arg_n' ].
+		l = 16rC	ifTrue:	[ ^ 'allocate_temp_1' ].
+		l = 16rD	ifTrue:	[ ^ 'allocate_temp_2' ].
+		l = 16rE	ifTrue:	[ ^ 'allocate_temp_3' ].
+		l = 16rF	ifTrue:	[ ^ 'allocate_temp_n' ].
+		^ ''
+	].
+
+	h = 16r1 ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'store_temp_0_pop' ].
+		l = 16r1	ifTrue:	[ ^ 'store_temp_1_pop' ].
+		l = 16r2	ifTrue:	[ ^ 'store_temp_2_pop' ].
+		l = 16r3	ifTrue:	[ ^ 'store_temp_3_pop' ].
+		l = 16r4	ifTrue:	[ ^ 'store_temp_4_pop' ].
+		l = 16r5	ifTrue:	[ ^ 'store_temp_5_pop' ].
+		l = 16r6	ifTrue:	[ ^ 'store_temp_n' ].
+		l = 16r7	ifTrue:	[ ^ 'store_temp_n_pop' ].
+		l = 16r8	ifTrue:	[ ^ 'push_neg_n' ].
+		l = 16r9	ifTrue:	[ ^ 'push_succ_n' ].
+		l = 16rA	ifTrue:	[ ^ 'push_literal' ].
+		l = 16rB	ifTrue:	[ ^ 'push_tos' ].
+		l = 16rC	ifTrue:	[ ^ 'push_self' ].
+		l = 16rD	ifTrue:	[ ^ 'push_nil' ].
+		l = 16rE	ifTrue:	[ ^ 'push_true' ].
+		l = 16rF	ifTrue:	[ ^ 'push_false' ].
+		^ ''
+	].
+
+	h = 16r2 ifTrue: [
+		l = 16r8	ifTrue:	[ ^ 'return_instVar' ].
+		^ ''
+	].
+
+	h = 16r3 ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'float_allocate' ].
+		l = 16r1	ifTrue:	[ ^ 'float_floatify_pop' ].
+		l = 16r2	ifTrue:	[ ^ 'float_move' ].
+		l = 16r3	ifTrue:	[ ^ 'float_set' ].
+		l = 16r4	ifTrue:	[ ^ 'float_nullary_op' ].
+		l = 16r5	ifTrue:	[ ^ 'float_unary_op' ].
+		l = 16r6	ifTrue:	[ ^ 'float_binary_op' ].
+		l = 16r7	ifTrue:	[ ^ 'float_unary_op_to_oop' ].
+		l = 16r8	ifTrue:	[ ^ 'float_binary_op_to_oop' ].
+		l = 16rD	ifTrue:	[ ^ 'push_instVar' ].
+		l = 16rE	ifTrue:	[ ^ 'store_instVar_pop' ].
+		l = 16rF	ifTrue:	[ ^ 'store_instVar' ].
+		^ ''
+	].
+
+	h = 16r4 ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'push_temp_0_context_0' ].
+		l = 16r1	ifTrue:	[ ^ 'push_temp_1_context_0' ].
+		l = 16r2	ifTrue:	[ ^ 'push_temp_2_context_0' ].
+		l = 16r3	ifTrue:	[ ^ 'push_temp_n_context_0' ].
+		l = 16r4	ifTrue:	[ ^ 'store_temp_0_context_0_pop' ].
+		l = 16r5	ifTrue:	[ ^ 'store_temp_1_context_0_pop' ].
+		l = 16r6	ifTrue:	[ ^ 'store_temp_2_context_0_pop' ].
+		l = 16r7	ifTrue:	[ ^ 'store_temp_n_context_0_pop' ].
+		l = 16r8	ifTrue:	[ ^ 'push_new_closure_context_0' ].
+		l = 16r9	ifTrue:	[ ^ 'push_new_closure_context_1' ].
+		l = 16rA	ifTrue:	[ ^ 'push_new_closure_context_2' ].
+		l = 16rB	ifTrue:	[ ^ 'push_new_closure_context_n' ].
+		l = 16rC	ifTrue:	[ ^ 'install_new_context_method_0' ].
+		l = 16rD	ifTrue:	[ ^ 'install_new_context_method_1' ].
+		l = 16rE	ifTrue:	[ ^ 'install_new_context_method_2' ].
+		l = 16rF	ifTrue:	[ ^ 'install_new_context_method_n' ].
+		^ ''
+	].
+
+	h = 16r5 ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'push_temp_0_context_1' ].
+		l = 16r1	ifTrue:	[ ^ 'push_temp_1_context_1' ].
+		l = 16r2	ifTrue:	[ ^ 'push_temp_2_context_1' ].
+		l = 16r3	ifTrue:	[ ^ 'push_temp_n_context_1' ].
+		l = 16r4	ifTrue:	[ ^ 'store_temp_0_context_1_pop' ].
+		l = 16r5	ifTrue:	[ ^ 'store_temp_1_context_1_pop' ].
+		l = 16r6	ifTrue:	[ ^ 'store_temp_2_context_1_pop' ].
+		l = 16r7	ifTrue:	[ ^ 'store_temp_n_context_1_pop' ].
+		l = 16r8	ifTrue:	[ ^ 'push_new_closure_tos_0' ].
+		l = 16r9	ifTrue:	[ ^ 'push_new_closure_tos_1' ].
+		l = 16rA	ifTrue:	[ ^ 'push_new_closure_tos_2' ].
+		l = 16rB	ifTrue:	[ ^ 'push_new_closure_tos_n' ].
+		l = 16rC	ifTrue:	[ ^ 'only_pop' ].
+		l = 16rD	ifTrue:	[ ^ 'install_new_context_block_1' ].
+		l = 16rE	ifTrue:	[ ^ 'install_new_context_block_2' ].
+		l = 16rF	ifTrue:	[ ^ 'install_new_context_block_n' ].
+		^ ''
+	].
+
+	h = 16r6 ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'push_temp_0_context_n' ].
+		l = 16r1	ifTrue:	[ ^ 'push_temp_1_context_n' ].
+		l = 16r2	ifTrue:	[ ^ 'push_temp_2_context_n' ].
+		l = 16r3	ifTrue:	[ ^ 'push_temp_n_context_n' ].
+		l = 16r4	ifTrue:	[ ^ 'store_temp_0_context_n_pop' ].
+		l = 16r5	ifTrue:	[ ^ 'store_temp_1_context_n_pop' ].
+		l = 16r6	ifTrue:	[ ^ 'store_temp_2_context_n_pop' ].
+		l = 16r7	ifTrue:	[ ^ 'store_temp_n_context_n_pop' ].
+		l = 16r8	ifTrue:	[ ^ 'set_self_via_context' ].
+		l = 16r9	ifTrue:	[ ^ 'copy_1_into_context' ].
+		l = 16rA	ifTrue:	[ ^ 'copy_2_into_context' ].
+		l = 16rB	ifTrue:	[ ^ 'copy_n_into_context' ].
+		l = 16rC	ifTrue:	[ ^ 'copy_self_into_context' ].
+		l = 16rD	ifTrue:	[ ^ 'copy_self_1_into_context' ].
+		l = 16rE	ifTrue:	[ ^ 'copy_self_2_into_context' ].
+		l = 16rF	ifTrue:	[ ^ 'copy_self_n_into_context' ].
+		^ ''
+	].
+
+	h = 16r7 ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'ifTrue_byte' ].
+		l = 16r1	ifTrue:	[ ^ 'ifFalse_byte' ].
+		l = 16r2	ifTrue:	[ ^ 'and_byte' ].
+		l = 16r3	ifTrue:	[ ^ 'or_byte' ].
+		l = 16r4	ifTrue:	[ ^ 'whileTrue_byte' ].
+		l = 16r5	ifTrue:	[ ^ 'whileFalse_byte' ].
+		l = 16r6	ifTrue:	[ ^ 'jump_else_byte' ].
+		l = 16r7	ifTrue:	[ ^ 'jump_loop_byte' ].
+		l = 16r8	ifTrue:	[ ^ 'ifTrue_word' ].
+		l = 16r9	ifTrue:	[ ^ 'ifFalse_word' ].
+		l = 16rA	ifTrue:	[ ^ 'and_word' ].
+		l = 16rB	ifTrue:	[ ^ 'or_word' ].
+		l = 16rC	ifTrue:	[ ^ 'whileTrue_word' ].
+		l = 16rD	ifTrue:	[ ^ 'whileFalse_word' ].
+		l = 16rE	ifTrue:	[ ^ 'jump_else_word' ].
+		l = 16rF	ifTrue:	[ ^ 'jump_loop_word' ].
+		^ ''
+	].
+
+	h = 16r8 ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'interpreted_send_0' ].
+		l = 16r1	ifTrue:	[ ^ 'interpreted_send_1' ].
+		l = 16r2	ifTrue:	[ ^ 'interpreted_send_2' ].
+		l = 16r3	ifTrue:	[ ^ 'interpreted_send_n' ].
+		l = 16r4	ifTrue:	[ ^ 'interpreted_send_0_pop' ].
+		l = 16r5	ifTrue:	[ ^ 'interpreted_send_1_pop' ].
+		l = 16r6	ifTrue:	[ ^ 'interpreted_send_2_pop' ].
+		l = 16r7	ifTrue:	[ ^ 'interpreted_send_n_pop' ].
+		l = 16r8	ifTrue:	[ ^ 'interpreted_send_self' ].
+		l = 16r9	ifTrue:	[ ^ 'interpreted_send_self_pop' ].
+		l = 16rA	ifTrue:	[ ^ 'interpreted_send_super' ].
+		l = 16rB	ifTrue:	[ ^ 'interpreted_send_super_pop' ].
+		l = 16rC	ifTrue:	[ ^ 'return_tos_pop_0' ].
+		l = 16rD	ifTrue:	[ ^ 'return_tos_pop_1' ].
+		l = 16rE	ifTrue:	[ ^ 'return_tos_pop_2' ].
+		l = 16rF	ifTrue:	[ ^ 'return_tos_pop_n' ].
+		^ ''
+	].
+
+	h = 16r9 ifTrue: [
+		l = 16rC	ifTrue:	[ ^ 'return_self_pop_0' ].
+		l = 16rD	ifTrue:	[ ^ 'return_self_pop_1' ].
+		l = 16rE	ifTrue:	[ ^ 'return_self_pop_2' ].
+		l = 16rF	ifTrue:	[ ^ 'return_self_pop_n' ].
+		^ ''
+	].
+
+	h = 16rA ifTrue: [
+		l = 16rC	ifTrue:	[ ^ 'return_tos_zap_pop_n' ].
+		l = 16rD	ifTrue:	[ ^ 'return_self_zap_pop_n' ].
+		l = 16rE	ifTrue:	[ ^ 'non_local_return_tos_pop_n' ].
+		l = 16rF	ifTrue:	[ ^ 'non_local_return_self_pop_n' ].
+		^ ''
+	].
+
+	h = 16rB ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'prim_call' ].
+		l = 16r1	ifTrue:	[ ^ 'predict_prim_call' ].
+		l = 16r2	ifTrue:	[ ^ 'prim_call_failure' ].
+		l = 16r3	ifTrue:	[ ^ 'predict_prim_call_failure' ].
+		l = 16r4	ifTrue:	[ ^ 'dll_call_sync' ].
+		l = 16r5	ifTrue:	[ ^ 'prim_call_self' ].
+		l = 16r6	ifTrue:	[ ^ 'prim_call_self_failure' ].
+		^ ''
+	].
+
+	h = 16rC ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'prim_call_lookup' ].
+		l = 16r1	ifTrue:	[ ^ 'predict_prim_call_lookup' ].
+		l = 16r2	ifTrue:	[ ^ 'prim_call_failure_lookup' ].
+		l = 16r3	ifTrue:	[ ^ 'predict_prim_call_failure_lookup' ].
+		l = 16r4	ifTrue:	[ ^ 'dll_call_async' ].
+		l = 16r5	ifTrue:	[ ^ 'prim_call_self_lookup' ].
+		l = 16r6	ifTrue:	[ ^ 'prim_call_self_failure_lookup' ].
+		^ ''
+	].
+
+	h = 16rD ifTrue: [
+		l = 16rD	ifTrue:	[ ^ 'special_primitive_send_1_hint' ].
+		^ ''
+	].
+
+	h = 16rE ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'smi_add' ].
+		l = 16r1	ifTrue:	[ ^ 'smi_sub' ].
+		l = 16r2	ifTrue:	[ ^ 'smi_mult' ].
+		l = 16r3	ifTrue:	[ ^ 'smi_div' ].
+		l = 16r4	ifTrue:	[ ^ 'smi_mod' ].
+		l = 16r5	ifTrue:	[ ^ 'smi_create_point' ].
+		l = 16r6	ifTrue:	[ ^ 'smi_equal' ].
+		l = 16r7	ifTrue:	[ ^ 'smi_not_equal' ].
+		l = 16r8	ifTrue:	[ ^ 'smi_less' ].
+		l = 16r9	ifTrue:	[ ^ 'smi_less_equal' ].
+		l = 16rA	ifTrue:	[ ^ 'smi_greater' ].
+		l = 16rB	ifTrue:	[ ^ 'smi_greater_equal' ].
+		l = 16rC	ifTrue:	[ ^ 'objArray_at' ].
+		l = 16rD	ifTrue:	[ ^ 'objArray_at_put' ].
+		l = 16rE	ifTrue:	[ ^ 'double_equal' ].
+		l = 16rF	ifTrue:	[ ^ 'double_tilde' ].
+		^ ''
+	].
+
+	h = 16rF ifTrue: [
+		l = 16r0	ifTrue:	[ ^ 'push_global' ].
+		l = 16r1	ifTrue:	[ ^ 'store_global_pop' ].
+		l = 16r2	ifTrue:	[ ^ 'store_global' ].
+		l = 16r3	ifTrue:	[ ^ 'push_classVar' ].
+		l = 16r4	ifTrue:	[ ^ 'store_classVar_pop' ].
+		l = 16r5	ifTrue:	[ ^ 'store_classVar' ].
+		l = 16r6	ifTrue:	[ ^ 'smi_and' ].
+		l = 16r7	ifTrue:	[ ^ 'smi_or' ].
+		l = 16r8	ifTrue:	[ ^ 'smi_xor' ].
+		l = 16r9	ifTrue:	[ ^ 'smi_shift' ].
+		l = 16rF	ifTrue:	[ ^ 'halt' ].
+		^ ''
+	].
+
+	self halt
+!
+
+interpreted_send_0_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r80 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_0_pop_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r84 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_1_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r81 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_1_pop_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r85 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_2_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r82 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_2_pop_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r86 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_n_byte: b1 oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r83 byte: b1 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_n_pop_byte: b1 oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r87 byte: b1 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_self_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r88 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_self_pop_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r89 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_super_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r8A oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+interpreted_send_super_pop_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r8B oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+jump_else_byte_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r76 byte: b1.
+!
+
+jump_else_word_word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r7E word: w1.
+!
+
+jump_loop_byte_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r77 byte: b1 byte: b2.
+!
+
+jump_loop_word_word: w1 word: w2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r7F word: w1 word: w2.
+!
+
+killLast
+    last := 0!
+
+komment
+	"
+	HCode represents hybrid code as an ordered collection of
+	bytes (Integers) and oop's (non-Integers). Each oop is represented
+	by four consecutive entries of itself, making up the four bytes
+	used for the oop in the VM.
+		The index of the last HCode is held in the instVar last and may be
+	used for optimization purposes. last <= 0 indicates no available or
+	no valid last HCode.
+	"!
+
+non_local_return_self_pop_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rAF byte: b1.
+!
+
+non_local_return_tos_pop_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rAE byte: b1.
+!
+
+objArray_at_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rEC oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+objArray_at_put_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rED oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+only_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r5C.
+!
+
+or_byte_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r73 byte: b1.
+!
+
+or_word_word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r7B word: w1.
+!
+
+predict_prim_call_failure_lookup_oop: o1 word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rC3 oop: o1 word: w1.
+!
+
+predict_prim_call_failure_word: w1 word: w2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rB3 word: w1 word: w2.
+!
+
+predict_prim_call_lookup_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rC1 oop: o1.
+!
+
+predict_prim_call_word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rB1 word: w1.
+!
+
+prim_call_failure_lookup_oop: o1 word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rC2 oop: o1 word: w1.
+!
+
+prim_call_failure_word: w1 word: w2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rB2 word: w1 word: w2.
+!
+
+prim_call_lookup_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rC0 oop: o1.
+!
+
+prim_call_self_failure_lookup_oop: o1 word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rC6 oop: o1 word: w1.
+!
+
+prim_call_self_failure_word: w1 word: w2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rB6 word: w1 word: w2.
+!
+
+prim_call_self_lookup_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rC5 oop: o1.
+!
+
+prim_call_self_word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rB5 word: w1.
+!
+
+prim_call_word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rB0 word: w1.
+!
+
+printOn: aStream
+	aStream nextPutAll: 'Bytecode: '.
+	self size printOn: aStream.
+	aStream nextPutAll: ' bytes' ; cr ; cr.
+	self printOn: aStream indent: 0!
+
+printOn: aStream indent: indent
+	| n i x j |
+	n := self size.
+	i := 1.
+	[ i <= n ] whileTrue: [
+		j := indent * 6.
+		[ j > 0 ] whileTrue: [
+			aStream tab.
+			j := j - 1
+		].
+		i < 10 ifTrue: [ aStream nextPut: $0 ].
+		i < 100 ifTrue: [ aStream nextPut: $0 ].
+		i < 1000 ifTrue: [ aStream nextPut: $0 ].
+		i printOn: aStream.
+		aStream tab ; tab.
+		x := code at: i.
+		(self holdsOopAt: i)
+			ifFalse: [
+				x asInteger < 16 ifTrue: [ aStream nextPut: $0 ].
+				BootStrapping
+					ifTrue: [ x asInteger printBareHexOn: aStream ]
+					ifFalse: [ x asInteger printOn: aStream base: 16 showRadix: false ].
+				x asInteger \\ 16 < 10 ifTrue: [ aStream nextPut: $  ]. "output fine tuning"
+				x asInteger \\ 16 = 15 ifTrue: [ aStream nextPut: $  ]. "output fine tuning"
+				aStream tab ; tab.
+				aStream nextPutAll: (self instr: x asInteger).
+				i := i + 1
+			]
+			ifTrue: [
+				aStream tab ; tab ; tab.
+				x printOn: aStream.
+				i := i + 4
+			].
+		aStream cr.
+		 (x isOop and: [x isMethodOop]) ifTrue: [
+			x code printOn: aStream indent: indent + 1
+		]
+	]
+!
+
+push_arg_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r08.
+!
+
+push_arg_2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r09.
+!
+
+push_arg_3
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r0A.
+!
+
+push_arg_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r0B byte: b1.
+!
+
+push_classVar_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF3 oop: o1.
+	self has_classVar_access.
+!
+
+push_false
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r1F.
+!
+
+push_global_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF0 oop: o1.
+!
+
+push_instVar_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r3D oop: o1.
+	self has_instVar_access.
+!
+
+push_literal_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r1A oop: o1.
+!
+
+push_neg_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r18 byte: b1.
+!
+
+push_new_closure_context_0_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r48 oop: o1.
+!
+
+push_new_closure_context_1_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r49 oop: o1.
+!
+
+push_new_closure_context_2_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r4A oop: o1.
+!
+
+push_new_closure_context_n_byte: b1 oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r4B byte: b1 oop: o1.
+!
+
+push_new_closure_tos_0_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r58 oop: o1.
+!
+
+push_new_closure_tos_1_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r59 oop: o1.
+!
+
+push_new_closure_tos_2_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r5A oop: o1.
+!
+
+push_new_closure_tos_n_byte: b1 oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r5B byte: b1 oop: o1.
+!
+
+push_nil
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r1D.
+!
+
+push_self
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r1C.
+!
+
+push_succ_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r19 byte: b1.
+!
+
+push_temp_0
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r00.
+!
+
+push_temp_0_context_0
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r40.
+!
+
+push_temp_0_context_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r50.
+!
+
+push_temp_0_context_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r60 byte: b1.
+!
+
+push_temp_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r01.
+!
+
+push_temp_1_context_0
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r41.
+!
+
+push_temp_1_context_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r51.
+!
+
+push_temp_1_context_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r61 byte: b1.
+!
+
+push_temp_2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r02.
+!
+
+push_temp_2_context_0
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r42.
+!
+
+push_temp_2_context_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r52.
+!
+
+push_temp_2_context_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r62 byte: b1.
+!
+
+push_temp_3
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r03.
+!
+
+push_temp_4
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r04.
+!
+
+push_temp_5
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r05.
+!
+
+push_temp_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r07 byte: b1.
+!
+
+push_temp_n_context_0_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r43 byte: b1.
+!
+
+push_temp_n_context_1_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r53 byte: b1.
+!
+
+push_temp_n_context_n_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r63 byte: b1 byte: b2.
+!
+
+push_tos
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r1B.
+!
+
+push_true
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r1E.
+!
+
+referencedSymbols
+    | symbols |
+    symbols := Set new.
+    self symbolOopsDo: [ :e | symbols add: e symbol ].
+    ^symbols!
+
+referencesAssociation: a
+    self associationOopsDo: [ :e | e = a ifTrue: [ ^true ]].
+    ^false
+!
+
+referencesGlobal: g
+    self associationOopsDo: [ :e | e key symbol = g ifTrue: [ ^true ]].
+    ^false
+!
+
+referencesSymbol: s
+    self symbolOopsDo: [ :e | e symbol = s ifTrue: [ ^true ]].
+    ^false
+!
+
+removeLast
+    "Removes last HCode."
+    self assert: [last > 0].
+    [code size >= last] whileTrue: [code removeLast].
+    self killLast!
+
+return_instVar_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r28 oop: o1.
+	self has_instVar_access.
+!
+
+return_self_pop_0
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r9C.
+!
+
+return_self_pop_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r9D.
+!
+
+return_self_pop_2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r9E.
+!
+
+return_self_pop_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r9F byte: b1.
+!
+
+return_self_zap_pop_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rAD byte: b1.
+!
+
+return_tos_pop_0
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r8C.
+!
+
+return_tos_pop_1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r8D.
+!
+
+return_tos_pop_2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r8E.
+!
+
+return_tos_pop_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r8F byte: b1.
+!
+
+return_tos_zap_pop_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rAC byte: b1.
+!
+
+setLast
+    "Private. Marks the position of the last HCode added."
+    last := code size + 1!
+
+set_self_via_context
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r68.
+!
+
+size
+    ^ code size!
+
+smi_add_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE0 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_and_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF6 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_create_point_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE5 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_div_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE3 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_equal_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE6 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_greater_equal_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rEB oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_greater_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rEA oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_less_equal_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE9 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_less_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE8 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_mod_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE4 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_mult_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE2 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_not_equal_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE7 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_or_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF7 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_shift_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF9 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_sub_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rE1 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+smi_xor_oop: o1 oop: o2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF8 oop: o1 oop: o2.
+	self has_inline_cache.
+!
+
+special_primitive_send_1_hint_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rDD byte: b1.
+!
+
+store_classVar_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF5 oop: o1.
+	self has_classVar_access.
+!
+
+store_classVar_pop_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF4 oop: o1.
+	self has_classVar_access.
+!
+
+store_global_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF2 oop: o1.
+!
+
+store_global_pop_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16rF1 oop: o1.
+!
+
+store_instVar_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r3F oop: o1.
+	self has_instVar_access.
+!
+
+store_instVar_pop_oop: o1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r3E oop: o1.
+	self has_instVar_access.
+!
+
+store_temp_0_context_0_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r44.
+!
+
+store_temp_0_context_1_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r54.
+!
+
+store_temp_0_context_n_pop_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r64 byte: b1.
+!
+
+store_temp_0_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r10.
+!
+
+store_temp_1_context_0_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r45.
+!
+
+store_temp_1_context_1_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r55.
+!
+
+store_temp_1_context_n_pop_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r65 byte: b1.
+!
+
+store_temp_1_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r11.
+!
+
+store_temp_2_context_0_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r46.
+!
+
+store_temp_2_context_1_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r56.
+!
+
+store_temp_2_context_n_pop_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r66 byte: b1.
+!
+
+store_temp_2_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r12.
+!
+
+store_temp_3_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r13.
+!
+
+store_temp_4_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r14.
+!
+
+store_temp_5_pop
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r15.
+!
+
+store_temp_n_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r16 byte: b1.
+!
+
+store_temp_n_context_0_pop_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r47 byte: b1.
+!
+
+store_temp_n_context_1_pop_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r57 byte: b1.
+!
+
+store_temp_n_context_n_pop_byte: b1 byte: b2
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r67 byte: b1 byte: b2.
+!
+
+store_temp_n_pop_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r17 byte: b1.
+!
+
+symbolOopsDo: aBlock
+	| e |
+	1 to: code size do: [ :i |
+		(self holdsOopAt: i) ifTrue: [
+			e := self at: i.
+			e isOop ifTrue: [
+				e isSymbolOop
+					ifTrue: [ aBlock value: e ]
+					ifFalse: [ e isMethodOop ifTrue: [e symbolOopsDo: aBlock ] ] ] ] ]
+
+
+"
+    code do: [ :e | (e isSmallInteger or: [e isCharacter]) ifFalse: [
+        e isSymbolOop
+            ifTrue: [ aBlock value: e ]
+            ifFalse: [ e isMethodOop ifTrue: [e symbolOopsDo: aBlock ]]]]
+"!
+
+whileFalse_byte_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r75 byte: b1.
+!
+
+whileFalse_word_word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r7D word: w1.
+!
+
+whileTrue_byte_byte: b1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r74 byte: b1.
+!
+
+whileTrue_word_word: w1
+	"
+	Generated method - do not modify manually
+	(use delta +GenerateSmalltalk to generate).
+	"
+	self byte: 16r7C word: w1.
+!
+
+wordAt: pos put: w
+    "This should be rethought - byte ordering dependency"
+    | p t |
+    "little endian machine"
+    p := pos.
+    t := w.
+    4 timesRepeat: [
+        self byteAt: p put: t \\ 256.
+        p := p + 1.
+        t := t // 256
+    ]! !
+

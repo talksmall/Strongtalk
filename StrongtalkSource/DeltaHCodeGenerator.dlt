@@ -1,0 +1,844 @@
+Delta define: #DeltaHCodeGenerator as: (
+(Class subclassOf: 'Object' instanceVariables: 'code optimize longJumps shortJumpFailureBlock nofStackTemps nofStackFloats floatStackTop floatStackMax ') classVariables: 'HCodeTable ') !
+
+(Delta mirrorFor: #DeltaHCodeGenerator) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaHCodeGenerator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaHCodeGenerator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaHCodeGenerator) classSide methodsFor: 'Unclassified' !
+
+
+initializeBCTable
+    HCodeTable := IdentityDictionary new.
+    HCodeTable
+          at: #pushTempFast                       put: 16r00
+        ; at: #pushParamFast                     put: 16r08
+        ; at: #storeTempPopFast               put: 16r10
+        ; at: #pushInstVarFast                    put: 16r20
+        ; at: #storeInstVarPopFast            put: 16r30
+        ; at: #pushTempb                              put: 16r07
+        ; at: #pushParamb                            put: 16r0B
+        ; at: #storeTempPopb                     put: 16r17
+        ; at: #storeTempb                             put: 16r16
+        ; at: #pushInstVarb                          put: 16r27
+        ; at: #storeInstVarPopb                 put: 16r37
+        ; at: #storeInstVarb                         put: 16r06
+        ; at: #getInstVarReturn                  put: 16r28
+        ; at: #setInstVarReturn                  put: 16r38
+
+        ; at: #pushVarViaContext0           put: 16r40
+        ; at: #pushVarViaContext1           put: 16r50
+        ; at: #pushVarViaContextb           put: 16r60
+
+         ; at: #pushVarbViaContext0            put: 16r43
+        ; at: #pushVarbViaContext1            put: 16r53
+        ; at: #pushVarbViaContextb            put: 16r63
+
+       ; at: #storePopVarViaContext0     put: 16r44
+        ; at: #storePopVarViaContext1     put: 16r54
+        ; at: #storePopVarViaContextb     put: 16r64
+
+        ; at: #storePopVarbViaContext0   put: 16r47
+        ; at: #storePopVarbViaContext1   put: 16r57
+        ; at: #storePopVarbViaContextb   put: 16r67
+
+        ; at: #pushClosureContext           put: 16r48
+        ; at: #pushClosureTos                    put: 16r58
+        ; at: #installMethodContext          put: 16r4C
+        ; at: #installBlockContext              put: 16r5C
+
+        ; at: #pushClosureContextb         put: 16r4B
+        ; at: #pushClosureTosb                  put: 16r5B
+        ; at: #installMethodContextb        put: 16r4F
+        ; at: #installBlockContextb            put: 16r5F
+
+        ; at: #setRecvViaContext             put: 16r68
+        ; at: #copyParams                           put: 16r68
+        ; at: #copyRecvParams                 put: 16r6C
+
+        ; at: #allocateTemps                        put: 16r0C
+        ; at: #allocateTempsb                     put: 16r0F
+        ; at: #pushMb                                     put: 16r18
+        ; at: #pushBp1                                   put: 16r19
+        ; at: #pushLit                                      put: 16r1A
+        ; at: #pushTos                                    put: 16r1B
+        ; at: #pushRecv                                 put: 16r1C
+        ; at: #pushNil                                      put: 16r1D
+        ; at: #pushTrue                                  put: 16r1E
+        ; at: #pushFalse                                 put: 16r1F
+
+        ; at: #popTos                                      put: 16r5C
+
+        ; at: #ifTrueS                                      put: 16r70
+        ; at: #ifFalseS                                     put: 16r71
+        ; at: #andS                                           put: 16r72
+        ; at: #orS                                              put: 16r73
+        ; at: #loopEntryS                               put: 16r74
+        ; at: #jumpS                                         put: 16r75
+
+        ; at: #ifTrueL                                      put: 16r78
+        ; at: #ifFalseL                                     put: 16r79
+        ; at: #andL                                           put: 16r7A
+        ; at: #orL                                              put: 16r7B
+        ; at: #loopEntryL                               put: 16r7C
+        ; at: #jumpL                                         put: 16r7D
+
+        ; at: #loop                                            put: 16r76
+        ; at: #loopAlways                             put: 16r77
+        ; at: #whileTrue                                 put: 16r7E
+        ; at: #whileFalse                                put: 16r7F
+
+        ; at: #properSend                                         put: 16r80
+        ; at: #properSendPop                                 put: 16r84
+        ; at: #properSendb                                      put: 16r83
+        ; at: #properSendPopb                              put: 16r87
+
+        ; at: #selfSend                                              put: 16r88
+        ; at: #selfSendPop                                      put: 16r89
+
+        ; at: #superSend                                           put: 16r8A
+        ; at: #superSendPop                                   put: 16r8B
+
+        ; at: #superSendLookup                            put: 16r8A + 16
+        ; at: #superSendPopLookup                     put: 16r8B + 16
+
+        ; at: #returnTos                                             put: 16r8C
+        ; at: #returnTosb                                           put: 16r8F
+        ; at: #returnRecv                                          put: 16r9C
+        ; at: #returnRecvb                                        put: 16r9F
+
+        ; at: #zapReturnTos                                      put: 16rAC
+        ; at: #zapReturnRecv                                   put: 16rAD
+
+        ; at: #nonlocalReturnTos                            put: 16rAE
+        ; at: #nonlocalReturnRecv                         put: 16rAF
+
+        ; at: #primitiveSend                                     put: 16rB0
+        ; at: #primitiveSendIfFail                           put: 16rB2
+
+        ; at: #primitiveSendLookup                      put: 16rB0 + 16
+        ; at: #primitiveSendIfFailLookup            put: 16rB2 + 16
+
+        ; at: #dllCall                                                     put: 16rB4
+        ; at: #dllCallIfFail                                           put: 16rB6
+
+        ; at: #dllCallLookup                                      put: 16rB4 + 16
+        ; at: #dllCallIfFailLookup                            put: 16rB6 + 16
+
+        ; at: #+                                                               put: 16rE0
+        ; at: #-                                                                put: 16rE1
+        ; at: #*                                                               put: 16rE2
+        ; at: #//                                                               put: 16rE3
+        ; at: #\\                                                               put: 16rE4
+
+        ; at: #=                                                               put: 16rE6
+        ; at: #~=                                                              put: 16rE7
+        ; at: #<                                                               put: 16rE8
+        ; at: #<=                                                             put: 16rE9
+        ; at: #>                                                               put: 16rEA
+        ; at: #>=                                                             put: 16rEB
+
+        ; at: #==                                                             put: 16rEE
+        ; at: #~~                                                               put: 16rEF
+
+        ; at: #pushGlobalVar                                    put: 16rF0
+        ; at: #storeGlobalVarPop                           put: 16rF1
+        ; at: #storeGlobalVar                                   put: 16rF2
+        ; at: #halt                                                          put: 16rFF!
+
+new
+    ^ super new initialize!
+
+version
+	"The version number must be incremented whenever a change is made to the
+	  bytecode generation"
+	^ 2! !
+
+! (Delta mirrorFor: #DeltaHCodeGenerator) methodsFor: 'Unclassified' !
+
+
+allocateTemps: nofTemps floats: nofFloats floatExprs: hasFloatExprs
+	"Allocates nofTemps temporaries and nofFloats floats."
+	| n |
+	self assert: [ nofTemps >= 0 ].
+	nofTemps > nofStackTemps ifTrue: [ nofStackTemps := nofTemps ].
+	hasFloatExprs
+		ifFalse: [
+			n := nofTemps - 1. "one temporary always allocated"
+			n > 0 ifTrue: [
+				n = 1		ifTrue: [ code allocate_temp_1. ^ self ].
+				n = 2		ifTrue: [ code allocate_temp_2. ^ self ].
+				n = 3		ifTrue: [ code allocate_temp_3. ^ self ].
+				n <= 256	ifTrue: [
+					n = 256 ifTrue: [ n := 0 ]. "0 means 256 temps"
+					code allocate_temp_n_byte: n.
+					^ self
+				].
+				self halt
+			]
+		]
+		ifTrue: [
+			self assert: [ nofTemps >= 2 and: [ nofTemps \\ 2 = 0 ] ]. "must be an even no. of temps and at least 2"
+			self initializeFloatStack: nofFloats.
+			code float_allocate_byte: nofTemps // 2 - 1 byte: nofFloats byte: 0
+
+		]
+!
+
+and
+    "Answers fixup address."
+    longJumps
+        ifTrue: [code byte: (HCodeTable at: #andL) word: 0]
+        ifFalse: [code byte: (HCodeTable at: #andS) byte: 0].
+    ^ code size!
+
+at: pos fixupFlags: flags jumpInfo: dist
+	"
+	Adds decoder info to the ifTrue/ifFalse instruction at position pos.
+	The format is as follows:
+
+		0:	...										<== pos
+		1:	ifTrue/ifFalse byte
+		2:	decoder info byte
+		3:	jump offset byte/word
+
+	The info byte contains some flags (bits 0 - 3) and a distance d
+	(bits 4 - 7) that tells where the jump instruction jumping over
+	the else branch starts if there is one. Beginning position of
+	the else branch - d is the position of the branch.
+	"
+
+	self assert: [ 0 <= flags and: [ flags < 16r10 ] ].
+	self assert: [ 0 <= dist and: [ dist < 16r10 ] ].
+	code
+		byteAt: pos + 2
+		put: dist * 16r10 + flags!
+
+at: pos fixupLoopInfo: offs
+	| p |
+	"
+	Adds decoder info to the jump loop instruction at position pos.
+	The format is as follows:
+
+		with short jumps:			with long jumps:
+
+		...									...												<== pos
+		jump loop byte				jump loop byte
+		loop info byte				...
+		jump offset (byte)		aligned loop info word
+											aligned jump offset (word)
+
+	Adding the loop info and the jump offset to the position
+	of the instruction following the jump loop instruction yields
+	the position of the first instruction after the loop.
+	"
+
+	longJumps
+		ifTrue: [
+			"[ 0 <= offs and: [ offs < 16r100000000 ] ] assert."
+			p := pos + 2.
+			[ p \\ 4 = 1 ] whileFalse: [ p := p + 1].	"align"
+			code wordAt: p put: offs
+		]
+		ifFalse: [
+			(0 <= offs and: [ offs < 16r100 ]) ifFalse: [ shortJumpFailureBlock value. super halt ].
+			code byteAt: pos + 2 put: offs
+		]!
+
+bci
+    "Answers the current bci."
+    ^ code size!
+
+close
+    "To be called at the end of code generation."
+	| s |
+
+	s := floatStackMax - nofStackFloats + 1.
+	s > 0 ifTrue: [
+		"fixup allocate float instruction in the beginning - float expression stack size is only known after code has been generated"
+		"(Note: should use constants at some point)"
+		self assert: [ s < 256 ].
+		self assert: [ (code byteAt: 1) = 16r30 ].	"first instruction must be float_allocate"
+		code byteAt: 4 put: s								"last byte of 4-byte float_allocate instruction specifies float expression stack size"
+	].
+
+	"make code length multiple of 4"
+    code align!
+
+code
+    ^ code!
+
+copyParameters: offsets withRecv: aBoolean
+	| op n |
+	self assert: [offsets isCollection].
+	self assert: [(offsets size > 0) or: [aBoolean]].
+	offsets do: [ :offs |
+		self assert: [ offs >= 0 ]
+	].
+	op := HCodeTable at: (
+		aBoolean
+			ifTrue: [#copyRecvParams]
+			ifFalse: [#copyParams]
+	).
+	n := offsets size.
+	n = 0			ifTrue: [code byte: op + 0.																^ self].
+	n = 1			ifTrue: [code byte: op + 1 byte: (offsets at: 1).									^ self].
+	n = 2			ifTrue: [code byte: op + 2 byte: (offsets at: 1) byte: (offsets at: 2).	^ self].
+	n <= 256	ifTrue: [code byte: op + 3 byte: n \\ 256 bytes: offsets.					^ self].
+	self halt!
+
+dll: dll call: function nofArgs: n async: async
+	self assert: [ 0 <= n and: [ n < 256 ] ].
+	async
+		ifTrue:		[ code dll_call_async_oop: dll oop: function word: 0 byte: n ]
+		ifFalse:	[ code dll_call_sync_oop: dll oop: function word: 0 byte: n ]!
+
+endsWithReturn
+	"Answers whether the last instruction did a return or not."
+
+	| b x y |
+	b := code getLast.
+
+	x := HCodeTable at: #returnTos.
+	y := HCodeTable at: #returnTosb.
+	(x <= b) & (b <= y) ifTrue: [ ^ true ].
+
+	x := HCodeTable at: #returnRecv.
+	y := HCodeTable at: #returnRecvb.
+	(x <= b) & (b <= y) ifTrue: [ ^ true ].
+
+	(b = (HCodeTable at: #zapReturnTos)) ifTrue: [ ^ true ].
+	(b = (HCodeTable at: #zapReturnRecv)) ifTrue: [ ^ true ].
+	(b = (HCodeTable at: #nonlocalReturnTos)) ifTrue: [ ^ true ].
+	(b = (HCodeTable at: #nonlocalReturnRecv)) ifTrue: [ ^ true ].
+
+	b = 16r28 ifTrue: [ ^ true ].
+
+	^ false!
+
+floatBinaryOp: f
+	self popFloat.
+	self assert: [ self floatStackIsEmpty not ].
+	code float_binary_op_byte: self floatStackTopIndex byte: (self floatBinaryOpCodeFor: f)!
+
+floatBinaryOpCodeFor: f
+	"
+	Private.
+	"
+	f = #+	ifTrue: [ ^ code float_add			].
+	f = #-	ifTrue: [ ^ code float_subtract	].
+	f = #*	ifTrue: [ ^ code float_multiply	].
+	f = #/	ifTrue: [ ^ code float_divide		].
+	f = #\\	ifTrue: [ ^ code float_modulo	].
+	super halt!
+
+floatBinaryOpToOop: f
+	self popFloat.
+	self assert: [ self floatStackIsEmpty not ].
+	code float_binary_op_to_oop_byte: self floatStackTopIndex byte: (self floatBinaryOpToOopCodeFor: f).
+	self popFloat!
+
+floatBinaryOpToOopCodeFor: f
+	"
+	Private.
+	"
+	f = #=	ifTrue: [ ^ code float_is_equal					].
+	f = #~=	ifTrue: [ ^ code float_is_not_equal			].
+	f = #<	ifTrue: [ ^ code float_is_less					].
+	f = #<=	ifTrue: [ ^ code float_is_less_equal		].
+	f = #>	ifTrue: [ ^ code	float_is_greater				].
+	f = #>=	ifTrue: [ ^ code	float_is_greater_equal	].
+	super halt!
+
+floatIndex: fno
+	| i |
+	"Answers the float index used in the byte codes for the float number fno."
+	self assert: [ nofStackTemps \\ 2 = 0 ].
+	self assert: [ fno >= 0 ].
+	i := 256 - (nofStackTemps // 2) - fno.
+	self assert: [ 0 <= i and: [ i < 256 ] ].
+	^ i!
+
+floatNullaryOp: f
+	self incFloatStackTop: 1.
+	code float_unary_op_byte: self floatStackTopIndex byte: (self floatNullaryOpCodeFor: f)!
+
+floatNullaryOpCodeFor: f
+	"
+	Private.
+	"
+	f = #zero	ifTrue: [ ^ code float_zero	].
+	f = #one	ifTrue: [ ^ code float_one		].
+	super halt!
+
+floatStackIsEmpty
+	self assert: [ floatStackTop >= (nofStackFloats - 1) ].
+	^ floatStackTop < nofStackFloats!
+
+floatStackTopIndex
+	^ self floatIndex: floatStackTop!
+
+floatUnaryOp: f
+	self assert: [ self floatStackIsEmpty not ].
+	code float_unary_op_byte: self floatStackTopIndex byte: (self floatUnaryOpCodeFor: f)!
+
+floatUnaryOpCodeFor: f
+	"
+	Private.
+	"
+	f = #abs			ifTrue: [ ^ code float_abs			].
+	f = #negated	ifTrue: [ ^ code float_negated	].
+	f = #squared	ifTrue: [ ^ code float_squared	].
+	f = #sqrt			ifTrue: [ ^ code float_sqrt			].
+	f = #sin			ifTrue: [ ^ code float_sin			].
+	f = #cos			ifTrue: [ ^ code float_cos			].
+	f = #tan			ifTrue: [ ^ code float_tan			].
+	f = #exp			ifTrue: [ ^ code float_exp			].
+	f = #ln				ifTrue: [ ^ code float_ln			].
+	super halt!
+
+floatUnaryOpToOop: f
+	self assert: [ self floatStackIsEmpty not ].
+	code float_unary_op_to_oop_byte: self floatStackTopIndex byte: (self floatUnaryOpToOopCodeFor: f).
+	self popFloat!
+
+floatUnaryOpToOopCodeFor: f
+	"
+	Private.
+	"
+	f = #asFloat	ifTrue: [ ^ code float_oopify		].
+	super halt!
+
+floatify
+	self incFloatStackTop: 1.
+	code float_floatify_pop_byte: self floatStackTopIndex!
+
+if: cond
+	"Answers fixup address."
+	longJumps
+		ifTrue: [
+			code
+				byte:
+					(cond
+						ifTrue: [HCodeTable at: #ifTrueL]
+						ifFalse: [HCodeTable at: #ifFalseL]
+					)
+				byte: 0
+				word: 0
+		]
+		ifFalse: [
+			code
+				byte:
+					(cond
+						ifTrue: [HCodeTable at: #ifTrueS]
+						ifFalse: [HCodeTable at: #ifFalseS]
+					)
+				byte: 0
+				byte: 0
+		].
+	^ code size!
+
+incFloatStackTop: delta
+	floatStackTop := floatStackTop + delta.
+	floatStackTop > floatStackMax ifTrue: [ floatStackMax := floatStackTop ]!
+
+initialize
+	"
+	Private.
+	"
+	code := DeltaHCode new.
+	optimize := true.
+	longJumps := false.
+	shortJumpFailureBlock := [].
+	nofStackTemps := 1. "temp0 always allocated"
+	self initializeFloatStack:  0!
+
+initializeFloatStack: nofFloats
+	self assert: [ nofFloats >= 0 ].
+	nofStackFloats := nofFloats.
+	floatStackTop := nofFloats - 1.
+	floatStackMax := floatStackTop.
+	self assert: [ self floatStackIsEmpty ]!
+
+installBlockContext: nofVars
+    self assert: [nofVars >= 1].
+    nofVars < 3     ifTrue: [code byte: (HCodeTable at: #installBlockContext) + nofVars. ^ self].
+    nofVars < 256 ifTrue: [code byte: (HCodeTable at: #installBlockContextb) byte: nofVars. ^ self].
+    self halt!
+
+installMethodContext: nofVars
+    self assert: [nofVars >= 0].
+    nofVars < 3     ifTrue: [code byte: (HCodeTable at: #installMethodContext) + nofVars. ^ self].
+    nofVars < 256 ifTrue: [code byte: (HCodeTable at: #installMethodContextb) byte: nofVars. ^ self].
+    self halt!
+
+jump
+	"Answers fixup address."
+	longJumps
+		ifTrue: [ code byte: 16r7E word: 0 ]
+		ifFalse: [ code byte: 16r76 byte: 0 ].
+	^ code size!
+
+jumpLoop
+	"Answers fixup address."
+	longJumps
+		ifTrue: [ code byte: 16r7F word: 0 word: 0 ]
+		ifFalse: [ code byte: 16r77 byte: 0 byte: 0 ].
+	code killLast.
+	^ code size!
+
+label: pos
+	"
+	Defines a target for the (forward) jump at pos
+	and fixes the jump offset. Since a label corresponds
+	to a join of two execution branches, no information
+	on previous instructions may be used for optimizations
+	of future instructions.
+	"
+	| offs |
+	offs := code size - pos.
+	longJumps
+		ifTrue: [
+			"self assert: [0 <= offs and: [ offs < 16r100000000 ] ]."
+			code wordAt: pos - 3 put: offs
+		]
+		ifFalse: [
+			(0 <= offs and: [ offs < 16r100 ]) ifFalse: [ shortJumpFailureBlock value. super halt ].
+			code byteAt: pos put: offs
+		].
+	code killLast!
+
+labelL: pos
+    "This is used only for jumps around primitive and dll
+    failure blocks since they do not support short jumps."
+    | save |
+    save := longJumps.
+    longJumps := true.
+    self label: pos.
+    longJumps := save!
+
+length: block
+	"Answers the code length in bytes for the code generated by block."
+	| d |
+	d := self bci.
+	block value.
+	^ self bci - d!
+
+longJumps: bool
+	self assert: [ bool isBoolean ].
+	longJumps := bool!
+
+nonlocalReturn: nofArgs
+    (optimize and: [(code getLast) = (HCodeTable at: #pushRecv)])
+        ifTrue: [
+            code removeLast.
+            code  byte: (HCodeTable at: #nonlocalReturnRecv) byte: nofArgs
+        ]
+        ifFalse: [code  byte: (HCodeTable at: #nonlocalReturnTos) byte: nofArgs]!
+
+normalSend: sel nofArgs: n pushResult: pushIt
+    | op |
+    self assert: [n >= 0].
+    n < 3 ifTrue: [
+        op :=
+            pushIt
+                ifTrue: [HCodeTable at: #properSend]
+                ifFalse: [HCodeTable at: #properSendPop].
+        code byte: op + n oop: sel oop: 0.
+        ^ self
+    ].
+    n < 256 ifTrue: [
+        op :=
+            pushIt
+                ifTrue: [HCodeTable at: #properSendb]
+                ifFalse: [HCodeTable at: #properSendPopb].
+        code byte: op byte: n oop: sel oop: 0.
+        ^ self
+    ].
+    self halt!
+
+or
+    "Answers fixup address."
+    longJumps
+        ifTrue: [code byte: (HCodeTable at: #orL) word: 0]
+        ifFalse: [code byte: (HCodeTable at: #orS) byte: 0].
+    ^ code size!
+
+popFloat
+	self assert: [ self floatStackIsEmpty not ].
+	self incFloatStackTop: -1!
+
+popTos
+    code only_pop!
+
+predictPrimitive: primitive
+	code byte: 16rC1 oop: primitive!
+
+predictSpecialPrimitive: primitive
+	| b |
+	b := code codeForPrimitive: primitive.
+	b notNil ifTrue: [
+		"primitive recognized => generate hint (ignore otherwise)"
+		code special_primitive_send_1_hint_byte: b
+	]!
+
+primitiveSend: selector
+	code prim_call_lookup_oop: selector!
+
+primitiveSendIfFail: selector
+	"Answers fixup address."
+	code prim_call_failure_lookup_oop: selector word: 0.
+	^ code size!
+
+primitiveSendSelf: selector
+	code prim_call_self_lookup_oop: selector!
+
+primitiveSendSelfIfFail: selector
+	"Answers fixup address."
+	code prim_call_self_failure_lookup_oop: selector word: 0.
+	^ code size!
+
+pushClassVar: name
+	self assert: [ name isSymbolOop ].
+	code push_classVar_oop: name!
+
+pushClosureWithContext: block nofArgs: n
+	self assert: [ n >= 0 ].
+	n <= 2		ifTrue: [ code byte: (HCodeTable at: #pushClosureContext) + n oop: block. ^ self ].
+	n <= 255	ifTrue: [ code byte: (HCodeTable at: #pushClosureContextb) byte: n oop: block. ^ self ].
+	self halt!
+
+pushClosureWithTos: block nofArgs: n
+	self assert: [ n >= 0 ].
+	n <= 2		ifTrue: [ code byte: (HCodeTable at: #pushClosureTos) + n oop: block. ^ self ].
+	n <= 255	ifTrue: [ code byte: (HCodeTable at: #pushClosureTosb) byte: n oop: block. ^ self ].
+	self halt!
+
+pushFloat: fno
+	self assert: [ 0 <= fno and: [ fno < nofStackFloats ] ].
+	self incFloatStackTop: 1.
+	code
+		float_move_byte: self floatStackTopIndex
+		byte: (self floatIndex: fno)!
+
+pushFloatLiteral: flit
+	"self assert: [ flit type = 'double' ]."
+	flit = 0.0 ifTrue: [ self floatNullaryOp: #zero.	^ self ].
+	flit = 1.0 ifTrue: [ self floatNullaryOp: #one.	^ self ].
+	self incFloatStackTop: 1.
+	code float_set_byte: self floatStackTopIndex oop: flit!
+
+pushGlobalVar: assoc
+    code byte: (HCodeTable at: #pushGlobalVar) oop: assoc!
+
+pushInstVar: offset
+    | n |
+	self assert: [ offset isSymbolOop ].
+	code byte: 16r3D oop: offset!
+
+pushLiteral: lit
+    lit isInteger ifTrue: [
+        (-255 <= lit) & (lit <= 0) ifTrue: [code byte: (HCodeTable at: #pushMb) byte: lit negated. ^ self].
+        (1 <= lit) & (lit <= 256) ifTrue: [code byte: (HCodeTable at: #pushBp1) byte: lit - 1. ^ self]
+    ].
+    (lit == Delta nilObj)       ifTrue: [code byte: (HCodeTable at: #pushNil).      ^ self].
+    (lit == Delta trueObj)   ifTrue: [code byte: (HCodeTable at: #pushTrue).  ^ self].
+    (lit == Delta falseObj) ifTrue: [code byte: (HCodeTable at: #pushFalse). ^ self].
+    code byte: (HCodeTable at: #pushLit) oop: lit!
+
+pushNil
+    code push_nil!
+
+pushSelf
+	code push_self!
+
+pushTemp: n
+	n = 0									ifTrue: [ code byte: 16r1C.					^ self ].
+	(1 <= n and: [ n <= 6 ])			ifTrue: [ code byte: n - 1.						^ self ].
+	(-3 <= n and: [ n <= -1 ])		ifTrue: [ code byte: 7 - n.						^ self ].
+	(1 <= n and: [ n <= 256 ])		ifTrue: [ code byte: 7 byte: 256 - n.		^ self ].
+	(-255 <= n and: [ n <= -1 ])	ifTrue: [ code byte: 16rB byte: -1 - n.	^ self ].
+	self halt!
+
+pushTos
+    code push_tos!
+
+pushVar: n viaContext: c
+	self assert: [ n >= 0 ].
+	self assert: [ c >= 0 ].
+	n < 3 ifTrue: [
+		c = 0			ifTrue: [ code byte: (HCodeTable at: #pushVarViaContext0) + n.							^ self ].
+		c = 1			ifTrue: [ code byte: (HCodeTable at: #pushVarViaContext1) + n.							^ self ].
+		c < 256		ifTrue: [ code byte: (HCodeTable at: #pushVarViaContextb) + n byte: c.				^ self ].
+		self halt
+	].
+	n < 256 ifTrue: [
+		c = 0			ifTrue: [ code byte: (HCodeTable at: #pushVarbViaContext0) byte: n.					^ self ].
+		c = 1			ifTrue: [ code byte: (HCodeTable at: #pushVarbViaContext1) byte: n.					^ self ].
+		c < 256		ifTrue: [ code byte: (HCodeTable at: #pushVarbViaContextb) byte: n byte: c.		^ self ].
+		self halt
+	].
+	self halt!
+
+return: nofArgs zapContext: zap
+    | b |
+    self assert: [(0 <= nofArgs) & (nofArgs < 256)].
+    zap
+        ifTrue: [
+            (optimize and: [(code getLast) = (HCodeTable at: #pushRecv)])
+                ifTrue: [
+                    code removeLast.
+                    code byte: (HCodeTable at: #zapReturnRecv) byte: nofArgs.
+                    ^ self
+                ]
+                ifFalse: [
+                    code byte: (HCodeTable at: #zapReturnTos) byte: nofArgs.
+                    ^ self
+                ]
+        ]
+        ifFalse: [
+            (optimize and: [(code getLast) = (HCodeTable at: #pushRecv)])
+                ifTrue: [
+                    code removeLast.
+                    nofArgs < 3 ifTrue: [code byte: (HCodeTable at: #returnRecv) + nofArgs. ^ self].
+                    code byte: (HCodeTable at: #returnRecvb) byte: nofArgs. ^ self
+                ]
+                ifFalse: [
+                    nofArgs < 3 ifTrue: [code byte: (HCodeTable at: #returnTos) + nofArgs. ^ self].
+                    code byte: (HCodeTable at: #returnTosb) byte: nofArgs. ^ self
+                ]
+        ]!
+
+returnInstVar: offset
+	self assert: [ offset isSymbolOop ].
+	code byte: 16r28 oop: offset!
+
+selfSend: sel pushResult: pushIt
+	| op |
+	op :=
+		pushIt
+			ifTrue: [ 16r88 ]
+			ifFalse: [ 16r89 ].
+	code byte: op oop: sel oop: 0!
+
+sendEqlEql
+    code double_equal!
+
+sendNeqNeq
+    code double_tilde!
+
+setSelfViaContext
+	code set_self_via_context!
+
+shortJumpFailureBlock: block
+	shortJumpFailureBlock := block!
+
+smiSend: sel
+    self assert: [(#(+ - * = ~= < <= > >=) includes: sel)].
+    code byte: (HCodeTable at: sel) oop: (Delta createSymbol: sel) oop: 0!
+
+storeAndPopClassVar: name
+	self assert: [ name isSymbolOop ].
+    code byte: 16rF4 oop: name!
+
+storeAndPopGlobalVar: assoc
+    code byte: (HCodeTable at: #storeGlobalVarPop) oop: assoc!
+
+storeAndPopInstVar: offset
+    | n |
+	self assert: [ offset isSymbolOop ].
+	code byte: 16r3E oop: offset!
+
+storeAndPopVar: n viaContext: c
+    self assert: [n >= 0].
+    self assert: [c >= 0].
+    n < 3 ifTrue: [
+        c = 0     ifTrue: [code byte: (HCodeTable at: #storePopVarViaContext0) + n. ^ self].
+        c = 1     ifTrue: [code byte: (HCodeTable at: #storePopVarViaContext1) + n. ^ self].
+        c < 256 ifTrue: [code byte: (HCodeTable at: #storePopVarViaContextb) + n byte: c. ^ self].
+        self halt
+    ].
+    n < 256 ifTrue: [
+        c = 0     ifTrue: [code byte: (HCodeTable at: #storePopVarbViaContext0) byte: n. ^ self].
+        c = 1     ifTrue: [code byte: (HCodeTable at: #storePopVarbViaContext1) byte: n. ^ self].
+        c < 256 ifTrue: [code byte: (HCodeTable at: #storePopVarbViaContextb) byte: n byte: c. ^ self].
+        self halt
+    ].
+    self halt!
+
+storeClassVar: name
+	self assert: [ name isSymbolOop ].
+    code byte: 16rF5 oop: name!
+
+storeFloat: fno
+	self assert: [ self floatStackIsEmpty not ].
+	self assert: [ 0 <= fno and: [ fno < nofStackFloats ] ].
+	code
+		float_move_byte: (self floatIndex: fno)
+		byte: self floatStackTopIndex!
+
+storeGlobalVar: assoc
+    code byte: (HCodeTable at: #storeGlobalVar) oop: assoc!
+
+storeInstVar: offset
+    | n |
+	self assert: [ offset isSymbolOop ].
+	code byte: 16r3F oop: offset!
+
+storeTemp: n
+	self assert: [ n >= 0 ].
+	n = 0									ifTrue: [ code byte: 16r3C.						^ self ].
+	(1 <= n and: [ n <= 256 ])		ifTrue: [ code byte: 16r16 byte: 256 - n.	^ self ].
+	self halt!
+
+storeTempAndPop: n
+	self assert: [ n > 0 ].
+	(1 <= n and: [ n <= 6 ])		ifTrue: [ code byte: 16rF + n.						^ self ].
+	(1 <= n and: [ n <= 256 ])		ifTrue: [ code byte: 16r17 byte: 256 - n.	^ self ].
+	self halt!
+
+storeVar: n viaContext: c
+    self pushTos.
+    self storeAndPopVar: n viaContext: c!
+
+superSend: sel pushResult: pushIt
+    | op |
+    op :=
+        pushIt
+            ifTrue: [16r8A]
+            ifFalse: [16r8B].
+    code byte: op oop: sel oop: 0!
+
+while: cond jumpTo: pos
+	| offs |
+	offs := code size - pos.
+	self assert: [ offs >= 0 ].
+	offs < 16r100
+		ifTrue: [
+			"use short jumps"
+			code
+				byte:
+					(cond
+						ifTrue: [ 16r74 ]
+						ifFalse: [ 16r75 ]
+					)
+				byte: offs
+		]
+		ifFalse: [
+			"use long jumps"
+			"self assert: [ offs < 16r100000000 ]."
+			code
+				byte:
+					(cond
+						ifTrue: [ 16r7C ]
+						ifFalse: [ 16r7D ]
+					)
+				word: offs
+		].
+	code killLast! !
+

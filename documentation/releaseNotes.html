@@ -1,0 +1,372 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Release Notes</title>
+</head>
+
+<body>
+
+<h1 align="center">Release Notes</h1>
+
+<h2 align="left">Version 1.1.2</h2>
+
+<ul>
+    <li><p align="left">Fixed inaccuracy in the type system intro
+        in tour: private instance methods <em>are</em> visible
+        from class methods and vice-versa, when using
+        &lt;Instance&gt; and &lt;Self class&gt; types.</p>
+    </li>
+    <li><p align="left">Corrected longstanding documentation error on the history page that failed to credit Dan Ingalls
+		for his work on the first attempt at a static type system for Smalltalk.</p>
+    </li>
+    <li><p align="left">Added AssocSet</p>
+    </li>
+
+</ul>
+
+<h2 align="left">Version 1.1.1</h2>
+
+<p align="left">(Dave Griswold) This release consists of just a
+couple of things that came up shortly after the first public
+release to address some issues people were having:</p>
+
+<ul>
+    <li><p align="left">A <a href="benchmarking.html">Benchmarking
+        Guide</a> has been added to the documentation to help
+        people avoid some very common benchmarking traps.</p>
+    </li>
+    <li><p align="left">A bug is fixed in
+        Dictionary&gt;&gt;at:put: that caused it to allocate an
+        Association even when an entry already exists for the
+        key. This was fixed a long time ago, but apparently the
+        fix got lost. This speeds up replacing dictionary values
+        by about 32%. It ought to be even faster- the code
+        generator must not be producing good code for this for
+        some reason.</p>
+    </li>
+    <li><p align="left">Support for file-ins in basic Squeak
+        format is now supported. This is just for simple classes
+        and methods, and has one big caveat: the class must not
+        have a class comment. Primarily useful for moving
+        benchmarks around. Classes in this format can be filed
+        into VisualWorks, too, if you remove the 'stamp:'
+        keywords on the method chunk headers.</p>
+    </li>
+</ul>
+
+<h2 align="left">Version 1.1</h2>
+
+<p align="left">This release consists of contributions from</p>
+
+<ul>
+    <li><p align="left">David Griswold - lots of different kind
+        of cleanup work and enhancements:</p>
+        <ul>
+            <li><p align="left">Made it work on Windows XP.
+                Command line arg handling was wrong, and lots of
+                files were read-only that shouldn't have been.
+                DON'T run in a compatibility mode, unless you are
+                filing in my 1.1 deltas to 1.0, in which case you
+                MUST:</p>
+                <ul>
+                    <li><p align="left">First start the 1.0
+                        system in Windows 95 compatibility mode.</p>
+                    </li>
+                    <li><p align="left">File in my 1.1 code, and
+                        save the system</p>
+                    </li>
+                    <li><p align="left">Exit, and turn off
+                        compatibility mode</p>
+                    </li>
+                    <li><p align="left">make strongtalk.bst.bak
+                        writable (for some reason, compatibility
+                        mode cause it to be read-only)</p>
+                    </li>
+                </ul>
+            </li>
+            <li><p align="left">Tons of library changes to get
+                the core libraries back to (or closer to) being
+                fully typesafe. More to do, especially the Stream
+                and Visual hierarchies, which I had done a lot of
+                work to clean up a long time ago but lost the
+                changes, so I am too depressed about it to tackle
+                it again right now. But at least the Collection,
+                Number and many other critical &quot;Blue
+                Book&quot; areas are quite close to being
+                typesafe now (most of the remaining problems are
+                bugs in the typechecker or in other people's
+                code). I will do more on this.</p>
+            </li>
+            <li><p align="left">Fixed an bug in the typechecker
+                error display code caused by a postincrement that
+                should have been a preincrement. This needs more
+                looking at.</p>
+            </li>
+            <li><p align="left">HTML Browser enhancements to make
+                the System Tour work, including making it
+                possible to view html documents edited (in some
+                ways) using Outlook Express.</p>
+            </li>
+            <li><p align="left">Wrote the System Tour and
+                reorganized and extended the rest of the
+                documentation.</p>
+            </li>
+            <li><p align="left">Added filtering to the hierarchy
+                browser. The API can do hierarchy filtering with
+                an arbitrary predicate, and the UI has
+                convenience interfaces for filtering on common
+                library subsets, class comment substrings, or on
+                subclasses of a class (which lets you nicely view
+                a class' subhierarchy <em>and</em> its superclass
+                chain at the same time), or combinations built up
+                using AND operators. Filtering is used by the
+                system tour to make it easy to view all the
+                classes in a subsystem at once, regardless of
+                where they are. Look on the context menu for
+                subclasses as well as on the pulldown menus (they
+                are different). Classes that don't match but that
+                need to be shown because they have matching
+                subclasses can be distinguished by a different
+                font.</p>
+            </li>
+            <li><p align="left">Added support for a source code
+                save log, which makes rapid development a whole
+                lot easier. To use it, create an empty text file
+                in the source subdirectory called
+                strongtalkSave.log, and it will accumulate saved
+                source code changes, without any changes that
+                haven't been saved. Not as good as projects, but
+                a whole lot better than what we had before.</p>
+            </li>
+            <li><p align="left">The system now keeps track of
+                whether you have made source changes or not, and
+                prompts you intelligently to save or not when you
+                try to exit. %Bug: Doesn't work for the rare
+                things that aren't reflected in the change log.
+                Why isn't everything reflected there? You can
+                also view all unsaved source changes made during
+                a session (See &quot;Browse/Unsaved Changes&quot;
+                in Launcher menu).</p>
+            </li>
+            <li><p align="left">Changed the Transcript so it can
+                show DoIt buttons for system restore after a
+                session crash</p>
+            </li>
+            <li><p align="left">Added mouse scrollwheel support</p>
+            </li>
+            <li><p align="left">&quot;implementers&quot;,
+                &quot;senders&quot; and &quot;messages&quot; now
+                open a browser directly if there is only one
+                match.</p>
+            </li>
+            <li><p align="left">Added Apply button to Definitions
+                selection box, so you can quickly browse many
+                matching classes.</p>
+            </li>
+            <li><p align="left">Added prompt dialog for category
+                name changes for safety.</p>
+            </li>
+            <li><p align="left">added back the missing prims.src
+                file (with many changes) so that primitives can
+                be typechecked.</p>
+            </li>
+            <li><p align="left">Ctrl-O (open definition) now only
+                needs the cursor to be on the name of the
+                definition in text- it will try to select the
+                range itself.</p>
+            </li>
+            <li><p align="left">Switched browser fonts to ones
+                that work with ClearType technology in Windows
+                XP. (makes fonts much higher resolution on LCD
+                displays- try it!).</p>
+            </li>
+            <li><p align="left">added a gross hack because the
+                full garbage collection doesn't run automatically
+                right now so that we don't run out of virtual
+                memory while browsing, by running GC explicitly
+                in the browser every time we load a page. I do it
+                in a background process that waits 1/4 second
+                after page loading so that it hopefully happens
+                during think time.</p>
+            </li>
+            <li><p align="left">When creating a new subclass in
+                the prog. env. a browser for the new class is now
+                automatically launched.</p>
+            </li>
+            <li><p align="left">HTML Browser now supports
+                &lt;strong&gt;. Also, headings can now contain
+                &lt;br&gt;, images, links, and other phrase
+                markup.</p>
+            </li>
+            <li><p align="left">Quitting the system without
+                saving changes now automatically reverts the
+                source database, so that quitting after unsaved
+                changes doesn't leave the source database in an
+                inconsistent state (you are prompted to save if
+                you want, and you can view the unsaved changes
+                from the Browse menu if you want to save them
+                some other way). The changes are still recorded
+                in the change log no matter what.</p>
+            </li>
+            <li><p align="left">Added a toolbar button to Class
+                browers to spawn the superclass.</p>
+            </li>
+            <li><p align="left">Ctrl-Shift-Enter is now a
+                shortcut for accept &amp; typecheck in
+                TypedCodeViews.</p>
+            </li>
+            <li><p align="left">Turned off smooth scrolling by
+                default. This seems to reduce the frequency of
+                the occasional hangs people have been having. You
+                can turn it on again from the Launcher Dev menu.</p>
+            </li>
+            <li><p align="left">TextViews now automatically
+                resize by default. This makes the browsers work a
+                lot cooler.</p>
+            </li>
+            <li><p align="left">Fixed that nagging baseline
+                alignment bug when imbedding category outliners
+                in browser pages.</p>
+            </li>
+            <li><p align="left">*Maybe fixed the hellish
+                intermittent temporary hang in the system.
+                Guessed it was some kind of deadlock on the
+                semaphore protecting the event 'grab' stack, used
+                by the region enter/leave managment logic, so
+                disabled it by returning a new semaphore anytime
+                anyone asks, and haven't had a hang since!
+                Theoretically this opens a hole, but the monitor
+                was only there for an obscure case that probably
+                has never happened anyway (two processes asking
+                for the event grab at the same time). Can try
+                turning smooth scrolling on again now.</p>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul>
+    <li><p align="left">Gilad Bracha and the rest of the team- A
+        copy of the new paper on mixins has been included.</p>
+    </li>
+</ul>
+
+<h3 align="left">Bugs/Limitations</h3>
+
+<ul>
+    <li><p align="left">Fixed: one of the typechecker error
+        display bugs -D.G.</p>
+    </li>
+    <li><p align="left">Fixed: Now works on Windows XP - D.G.</p>
+    </li>
+    <li><p align="left">The new dialog boxes I added to keep
+        track of whether source changes have been made, only keep
+        track of things that modify the change log. Other changes
+        (specifically creation of a new category) aren't noticed,
+        and don't by themselves cause the quit dialog to prompt
+        you. I need to fix this at some point, although it is
+        rare to just modify a category without modifying any
+        method. -D.G.</p>
+    </li>
+    <li><p align="left">otherwise, same as 1.0</p>
+    </li>
+</ul>
+
+<h2 align="left">Version 1.0</h2>
+
+<p align="left">This is the original release from Sun
+Microsystems, Inc. Most of the work done internally at Sun to get
+this ready for release was done by Gilad Bracha and Robert
+Griesemer.</p>
+
+<h3 align="left">Bugs/Limitations</h3>
+
+<h4 align="left">System</h4>
+
+<ul>
+    <li><p align="left">Doesn't work on Windows XP.</p>
+    </li>
+</ul>
+
+<h4 align="left">UI</h4>
+
+<ul>
+    <li>The HTML browser is very limited. It's main purpose is to
+        demonstrate smapplets, and to allow active Smalltalk code
+        to be integrated into the documentation. If what you see
+        is messed up, or if you get crashes or complaints about
+        unrecognized tags, try a real browser (or fix the bug!).
+        In particular, don't expect to view PDF or run plugins or
+        anything like that. </li>
+    <li>Color support is ancient and ridiculous. Palette support
+        had just been written, but not gotten working, when
+        original work on the system stopped. So there are only
+        the16 system colors right now (!). I hope to fix this at
+        some point soon (D.G.)</li>
+    <li>There's a known problem when outliners are opened all the
+        way to the bottom, then closed and then redrawn. The
+        layout can get messed up. </li>
+    <li>Closing a browser (other than a text editor) that has
+        unaccepted changes deep down inside doesn't warn you that
+        you are about to lose the changes. There is a framework
+        for fixing these sorts of issues, but it has never been
+        completely applied.</li>
+    <li>There is a known memory leak in the Browser caused by the
+        fact that a dependency isn't released on closing, which
+        causes accumulating dead dependencies in the dependency
+        dictionary. Fixing it the right way might be pretty hard
+        without weak pointers, although a hack might work.</li>
+</ul>
+
+<h4>Programming Environment</h4>
+
+<ul>
+    <li>moving a method between a public and private category
+        doesn't always update the visibility of the method. As a
+        workaround, just reaccept the method once you've moved
+        it.</li>
+    <li>Someone added an interesting 'meta' hack to easily
+        inspect the Application for a window, but this crashes
+        the system for some applications, such as workspace.</li>
+    <li>Under some more unusual situations the reflective
+        interface can corrupt the image, for example sometimes
+        when changing the superclasses of all the subclasses of a
+        class, then removing the original superclass. If the
+        image becomes corrupted this way, you can fix it by
+        filing out and then filing in all the affected code,
+        which forces it to be rebuilt.</li>
+</ul>
+
+<h4>Type system</h4>
+
+<p>There are a variety of shortcomings and bugs in the
+typechecker, but here are some of the main ones you may
+encounter:</p>
+
+<ul>
+    <li>Unions often don't work right. You may encounter error
+        messages that say things like &quot;[^Boolean | Boolean]
+        is not a subtype of [^Boolean]&quot;</li>
+    <li>Sometimes the error messages are cryptic or apparently
+        unrelated to the real problem. This is usually due to
+        cascading errors.</li>
+    <li>There are some error display bugs that may cause crashes.</li>
+    <li>inherited types don't work right now.</li>
+    <li>&quot;typecheck world&quot; in the launcher crashes right
+        now.</li>
+    <li>&quot;typecheck all classes&quot; in hierarchy browser
+        doesn't produce the same results as typechecking all the
+        classes individually right now; not sure which one is
+        right. this needs to be fixed.</li>
+</ul>
+
+<p><br>
+(c) 1994-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. <br>
+Use and distribution of this software is subject to the terms of
+the <br>
+<a href="sourceLicense.html">source license. </a></p>
+</body>
+</html>

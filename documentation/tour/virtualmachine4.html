@@ -1,0 +1,54 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Virtual Machine</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="virtualmachine3.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="typesystem.html"><strong>Next ==&gt;</strong></a></h3>
+
+<h2 align="left">The Virtual Machine (cont.)</h2>
+
+<h3 align="left">Other Virtual Machine Issues</h3>
+
+<ul>
+    <li><p align="left"><strong>Fast Floating Point:</strong> The
+        virtual machine contains optional highly experimental
+        support for fast (unboxed) double-precision (64 bit)
+        arithmetic. This is just an experiment, but if you are
+        interested you can read more about it <a
+        href="fastfloats.html">here</a>.</p>
+    </li>
+    <li><p align="left"><strong>Debugging Support:</strong>
+        Debugging support is fairly rudimentary right now. There
+        is no graphical debugger, however, invoking #halt will
+        bring up a graphical stack examination window that lets
+        you see the stack and inspect method receivers and
+        arguments. From the menu of the stack examination window,
+        you can select &quot;Process/Transfer to console
+        debugger&quot; to invoke a command-line debugger that
+        will let you single step through the code.</p>
+        <p>It is unfortunate that we didn't have the time to
+        write a graphical debugger, since one of the really neat
+        features of the inlining virtual machine is that it
+        provides an exceptionally nice environment for debugging.
+        This is because the ability of the VM to dynamically <em>deoptimize</em>
+        methods even while they are executing means that it is
+        trivial to make inlining and other optimizations fully
+        transparent to the debugger. As soon as you halt or
+        single-step, the VM reverts to the interpreted version of
+        just the methods you are in on-the-fly, providing full
+        interpreted semantics for debugging. Called methods can
+        remain fully optimized, and as soon as you continue, the
+        normal optimization process reoptimizes the code.</p>
+    </li>
+</ul>
+
+<h3 align="right"><a href="typesystem.html"><strong>The Type System ==&gt;</strong></a></h3>
+</body>
+</html>

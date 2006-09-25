@@ -1,0 +1,200 @@
+Delta define: #Point as: (
+(Class subclassOf: 'Object' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #Point) revision: '$Revision: 1.8 $'!
+
+(Delta mirrorFor: #Point) group: 'base'!
+
+(Delta mirrorFor: #Point)
+comment: 
+'This is the abstract superclass for 2 dimensional points.  Subclasses must implement the #x and #y methods.
+
+%compatibility note:  Coercive operations between points and numbers are not supported in our system.
+They are a kludge, don''t add significant functionality, obfusticate the number double dispatching code,
+and worst of all, lead you down the slippery slope to defining numbers as simply "points on the diagonal"
+("Should > be coercive? What about =? Hey, the easiest and most complete way to get this coercive stuff to work
+is to define #x and #y in Number to return self, and then mixin Point behavior to Number!! Voila!!" 
+Blech.  Try seeing what evaluating 1 = (1@1) gives you in certain other unnamed Smalltalk systems).
+
+Tags: %BlueBook %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.8 $
+'!
+
+! (Delta mirrorFor: #Point) classSide methodsFor: 'creation' !
+
+
+x: xval <Number> y: yval <Number>  ^<Point>
+
+	^HeavyPoint new x: xval y: yval! !
+
+! (Delta mirrorFor: #Point) classSide methodsFor: 'constants' !
+
+
+origin ^<Point>
+
+	"%todo:  cache this if we don't optimize points"
+	^0@0! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'accessing' !
+
+
+hash ^<Int>
+
+	"2**10 = 1024 = approximate screen dimension"
+	^(self x hash bitShift: 10) bitXor: (self x hash bitXor: self y hash)!
+
+x ^<Number>
+
+	self subclassResponsibility!
+
+y ^<Number>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm print: self x; putAll: ' @ '; print: self y! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'comparing' !
+
+
+< other <Point> ^<Boolean>
+
+	^self x < other x and: [ self y < other y ]!
+
+<= other <Point> ^<Boolean>
+
+	^self x <= other x and: [ self y <= other y ]!
+
+= other <Object>  ^<Boolean>
+
+	^self == other
+		or: [ other isPoint
+					and: [	| p <Point> |
+								p := guaranteed <Point> other.
+								self x = p x and: [ self y = other y ]		]]
+
+	"%todo: use correct code below when coerce is implemented fast. (& remove isPoint implementation)"
+"	^self == other
+		or: [	| p <Pt> |
+				p := Pt coerce: other else: [ ^false ].
+				self x = p x and: [ self y = other y ]	]	]
+"!
+
+> other <Point> ^<Boolean>
+
+	^self x > other x and: [ self y > other y ]!
+
+>= other <Point> ^<Boolean>
+
+	^self x >= other x and: [ self y >= other y ]!
+
+asPoint ^<Point>
+
+	^self! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'operations' !
+
+
+* other <Point> ^<Point>
+
+	^(self x * other x)@(self y * other y)!
+
++ other <Point> ^<Point>
+
+	^(self x + other x)@(self y + other y)!
+
+- other <Point> ^<Point>
+
+	^(self x - other x)@(self y - other y)!
+
+/ other <Point> ^<Point>
+
+	^(self x / other x)@(self y / other y)!
+
+// other <Point> ^<Point>
+
+	^(self x // other x)@(self y // other y)!
+
+abs ^<Point>
+
+	^self x abs @ self y abs!
+
+floor ^<Point>
+
+	^self x floor @ self y floor!
+
+max: other <Point> ^<Point>
+
+	^(self x max: other x) @ (self y max: other y)!
+
+min: other <Point> ^<Point>
+
+	^(self x min: other x) @ (self y min: other y)!
+
+negated ^<Point>
+
+	^self x negated @ self y negated!
+
+relativeTo: p <Point> ^<Point>
+
+	^self - p!
+
+rounded ^<Point>
+
+	^self x rounded @ self y rounded!
+
+translatedBy: p <Point> ^<Point>
+
+	^self + p!
+
+truncateTo: grid <Number>
+
+	^(self x truncateTo: grid)@(self y truncateTo: grid)!
+
+truncated ^<Point>
+
+	^self x truncated @ self y truncated! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'testing' !
+
+
+isPoint ^<Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'utility' !
+
+
+corner: other <Point> ^<Rect>
+
+	^Rectangle origin: self  corner: other!
+
+extent: other <Point> ^<Rect>
+
+	^Rectangle origin: self  extent: other! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'restricted-double dispatching' !
+
+
+expandRect: r <Rect> ^<Rect>
+
+	^Rectangle
+		left: r left - self x
+		right: r right + self x
+		top: r top - self y
+		bottom: r bottom + self y!
+
+insetRect: r <Rect> ^<Rect>
+
+	^Rectangle
+		left: r left + self x
+		right: r right - self x
+		top: r top + self y
+		bottom: r bottom - self y! !
+

@@ -1,0 +1,726 @@
+Delta define: #Launcher as: (
+(Class subclassOf: 'ClassCritical |> Application' instanceVariables: 'menuBar <Menu>
+sourceConsistencyHasBeenChecked <Boolean>
+') classVariables: 'MenuRegistry <OrdCltn[LookupKey[Object,Menu]]>
+Launchers <IdentitySet[Launcher]>
+	"All unclosed instances of launcher, so that we
+		can notify them when their menus change"') !
+
+(Delta mirrorFor: #Launcher) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #Launcher) group: 'ui'!
+
+(Delta mirrorFor: #Launcher)
+comment: 
+'The launcher is the entry point application for the programming environment.
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license. '!
+
+! (Delta mirrorFor: #Launcher) classSide methodsFor: 'registering menus' !
+
+
+registerMenu: m <Menu> for: owner <Object>
+	"Merge m into the launcher menu.  It can be unregistered later.
+		Any displayed launchers will update their menus dynamically."
+
+	self critical:
+		[	self menuRegistry addLast:
+						(LookupKey[Object,Menu] key: owner value: m).
+			self rebuildMenus	]!
+
+unregisterMenuFor: owner <Object>
+	"Unmerge m from the launcher menu. "
+
+	self critical:
+		[	self menuRegistry remove: (LookupKey[Object,Menu] key: owner value: nil). "value doesn't matter"
+			self rebuildMenus	]! !
+
+! (Delta mirrorFor: #Launcher) classSide methodsFor: 'private' !
+
+
+menuRegistry ^<OrdCltn[LookupKey[Object,Menu]]>
+	"call only from a critical region"
+
+	MenuRegistry isNil
+		ifTrue: [ MenuRegistry := OrderedCollection[LookupKey[Object,Menu]] new ].
+	^MenuRegistry!
+
+mergedMenu ^<Menu>
+	"Call only from critical region"
+
+	| newMenu <Menu> |
+	newMenu := Menu new.
+	self menuRegistry do:
+		[ :entry <LookupKey[Object,Menu]> |
+			newMenu merge: entry value copy.	].
+	^newMenu!
+
+rebuildMenus
+	"rebuild all the menus and notify the launchers.  Must
+		be in a critical region on self"
+
+	| newMenu <Menu> |
+	newMenu := self mergedMenu.
+	self launchers do:
+		[ :l <Launcher> |
+			l menuBar: newMenu copy	].!
+
+registerLauncher: l <Launcher>
+
+	self critical:
+		[ self launchers include: l ]! !
+
+! (Delta mirrorFor: #Launcher) classSide methodsFor: 'control' !
+
+
+createUITranscript
+
+	"Make sure the UI isn't already running"
+	self assert: [ Transcript class ~~ Workspace ].
+	
+	Transcript := Workspace new.!
+
+startProgEnv ^<Instance>
+
+	| launcher <Instance> |
+	self createUITranscript.
+	
+	"Register stophandler for process scheduler"
+	Processor stopHandler: [ :p <Process> | (StackTraceInspector on: p) launch ].
+
+	launcher := (self new) launch; yourself.
+
+	"Don't launch start page if system is inconsistent so that it won't
+		obscure the error messages in the transcript"
+	SourceHandler systemIsConsistent
+		ifTrue: [ launcher browseStartPage ]. 
+
+	^launcher
+! !
+
+! (Delta mirrorFor: #Launcher) classSide methodsFor: 'accessing' !
+
+
+launchers ^<IdentitySet[Launcher]>
+	"call only from a critical region"
+
+	Launchers isNil
+		ifTrue: [ Launchers := IdentitySet[Launcher] new ].
+	^Launchers! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	^ApplicationInterceptor
+			for: self workspace imbeddedVisual with3DBorder
+			application: self! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'restricted' !
+
+
+menuBar: m <Menu>
+	"Set or change the merged application menu.  We don't actually
+		store this menu, since we have to change the window's menu
+		in place; we simply replace all of the current menus elements
+		with m's"
+
+	self inSessionProcessDo: [ self menuBar 
+																	removeAll;
+																	add: self fileMenu;
+																	add: self browsingMenu;
+																	merge: m
+														].! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'menus' !
+
+
+docMenu ^<Menu>
+
+	^Menu new name: '&Documentation';
+				add: (MenuAction new
+							name: '&Browse';
+							action: [ self launchDoc ])!
+
+fileMenu ^<Menu>
+
+	^Menu new name: '&File';
+		add: (MenuAction new
+					name: '&Save System';
+					action: [ self saveSystem ] );
+		addSeparator;
+		add: (MenuAction new
+					name: 'File &in...';
+					action: [ self fileIn ] );
+		add: (MenuAction new
+					name: 'File &out world...';
+					action: [ self fileOutWorld ] );
+		add: (MenuAction new
+					name: '&Recompile world...';
+					action: [ self recompileWorld ] );
+		add: (MenuAction new
+					name: 'Typecheck world...';
+					action: [ self typecheckWorld ] );
+		 addSeparator;
+		 add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self]);
+		addSeparator;
+		add: (MenuAction new
+					name: 'E&xit';
+					action: [ self closeRequest: []  ] )!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	menuBar isNil
+		ifTrue: [ menuBar := Menu new 
+															add: self fileMenu;
+															add: self browsingMenu;
+															merge: self class mergedMenu;
+															add: self docMenu
+					 ].
+	^menuBar! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self actualClass registerLauncher: self.
+	sourceConsistencyHasBeenChecked := false.
+! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+
+	SourceHandler unsavedChangesHaveBeenMade
+		ifTrue: [ self promptForSave: toClose ]
+		ifFalse: [ self promptForQuit: toClose ]!
+
+recompileWorld
+
+	(Workspace coerce: Transcript) visual
+		promptOkCancel: 'Recompile all methods in the system?'
+		title: 'Please confirm'
+		type: #question
+		default: 2
+		action: [ : b <Boolean> | b ifTrue: [ [ Smalltalk recompileAllMethods ] fork ] ]!
+
+saveSystem
+
+	self visual promptOkCancel: 'Save System?'
+				title: 'Save System'
+				type: #exclamation
+				default: 1
+				action: [ :ok <Boolean> |
+								ok ifTrue: [	Dumper saveSystem.
+														self visual
+																promptOk: 'System Saved.'
+																title: 'Save System'
+																type: #info
+																action: [ ]
+													]
+							]
+!
+
+typecheckWorld
+ 
+	| vis <Visual> |
+	vis := 	(Workspace coerce: Transcript) visual.
+	vis	promptYesNo: 'Do you really want to typecheck all the source code in the system?'
+		title: 'Typecheck world'
+		type: #question
+		default: 2
+		action:	[: b <Boolean> |
+							b ifTrue: [ Smalltalk typecheckWorld ].
+						]
+! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'menus to move elsewhere' !
+
+
+browsingMenu ^<Menu>
+
+	^Menu new name: '&Browse';
+			add: (MenuAction new
+					name: 'My &Start Page';
+					action: [ self browseStartPage ] );
+			addSeparator;
+			add: (MenuAction new
+					name: '&Definition...';
+					action: [ self findDefinition] );
+			add: (MenuAction new
+					name: '&User Classes (i.e. classes useful to users)';
+					action: [ self openUserClassHierarchyOutliner ] );
+			add: (MenuAction new
+					name: 'All &Classes';
+					action: [ self openClassHierarchyOutliner ] );
+			add: (MenuAction new
+					name: '&Mixins';
+					action: [ self openMixinListOutliner ] );
+			add: (MenuAction new
+					name: '&Protocols';
+					action: [ self openProtocolListOutliner ] );
+			add: (MenuAction new
+					name: '&Type Aliases';
+					action: [ self openTypeAliasListOutliner ] );
+			add: (MenuAction new
+					name: '&Global Variables';
+					action: [ self openGlobalVariableListOutliner ] );
+			addSeparator;
+			add: (MenuAction new
+					name: 'Message Implementors ...';
+					action: [ self findImplementors ] );
+			add: (MenuAction new
+					name: 'Message Senders ...';
+					action: [ self findSenders ] );
+			add: (MenuAction new
+					name: 'Global References ...';
+					action: [ self findGlobalReferences ] );
+			addSeparator;
+			add: (MenuAction new
+					name: 'Unsaved Changes From This Session';
+					active: [ SourceHandler unsavedChangesHaveBeenMade ];
+					action: [ self showUnsavedChanges ] );
+			add: (MenuAction new
+					name: 'Restore Log';
+					active: [ (FilePath forElements: #('source' 'strongtalkrestore.log')) exists ];
+					action: [ (CodeEditor on: (FilePath forElements: #('source' 'strongtalkrestore.log'))) launch ] );
+			add: (MenuAction new
+					name: 'Save Log';
+					active: [ (FilePath forElements: #('source' 'strongtalkSave.log')) exists ];
+					action: [ (CodeEditor on: (FilePath forElements: #('source' 'strongtalkSave.log'))) launch ] )
+! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'filing in/out' !
+
+
+fileIn
+
+	(Workspace coerce: Transcript) visual
+		userPickOpenFileWithAction: [ :file< FilePath> :readOnly <Boolean> | [ Smalltalk fileInFromFile: file ] fork ]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'Delta files (*.dlt)' ,, '*.dlt' with: 'All files (*.*)' ,, '*.*')
+		defaultFile: nil
+		defaultDir: nil
+		title: 'Install file-in into image'
+		allowReadOnly: false
+		mustExist: true
+!
+
+fileOutWorld
+
+	(Workspace coerce: Transcript) visual
+		userPickSaveFileWithAction: [ :file< FilePath> | [ Smalltalk fileOutWorldToFile: file ] fork ]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'Group files (*.gr)' ,, '*.gr' with: 'All files (*.*)' ,, '*.*')
+		defaultFile: (FilePath for: 'world.gr')
+		defaultDir: nil
+		title: 'File out world and corresponding world group file'
+! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'browsing' !
+
+
+browseStartPage
+
+	self startPagePath exists
+		ifFalse: [  self visual promptOk: 'Can''t open ',self startPagePath name
+								title: 'Error'
+								type: #exclamation
+								action: [].
+							^self
+						].
+
+	(HTMLView new model: (URL forFilePath: self startPagePath)) launch!
+
+findDefinition
+	
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'Open definition'
+		caption: 'Matching expression' 
+		default: '*'
+		action: [ :s <Str> | self launchDefinitionsMatching: s ]
+!
+
+findGlobalReferences
+
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'Find references'
+		caption: 'Name of global' 
+		default: ''
+		action: [ :s <Str> | self launchReferencesToGlobalName: s asSymbol ]
+!
+
+findImplementors
+
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'Find implementors'
+		caption: 'Matching expression' 
+		default: '*'
+		action: [ :s <Str> | self launchImplementorsMatching: s ]
+
+!
+
+findSenders
+
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'Find senders'
+		caption: 'Matching expression' 
+		default: '*'
+		action: [ :s <Str> | self launchSendersMatching: s ]
+!
+
+launchDefinitionsMatching: s <Str>
+
+	"THIS IS JUST A QUICK HACK!!!!!! REMOVE LATER!!!!!!"
+	
+	| definitions <AddableSequenceableCollection[Symbol]> mirror <Mirror> |
+	definitions := OrderedCollection[Symbol] new.
+	Smalltalk keysDo: [ :key <Symbol> | 
+		(s platformMatch: key)
+			ifTrue: [	definitions add: key ]
+	].
+	definitions isEmpty
+		ifTrue: [	| pattern <Str> |
+					pattern := s, Platform multipleMatchWildcardCharacter asString.
+					Smalltalk keysDo: [ :key <Symbol> | 
+						(pattern platformMatch: key)
+							ifTrue: [	definitions add: key ]
+					]
+	].
+	definitions := definitions asSortedCollection: [ :a <Symbol> :b <Symbol> | a <= b ].
+	definitions isEmpty
+		ifTrue: [		(Workspace coerce: Transcript) visual
+								promptOk: 'No definitions matching ''', s, ''''
+								title: 'Information'
+								type: #info
+								action: [] ].
+	definitions size = 1
+		ifTrue: [		mirror := Smalltalk mirrorFor: (definitions at: 1) ifAbsent: [ ^self ].
+						(DefOutliner on: mirror) launch ]
+		ifFalse: [	self 
+								launchListDialogWithPainter: Painter default
+								title: 'Definitions matching ', s
+								modal: false
+								contents: definitions
+								multi: true
+								action: [ :indices <Cltn[Int]> |
+												indices do:
+													[ :index <Int> |
+														mirror := Smalltalk mirrorFor: (definitions at: index)
+																			ifAbsent: [ ^self ].
+														(DefOutliner on: mirror) launch 	]	].
+							]!
+
+launchDoc
+
+	(HTMLView new model: (URL forFilePath: self docPath)) launch!
+
+launchImplementorsMatching: s <Str>
+
+	| implementors <SeqCltn[Tuple[Mirror, Symbol]]> |
+	(implementors := Smalltalk implementorsMatching: s) isEmpty
+		ifTrue: [		(Workspace coerce: Transcript) visual
+								promptOk: 'No implementors matching ''', s, ''''
+								title: 'Information'
+								type: #info
+								action: [] ]
+		ifFalse: [	self 
+								launchSelectorListWithPainter: Painter default 
+								title: 'Implementors matching ''', s,	 '''' 
+								contents: implementors ]
+!
+
+launchListDialogWithPainter: p <Painter>
+title: t <Str>
+contents: strs <SeqCltn[Str]>
+multi: b <Boolean>
+action: blk <[Cltn[Int]]>
+
+	self	launchListDialogWithPainter: p 
+			title: t 
+			modal: true
+			contents: strs
+			multi: b 
+			action: blk 
+!
+
+launchListDialogWithPainter: p <Painter>
+title: t <Str>
+modal: modal <Boolean>
+contents: strs <SeqCltn[Str]>
+multi: b <Boolean>
+action: blk <[Cltn[Int]]>
+
+	"THIS IS JUST A QUICK HACK!!!!!! REMOVE LATER!!!!!!"
+
+		| listBox <ListBox> editor <TextView[Str]> glue <Visual> dialog <Window> |
+	strs size > 0
+		ifFalse: [ ^self ].
+	listBox := b
+		ifTrue: [	ListBox forMultipleSelections
+						simpleMultiple: false ]
+		ifFalse: [	ListBox forSingleSelection ].
+	listBox
+		stringList: strs;
+		selections: #(1);
+		onDoubleClick: [ :lb <ListBox> | dialog close. blk value: lb selections ].
+	dialog := (Workspace coerce: Transcript) visual
+		launchCustomDialog: t
+		for: (listBox withBorder: (Border standard3DWithColor: Paint gray raised: false))
+		showApply: true
+		modal: modal
+		toValidate: [ :continue <[]> | continue value ]
+		action: [ blk value: listBox selections ].
+!
+
+launchReferencesToGlobalName: name <Symbol>
+
+	| refs <SeqCltn[Tuple[Mirror, Symbol]]> |
+	(refs := Smalltalk referencesToGlobalName: name) isEmpty
+		ifTrue: [		(Workspace coerce: Transcript) visual
+								promptOk: 'No references to global ''', name, ''''
+								title: 'Information'
+								type: #info
+								action: [] ]
+		ifFalse: [	self 
+								launchSelectorListWithPainter: Painter default 
+								title: 'References to global ''', name,	 '''' 
+								contents: refs ]
+!
+
+launchSelectorListWithPainter: p <Painter> title: t <Str> contents: list <SeqCltn[Tuple[Mirror, Symbol]]>
+
+	"THIS IS JUST A QUICK HACK!!!!!! REMOVE LATER!!!!!!"
+
+	| listBox <ListBox> action <[ListBox]> win <Window> |
+	list size > 0
+		ifFalse: [ ^self ].
+	list size = 1
+		ifTrue: [	| mirror <Mirror> sel <Symbol> |
+					mirror := (list at: 1) at1.
+					sel := (list at: 1) at2.
+					(DefWithMsgOutliner on: mirror instanceSide) launchOpenSide: mirror isMeta selector: sel.
+					^self ].
+	action := [ 	:lb <ListBox> |
+						| index <Int> mirror <Mirror> sel <Symbol> |
+						index := lb selections anElement.				"We use single selection"
+						mirror := (list at: index) at1.
+						sel := (list at: index) at2.
+						(DefWithMsgOutliner on: mirror instanceSide) launchOpenSide: mirror isMeta selector: sel.
+						].
+	listBox := ListBox forSingleSelection.
+	listBox
+		stringList: (list collect: [ :t <Tuple[Mirror, Symbol]> | t at1 name, '>>', t at2 ]);
+		selections: #(1);
+		onDoubleClick: [ :lb <ListBox> | action value: lb ].
+	win := (Workspace coerce: Transcript) visual
+		launchCustomDialog: t
+		for: (listBox withBorder: (Border standard3DWithColor: Paint gray raised: false))
+		showApply: true
+		modal: false
+		toValidate: [ :continue <[]> | continue value ]
+		action: [ 	action value: listBox ].
+!
+
+launchSendersMatching: s <Str>
+
+	| senders <SeqCltn[Tuple[Mirror, Symbol]]> |
+	(senders := Smalltalk sendersMatching: s) isEmpty
+		ifTrue: [		(Workspace coerce: Transcript) visual
+								promptOk: 'No senders matching ''', s, ''''
+								title: 'Information'
+								type: #info
+								action: [] ]
+		ifFalse: [	self 
+								launchSelectorListWithPainter: Painter default 
+								title: 'Senders matching ''', s,	 '''' 
+								contents: senders ]
+!
+
+launchSingleLineTextDialogWithPainter: p <Painter> title: t <Str> caption: c <Str> default: d <Str> action: blk <[Str]>
+
+	"THIS IS JUST A QUICK HACK!!!!!! REMOVE LATER!!!!!!"
+
+	| caption <Visual> editor <TextView[Str]> glue <Visual> |
+	caption := (StringGlyph for: c painter: p) asVisual.
+	glue := Glue xRigid: 10.
+	editor := CommonProgEnvOutliner new buildSingleLineTextViewWithPainter: p getModel: [ d ] setModelOnSuccess: [ :blk <[]> | blk value ].
+	editor desiredColumns: (c size max: d size).
+	(Workspace coerce: Transcript) visual
+		launchCustomDialog: t
+		for: (Row[Visual] holding: (OrderedCollection[Visual] with: caption with: glue with: (CommonProgEnvOutliner new editorBorderFor: editor)))
+		showApply: false
+		modal: true
+		toValidate: [ :continue <[]> | continue value ]
+		action: [ blk value: editor model ].
+!
+
+openClassHierarchyOutliner
+
+	(ClassHierarchyOutliner for: (ClassMirror on: Object))
+		launch.!
+
+openGlobalVariableListOutliner
+
+	GlobalVariableListOutliner forWorld launch!
+
+openMixinListOutliner
+
+	MixinListOutliner forWorld launch!
+
+openProtocolListOutliner
+
+	ProtocolListOutliner forWorld launch!
+
+openTypeAliasListOutliner
+
+	TypeAliasListOutliner forWorld launch!
+
+openUserClassHierarchyOutliner
+
+	(ClassHierarchyOutliner for: (ClassMirror on: Object))
+		filterOnUserClasses
+		launch.!
+
+showUnsavedChanges
+	"Launch a read-only text view on the unsaved changes that have been made
+	 during this session"
+
+	SourceHandler unsavedChangesHaveBeenMade
+		ifTrue: [	| tv <TextView[InputStream[Character]]> |
+					tv := TextView[InputStream[Character]]  forCharStream.
+					tv scrollable: true.
+					tv model: (SourceHandler currentUnsavedChanges);
+						doneBlock:
+							[ :saveFlag <Boolean> :action <[]> |
+								self visual
+									promptOk: 'You can''t change the changes here!!'
+									title: 'Error'
+									type: #stop
+									action: [  ]	 ].
+					(tv bareVisualTop: false) launchWithTitle: 'Unsaved Changes'.		]
+		ifFalse: [ self visual
+						promptOk: 'There are no unsaved changes.'
+						title: 'System Change Status'
+						type: #info
+						action: [ ]		]!
+
+startPagePath ^<FilePath>
+
+	^FilePath currentDirectory, (FilePath for: 'startPage.html')! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'accessing' !
+
+
+docPath ^<FilePath>
+
+	^FilePath currentDirectory, (FilePath for: 'documentation\index.html')!
+
+windowTitle ^ <Str>
+
+	^'Strongtalk Launcher'!
+
+workspace ^<Workspace>
+
+	^Workspace coerce: Transcript! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'toolbar' !
+
+
+hasToolBar ^<Boolean>
+
+	^true!
+
+toolBar ^<ToolBar>
+
+	^ToolBar new
+			addButtonWithImageFrom: 'resources/smallHome.bmp'
+					action: [ :b <Button> |	self browseStartPage ];
+			addSpace;
+			addButtonWithImageFrom: 'resources/open.bmp'
+					action: [ :b <Button> |	self findDefinition ];
+			addButtonWithImageFrom: 'resources/implementors.bmp'
+					action: [ :b <Button> |	self findImplementors ];
+			addButtonWithImageFrom: 'resources/senders.bmp'
+					action: [ :b <Button> |	self findSenders ];
+			addSpace;
+			addButtonWithImageFrom: 'resources/userHierarchy.bmp'
+					action: [ :b <Button> |	self openUserClassHierarchyOutliner ];
+			addButtonWithImageFrom: 'resources/hierarchy.bmp'
+					action: [ :b <Button> |	self openClassHierarchyOutliner ];
+			addButtonWithImageFrom: 'resources/blankSheet.bmp'
+					action: [ :b <Button> |	Workspace new launch ];
+			addSpace;
+			addButtonWithImageFrom: 'resources/texteditor.bmp'
+					action: [ :b <Button> |	CodeEditor new launch ];
+			addButtonWithImageFrom: 'resources/documentation.bmp'
+					action: [ :b <Button> |	self launchDoc ];
+			yourself! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'control-private' !
+
+
+doClose: toClose <[]>
+
+	toClose value.
+	VM quit.!
+
+promptForQuit: toClose <[]>
+
+	self visual
+				promptYesNo: 'Are you sure you want to quit?'
+				title: 'Quit'
+				type: #exclamation
+				default: 2
+				action: [ :ok <Boolean> |
+								ok = true
+									ifTrue: [ self doClose: toClose ]
+								]!
+
+promptForSave: toClose <[]>
+
+	self visual
+				promptYesNoCancel: 'The system has been changed.  Save system before exiting? (''No'' will erase any changes and add them to the restore log)'
+				title: 'Quit'
+				type: #exclamation
+				default: 3
+				action: [ :ok <Boolean | Nil> |
+								ok = nil
+									ifFalse: [	ok
+														ifTrue: [ Dumper saveSystem ]
+														ifFalse: [ SourceHandler checkSystemConsistency at1
+																		ifTrue: [ SourceHandler restoreBackup ]. ].
+													self doClose: toClose		]
+								]! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'notification' !
+
+
+visualAllocated
+
+	sourceConsistencyHasBeenChecked
+		ifFalse: [	sourceConsistencyHasBeenChecked := true.
+						"This is a gross %hack to make sure that the launcher
+							window has appeared by the time we try to print
+							any warning messages.  This is because I'm using
+							fancy doitButtons in the warning message, and there
+							is some kind of timing problem that hangs the system
+							if the message arrives too soon, and I don't have time
+							to find it."
+						[	(Delay forMilliseconds: 250) wait.
+							SourceHandler checkSystemConsistencyAndPrintMessagesIfNeeded.
+							] fork.	].
+! !
+

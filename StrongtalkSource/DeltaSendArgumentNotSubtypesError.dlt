@@ -1,0 +1,46 @@
+Delta define: #DeltaSendArgumentNotSubtypesError as: (
+(Class subclassOf: 'DeltaSendError' instanceVariables: 'argument actualName formalName ')) !
+
+(Delta mirrorFor: #DeltaSendArgumentNotSubtypesError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaSendArgumentNotSubtypesError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSendArgumentNotSubtypesError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSendArgumentNotSubtypesError) methodsFor: 'Unclassified' !
+
+
+actualName
+	^actualName!
+
+actualName: aSymbol
+	actualName := aSymbol!
+
+argument
+	^argument!
+
+argument: n
+	argument := n!
+
+errorMessage
+	^'Type of actual argument ', self argument printString, ' (', self actualName,') is not a subtype of formal argument type ', self formalName
+!
+
+formalName
+	^formalName!
+
+formalName: aSymbol
+	formalName := aSymbol!
+
+subtypeExpr ^<DeltaType>
+	^(self loc astNode args at: self argument) type
+!
+
+supertypeExpr ^<DeltaType>
+"	^(self loc astNode recv type selectMsg: self loc astNode msg selector) domain at: self argument	"
+	^self loc astNode funType domain at: self argument
+! !
+

@@ -1,0 +1,224 @@
+Delta define: #Constraint as: (
+(Class subclassOf: 'IndexedInstanceVariables[Int] |> AbstractConstraint' instanceVariables: 'methods whichMethod')) !
+
+(Delta mirrorFor: #Constraint) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Constraint) group: 'benchmark'!
+
+(Delta mirrorFor: #Constraint)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Constraint) classSide methodsFor: 'instance creation' !
+
+
+names: variableNames methods: methodStrings
+	"Create a new constraint from the given method strings. The expressions in methodStrings are compiled to produce the actual method bodies for the constraint. For example, the following builds a plus constraint:
+
+	Constraint
+		names: #(sum a b)
+		methods: #('sum := a + b'    'a := sum - b'    'b := sum - a')
+
+The constraint thus created may be bound to actual variables with a specific strength (see Constraint>bind:strength:)."
+
+	| methodList |
+	methodList := methodStrings collect:
+		[: s | Method names: variableNames methodString: s].
+	^(super new: variableNames size) methods: methodList! !
+
+! (Delta mirrorFor: #Constraint) methodsFor: 'initialize-release' !
+
+
+methods: methodList
+	"Initialize myself with the given methods. I am initially not bound to variables."
+
+	strength := Strength required.
+	methods := methodList asArray.
+	whichMethod := nil.!
+
+release
+
+	strength := nil.
+	methods := nil.
+	whichMethod := nil.!
+
+var: variable strength: strengthSymbol
+	"Install myself on the given variable with the given strength."
+
+	self
+		vars: (Array with: variable)
+		strength: strengthSymbol!
+
+var: variable1 var: variable2 strength: strengthSymbol
+	"Install myself on the given variables with the given strength."
+
+	self
+		vars: (Array with: variable1 with: variable2)
+		strength: strengthSymbol!
+
+var: variable1 var: variable2 var: variable3 strength: strengthSymbol
+	"Install myself on the given variables with the given strength."
+
+	self
+		vars: (Array with: variable1 with: variable2 with: variable3)
+		strength: strengthSymbol!
+
+var: variable1 var: variable2 var: variable3 var: variable4 strength: strengthSymbol
+	"Install myself on the given variables with the given strength."
+
+	self
+		vars: (Array with: variable1 with: variable2 with: variable3 with: variable4)
+		strength: strengthSymbol!
+
+var: variable1 var: variable2 var: variable3 var: variable4 var: variable5 strength: strengthSymbol
+	"Install myself on the given variables with the given strength."
+
+	self
+		vars:
+			(Array with: variable1 with: variable2 with: variable3),
+			(Array with: variable4 with: variable5)
+		strength: strengthSymbol!
+
+var: variable1 var: variable2 var: variable3 var: variable4 var: variable5 var: variable6 strength: strengthSymbol
+	"Install myself on the given variables with the given strength."
+
+	self
+		vars:
+			(Array with: variable1 with: variable2 with: variable3),
+			(Array with: variable4 with: variable5 with: variable6)
+		strength: strengthSymbol!
+
+var: variable1 var: variable2 var: variable3 var: variable4 var: variable5 var: variable6 var: variable7 strength: strengthSymbol
+	"Install myself on the given variables with the given strength."
+
+	self
+		vars:
+			(Array with: variable1 with: variable2 with: variable3 with: variable4),
+			(Array with: variable5 with: variable6 with: variable7)
+		strength: strengthSymbol!
+
+var: variable1 var: variable2 var: variable3 var: variable4 var: variable5 var: variable6 var: variable7 var: variable8 strength: strengthSymbol
+	"Install myself on the given variables with the given strength."
+
+	self
+		vars:
+			(Array with: variable1 with: variable2 with: variable3 with: variable4),
+			(Array with: variable5 with: variable6 with: variable7 with: variable8)
+		strength: strengthSymbol!
+
+vars: vars strength: aSymbol
+	"Install myself on the given collection of variables with the given strength."
+
+	(vars size == self size) ifFalse:
+		[self error: 'Wrong number of variables for this constraint.'].
+	1 to: self size do:
+		[: i | self at: i put: (vars at: i)].
+	strength := Strength of: aSymbol.
+	self addConstraint.! !
+
+! (Delta mirrorFor: #Constraint) methodsFor: 'queries' !
+
+
+isSatisfied
+	"Answer true if this constraint is satisfied in the current solution."
+
+	^whichMethod notNil! !
+
+! (Delta mirrorFor: #Constraint) methodsFor: 'add/remove' !
+
+
+addToGraph
+	"Add myself to the constraint graph."
+
+	1 to: self size do:
+		[: i | (self at: i) addConstraint: self].
+	whichMethod := nil.!
+
+removeFromGraph
+	"Remove myself from the constraint graph."
+
+	| v |
+	1 to: self size do:
+		[: i |
+		 v := self at: i.
+		 (v == nil) ifFalse: [v removeConstraint: self]].
+	whichMethod := nil.! !
+
+! (Delta mirrorFor: #Constraint) methodsFor: 'planning' !
+
+
+chooseMethod: mark
+	"Decide if I can be satisfied and record that decision. The output of the choosen method must not have the given mark and must have a walkabout strength less than that of this constraint."
+
+	| bestOutStrength mOut |
+	whichMethod := nil.
+	bestOutStrength := strength.
+	methods do:
+		[: m |
+		 mOut := self at: m outIndex.
+		 ((mOut mark ~= mark) &
+		  (mOut walkStrength weaker: bestOutStrength)) ifTrue:
+			[whichMethod := m.
+			 bestOutStrength := mOut walkStrength]].!
+
+constantOutput
+	"Answer true if:
+	    1. I am not an input constraint such as an EditConstraint, and
+	    2. If I have any inputs, they are all marked stay."
+
+	| outIndex i |
+	(self isInput) ifTrue: [^false].
+	self inputsDo:
+		[: in | (in stay) ifFalse: [^false]].
+	^true!
+
+execute
+	"Enforce this constraint. Assume that it is satisfied."
+
+	whichMethod execute: self.!
+
+inputsDo: aBlock
+	"See comment in AbstractConstraint."
+
+	| outIndex |
+	outIndex := whichMethod outIndex.
+	1 to: self size do:
+		[: i |
+		 (i == outIndex) ifFalse:
+			[aBlock value: (self at: i)]].!
+
+markUnsatisfied
+	"Record the fact that I am unsatisfied."
+
+	whichMethod := nil.!
+
+output
+	"Answer the output variable for the currently selected method. Raise an error if the receiver is not currently satisfied."
+
+	^self at: whichMethod outIndex!
+
+outputWalkStrength
+	"Answer the walkabout strength to be assigned to the output of my selected method."
+
+	| minStrength currentOut methodOut |
+	minStrength := strength.
+	currentOut := self at: whichMethod outIndex.
+	1 to: methods size do:
+		[: i |
+		 methodOut := self at: ((methods at: i) outIndex).
+		 ((methodOut ~~ currentOut) and:
+		   [methodOut walkStrength weaker: minStrength]) ifTrue:
+			[minStrength := methodOut walkStrength]].
+	^minStrength!
+
+recalculate
+	"Calculate the walkabout strength, the stay flag, and, if it is 'stay', the value for the current output of this constraint. Assume this constraint is satisfied."
+
+	| out |
+	out := self at: whichMethod outIndex.
+	out walkStrength: self outputWalkStrength.
+	out stay: self constantOutput.
+	(out stay) ifTrue: [self execute].		"stay optimization"! !
+

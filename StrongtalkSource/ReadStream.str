@@ -1,0 +1,29 @@
+Delta define: #ReadStream as: (
+Generic forAll: '(E covar) ' body: (Protocol superProtocol: '<InputStream[E] ; PositionableStream>')) !
+
+(Delta mirrorFor: #ReadStream) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ReadStream) group: 'base'!
+
+(Delta mirrorFor: #ReadStream)
+comment: 
+'A ReadStream is a positionable InputStream
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ReadStream) methodsFor: 'Unclassified' !
+
+
+at: index <Int> ^<E>
+!
+
+collection ^<SeqCltn[E]>
+"Return a collection of all the elements being streamed over,
+including any already read.
+
+Classes should implement contents for compatibility." !
+
+repositioningAt: index <Int> ^<E>
+
+	"Like at:, but can leave the position changed"! !
+

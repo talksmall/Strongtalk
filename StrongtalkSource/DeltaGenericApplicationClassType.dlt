@@ -1,0 +1,160 @@
+Delta define: #DeltaGenericApplicationClassType as: (
+(Class subclassOf: 'DeltaGenericApplicationType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaGenericApplicationClassType) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaGenericApplicationClassType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericApplicationClassType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericApplicationClassType) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^self asSide abstract!
+
+asMixinSide   ^ <MixinSide>
+
+
+^DeltaGenericApplicationMixinType new apply: self target to: self actuals
+
+!
+
+asSide ^ <Side>
+    ^self target asGeneric body asSide!
+
+classObj ^ <Class>
+
+"Return the class I denote, if indeed it is a class"
+
+^self target classObj!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+^self compositeSubstitutePrivate: t!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+
+^(self filteree compositeSubstitutePrivate: t) substitute: self substitution!
+
+dualClassType ^ <ClassType>
+    ^ DeltaUnaryGenApp new dual: self!
+
+functions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide functions virtualCollect:[:f <Method | Message>  | f  substitute: self actualForFormalSubstitution].!
+
+heirScope ^ <DeltaScope>
+    ^self asSide heirScope substitute: self actualForFormalSubstitution!
+
+implementedPrivateProtocol ^ <Protocol>
+    ^self asSide implementedPrivateProtocol forcedSubstitute: self actualForFormalSubstitution!
+
+invocationCache ^ <Dict[ObjectType, ObjectType]>
+
+^self generic invocationCacheFor: self!
+
+isMetaSide ^ <Boolean>
+    ^self asSide isMetaSide!
+
+localScope ^ <DeltaScope>
+    ^self asSide localScope substitute: self actualForFormalSubstitution!
+
+messages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide messages virtualCollect:[:f <Message>  | f  substitute: self actualForFormalSubstitution].!
+
+methods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide methods virtualCollect:[:f <Method>  | f  substitute: self actualForFormalSubstitution].!
+
+mixinObj ^ <Mixin>
+
+"Return the mixin I denote, if indeed it is a mixin"
+
+^self target mixinObj!
+
+mixinSubstitute: t <Interface> ^ <Interface>
+
+^t substitute: self actualForFormalSubstitution!
+
+monotonic ^ <Boolean>
+    ^self asSide monotonic!
+
+myTypeVarSubstitution ^ <Substitution>
+
+"This method returns a substitution that replaces my type variables
+with my self and my dual.
+"
+    | theta <Substitution>  |
+
+theta := super myTypeVarSubstitution.
+theta at: self selfPublicClassTV put: self dual.
+theta at: self selfPublicTV put: self.
+^theta!
+
+privateFunctions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateFunctions virtualCollect:[:f <Method | Message>  | f  substitute: self actualForFormalSubstitution].!
+
+privateMessages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateMessages virtualCollect:[:f <Message>  | f  substitute: self actualForFormalSubstitution].!
+
+privateMethods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateMethods virtualCollect:[:f <Method>  | f  substitute: self actualForFormalSubstitution].!
+
+privateProtocol ^ <Protocol>
+    ^self asSide privateProtocol forcedSubstitute: self actualForFormalSubstitution!
+
+protocolForInvocation: i <MixinInvocationNode> ^ <Protocol>
+
+| key <Protocol> |
+
+key :=  i superclassType asProtocol canonicalRep.
+^self invocationCache 
+            at: key
+            ifAbsent:[self invocationCache at: key put: i computeTypeOfInstances]!
+
+publicFunctions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicFunctions virtualCollect:[:f <Method | Message>  | f  substitute: self actualForFormalSubstitution].!
+
+publicMessages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicMessages virtualCollect:[:f <Message>  | f  substitute: self actualForFormalSubstitution].!
+
+publicMethods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicMethods virtualCollect:[:f <Method>  | f  substitute: self actualForFormalSubstitution].!
+
+scope ^ <DeltaScope>
+    ^self asSide scope substitute: self actualForFormalSubstitution!
+
+selfClassTV ^ <TypeVar>
+
+^self filteree  selfClassTV.
+!
+
+selfTV ^ <TypeVar>
+
+^self filteree selfTV
+!
+
+subtype ^ <Boolean>
+    ^self asSide subtype!
+
+supportedProtocol ^ <Protocol>
+
+| sp <Protocol> |
+
+sp := self asSide supportedProtocol.
+^sp isNil ifTrue:[nil] ifFalse:[sp substitute: self actualForFormalSubstitution].!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+   ^self asSide unimplementedMessages !
+
+untypedName   ^ <Symbol>
+
+^self target name
+!
+
+varDecls ^ <Dict[Symbol,ObjectType]>
+    ^self asSide varDecls virtualCollect:[:v <VarDecl>  | v type substitute: self actualForFormalSubstitution].! !
+

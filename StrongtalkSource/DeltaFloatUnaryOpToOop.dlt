@@ -1,0 +1,33 @@
+Delta define: #DeltaFloatUnaryOpToOop as: (
+(Class subclassOf: 'DeltaExpression' instanceVariables: 'f x ')) !
+
+(Delta mirrorFor: #DeltaFloatUnaryOpToOop) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaFloatUnaryOpToOop) group: 'ast'!
+
+(Delta mirrorFor: #DeltaFloatUnaryOpToOop)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaFloatUnaryOpToOop) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+    aTool floatUnaryOpToOopNode: self!
+
+f
+	^ f!
+
+f: op x: arg
+	self assert: [ EnableFloatValues ].
+	self assert: [ arg isFloatExpressionNode ].
+	f := op.
+	x := arg!
+
+isFloatUnaryOpToOopNode
+	^ true!
+
+x
+	^ x! !
+

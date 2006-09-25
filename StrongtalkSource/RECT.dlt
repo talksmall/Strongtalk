@@ -1,0 +1,97 @@
+Delta define: #RECT as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #RECT) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #RECT) group: 'base'!
+
+(Delta mirrorFor: #RECT)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #RECT) methodsFor: 'accessing' !
+
+
+bottom ^<Int>
+
+	^self smallIntegerAt: self bottomOffset!
+
+bottom: v <Int> ^<Int>
+
+	^self smallIntegerAt: self bottomOffset put: v!
+
+corner ^<Point>
+
+	^self right @ self bottom!
+
+left ^<Int>
+
+	^self smallIntegerAt: self leftOffset!
+
+left: v <Int> ^<Int>
+
+	^self smallIntegerAt: self leftOffset put: v!
+
+origin ^<Point>
+
+	^self left @ self top!
+
+right ^<Int>
+
+	^self smallIntegerAt: self rightOffset!
+
+right: v <Int> ^<Int>
+
+	^self smallIntegerAt: self rightOffset put: v!
+
+structureSize ^<Int>
+
+	^16!
+
+top ^<Int>
+
+	^self smallIntegerAt: self topOffset!
+
+top: v <Int> ^<Int>
+
+	^self smallIntegerAt: self topOffset put: v! !
+
+! (Delta mirrorFor: #RECT) methodsFor: 'offsets' !
+
+
+bottomOffset ^<Int>
+
+	^12!
+
+leftOffset ^<Int>
+
+	^0!
+
+rightOffset ^<Int>
+
+	^8!
+
+topOffset ^<Int>
+
+	^4! !
+
+! (Delta mirrorFor: #RECT) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm putAll: 'RECT('; print: self asRectangle; putAll: ')'! !
+
+! (Delta mirrorFor: #RECT) methodsFor: 'utility' !
+
+
+asRectangle ^<Rect>
+
+	^(self left @ self top) corner: (self right @ self bottom)!
+
+setFrom: r <Rect>
+
+	self left: r left; right: r right; top: r top; bottom: r bottom! !
+

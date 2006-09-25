@@ -1,0 +1,91 @@
+Delta define: #FileDescriptor as: (
+(Class subclassOf: 'ExternalStreamDescriptor[File]' instanceVariables: 'position <Int>
+			"This must be cached here so that we can seek to the right spot when
+			  the descriptor is reopened after an image restart.  Note that because
+			  of external stream buffering, this position will probably not be the same
+			  as the stream position."
+knowAtEnd <Boolean>
+            "True if we know we are at the end, and can optimize reads"
+		')) !
+
+(Delta mirrorFor: #FileDescriptor) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #FileDescriptor) group: 'base'!
+
+(Delta mirrorFor: #FileDescriptor)
+comment: 
+'A file descriptor is a positionable stream descriptor.
+%todo: factor out a superclass for positionable-ness if needed
+%bug: reopening on image startup will probably cause file truncation for write files, since we
+         don''''t currently distinguish between the original open, which should truncate, and
+        reopens, which should not.  When we fix, be sure to set knowAtEnd on first open of
+        a write file, and be sure not to on reopens.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #FileDescriptor) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #FileDescriptor) methodsFor: 'initialization' !
+
+
+initialize
+    position := 0.
+    self knowAtEnd: false.    "By default, we know nothing"! !
+
+! (Delta mirrorFor: #FileDescriptor) methodsFor: 'control' !
+
+
+openIfFail: errf <[ExternalError]>
+    super openIfFail:
+        [ :err <ExternalError> |
+            errf value: err.
+            ^self ].
+    "Restore the file position"
+    self setExternalPosition: self position.
+    "When opening a write only file, the file is created/truncated, so we
+      know we are at the end"
+    self knowAtEnd: self mode = #write! !
+
+! (Delta mirrorFor: #FileDescriptor) methodsFor: 'private' !
+
+
+knowAtEnd ^<Boolean>
+    ^knowAtEnd!
+
+knowAtEnd: f <Boolean>
+    knowAtEnd := f!
+
+setExternalPosition: p <Int>
+	"moves the external file pointer.  Assume: file is open and position ivar already moved"
+
+	self subclassResponsibility!
+
+setPosition: p <Int>
+
+	position := p.! !
+
+! (Delta mirrorFor: #FileDescriptor) methodsFor: 'accessing' !
+
+
+position ^<Int>
+	^position!
+
+position: p <Int>
+    p = self position
+        ifFalse: [ self knowAtEnd: false ]
+        ifTrue: [ ^self ].
+    self setPosition: p.
+    self isClosed
+        ifFalse: [ self setExternalPosition: p ]!
+
+size ^<Int>
+
+	self subclassResponsibility! !
+

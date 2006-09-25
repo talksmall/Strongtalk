@@ -1,0 +1,49 @@
+Delta define: #LivermoreBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: '')) !
+
+(Delta mirrorFor: #LivermoreBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #LivermoreBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #LivermoreBenchmark)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #LivermoreBenchmark) methodsFor: 'misc' !
+
+
+run
+	|	n size x y q r z t |
+
+	n := 1001.
+	size := n + 12.
+	x := Array new: size.
+	y := (Array new: size) atAllPut: 1.1234.
+	z := (Array new: size) atAllPut: 1.1234.
+	q := r := t := 1.234.
+
+	100 "1000" timesRepeat: [
+		1 to: n do: [ :k  |
+			x at: k put: (q + ( (y at: k) * (r*(z at: k + 10)) + (t*(z at: k + 11)) ))
+		]
+	]
+
+
+! !
+
+! (Delta mirrorFor: #LivermoreBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^0!
+
+factor
+	^2!
+
+name
+	^#Livermore!
+
+parcplaceTime
+	^0! !
+

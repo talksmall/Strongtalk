@@ -1,0 +1,100 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Programming Environment</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="progenv3.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="progenv5.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">The Programming Environment (cont.)</h2>
+
+<h3 align="left">Class Browsers (cont.)</h3>
+
+<p align="left">Now, let's look at how the guts of a Strongtalk
+class look. Press <smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/publicInterface.bmp'))
+				action: [ :b  |	 ]	
+"> on the HTMLView class browser to show the
+public interface. </p>
+
+<p align="left">The first thing that you will see that is
+different from other Smalltalk libraries is that the method
+signatures shown have type annotations. Notice how much easier
+this makes it to understand the interface. If you open the class
+header (the first item in the outline), you will see that the
+instance variables have types, too (and you can imbed comments in
+the instance variable string, as well). As you can see, type
+annotations are enclosed in angle brackets (&lt;...&gt;); method
+return types are preceded by a hat (^). You will get a quick
+tutorial on the type system later, so don't worry too much about
+the exact meaning of the types right now.</p>
+
+<p align="left">You can look at method bodies by expanding the
+method or methods you are interested in. Many different
+operations on methods and categories are available by
+right-clicking over a category or method header to get the
+context menu.</p>
+
+<h4 align="left">A Little Project</h4>
+
+<p align="left">To illustrate using the browsers and the type
+system, we will undertake a very small project: adding a
+'forward' button to the browser. I've gone ahead and added almost
+all the machinery needed for this, but you will need to add two small
+methods, and add one line to another method (I'll
+provide the exact text to enter).  I've added an instance variable
+'forwardURLs', and put some methods that manipulate it in the
+category <em>private-forward</em>. If you look at the instance
+variables, you can see clearly that the type of the instance
+variable is &lt;OrdCltn[URL]&gt;. OrdCltn is just a convenient
+alias for OrderedCollection, since it is commonly used.
+Collections are generic, just like View, so we can see easily
+that this is an ordered collection of URLs, which the type system
+will enforce for us.</p>
+
+<p align="left">Expand the <em>private-forward</em> category. If
+you would like to see all the other places that I modified, right
+click over the #forwardURLs method and select 'Senders'.</p>
+
+<p align="left">The main thing you need to do is add the method
+that is invoked when the forward command is invoked. Start by
+adding a new method to the <em>private-forward</em> category, by
+selecting 'New method' from the category context menu. Then,
+enter the following text (you can copy and paste using
+&lt;Ctrl&gt;-C and &lt;Ctrl&gt;-V):</p>
+
+<p align="center"><smappl visual=" ((CodeView forString) 
+	doneBlock: [ :saveFlag :action | ];
+	model: 'goForwardOrIfAbsent: failBlk &lt;[]&gt;
+
+	| current &lt;URL&gt; |
+	current := self model.
+	self bareModel: (self popNextURLOrIfAbsent: failBlk ).
+	self history addLast: current.'
+) imbeddedVisual with3DBorder withBorder: (Border standard3DRaised: true)"> </p>
+
+<p align="left">This method uses the #popNextURLOrIfAbsent:
+method to pop the last forward link off the forwardURLs
+ordered collection, sets the model of the view to that URL, and then
+pushes the previous URL onto the history list. If the forward
+list is empty, the ...IfAbsent: block is invoked instead. I've
+intentionally put a common kind of Smalltalk bug in this method,
+to illustrate the type system. Can you see the bug?</p>
+
+<p align="left">Note the type annotations. The argument is a
+block, whose value type we don't care about, so we can just use
+&lt;[]&gt; to indicate a block that takes no arguments and
+produces an Object, by default. We haven't declared a return type
+for the method, so it defaults to a return type of &lt;Self&gt;,
+which we could have explicitly written by writing '^&lt;Self&gt;'
+at the end of the method signature.</p>
+
+<h3 align="right"><a href="progenv5.html"><strong>Programming
+Environment, cont. ==&gt;</strong></a></h3>
+</body>
+</html>

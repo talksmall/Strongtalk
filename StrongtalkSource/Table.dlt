@@ -1,0 +1,144 @@
+Delta define: #Table as: (
+(Class subclassOf: 'Application' instanceVariables: 'rowMajor <Boolean>
+			"If rows are major, then x baselines are honored, else y baselines are used."
+major <RowOrColumn[RowOrColumn[EqualizerWrapper]]>
+rowEqualizers <Array[Equalizer]>
+colEqualizers <Array[Equalizer]>
+numRows <Int>
+numCols <Int>
+		')) !
+
+(Delta mirrorFor: #Table) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Table) group: 'ui'!
+
+(Delta mirrorFor: #Table)
+comment: 
+'A table is an application that builds and manages a visual that organises
+a set of other visuals into rows and columns.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Table) classSide methodsFor: 'instance creation' !
+
+
+rows: rows <Int> columns: cols <Int> ^<Instance>
+
+	^self new initRows: rows columns: cols! !
+
+! (Delta mirrorFor: #Table) methodsFor: 'private-initialization' !
+
+
+initRows: rows <Int> columns: cols <Int> ^<Instance>
+
+	numRows := rows.
+	numCols := cols.
+	rowMajor := false.
+! !
+
+! (Delta mirrorFor: #Table) methodsFor: 'accessing' !
+
+
+atRow: r <Int> column: c <Int>  ^<Visual>
+
+	^(EqualizerWrapper coerce: ((self wrapperAtRow: r col: c) part)) part!
+
+atRow: r <Int> column: c <Int> put: v <Visual>
+
+	(EqualizerWrapper coerce: ((self wrapperAtRow: r col: c) part)) part: v!
+
+numCols ^<Int>
+
+	^numCols!
+
+numRows ^<Int>
+
+	^numRows!
+
+rowMajor ^<Boolean>
+
+	^rowMajor!
+
+rowMajor: f <Boolean>
+ 
+	rowMajor := f! !
+
+! (Delta mirrorFor: #Table) methodsFor: 'private' !
+
+
+buildBareVisual ^<Visual>
+
+	^self major!
+
+buildBareVisualTop: top <Boolean> ^<Visual>
+
+	^self major!
+
+colEqualizers ^<Array[Equalizer]>
+
+	colEqualizers isNil
+		ifTrue: [	colEqualizers := Array[Equalizer] new: self numCols.
+						1 to: self numCols do:
+							[ :i <Int> |
+								colEqualizers at: i put: ((Equalizer forX) rigid: true).	].
+					].
+	^colEqualizers!
+
+major ^<RowOrColumn[RowOrColumn[EqualizerWrapper]]>
+
+	| minors <OrderedCollection[RowOrColumn[EqualizerWrapper]]> |
+	major isNil
+		ifTrue: [ self rowMajor
+						ifTrue: [	minors := OrderedCollection[RowOrColumn[EqualizerWrapper]] newWithSize: self numCols.
+										1 to: self numCols do:
+											[ :i <Int> |
+												| els <OrderedCollection[EqualizerWrapper]> |
+												els := OrderedCollection[EqualizerWrapper] newWithSize: self numRows.
+												1 to: self numRows do:
+													[ :j <Int> |
+														| el <EqualizerWrapper> |
+														el := (self rowEqualizers at: j)
+																	for: ((self colEqualizers at: i)
+																				for: (Glue xRigid: 0 yRigid: 0)).
+														els at: j put: el.	].
+												minors at: i put: (Column[EqualizerWrapper] holding: (OrderedCollection[EqualizerWrapper] withAll: els)).
+											].
+										major := Row[RowOrColumn[EqualizerWrapper]] holding: (OrderedCollection[EqualizerWrapper] withAll: minors).	]
+						ifFalse: [	minors := OrderedCollection[RowOrColumn[EqualizerWrapper]] newWithSize: self numRows.
+										1 to: self numRows do:
+											[ :i <Int> |
+												| els <OrderedCollection[EqualizerWrapper]> |
+												els := OrderedCollection[EqualizerWrapper] newWithSize: self numCols.
+												1 to: self numCols do:
+													[ :j <Int> |
+														| el <EqualizerWrapper> |
+														el := (self colEqualizers at: j)
+																	for: ((self rowEqualizers at: i)
+																				for: (Glue xRigid: 0 yRigid: 0)).
+														els at: j put: el.	].
+												minors at: i put: (Row[EqualizerWrapper] holding: (OrderedCollection[EqualizerWrapper] withAll: els)).
+											].
+										major := Column[RowOrColumn[EqualizerWrapper]] holding: (OrderedCollection[EqualizerWrapper] withAll: minors).	].
+					].
+	^major!
+
+rowEqualizers ^<Array[Equalizer]>
+
+	rowEqualizers isNil
+		ifTrue: [	rowEqualizers := Array[Equalizer] new: self numRows.
+						1 to: self numRows do:
+							[ :i <Int> |
+								rowEqualizers at: i put: ((Equalizer forY) rigid: true).	].
+					].
+	^rowEqualizers!
+
+wrapperAtRow: r <Int> col: c <Int>  ^<EqualizerWrapper>
+
+	^self rowMajor
+		ifTrue: [ (self major at: c) at: r ]
+		ifFalse: [ (self major at: r) at: c ]! !
+

@@ -1,0 +1,239 @@
+<HTML>
+<HEAD>
+<TITLE>
+processOopPrimitives
+</TITLE>
+</HEAD>
+<BODY>
+<H1>
+processOopPrimitives
+</H1>
+<UL>
+<HR>
+<LI>
+&lt;<A href="types.html#Process class">Process class</A>&gt; <B>
+primitiveProcessCreate:ifFail:
+</B>
+ ^&lt;<A href="types.html#Process">Process</A>&gt;
+<BR> 
+<PRE>'Creates a new process'
+</PRE>
+<EM>Parameters:</EM><BR>
+block &lt;<A href="types.html#BlockWithoutArguments">BlockWithoutArguments</A>&gt;<BR>
+<EM>Errors:</EM>  
+ProcessAllocationFailed 
+<BR>
+
+<HR>
+<LI>
+<B>
+primitiveProcessYield
+</B>
+ ^&lt;<A href="types.html#Process">Process</A>&gt;
+<BR> 
+<PRE>'Yields the control to the scheduler.'
+'Does nothing if executed by the scheduler.'
+'Returns current process when regaining control.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveProcessStop
+</B>
+ ^&lt;<A href="types.html#Process">Process</A>&gt;
+<BR> 
+<PRE>'Yields the control to the scheduler.'
+'Does nothing if executed by the scheduler.'
+'Returns current process when regaining control.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveProcessActiveProcess
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Returns the active process'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveProcessTransferTo:ifFail:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Transfers the control from the scheduler to a process.'
+'Returns the status of process (see primitiveProcessStatus).'
+</PRE>
+<EM>Parameters:</EM><BR>
+process &lt;<A href="types.html#Process">Process</A>&gt;<BR>
+<EM>Errors:</EM>  
+NotInScheduler 
+ProcessCannotContinue 
+Dead 
+<BR>
+
+<HR>
+<LI>
+<B>
+primitiveProcessSingleStep:ifFail:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Transfers the control from the scheduler to a process,'
+'performs a single step and yields.'
+'Returns the status of process (see primitiveProcessStatus).'
+</PRE>
+<EM>Parameters:</EM><BR>
+process &lt;<A href="types.html#Process">Process</A>&gt;<BR>
+<EM>Errors:</EM>  
+NotInScheduler 
+ProcessCannotContinue 
+Dead 
+<BR>
+
+<HR>
+<LI>
+&lt;<A href="types.html#Process">Process</A>&gt; <B>
+primitiveProcessTerminateIfFail:
+</B>
+ ^&lt;<A href="types.html#Self">Self</A>&gt;
+<BR> 
+<PRE>'Terminates the process'
+</PRE>
+<EM>Errors:</EM>  
+Dead 
+<BR><EM>Flags:</EM> NLR 
+
+<HR>
+<LI>
+&lt;<A href="types.html#Process">Process</A>&gt; <B>
+primitiveProcessStatus
+</B>
+ ^&lt;<A href="types.html#Symbol">Symbol</A>&gt;
+<BR> 
+<PRE>'Returns the process status:'
+'  #Initialized            - State right after creation.'
+'  #Yielded                - Gave up control by calling yield.'
+'  #Running                - Is running.'
+'  #InAsyncDLL             - Gave up control but continues to execute asynchronous DLL.'
+'  #Stopped                - Gave up control by calling stop.'
+'  #Preempted              - Was preempted by system.'
+'  #Completed              - Ran to completion.'
+'  #Dead                   - The process is dead.'
+'  #BooleanError           - A boolean was expected at hardcoded control structure.'
+'  #FloatError             - A float was expected at hardcoded float operation.'
+'  #LookupError            - The receiver does not understand doesNotUnderstand:.'
+'  #PrimitiveLookupError   - Binding a primitive failed.'
+'  #DLLLookupError         - Binding a DLL function failed.'
+'  #NLRError               - Context for NLR did not exist.'
+'  #StackOverflow          - Stack exhausted.'
+</PRE>
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#Process">Process</A>&gt; <B>
+primitiveProcessSchedulerWait:ifFail:
+</B>
+ ^&lt;<A href="types.html#Boolean">Boolean</A>&gt;
+<BR> 
+<PRE>'Waits until timer has expired or a asynchronous dll call has returned.'
+'Returns whether the timer expired.'
+</PRE>
+<EM>Parameters:</EM><BR>
+milliseconds &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#Process">Process</A>&gt; <B>
+primitiveProcessTraceStack:ifFail:
+</B>
+ ^&lt;<A href="types.html#Self">Self</A>&gt;
+<BR> 
+<PRE>'Prints the stack trace'
+</PRE>
+<EM>Parameters:</EM><BR>
+size &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveProcessEnterCritical
+</B>
+ ^&lt;<A href="types.html#Process">Process</A>&gt;
+<BR> 
+<PRE>'Disables preemption in active process.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveProcessLeaveCritical
+</B>
+ ^&lt;<A href="types.html#Process">Process</A>&gt;
+<BR> 
+<PRE>'Enables preemption in active process'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveProcessYieldInCritical
+</B>
+ ^&lt;<A href="types.html#Process">Process</A>&gt;
+<BR> 
+<PRE>'Yields the control to the scheduler.'
+'Does nothing if executed by the scheduler.'
+'Returns current process when regaining control.'
+</PRE>
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#Process">Process</A>&gt; <B>
+primitiveProcessUserTime
+</B>
+ ^&lt;<A href="types.html#Float">Float</A>&gt;
+<BR> 
+<PRE>'Returns time, in seconds, the process has spent in user code'
+</PRE>
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#Process">Process</A>&gt; <B>
+primitiveProcessSystemTime
+</B>
+ ^&lt;<A href="types.html#Float">Float</A>&gt;
+<BR> 
+<PRE>'Returns time, in seconds, the process has spent in system code'
+</PRE>
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#Process">Process</A>&gt; <B>
+primitiveProcessStackLimit:ifFail:
+</B>
+ ^&lt;<A href="types.html#IndexedInstanceVariables">IndexedInstanceVariables</A>&gt;
+<BR> 
+<PRE>'Returns an array of the process activation'
+</PRE>
+<EM>Parameters:</EM><BR>
+limit &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+
+
+</UL>
+</BODY>
+</HTML>

@@ -1,0 +1,37 @@
+Delta define: #DeltaArgTypeSelection as: (
+(Class subclassOf: 'DeltaASTNode' instanceVariables: 'target arg ') protocols: 'InferenceClause') !
+
+(Delta mirrorFor: #DeltaArgTypeSelection) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaArgTypeSelection) group: 'ast'!
+
+(Delta mirrorFor: #DeltaArgTypeSelection)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaArgTypeSelection) methodsFor: 'accessing' !
+
+
+arg ^ <Int>
+    ^arg!
+
+baseUsing: actuals <InferenceSignature > ^ <MsgSignature>
+    ^self target isNil ifTrue:[actuals]
+                          ifFalse:[self target inferFrom: actuals]!
+
+target ^ <MsgSignatureInferenceClause>
+    ^target!
+
+target: t <MsgSignatureInferenceClause >arg: a <Int > ^ <Self>
+    target := t.
+arg := a.! !
+
+! (Delta mirrorFor: #DeltaArgTypeSelection) methodsFor: 'inferring' !
+
+
+inferFrom: actuals <InferenceSignature > ^ <ObjectType>
+    ^(self baseUsing: actuals) domain
+            at: self arg
+            ifAbsent:[self reportError: (DeltaInferenceClauseArgumentError new argument: self arg)].! !
+

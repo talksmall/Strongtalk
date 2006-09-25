@@ -1,0 +1,44 @@
+Delta define: #SequenceableVirtualCollector as: (
+Generic forAll: '(T covar) ' body: ((Class subclassOf: 'SequenceableCollection[T]' instanceVariables: 'cltn map ') protocols: 'VirtualCollector[T]')) !
+
+(Delta mirrorFor: #SequenceableVirtualCollector) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #SequenceableVirtualCollector) group: 'misc'!
+
+(Delta mirrorFor: #SequenceableVirtualCollector)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SequenceableVirtualCollector) classSide methodsFor: 'Unclassified' !
+
+
+on: c <SeqCltn[X] >map: b <[X def,^T] > ^ <Instance>
+    ^super new on: c map: b! !
+
+! (Delta mirrorFor: #SequenceableVirtualCollector) methodsFor: 'Unclassified' !
+
+
+at: i <Int > ^ <T>
+    ^map value: (cltn at: i)!
+
+at: i <Int > ifAbsent: blk  <[^V def]>  ^ <T|V>
+    ^map value: (cltn at: i ifAbsent: blk)!
+
+cltn ^ <Collection[T]>
+    ^cltn!
+
+cltnSpecies
+
+^self cltn cltnSpecies!
+
+do: blk <[T,^Object] > ^ <Self>
+    cltn do: [ :e <X>  | blk value: (map value: e) ]!
+
+on: c <SeqCltn[X] >map: b <[X def,^T] > ^ <Self>
+    cltn := c.
+    map := b.!
+
+size ^ <Int>
+    ^cltn size! !
+

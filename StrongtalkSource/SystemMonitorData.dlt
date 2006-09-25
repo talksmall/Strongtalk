@@ -1,0 +1,79 @@
+Delta define: #SystemMonitorData as: (
+(Class subclassOf: 'Object' instanceVariables: 'data <Array[Integer]>		"Contains the array returned from the VM"
+  total <Integer>					"Total number of ticks in data"
+')) !
+
+(Delta mirrorFor: #SystemMonitorData) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SystemMonitorData) group: 'misc'!
+
+(Delta mirrorFor: #SystemMonitorData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SystemMonitorData) classSide methodsFor: 'creation' !
+
+
+new ^<Instance>
+	^super new initialize! !
+
+! (Delta mirrorFor: #SystemMonitorData) methodsFor: 'initialization' !
+
+
+initialize
+	data := {{primitiveSlidingSystemAverageIfFail: [ :err | self error: err ]}}.
+	total := 0.
+	data do: [ :elem <Integer> | total := total + elem]! !
+
+! (Delta mirrorFor: #SystemMonitorData) methodsFor: 'accessing' !
+
+
+inCompiledCode ^<Float>
+	"Returns the fraction spend in compiled code"
+	
+	^self fractionFor: 1!
+
+inCompiler ^<Float>
+	"Returns the fraction spend in the compiler"
+	
+	^self fractionFor: 5!
+
+inGarbageCollector ^<Float>
+	"Returns the fraction spend in stub code"
+	
+	^self fractionFor: 6!
+
+inIdle ^<Float>
+	"Returns the fraction spend in idle primitive"
+	
+	^self fractionFor: 7!
+
+inInterpretedCode ^<Float>
+	"Returns the fraction spend in interpreter code"
+	
+	^self fractionFor: 2!
+
+inPICCode ^<Float>
+	"Returns the fraction spend in polymorphic inline cache code"
+	
+	^self fractionFor: 3!
+
+inStubCode ^<Float>
+	"Returns the fraction spend in stub code"
+	
+	^self fractionFor: 4!
+
+inVM ^<Float>
+	"Returns the fraction spend in compiled code"
+	
+	^self fractionFor: 8! !
+
+! (Delta mirrorFor: #SystemMonitorData) methodsFor: 'private' !
+
+
+fractionFor: index <Integer> ^<Float>
+	
+	^ (data at: index) asFloat / total
+	! !
+

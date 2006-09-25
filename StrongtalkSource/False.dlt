@@ -1,0 +1,89 @@
+Delta define: #False as: (
+(Class subclassOf: 'Boolean' instanceVariables: '')) !
+
+(Delta mirrorFor: #False) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #False) group: 'base'!
+
+(Delta mirrorFor: #False)
+comment: 
+'Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.6 $
+'!
+
+! (Delta mirrorFor: #False) methodsFor: 'operations' !
+
+
+& other <Boolean>	^<Boolean>
+
+	^false!
+
+not ^<Boolean>
+
+	^true!
+
+| other <Boolean>	^<Boolean>
+
+	^other! !
+
+! (Delta mirrorFor: #False) methodsFor: 'control' !
+
+
+&& f <[^Boolean]>	^<Boolean>
+
+	^false!
+
+and: f <[^Boolean]>	^<Boolean>
+
+	^false!
+
+ifFalse: then <[]> ^<Object>
+
+	^then value!
+
+ifFalse: then <[^X def]> ifTrue: else <[^Y def]> ^<X|Y>
+
+	^then value!
+
+ifTrue: then <[]> ^<Object>
+
+	^nil!
+
+ifTrue: then <[^X def]> ifFalse: else <[^Y def]> ^<X | Y>
+
+	^else value!
+
+or: f <[^Boolean]>	^<Boolean>
+	^f value!
+
+|| f <[^Boolean]>	^<Boolean>
+	^f value! !
+
+! (Delta mirrorFor: #False) methodsFor: 'converting' !
+
+
+asExternalData ^<Int>
+
+	^0! !
+
+! (Delta mirrorFor: #False) methodsFor: 'utility' !
+
+
+onFalse: blk <[^Object]>  ^<Boolean>
+
+	blk value.
+	^self!
+
+onTrue: blk <[^Object]>  ^<Boolean>
+
+	^self! !
+
+! (Delta mirrorFor: #False) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm nextPutAll: 'false'! !
+

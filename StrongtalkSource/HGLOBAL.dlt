@@ -1,0 +1,44 @@
+Delta define: #HGLOBAL as: (
+(Class subclassOf: 'Win32Handle' instanceVariables: '')) !
+
+(Delta mirrorFor: #HGLOBAL) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HGLOBAL) group: 'base'!
+
+(Delta mirrorFor: #HGLOBAL)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #HGLOBAL) methodsFor: 'allocation' !
+
+
+allocate: bytes <Int> attributes: attrs <ExternalData>
+
+	self setFromProxy:
+		{{<kernel ExternalProxy GlobalAlloc>
+			flags: attrs
+			bytes: bytes
+		}}.
+	self isNull
+		ifTrue: [ Win32 handleError ]!
+
+free
+
+	self assert: [ self isNull not ].
+	self setFromProxy: {{<kernel ExternalProxy GlobalFree> hnd: self}}.
+	self isNull
+		ifFalse: [ Win32 handleError ]! !
+
+! (Delta mirrorFor: #HGLOBAL) methodsFor: 'accessing' !
+
+
+withPointer: proxy <P> do: blk <[P,^X def]> ^<X>
+		{where P <ExternalProxy> is arg 1}
+
+	proxy setFromProxy: {{<kernel ExternalProxy GlobalLock> hnd: self}}.
+	proxy isNull
+		ifTrue: [ Win32 handleError ].
+	[ ^blk value: proxy ]
+		ensure: [	{{<kernel ExternalProxy GlobalUnlock> hnd: self}} ]! !
+

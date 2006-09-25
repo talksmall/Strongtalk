@@ -1,0 +1,25 @@
+Delta define: #DeltaReturnSelfError as: (
+(Class subclassOf: 'DeltaReturnError' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaReturnSelfError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaReturnSelfError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaReturnSelfError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaReturnSelfError) methodsFor: 'Unclassified' !
+
+
+errorMessage
+	^'Method may return self, whose type is not a subtype of declared return type ', self declaredName!
+
+subtypeExpr ^<DeltaType>
+	^self loc astNode scope at: #Self!
+
+supertypeExpr ^<DeltaType>
+	^self loc deltaMethod type range
+! !
+

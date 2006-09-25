@@ -1,0 +1,43 @@
+Delta define: #SupportedProtocolLocator as: (
+(Class subclassOf: 'DeltaLocator[ClassMirror | MixinDeclMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #SupportedProtocolLocator) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SupportedProtocolLocator) group: 'ast'!
+
+(Delta mirrorFor: #SupportedProtocolLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SupportedProtocolLocator) methodsFor: 'locator matching' !
+
+
+matchesLocator: l <DeltaLocator[Mirror]> ^ <Boolean>
+	^l matchesSupportedProtocolLocator: self!
+
+matchesSupportedProtocolLocator: l  <SupportedProtocolLocator> ^ <Boolean>
+
+^self matchesDefinitionLocator: l! !
+
+! (Delta mirrorFor: #SupportedProtocolLocator) methodsFor: 'accessing' !
+
+
+ast ^ <DeltaProtocol>
+
+^(Type for: self mirror reflectee) supportedProtocol!
+
+name ^ <Str>
+
+^self definitionName, ' supported protocol'!
+
+parseTree  ^ <ParseTree[TypeExpr]>
+	^DeltaParser new 	parseTypeExpr: self source 
+												within: self mirror scope 
+												ifError: [:s <Str> :i <Int> | self error: s].
+	!
+
+source ^ <Str>
+
+^self mirror supportedProtocolString! !
+

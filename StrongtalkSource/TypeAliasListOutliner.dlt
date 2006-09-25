@@ -1,0 +1,101 @@
+Delta define: #TypeAliasListOutliner as: (
+(Class subclassOf: 'MirrorListOutliner[TypeAliasMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #TypeAliasListOutliner) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #TypeAliasListOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #TypeAliasListOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'private' !
+
+
+computeWorldList ^ <OrdCltn[TypeAliasMirror]>
+
+	| result <SortedCollection[TypeAliasMirror]> |
+	result := SortedCollection[TypeAliasMirror] 
+					sortBlock: [ :m1 <TypeAliasMirror> :m2 <TypeAliasMirror> | m1 name <= m2 name ].
+	Smalltalk typeAliasesDo: [ :m <TypeAlias> | result add: (TypeAliasMirror on: m) ].
+	^result asOrderedCollection!
+
+labelPainter ^<Painter>
+
+	^self typeAliasPainter! !
+
+! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'control' !
+
+
+addNewTypeAlias
+
+	self
+		launchDefinitionDialogWithPainter: self typeAliasPainter
+		title: 'Add new type alias'
+		constructor: [ :name <Symbol> |
+			Smalltalk let: name be:  'Object' ]
+!
+
+typecheckAll
+
+self typecheckAction:[
+											self list do:[: m <TypeAliasMirror> |
+											 					m typecheck.
+																].
+											]
+title: 'Typechecking all type aliases'.!
+
+typecheckAllDefs
+
+self typecheckAll
+! !
+
+! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+					name: '&Add new type alias';
+					action: [ self addNewTypeAlias ] )!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self typecheckingMenu!
+
+typecheckingMenu ^ <Menu>
+
+^Menu new name: 'Typecheck';
+    add: (MenuAction new
+                  name: 'Typecheck all type aliases';
+                  action: [self typecheckAll])
+! !
+
+! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'accessing' !
+
+
+entryName ^ <Str>
+
+	^'alias'!
+
+windowTitle ^ <Str>
+
+	^'Aliases'! !
+
+! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		((aspect = #addGlobal or: [aspect = #removeGlobal]) and: [ TypeAlias = value at2 class ])
+			ifTrue: [	self update ] ]! !
+

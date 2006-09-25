@@ -1,0 +1,1924 @@
+ <Behavior> primitiveNewIfFail: failBlock <PrimFailBlock> ^<Instance> =
+   Internal { error = #(ReceiverIsIndexable)
+              name  = 'behaviorPrimitives::allocate'
+              flags = #Allocate }
+!
+ <NoReceiver> primitiveBehaviorMixinOf: behavior <Behavior> 
+                                ifFail: failBlock <PrimFailBlock> ^<Mixin> =
+   Internal { name = 'behaviorPrimitives::mixinOf' }
+!
+ <NoReceiver> primitiveBehaviorHeaderSizeOf: behavior <Behavior>
+                                     ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name = 'behaviorPrimitives::headerSize' }
+!
+ <NoReceiver> primitiveBehaviorNonIndexableSizeOf: behavior <Behavior>
+                                           ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name = 'behaviorPrimitives::nonIndexableSize' }
+!
+ <NoReceiver> primitiveBehaviorIsSpecializedClass: behavior  <Behavior>
+                                           ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { name  = 'behaviorPrimitives::is_specialized_class' }
+!
+ <NoReceiver> primitiveBehaviorCanBeSubclassed: behavior  <Behavior>
+                                        ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { name  = 'behaviorPrimitives::can_be_subclassed' }
+!
+ <NoReceiver> primitiveBehaviorCanHaveInstanceVariables: behavior <Behavior> 
+                                                 ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { name  = 'behaviorPrimitives::can_have_instance_variables' }
+!
+ <Behavior> primitiveSuperclass ^<Behavior|Nil> =
+   Internal { name  = 'behaviorPrimitives::superclass' }
+!
+ <NoReceiver> primitiveSuperclassOf: class <Behavior>
+                             ifFail: failBlock <PrimFailBlock> ^<Behavior|Nil> =
+   Internal { name  = 'behaviorPrimitives::superclass_of' }
+!
+ <NoReceiver> primitiveBehavior: behavior  <Behavior> 
+                classVariableAt: index     <SmallInteger> 
+                         ifFail: failBlock <PrimFailBlock> ^<GlobalAssociation> =
+   Internal { error = #(OutOfBounds)
+              name  = 'behaviorPrimitives::classVariableAt' }
+!
+ <NoReceiver> primitiveBehavior: behavior  <Behavior> 
+           classVariablesIfFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { error = #(OutOfBounds)
+              name  = 'behaviorPrimitives::classVariables' }
+!
+ <Behavior> primitivePrintMethod: selector  <ByteArray>
+                          ifFail: failBlock <PrimFailBlock> ^<Behavior> =
+   Internal { name  = 'behaviorPrimitives::printMethod' }
+!
+ <Behavior> primitiveMethodFor: selector  <CompressedSymbol>
+                        ifFail: failBlock <PrimFailBlock> ^<Method> =
+   Internal { name = 'behaviorPrimitives::methodFor'
+              error = #(NotFound)
+            }
+!
+ <NoReceiver> primitiveBehaviorFormat: behavior  <Behavior>
+                               ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { name  = 'behaviorPrimitives::format' }
+!
+ <NoReceiver> primitiveBehaviorVMType: behavior  <Behavior>
+                               ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal {  doc   = 'Oops, SmallInteger, GlobalAssociation, Method, Float, Array, WeakArray, '
+               doc   = 'DoubleByteArray, FloatValueArray, ByteArray, Symbol, '
+               doc   = 'Block, Context, Process, Proxy, Activation, Mixin, and Class'
+               name  = 'behaviorPrimitives::vm_type' }
+!
+ <Behavior> primitiveBehaviorIsClassOf: obj  <Object> ^<Boolean> =
+   Internal { 
+              flags = #(LastDeltaFrameNotNeeded)
+              name  = 'behaviorPrimitives::is_class_of' }
+!
+ <Behavior> primitiveNew0 ^<Object> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew0' }
+!
+ <Behavior> primitiveNew1 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew1' }
+!
+ <Behavior> primitiveNew2 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew2' }
+!
+ <Behavior> primitiveNew3 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew3' }
+!
+ <Behavior> primitiveNew4 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew4' }
+!
+ <Behavior> primitiveNew5 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew5' }
+!
+ <Behavior> primitiveNew6 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew6' }
+!
+ <Behavior> primitiveNew7 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew7' }
+!
+ <Behavior> primitiveNew8 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew8' }
+!
+ <Behavior> primitiveNew9 ^<Instance> = 
+   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)
+              name  = 'primitiveNew9' }
+!
+ <BlockWithoutArguments> primitiveValue ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue0' }
+!
+ <BlockWithOneArgument> primitiveValue: arg1 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue1' }
+!
+ <BlockWithTwoArguments> primitiveValue: arg1 <Object> value: arg2 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue2' }
+!
+ <BlockWithThreeArguments> primitiveValue: arg1 <Object> value: arg2 <Object> value: arg3 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue3' }
+!
+ <BlockWithFourArguments> primitiveValue: arg1 <Object> value: arg2 <Object> value: arg3 <Object>
+                                   value: arg4 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue4' }
+!
+ <BlockWithFiveArguments> primitiveValue: arg1 <Object> value: arg2 <Object> value: arg3 <Object>
+                                   value: arg4 <Object> value: arg5 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue5' }
+!
+ <BlockWithSixArguments> primitiveValue: arg1 <Object> value: arg2 <Object> value: arg3 <Object>
+                                  value: arg4 <Object> value: arg5 <Object> value: arg6 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue6' }
+!
+ <BlockWithSevenArguments> primitiveValue: arg1 <Object> value: arg2 <Object> value: arg3 <Object>
+                                    value: arg4 <Object> value: arg5 <Object> value: arg6 <Object>
+                                    value: arg7 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue7' }
+!
+ <BlockWithEightArguments> primitiveValue: arg1 <Object> value: arg2 <Object> value: arg3 <Object>
+                                    value: arg4 <Object> value: arg5 <Object> value: arg6 <Object>
+                                    value: arg7 <Object> value: arg8 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue8' }
+!
+ <BlockWithNineArguments> primitiveValue: arg1 <Object> value: arg2 <Object> value: arg3 <Object>
+                                   value: arg4 <Object> value: arg5 <Object> value: arg6 <Object>
+                                   value: arg7 <Object> value: arg8 <Object> value: arg9 <Object> ^<Object> =
+   Internal {
+     flags = #(NLR Block LastDeltaFrameNotNeeded)
+     name  = 'primitiveValue9' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate: size <SmallInteger> ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate)
+     name  = 'allocateBlock' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate0 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock0' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate1 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock1' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate2 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock2' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate3 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock3' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate4 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock4' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate5 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock5' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate6 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock6' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate7 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock7' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate8 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock8' }
+!
+ <NoReceiver> primitiveCompiledBlockAllocate9 ^<Block> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateBlock9' }
+!
+ <NoReceiver> primitiveCompiledContextAllocate: size <SmallInteger> ^<Object> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateContext' }
+!
+ <NoReceiver> primitiveCompiledContextAllocate0 ^<Object> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateContext0' }
+!
+ <NoReceiver> primitiveCompiledContextAllocate1 ^<Object> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateContext1' }
+!
+ <NoReceiver> primitiveCompiledContextAllocate2 ^<Object> =
+   Internal {
+     flags = #(Internal Block Allocate LastDeltaFrameNotNeeded)
+     name  = 'allocateContext2' }
+!
+ <BlockWithoutArguments> primitiveUnwindProtect: protect   <BlockWithoutArguments> 
+                                         ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal {
+     doc   = 'Evaluates the receiver block and if it returns via a non-local-return'
+     doc   = 'the protect block is invoked.'
+     doc   = 'The original non-local-return continues after evaluation of the protect block.'
+     flags = #(NLR)
+     name  = 'unwindprotect' }
+!
+ <BlockWithoutArguments> primitiveRepeat ^<BottomType> =
+   Internal {
+     doc   = 'Repeats evaluating the receiver block'
+     flags = #(NLR)
+     name  = 'blockRepeat' }
+!
+ <Block> primitiveBlockMethod ^<Method> =
+   Internal {
+     doc   = 'Returns the block method'
+     name  = 'block_method' }
+!
+ <Block> primitiveBlockIsOptimized ^<Boolean> =
+   Internal {
+     doc   = 'Tells whether the block has optimized code'
+     name  = 'block_is_optimized' }
+!
+ <IndexedByteInstanceVariables class>
+   primitiveIndexedByteNew: size      <SmallInteger> 
+                    ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NegativeSize)
+              flags = #(Allocate)
+              name  = 'byteArrayPrimitives::allocateSize' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteSize ^<SmallInteger> =
+   Internal { flags = #(Pure IndexedByte)
+              name  = 'byteArrayPrimitives::size' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteAt: index <SmallInteger>
+                   ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(OutOfBounds)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::at' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteAt: index     <SmallInteger>
+                      put: c         <SmallInteger>
+                   ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(OutOfBounds ValueOutOfBounds)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::atPut' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteCompare: index <String>
+                        ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name = 'byteArrayPrimitives::compare' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteInternIfFail: failBlock <PrimFailBlock> ^<CompressedSymbol> =
+   Internal { error = #(ValueOutOfBounds)
+              name  = 'byteArrayPrimitives::intern' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteCharacterAt: index <SmallInteger>
+                            ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(OutOfBounds)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::characterAt' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteAtAllPut: c <SmallInteger>
+                         ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { name  = 'byteArrayPrimitives::at_all_put' }
+!
+ <IndexedByteInstanceVariables class>
+   primitiveIndexedByteLargeIntegerFromSmallInteger: number  <SmallInteger> 
+                                             ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables> =
+   Internal { flags = #(Function)
+              name  = 'byteArrayPrimitives::largeIntegerFromSmallInteger' }
+!
+ <IndexedByteInstanceVariables class>
+   primitiveIndexedByteLargeIntegerFromFloat: number  <Float> 
+                                      ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables> =
+   Internal { flags = #(Function)
+              name  = 'byteArrayPrimitives::largeIntegerFromDouble' }
+!
+ <IndexedByteInstanceVariables class>
+   primitiveIndexedByteLargeIntegerFromString: argument  <String>
+                                         base: base      <Integer> 
+                                       ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables> =
+   Internal { error = #(ConversionFailed)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerFromString' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteLargeIntegerAdd: argument <IndexedByteInstanceVariables>
+                                ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+   Internal { error = #(ArgumentIsInvalid)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerAdd' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteLargeIntegerSubtract: argument <IndexedByteInstanceVariables>
+                                     ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+   Internal { error = #(ArgumentIsInvalid)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerSubtract' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteLargeIntegerMultiply: argument <IndexedByteInstanceVariables>
+                                     ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+   Internal { error = #(ArgumentIsInvalid)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerMultiply' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteLargeIntegerDiv: argument <IndexedByteInstanceVariables>
+                                ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+   Internal { error = #(ArgumentIsInvalid DivisionByZero)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerDiv' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteLargeIntegerMod: argument <IndexedByteInstanceVariables>
+                                ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+   Internal { error = #(ArgumentIsInvalid DivisionByZero)
+              flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerMod' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteLargeIntegerCompare: argument <IndexedByteInstanceVariables>
+                                    ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerCompare' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteLargeIntegerAsFloatIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerToFloat' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteLargeIntegerToStringBase: base      <SmallInteger>
+                                         ifFail: failBlock <PrimFailBlock> ^<String> =
+   Internal { flags = #(Function IndexedByte)
+              name  = 'byteArrayPrimitives::largeIntegerToString' }
+!
+ <IndexedByteInstanceVariables>
+   primitiveIndexedByteHash ^<SmallInteger> =
+   Internal { flags = #(Pure IndexedByte)
+              name  = 'byteArrayPrimitives::hash' }
+!
+ <NoReceiver> primitiveCallBackReceiver: receiver <Object>
+                               selector: selector <Symbol>
+                                 ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'callBackPrimitives::initialize' }
+!
+ <NoReceiver> primitiveCallBackRegisterPascalCall: index   <SmallInteger>
+                                numberOfArguments: nofArgs <SmallInteger>
+                                           result: proxy   <Proxy>
+                                           ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'callBackPrimitives::registerPascalCall' }
+!
+ <NoReceiver> primitiveCallBackRegisterCCall: index   <SmallInteger>
+                                      result: proxy   <Proxy>
+                                      ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'callBackPrimitives::registerCCall' }
+!
+ <Object> primitiveCallBackUnregister: proxy <Proxy>
+                               ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'callBackPrimitives::unregister' }
+!
+ <Object> primitiveCallBackInvokePascal2: proxy <Proxy>
+                                  ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'callBackPrimitives::invokePascal' }
+!
+ <Object> primitiveCallBackInvokeC2: proxy <Proxy>
+                             ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'callBackPrimitives::invokeC' }
+!
+ <IndexedDoubleByteInstanceVariables class>
+   primitiveIndexedDoubleByteNew: size      <SmallInteger> 
+                          ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NegativeSize)
+              flags = #(Allocate)
+              name  = 'doubleByteArrayPrimitives::allocateSize' }
+!
+ <IndexedDoubleByteInstanceVariables>
+   primitiveIndexedDoubleByteSize ^<SmallInteger> =
+   Internal { flags = #(Pure IndexedDoubleByte)
+              name  = 'doubleByteArrayPrimitives::size' }
+!
+ <IndexedDoubleByteInstanceVariables>
+   primitiveIndexedDoubleByteAt: index     <SmallInteger>
+                         ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(OutOfBounds)
+              flags = #(Function IndexedDoubleByte)
+              name  = 'doubleByteArrayPrimitives::at' }
+!
+ <IndexedDoubleByteInstanceVariables>
+   primitiveIndexedDoubleByteAt: index     <SmallInteger>
+                            put: c         <SmallInteger>
+                         ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(OutOfBounds ValueOutOfBounds)
+              flags = #(Function IndexedDoubleByte)
+              name  = 'doubleByteArrayPrimitives::atPut' }
+!
+ <IndexedDoubleByteInstanceVariables>
+   primitiveIndexedDoubleByteCompare: str       <String>
+                              ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #Function
+              name  = 'doubleByteArrayPrimitives::compare' }
+!
+ <IndexedDoubleByteInstanceVariables>
+   primitiveIndexedDoubleByteInternIfFail: failBlock <PrimFailBlock> ^<CompressedSymbol> =
+   Internal { error = #(ValueOutOfBounds)
+              name  = 'doubleByteArrayPrimitives::intern' }
+!
+ <IndexedDoubleByteInstanceVariables>
+   primitiveIndexedDoubleByteCharacterAt: index <SmallInteger>
+                                  ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(OutOfBounds)
+              flags = #(Function IndexedDoubleByte)
+              name  = 'doubleByteArrayPrimitives::characterAt' }
+!
+ <IndexedDoubleByteInstanceVariables>
+   primitiveIndexedDoubleByteHash ^<SmallInteger> =
+   Internal { name  = 'doubleByteArrayPrimitives::hash' }
+!
+ <NoReceiver> primitiveBooleanFlagAt: name      <Symbol>
+                              ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { 
+      error = #(NotFound)
+      name  = 'debugPrimitives::boolAt' }
+!
+ <NoReceiver> primitiveBooleanFlagAt: name      <Symbol>
+                                 put: value     <Boolean>
+                              ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { 
+      error = #(NotFound)
+      name  = 'debugPrimitives::boolAtPut' }
+!
+ <NoReceiver> primitiveSmallIntegerFlagAt: name      <Symbol>
+                                   ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { 
+      error = #(NotFound)
+      name  = 'debugPrimitives::smiAt' }
+!
+ <NoReceiver> primitiveSmallIntegerFlagAt: name      <Symbol>
+                                      put: value     <Boolean>
+                                   ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { 
+      error = #(NotFound)
+      name  = 'debugPrimitives::smiAtPut' }
+!
+ <NoReceiver> primitiveClearLookupCache ^<Object> =
+   Internal { name  = 'debugPrimitives::clearLookupCache' }
+!
+ <NoReceiver> primitiveClearLookupCacheStatistics ^<Object> =
+   Internal { name  = 'debugPrimitives::clearLookupCacheStatistics' }
+!
+ <NoReceiver> primitivePrintLookupCacheStatistics ^<Object> =
+   Internal { name  = 'debugPrimitives::printLookupCacheStatistics' }
+!
+ <NoReceiver> primitivePrintLayout ^<Object> =
+   Internal { name  = 'debugPrimitives::printMemoryLayout' }
+!
+ <NoReceiver> primitiveDecodeAllMethods ^<Object> =
+   Internal { name  = 'debugPrimitives::decodeAllMethods' }
+!
+ <Object> primitivePrintMethodCodes: selector <Symbol>
+                             ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NotFound)
+              name  = 'debugPrimitives::printMethodCodes' }
+!
+ <Object> primitiveGenerateIR: selector <Symbol>
+                       ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NotFound)
+              name  = 'debugPrimitives::generateIR' }
+!
+ <Object> primitiveOptimizeMethod: selector <Symbol>
+                           ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NotFound)
+              name  = 'debugPrimitives::optimizeMethod' }
+!
+ <Object> primitiveDecodeMethod: selector <Symbol>
+                         ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NotFound)
+              name  = 'debugPrimitives::decodeMethod' }
+!
+ <NoReceiver> primitiveTimerStart ^<Object> =
+   Internal { name  = 'debugPrimitives::timerStart' }
+!
+ <NoReceiver> primitiveTimerStop ^<Object> =
+   Internal { name  = 'debugPrimitives::timerStop' }
+!
+ <NoReceiver> primitiveTimerPrintBuffer ^<Object> =
+   Internal { name  = 'debugPrimitives::timerPrintBuffer' }
+!
+ <NoReceiver> primitiveInterpreterInvocationCounterLimit ^<SmallInteger> =
+   Internal { name = 'debugPrimitives::interpreterInvocationCounterLimit' }
+!
+ <NoReceiver> primitiveSetInterpreterInvocationCounterLimitTo: limit <SmallInteger>
+                                                       ifFail: failBlock <PrimFailBlock> ^ <Object> =
+   Internal { name = 'debugPrimitives::setInterpreterInvocationCounterLimit' }
+!
+ <NoReceiver> primitiveClearInvocationCounters ^<Object> =
+   Internal { name  = 'debugPrimitives::clearInvocationCounters' }
+!
+ <NoReceiver> primitivePrintInvocationCounterHistogram: size <SmallInteger> 
+                                                ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name  = 'debugPrimitives::printInvocationCounterHistogram' }
+!
+ <NoReceiver> primitivePrintObjectHistogram ^<Object> =
+   Internal { name  = 'debugPrimitives::printObjectHistogram' }
+!
+ <NoReceiver> primitiveClearInlineCaches ^<Object> =
+   Internal {name  = 'debugPrimitives::clearInlineCaches' }
+!
+ <NoReceiver> primitiveClearNMethodCounters ^<Object> =
+   Internal { name  = 'debugPrimitives::clearNMethodCounters' }
+!
+ <NoReceiver> primitivePrintNMethodCounterHistogram: size <SmallInteger> 
+                                        ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name  = 'debugPrimitives::printNMethodCounterHistogram' }
+!
+ <NoReceiver> primitiveNumberOfMethodInvocations ^<SmallInteger> =
+   Internal { name  = 'debugPrimitives::numberOfMethodInvocations' }
+!
+ <NoReceiver> primitiveNumberOfNMethodInvocations ^<SmallInteger> =
+   Internal { name  = 'debugPrimitives::numberOfNMethodInvocations' }
+!
+ <NoReceiver> primitiveNumberOfPrimaryLookupCacheHits ^<SmallInteger> =
+   Internal { name  = 'debugPrimitives::numberOfPrimaryLookupCacheHits' }
+!
+ <NoReceiver> primitiveNumberOfSecondaryLookupCacheHits ^<SmallInteger> =
+   Internal { name  = 'debugPrimitives::numberOfSecondaryLookupCacheHits' }
+!
+ <NoReceiver> primitiveNumberOfLookupCacheMisses ^<SmallInteger> =
+   Internal { name  = 'debugPrimitives::numberOfLookupCacheMisses' }
+!
+ <NoReceiver> primitiveClearPrimitiveCounters ^<Object> =
+   Internal { name  = 'debugPrimitives::clearPrimitiveCounters' }
+!
+ <NoReceiver> primitivePrintPrimitiveCounters ^<Object> =
+   Internal { name  = 'debugPrimitives::printPrimitiveCounters' }
+!
+ <NoReceiver> primitiveDeoptimizeStacks ^<Object> =
+   Internal { doc   = 'Deoptimizes all stack to the canonical form'
+              flags = #(NLR)
+              name  = 'debugPrimitives::deoptimizeStacks' }
+!
+ <NoReceiver> primitiveVerify ^<Object> =
+   Internal { doc   = 'Verify the system'
+              name  = 'debugPrimitives::verify' }
+!
+ <Float> primitiveFloatLessThan:  aNumber   <Float>
+                         ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { doc   = 'Returns whether the receiver is less than the argument'
+              flags = #(Pure DoubleCompare LastDeltaFrameNotNeeded)
+              name  = 'doubleOopPrimitives::lessThan' }
+!
+ <Float> primitiveFloatGreaterThan: aNumber   <Float>
+                            ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { doc   = 'Returns whether the receiver is greater than the argument'
+              flags = #(Pure DoubleCompare LastDeltaFrameNotNeeded)
+              name  = 'doubleOopPrimitives::greaterThan' }
+!
+ <Float> primitiveFloatLessThanOrEqual: aNumber   <Float>
+                                ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { doc   = 'Returns whether the receiver is less than or equal to the argument'
+              flags = #(Pure DoubleCompare LastDeltaFrameNotNeeded)
+              name  = 'doubleOopPrimitives::lessThanOrEqual' }
+!
+ <Float> primitiveFloatGreaterThanOrEqual: aNumber   <Float>
+                                   ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { doc   = 'Returns whether the receiver is greater than or equal to the argument'
+              flags = #(Pure DoubleCompare LastDeltaFrameNotNeeded)
+              name  = 'doubleOopPrimitives::greaterThanOrEqual' }
+!
+ <Float> primitiveFloatEqual: aNumber   <Float>
+                      ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { doc   = 'Returns whether the receiver is equal to the argument'
+              flags = #(Pure DoubleCompare LastDeltaFrameNotNeeded)
+              name  = 'doubleOopPrimitives::equal' }
+!
+ <Float> primitiveFloatNotEqual: aNumber   <Float>
+                         ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { doc   = 'Returns whether the receiver is not equal to the argument'
+              flags = #(Pure DoubleCompare LastDeltaFrameNotNeeded)
+              name  = 'doubleOopPrimitives::notEqual' }
+!
+ <Float> primitiveFloatMod: aNumber   <Float>
+                    ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the result of dividing the receiver by the argument'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::mod' }
+!
+ <Float> primitiveFloatCosine ^<Float> =
+   Internal { doc   = 'Returns the cosine of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::cosine' }
+!
+ <Float> primitiveFloatSine ^<Float> =
+   Internal { doc   = 'Returns the sine of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::sine' }
+!
+ <Float> primitiveFloatTangentIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the tangent of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::tangent' }
+!
+ <Float> primitiveFloatArcCosineIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the arc-cosine of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::arcCosine' }
+!
+ <Float> primitiveFloatArcSineIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the arc-sine of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::arcSine' }
+!
+ <Float> primitiveFloatArcTangentIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the arc-tangent of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::arcTangent' }
+!
+ <Float> primitiveFloatHyperbolicCosineIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the hyperbolic-cosine of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::hyperbolicCosine' }
+!
+ <Float> primitiveFloatHyperbolicSineIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the hyperbolic-sine of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::hyperbolicSine' }
+!
+ <Float> primitiveFloatHyperbolicTangentIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the hyperbolic-tangent of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::hyperbolicTangent' }
+!
+ <Float> primitiveFloatSqrtIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the square root of the receiver'
+              error = #(ReceiverNegative)
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::sqrt' }
+!
+ <Float> primitiveFloatSquared ^<Float> =
+   Internal { doc   = 'Returns the result of multiplying the receiver by it self'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::squared' }
+!
+ <Float> primitiveFloatLnIfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the logarithm of the receiver'
+              error = #(ReceiverNotStrictlyPositive)
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::ln' }
+!
+ <Float> primitiveFloatExp ^<Float> =
+   Internal { doc   = 'Returns the exponential value of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::exp' }
+!
+ <Float> primitiveFloatLog10IfFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the base 10 logarithm of the receiver'
+              error = #(ReceiverNotStrictlyPositive)
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::log10' }
+!
+ <Float> primitiveFloatIsNan ^<Boolean> =
+   Internal { doc   = 'Returns whether the receiver is NaN (Not a Number)'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::isNan' }
+!
+ <Float> primitiveFloatIsFinite ^<Boolean> =
+   Internal { doc   = 'Returns whether the receiver is finite (not NaN)'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::isFinite' }
+!
+ <Float> primitiveFloatFloor ^<Float> =
+   Internal { doc   = 'Returns the largest integral Float that is less than or equal to the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::floor' }
+!
+ <Float> primitiveFloatSmallIntegerFloorIfFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { doc   = 'Returns the largest SmallInteger that is less than or equal to the receiver'
+              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
+              error = #(ConversionFailed)
+              name  = 'doubleOopPrimitives::smi_floor' }
+!
+ <Float> primitiveFloatCeiling ^<Float> =
+   Internal { doc   = 'Returns the smallest integral Float that is greater than or equal to the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::ceiling' }
+!
+ <Float> primitiveFloatExponent ^<SmallInteger> =
+   Internal { doc   = 'Returns the exponent part of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::exponent' }
+!
+ <Float> primitiveFloatMantissa ^<Float> =
+   Internal { doc   = 'Returns the mantissa part of the receiver'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::mantissa' }
+!
+ <Float> primitiveFloatTruncated  ^<Float> =
+   Internal { doc   = 'Returns the receiver truncated'
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::truncated' }
+!
+ <Float> primitiveFloatTimesTwoPower: aNumber   <SmallInteger>
+                              ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the receiver multiplied with 2 to the power of aNumber'
+              error = #(RangeError)
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::timesTwoPower' }
+!
+ <Float> primitiveFloatRoundedAsSmallIntegerIfFail: failBlock <PrimFailBlock>  ^<SmallInteger> =
+   Internal { doc   = 'Returns the receiver converted to a SmallInteger'
+              error = #(SmallIntegerConversionFailed)
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::roundedAsSmallInteger' }
+!
+ <Float> primitiveFloatAsSmallIntegerIfFail: failBlock <PrimFailBlock>  ^<SmallInteger> =
+   Internal { doc   = 'Returns the receiver as a SmallInteger'
+              error = #(SmallIntegerConversionFailed)
+              flags = #(Pure DoubleArith)
+              name  = 'doubleOopPrimitives::asSmallInteger' }
+!
+ <Float> primitiveFloatPrintFormat: format    <IndexedByteInstanceVariables>
+                            ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { doc   = 'Prints the receiver using the format and returns the recever'
+              flags = #Function
+              name  = 'doubleOopPrimitives::printFormat' }
+!
+ <Float> primitiveFloatPrintString ^<IndexedByteInstanceVariables> =
+   Internal { doc   = 'Returns the print string for the receiver'
+              flags = #Function
+              name  = 'doubleOopPrimitives::printString' }
+!
+ <NoReceiver> primitiveFloatMaxValue ^<Float> =
+   Internal { doc   = 'Returns the maximum Float value'
+              flags = #(Pure)
+              name  = 'doubleOopPrimitives::min_positive_value' }
+!
+ <NoReceiver> primitiveFloatMinPositiveValue ^<Float> =
+   Internal { doc   = 'Returns the minimum positive Float value'
+              flags = #(Pure)
+              name  = 'doubleOopPrimitives::min_positive_value' }
+!
+ <Float> primitiveFloatStoreString ^<ByteArray> =
+   Internal { flags = #(Function)
+              name  = 'doubleOopPrimitives::store_string' }
+!
+ <NoReceiver> primitiveMandelbrotAtRe: re        <Float>
+                                   im: im        <Float>
+                              iterate: n         <SmallInteger>
+                               ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { doc   = 'Returns no. of iterations used for Mandelbrot value at (re, im)'
+              flags = #(Pure LastDeltaFrameNotNeeded)
+              name  = 'doubleOopPrimitives::mandelbrot' }
+!
+ <Float> primitiveFloatSubtract: aNumber   <Float>
+                         ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the result of subtracting the argument from the receiver'
+              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
+              name  = 'double_subtract' }
+!
+ <Float> primitiveFloatDivide: aNumber   <Float>
+                       ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the modulus of the receiver by the argument'
+              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
+              name  = 'double_divide' } 
+!
+ <Float> primitiveFloatAdd: aNumber   <Float>
+                    ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the sum of the receiver and the argument'
+              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
+              name  = 'double_add' }
+!
+ <Float> primitiveFloatMultiply: aNumber   <Float>
+                         ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { doc   = 'Returns the multiply of the receiver and the argument'
+              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
+              name  = 'double_multiply' }
+!
+ <IndexedFloatValueInstanceVariables class>
+   primitiveIndexedFloatValueNew: size      <SmallInteger> 
+                          ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NegativeSize)
+              flags = #(Allocate)
+              name  = 'doubleValueArrayPrimitives::allocateSize' }
+!
+ <IndexedFloatValueInstanceVariables>
+   primitiveIndexedFloatValueSize ^<SmallInteger> =
+   Internal { flags = #(Pure IndexedFloatValue)
+              name  = 'doubleValueArrayPrimitives::size' }
+!
+ <IndexedFloatValueInstanceVariables>
+   primitiveIndexedFloatValueAt: index     <SmallInteger>
+                         ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { error = #(OutOfBounds)
+              flags = #(Function IndexedFloatValue)
+              name  = 'doubleValueArrayPrimitives::at' }
+!
+ <IndexedFloatValueInstanceVariables>
+   primitiveIndexedFloatValueAt: index     <SmallInteger>
+                            put: value     <Float>
+                         ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { error = #(OutOfBounds ValueOutOfBounds)
+              flags = #(Function IndexedFloatValue)
+              name  = 'doubleValueArrayPrimitives::atPut' }
+!
+ <Method> primitiveMethodSelector ^<Symbol> =
+   Internal { name = 'methodOopPrimitives::selector' }
+!
+ <Method> primitiveMethodSelector: name      <Symbol>
+                           ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { name = 'methodOopPrimitives::setSelector' }
+!
+ <Method> primitiveMethodNumberOfArguments ^<SmallInteger> =
+   Internal { name = 'methodOopPrimitives::numberOfArguments' }
+!
+ <Method> primitiveMethodOuterIfFail: failBlock <PrimFailBlock> ^<Method> =
+   Internal { error = #(ReceiverNotBlockMethod)
+              name  = 'methodOopPrimitives::outer' }
+!
+ <Method> primitiveMethodOuter: method    <Method>
+                        ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { name = 'methodOopPrimitives::setOuter' }
+!
+ <Method> primitiveMethodReferencedInstVarNamesMixin: mixin <Mixin>
+                                              ifFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { name = 'methodOopPrimitives::referenced_instance_variable_names' }
+!
+ <Method> primitiveMethodReferencedClassVarNames ^<IndexedInstanceVariables> =
+   Internal { name = 'methodOopPrimitives::referenced_class_variable_names' }
+!
+ <Method> primitiveMethodReferencedGlobalNames ^<IndexedInstanceVariables> =
+   Internal { name = 'methodOopPrimitives::referenced_global_names' }
+!
+ <Method> primitiveMethodSenders ^<IndexedInstanceVariables> =
+   Internal { name = 'methodOopPrimitives::senders' }
+!
+ <Method> primitiveMethodPrettyPrintKlass: klass     <Object>
+                                   ifFail: failBlock <PrimFailBlock> ^<Method> =
+   Internal { name = 'methodOopPrimitives::prettyPrint' }
+!
+ <Method> primitiveMethodPrettyPrintSourceKlass: klass     <Object>
+                                         ifFail: failBlock <PrimFailBlock> ^<ByteIndexedInstanceVariables> =
+   Internal { name = 'methodOopPrimitives::prettyPrintSource' }
+!
+ <Method> primitiveMethodPrintCodes ^<Symbol> =
+   Internal { name = 'methodOopPrimitives::printCodes' }
+!
+ <Method> primitiveMethodDebugInfo ^<Object> =
+   Internal { name = 'methodOopPrimitives::debug_info' }
+!
+ <Method> primitiveMethodSizeAndFlags ^<Object> =
+   Internal { name = 'methodOopPrimitives::size_and_flags' }
+!
+ <Method> primitiveMethodBody ^<Object> =
+   Internal { name = 'methodOopPrimitives::fileout_body' }
+!
+ <NoReceiver> primitiveConstructMethod: selector_or_method <Object>
+                                 flags: flags              <SmallInteger>
+                               nofArgs: nofArgs            <SmallInteger>
+                             debugInfo: debugInfo          <Array>
+                                 bytes: bytes              <ByteArray>
+                                  oops: oops               <Array>
+                                ifFail: failBlock          <PrimFailBlock> ^<Method> =
+   Internal { name = 'methodOopPrimitives::constructMethod' }
+!
+ <Method> primitiveMethodAllocateBlockIfFail: failBlock <PrimFailBlock> ^<Block> =
+   Internal {
+     name  = 'methodOopPrimitives::allocate_block' }
+!
+ <Method> primitiveMethodAllocateBlock: receiver <Object> ifFail: failBlock <PrimFailBlock> ^<Block> =
+   Internal {
+     name  = 'methodOopPrimitives::allocate_block_self' }
+!
+ <Method> primitiveMethodSetInliningInfo: info      <Symbol>
+                                  ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { doc  = 'Sets the inlining info for the method (#Normal, #Never, or #Always)'
+              error = #(ArgumentIsInvalid)
+              name = 'methodOopPrimitives::set_inlining_info' }
+!
+ <Method> primitiveMethodInliningInfo ^<Symbol> =
+   Internal { doc  = 'Returns #Normal, #Never, or #Always'
+              name = 'methodOopPrimitives::inlining_info' }
+!
+ <NoReceiver> primitiveMixinNumberOfMethodsOf: mixin <Mixin>
+                                       ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name  = 'mixinOopPrimitives::number_of_methods' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+                    methodAt: index     <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<Method> =
+   Internal { error = #(OutOfBounds)
+              name  = 'mixinOopPrimitives::method_at' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+                   addMethod: method    <Method>
+                      ifFail: failBlock <PrimFailBlock> ^<Method> =
+   Internal { error = #(IsInstalled)
+              name  = 'mixinOopPrimitives::add_method' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+              removeMethodAt: index     <SmallInteger> 
+                      ifFail: failBlock <PrimFailBlock> ^<Method> =
+   Internal {  error = #(IsInstalled OutOfBounds)
+               name  = 'mixinOopPrimitives::remove_method_at' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+               methodsIfFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { name  = 'mixinOopPrimitives::methods' }
+!
+ <NoReceiver> primitiveMixinNumberOfInstanceVariablesOf: mixin <Mixin>
+                                                 ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name = 'mixinOopPrimitives::number_of_instance_variables' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+          instanceVariableAt: index     <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { error = #(OutOfBounds)
+              name  = 'mixinOopPrimitives::instance_variable_at' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+         addInstanceVariable: name      <Symbol>
+                      ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { error = #(IsInstalled OutOfBounds)
+              name = 'mixinOopPrimitives::add_instance_variable' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+    removeInstanceVariableAt: index     <SmallInteger> 
+                      ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { error = #(IsInstalled OutOfBounds)
+              name  = 'mixinOopPrimitives::remove_instance_variable_at' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+     instanceVariablesIfFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { name  = 'mixinOopPrimitives::instance_variables' }
+!
+ <NoReceiver> primitiveMixinNumberOfClassVariablesOf: mixin <Mixin>
+                                              ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name  = 'mixinOopPrimitives::number_of_class_variables' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+             classVariableAt: index     <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { error = #(OutOfBounds)
+              name  = 'mixinOopPrimitives::class_variable_at' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+            addClassVariable: name      <Symbol>
+                      ifFail: failBlock <PrimFailBlock> ^<Mixin> =
+   Internal {  error = #(IsInstalled OutOfBounds)
+               name = 'mixinOopPrimitives::add_class_variable' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+       removeClassVariableAt: index     <SmallInteger> 
+                      ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { error = #(IsInstalled OutOfBounds)
+              name  = 'mixinOopPrimitives::remove_class_variable_at' }
+!
+ <NoReceiver> primitiveMixin: mixin     <Mixin>
+        classVariablesIfFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { name  = 'mixinOopPrimitives::class_variables' }
+!
+ <NoReceiver> primitiveMixinPrimaryInvocationOf: mixin <Mixin>
+                                         ifFail: failBlock <PrimFailBlock> ^<Class> =
+   Internal { name = 'mixinOopPrimitives::primary_invocation' }
+!
+ <NoReceiver> primitiveMixinSetPrimaryInvocationOf: mixin <Mixin>
+                                                to: class <Class>
+                                            ifFail: failBlock <PrimFailBlock> ^<Class> =
+   Internal { error = #(IsInstalled)
+              name  = 'mixinOopPrimitives::set_primary_invocation' }
+!
+ <NoReceiver> primitiveMixinClassMixinOf: mixin <Mixin>
+                                  ifFail: failBlock <PrimFailBlock> ^<Mixin> =
+   Internal { name = 'mixinOopPrimitives::class_mixin' }
+!
+ <NoReceiver> primitiveMixinSetClassMixinOf: mixin      <Mixin>
+                                         to: classMixin <Mixin>
+                                     ifFail: failBlock <PrimFailBlock> ^<Mixin> =
+   Internal { error = #(IsInstalled)
+              name  = 'mixinOopPrimitives::set_class_mixin' }
+!
+ <NoReceiver> primitiveMixinIsInstalled: mixin <Mixin>
+                                 ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { name = 'mixinOopPrimitives::is_installed' }
+!
+ <NoReceiver> primitiveMixinSetInstalled: mixin <Mixin>
+                                  ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { name = 'mixinOopPrimitives::set_installed' }
+!
+ <NoReceiver> primitiveMixinSetUnInstalled: mixin <Mixin>
+                                    ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { name = 'mixinOopPrimitives::set_uninstalled' }
+!
+ <IndexedInstanceVariables class>
+   primitiveIndexedObjectNew: size <SmallInteger> 
+                      ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NegativeSize)
+              flags = #(Allocate)
+              name  = 'objArrayPrimitives::allocateSize' }
+!
+ <IndexedInstanceVariables>
+   primitiveIndexedObjectSize =
+   Internal { flags = #(Pure IndexedObject)
+              name  = 'objArrayPrimitives::size' }
+!
+ <IndexedInstanceVariables> 
+   primitiveIndexedObjectAt: index     <SmallInteger>
+                     ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(OutOfBounds)
+              flags = #(Function IndexedObject)
+              name  = 'objArrayPrimitives::at' }
+!
+ <IndexedInstanceVariables>
+   primitiveIndexedObjectAt: index     <SmallInteger>
+                        put: c         <Object>
+                     ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(OutOfBounds)
+              flags = #(Function IndexedObject)
+              name  = 'objArrayPrimitives::atPut' }
+!
+ <IndexedInstanceVariables>
+   primitiveIndexedObjectAtAllPut: obj <Object> ^<Self> =
+   Internal { flags = #(Function IndexedObject)
+              name  = 'objArrayPrimitives::at_all_put' }
+!
+ <IndexedInstanceVariables>
+   primitiveIndexedObjectReplaceFrom: from      <SmallInteger>
+                                  to: to        <SmallInteger>
+                                with: source    <IndexedInstanceVariables>
+                          startingAt: start     <SmallInteger>
+                              ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { error = #(OutOfBounds)
+              flags = #(IndexedObject)
+              name  = 'objArrayPrimitives::replace_from_to' }
+!
+ <IndexedInstanceVariables>
+   primitiveIndexedObjectCopyFrom: from      <SmallInteger>
+                       startingAt: start     <SmallInteger>
+                             size: size      <SmallInteger>
+                           ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { error = #(OutOfBounds NegativeSize)
+              flags = #(IndexedObject)
+              name  = 'objArrayPrimitives::copy_size' }
+!
+ <Object> primitiveBecome: anObject  <Object>
+                   ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(RecieverHasWrongType)
+              name  = 'oopPrimitives::become' }
+!
+ <Object> primitiveInstVarAt: index     <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(OutOfBounds)
+              name  = 'oopPrimitives::instVarAt' }
+!
+ <Reciever> primitiveInstVarNameFor: obj       <Object>
+                                 at: index     <SmallInteger>
+                             ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { error = #(OutOfBounds)
+              name  = 'oopPrimitives::instance_variable_name_at' }
+!
+ <Object> primitiveInstVarAt: index     <SmallInteger>
+                         put: contents  <Object>
+                      ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(OutOfBounds)
+              name  = 'oopPrimitives::instVarAtPut' }
+!
+ <Object> primitiveHash ^<SmallInteger> =
+   Internal { name = 'oopPrimitives::hash' }
+!
+ <NoReceiver> primitiveHashOf: obj <Object> ^<SmallInteger> =
+   Internal { name = 'oopPrimitives::hash_of' }
+!
+ <Object> primitiveShallowCopyIfFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(ReceiverHasWrongType)
+              name  = 'oopPrimitives::shallowCopy' }
+!
+ <Object> primitiveCopyTenuredIfFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(NotOops)
+              name  = 'oopPrimitives::copy_tenured' }
+!
+ <Object> primitiveEqual: anObject <Object> ^<Boolean> =
+   Internal { flags = #Pure
+		  name  = 'oopPrimitives::equal' }
+!
+ <Object> primitiveNotEqual: anObject <Object> ^<Boolean> =
+   Internal { flags = #Pure
+		  name  = 'oopPrimitives::not_equal' }
+!
+ <Object> primitiveOopSize ^<SmallInteger> = 
+   Internal {
+     flags = #Pure
+     name = 'oopPrimitives::oop_size'}
+!
+ <Object> primitiveClass ^<Self class> = 
+   Internal {
+     flags = #(Pure LastDeltaFrameNotNeeded)
+     name = 'oopPrimitives::klass'}
+!
+ <NoReceiver> primitiveClassOf: obj <Object> ^<Behavior> = 
+   Internal {
+     flags = #(Pure LastDeltaFrameNotNeeded)
+     name = 'oopPrimitives::klass_of'}
+!
+ <Object> primitivePrint ^<Self> =
+   Internal { name = 'oopPrimitives::print'}
+!
+ <Object> primitivePrintValue ^<Self> =
+   Internal { name = 'oopPrimitives::printValue'}
+!
+ <Object> primitiveAsObjectID ^<SmallInteger> =
+   Internal { name = 'oopPrimitives::asObjectID'}
+!
+ <Object> primitivePerform: selector  <CompressedSymbol>
+                    ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'oopPrimitives::perform'
+              error = #(SelectorHasWrongNumberOfArguments)
+            }
+!
+ <Object> primitivePerform: selector  <CompressedSymbol>
+                      with: arg1      <Object>
+                    ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'oopPrimitives::performWith'
+              error = #(SelectorHasWrongNumberOfArguments)
+              flags = #(NLR)
+            }
+!
+ <Object> primitivePerform: selector  <CompressedSymbol>
+                      with: arg1      <Object>
+                      with: arg2      <Object>
+                    ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'oopPrimitives::performWithWith'
+              error = #(SelectorHasWrongNumberOfArguments)
+              flags = #(NLR)
+            }
+!
+ <Object> primitivePerform: selector  <CompressedSymbol>
+                      with: arg1      <Object>
+                      with: arg2      <Object>
+                      with: arg3      <Object>
+                    ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'oopPrimitives::performWithWithWith'
+              error = #(SelectorHasWrongNumberOfArguments)
+              flags = #(NLR)
+            }
+!
+ <Object> primitivePerform: selector  <CompressedSymbol>
+                 arguments: args      <Array>
+                    ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { name = 'oopPrimitives::performArguments'
+              error = #(SelectorHasWrongNumberOfArguments)
+              flags = #(NLR)
+            }
+!
+ <Process class> primitiveProcessCreate: block <BlockWithoutArguments>
+                                 ifFail: failBlock <PrimFailBlock> ^<Process> =
+   Internal { doc   = 'Creates a new process'
+              error = #(ProcessAllocationFailed)
+              name  = 'processOopPrimitives::create' }
+!
+ <NoReceiver> primitiveProcessYield ^<Process> =
+   Internal { doc   = 'Yields the control to the scheduler.'
+              doc   = 'Does nothing if executed by the scheduler.'
+              doc   = 'Returns current process when regaining control.' 
+              name  = 'processOopPrimitives::yield' }
+!
+ <NoReceiver> primitiveProcessStop ^<Process> =
+   Internal { doc   = 'Yields the control to the scheduler.'
+              doc   = 'Does nothing if executed by the scheduler.'
+              doc   = 'Returns current process when regaining control.' 
+              name  = 'processOopPrimitives::stop' }
+!
+ <NoReceiver> primitiveProcessActiveProcess ^<Object> =
+   Internal { doc   = 'Returns the active process'
+              name  = 'processOopPrimitives::activeProcess' }
+!
+ <NoReceiver> primitiveProcessTransferTo: process   <Process> 
+                                  ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { doc   = 'Transfers the control from the scheduler to a process.'
+              doc   = 'Returns the status of process (see primitiveProcessStatus).'
+              error = #(NotInScheduler ProcessCannotContinue Dead)
+              name  = 'processOopPrimitives::transferTo' }
+!
+ <Process> primitiveProcessSetMode: mode       <Symbol>
+                        activation: activation <Activation>
+                       returnValue: value      <Object>
+                            ifFail: failBlock  <PrimFailBlock> ^<Symbol> =
+   Internal { doc   = 'Change the mode of the process. mode: #Normal #Step #StepNext #StepEnd #Revert #Return'
+              doc   = 'Returns the old mode of the process.'
+              error = #(InScheduler Dead)
+              name  = 'processOopPrimitives::set_mode' }
+!
+ <NoReceiver> primitiveProcessStartEvaluator: process   <Process> 
+                                      ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { doc   = 'Transfers the control from the scheduler to a process,'
+              doc   = 'and enters the evaluator.'
+              doc   = 'Returns the status of process (see primitiveProcessStatus).'
+              error = #(NotInScheduler ProcessCannotContinue Dead)
+              name  = 'processOopPrimitives::start_evaluator' }
+!
+ <Process> primitiveProcessTerminateIfFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { doc   = 'Terminates the process'
+              error = #(Dead)
+              flags = #(NLR)
+              name  = 'processOopPrimitives::terminate' }
+!
+ <Process> primitiveProcessStatus ^<Symbol> =
+   Internal { doc  = 'Returns the process status:'
+              doc  = '  #Initialized            - State right after creation.'
+              doc  = '  #Yielded                - Gave up control by calling yield.'
+              doc  = '  #Running                - Is running.'
+              doc  = '  #InAsyncDLL             - Gave up control but continues to execute asynchronous DLL.'
+              doc  = '  #Stopped                - Gave up control by calling stop.'
+              doc  = '  #Preempted              - Was preempted by system.'
+              doc  = '  #Completed              - Ran to completion.'
+              doc  = '  #Dead                   - The process is dead.'
+              doc  = '  #BooleanError           - A boolean was expected at hardcoded control structure.'
+              doc  = '  #FloatError             - A float was expected at hardcoded float operation.'
+              doc  = '  #LookupError            - The receiver does not understand doesNotUnderstand:.'
+              doc  = '  #PrimitiveLookupError   - Binding a primitive failed.'
+              doc  = '  #DLLLookupError         - Binding a DLL function failed.'
+              doc  = '  #NLRError               - Context for NLR did not exist.'
+              doc  = '  #StackOverflow          - Stack exhausted.'
+              name = 'processOopPrimitives::status' }
+!
+ <Process> primitiveProcessSchedulerWait: milliseconds <SmallInteger>
+                                  ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { doc   = 'Waits until timer has expired or a asynchronous dll call has returned.'
+              doc   = 'Returns whether the timer expired.'
+              name  = 'processOopPrimitives::scheduler_wait' }
+!
+ <Process> primitiveProcessTraceStack: size <SmallInteger>
+                               ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { doc    = 'Prints the stack trace'
+              errors = #(Dead)
+              name   = 'processOopPrimitives::trace_stack' }
+!
+ <NoReceiver> primitiveProcessEnterCritical ^<Process> =
+   Internal { doc    = 'Disables preemption in active process.'
+              name   = 'processOopPrimitives::enter_critical' }
+!
+ <NoReceiver> primitiveProcessLeaveCritical ^<Process> =
+   Internal { doc    = 'Enables preemption in active process'
+              name   = 'processOopPrimitives::leave_critical' }
+!
+ <NoReceiver> primitiveProcessYieldInCritical ^<Process> =
+   Internal { doc   = 'Yields the control to the scheduler.'
+              doc   = 'Does nothing if executed by the scheduler.'
+              doc   = 'Returns current process when regaining control.' 
+              name  = 'processOopPrimitives::yield_in_critical' }
+!
+ <Process> primitiveProcessUserTime ^<Float> =
+   Internal { doc   = 'Returns time, in seconds, the process has spent in user code' 
+              name  = 'processOopPrimitives::user_time' }
+!
+ <Process> primitiveProcessSystemTime ^<Float> =
+   Internal { doc   = 'Returns time, in seconds, the process has spent in system code' 
+              name  = 'processOopPrimitives::user_time' }
+!
+ <Process> primitiveProcessStackLimit: limit <SmallInteger>
+                               ifFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { errors = #(Dead Running)
+              doc    = 'Returns an array of the process activation.'
+              doc    = 'The primitive fails if either the receiver is a dead process or'
+              doc    = 'if it is the active process'
+              name   = 'processOopPrimitives::stack' }
+!
+ <Proxy> primitiveProxyGetIfFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(ConversionFailed)
+              name  = 'proxyOopPrimitives::getSmi' }
+!
+ <Proxy> primitiveProxySet: value     <SmallInteger|Proxy>
+                    ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { name = 'proxyOopPrimitives::set' }
+!
+ <Proxy> primitiveProxySetHigh: high      <SmallInteger>
+                           low: low       <SmallInteger>
+                        ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { name = 'proxyOopPrimitives::setHighLow' }
+!
+ <Proxy> primitiveProxyGetHigh ^<SmallInteger> =
+   Internal { name = 'proxyOopPrimitives::getHigh' }
+!
+ <Proxy> primitiveProxyGetLow ^<SmallInteger> =
+   Internal { name = 'proxyOopPrimitives::getLow' }
+!
+ <Proxy> primitiveProxyIsNull ^<Boolean> =
+   Internal { name = 'proxyOopPrimitives::isNull' }
+!
+ <Proxy> primitiveProxyIsAllOnes ^<Boolean> =
+   Internal { name = 'proxyOopPrimitives::isAllOnes' }
+!
+ <Proxy> primitiveProxyMalloc: size      <SmallInteger>
+                       ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { name = 'proxyOopPrimitives::malloc' }
+!
+ <Proxy> primitiveProxyCalloc: size      <SmallInteger>
+                       ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { name = 'proxyOopPrimitives::calloc' }
+!
+ <Proxy> primitiveProxyFree ^<Self> =
+   Internal { name = 'proxyOopPrimitives::free' }
+!
+ <Proxy> primitiveProxyByteAt: offset    <SmallInteger>
+                       ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #(LastDeltaFrameNotNeeded)
+              name = 'proxyOopPrimitives::byteAt' }
+!
+ <Proxy> primitiveProxyByteAt: offset    <SmallInteger>
+                          put: value     <SmallInteger>
+                       ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #(LastDeltaFrameNotNeeded)
+              name  = 'proxyOopPrimitives::byteAtPut' }
+!
+ <Proxy> primitiveProxyDoubleByteAt: offset   <SmallInteger>
+                            ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name = 'proxyOopPrimitives::doubleByteAt' }
+!
+ <Proxy> primitiveProxyDoubleByteAt: offset    <SmallInteger>
+                                put: value     <SmallInteger>
+                             ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name = 'proxyOopPrimitives::doubleByteAtPut' }
+!
+ <Proxy> primitiveProxySmiAt: offset    <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(ConversionFailed)
+              name  = 'proxyOopPrimitives::smiAt' }
+!
+ <Proxy> primitiveProxySmiAt: offset    <SmallInteger>
+                         put: value     <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { name = 'proxyOopPrimitives::smiAtPut' }
+!
+ <Proxy> primitiveProxySubProxyAt: offset    <SmallInteger>
+                           result: result    <Proxy>
+                           ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { name = 'proxyOopPrimitives::subProxyAt' }
+!
+ <Proxy> primitiveProxyProxyAt: offset    <SmallInteger>
+                        result: result    <Proxy>
+                        ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { name = 'proxyOopPrimitives::proxyAt' }
+!
+ <Proxy> primitiveProxyProxyAt: offset    <SmallInteger>
+                           put: value     <Proxy>
+                        ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { name = 'proxyOopPrimitives::proxyAtPut' }
+!
+ <Proxy> primitiveProxySinglePrecisionFloatAt: offset    <SmallInteger>
+                                       ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { name  = 'proxyOopPrimitives::singlePrecisionFloatAt' }
+!
+ <Proxy> primitiveProxySinglePrecisionFloatAt: offset    <SmallInteger>
+                                          put: value     <Float>
+                                       ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { error = #(ConversionFailed)
+              name = 'proxyOopPrimitives::singlePrecisionFloatAtPut' }
+!
+ <Proxy> primitiveProxyDoublePrecisionFloatAt: offset    <SmallInteger>
+                                       ifFail: failBlock <PrimFailBlock> ^<Float> =
+   Internal { name  = 'proxyOopPrimitives::doublePrecisionFloatAt' }
+!
+ <Proxy> primitiveProxyDoublePrecisionFloatAt: offset    <SmallInteger>
+                                          put: value     <Float>
+                                       ifFail: failBlock <PrimFailBlock> ^<Self> =
+   Internal { error = #(ConversionFailed)
+              name = 'proxyOopPrimitives::doublePrecisionFloatAtPut' }
+!
+ <Proxy> primitiveAPICallResult: proxy <Proxy>
+                         ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { flags = #NLR
+              name  = 'proxyOopPrimitives::callOut0' }
+!
+ <Proxy> primitiveAPICallValue: arg1  <Proxy|SmallInteger>
+                        result: proxy <Proxy>
+                        ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { flags = #NLR
+              name  = 'proxyOopPrimitives::callOut1' }
+!
+ <Proxy> primitiveAPICallValue: arg1      <Proxy|SmallInteger>
+                         value: arg2      <Proxy|SmallInteger>
+                        result: proxy     <Proxy>
+                        ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { flags = #NLR
+              name  = 'proxyOopPrimitives::callOut2' }
+!
+ <Proxy> primitiveAPICallValue: arg1      <Proxy|SmallInteger>
+                         value: arg2      <Proxy|SmallInteger>
+                         value: arg3      <Proxy|SmallInteger>
+                        result: proxy     <Proxy>
+                        ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { flags = #NLR
+              name  = 'proxyOopPrimitives::callOut3' }
+!
+ <Proxy> primitiveAPICallValue: arg1      <Proxy|SmallInteger>
+                         value: arg2      <Proxy|SmallInteger>
+                         value: arg3      <Proxy|SmallInteger>
+                         value: arg4      <Proxy|SmallInteger>
+                        result: proxy     <Proxy>
+                        ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { flags = #NLR
+              name  = 'proxyOopPrimitives::callOut4' }
+!
+ <Proxy> primitiveAPICallValue: arg1      <Proxy|SmallInteger>
+                         value: arg2      <Proxy|SmallInteger>
+                         value: arg3      <Proxy|SmallInteger>
+                         value: arg4      <Proxy|SmallInteger>
+                         value: arg5      <Proxy|SmallInteger>
+                        result: proxy     <Proxy>
+                        ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { flags = #NLR
+              name  = 'proxyOopPrimitives::callOut5' }
+!
+ <SmallInteger> primitiveLessThan: aNumber   <SmallInteger>
+                           ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { flags = #(Pure SmiCompare LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::lessThan' }
+!
+ <SmallInteger> primitiveGreaterThan: aNumber   <SmallInteger>
+                              ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { flags = #(Pure SmiCompare LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::greaterThan' }
+!
+ <SmallInteger> primitiveLessThanOrEqual: aNumber   <SmallInteger>
+                                  ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { flags = #(Pure SmiCompare LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::lessThanOrEqual' }
+!
+ <SmallInteger> primitiveGreaterThanOrEqual: aNumber   <SmallInteger>
+                                     ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { flags = #(Pure SmiCompare LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::greaterThanOrEqual' }
+!
+ <SmallInteger> primitiveSmallIntegerEqual: aNumber   <SmallInteger>
+                                    ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { flags = #(Pure SmiCompare LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::equal' }
+!
+ <SmallInteger> primitiveSmallIntegerNotEqual: aNumber   <SmallInteger>
+                                       ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { flags = #(Pure SmiCompare LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::notEqual' }
+!
+ <SmallInteger> primitiveBitAnd: aNumber   <SmallInteger>
+                         ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::bitAnd' }
+!
+ <SmallInteger> primitiveBitOr: aNumber   <SmallInteger>
+                        ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::bitOr' }
+!
+ <SmallInteger> primitiveBitXor: aNumber   <SmallInteger>
+                         ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::bitXor' }
+!
+ <SmallInteger> primitiveBitShift: aNumber   <SmallInteger>
+                           ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::bitShift' }
+!
+ <SmallInteger> primitiveRawBitShift: aNumber   <SmallInteger>
+                              ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives::rawBitShift' }
+!
+ <SmallInteger> primitiveAsObjectIfFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { error = #(OutOfBounds)
+              flags = #Function
+              name  = 'smiOopPrimitives::asObject' }
+!
+ <SmallInteger> primitivePrintCharacterIfFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(OutOfBounds)
+              flags = #Function
+              name  = 'smiOopPrimitives::printCharacter' }
+!
+ <SmallInteger> primitiveAdd: aNumber   <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(Overflow)
+              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives_add' }
+!
+ <SmallInteger> primitiveSubtract: aNumber   <SmallInteger>
+                           ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(Overflow)
+              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives_subtract' }
+!
+ <SmallInteger> primitiveMultiply: aNumber   <SmallInteger>
+                           ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(Overflow)
+              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives_multiply' }
+!
+ <SmallInteger> primitiveMod: aNumber   <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(Overflow DivisionByZero)
+              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives_mod' }
+!
+ <SmallInteger> primitiveDiv: aNumber   <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(Overflow DivisionByZero)
+              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives_div' }
+!
+ <SmallInteger> primitiveQuo: aNumber   <SmallInteger>
+                      ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(NotImplementedYet)
+            flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives_quo' }
+!
+ <SmallInteger> primitiveRemainder: aNumber   <SmallInteger>
+                            ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { error = #(DivisionByZero)
+              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
+              name  = 'smiOopPrimitives_remainder' }
+!
+ <SmallInteger> primitiveAsFloat ^<Float> =
+   Internal { flags = #(Pure SmiArith)
+              name  = 'double_from_smi' }
+!
+ <NoReceiver> primitiveCreateInvocationOf: mixin      <Mixin>
+                                    named: name       <Symbol>
+                      isPrimaryInvocation: primary    <Boolean>
+                               superclass: superclass <Behavior>
+                                   format: format     <Symbol>
+                                   ifFail: failBlock  <PrimFailBlock> ^<GlobalAssociation> =
+   Internal { doc   = 'format: #Oops, #ExternalProxy #Process'
+              doc   = '        #IndexedInstanceVariables #IndexedByteInstanceVariables'
+              doc   = '        #IndexedDoubleByteInstanceVariables #IndexedNextOfKinInstanceVariables'
+              error = #(WrongFormat) 
+              name  = 'systemPrimitives::createNamedInvocation' }
+!
+ <NoReceiver> primitiveCreateInvocationOf: mixin      <Mixin>
+                               superclass: superclass <Behavior>
+                                   format: format     <Symbol>
+                                   ifFail: failBlock  <PrimFailBlock> ^<GlobalAssociation> =
+   Internal { doc   = 'format: #Oops, #ExternalProxy #Process'
+              doc   = '        #IndexedInstanceVariables #IndexedByteInstanceVariables'
+              doc   = '        #IndexedDoubleByteInstanceVariables #IndexedNextOfKinInstanceVariables'
+              error = #(WrongFormat) 
+              name  = 'systemPrimitives::createInvocation' }
+!
+ <NoReceiver> primitiveApplyChange: change        <IndexedInstanceVariables>
+                            ifFail: failBlock     <PrimFailBlock> ^<Object> =
+   Internal { doc  = 'Apply change to a mixin and their invocations.'
+              doc  = 'The change is a <IndexedInstanceVariables> with the following structure:'
+              doc  = '  [1]     = new-mixin   <Mixin>'
+              doc  = '  [2]     = old-mixin   <Mixin>'
+              doc  = '  [3 - n] = invocations <IndexedInstanceVariables>'
+              doc  = 'Where the format for the a incovation is:'
+              doc  = '  [1]     = incovation  <Class>'
+              doc  = '  [2]     = format      <Symbol>'
+              doc  = '  [3]     = superClass  <Class>'
+              doc  = '  [4 - m] = {subclass, format}*  <IndexedInstanceVariables>, <Symbol>'
+              doc  = 'The list of classes are sub classes of the invocation (topological sorted).'
+              name = 'systemPrimitives::applyChange' }
+!
+ <Object> primitiveScavenge ^<Self> =
+   Internal { name  = 'systemPrimitives::scavenge' }
+!
+ <Object> primitiveGarbageCollect ^<Self> =
+   Internal { name  = 'systemPrimitives::garbageGollect' }
+!
+ <NoReceiver> primitiveBreakpoint ^<Object> =
+   Internal { name  = 'systemPrimitives::breakpoint' }
+!
+ <NoReceiver> primitiveHalt ^<Object> =
+   Internal { name  = 'systemPrimitives::halt' }
+!
+ <NoReceiver> primitiveUserTime ^<Float> =
+   Internal { name  = 'systemPrimitives::userTime' }
+!
+ <NoReceiver> primitiveSystemTime ^<Float> =
+   Internal { name  = 'systemPrimitives::systemTime' }
+!
+ <NoReceiver> primitiveElapsedTime ^<Float> = 
+   Internal { name = 'systemPrimitives::elapsedTime' }
+!
+ <NoReceiver> primitiveWriteSnapshot: fileName <String> ^<Object> =
+   Internal { name  = 'systemPrimitives::writeSnapshot' }
+!
+ <NoReceiver> primitiveQuit ^<BottomType> =
+   Internal { name  = 'systemPrimitives::quit' }
+!
+ <GlobalAssociation> primitiveGlobalAssociationKey ^<Symbol> =
+   Internal { name  = 'systemPrimitives::globalAssociationKey' }
+!
+ <GlobalAssociation> primitiveGlobalAssociationSetKey: key <Symbol> ^<Object> =
+   Internal { name  = 'systemPrimitives::globalAssociationSetKey' }
+!
+ <GlobalAssociation> primitiveGlobalAssociationValue ^<Object> =
+   Internal { name  = 'systemPrimitives::globalAssociationValue' }
+!
+ <GlobalAssociation> primitiveGlobalAssociationSetValue: value <Object> ^<Object> =
+   Internal { name  = 'systemPrimitives::globalAssociationSetValue' }
+!
+ <GlobalAssociation> primitiveGlobalAssociationIsConstant ^<Boolean> =
+   Internal { name  = 'systemPrimitives::globalAssociationIsConstant' }
+!
+ <GlobalAssociation> primitiveGlobalAssociationSetConstant: value <Boolean> ^<Boolean> =
+   Internal { name  = 'systemPrimitives::globalAssociationSetConstant' }
+!
+ <NoReceiver> primitiveSmalltalkAt: index <SmallInteger>
+                            ifFail: failBlock <PrimFailBlock>  ^<GlobalAssociation> =
+   Internal { doc   = 'Returns the global association at index'
+              error = #(OutOfBounds)
+              name  = 'systemPrimitives::smalltalk_at' }
+!
+ <NoReceiver> primitiveSmalltalkAt: key       <Symbol>
+                               Put: value     <Object>
+                            ifFail: failBlock <PrimFailBlock>  ^<GlobalAssociation> =
+   Internal { doc   = 'Add a new non-constant global association'
+              name  = 'systemPrimitives::smalltalk_at_put' }
+!
+ <NoReceiver> primitiveSmalltalkRemoveAt: index <SmallInteger>
+                                  ifFail: failBlock <PrimFailBlock>  ^<GlobalAssociation> =
+   Internal { doc   = 'Removes the association at index, and returns the removed element'
+              name  = 'systemPrimitives::smalltalk_remove_at' }
+!
+ <NoReceiver> primitiveSmalltalkSize ^<SmallInteger> =
+   Internal { name  = 'systemPrimitives::smalltalk_size' }
+!
+ <NoReceiver> primitiveSmalltalkArray ^<IndexedInstanceVariables> =
+   Internal { name  = 'systemPrimitives::smalltalk_array' }
+!
+ <NoReceiver> primitivePrintPrimitiveTable ^<Object> =
+   Internal { name  = 'systemPrimitives::printPrimitiveTable' }
+!
+ <NoReceiver> primitivePrintMemory ^<Object> =
+   Internal { name  = 'systemPrimitives::print_memory' }
+!
+ <NoReceiver> primitivePrintZone ^<Object> =
+   Internal { name  = 'systemPrimitives::print_zone' }
+!
+ <NoReceiver> primitiveDefWindowProc: resultProxy <Proxy>
+                              ifFail: failBlock <PrimFailBlock>  ^<Proxy> =
+   Internal { name  = 'systemPrimitives::defWindowProc' }
+!
+ <NoReceiver> primitiveWindowsHInstance: resultProxy <Proxy>
+                                 ifFail: failBlock <PrimFailBlock>  ^<Proxy> =
+   Internal { name  = 'systemPrimitives::windowsHInstance' }
+!
+ <NoReceiver> primitiveWindowsHPrevInstance: resultProxy <Proxy>
+                                     ifFail: failBlock <PrimFailBlock>  ^<Proxy> =
+   Internal { name  = 'systemPrimitives::windowsHPrevInstance' }
+!
+ <NoReceiver> primitiveWindowsNCmdShow ^<Object> =
+   Internal { name  = 'systemPrimitives::windowsNCmdShow' }
+!
+ <NoReceiver> primitiveCharacterFor: value     <SmallInteger>
+                             ifFail: failBlock <PrimFailBlock>  ^<Proxy> =
+   Internal { error = #(OutOfBounds)
+              name  = 'systemPrimitives::characterFor' }
+!
+ <NoReceiver> primitiveTraceStack ^<Object> =
+   Internal { name  = 'systemPrimitives::traceStack' }
+!
+ <NoReceiver> primitiveFlatProfilerReset ^<Object> = 
+   Internal { doc  = 'Resets the flat profiler to initial state.'
+              name = 'systemPrimitives::flat_profiler_reset' }
+!
+ <NoReceiver> primitiveFlatProfilerProcess ^<Process|nil> = 
+   Internal { doc  = 'Returns the process beeing profiler, nil otherwise.'
+              name = 'systemPrimitives::flat_profiler_process' }
+!
+ <NoReceiver> primitiveFlatProfilerEngage: process <Process>
+                                   ifFail: failBlock <PrimFailBlock> ^<Process> = 
+   Internal { doc  = 'Starts profiling process.'
+              name = 'systemPrimitives::flat_profiler_engage' }
+!
+ <NoReceiver> primitiveFlatProfilerDisengage ^<Process|nil> = 
+   Internal { doc  = 'Stops profiling.'
+              name = 'systemPrimitives::flat_profiler_disengage' }
+!
+ <NoReceiver> primitiveFlatProfilerPrint ^<Object> =
+    Internal { doc   = 'Prints the collected profile information.'
+               name  = 'systemPrimitives::flat_profiler_print' }
+!
+ <NoReceiver> primitiveNotificationQueueGetIfFail: failBlock <PrimFailBlock>  ^<Object> =
+   Internal { doc   = 'Returns the first element in the notification queue (FIFO).'
+              error = #(EmptyQueue)
+              name  = 'systemPrimitives::notificationQueueGet' }
+!
+ <NoReceiver> primitiveNotificationQueuePut: value <Object> ^<Object> =
+   Internal { doc   = 'Appends the argument to the notification queue (FIFO).'
+              name  = 'systemPrimitives::notificationQueuePut' }
+!
+ <NoReceiver> primitiveHadNearDeathExperience: value <Object> ^<Boolean> =
+   Internal { doc  = 'Tells whether the receiver had a near death experience.'
+              name = 'systemPrimitives::hadNearDeathExperience' }
+!
+ <NoReceiver> primitiveDLLSetupLookup: receiver <Object>
+                             selector: selector <Symbol>
+                               ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { doc    = 'Setup call back for DLL lookup. Fails if selector does not have right number of arguments'
+              errors = #(failed)
+              name   = 'systemPrimitives::dll_setup' }
+!
+ <NoReceiver> primitiveDLLLookup: name      <Symbol> 
+                              in: library   <Proxy>
+                          result: entry     <Proxy>
+                          ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { doc    = 'Lookup name in library'
+              errors = #(NotFound)
+              name   = 'systemPrimitives::dll_lookup' }
+!
+ <NoReceiver> primitiveDLLLoad: name      <Symbol> 
+                        result: library   <Proxy>
+                        ifFail: failBlock <PrimFailBlock> ^<Proxy> =
+   Internal { doc    = 'Load library'
+              errors = #(NotFound)
+              name   = 'systemPrimitives::dll_load' }
+!
+ <NoReceiver> primitiveDLLUnload: library <Proxy> 
+                          ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { doc    = 'Unload the library'
+              errors = #(Failed)
+              name   = 'systemPrimitives::dll_unload' }
+!
+ <NoReceiver> primitiveInliningDatabaseDirectory ^<Symbol> =
+   Internal { doc    = 'Returns the directory for the external inlining database.'
+              errors = #(Failed)
+              name   = 'systemPrimitives::inlining_database_directory' }
+!
+ <NoReceiver> primitiveInliningDatabaseSetDirectory: name      <Symbol>
+                                             ifFail: failBlock <PrimFailBlock> ^<Symbol> =
+   Internal { doc    = 'Sets the directory for external inlining database.'
+              doc    = 'Returns the old directory.'
+              errors = #(Failed)
+              name   = 'systemPrimitives::inlining_database_set_directory' }
+!
+ <NoReceiver>  primitiveInliningDatabaseFileOutClass: receiverClass <Behavior>
+                                              ifFail: failBlock     <PrimFailBlock> ^<SmallInteger> =
+   Internal { doc    = 'Adds inlining information to the external database for all compiled methods with the specific receiver class.'
+              doc    = 'Returns the number of filed out structures.'
+              errors = #(Failed)
+              name   = 'systemPrimitives::inlining_database_file_out_class' }
+!
+ <NoReceiver>  primitiveInliningDatabaseFileOutAllIfFail: failBlock ^<SmallInteger> =
+   Internal { doc    = 'Adds inlining information to the external database for all compiled methods.'
+              doc    = 'Returns the number of filed out structures.'
+              errors = #(Failed)
+              name   = 'systemPrimitives::inlining_database_file_out_all' }
+!
+ <NoReceiver>  primitiveInliningDatabaseCompile: fileName  <String>
+                                         ifFail: failBlock <PrimFailBlock> ^<Object> =
+   Internal { doc    = 'Compiles a method described in fileName.'
+              errors = #(Failed)
+              name   = 'systemPrimitives::inlining_database_compile' }
+!
+ <NoReceiver>  primitiveInliningDatabaseCompile ^<Boolean> =
+   Internal { doc    = 'Compiles a method for the inlining database (for background compilation).'
+              name   = 'systemPrimitives::inlining_database_compile_next' }
+!
+ <NoReceiver>  primitiveInliningDatabaseMangle: name      <String>
+                                        ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables> =
+   Internal { doc    = 'Returns the mangled name'
+              name   = 'systemPrimitives::inlining_database_mangle' }
+!
+ <NoReceiver>  primitiveInliningDatabaseCompileDemangled: name <String>
+                                                  ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables> =
+   Internal { doc    = 'Returns the demangled name'
+              name   = 'systemPrimitives::inlining_database_demangle' }
+!
+ <NoReceiver>  primitiveInliningDatabaseAddLookupEntryClass: class      <Behavior>
+                                                   selector: selector   <Symbol>
+                                                     ifFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { name   = 'systemPrimitives::inlining_database_add_entry' }
+!
+ <NoReceiver>  primitiveSlidingSystemAverageIfFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { errors = #(NotActive)
+              name   = 'systemPrimitives::sliding_system_average' }
+!
+ <NoReceiver> primitiveInstancesOf: class <Class>
+                             limit: limit <SmallInteger>
+                            ifFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { doc    = 'Returns an array with instances of class.'
+              doc    = 'limit specifies the maximum number of elements.'
+              errors = #(OutOfMemory)
+              name   = 'systemPrimitives::instances_of' }
+!
+ <NoReceiver> primitiveReferencesTo: obj <Object>
+                              limit: limit <SmallInteger>
+                             ifFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { doc    = 'Returns an array with all objects referring obj.'
+              doc    = 'limit specifies the maximum number of elements.'
+              errors = #(OutOfMemory)
+              name   = 'systemPrimitives::references_to' }
+!
+ <NoReceiver> primitiveReferencesToInstancesOf: class <Class>
+                                         limit: limit <SmallInteger>
+                                        ifFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { doc    = 'Returns an array with all objects referring instances of class.'
+              doc    = 'limit specifies the maximum number of elements.'
+              errors = #(OutOfMemory)
+              name   = 'systemPrimitives::references_to_instances_of' }
+!
+ <NoReceiver> primitiveAllObjectsLimit: limit <SmallInteger>
+                                ifFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { doc    = 'Returns an array containing all objects.'
+              doc    = 'limit specifies the maximum number of elements.'
+              errors = #(OutOfMemory)
+              name   = 'systemPrimitives::all_objects' }
+!
+ <NoReceiver> primitiveFlushCodeCache ^<Object> =
+   Internal { doc    = 'Flushes all compiled code.'
+              name   = 'systemPrimitives::flush_code_cache' }
+!
+ <NoReceiver> primitiveFlushDeadCode ^<Object> =
+   Internal { doc    = 'Flushes all invalidate compiled code.'
+              name   = 'systemPrimitives::flush_dead_code' }
+!
+ <Activation> primitiveActivationProcess ^<SmallInteger> =
+   Internal { flags = #(Pure)
+              name  = 'vframeOopPrimitives::index' }
+!
+ <Activation> primitiveActivationIndex ^<SmallInteger> =
+   Internal { flags = #(Pure)
+              name  = 'vframeOopPrimitives::index' }
+!
+ <Activation> primitiveActivationTimeStamp ^<SmallInteger> =
+   Internal { flags = #(Pure)
+              name  = 'vframeOopPrimitives::time_stamp' }
+!
+ <Activation> primitiveActivationIsSmalltalkActivationIfFail: failBlock <PrimFailBlock> ^<Boolean> =
+   Internal { flags = #(Pure)
+              errors = #(ActivationIsInvalid)
+              name  = 'vframeOopPrimitives::is_smalltalk_activation' }
+!
+ <Activation> primitiveActivationByteCodeIndexIfFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags  = #(Pure)
+              errors = #(ActivationIsInvalid ExternalActivation)
+              name   = 'vframeOopPrimitives::byte_code_index' }
+!
+ <Activation> primitiveActivationExpressionStackIfFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { flags  = #(Pure)
+              errors = #(ActivationIsInvalid ExternalActivation)
+              name   = 'vframeOopPrimitives::expression_stack' }
+!
+ <Activation> primitiveActivationMethodIfFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags  = #(Pure)
+              errors = #(ActivationIsInvalid ExternalActivation)
+              name   = 'vframeOopPrimitives::method' }
+!
+ <Activation> primitiveActivationReceiverIfFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+   Internal { flags  = #(Pure)
+              errors = #(ActivationIsInvalid ExternalActivation)
+              name   = 'vframeOopPrimitives::receiver' }
+!
+ <Activation> primitiveActivationTemporariesIfFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { flags  = #(Pure)
+              errors = #(ActivationIsInvalid ExternalActivation)
+              name   = 'vframeOopPrimitives::temporaries' }
+!
+ <Activation> primitiveActivationArgumentsIfFail: failBlock <PrimFailBlock> ^<IndexedInstanceVariables> =
+   Internal { flags  = #(Pure)
+              errors = #(ActivationIsInvalid ExternalActivation)
+              name   = 'vframeOopPrimitives::arguments' }
+!
+ <Activation> primitiveActivationPrettyPrintIfFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables> =
+   Internal { flags  = #(Pure)
+              errors = #(ActivationIsInvalid ExternalActivation)
+              name   = 'vframeOopPrimitives::pretty_print' }
+!
+!

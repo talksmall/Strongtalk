@@ -1,0 +1,21 @@
+Delta define: #DeltaBasicOverrideLocator as: (
+(Class subclassOf: 'DeltaBasicMergeLocator' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaBasicOverrideLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaBasicOverrideLocator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBasicOverrideLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBasicOverrideLocator) methodsFor: 'Unclassified' !
+
+
+name  ^ <String>
+	^self loc1 name, '/', self loc2 name!
+
+typeInfo   ^ <DeltaProtocolOverride>
+	^DeltaProtocolOverride new type1: self loc1 typeInfo type2: self loc2 typeInfo! !
+

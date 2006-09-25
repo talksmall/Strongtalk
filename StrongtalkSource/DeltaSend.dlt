@@ -1,0 +1,86 @@
+Delta define: #DeltaSend as: (
+(Class subclassOf: 'DeltaExpression' instanceVariables: 'msg ')) !
+
+(Delta mirrorFor: #DeltaSend) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaSend) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSend)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSend) methodsFor: 'Unclassified' !
+
+
+args ^ <OrdCltn[Expression]>
+    ^self msg args!
+
+checkArgsAgainstSignature: ft <MsgSignature>
+"Private"
+    | i <Int>   |
+
+i := 0.
+self args with: ft domain do:
+ [:actual <Expression>  :formal <ObjectType>  |
+ i := i + 1.
+ (actual type subtypeOf: formal assuming: DeltaGlobalTrail)
+	ifFalse:[self reportError: (DeltaSendArgumentNotSubtypesError new argument: i; actualName: actual type name; formalName:  formal name)]
+ ].
+
+
+!
+
+checkArityAgainstSignature: ft  <MsgSignature> ifFail: fb <[]>
+"Private"
+self args size = ft domain size 
+  ifFalse:[fb value].
+"This should never happen. It is syntactically impossible. 
+However, if ft is an error, then we must deal with this"
+
+
+!
+
+funType ^ <DeltaMsgSignature>
+	| sig <DeltaMsgSignature> |
+
+	sig := self recv type selectMsg: self msg selector ifAbsent: [
+		DeltaSelectorUndefinedError new selector: self msg selector].
+	sig isError ifTrue: [self reportError: sig].
+	^sig!
+
+functionType ^ <DeltaMsgSignature>
+
+| funType <DeltaMsgSignature>   
+   targetType <ObjectType> 
+   inferredType <DeltaMsgSignature>   
+ |
+funType := self funType.
+inferredType :=  self inferTypeFrom: funType.
+((inferredType domain virtualSelect:[ :t <ObjectType> | t isError]) 
+   virtualSelect:[ :t <ObjectType> | t isInferenceError]) 
+ do:[:te | self reportError: te].
+^inferredType.!
+
+inferTypeFrom: ft  <MsgSignature> ^ <MsgSignature>
+
+^ft inferTypeFrom: (self msg args copy addFirst: self recv; yourself).!
+
+isSendNode ^ <Boolean>
+    ^ true!
+
+msg ^ <DeltaMessage>
+    ^ msg!
+
+recv ^ <Expression>
+    self subclassResponsibility!
+
+type ^ <ObjectType>
+    | functionType <DeltaMsgSignature>  i <Int>   |
+
+functionType := self functionType.
+self checkArityAgainstSignature: functionType 
+         ifFail:[( guaranteed <TypeError> functionType) domainSize: self args size].
+self checkArgsAgainstSignature: functionType.
+^functionType range.! !
+

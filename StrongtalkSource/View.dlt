@@ -1,0 +1,189 @@
+Delta define: #View as: (
+Generic forAll: 'MODEL ' body: ((Class subclassOf: 'Application' instanceVariables: 'model <MODEL>
+changeBlock <[]>
+		"A block to evaluate whenever the model changes or
+			is replaced with a new model"
+doneBlock <[Boolean, []]>
+		"A block to evaluate when the user indicates they
+		 are done editing.  If the argument is true, then the user wants to
+		 save their changes.  If it is false, they want to cancel.  If the
+		 accept or cancel is successful, the second argument is evaluated"
+hasBeenChanged <Boolean>
+		"This is true in the time between when changes are made and
+			accept or cancel is done"
+	') abstract)) !
+
+(Delta mirrorFor: #View) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #View) group: 'ui'!
+
+(Delta mirrorFor: #View)
+comment: 
+'Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #View) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self changeBlock:
+		[  "By default, do nothing"  ].
+	self hasBeenChanged: false.! !
+
+! (Delta mirrorFor: #View) methodsFor: 'accessing' !
+
+
+changeBlock ^<[]>
+
+	^changeBlock!
+
+changeBlock: blk <[]>
+
+	changeBlock := blk!
+
+doneBlock ^<[Boolean, []]>
+
+	^doneBlock!
+
+doneBlock: blk <[Boolean, []]>
+
+	doneBlock := blk!
+
+model ^<MODEL>
+
+	^model!
+
+model: m <MODEL>
+
+	self setModel: m.
+	self hasBeenChanged: false.! !
+
+! (Delta mirrorFor: #View) methodsFor: 'control' !
+
+
+accept
+
+	self acceptAndOnSuccess: []!
+
+acceptAndOnSuccess: blk <[]>
+	"accept, and if the accept succeeds, evaluate blk."
+
+	self doneUseEdits: true onSuccess: blk!
+
+cancel
+
+	self cancelAndOnSuccess: []!
+
+cancelAndOnSuccess: blk <[]>
+	"cancel, and if the accept succeeds, evaluate blk."
+
+	self doneUseEdits: false onSuccess: blk!
+
+changing
+
+	self assert: [ self isReadOnly not ].
+	self hasBeenChanged: true.
+	self changeBlock value.!
+
+closeRequest: toClose <[]>
+	"Request that the user decide whether to save and close, close, or cancel close.
+		toClose is evaluated if the user decides to close.  The save is done first
+		if the user requests it."
+
+	(self hasVisual and: [ self hasBeenChanged ])
+		ifTrue: [ self	promptUserToSaveAndClose: toClose
+							caption: self saveAndCloseCaption	 ]
+		ifFalse: [ toClose value ]! !
+
+! (Delta mirrorFor: #View) methodsFor: 'testing' !
+
+
+hasBeenChanged ^<Boolean>
+
+	^hasBeenChanged!
+
+isReadOnly ^<Boolean>
+
+	^self doneBlock isNil! !
+
+! (Delta mirrorFor: #View) methodsFor: 'private' !
+
+
+doneUseEdits: flag <Boolean> onSuccess: blk <[]>
+	"call the done block, and return the results of whether the accept/cancel was acceptable"
+
+	self isReadOnly
+		ifTrue: [ blk value ]
+		ifFalse: [ self doneBlock
+							value: flag
+							value: [ self hasBeenChanged
+												ifTrue: [ self hasBeenChanged: false ].
+											blk value ].
+					  ]!
+
+hasBeenChanged: f <Boolean>
+
+	hasBeenChanged := f!
+
+promptUserToSaveAndClose: toClose <[]> caption: cap <Str>
+	"show a dialog box to let the user decide whether to save and close, close, or cancel close.
+		toClose is evaluated if the user decides to close.  The save is done first
+		if the user requests it."
+
+	self visual
+		promptYesNoCancel: cap
+		title: self windowTitle
+		type: #exclamation
+		default: 3
+		action: [ :decision <Boolean | Nil> |
+						decision notNil
+							ifTrue: [	decision == true
+												ifTrue: [ self acceptAndOnSuccess: toClose  ]
+												ifFalse: [  toClose value	]
+										]
+					]!
+
+saveAndCloseCaption ^<Str>
+
+	^'Save changes before closing?'!
+
+setModel: m <MODEL>
+
+	model := m.! !
+
+! (Delta mirrorFor: #View) methodsFor: 'menus' !
+
+
+acceptMenu ^<Menu>
+
+	^Menu new name: '&Accept';
+		add: (MenuAction new
+					name: '&Accept';
+					action: [ self accept ] );
+			add: (MenuAction new
+					name: 'Cancel';
+					active: [ self hasBeenChanged ];
+					action: [ self cancel ] )! !
+
+! (Delta mirrorFor: #View) methodsFor: 'utility' !
+
+
+freelyEditWith: initialModel <MODEL>
+	"This sets the done block for the view to a simple one that allows accepting and canceling,
+		but with no notification."
+
+	| m <MODEL> |
+	m := initialModel.
+	self model: m.
+	self doneBlock:
+		[ :done <Boolean> :continue <[]> |
+			done
+				ifFalse: [ self model: m ]
+				ifTrue: [ m := self model ].
+			continue value  ].! !
+

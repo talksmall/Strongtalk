@@ -1,0 +1,51 @@
+Delta define: #DeltaBasicEntryLocator as: (
+(Class subclassOf: 'DeltaBasicLocator' instanceVariables: 'id isMetaSide ')) !
+
+(Delta mirrorFor: #DeltaBasicEntryLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaBasicEntryLocator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBasicEntryLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBasicEntryLocator) methodsFor: 'Unclassified' !
+
+
+id  ^ <Symbol>
+	^id!
+
+id: s   <Symbol>
+	id := s!
+
+isMetaSide  ^ <Boolean>
+	^isMetaSide!
+
+isMetaSide: b   <Boolean>
+	isMetaSide := b!
+
+matches: loc <BasicLocator> ignoreSide: b <Boolean> ^ <Boolean>
+	(self class = loc class) ifFalse: [^false].
+	(self id = loc id) ifFalse: [^false].
+	^b ifTrue: [true] ifFalse: [self isMetaSide = loc isMetaSide]!
+
+methodAt: sel <Symbol> ifAbsent: blk <[^X def]>  ^ <Method | X>
+	^self subclassResponsibility
+!
+
+mirror   ^ <Mirror>
+	^self subclassResponsibility!
+
+name  ^ <String>
+	self isMetaSide
+		ifTrue: [^self id, ' class']
+		ifFalse: [^self id]!
+
+printOn: aStream <WriteStream[Character] > ^ <Self>
+	super printOn: aStream.
+	aStream nextPutAll: '(', self name, ')'.!
+
+typeInfo   ^ <DeltaType>
+	^self mirror typeInfo! !
+

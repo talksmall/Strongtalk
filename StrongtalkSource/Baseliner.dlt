@@ -1,0 +1,130 @@
+Delta define: #Baseliner as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'xSide <Symbol>
+	"#left, #right, or nil if no x baselining"
+ySide <Symbol>
+	"#top, #bottom, or nil if no y baselining"
+offsetBlock <[^Point]>
+	"Block returning an offset from baseline"')) !
+
+(Delta mirrorFor: #Baseliner) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Baseliner) group: 'ui'!
+
+(Delta mirrorFor: #Baseliner)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $'!
+
+! (Delta mirrorFor: #Baseliner) methodsFor: 'private' !
+
+
+adjust: rect <Rect> ^<Rect>
+	"return the baselined version of rect"
+
+	| left <Int> right <Int> top <Int> bottom <Int> offset <Point> |
+	
+	offset := self offset.
+	left := rect left.
+	right := rect right.
+	top := rect top.
+	bottom := rect bottom.
+	"subtractions are used below because left and top are negative"
+	self ySide == #top
+		ifTrue: [	bottom := (bottom - top) - offset y.
+						top := offset y negated.	].
+	self ySide == #bottom
+		ifTrue: [	top := (top - bottom) - offset y.
+						bottom := offset y negated.  ].
+	self xSide == #left
+		ifTrue: [	right := (right - left) - offset x.
+						left := offset x negated.	].
+	self xSide == #right
+		ifTrue: [	left := (left - right) - offset x.
+						right := offset x negated.  ].
+	^Rectangle
+		left: left right: right top: top bottom: bottom!
+
+childIsSameSize ^<Boolean>
+
+	^false!
+
+layoutPart
+
+	self part allocationInParent: self allocation! !
+
+! (Delta mirrorFor: #Baseliner) methodsFor: 'geometry' !
+
+
+max ^<Region>
+
+	^self adjust: (self part max enclosingRect)
+!
+
+min ^<Region>
+
+	^self adjust: (self part min enclosingRect)
+!
+
+natural ^<Region>
+
+	^self adjust: (self part natural enclosingRect)
+! !
+
+! (Delta mirrorFor: #Baseliner) methodsFor: 'accessing' !
+
+
+offset ^<Point>
+
+	^self offsetBlock value!
+
+offsetBlock ^<[^Point]>
+
+	^offsetBlock!
+
+offsetBlock: b <[^Point]>
+
+	offsetBlock := b!
+
+xSide ^<Symbol>
+
+	^xSide!
+
+xSide: xs <Symbol>
+
+	self assert: [ xs == nil or: [ xs == #right or: [ xs == #left ]]].
+	xSide := xs!
+
+ySide ^<Symbol>
+
+	^ySide!
+
+ySide: ys <Symbol>
+
+	self assert: [ ys == nil or: [ ys == #top or: [ ys == #bottom ]]].
+	ySide := ys! !
+
+! (Delta mirrorFor: #Baseliner) methodsFor: 'initialization' !
+
+
+initialize
+	
+	super initialize.
+	self
+		ySide: #bottom;
+		xSide: #left.
+	self offsetBlock: [ Point origin ]
+! !
+
+! (Delta mirrorFor: #Baseliner) methodsFor: 'utility' !
+
+
+forMultiLine
+	"this sets up the baseliner to adapt a widget that starts off as a single
+	 line of text but that might become multiline (i.e. an outliner that
+	 starts closed) so that it is suitable for imbedding in a single line of text."
+	| offset <Point> |
+	self ySide: #top; offsetBlock:
+		[	offset isNil
+				ifTrue: [ offset := 0 @ self part natural enclosingRect top negated ].
+			offset 	]! !
+

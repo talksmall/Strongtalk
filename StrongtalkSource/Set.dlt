@@ -1,0 +1,182 @@
+Delta define: #Set as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'HashedCollection[Object,E,E]' instanceVariables: '') protocols: 'Extensible[E]')) !
+
+(Delta mirrorFor: #Set) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #Set) group: 'base'!
+
+(Delta mirrorFor: #Set)
+comment: 
+'Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Set) classSide methodsFor: 'testing' !
+
+
+exercise: s <Extensible[Str]> and: oc <Extensible[Str]>
+
+	[ oc hasSameElementsAs: s ] verify.
+	[ s hasSameElementsAs: oc ] verify.!
+
+includePerformanceTest
+
+	| d <Set[Symbol]>  x <Symbol>  |
+	d := Set[Symbol] new.
+	500000 timesRepeat:
+		[	x := d include: #hello	].
+	self assert: [ x = #hello ].!
+
+includesPerformanceTest
+
+	| d <Set[Symbol]>  x <Boolean>  |
+	d := Set[Symbol] new.
+	d include: #hello.
+	500000 timesRepeat:
+		[	x := d includes: #hello	].
+	self assert: [ x = true ].!
+
+test
+	"self test"
+
+	self test: Set[Str] new.
+!
+
+test: s <Extensible[Str]>
+
+	| oc <OrdCltn[Str]> |
+
+	oc := OrderedCollection[Str] new.
+
+	3 timesRepeat: [ 
+		self exercise: s and: oc.
+		[ s size = 0 ] verify. [ (s includes: 3) not ] verify. [ (oc includes: 3) not ] verify.
+
+		s include: 'hi'.
+		[ (oc hasSameElementsAs: s) not ] verify.
+		oc include: 'hi'.
+
+		self exercise: s and: oc.
+		[ s size = 1 ] verify. [ s includes: 'hi' ] verify. [ oc includes: 'hi' ] verify.
+
+		s include: 'there'.
+		oc include: 'there'.
+
+		self exercise: s and: oc.
+		[ s size = 2 ] verify. [ s includes: 'hi' ] verify. [ s includes: 'there' ] verify.
+
+		s remove: 'there'.
+		oc remove: 'there'.
+
+		self exercise: s and: oc.
+		[ s size = 1 ] verify. [ s includes: 'hi' ] verify. [ oc includes: 'hi' ] verify.
+
+		s include: 'there'.
+		oc include: 'there'.
+
+		self exercise: s and: oc.
+		[ s size = 2 ] verify. [ s includes: 'hi' ] verify. [ s includes: 'there' ] verify.
+
+		s include: 'hello'; include: #there; include: #bub.
+		oc include: 'hello'; include: #there; include: #bub.
+
+		self exercise: s and: oc.
+		[ s size = 4 ] verify. [ s includes: 'hi' ] verify. [ s includes: 'bub' ] verify.
+
+		s include: 'hello'; include: #there; include: #bub.
+		oc include: 'hello'; include: #there; include: #bub.
+
+		self exercise: s and: oc.
+		[ s size = 4 ] verify. [ s includes: 'hi' ] verify. [ s includes: 'bub' ] verify.
+
+		s include: 'mello'.	[ s size = 5 ].
+		s include: #here.		 [ s size = 6 ].
+		s include: #blub. 		[ s size = 7].
+		oc include: 'mello'; include: #here; include: #blub.
+
+		self exercise: s and: oc.
+		[ s size = 7 ] verify. [ s includes: 'mello' ] verify. [ s includes: 'hi' ] verify.
+
+		s remove: 'mello'.
+		oc remove: 'mello'.
+
+		self exercise: s and: oc.
+		[ s size = 6 ] verify. [ (s includes: 'mello') not ] verify. [ (oc includes: 'mello') not] verify.
+
+		s removeAll: s copy.
+		oc removeAll: oc copy.
+		"loop must end with empty collections, so we can do it again with shrunken state"	]
+! !
+
+! (Delta mirrorFor: #Set) methodsFor: 'restricted- table decoding' !
+
+
+buildValForKey:  key <Object> element: el <E> ^<E>
+
+	^el!
+
+elementFor: el <E> ^<E>
+
+	^el!
+
+elementForCopy: el <E> ^<E>
+
+	^el!
+
+hashFor: key <Object> ^<Int>
+
+	^key hash!
+
+key: k <Object> matches: another <Object> ^<Boolean>
+
+	^k = another!
+
+keyFor: e <E> ^<Object>
+
+	^e!
+
+objToIncludeFor: new <E> withExisting: other <E> ^<E>
+
+	^new! !
+
+! (Delta mirrorFor: #Set) methodsFor: 'testing' !
+
+
+hasSameElementsAs: other <Cltn[Object]>  ^<Boolean>
+
+	"A faster reimplementation of the inherited version, to speed up set comparisons"
+
+	| otherSet <Extensible[Object]> |
+	self size = other size
+		ifFalse: [ ^false ].
+	otherSet := other asSet.
+	self size = otherSet size
+		ifFalse: [ ^false ].
+	self do:
+		[ :el <Object> |
+			(otherSet includes: el)
+				ifFalse: [ ^false ]  ].
+	^true!
+
+includes: o <Object> ^<Boolean>
+
+	^self includesKey: o! !
+
+! (Delta mirrorFor: #Set) methodsFor: 'private' !
+
+
+newForCollect: size <Int> ^<Extensible[Object]>
+
+	^Set[Object] new: size! !
+
+! (Delta mirrorFor: #Set) methodsFor: 'converting' !
+
+
+asSet ^<Extensible[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is safe because of the inference clause"
+	^guaranteed <Set[EX]> self! !
+

@@ -1,0 +1,110 @@
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+(Delta mirrorFor: #ActivationOutliner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ActivationOutliner) group: 'Unclassified'!
+
+(Delta mirrorFor: #ActivationOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+
+
+on: a <Activation> ^ <Instance>
+
+	^self new initActivation: a! !
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'accessing' !
+
+
+activation ^ <Activation>
+
+	^activation! !
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+
+
+buildBody ^<Visual>
+
+	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self activation vmPrettyPrint.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	
+	cv := CodeView forText.
+	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
+	cv model: gls.
+	^self editorBorderFor: cv
+!
+
+buildClosedHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> |
+	
+	"Check type of activation"
+	self activation isSmalltalk
+		ifFalse: [	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual ].
+
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	self activation method isBlockMethod
+		ifTrue: [		"Add block parens interspersed with arguments"
+							row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+							args do: [ :arg <Object> |
+								row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+								row add: (self
+									buildLabel: arg printString 
+									painter: self codePainter
+									action: [ (Inspector on: arg) launch ]) ].
+							row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+							row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	"Add receiver"
+							| receiver <Object> |
+							receiver := self activation receiver.
+							row add: (self
+								buildLabel: receiver printString 
+								painter: self codePainter
+								action: [ (Inspector on: receiver) launch ]).
+							row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+							"Add selector interspersed with arguments"
+							args size = 0
+								ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+								ifFalse: [	| strm <CharacterReadStream> |
+													strm := selector readStream.
+													args do: [ :arg <Object> |
+														row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+														row add: (self
+															buildLabel: arg printString 
+															painter: self codePainter
+															action: [ (Inspector on: arg) launch ]) ]
+												]
+						].
+	^row!
+
+currentByteCodeSeparatorCharacter ^ <Character>
+
+	^Character value: 16r1B
+!
+
+initialPacifiedState ^ <Boolean>
+
+	^self activation isSmalltalk not! !
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+
+
+initActivation: a <Activation>
+
+	activation := a! !
+

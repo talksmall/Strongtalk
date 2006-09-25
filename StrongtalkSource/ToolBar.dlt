@@ -1,0 +1,94 @@
+Delta define: #ToolBar as: (
+(Class subclassOf: 'Application' instanceVariables: 'visible <Boolean>
+column <Column[Visual]>
+row <GlyphRow>')) !
+
+(Delta mirrorFor: #ToolBar) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ToolBar) group: 'Unclassified'!
+
+(Delta mirrorFor: #ToolBar)
+comment: 
+'Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #ToolBar) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	self rebuild.
+	^self column withBackdrop:
+			(Painter new paint: Paint backgroundGray)!
+
+buttonSpacer ^<Glyph>
+
+	^Glue xRigid: 10!
+
+column ^<Column[Visual]>
+
+	^column!
+
+rebuild
+
+	self column removeAll.
+	self visible
+		ifTrue: [ self row noParent.
+						self column
+							add: (self row withBorder: (Border withRigidInset: 2)) baselined	].!
+
+row ^<GlyphRow>
+
+	^row! !
+
+! (Delta mirrorFor: #ToolBar) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	self visible: true.
+	column := Column[Visual] new.
+	row := GlyphRow new.! !
+
+! (Delta mirrorFor: #ToolBar) methodsFor: 'accessing' !
+
+
+visible ^<Boolean>
+
+	^visible!
+
+visible: f <Boolean>
+
+	visible := f.
+	self hasVisual
+		ifTrue: [ self rebuild ]! !
+
+! (Delta mirrorFor: #ToolBar) methodsFor: 'adding' !
+
+
+add: v <Visual> ^<Visual>
+
+	^self row add: v!
+
+addButtonWithImage: i <Image>
+action: action <[Button]>
+^<Button>
+
+	^self row add:
+		(Button withImage: i action: action)!
+
+addButtonWithImageFrom: filename <Str>
+action: action <[Button]>
+^<Button>
+
+	^self	addButtonWithImage: 
+					(Image fromFile: (FilePath for: filename))
+				action: action!
+
+addSpace
+
+	self row add: self buttonSpacer! !
+

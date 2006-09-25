@@ -1,0 +1,169 @@
+Delta define: #CharacterGlyph as: (
+(Class subclassOf: 'Glyph' instanceVariables: 'medium <Medium>
+            "The medium for which the allocation was calculated"
+allocation <Rect>
+            "The allocation acts as a kind of inline-cache for a given medium"
+character <Character>
+
+painter <Painter>
+		')) !
+
+(Delta mirrorFor: #CharacterGlyph) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #CharacterGlyph) group: 'ui'!
+
+(Delta mirrorFor: #CharacterGlyph)
+comment: 
+'glyphs representing characters writting using a particular painter (i.e. font & paint).
+As a convenience for text manipulation, carriage return glyphs can be created and used as placeholders. 
+Visually, they act like spaces.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #CharacterGlyph) classSide methodsFor: 'instance creation' !
+
+
+for: c <Character> painter: p <Painter> ^<CharacterGlyph>
+	"get a canonicalized glyph for the character c that will display
+		using the paint and font of p"
+		
+	^p charGlyphFor: c!
+
+new ^<Instance>
+
+	"Character glyph instances should not be explicitly created"
+	self shouldNotHappen! !
+
+! (Delta mirrorFor: #CharacterGlyph) classSide methodsFor: 'restricted-instance creation' !
+
+
+buildFor: c <Character> painter: p <Painter>  ^<CharacterGlyph>
+	"This should only be sent by instances of Font, which manage the
+	  canonicalized characterglyph instances"
+	
+	^super new initFor: c painter: p! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'initialization' !
+
+
+initFor: c <Character> painter: p <Painter>
+
+	character := c.
+	painter := p.! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'geometry-local' !
+
+
+allocationFor: context <VisualGlyph>  ^<Region>
+
+	^self character == Character tab
+		ifFalse: [ self regularAllocationIn: context medium ]
+		ifTrue: [ self tabAllocationIn: context medium at: context position ]!
+
+naturalIn: m <Medium> ^<Region>
+
+	^self character == Character tab
+		ifTrue: [	self tabAllocationIn: m at: Point origin ]
+		ifFalse: [	self regularAllocationIn: m ]
+!
+
+naturalIn: m <Medium> at: proposedPosition <Point> ^<Region>
+
+	^self character == Character tab
+		ifTrue: [	self tabAllocationIn: m at: proposedPosition ]
+		ifFalse: [	self regularAllocationIn: m ]
+! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'accessing' !
+
+
+character ^<Character>
+
+	^character!
+
+font ^<Font>
+
+	^self painter font!
+
+paint ^<Paint>
+
+	^self painter paint!
+
+painter ^<Painter>
+
+	^painter! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas> for: context <VisualGlyph>
+
+	| c <Character> |
+	c := self character.
+	(c == Character cr or: [ c == Character tab ])
+		ifFalse: [	can	displayCharacter: c
+								allocation: (self allocationFor: context)
+								painter: self painter	]! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'private' !
+
+
+allocationIn: m <Medium>  ^<Region>
+
+	^self character = Character tab
+		ifTrue: [ self tabAllocationIn: m at: Point origin ]
+		ifFalse: [ self regularAllocationIn: m ]!
+
+medium ^<Medium>
+
+	^medium!
+
+medium: m <Medium>
+
+	medium := m!
+
+regularAllocationIn: m <Medium>  ^<Region>
+
+	m = self medium
+		ifFalse: [		| c <Character> |
+							c := self character.
+							c == Character cr
+								ifTrue: [ c := Character space ].
+							self medium: m.
+							allocation := self font naturalFor: c in: m using: self painter.	].
+	^allocation!
+
+tabAllocationIn: m <Medium> at: pos <Point> ^<Region>
+
+	| protoAlloc <Rect> tabstop <Int> width <Int> |
+	"Tabs adapt to the nearest 4 char boundary, for now"
+	protoAlloc := ((self painter charGlyphFor: Character space) naturalIn: m) enclosingRect.
+	tabstop := protoAlloc width * 4.
+	width := tabstop - (pos x \\ tabstop).
+	^protoAlloc origin corner: width @ protoAlloc bottom! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'testing' !
+
+
+isRectangularAndOpaque ^<Boolean>
+
+	^false!
+
+isSurelyRigid ^<Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream> indent: level <Int>
+
+	level timesRepeat: [ strm show: '    ' ].
+	strm show: self class name.
+	strm show: '('; print: self character; show: ')'.
+	strm cr.! !
+

@@ -1,0 +1,203 @@
+Delta define: #Date as: (
+(Class subclassOf: 'Magnitude[Date]' instanceVariables: 'monthIndex <Int>
+dayOfMonth <Int>
+year <Int>
+		')) !
+
+(Delta mirrorFor: #Date) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Date) group: 'base'!
+
+(Delta mirrorFor: #Date)
+comment: 
+'Tags: %BlueBook  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Date) classSide methodsFor: 'inquiries' !
+
+
+americanFormat ^<Boolean>
+	"If true, then dates are printed as mm/dd/yy, else dd/mm/yy"
+
+	^true!
+
+dateAndTimeNow ^<Tuple[Date,Time]>
+
+	^Time dateAndTimeNow!
+
+dayOfWeek: dayName <Symbol> ^<Int>
+	"return the index in the week, where #Monday is 1"
+
+	^self daysOfWeek indexOf: dayName ifAbsent: [ self error: 'invalid day name' ]!
+
+daysInMonth: m <Symbol> forYear: y <Int> ^<Int>
+
+	self unimplemented!
+
+daysInYear: y <Int> ^<Int>
+
+	self unimplemented!
+
+indexOfMonth: name <Symbol> ^<Int>
+	"return the index in the year of the given month, where #January is 1"
+
+	^self monthsOfYear indexOf: name ifAbsent: [ self error: 'invalid month name' ]!
+
+leapYear: y <Int> ^<Int>
+	"Answer 1 if y is a leap year, 0 otherwise"
+
+	self unimplemented!
+
+nameOfDay: dayIndex <Int> ^<Symbol>
+	"return the day of the week for the given index, where 1 -> #Monday"
+
+	^self daysOfWeek at: dayIndex!
+
+nameOfMonth: index <Int> ^<Symbol>
+	"return the month of the year for the given index, where 1 -> #January"
+
+	^self monthsOfYear at: index! !
+
+! (Delta mirrorFor: #Date) classSide methodsFor: 'constants' !
+
+
+daysOfWeek ^<SeqCltn[Symbol]>
+	"%todo: internationalize"
+	^#(Monday Tuesday Wednesday Thursday Friday Saturday Sunday)!
+
+monthsOfYear ^<SeqCltn[Symbol]>
+	"%todo: internationalize"
+	^#(January February March April May June July August September October November December)! !
+
+! (Delta mirrorFor: #Date) classSide methodsFor: 'instance creation' !
+
+
+julian: d <Int> ^<Instance>
+
+	self unimplemented!
+
+newDay: d <Int> month: m <Symbol> year: y <Int> ^<Instance>
+
+	^self newDay: d monthIndex: (self indexOfMonth: m) year: y!
+
+newDay: d <Int> monthIndex: m <Int> year: y <Int> ^<Instance>
+
+	^super new initDayOfMonth: d monthIndex: m year: y!
+
+newDay: d <Int> year: y <Int> ^<Instance>
+
+	self unimplemented!
+
+today ^<Instance>
+
+	| t <SYSTEMTIME> |
+	t := Time localSYSTEMTIME.
+	^[	self newDay: t wDay monthIndex: t wMonth year: t wYear
+	 ] ensure: [ t free ]
+! !
+
+! (Delta mirrorFor: #Date) methodsFor: 'accessing' !
+
+
+asSeconds ^<Int>
+	"# of seconds since January 1, 1901"
+
+	self unimplemented!
+
+dayOfMonth ^<Int>
+
+	^dayOfMonth!
+
+hash ^<Int>
+
+	| hash <Int> |
+	hash := self year.
+	hash := ((hash bitShift: 4) bitXor: self month) bitXor: hash.
+	hash := ((hash bitShift: 4) bitXor: self dayOfMonth) bitXor: hash.
+	^hash!
+
+julian ^<Int>
+
+	self unimplemented!
+
+month ^<Symbol>
+
+	^Date monthsOfYear at: self monthIndex!
+
+monthIndex ^<Int>
+
+	^monthIndex!
+
+year ^<Int>
+
+	^year! !
+
+! (Delta mirrorFor: #Date) methodsFor: 'comparing' !
+
+
+< other <Date> ^<Boolean>
+
+	^self year < other year
+		or: [ self year = other year
+				and: [ self monthIndex < other monthIndex
+							or: [ self monthIndex = other monthIndex
+									and: [ self dayOfMonth < other dayOfMonth ]   ]]]!
+
+= other <Object> ^<Boolean>
+
+	^self == other or:
+		[	Date
+				coerce: other
+				do: [ :od <Date> |
+							self year = od year
+								and: [ self month == od month
+								and: [ self dayOfMonth = od dayOfMonth ]]
+					  ]
+				else: [ false ]
+		]! !
+
+! (Delta mirrorFor: #Date) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+	^self! !
+
+! (Delta mirrorFor: #Date) methodsFor: 'operations' !
+
+
+addDays: days <Int> ^<Date>
+
+	^Date julian: self julian + days!
+
+subtractDate: d <Date> ^<Int>
+
+	^d julian - self julian!
+
+subtractDays: days <Int> ^<Date>
+
+	^Date julian: self julian - days! !
+
+! (Delta mirrorFor: #Date) methodsFor: 'private-initialization' !
+
+
+initDayOfMonth: d <Int> monthIndex: m <Int> year: y <Int>
+
+
+	dayOfMonth := d.
+	monthIndex := m.
+	year := y.! !
+
+! (Delta mirrorFor: #Date) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm putAll: self month;
+			put: Character space;
+			print: self dayOfMonth;
+			putAll: ', ';
+			print: self year.! !
+

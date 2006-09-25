@@ -1,0 +1,35 @@
+Delta define: #HTMLNode as: (
+(Class subclassOf: 'Object' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #HTMLNode) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #HTMLNode) group: 'HTML'!
+
+(Delta mirrorFor: #HTMLNode)
+comment: 
+'The node type for HTML ASTs.
+
+Tags: %HTML %UI
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #HTMLNode) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	self subclassResponsibility!
+
+textOn: strm <CharOutputStream>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #HTMLNode) methodsFor: 'iterating' !
+
+
+linksDo: blk <[ElementA]>
+
+	self subclassResponsibility! !
+

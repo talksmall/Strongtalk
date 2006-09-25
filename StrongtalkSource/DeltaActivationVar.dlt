@@ -1,0 +1,25 @@
+Delta define: #DeltaActivationVar as: (
+(Class subclassOf: 'DeltaVar' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaActivationVar) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaActivationVar) group: 'ast'!
+
+(Delta mirrorFor: #DeltaActivationVar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaActivationVar) methodsFor: 'Unclassified' !
+
+
+isActivationVarNode ^ <Boolean>
+    ^ true!
+
+isFloatValue
+	^ EnableFloatValues and: [ self type name = #FloatValue ]!
+
+isIntroducedByRewriter
+	self deltaHack.
+	^ (self name at: 1) = $.! !
+

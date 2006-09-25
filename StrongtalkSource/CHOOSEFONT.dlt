@@ -1,0 +1,66 @@
+Delta define: #CHOOSEFONT as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #CHOOSEFONT) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #CHOOSEFONT) group: 'base'!
+
+(Delta mirrorFor: #CHOOSEFONT)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+! (Delta mirrorFor: #CHOOSEFONT) methodsFor: 'accessing' !
+
+
+Flags: v <Int>
+
+	self externalDataAt: self FlagsOffset put: v!
+
+hwndOwner: v <ExternalData>
+
+	self externalDataAt: self hwndOwnerOffset put: v!
+
+lStructSize: v <Int>
+
+	self smallIntegerAt: self lStructSizeOffset put: v!
+
+lpLogFont: v <LOGFONT>
+
+	self externalDataAt: self lpLogFontOffset put: v!
+
+rgbColors ^<Int>
+
+	^self smallIntegerAt: self rgbColorsOffset!
+
+rgbColors: v <Int>
+
+	self smallIntegerAt: self rgbColorsOffset put: v!
+
+structureSize ^<Int>
+
+	^(14*Platform wordSize)+(2 *(Platform wordSize // 2))! !
+
+! (Delta mirrorFor: #CHOOSEFONT) methodsFor: 'offsets' !
+
+
+FlagsOffset ^<Int>
+
+	^20!
+
+hwndOwnerOffset ^<Int>
+
+	^4!
+
+lStructSizeOffset ^<Int>
+
+	^0!
+
+lpLogFontOffset ^<Int>
+
+	^12!
+
+rgbColorsOffset ^<Int>
+
+	^24! !
+

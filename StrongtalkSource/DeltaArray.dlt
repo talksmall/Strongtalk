@@ -1,0 +1,57 @@
+Delta define: #DeltaArray as: (
+(Class subclassOf: 'DeltaLiteral' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaArray) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaArray) group: 'ast'!
+
+(Delta mirrorFor: #DeltaArray)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaArray) methodsFor: 'Unclassified' !
+
+
+buildUnion: e <SeqCltn[ObjectType] > ^ <ObjectType>
+    e size = 1 ifTrue:[^e first].
+^DeltaUnionType new type1: e first type2: (self buildUnion: (e removeFirst; yourself))!
+
+isArrayNode
+    ^ true!
+
+type ^ <ObjectType>
+    |
+sqTarget <DeltaTypeId> 
+sqActuals <VarOrdCltn[ObjectType]> 
+sqActual <ObjectType> 
+sqType <GenericTypeApplication>
+tupleTarget <DeltaTypeId> 
+tupleActuals <VarOrdCltn[ObjectType]> 
+tupleType <TupleType>
+|
+
+sqTarget := DeltaTypeId new setId: #SeqCltn; scope: DeltaGlobals"; begin: 0 end: 0".
+sqActuals := OrderedCollection[ObjectType]  new.
+tupleActuals := self value collect:[:e <DeltaLiteral>  | e type].
+
+tupleActuals isEmpty 
+   ifTrue:[tupleActuals add: (DeltaTypeId new setId: #DoesNotMatter;
+                                                                                         scope: DeltaGlobals)
+                ].
+
+sqActual := self buildUnion: tupleActuals asSet asOrderedCollection.
+
+sqActuals add: sqActual.
+sqType := DeltaGenericApplicationType new apply: sqTarget to: sqActuals.
+
+tupleTarget := DeltaTypeId new setId: #Tuple; scope: DeltaGlobals.
+tupleType := DeltaTupleType new apply: tupleTarget to: tupleActuals.
+
+
+^DeltaProtocolMerge new type1: sqType type2: tupleType.
+!
+
+typeName ^ <Symbol>
+    ^self type name! !
+

@@ -1,0 +1,96 @@
+Delta define: #QueensBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: '') classVariables: 'Queencount ') !
+
+(Delta mirrorFor: #QueensBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #QueensBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #QueensBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #QueensBenchmark) classSide methodsFor: 'constants' !
+
+
+initialize Queencount := 50 "QueensBenchmark initialize"! !
+
+! (Delta mirrorFor: #QueensBenchmark) methodsFor: 'run' !
+
+
+run
+	Queencount timesRepeat: [self doQueens]! !
+
+! (Delta mirrorFor: #QueensBenchmark) methodsFor: 'private' !
+
+
+doQueens
+	| i a b c x |
+	a := Array new: 9.
+	b := Array new: 17.
+	c := Array new: 15.
+	x := Array new: 9.
+	i := -7.
+	[i <= 16]
+		whileTrue: 
+			[(i >= 1 and: [i <= 8])
+				ifTrue: [a at: i put: true].
+			i >= 2 ifTrue: [b at: i put: true].
+			i <= 7 ifTrue: [c at: i + 8 put: true].
+			i := i + 1].
+	(self
+		tryI: 1
+		A: b
+		B: a
+		C: c
+		X: x)
+		ifFalse: [self error: 'Error in queens']!
+
+tryI: i A: a B: b C: c X: x 
+	| j q |
+	j := 0.
+	q := false.
+	[q not and: [j ~= 8]]
+		whileTrue: 
+			[j := j + 1.
+			q := false.
+			((b at: j)
+				and: [(a at: i + j)
+						and: [c at: i - j + 8]])
+				ifTrue: 
+					[x at: i put: j.
+					b at: j put: false.
+					a at: i + j put: false.
+					c at: i - j + 8 put: false.
+					i < 8
+						ifTrue: 
+							[q := self
+										tryI: i + 1
+										A: a
+										B: b
+										C: c
+										X: x.
+							q
+								ifFalse: 
+									[b at: j put: true.
+									a at: i + j put: true.
+									c at: i - j + 8 put: true]]
+						ifFalse: [q := true]]].
+	^q! !
+
+! (Delta mirrorFor: #QueensBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^60!
+
+factor
+	^25!
+
+name
+	^#Queens!
+
+parcplaceTime
+	^83! !
+

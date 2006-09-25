@@ -1,0 +1,116 @@
+Delta define: #DeltaScopeReference as: (
+(Class subclassOf: 'DeltaScope' instanceVariables: 'ref accessBlk ')) !
+
+(Delta mirrorFor: #DeltaScopeReference) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaScopeReference) group: 'ast'!
+
+(Delta mirrorFor: #DeltaScopeReference)
+comment: 
+'This scope serves as a symbolic reference to another scope.
+It maintains a symbolic reference to the construct whose scope it
+represents, and uses that to locate the correct scope dynamically.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaScopeReference) classSide methodsFor: 'Unclassified' !
+
+
+for: ref accessBlk: blk <[ASTNode, ^ Scope]>
+
+blk isNil ifTrue:[self halt].
+^self new ref: ref ; accessBlk: blk! !
+
+! (Delta mirrorFor: #DeltaScopeReference) methodsFor: 'Unclassified' !
+
+
+accessBlk
+
+^accessBlk!
+
+accessBlk: ab
+
+accessBlk := ab!
+
+at: aKey
+"Answers the value associated with aKey in this or one the super scopes or fails if aKey is absent"
+^self referredScope at: aKey !
+
+at: aKey ifAbsent: aBlock
+
+^self referredScope at: aKey ifAbsent: aBlock!
+
+at: aKey put: aValue
+
+^self referredScope at: aKey put: aValue!
+
+at: aKey put: aValue ifThere: aBlock
+
+^self referredScope at: aKey put: aValue ifThere: aBlock!
+
+classVarDecls ^ <Dict[Symbol,VarDecl]>
+
+^self referredScope classVarDecls!
+
+includesIndex: key
+    ^ self referredScope includesIndex: key!
+
+includesIndexLocally: key <NameType > ^ <Boolean>
+
+^self referredScope includesKeyLocally: key.!
+
+includesKey: key
+    ^ self referredScope includesKey: key!
+
+includesKeyLocally: key <NameType > ^ <Boolean>
+
+^self referredScope includesKeyLocally: key.!
+
+instVarDecls ^ <Dict[Symbol,VarDecl]>
+
+^self referredScope instVarDecls!
+
+isOverrideScope
+	^ self referredScope isOverrideScope!
+
+komment
+
+"This scope serves as a symbolic reference to another scope.
+It maintains a symbolic reference to the construct whose scope it
+represents, and uses that to locate the correct scope dynamically.
+"!
+
+ref
+
+^ref!
+
+ref: r
+
+ref := r!
+
+referredScope 
+
+^self accessBlk  value: self ref!
+
+remove: index
+
+self referredScope remove: index!
+
+removeKey: index
+
+self referredScope removeKey: index!
+
+removeKey: index ifAbsent: blk
+
+self referredScope removeKey: index ifAbsent: blk!
+
+substitute: s
+
+
+^self class new ref: (self ref substitute: s); accessBlk: self accessBlk!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+
+^self referredScope varDecls! !
+

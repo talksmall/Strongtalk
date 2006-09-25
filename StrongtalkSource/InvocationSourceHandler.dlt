@@ -1,0 +1,31 @@
+Delta define: #InvocationSourceHandler as: (
+(Class subclassOf: 'CommonSourceHandler' instanceVariables: '')) !
+
+(Delta mirrorFor: #InvocationSourceHandler) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #InvocationSourceHandler) group: 'reflection'!
+
+(Delta mirrorFor: #InvocationSourceHandler)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #InvocationSourceHandler) methodsFor: 'Unclassified' !
+
+
+definitionString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler definitionString ].
+	^(self attributeAt: '#definitionString') first
+!
+
+definitionString: s <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler definitionString: s ].
+	self attributeAt: '#definitionString'  put: (OrderedCollection[Str] with: s)!
+
+handlerId ^ <Str>
+
+	^'Invocation'
+! !
+

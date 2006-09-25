@@ -1,0 +1,51 @@
+Delta define: #CustomDictionary as: (
+Generic forAll: 'K , E ' body: ((Class subclassOf: 'Dictionary[K,E]' instanceVariables: 'compareBlock <[K,K,^Boolean]>
+hashBlock <[K, ^Int]>
+		'))) !
+
+(Delta mirrorFor: #CustomDictionary) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #CustomDictionary) group: 'base'!
+
+(Delta mirrorFor: #CustomDictionary)
+comment: 
+'CustomDictionaries are like regular dictionaries, except that they use blocks to
+perform key hashing and comparison, so that key matching using a different
+operator than #= can be done.  The default blocks compare using the standard
+operator #=.
+
+Tags: %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #CustomDictionary) classSide methodsFor: 'instance creation' !
+
+
+withCompareBlock: compareBlock <[K,K,^Boolean]>
+hashBlock: hashBlock <[K, ^Int]>
+ ^<Instance>
+
+	^(self new) compareBlock: compareBlock; hashBlock: hashBlock! !
+
+! (Delta mirrorFor: #CustomDictionary) methodsFor: 'initialization' !
+
+
+initCapacity: cap <Int>
+
+	super initCapacity: cap.
+	self	compareBlock: [ :k1 <K> :k2 <K> |  k1 = k2 ];
+			hashBlock: [ :k <K> | k hash ].! !
+
+! (Delta mirrorFor: #CustomDictionary) methodsFor: 'accessing' !
+
+
+compareBlock: blk <[K,K,^Boolean]>
+
+	compareBlock := blk!
+
+hashBlock: blk <[K, ^Int]>
+
+	hashBlock := blk! !
+

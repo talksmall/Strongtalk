@@ -1,0 +1,124 @@
+Delta define: #DeltaUnaryClassExpr as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaUnaryClassExpr) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaUnaryClassExpr) group: 'ast'!
+
+(Delta mirrorFor: #DeltaUnaryClassExpr)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaUnaryClassExpr) methodsFor: 'Unclassified' !
+
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^self dual allSelfTVs!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^self dual allSelfClassTVs!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self dual antimonotonicIn: tv!
+
+asMixinSide ^ <SideUpdate>
+
+^self dual asMixinSide dual!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self dual bareSecondaryAttributes!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self dual bareAttributes!
+
+basicLocator
+	^self dual basicLocator isMetaSide: true
+!
+
+branded ^ <Boolean>
+    ^self dual branded!
+
+canonicalRep ^ <Protocol>
+    ^self dual canonicalRep classProtocol!
+
+classProtocol ^ <Protocol>
+"Should be Metaclass"
+    ^DeltaTypeId new setId: #Class; scope: DeltaGlobals!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+^self dual compositeSubstitute: t!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^p == self or:[(Type forClass: (Delta at: #Class))  declaredSubprotocolOf: p]!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^OrderedCollection[ObjectType] new add: (Type forClass: Class); yourself!
+
+dual ^ <Protocol>
+    ^self filteree dual substitute: self substitution!
+
+dual: d <Protocol > ^ <Self>
+    self filter: (BasicClassProtocolData new dual: d)
+       using: DeltaSubstitution new initialize.!
+
+involvesTypeVariables ^ <Boolean>
+    ^self dual involvesTypeVariables!
+
+isMeta ^ <Boolean>
+    ^true!
+
+isMonotonic ^ <Boolean>
+    ^self dual isMonotonic!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self dual localBareSecondaryAttributes!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self dual localBareAttributes!
+
+localPrimaryInterface ^ <Interface>
+	^self dual localSecondaryInterface!
+
+localSecondaryInterface ^ <Interface>
+	^self dual localPrimaryInterface!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self dual monotonicIn: tv!
+
+name ^ <Symbol>
+    ^(self dual name, ' class') asSymbol!
+
+rawClassInterface ^ <Interface>
+    ^(DeltaScope at: #Class) rawPrimaryInterface!
+
+rawPrimaryInterface ^ <Interface>
+    ^self dual rawSecondaryInterface!
+
+rawSecondaryInterface ^ <Interface>
+    ^self dual rawPrimaryInterface!
+
+scope ^ <Scope>
+    ^self dual scope!
+
+selfClassTV ^ <TypeVar>
+    ^self dual selfTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self dual selfPublicTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self dual selfPublicClassTV!
+
+selfTV ^ <TypeVar>
+    ^self dual selfClassTV!
+
+substitute: s <Substitution > ^ <Self>
+    ^(self dual substitute: s)  typeOfClass!
+
+wellFormed ^ <Boolean>
+
+^self dual wellFormed! !
+

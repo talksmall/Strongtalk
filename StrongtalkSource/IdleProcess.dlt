@@ -1,0 +1,129 @@
+Delta define: #IdleProcess as: (
+(Class subclassOf: 'InstanceCritical |> Process' instanceVariables: 'idleActions <Queue[[]]>') classVariables: 'TheIdleProcess <IdleProcess>
+	"The single instance"') !
+
+(Delta mirrorFor: #IdleProcess) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #IdleProcess) group: 'base'!
+
+(Delta mirrorFor: #IdleProcess)
+comment: 
+'The IdleProcess is a single special process that executes idle actions.
+Idle actions are registered using IdleProcess>>register:, and unregistered
+similarly.
+
+%todo: the normal process protocol probably doesn''t completely work
+	right yet, since this process doesn''t appear in the running process list.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'instance creation' !
+
+
+for: block <[]> ^<Instance>
+
+	self assert: [ TheIdleProcess isNil ].
+	^super for: block!
+
+new ^<Instance>
+
+	| i <Instance> |
+	self assert: [ TheIdleProcess isNil ].
+	i := self for: [ i runIdleActionLoop ].		"tricky"
+	^i! !
+
+! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'registering' !
+
+
+register: idleAction <[]>
+	"Register a new idle action to execute repeatedly when the system is queiscent.
+	  The action should do only a very small amount of work at a time (much less than a second)."
+	  
+	self theIdleProcess register: idleAction!
+
+unregister: idleAction <[]>
+	"unregister a previously registered idle action"
+	  
+	self theIdleProcess unregister: idleAction! !
+
+! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	TheIdleProcess := nil.
+	TheIdleProcess := IdleProcess new.! !
+
+! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'accessing' !
+
+
+theIdleProcess ^<IdleProcess>
+
+	^TheIdleProcess
+	! !
+
+! (Delta mirrorFor: #IdleProcess) methodsFor: 'private-initialization' !
+
+
+initFor: block <[]>
+
+	super initFor: block.
+	idleActions := Queue[[]] new.! !
+
+! (Delta mirrorFor: #IdleProcess) methodsFor: 'accessing' !
+
+
+hasIdleActions ^<Boolean>
+
+	^self idleActions isEmpty not!
+
+idleActions ^<Queue[[]]>
+
+	^idleActions! !
+
+! (Delta mirrorFor: #IdleProcess) methodsFor: 'restricted-registering' !
+
+
+register: idleAction <[]>
+
+	self critical: [ self idleActions nextPut: idleAction ]!
+
+unregister: idleAction <[]>
+
+	self critical: [ self idleActions remove: idleAction ]! !
+
+! (Delta mirrorFor: #IdleProcess) methodsFor: 'control' !
+
+
+executeNextAction
+	"Execute the idle action on the front of the queue, and put it back at the end of the queue"
+
+	| action <[]> |
+	self critical:
+		[	action := self idleActions next.
+			self idleActions nextPut: action. ].
+	action value.!
+
+resume
+
+	"Do nothing for the idle process"!
+
+runIdleActionLoop
+
+	[	self executeNextAction.
+		"Idle actions are only executed one at a time"
+		Processor yield.
+	] repeat!
+
+suspend
+
+	"Do nothing for the idle process"! !
+
+! (Delta mirrorFor: #IdleProcess) methodsFor: 'private' !
+
+
+register
+
+	"We override this to do nothing because this process should
+		not be registered"! !
+

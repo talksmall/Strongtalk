@@ -1,0 +1,274 @@
+Delta define: #Dictionary as: (
+Generic forAll: 'K , E ' body: ((Class subclassOf: 'HashedCollection[K,E,VarAssoc[K,E]]' instanceVariables: '') protocols: 'VarDict[K,E]')) !
+
+(Delta mirrorFor: #Dictionary) revision: '$Revision: 1.14 $'!
+
+(Delta mirrorFor: #Dictionary) group: 'base'!
+
+(Delta mirrorFor: #Dictionary)
+comment: 
+'Dictionaries are efficient HashedCollections that let you dynamically associate key->value
+pairs,  where the keys are matched using the #= message.  Equal keys must have equal #hash
+values.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Dictionary) classSide methodsFor: 'testing' !
+
+
+atPerformanceTest
+
+	| d <VarDict[Symbol,Symbol]> x <Symbol> |
+	d := Dictionary[Symbol,Symbol] new.
+	d at: #hello put: #hello.
+	500000 timesRepeat:
+		[ x := d at: #hello	].
+	self assert: [ x == #hello ].!
+
+atPutPerformanceTest
+
+	| d <VarDict[Symbol,Symbol]> x <Symbol> |
+	d := Dictionary[Symbol,Symbol] new.
+	d at: #hello put: #hello.
+	500000 timesRepeat:
+		[ x := d at: #hello put: #hello	].
+	self assert: [ x == #hello ].!
+
+test
+
+	"self test"
+	| d <Dictionary[Str,Str]> new <Boolean> oc <OrderedCollection[Assoc[Str,Str]]> |
+	d := Dictionary[Str,Str] new.
+	d at: #this put: #that.
+	self test: 1 is: [ (d at: #this) = #that ].
+	new := false.
+	d at: #this put: #that ifNew: [ new := true ].
+	d checkValidity.
+	self test: 2 is: [ new not ].
+	d at: #hi put: #there ifNew: [ new := true ].
+	d checkValidity.
+	self test: 3 is: [ new ].
+	oc := OrderedCollection[Assoc[Str,Str]] new.
+	d keysAndValuesDo:
+		[ :k <Str> :v <Str> |
+			oc add: k -> v ].
+	self test: 4 is: [ oc size = 2 and: [ oc hasSameElementsAs: d associations] ].
+	d addAssociation: #hi -> #mom.
+	d checkValidity.
+	self test: 5 is: [ (d associationAt: #hi) value = #mom ].
+	self test: 6 is: [ d includesAssociation: #hi -> #mom ].
+	self test: 7 is: [ (d includesAssociation: #yo -> #momma) not ].
+	(d copy) at: #hi put: #there; checkValidity.
+	d checkValidity.
+	self test: 8 is: [ (d at: #hi) = #mom ].
+	new := false.
+	d removeAssociation: #this -> #that ifAbsent: [ new := true ].
+	d checkValidity.
+	self test: 9 is: [ (d includesKey: #this) not & new not ].
+	d removeAssociation: #bubba -> #that ifAbsent: [ new := true ].
+	d checkValidity.
+	self test: 10 is: [ new ].! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'private-superclass implementation' !
+
+
+buildValForKey: k <K> element: el <E> ^<VarAssoc[K,E]>
+
+	^Association[K,E] key: k value: el!
+
+elementFor: assoc <Assoc[K,E]> ^<E>
+
+	^assoc value!
+
+elementForCopy: el <VarAssoc[K,E]> ^<VarAssoc[K,E]>
+
+	^el copy!
+
+hashFor: key <Object> ^<Int>
+
+	^key hash!
+
+key: k <Object> matches: another <Object> ^<Boolean>
+
+	^k = another!
+
+keyFor: assoc <Assoc[K,E]> ^<K>
+
+	^assoc key!
+
+objToIncludeFor: newAssoc <VarAssoc[K,E]>
+withExisting: assoc <VarAssoc[K,E]>
+^<VarAssoc[K,E]>
+
+	"Dictionaries reuse the previous association"
+	assoc value: newAssoc value.
+	^assoc! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'adding' !
+
+
+at: key <K> put: el <E> ^<E>
+
+	^self at: key put: el ifNew: []!
+
+at: key <K> put: el <E> ifNew: blk <[]> ^<E>
+
+	self tableAt: key put: el ifNew: blk.
+	^el! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'iterating' !
+
+
+keysAndValuesDo: f <[K,E]>
+
+	self contentsDo:
+		[ :assoc <Assoc[K,E]> |
+		   f value: assoc key value: assoc value ]! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'testing' !
+
+
+= other <Object> ^<Boolean>
+
+	^super = other and: [
+		self == other or: [
+			"We already know that the other object must be a Dictionary"
+			self keys = (guaranteed <Dict[Object,Object]> other) keys	]]! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'associations' !
+
+
+addAssociation: assoc <Assoc[K,E]> ^<Assoc[K,E]>
+
+	"we don't use the incoming association, for safety"
+	^self include: (Association[K,E] key: assoc key value: assoc value)!
+
+associationAt: key <K> ^<Assoc[K,E]>
+
+	^self associationAt: key ifAbsent: [ self error: 'key not found' ]!
+
+associationAt: key <K> ifAbsent: failBlock <[^X def]> ^<Assoc[K,E] | X>
+
+	^self valAt: key ifAbsent: failBlock!
+
+associations ^<OrdCltn[Assoc[K,E]]>
+
+	| oc <OrdCltn[Assoc[K,E]]> |
+
+	oc := OrderedCollection[Assoc[K,E]] new: self size.
+	self associationsDo:
+		[ :assoc <Assoc[K,E]> |
+			oc add: assoc	].
+	^oc!
+
+associationsDo: f <[Assoc[K,E]]>
+
+	self contentsDo:
+		[ :assoc <Assoc[K,E]> |
+			f value: assoc ]!
+
+includesAssociation: assoc <Assoc[K,Object]>  ^<Boolean>
+
+	^(self at: assoc key ifAbsent: [ ^false ]) = assoc value!
+
+removeAssociation: assoc <Assoc[K,E]> ^<Assoc[K,E]>
+
+	^self removeAssociation: assoc ifAbsent: [ self error: 'Association not found' ].
+!
+
+removeAssociation: assoc <Assoc[K,E]> ifAbsent: fn <[^X def]>  ^<Assoc[K,E] | X>
+
+	self removeKey: assoc key ifAbsent: [ ^fn value ].
+	^assoc! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'accessing' !
+
+
+keys ^<Set[K]>
+
+	| s <Set[K]> |
+
+	s := Set[K] new: self size.
+	self keysDo:
+		[ :key <K> |
+			s include: key ].
+	^s!
+
+values ^<OrdCltn[E]>
+
+	^self inject: (OrderedCollection[E] new: self size) into:
+		[ :oc <OrdCltn[E]>  :el <E> |
+			oc add: el; yourself  ]! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'virtual operations' !
+
+
+merge: d <Dictionary[K,E]> ^ <DictionaryMerge>
+
+^DictionaryMerge new dict1: self dict2: d!
+
+override: d <Dictionary[K,E]> ^ <DictionaryOverride>
+
+^DictionaryOverride new dict1: self dict2: d!
+
+virtualCollect: blk <[E, ^X def]> ^<VirtualCollector[X]>
+
+	^ VirtualDictCollector[K,X] on: self map: blk!
+
+virtualSelectorClass^ <VirtualDictSelector[K,E] class>
+
+	^VirtualDictSelector[K,E]! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'combined getting/putting' !
+
+
+at: key <K> ifPresent: pblk <[E]> ifAbsentPut: ablk <[^E]> ^<E>
+	"This is a method that is useful in the common case when you want
+		to find out if a key is present, and if it isn't, put an entry in for it.
+		It is much faster than a construct like (hc at: k ifAbsent: [ hc at: k put: e ])
+		for the case when a new entry must be added.
+		If the key is present, pblk is evaluated with the associated element.
+		If it is absent, then ablk is evaluated, and the value that it returns
+		is associated with k in the receiver.  In either case, the associated element
+		is returned."
+
+	| reusableSlot <Int> |
+	self table == nil
+		ifTrue: [	self createFirstTable.	 ].
+	^self	lookup: key
+				matchingSlotDo:
+						[ :index <Int> :assoc <VarAssoc[K,E]> |
+							| el <E> |
+							el := assoc value.
+							pblk value: el.
+							el		]
+				emptySlotDo:
+						[ :index <Int> |
+							| newEl <E> |
+							newEl := ablk value.
+							reusableSlot == nil
+								ifTrue: [ self tableAt: key put: newEl inEmptySlot: index ]
+								ifFalse: [ self tableAt: key put: newEl inDeletedSlot: reusableSlot ].
+							newEl	]
+				deletedSlotsDo:
+						[ :index <Int> |
+							reusableSlot == nil
+								ifTrue: [ reusableSlot := index ].
+						]! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'private-subroutines for #tableAt:put:ifNew:' !
+
+
+tableAt: key <K>
+put: el <E>
+inMatchingSlot: index <Int>
+value: val <VarAssoc[K,E]>
+^<VarAssoc[K,E]>
+
+	val value: el.
+	^val! !
+

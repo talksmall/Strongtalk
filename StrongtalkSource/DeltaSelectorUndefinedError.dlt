@@ -1,0 +1,28 @@
+Delta define: #DeltaSelectorUndefinedError as: (
+(Class subclassOf: 'DeltaBasicTypeError' instanceVariables: 'selector ')) !
+
+(Delta mirrorFor: #DeltaSelectorUndefinedError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaSelectorUndefinedError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSelectorUndefinedError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSelectorUndefinedError) methodsFor: 'Unclassified' !
+
+
+errorMessage
+	^'Selector ', self selector, ' undefined'!
+
+matchesError: e
+	^(super matchesError: e) and: [self selector = e selector]
+!
+
+selector
+	^selector!
+
+selector: aSymbol
+	selector := aSymbol! !
+

@@ -1,0 +1,25 @@
+Delta define: #ElementSTRONG as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementSTRONG) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ElementSTRONG) group: 'Unclassified'!
+
+(Delta mirrorFor: #ElementSTRONG)
+comment: 
+''!
+
+! (Delta mirrorFor: #ElementSTRONG) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	| p <Painter> |
+	p := builder painter copy.
+	p font: (p font newSpec boldness: 0.75) font.
+	builder withPainter: p
+		do: [ self for: builder withColorsFromAttributesDo:
+					[	super buildFor: builder ].
+				]
+! !
+

@@ -1,0 +1,32 @@
+Delta define: #ToolBarHolder as: (
+(Class subclassOf: 'Column[Visual]' instanceVariables: '')) !
+
+(Delta mirrorFor: #ToolBarHolder) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ToolBarHolder) group: 'Unclassified'!
+
+(Delta mirrorFor: #ToolBarHolder)
+comment: 
+'Used to position toolbars and the window body.  The toolbar is
+the first entry, and the window body is the second.  We subclass Column
+because we want input focus to go to the body first, not the toolbar.
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #ToolBarHolder) methodsFor: 'input focus' !
+
+
+focusCandidatesDo: blk <[Visual]>
+
+	"let the receiver go first.  Does nothing right now, but is correct"
+	self isFocusCandidate
+		ifTrue: [ blk value: self ].
+
+	"let the body take priority over the toolbar"
+	(self at: 2) focusCandidatesDo: blk.
+
+	"now let the toolbar go"
+	(self at: 1) focusCandidatesDo: blk.
+! !
+

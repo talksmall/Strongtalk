@@ -1,0 +1,31 @@
+Delta define: #DeltaNotAGenericError as: (
+(Class subclassOf: 'DeltaInvalidTypeUsageError' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaNotAGenericError) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaNotAGenericError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaNotAGenericError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaNotAGenericError) methodsFor: 'Unclassified' !
+
+
+errorMessage
+	^self id, ' is not a generic'!
+
+invocationCacheFor: gi  <GenericApplicationClassType> ^ <Dict[ObjectType, ObjectType]>
+
+^Dictionary[ObjectType, ObjectType] new
+!
+
+localScope  ^ <Scope>
+
+^DeltaScope new initialize: nil!
+
+substitutionOfFormalsWithActuals: actuals <OrdCltn[ObjectType] > ^ <Substitution>
+    
+^DeltaSubstitution new initialize! !
+

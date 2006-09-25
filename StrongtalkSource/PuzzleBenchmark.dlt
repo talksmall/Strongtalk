@@ -1,0 +1,167 @@
+Delta define: #PuzzleBenchmark as: (
+(Class subclassOf: 'IntMMBenchmark' instanceVariables: 'piececount class piecemax puzzl p n kount')) !
+
+(Delta mirrorFor: #PuzzleBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #PuzzleBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #PuzzleBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'private' !
+
+
+fitI: i J: j 
+	0 to: (piecemax at: i)
+		do: [:k | (  ((p at: i) at: k) 
+				and: [(puzzl at: j + k) ])
+				ifTrue: [^false]].
+	^true!
+
+placeI: i J: j 
+	0 to: (piecemax at: i)
+		do: [:k | ((p at: i) at: k)
+				ifTrue: [puzzl at: j + k put: true]].
+	piececount at: (class at: i)
+		put: (piececount at: (class at: i)) - 1.
+	j to: self puzzleSize do: [:k | (puzzl at: k) ifFalse: [^k]].
+	^0!
+
+removeI: i J: j 
+	0 to: (piecemax at: i)
+		do: [:k | ((p at: i) at: k)
+				ifTrue: [puzzl at: j + k put: false]].
+	piececount at: (class at: i)
+		put: (piececount at: (class at: i))
+				+ 1!
+
+run1
+	piececount := PuzzleArray new: self classmax + 1.
+	class := PuzzleArray new: self typemax + 1.
+	piecemax := PuzzleArray new: self typemax + 1.
+	puzzl := PuzzleArray new: self puzzleSize + 1.
+	p := self makePuzzleMatrix: self typemax + 1 by: self puzzleSize + 1.
+	0 to: self puzzleSize do: [:m | puzzl at: m put: true]!
+
+run2  
+	1 to: 5 do: [ :i |
+	    1 to: 5 do: [ :j |
+	        1 to: 5 do: [ :k |
+		    puzzl at: i + (self d * (j + (self d * k))) put: false ]]].
+
+	0 to: self typemax   do: [ :i |
+	    0 to: self puzzleSize   do: [ :m |
+		(p at: i) at: m put: false]].
+
+	0 to: 3 do: [ :i | 0 to: 1 do: [ :j | 0 to: 0 do: [ :k | (p at: 0) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 0 put: 0.
+	piecemax at: 0 put: 3 + (self d * 1) + (self d * self d * 0).
+
+	0 to: 1 do: [ :i | 0 to: 0 do: [ :j | 0 to: 3 do: [ :k | (p at: 1) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 1 put: 0.
+	piecemax at: 1 put: 1 + (self d * 0) + (self d * self d * 3).
+
+	0 to: 0 do: [ :i | 0 to: 3 do: [ :j | 0 to: 1 do: [ :k | (p at: 2) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 2 put: 0.
+	piecemax at: 2 put: 0 + (self d * 3) + (self d * self d * 1).
+
+	0 to: 1 do: [ :i | 0 to: 3 do: [ :j | 0 to: 0 do: [ :k | (p at: 3) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 3 put: 0.
+	piecemax at: 3 put: 1 + (self d * 3) + (self d * self d * 0).
+
+	0 to: 3 do: [ :i | 0 to: 0 do: [ :j | 0 to: 1 do: [ :k | (p at: 4) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 4 put: 0.
+	piecemax at: 4 put: 3 + (self d * 0) + (self d * self d * 1).
+
+	0 to: 0 do: [ :i | 0 to: 1 do: [ :j | 0 to: 3 do: [ :k | (p at: 5) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 5 put: 0.
+	piecemax at: 5 put: 0 + (self d * 1) + (self d * self d * 3).
+
+	0 to: 2 do: [ :i | 0 to: 0 do: [ :j | 0 to: 0 do: [ :k | (p at: 6) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 6 put: 1.
+	piecemax at: 6 put: 2 + (self d * 0) + (self d * self d * 0).
+
+	0 to: 0 do: [ :i | 0 to: 2 do: [ :j | 0 to: 0 do: [ :k | (p at: 7) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 7 put: 1.
+	piecemax at: 7 put: 0 + (self d * 2) + (self d * self d * 0).
+
+	0 to: 0 do: [ :i | 0 to: 0 do: [ :j | 0 to: 2 do: [ :k | (p at: 8) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 8 put: 1.
+	piecemax at: 8 put: 0 + (self d * 0) + (self d * self d * 2).
+
+	0 to: 1 do: [ :i | 0 to: 1 do: [ :j | 0 to: 0 do: [ :k | (p at: 9) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 9 put: 2.
+	piecemax at: 9 put: 1 + (self d * 1) + (self d * self d * 0).
+
+	0 to: 1 do: [ :i | 0 to: 0 do: [ :j | 0 to: 1 do: [ :k | (p at: 10) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 10 put: 2.
+	piecemax at: 10 put: 1 + (self d * 0) + (self d * self d * 1).
+
+	0 to: 0 do: [ :i | 0 to: 1 do: [ :j | 0 to: 1 do: [ :k | (p at: 11) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 11 put: 2.
+	piecemax at: 11 put: 0 + (self d * 1) + (self d * self d * 1).
+
+	0 to: 1 do: [ :i | 0 to: 1 do: [ :j | 0 to: 1 do: [ :k | (p at: 12) at: i + (self d * (j + (self d * k))) put: true ]]].
+	class at: 12 put: 3.
+	piecemax at: 12 put: 1 + (self d * 1) + (self d * self d * 1).!
+
+trial: j 
+	| k |
+	kount := kount + 1.
+	0 to: self typemax do: [:i | (piececount at: (class at: i))
+			~= 0 ifTrue: [(self fitI: i J: j)
+				ifTrue: 
+					[k := self placeI: i J: j.
+					((self trial: k)
+						or: [k = 0])
+						ifTrue: [^true]
+						ifFalse: [self removeI: i J: j]]]].
+	^false! !
+
+! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'constants' !
+
+
+classmax ^3!
+
+d ^8!
+
+puzzleSize ^511!
+
+typemax ^12! !
+
+! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'run' !
+
+
+run
+	| m |
+	n := 0.
+	kount := 0.
+	self run1; run2.
+	piececount at: 0 put: 13.
+	piececount at: 1 put: 3.
+	piececount at: 2 put: 1.
+	piececount at: 3 put: 1.
+	m := 1 + (self d * (1 + (self d * 1))).
+	kount := 0.
+	(self fitI: 0 J: m) ifTrue: [n := self placeI: 0 J: m] ifFalse: [self error: 'error1 in puzzle'].
+	(self trial: n ) ifFalse: [self error: 'error2 in puzzle'].
+	kount = 2005 ifFalse: [self error: 'error3 in puzzle']! !
+
+! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^2712!
+
+factor
+	^1!
+
+name
+	^#Puzzle!
+
+parcplaceTime
+	^1886! !
+

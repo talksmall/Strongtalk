@@ -1,0 +1,52 @@
+Delta define: #CodeEditor as: (
+(Class subclassOf: 'TextEditor' instanceVariables: '')) !
+
+(Delta mirrorFor: #CodeEditor) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #CodeEditor) group: 'ui'!
+
+(Delta mirrorFor: #CodeEditor)
+comment: 
+'Text editor for Smalltalk code.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
+'!
+
+! (Delta mirrorFor: #CodeEditor) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	Launcher registerMenu: self launcherMenu for: self! !
+
+! (Delta mirrorFor: #CodeEditor) classSide methodsFor: 'private' !
+
+
+launcherMenu ^<Menu>
+
+	^Menu new
+			add: (Menu new name: '&Tools';
+						add: (MenuAction new
+									name: '&Text Editor';
+									action: [ self new launch ])
+					)! !
+
+! (Delta mirrorFor: #CodeEditor) methodsFor: 'private' !
+
+
+textViewClass ^ <TextView[CharGlyphs] class>
+
+	^CodeView! !
+
+! (Delta mirrorFor: #CodeEditor) methodsFor: 'menus' !
+
+
+popUpMenu ^<Menu>
+
+	^super popUpMenu
+		add: self textView smalltalkMenu
+! !
+

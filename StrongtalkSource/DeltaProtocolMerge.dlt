@@ -1,0 +1,192 @@
+Delta define: #DeltaProtocolMerge as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaProtocolMerge) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaProtocolMerge) group: 'ast'!
+
+(Delta mirrorFor: #DeltaProtocolMerge)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaProtocolMerge) methodsFor: 'Unclassified' !
+
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    | tvs <Collection[TypeVar]>  |
+
+tvs := self type1 allSelfClassTVs.
+self type2 allSelfClassTVs do:[ : tv <TypeVar>  | tvs add: tv].
+^tvs!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    | tvs <Collection[TypeVar]>  |
+
+tvs := self type1 allSelfTVs.
+self type2 allSelfTVs do:[ : tv <TypeVar>  | tvs add: tv].
+^tvs!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^(self type1 antimonotonicIn: tv) and:[self type2 antimonotonicIn: tv]!
+
+apply: tool <DeltaTool > ^ <Self>
+	tool protocolMergeNode: self.!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self type1 bareAttributes merge: self type2 bareAttributes!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self type1 bareSecondaryAttributes merge: self type2 bareSecondaryAttributes!
+
+basicLocator ^ <DeltaBasicMergeLocator>
+	^DeltaBasicMergeLocator new 
+		loc1: self type1 basicLocator
+		loc2: self type2 basicLocator!
+
+branded ^ <Boolean>
+    ^false!
+
+classProtocol ^ <Protocol>
+    ^classProtocol isNil ifTrue:[classProtocol := DeltaUnaryMerge new dual: self]
+                                ifFalse:[classProtocol].!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^p == self
+ or:[(self type1 declaredSubprotocolOf: p)
+      or:[self type2 declaredSubprotocolOf: p].
+      ].!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^false!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+| c <OrdCltn[ObjectType]> |
+
+c := OrderedCollection[ObjectType] new.
+c 	add: self type1;
+	add: self type2.
+^c!
+
+hasNoConflicts
+
+" This message verifies that any messages common to type1 and type2
+have equivalent signatures"
+
+| ms1 <Dict[Symbol, MsgSignature]> ms2 <Dict[Symbol, MsgSignature]> |
+
+ms1 := self type1 bareAttributes.
+ms2 := self type2 bareAttributes.
+
+^ms1 size < ms2 size
+   ifTrue: [ms1 keys inject: true into:[:b <Boolean> :k <Symbol> | b and:[self noConflictForSelector: k between: ms2 and: ms1]]]
+   ifFalse:[ms2 keys inject: true into:[:b <Boolean> :k <Symbol> |  b and:[self noConflictForSelector: k between: ms1 and: ms2 ]]]!
+
+involvesTypeVariables ^ <Boolean>
+    ^self type1 involvesTypeVariables or:[self type2 involvesTypeVariables]!
+
+isMonotonic ^ <Boolean>
+    ^(self type1 isMonotonic) and:[self type2 isMonotonic].!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^Dictionary[Symbol,MsgSignature]!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^Dictionary[Symbol,MsgSignature] new.!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^(self type1 monotonicIn: tv) and:[self type2 monotonicIn: tv]!
+
+myLocalSubstitution ^ <Substitution>
+" This method returns a substitution that replaces t1's and t2's
+type variables with my own. It is used to modify the signatures
+inherited from t1 and t2 so that all self reference uses
+my type variables. That is equivalent to invoking the t1's and t2's
+generator with the formal parameters of my generator during
+inheritance.
+"  
+    | theta <Substitution>  t1 <Protocol>   t2 <Protocol>  |
+
+theta := DeltaSubstitution new initialize.
+
+t1 := self type1.
+theta at: t1 selfTV put: self selfTV.
+theta at: t1 selfClassTV put: self selfClassTV.
+
+t2 := self type2.
+theta at: t2 selfTV put: self selfTV.
+theta at: t2 selfClassTV put: self selfClassTV.
+
+^theta!
+
+name  ^ <Symbol>
+
+^(self type1 name, ';', self type2 name) asSymbol!
+
+name: s  ^ <Symbol>
+
+self deltaHack.!
+
+noConflictForSelector: sel <Symbol> between: ms1 <Dict[Symbol, MsgSignature]> and: ms2 <Dict[Symbol, MsgSignature]> ^ <Boolean>
+
+"Private"
+
+| sig1 <MsgSignature>  sig2 <MsgSignature> result <Boolean>  |
+
+sig1 :=  self compositeSubstitute: (ms1 at: sel ifAbsent:[^true]).
+sig2 := self compositeSubstitute:  (ms2 at: sel).
+
+result := sig1 equals: sig2 assuming: DeltaGlobalTrail.
+result  ifFalse:[self reportError: (DeltaMergeMsgConflictError new conflictingSelector: sel)].
+^result
+               
+
+
+!
+
+primaryInterface ^ <Interface>
+    ^self rawPrimaryInterface substitute: self myTypeVarSubstitution.!
+
+rawPrimaryInterface ^ <Interface>
+    ^(self type1 rawPrimaryInterface merge: self type2 rawPrimaryInterface) substitute: self myLocalSubstitution!
+
+rawSecondaryInterface ^ <Interface>
+    ^(self type1 rawSecondaryInterface merge: self type2 rawSecondaryInterface) substitute: self myLocalSubstitution.!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+set := self filteree relevantTypeVars copy.
+set add: self selfTV;
+       add: self selfClassTV.
+self substitution keys do: [:k <Symbol> | set remove: k ifAbsent:[].].
+self myLocalSubstitution keys do: [:k <Symbol> | set remove: k ifAbsent:[].].
+self substitution values do:[:v <ObjectType> |
+                                                      v isTypeVar ifTrue:[set add: v].
+                                                       ].
+^set.!
+
+scope: s <Scope>
+
+self type1 scope: s.
+self type2 scope: s.!
+
+secondaryInterface
+    ^self type1 secondaryInterface merge: self type2 secondaryInterface!
+
+type1 ^ <TypeExpr>
+    ^self filteree type1 substitute: self substitution!
+
+type1: t1 <TypeExpr >type2: t2 <TypeExpr > ^ <Self>
+    substitution := DeltaSubstitution new.
+filteree := BasicMergeData new type1: t1 type2: t2 typeOfInstances: self.!
+
+type2 ^ <TypeExpr>
+    ^self filteree type2 substitute: self substitution!
+
+wellFormed ^ <Boolean>
+    ^self type1 wellFormed and:[self type2 wellFormed and:[self hasNoConflicts]].! !
+

@@ -1,0 +1,35 @@
+Delta define: #VarLocator as: (
+(Class subclassOf: 'DeltaLocator[ClassMirror | MixinDeclMirror]' instanceVariables: 'varName <Symbol>')) !
+
+(Delta mirrorFor: #VarLocator) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #VarLocator) group: 'ast'!
+
+(Delta mirrorFor: #VarLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VarLocator) classSide methodsFor: 'instance creation' !
+
+
+onVariable: n <Symbol> ofDefinition: d <BasicLocator>  ^ <Instance>
+
+^self new varName: n; definition: d
+
+! !
+
+! (Delta mirrorFor: #VarLocator) methodsFor: 'accessing' !
+
+
+varName ^ <Symbol>
+
+^varName! !
+
+! (Delta mirrorFor: #VarLocator) methodsFor: 'private' !
+
+
+varName: n 
+
+varName := n! !
+

@@ -1,0 +1,178 @@
+Delta define: #DeltaASTTool as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaASTTool) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaASTTool) group: 'ast'!
+
+(Delta mirrorFor: #DeltaASTTool)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaASTTool) methodsFor: 'node traversal' !
+
+
+accessMethodNode: node <Object > ^ <Self>
+    ^ self implementedBySubclass!
+
+andOrNode: node <Object > ^ <Self>
+    ^ self implementedBySubclass!
+
+assignmentNode: node <DeltaAssignment > ^ <Self>
+    ^ self implementedBySubclass!
+
+blockApplicationTypeNode: node <BlockApplicationType>
+    self implementedBySubclass!
+
+blockNode: node <DeltaBlock > ^ <Self>
+    ^ self implementedBySubclass!
+
+cascadedSendNode: node <DeltaCascadedSend > ^ <Self>
+    ^ self implementedBySubclass!
+
+classVarNode: node <DeltaClassVar > ^ <Self>
+    ^ self implementedBySubclass!
+
+codeBodyNode: cb <CodeBody>
+
+self subclassResponsibility!
+
+dllCallNode: node
+    self implementedBySubclass!
+
+genericApplicationExpressionNode: node
+    self implementedBySubclass!
+
+genericApplicationTypeNode: node <GenericApplicationType>
+    self implementedBySubclass!
+
+globalVarNode: node <DeltaGlobalVar > ^ <Self>
+    ^ self implementedBySubclass!
+
+guaranteedNode: node
+    self implementedBySubclass!
+
+ifNode: node <Object > ^ <Self>
+    ^ self implementedBySubclass!
+
+instVarNode: node <DeltaInstVar > ^ <Self>
+    ^ self implementedBySubclass!
+
+literalNode: node <DeltaLiteral > ^ <Self>
+    ^ self implementedBySubclass!
+
+loopNode: node <Object > ^ <Self>
+    ^ self implementedBySubclass!
+
+messageNode: node <DeltaMessage > ^ <Self>
+    ^ self implementedBySubclass!
+
+messagePatternNode: node <MessagePattern>
+
+self subclassResponsibility
+!
+
+methodNode: node <DeltaMethod > ^ <Self>
+    ^ self implementedBySubclass!
+
+mixinCompositionNode: node
+
+self subclassResponsibility
+
+
+!
+
+mixinDerivationNode: node
+
+self subclassResponsibility
+
+
+!
+
+mixinInvocationNode: node
+
+self subclassResponsibility
+
+
+!
+
+normalSend: node
+    self implementedBySubclass!
+
+normalSendNode: node
+    self implementedBySubclass!
+
+parameterNode: node <DeltaParameter > ^ <Self>
+    ^ self implementedBySubclass!
+
+polyMsgSignatureNode: node <PolyMsgSignature > ^ <Self>
+
+self subclassResponsibility!
+
+poolVarNode: node <DeltaPoolVar > ^ <Self>
+    ^ self implementedBySubclass!
+
+predictPrimitiveNode: node
+    self implementedBySubclass!
+
+primitiveCallNode: node
+    self subclassResponsibility!
+
+primitiveNode: node <DeltaPrimitive > ^ <Self>
+     self subclassResponsibility!
+
+protocolMergeNode: node <ProtocolMerge>
+
+self subclassResponsibility
+!
+
+protocolOverrideNode: node <ProtocolOverride>
+
+self subclassResponsibility
+!
+
+receiverNode: node <DeltaReceiver > ^ <Self>
+    ^ self implementedBySubclass!
+
+refNode: node <DeltaRef > ^ <Self>
+    ^ self implementedBySubclass!
+
+returnInstVarNode: node
+    self implementedBySubclass!
+
+returnStatNode: node <DeltaReturnStat > ^ <Self>
+    ^ self implementedBySubclass!
+
+superSendNode: node <DeltaSuperSend > ^ <Self>
+    ^ self implementedBySubclass!
+
+superVarNode: node <DeltaSuperVar > ^ <Self>
+    ^ self implementedBySubclass!
+
+temporaryNode: node <DeltaTemporary > ^ <Self>
+    ^ self implementedBySubclass!
+
+tupleTypeNode: node <TupleType>
+    self implementedBySubclass!
+
+typeFormalNode: node <TypeFormal>
+
+self subclassResponsibility.!
+
+typeVarNode: node <TypeVar> 
+
+self subclassResponsibility.!
+
+unaryGenAppNode: node <DeltaUnaryGenApp>
+
+self subclassResponsibility!
+
+unaryTypeExprNode: node <UnaryTypeExpr>
+
+self subclassResponsibility.!
+
+unionTypeNode: node <UnionType>
+
+self subclassResponsibility! !
+

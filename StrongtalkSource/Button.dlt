@@ -1,0 +1,424 @@
+Delta define: #Button as: (
+(Class subclassOf: 'Win32Control' instanceVariables: 'buttonStyle <ExternalData>
+clickAction <[Button]>
+			"The action to be performed when the button is clicked.  Changing the state
+			  must be done explicitly by the action."
+state <Boolean | Nil>
+			"The display state of the button.  For some styles, like checkboxes, nil means indeterminate (gray)"
+label <Str>
+	"If the image is nil, this is the text the button will display"
+image <Image>
+natural <Rect>
+stretchy <Boolean>
+buttonPainter <Painter>
+		') classVariables: 'ButtonClassName <CString>	"The windows class name"
+ButtonPainter <Painter>
+		') !
+
+(Delta mirrorFor: #Button) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #Button) group: 'ui'!
+
+(Delta mirrorFor: #Button)
+comment: 
+'Native button-like Visuals.  This implements not only text buttons, but check boxes,
+radio buttons, three-state check boxes, and general buttons with images rather
+than text on them.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Button) classSide methodsFor: 'instance creation' !
+
+
+checkBoxWithAction: action <[Button]> ^<Button>
+	"Check boxes have a checked(true) or unchecked(false).  Cycling throught the states
+	  is handled automatically, and then the action is called each time (which can readjust the state if it wants).
+	  The initial state is false."
+
+	^super new 
+			initializeWithStyle: Win32 BS_3STATE
+			label: ''
+			clickAction:
+				[ :inst <Button> |
+					inst state: (inst state = true ifFalse: [ true ] ifTrue: [ false ]).
+					action value: inst   ];
+		state: false;
+		stretchy: false!
+
+labeled: label <Str> action: action <[Button]> ^<Button>
+	"Action buttons execute an action when they are clicked"
+
+	^super new 
+		initializeWithStyle: Win32 BS_PUSHBUTTON
+		label: label
+		clickAction: action!
+
+radioButtonWithAction: action <[Button]> ^<Button>
+	"Radio buttons have a checked(true) or unchecked(false) state.  The action is called when the button
+		is pressed.  Radio buttons 'stick' in the true state, until you set them the state to false.
+	  The initial state is false."
+
+	^super new 
+			initializeWithStyle: Win32 BS_RADIOBUTTON
+			label: ''
+			clickAction:
+				[ :inst <Button> |
+					inst state
+						ifFalse: [ inst state: true ].
+					action value: inst   ];
+		state: false;
+		stretchy: false!
+
+threeStateCheckBoxWithAction: action <[Button]> ^<Button>
+	"Check boxes have a checked(true)/unchecked(false), or indeterminate(nil) state.  Cycling throught the states
+	  is handled automatically, and then the action is called each time (which can readjust the state if it wants).
+	  The initial state is nil."
+
+	^super new 
+			initializeWithStyle: Win32 BS_3STATE
+			label: ''
+			clickAction:
+				[ :inst <Button> |
+					inst state: (inst state = nil
+						ifTrue: [ false ]
+						ifFalse: [ inst state = true ifTrue: [ nil ] ifFalse: [ true ] ]).
+					action value: inst   ];
+		state: nil;
+		stretchy: false!
+
+withImage: i <Image> action: action <[Button]> ^<Button>
+	"Action buttons execute an action when they are clicked"
+
+	^(super new 
+		initializeWithStyle: Win32 BS_PUSHBUTTON
+		label: ''
+		clickAction: action
+		) image: i! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'private' !
+
+
+buildWin32Handle
+
+	self hasImage
+		ifTrue: [ self buildWin32HandleForImage ]
+		ifFalse: [ self buildWin32HandleForLabel ]!
+
+buildWin32HandleForImage
+	"Must not be sent before layout because allocation & position (and of parents) must exist"
+
+	| pos <Point> container <Window|Win32Control> |
+	pos := self nativePosition.
+	container := self parent nativeWindow.
+	win32Handle := {{<user ExternalProxy CreateWindowExA>
+		extendedStyle: self extendedWin32Style
+		className: self buttonClassName
+		caption: Win32 NULL
+		style: self win32Style
+		xpos: pos x asInteger
+		ypos: pos y asInteger
+		xsize: self allocation enclosedRect width asInteger
+		ysize: self allocation enclosedRect height asInteger
+		parent: container win32Handle
+        id: self controlId
+		program: container hInstance
+		params: Win32 NULL }}.
+	win32Handle isNull
+		ifTrue: [ Win32 handleError ].
+
+	self setWindowImage: self image.
+
+	self state = false
+		ifFalse: [ self setState: self state ].!
+
+buildWin32HandleForLabel
+	"Must not be sent before layout because allocation & position (and of parents) must exist"
+
+	| pos <Point> container <Window|Win32Control> caption <CString> |
+	caption := CString for: self label.
+	pos := self nativePosition.
+	container := self parent nativeWindow.
+	win32Handle := {{<user ExternalProxy CreateWindowExA>
+		extendedStyle: self extendedWin32Style
+		className: self buttonClassName
+		caption: caption
+		style: self win32Style
+		xpos: pos x asInteger
+		ypos: pos y asInteger
+		xsize: self allocation enclosedRect width asInteger
+		ysize: self allocation enclosedRect height asInteger
+		parent: container win32Handle
+        id: self controlId
+		program: container hInstance
+		params: Win32 NULL }}.
+	win32Handle isNull
+		ifTrue: [ Win32 handleError ].
+	
+	self sendMessage: Win32 WM_SETFONT
+			wparam: self font win32Handle
+			lparam: false asExternalData.
+	caption free.
+
+	self state = false
+		ifFalse: [ self setState: self state ].!
+
+buttonClassName ^<CString>
+
+	ButtonClassName isNil
+		ifTrue: [ ButtonClassName := CString for: 'Button' ].
+	^ButtonClassName!
+
+buttonPainter ^<Painter>
+	"Used to measure the label size"
+
+	"Don't care about critical region because duplicate won't hurt"
+	ButtonPainter isNil
+		ifTrue: [ ButtonPainter := Painter new
+						font: (Font forSpec:
+									(FontSpec new
+										typeface: 'MS Sans Serif';
+										points: 8	)
+									).
+						].
+	^ButtonPainter!
+
+buttonStyle ^<ExternalData>
+
+	^buttonStyle!
+
+callOrigWndProcFor: m <MSG> withLParam: lParam <ExternalData>^<ExternalData>
+
+	"We override this so we can translate double clicks (which the button
+		doesn't understand) back into clicks"
+	^{{<user ExternalProxy CallWindowProcA> 
+		proc: self originalWndProc
+		hwnd: self win32Handle
+		msg: (m message @= Win32 WM_LBUTTONDBLCLK ifTrue: [ Win32 WM_LBUTTONDOWN ] ifFalse: [ m message ])
+		wparam: m wParam
+		lparam: lParam }}!
+
+computeNatural ^<Region>
+
+	^self hasImage
+			ifTrue: [ self computeNaturalForImage ]
+			ifFalse: [ self computeNaturalForLabel ]!
+
+computeNaturalForImage ^<Region>
+
+	| imgNat <Rect> |
+	imgNat := (self image naturalIn: self medium) enclosingRect.
+	natural := (imgNat relativeTo: imgNat bottomLeft) expandBy: 3.
+	^natural!
+
+computeNaturalForLabel ^<Region>
+
+	| width <Int> height <Int> p <Painter> avgBox <Int> baseline <Int> |
+	p := self buttonPainter.
+	avgBox := (p charGlyphFor: $a) naturalIn: self medium.
+	height := avgBox height * 2 - 3.	"heuristic that seems to match win95"
+	width := 4 * avgBox width.	"heuristic to give a reasonable margin to look like win95"
+	self label do:
+		[ :c <Character> |
+			width := width + ((p charGlyphFor: c) allocationIn: self medium) width.	].
+	baseline := ((height - avgBox height) // 2) - avgBox top - 1.	"Subtract because top negative"
+	natural := 0@baseline negated corner: width @ (height - baseline).
+	^natural!
+
+destroyWin32Handle
+
+	super destroyWin32Handle.
+	natural := nil.!
+
+font ^<Font>
+
+	^self buttonPainter font medium: self medium!
+
+setState: s <Boolean>
+
+	state := s.
+	self hasWin32Handle
+		ifTrue: [	| externalState <ExternalData> |
+						externalState := s = nil
+							ifTrue: [ 2 ]
+							ifFalse: [ s asExternalData ].
+						self	sendMessage: Win32 BM_SETCHECK
+								wparam: externalState
+								lparam: Win32 NULL.		]!
+
+setWindowImage: i <Image>
+
+	self sendMessage: Win32 BM_SETIMAGE
+			wparam: Win32 IMAGE_BITMAP
+			lparam: i win32Image!
+
+updateWindowDimensions
+
+	super updateWindowDimensions.
+	self invalidate!
+
+win32Style ^<ExternalData>
+
+	^super win32Style
+		externalBitOr: (self buttonStyle
+		externalBitOr: Win32 BS_NOTIFY)! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'initialization' !
+
+
+initializeWithStyle: bstyle <ExternalData>
+label: l <Str>
+clickAction: action <[Button]>
+
+	buttonStyle := bstyle.
+	label := l.
+	self clickAction: action.
+	state := false.
+	stretchy := true.! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'accessing' !
+
+
+addDefaultStyle
+	"Add the heavy black border to the style that makes it look like the default button.
+		Only works for pushbuttons."
+
+	buttonStyle := self buttonStyle externalBitOr: Win32 BS_DEFPUSHBUTTON.!
+
+clickAction ^<[Button]>
+
+	^clickAction!
+
+clickAction: a <[Button]>
+
+	clickAction := a!
+
+hasImage ^<Boolean>
+	"If true, the button displays an image.  If false, it displays text"
+	
+	^self image notNil!
+
+image ^<Image>
+
+	^image!
+
+image: i <Image>
+
+	self changing.
+	image := i.
+	"Make sure there is no text."
+	label := nil.
+	
+	"update the style"
+	buttonStyle := self buttonStyle externalBitOr: Win32 BS_BITMAP.
+	
+	win32Handle isNil
+		ifFalse: [	natural := nil.
+							self setWindowImage: i.  ].!
+
+label ^<Str>
+
+	^label!
+
+label: l <Str>
+
+	"Currently, we don't allow changing from images to labels, but only because
+		I don't have time to fiddle with unsetting the button style BS_BITMAP"
+	self assert: [ self hasImage not ].
+	self changing.
+	label := l.
+	image := nil.
+	
+	win32Handle isNil
+		ifFalse: [	natural := nil.
+							self setWindowText: l.  ].!
+
+state ^<Boolean|Nil>
+
+	^state!
+
+state: s <Boolean|Nil>
+
+	self state ~= s
+		ifTrue: [ self setState: s ]!
+
+stretchy ^<Boolean>
+
+	^stretchy!
+
+stretchy: flag <Boolean>
+
+	stretchy := flag! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'geometry-local' !
+
+
+max ^<Region>
+
+	^self stretchy
+		ifFalse: [ self natural ]
+		ifTrue: [	| nat <Rect> |
+						0 @ self natural top corner: UI huge @ self natural bottom  ]!
+
+natural ^<Rect>
+
+	natural isNil
+		ifTrue: [ self computeNatural ].
+	^natural! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'restricted-win32' !
+
+
+buttonColorMsg: hdc <ExternalProxy> ^<ExternalData>
+
+	originalWndProc isNil
+		ifTrue: [	"%hack: buttons sometimes draw before window has painted (if state isn't false); in which
+						  case we won't have a background color yet, so just return a default value"
+						^Painter default win32Brush ].
+
+	buttonPainter isNil
+		ifTrue: [ buttonPainter := self backgroundPainter ].
+	^buttonPainter win32Brush!
+
+notificationMsg: notifyCode <ExternalData>
+
+	notifyCode @= Win32 BN_CLICKED
+		ifTrue: [	self press.
+						^self ].
+
+	"%bug: the double click msg is sent on button down; we really want to activate the button
+		only on the subsequent button up; how to do?   This isn't a big problem, but should be fixed."
+	notifyCode @= Win32 BN_DOUBLECLICKED
+		ifTrue: [	self press.
+						^self	].
+	
+	super notificationMsg: notifyCode! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'control' !
+
+
+press
+
+	MenuAction timeActions
+		ifTrue: [ Transcript print: [ self clickAction value: self ] time; cr. ]
+		ifFalse: [ self clickAction value: self ]
+! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'event handling' !
+
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	(super keyDown: key focus: focus event: ev)
+		ifTrue: [ ^true ].
+
+	key = #RETURN
+		ifTrue: [	self press.
+						"Absorb any built-up repeat chars so we don't get behind"
+						ev repeatCount: 0.
+						^true ].
+	^false! !
+

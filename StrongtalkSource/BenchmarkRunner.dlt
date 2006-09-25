@@ -1,0 +1,203 @@
+Delta define: #BenchmarkRunner as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #BenchmarkRunner) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BenchmarkRunner) group: 'benchmark'!
+
+(Delta mirrorFor: #BenchmarkRunner)
+comment: 
+'For benchmarking
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BenchmarkRunner) methodsFor: 'benchmarks' !
+
+
+runDeltaBlue: iterations
+	self showTitle: 'DeltaBlue'.
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		self evaluate: [
+			DeltaBlue initialize.
+			Planner ursDBTest: 10 Count: 1000.
+		]
+	]
+!
+
+runIndividualSlopstone: id repeat: iterations inner: inner
+	| bm |
+	self showTitle: 'Slopstone'.
+
+	bm := SlopstoneBenchmark new.
+
+	bm setup.
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		self evaluate: [ bm execute: id ] inner: inner
+	]
+!
+
+runIndividualSmopstone: id repeat: iterations inner: inner
+	| bm |
+	self showTitle: 'Smopstone'.
+
+	bm := SmopstoneBenchmark new.
+     bm setup.
+	bm executeUpTo: id - 1 repeat: 1.
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		self evaluate: [ bm individualSmopstone:  id repeat: inner ].
+	]!
+
+runIndividualStanford: bm repeat: iterations inner: inner
+	self showTitle: bm name.
+
+	AbstractBenchmark initialize.
+	bm initialize.
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		self evaluate: [ bm new runBenchmark ] inner: inner
+	]
+!
+
+runRichardsBenchmarks: iterations
+	self showTitle: 'Richards Benchmarks'.
+
+	AbstractBenchmark initialize.
+	AbstractBenchmark allDo: [ :bm | bm initialize ].
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		self measure: RichardsBenchmarks new
+	]
+!
+
+runSlopstoneBenchmarks: iterations
+	self showTitle: 'Smopstone Benchmarks'.
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		self evaluate: [ SlopstoneBenchmark new runBenchmark ]
+	]!
+
+runSmopstoneBenchmarks: iterations
+	self showTitle: 'Smopstone Benchmarks'.
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		self evaluate: [ SmopstoneBenchmark new runBenchmark ]
+	]!
+
+runStanfordBenchmarks: iterations
+	self showTitle: 'OO Stanford Benchmarks'.
+
+	AbstractBenchmark initialize.
+	AbstractBenchmark allDo: [ :bm | bm initialize ].
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		AbstractBenchmark allDo: [ :bm | self measure: bm new ]
+	]
+!
+
+runStanfordLoopBenchmarks: iterations
+	self showTitle: 'OO Stanford Benchmarks'.
+
+	VM booleanAt: #OptimizeIntegerLoops put: true.
+	VM booleanAt: #OptimizeLoops put: true.
+
+	AbstractBenchmark initialize.
+	AbstractBenchmark allLoopDo: [ :bm | bm initialize ].
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		AbstractBenchmark allLoopDo: [ :bm | self measure: bm new ]
+	].
+
+	VM booleanAt: #OptimizeIntegerLoops put: false.
+	VM booleanAt: #OptimizeLoops put: false.
+!
+
+runTypecheckerBenchmarks: iterations
+	self showTitle: 'Typechecker Benchmarks'.
+
+	1 to: iterations do: [:iter |
+		self showIteration: iter.
+		self evaluate: [ | t |
+			t := Time millisecondsToRun: [ Type doChecks: [ (ClassMirror on: Collection) typecheck ]].
+			Transcript show: t printString, ' ms'; cr.
+		]
+	]
+! !
+
+! (Delta mirrorFor: #BenchmarkRunner) methodsFor: 'printing' !
+
+
+format
+	^'Delta (ms), Digitalk (ms), ParcPlace (ms)'!
+
+name
+	^'Timing'!
+
+showIteration: iter
+		Transcript
+				cr
+			;	show: 'Iteration =  '
+			;	show: iter printString
+			;	cr.!
+
+showName: name
+	Transcript
+			show: name
+		;	tab
+!
+
+showTime:  title delta: time digitalk: dTime parcplace:  pTime
+	| dFactor pFactor |
+	dFactor := dTime asFloat / time asFloat.
+	pFactor := pTime asFloat / time asFloat.
+	self showName: title.
+	Transcript
+			show: time printString
+		;	tab
+		;	show: dTime printString
+		;	tab
+		;	show:  pTime printString
+		;	cr.!
+
+showTitle: t
+	Transcript
+			cr
+		;	show: t
+		; 	show: '(', self name, ')'
+		;	cr.
+! !
+
+! (Delta mirrorFor: #BenchmarkRunner) methodsFor: 'evaluating' !
+
+
+evaluate: blk
+	blk value	!
+
+evaluate: bm inner: inner
+	self evaluate: bm!
+
+measure: bm
+	| t f |	
+	f := bm factor.
+	t := (Time millisecondsToRun: [ f  timesRepeat: [ bm run ] ]) // f.
+	self  showTime: bm name delta: t digitalk: bm digitalkTime parcplace: bm parcplaceTime.
+	^t
+	!
+
+measure: bm inner: inner
+	| t |
+	t := Time millisecondsToRun: [ bm run ].
+	self  showTime: bm name delta: t digitalk: bm digitalkTime parcplace: bm parcplaceTime.
+	^t
+	! !
+

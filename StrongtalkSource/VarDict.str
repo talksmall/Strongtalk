@@ -1,0 +1,44 @@
+Delta define: #VarDict as: (
+Generic forAll: 'K , E ' body: (Protocol superProtocol: '<Dict[K,E]/VarIndexed[K,E]>')) !
+
+(Delta mirrorFor: #VarDict) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #VarDict) group: 'base'!
+
+(Delta mirrorFor: #VarDict)
+comment: 
+'The mutable dictionary protocol.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VarDict) methodsFor: 'Unclassified' !
+
+
+addAssociation: assoc <Assoc[K,E]> ^<Assoc[K,E]> !
+
+associations ^<OrdCltn[Assoc[K,E]]> !
+
+at: key <K> ifPresent: pblk <[E]> ifAbsentPut: ablk <[^E]> ^<E>
+!
+
+at: key <K> put: el <E> ifNew: f <[]> ^<E>
+!
+
+keys ^<Set[K]> !
+
+removeAssociation: assoc <Assoc[K,E]> ^<Assoc[K,E]> !
+
+removeAssociation: assoc <Assoc[K,E]> ifAbsent: <[^X def]> ^<Assoc[K,E] | X> !
+
+removeAt: key <K> ^<E> !
+
+removeAt: key <K> ifAbsent: <[^X def]> ^<K | X> !
+
+removeKey: k <K> ^<E> 
+	"Synonym for removeAt:, for compatibility" !
+
+removeKey: k <K> ifAbsent: <[^X def]> ^<E|X> 
+	"Synonym for removeAt:ifAbsent:, for compatibility" !
+
+values ^<OrdCltn[E]> ! !
+

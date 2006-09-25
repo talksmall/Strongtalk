@@ -1,0 +1,83 @@
+Delta define: #KeyedSet as: (
+Generic forAll: 'K , E ' body: ((Class subclassOf: 'HashedCollection[K,E,E]' instanceVariables: 'extractKey <[E,^K]>
+		') protocols: 'Indexed[K,E];Extensible[E]')) !
+
+(Delta mirrorFor: #KeyedSet) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #KeyedSet) group: 'base'!
+
+(Delta mirrorFor: #KeyedSet)
+comment: 
+'Tags: %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #KeyedSet) classSide methodsFor: 'instance creation' !
+
+
+new: capacity <Int> keyedBy: kf <[E,^K]>  ^<Instance>
+
+	^(super new: capacity) initExtractKey: kf!
+
+newKeyedBy: kf <[E,^K]>  ^<Instance>
+
+	^super new initExtractKey: kf! !
+
+! (Delta mirrorFor: #KeyedSet) classSide methodsFor: 'testing' !
+
+
+test
+	"self test"
+
+	Set[Str] test: (KeyedSet[Str,Str] newKeyedBy: [ :s <Str> | s ])! !
+
+! (Delta mirrorFor: #KeyedSet) methodsFor: 'testing' !
+
+
+includes: o <Object> ^<Boolean>
+	"For keyed sets, this message is inefficient, since we don't know if o is the right kind of
+	object to extract a key from, so the elements must be tested sequentially.  Use includesElement: 
+	for an efficient implementation"
+
+	^super includes: o! !
+
+! (Delta mirrorFor: #KeyedSet) methodsFor: 'restricted - table decoding' !
+
+
+buildValForKey: k <K> element: el <E> ^<E>
+
+	^el!
+
+elementFor: el <E> ^<E>
+
+	^el!
+
+elementForCopy: el <E> ^<E>
+
+	^el!
+
+hashFor: key <Object> ^<Int>
+
+	^key hash!
+
+key: k <Object> matches: another <Object> ^<Boolean>
+
+	^k = another!
+
+keyFor: el <E> ^<K>
+
+	^extractKey value: el!
+
+objToIncludeFor: new <E> withExisting: existing <E> ^<E>
+
+	^new! !
+
+! (Delta mirrorFor: #KeyedSet) methodsFor: 'initialization' !
+
+
+initExtractKey: kf <[E,^K]>
+
+	extractKey := kf! !
+

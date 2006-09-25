@@ -1,0 +1,252 @@
+Delta define: #Float as: (
+(Class subclassOf: 'ApproximateReal' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #Float) revision: '$Revision: 1.9 $'!
+
+(Delta mirrorFor: #Float) group: 'base'!
+
+(Delta mirrorFor: #Float)
+comment: 
+'Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Float) classSide methodsFor: 'constants' !
+
+
+maxVal ^<Float>
+
+	"%todo: this is wrong; put in either a primitive when available or 
+		the constant, when the parser becomes exact"
+	^99999.99e99! !
+
+! (Delta mirrorFor: #Float) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^72! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'testing' !
+
+
+isNil ^<Boolean>
+
+	"%todo: this should return true if the value is IEEE Not A Number"
+	^false ! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'comparison' !
+
+
+< a <Number> ^<Boolean>
+
+	^{{self primitiveFloatLessThan: a
+		ifFail: [ :err <Symbol> |
+				a lessFromFloat: self	]}}!
+
+<= a <Number> ^<Boolean>
+
+	^{{self primitiveFloatLessThanOrEqual: a
+		ifFail: [ :err <Symbol> |	super <= a	]}}!
+
+= a <Object> ^<Boolean>
+	"Comparing real numbers for equality when they have approximate representations
+	 is a really bad idea if they aren't representing small integers like 1.0, and isn't portable
+	 (Consider whether 2.0/3.0 in single precision is
+	 equal to 2.0/3.0 in double precision, for example).  If you want to do this, you should
+	 consider using Number>>isWithin:of:, which allows you to
+	 indicate precisely how close two numbers need to be to be considered equal."
+
+	^{{self primitiveFloatEqual: a
+		ifFail: [ :err <Symbol> |
+						self nonPrimitiveEqual: a ]}}!
+
+> a <Number> ^<Boolean>
+
+	^{{self primitiveFloatGreaterThan: a
+		ifFail: [ :err <Symbol> |	super > a	]}}!
+
+>= a <Number> ^<Boolean>
+
+	^{{self primitiveFloatGreaterThanOrEqual: a
+		ifFail: [ :err <Symbol> |	super >= a	]}}! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'operations' !
+
+
+* a <Number> ^<X>
+			{where X <Number> is returnType of #multiplyFromFloat: message of arg 1}
+	^guaranteed <X> {{self primitiveFloatMultiply: a
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveMultiply: a error: err ]}}!
+
++ a <Number> ^<X>
+			{where X <Number> is returnType of #addFromFloat: message of arg 1}
+	^guaranteed <X> {{self primitiveFloatAdd: a
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveAdd: a error: err ]}}!
+
+- a <Number> ^<X>
+			{where X <Number> is returnType of #subtractFromFloat: message of arg 1}
+	^guaranteed <X> {{self primitiveFloatSubtract: a
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveSubtract: a error: err ]}}!
+
+/ a <Number> ^<X>
+			{where X <Number> is returnType of #divideFromFloat: message of arg 1}
+	^guaranteed <X> {{self primitiveFloatDivide: a
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveDivide: a error: err	]}}!
+
+\\ a <Number> ^<X>
+			{where X <Number> is returnType of #moduloFromFloat: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a moduloFromFloat: self)!
+
+truncated ^<Int>
+
+	"%todo: change the primitive to return an integer"
+	^{{self primitiveFloatTruncated}} asInteger! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'restricted-double dispatching' !
+
+
+addFromFloat: o <Float> ^<Float>
+	self error: 'can''t happen because of double dispatching, but need for typing'.!
+
+divideFromFloat: o <Float> ^<Float>
+	self error: 'can''t happen because of double dispatching, but need for typing'.!
+
+equalFromFloat: o <Float>  ^<Boolean>
+	self error: 'can''t happen because of double dispatching'!
+
+lessFromFloat: o <Float>  ^<Boolean>
+	self error: 'can''t happen because of double dispatching'!
+
+moduloFromFloat: o <Float> ^<Number>
+	^o - ((o // self) * self)!
+
+multiplyFromFloat: o <Float> ^<Float>
+	self error: 'can''t happen because of double dispatching, but need for typing'.!
+
+subtractFromFloat: o <Float> ^<Float>
+	self error: 'can''t happen because of double dispatching, but need for typing'.! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'converting' !
+
+
+asFloat ^<Float>
+
+	^self!
+
+asInteger ^<Integer>
+
+	^{{self primitiveFloatRoundedAsSmallIntegerIfFail: [ :err <Symbol> |
+		LargeInteger forFloat: self]}}! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'constants' !
+
+
+unit ^<Float>
+
+	^1.0!
+
+zero ^<Float>
+
+	^0.0! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'iteration' !
+
+
+to: stop <Float> by: step <Float> do: f <[Float]> ^<Object>
+
+	| v <Float> |
+	v := self.
+	step < 0.0
+		ifFalse: [ [ v <= stop ]
+					whileTrue: [	f value: v.
+								v := v + step  ]]
+		ifTrue: [ [ v >= stop ]
+					whileTrue: [ f value: v.
+								v := v + step  ]].
+	^nil!
+
+to: stop <Float> do: f <[Float]> ^<Object>
+
+	| v <Float> |
+	v := self.
+	[ v <= stop ]
+		whileTrue: [	f value: v.
+					v := v + 1.0  ].
+	^nil! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	"%todo: implement this right"
+	{{self primitiveFloatPrintString}}
+		do: [ :c <Int> |
+				strm nextPut: (Character value: c) ]! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'private' !
+
+
+nonPrimitiveAdd: a <Number> error: err <Symbol> ^<Number>
+
+	^(err equalsSymbol: #FirstArgumentHasWrongType)
+			ifTrue: [ a addFromFloat: self]
+			ifFalse: [	self error: 'double addition error: ', err.	 ]!
+
+nonPrimitiveDivide: a <Number> error: err <Symbol> ^<Number>
+
+	^err == #FirstArgumentHasWrongType
+			ifTrue: [ a divideFromFloat: self]
+			ifFalse: [	self error: 'Float division error: ', err.	 ]!
+
+nonPrimitiveEqual: a <Object> ^<Boolean>
+	"This is invoked on primitive equality failure"
+
+"%todo: use this typesafe version when coerce: is fast
+	^(Number coerce: a else: [ ^false ]) equalFromFloat: self
+"
+	^a Number
+		ifTrue: [ (guaranteed <Number> a) equalFromFloat: self ]
+		ifFalse: [ false ]!
+
+nonPrimitiveMultiply: a <Number> error: err <Symbol> ^<Number>
+
+	^err == #FirstArgumentHasWrongType
+			ifTrue: [ a multiplyFromFloat: self]
+			ifFalse: [	self error: 'double multiplication error: ', err.	 ]!
+
+nonPrimitiveSubtract: a <Number> error: err <Symbol> ^<Number>
+
+	^err == #FirstArgumentHasWrongType
+			ifTrue: [ a subtractFromFloat: self ]
+			ifFalse: [	self error: 'double subtraction error: ', err.	 ]! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'mathematical functions' !
+
+
+sqrt ^<Float>
+
+	^{{self primitiveFloatSqrtIfFail: [ :err <Symbol> | self error: err ]}}! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'file out' !
+
+
+fileOutHeaderOn: d <Dumper>
+	super fileOutHeaderOn: d.
+	self fileOutStoreString do: [ :byte <Int> |
+		d putByte: byte
+	]!
+
+fileOutSignature ^<Integer>
+    ^104!
+
+fileOutStoreString ^<SeqCltn[Int]>
+	^{{self primitiveFloatStoreString}}! !
+

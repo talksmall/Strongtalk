@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE></TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0Gold (WinNT; U) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1>The Strongtalk Type System for Smalltalk</H1>
+
+<H5>Gilad Bracha</H5>
+
+<H3>Introduction</H3>
+
+<P>The benefits of static typechecking in software development are widely
+recognized. It is now feasible to introduce static typechecking into Smalltalk
+in a manner that does not compromise the flexibility of the language or
+the programming environment. This document describes <B><I>Strongtalk</I></B>,
+a type system well suited to this purpose. The Strongtalk type system is
+designed to ease the development process by improving the reliability and
+readability of programs during development, maintenance and use. The type
+system provides an enforceable formalism for describing the interfaces
+of Smalltalk libraries. This formalism helps designers communicate to themselves
+and to others the interfaces of classes. In addition, Strongtalk helps
+catch errors earlier in the development process. The type system is <I>not</I>
+concerned with improving execution performance, since it is based on interface
+types. Optimization requires concrete implementation type information.
+Agesen \cite{Agesen96} has demonstrated that extracting concrete type information
+in Smalltalk-like languages does not require linguistic extensions. Therefore
+concrete types are not considered here. Since Strongtalk provides a language
+for describing interfaces to humans and machines, it is by definition a
+language extension. However, use of the type system is completely optional.
+The following section briefly describes the specifics of the type system.
+The later sections discuss the type system's interaction with other language
+features, its implementation and experience in its use. </P>
+
+<H3>The Type System</H3>
+
+<P>This document is too brief to give a complete specification of the Strongtalk
+type system. Here we can only provide an overview of Strongtalk's salient
+characteristics and a summary of its features. For a more detailed description
+(though somewhat out of date) see [<A HREF="#oopsla93">BrachaGriswold93</A>].
+The key characteristics of the Strongtalk type system are : </P>
+
+<UL>
+<LI>The type system is <I>expressive</I> enough to allow natural Smalltalk
+idioms to be typechecked. To accomplish this, Strongtalk:</LI>
+
+<OL>
+<LI>Separates the subtype and subclass lattices. </LI>
+
+<LI>Includes parameterized types and classes. </LI>
+
+<LI>Supports parametrically polymorphic messages, with a flexible mechanism
+for automatically inferring actual type parameters. </LI>
+
+<LI>Supports both subtyping and type matching. </LI>
+
+<LI>Preserves the subtype relations between classes defined by the Smalltalk
+metaclass hierarchy and relates them to the types of their instances. </LI>
+
+<LI>Provides facilities for dynamic typing. </LI>
+</OL>
+
+<LI>The type system preserves <I>encapsulation</I>. This means that internal
+changes in classes to do not effect clients. This is itself a desirable
+property. Additional advantages include: </LI>
+
+<UL>
+<LI>The system does not require access to the internals of a class or method
+in order to typecheck their usage (including inheritance). Consequently:</LI>
+
+<UL>
+<LI>The system can be used even if source code is unavailable.</LI>
+
+<LI>The system can be used even if source code cannot be statically typechecked.</LI>
+</UL>
+
+<LI>It is much easier to produce a responsive incremental implementation,
+which is a de facto requirement for any Smalltalk programming environment.
+</LI>
+</UL>
+
+<LI>The type system is <I>optional</I>. This means the developer is free
+to choose: </LI>
+
+<UL>
+<LI>Which code to typecheck, if any. </LI>
+
+<LI>When to typecheck code, if ever.</LI>
+
+<LI>Where to add type annotations, if at all.</LI>
+</UL>
+
+<P>There is a continuum of choices representing different costs and benefits
+associated with different levels of typechecking. One extreme is not typechecking
+any code at any time, and using no type annotations. This amounts to using
+a traditional Smalltalk. Another extreme is annotating all code, and always
+typechecking all of it. This is very much the way one uses a traditional
+statically typed language. Neither extreme is optimal, but the main point
+is that each developer is free to choose. For typechecking to be truly
+optional, the dynamic behavior of a Smalltalk program must not be influenced
+by any type annotations attached to it. This is not a trivial requirement.
+Many statically typed languages have constructs that violate this constraint.
+Examples include implicit dynamic type checks (as in Beta or Eiffel) or
+overloading (as in C++ or Java). As a consequence of optional typechecking,
+the type system does not restrict the set of programs expressible in the
+language. If typechecking is required, this is impossible as a matter of
+principle, for reasons of computability. </P>
+
+<LI>The system provides the same kind of <I>reflective</I> access to type
+information as Smalltalk does to other language constructs. Note that if
+a program does access type information reflectively, then by definition
+its behavior is dependent on the type annotations in it.</LI>
+</UL>
+
+<H3>Details </H3>
+
+<P>We summarize the features of the Strongtalk type system here. </P>
+
+<UL>
+<H4>Protocols </H4>
+
+<P>Strongtalk separates types from classes. The type hierarchy is defined
+using <I>protocols</I>. A protocol is a collection of message selectors
+and their associated <I>signatures</I>. A message signature specifies the
+types of a message's arguments and its return type. Every class <TT>C</TT>
+automatically induces a protocol, known as <TT>C protocol</TT>. In type
+expressions, no ambiguity can arise as to whether a name denotes a class
+or a protocol, so we elide the selector <TT>protocol</TT>, and refer to
+<TT>C protocol</TT> as just <TT>C</TT>. One may also define protocols independently
+of classes. Protocols are created by protocol inheritance, just as classes
+are created by class inheritance. All protocols inherit from <TT>Object
+protocol</TT>, just as all classes inherit from <TT>Object</TT>. Since
+every class also induces a metaclass <TT>C class</TT>, and every class
+induces a protocol, it follows that every metaclass induces a protocol
+which is referred to as a <I>class protocol</I>. Naturally, the protocol
+for <TT>C class </TT>is <TT>C class protocol</TT>. In type expressions,
+one can always elide the word <TT>protocol</TT>, and refer to the protocol
+of the metaclass as <TT>C class</TT>. In a protocol, the type variable
+<TT>Self</TT> refers to the type of the receiver. <TT>Self class</TT> then
+represents the type of the class of the receiver. In the case of class
+protocols, the receiver is a class, and we may wish to refer not only to
+the type of the receiver and the type of the receiver's class, but also
+to the type of the receiver's instances. This can be done using the type
+variable <TT>Instance</TT>. Every protocol definition induces a class protocol
+representing the type of the class of objects which support the protocol.
+The class protocol hierarchy parallels the protocol hierarchy, just as
+the metaclass hierarchy parallels the class hierarchy. Thus, all class
+protocols inherit from <TT>Object class protocol</TT>, just as all metaclasses
+inherit from <TT>Object class</TT>.</P>
+
+<H4>Typed Methods and Expressions</H4>
+
+<P>Smalltalk is extended syntactically so that all variable declarations
+may be annotated with a type declaration. This includes temporaries, block
+and method arguments, instance, class, pool and global variables. All methods
+have an associated return type. If no return type is explicitly declared
+then <TT>Self</TT>, the type of the receiver, is assumed. Methods may be
+declared to take type arguments. These are never passed in explicitly,
+but are inferred. The visibility of a method may be either public (the
+norm) or private (in which case the method is only visible within the class
+and its subclasses). A private method does not appear in the classes' protocol.
+Classes may include <I>message declarations</I>, indicating messages that
+must be supported but are not implemented. In practice, subclass responsibility
+methods may be used for this purpose. Classes may be declared <I>abstract</I>,
+meaning that they include message declarations. The system can then ensure
+that classes that are not abstract implement all their message declarations.
+</P>
+
+<H4>Genericity</H4>
+
+<P>Definitions such as classes and protocols can be declared to be <I>generic</I>.
+A generic abstracts over one or more types. Typical examples are the classes
+in the <TT>Collection</TT> hierarchy: </P>
+
+<PRE>Collection[T] {Object subclass ...} </PRE>
+
+<PRE>Set[E] {Collection[E] subclass ...} </PRE>
+
+<P>A generic definition introduces one or more formal type arguments. These
+variables can be used in the scope of the definition. To be used in a type
+safe manner, a generic must be invoked with actual type arguments (e.g.,
+<TT>Collection[Character], Set[Boolean], Dictionary[Symbol, Integer]</TT>).
+Occurrences of the formal type arguments are replaced with the corresponding
+actual type arguments. A bound can be specified for each formal type argument
+<TT>T</TT>. If no bound is given, <TT>T</TT> is assumed to be a subtype
+of <TT>Object</TT>.</P>
+
+<H4>Block Types</H4>
+
+<P>A special syntax is provided for the types of blocks. <TT>[^Symbol]</TT>
+is the type of a block with no arguments that returns a symbol. <TT>[Character,
+^ Integer]</TT> is the type of a block that takes a single character argument
+and returns an integer. <TT>[Boolean, Integer, ^Boolean]</TT> is the type
+of a block taking two arguments, a boolean and an integer and returning
+a boolean result. <TT>[X, ^Object]</TT> can be written more concisely as
+<TT>[X]</TT>. Similarly <TT>[Boolean, Integer, ^Object] = [Boolean, Integer]</TT>.
+<TT>[^Object]</TT> can be contracted to <TT>[]</TT>.</P>
+
+<H4>Union Types</H4>
+
+<P>One may specify the type of an object as the union of several object
+types, (e.g.,<TT> Symbol | UndefinedObject</TT>). </P>
+
+<H4>Parametric Polymorphism </H4>
+
+<P>In some cases the type of a method's result may depend on the type of
+its arguments. To accurately express the signatures of such methods one
+may use <I>parametric polymorphism</I>. A parametrically polymorphic method
+signature introduces one or more formal type arguments which can be used
+throughout the signature and the method body. When the message is sent,
+the actual types will be inferred and replace the formal type arguments
+in the signature. As an example, consider the signature of <TT>Collection[T]&gt;&gt;collect:</TT>
+: </P>
+
+<PRE>collect: blk &lt;[T, ^X def]&gt; ^ &lt;Collection[X]&gt;</PRE>
+
+<P>The type term <TT>X def</TT> introduces a type argument <TT>X</TT>,
+which will be inferred to be the type returned by the block which must
+be the first argument to the method. A typical usage would be </P>
+
+<PRE>| nums &lt;Collection[Integer]&gt; |</PRE>
+
+<PRE>nums := 'Fee Fi Fo Fum' collect:[:c  &lt;Character&gt; | c asciiValue]. </PRE>
+
+<P>Here <TT>X</TT> will be inferred to be <TT>Integer</TT>, and the type
+of the send is <TT>Collection[Integer]</TT> as expected. </P>
+
+<H4>Relationships among types </H4>
+
+<P>Strongtalk supports two relations on types: <I>subtyping</I> and <I>matching</I>.
+Subtyping implies substitutability: an element of a subtype can be safely
+used wherever an element of a supertype is expected. Matching implies a
+common pattern of self reference. Originally, Strongtalk relied on a structural
+type system augmented with brands. The current version abandons brands
+and uses declared relations to determine subtyping and matching. Every
+protocol definition specifies its supertypes. Likewise, a class definition
+can specify the supertypes of its protocol. By default, a protocol is declared
+to be a subtype of its superprotocol. Naturally, every declared type relation
+is verified by means of a structural check. Subtyping among invocations
+of a given generic is declared as follows. Each formal type argument has
+a <I>variance</I> which determines how the type of an invocation varies
+with the type of the actual type argument supplied. If the formal is <I>covariant</I>,
+then <TT>T &lt;= S ==&gt; G[T] &lt;= G[S]</TT>. If it is <I>contravariant</I>
+then <TT>T &lt;= S ==&gt; G[S] &lt;= G[T]</TT>. If it is <I>unrelated</I>
+(the default) then no subtype relation is declared between <TT>G[T]</TT>
+and <TT>G[S]</TT>. Subtyping of block types is contravariant on the argument
+types and covariant on the range type. </P>
+
+<H4>Essential Type rules </H4>
+
+<UL>
+<H5>Message send </H5>
+
+<P>The message selector must be defined for the type of the receiver. The
+types of arguments in a message send must be subtypes of the types of the
+formal parameters. The type of the send is the return type of the message
+signature being invoked. </P>
+
+<H5>Assignment</H5>
+
+<P>The type of the right hand side of the assignment must be a subtype
+of the type of the variable being assigned. The type of the assignment
+is the type of its right hand side. </P>
+
+<H5>Return statement </H5>
+
+<P>The type of the expression being returned must be a subtype of the declared
+return type of the enclosing method. The type of the return statement is
+<TT>DoesNotMatter</TT>, which is a subtype of any type. </P>
+
+<H5>Method body </H5>
+
+<P>The return type of a method that does not execute a return must be a
+supertype of <TT>Self</TT>.</P>
+
+<H5>Subclassing</H5>
+
+<P>A method signature in a subclass must always be a matchtype of its signature
+in the superclass. The types of variables cannot change. Inherited public
+methods cannot be privatized. </P>
+</UL>
+</UL>
+
+<H3>Interaction with Existing Language Features</H3>
+
+<P>Since the type system is optional, the extension does not interact with
+existing language features. Strongtalk is both upward compatible with Smalltalk
+(since any Smalltalk program is a Strongtalk program) and downward-compatible
+in the sense that any Strongtalk program can be trivially converted back
+into a Smalltalk program by stripping out the type annotations.</P>
+
+<H3>Implementation Issues</H3>
+
+<P>Strongtalk can be integrated into an existing implementation by modifying
+the programming environment so it can parse and typecheck type-annotated
+programs. No changes are needed to the underlying compiler or runtime because
+the type system is optional. </P>
+
+<H3>Implementation Status and Experience</H3>
+
+<P>An implementation that integrated Strongtalk into an existing browser
+was demonstrated at OOPSLA 93, and used in production in the financial
+industry. A second generation implementation has since been developed using
+completely new browsers that take fuller advantage of the type system.
+Strongtalk has been used to write several large libraries, including a
+complete blue book base library implementation. The implementation has
+the highly desirable property that it imposes no overhead unless the typechecker
+is actually invoked. When the typechecker is used, memory overhead is small,
+and incremental response is good. Experience using Strongtalk has supported
+most of the assumptions of the original type system design. In particular:
+</P>
+
+<UL>
+<LI>Even if a library is not typechecked, typechecking its clients is feasible
+and beneficial, as long as a library interface has been defined. </LI>
+
+<LI>Type annotation enhances readability of code. </LI>
+
+<LI>Typechecking can actually ease the development process. It detects
+many bugs that otherwise show up during debugging, but faster. Also, the
+type system occasionally detects problems that lurk in working code for
+extended periods of time.</LI>
+</UL>
+
+<P>The most important change introduced into Strongtalk is the move from
+structural to declaration based subtyping. This change was made because:
+</P>
+
+<UL>
+<LI>Structural type descriptors do not express programmer intent, and are
+difficult to read. </LI>
+
+<LI>Error messages produced by structural checking are poorly localized
+and very hard to understand. This is especially true in a large system
+with lots of internal cross references like Smalltalk. </LI>
+</UL>
+
+<H3>References</H3>
+
+<P><A NAME="oopsla93"></A>[BrachaGriswold93] Gilad Bracha and David Griswold.
+<A HREF="ooplsa93.ps">Strongtalk: Typechecking Smalltalk in a Production
+Environment (postscript, 187K)</A>. In Proc. of the ACM Conf. on Object-Oriented
+Programming, Systems, Languages and Applications, September 1993. </P>
+
+</BODY>
+</HTML>

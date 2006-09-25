@@ -1,0 +1,78 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Virtual Machine</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="optimization.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="virtualmachine2.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">How Adaptive Optimization Works (cont.)</h2>
+
+<h3 align="left">The second step: Adaptive native-code
+compilation</h3>
+
+<p align="left">Once an invocation counter reaches a
+predetermined threshold, the code associated with it becomes a
+candidate for optimization. This happens only for a very small
+fraction of the code in the system, but it is exactly that
+fraction of the code that the system spends most of its time
+executing. Typically, it only takes a fraction of a second for
+performance-critical code to reach this threshold.</p>
+
+<p align="left">Because only a small fraction of the code in the
+system is optimized, we can afford to do more optimization on
+that code. This is true in both space and time: we can afford to
+do extensive inlining, which consumes more space, and we can
+afford to spend more time generating good code. The Strongtalk VM
+currently has a rather simple code generator- the possibilities
+for improvement are large. A considerably better code-generator
+was written for the system, but it had not been sufficiently
+tested to be included in the release.</p>
+
+<p align="left">Because of the two-phase nature of execution,
+when the native code compiler is invoked on a piece of code we
+know not only that the code is frequently executed, but we know a
+lot about what kinds of receiver classes have been encountered
+for each send in that code, because of the inline-cache
+information described above. This information can be used to
+drive optimization.</p>
+
+<p align="left"><strong>Optimistic Inlining: </strong>The
+fundamental enabling optimization used is <em>optimistic inlining</em>.
+An optimistic optimization is one that requires that a predicted
+property of the code remain true in the future for it to be
+successful (or correct). For example, if a send is monomorphic,
+the VM might try to optimistically inline just the single method
+that has been invoked in the past, and assume following that
+inlined section that only that method has been invoked (which
+lets you do better optimizations <em>after</em> the inlined
+send). This is optimistic, because usually we cannot guarantee
+that at some point in the future we might suddenly encounter
+other receiver classes for that send.</p>
+
+<p align="left"><strong>Deoptimization: </strong>Optimistic
+inlining of this type requires an adaptive mechanism to <em>deoptimize</em>
+the code on-the-fly if an optimistic assumption is violated-
+otherwise the optimization will actually be incorrect, not just
+inefficient. For example, if we inline a monomorphic message
+whose invoked method always returns an Association, the compiler
+may perform optimizations in addition to the inlining based on
+the fact that the returned value is known to be an Association.
+But if at some point a method other than the inlined one is
+invoked by that send, the subsequent assumptions about the return
+value can become invalid, and the optimized code <em>cannot</em>
+be used. The Strongtalk VM detects these cases on-the-fly, and
+actually modifies activations in-place on the stack to revert to
+the safe, interpreted form of execution, in the middle of
+optimized method execution. Thus, the ability to do
+deoptimization is critical to enabling aggressive optimization.</p>
+
+<h3 align="right"><a href="virtualmachine2.html"><strong>Continue
+with the tour ==&gt;</strong></a></h3>
+</body>
+</html>

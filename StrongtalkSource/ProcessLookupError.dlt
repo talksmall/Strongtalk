@@ -1,0 +1,29 @@
+Delta define: #ProcessLookupError as: (
+(Class subclassOf: 'ProcessError' instanceVariables: '')) !
+
+(Delta mirrorFor: #ProcessLookupError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ProcessLookupError) group: 'base'!
+
+(Delta mirrorFor: #ProcessLookupError)
+comment: 
+'Process stopped because doesNotUnderstand: was not understood.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProcessLookupError) classSide methodsFor: 'test' !
+
+
+provoke
+	"A piece of test code provoking this particular error"
+	
+	"doesNotUnderstand: in Object will have to be renamed to test this"
+	self thisSelectorIsNotDefined! !
+
+! (Delta mirrorFor: #ProcessLookupError) methodsFor: 'accessing' !
+
+
+name ^ <Str>
+
+	^'The receiver does not understand doesNotUnderstand:'! !
+

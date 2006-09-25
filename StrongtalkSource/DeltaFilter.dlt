@@ -1,0 +1,38 @@
+Delta define: #DeltaFilter as: (
+(Class subclassOf: 'DeltaASTNode' instanceVariables: 'filteree substitution ') abstract) !
+
+(Delta mirrorFor: #DeltaFilter) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaFilter) group: 'ast'!
+
+(Delta mirrorFor: #DeltaFilter)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaFilter) methodsFor: 'Unclassified' !
+
+
+filter: t <T >using: s <Substitution > ^ <Self>
+    filteree := t.
+substitution := s.!
+
+filteree ^ <T>
+    ^filteree!
+
+name ^ <Symbol>
+    self subclassResponsibility!
+
+substitute: s <Substitution > ^ <Self>
+    ^s isEmpty ifTrue:[self]
+                  ifFalse:[self class new filter: self using: s].!
+
+substitution ^ <Substitution>
+    ^substitution!
+
+unfiltered  ^<ASTNode>
+	self class = filteree class 
+		ifTrue: [^self filteree unfiltered]
+		ifFalse: [^self]
+! !
+

@@ -1,0 +1,400 @@
+Delta define: #DeltaPrim as: (
+(Class subclassOf: 'Object' instanceVariables: 'doc 
+receiver <ObjectType>
+ attributes 
+ msgPattern <DeltaMessagePattern>
+ qualifier params ')) !
+
+(Delta mirrorFor: #DeltaPrim) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaPrim) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPrim)
+comment: 
+'An AST node that represents a primitive declaration.
+Since these declarations are not part of the Smalltalk or Strongtalk languages, it is not
+part of the DeltaASTNode hierarchy.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPrim) classSide methodsFor: 'Unclassified' !
+
+
+new
+  ^super new initialize! !
+
+! (Delta mirrorFor: #DeltaPrim) methodsFor: 'Unclassified' !
+
+
+addDocLine: line
+	doc nextPutAll: line; cr.!
+
+argumentAdd: name type: type
+
+	self halt.
+	"argumentNames add: name.
+	argumentTypes add: type."
+!
+
+attributeAt: name put: value
+  attributes at: name put: value!
+
+canBeConstantFolded
+    | value |
+    value := false.
+    self flagsDo: [ :name |
+        name == #Pure ifTrue: [ value := true ].
+    ].
+    ^value!
+
+canPerformNLR
+    | value |
+    value := false.
+    self flagsDo: [ :name |
+        name == #NLR  ifTrue: [ value := true ].
+    ].
+    ^value!
+
+canScavenge
+    | value |
+    value := true.
+    self flagsDo: [ :name |
+        name == #Pure            ifTrue: [ value := false ].
+        name == #Function    ifTrue: [ value := false ].
+    ].
+    ^value!
+
+errorCodeString
+	| l sig |
+	"Construct string"
+     l := self getAttribute: #error ifAbsent: [^'{NULL}'].
+	sig := '{ '.	
+	l do: [ :e |
+		sig := sig, '"', e value, '"'
+	] andBetweenDo: [
+		sig := sig, ', '
+	].
+	^sig, ', NULL}'!
+
+errorString
+	| col str |
+	col := self getAttribute: #error ifAbsent: [^''].
+	str := ''.
+	col do: [ :v |
+		str := str, v value asString.
+	] andBetweenDo: [
+		str := str, ' '
+	].
+	^str!
+
+errorSymbols
+	| col str result |
+	result := OrderedCollection new.
+	col := self getAttribute: #error ifAbsent: [^result].
+	col do: [ :v | result add: v value asString ].
+	^result!
+
+fileOut: number on: stream
+	stream
+			nextPutAll: 'static char* signature_'
+		;	nextPutAll: number printString
+		;	nextPutAll: '[] = '
+		;	nextPutAll: self signatureString
+		;	nextPutAll: ';'
+		;	cr
+
+		;	nextPutAll: 'static char* errors_'
+		;	nextPutAll: number printString
+		;	nextPutAll: '[] = '
+		;	nextPutAll: self errorCodeString
+		;	nextPutAll: ';'
+		;	cr
+
+		;	nextPutAll: 'static primitive_desc primitive_'
+		;	nextPutAll:  number printString
+		;	nextPutAll: ' = {'
+		;	cr
+		;	nextPutAll: '	"'
+		;	nextPutAll:  self selector
+		;	nextPutAll:  '", '
+		;	cr
+		;	nextPutAll: '	'
+		;	nextPutAll:  self getFunction
+		;	nextPutAll: ', '
+		;	cr
+		;	nextPutAll: '	'
+		;	nextPutAll: self flags printString
+		;	nextPutAll: ', '
+		;	cr
+		;	nextPutAll: '	signature_'
+		;	nextPutAll: number printString
+		;	nextPutAll: ', '
+		;	cr
+		;	nextPutAll: '	errors_'
+		;	nextPutAll: number printString
+		;	cr
+		;	nextPutAll: '};'
+		;	cr
+		;	cr!
+
+fileOutDocHTMLOn: stream
+	| d |
+	d := doc contents.
+	d size > 0 ifTrue: [
+		stream
+				nextPutAll: '<PRE>'
+			;	nextPutAll: d
+			;	nextPutAll: '</PRE>'
+			;	cr
+	]!
+
+fileOutFlagsHTMLOn: stream
+	| printed |
+	printed := false.
+	self flagsDo: [:f| 
+		printed ifFalse: [
+			stream nextPutAll: '<EM>Flags:</EM> '.
+			printed := true.
+		].
+		stream nextPutAll: f; nextPutAll: ' '.
+	].
+	stream cr.
+!
+
+fileOutHTMLOn: stream
+	| num errors |
+
+	"receiver type"
+	self hasReceiver ifTrue: [
+		stream nextPutAll: self receiverHTMLString; nextPutAll: ' '.
+	].
+	stream nextPutAll: '<B>'; cr.
+	stream nextPutAll: self selector; cr.
+	stream nextPutAll: '</B>'; cr. 
+	"return type"
+	stream nextPutAll: ' ^'; nextPutAll:  self returnHTMLString; cr.
+	
+	stream	nextPutAll: '<BR> '; cr.
+
+	self fileOutDocHTMLOn: stream.
+
+	num := params size.
+	self hasFailureBlock ifTrue: [ num := num - 1 ].
+	num = 0 ifFalse: [
+
+	stream nextPutAll: '<EM>Parameters:</EM><BR>'; cr.
+		1 to: num do: [ :index |
+			stream 
+					nextPutAll: ((params at: index) name asString)
+				;	nextPutAll: ' ', (self typeHTMLString: ((msgPattern type domain at: index) name asString))
+				;	nextPutAll: '<BR>'
+				;	cr.
+		].
+	].
+
+	errors := self errorSymbols.
+	errors isEmpty ifFalse: [ 
+		stream	nextPutAll: '<EM>Errors:</EM>  '; cr.
+		self errorSymbols do: [:sym |
+			stream 
+					nextPutAll: sym
+				;	nextPutAll: ' '
+				;	cr.
+		].
+		stream nextPutAll: '<BR>'.
+	].
+
+	"stream nextPutAll: '<EM>Entry:</EM> '; nextPutAll: self getEntryName; cr."
+
+	self fileOutFlagsHTMLOn: stream.
+!
+
+flags
+    | result |
+    result := self numberOfParameters.
+    result := result + (self groupNumber bitShift: 8).
+    self canScavenge                ifTrue: [ result := result + (1 bitShift: 16) ].
+    self canPerformNLR            ifTrue: [ result := result + (1 bitShift: 17) ].
+    self hasFailureBlock            ifTrue: [ result := result + (1 bitShift: 18) ].
+    self canBeConstantFolded    ifTrue: [ result := result + (1 bitShift: 19) ].
+    self hasReceiver                    ifTrue: [ result := result + (1 bitShift: 20) ].
+    self isInternal                        ifTrue: [ result := result + (1 bitShift: 21) ].
+    self needsLastDeltaFrame		ifFalse: [ result := result + (1 bitShift: 22) ].
+
+    ^result!
+
+flagsDo: blk
+    | f |
+    f := self getAttribute: #flags ifAbsent: [ ^self ].
+    f isSymbol ifTrue: [ ^blk value: f ].
+    f do: [ :e | blk value: e value ]!
+
+getAttribute: sel
+  ^(attributes at: sel) value!
+
+getAttribute: sel ifAbsent: blk
+  ^(attributes at: sel ifAbsent: blk) value!
+
+getCategoryName
+	| name |
+	name := self getEntryName.
+	1 to: name size do: [ :i |
+		(name at: i) isLetter ifFalse: [
+			^name copyFrom: 1 to: i - 1 ]].
+	^name
+!
+
+getEntryName
+	| name |
+	name := self getAttribute: #name ifAbsent: [^'NULL'].
+	^name!
+
+getFunction
+	| name |
+	name := self getAttribute: #name ifAbsent: [^'NULL'].
+	^'fntype(&',  name, ')'!
+
+getName
+  ^self getAttribute: #name ifAbsent: [^'NULL']!
+
+groupNumber
+    self flagsDo: [ :name |
+        name == #SmiCompare            ifTrue: [^1].
+        name == #SmiArith                    ifTrue: [^2].
+        name == #DoubleCompare        ifTrue: [^3].
+        name == #DoubleArith                ifTrue: [^4].
+        name == #IndexedObject            ifTrue: [^5].
+        name == #IndexedByte            ifTrue: [^6].
+        name == #IndexedDoubleByte    ifTrue: [^7].
+        name == #Block                        ifTrue: [^8].
+    ].
+    ^0!
+
+hasFailureBlock ^ <Boolean>
+    | postfix size <Int>  str <String> |
+    postfix := #ifFail:.
+    size        := postfix size.
+
+    (self selector size < size) ifTrue: [^false].
+    str := self selector copyFrom: (self selector size - size + 1) to: self selector size.
+    ^str @=  postfix asString!
+
+hasReceiver ^ <Boolean>
+   self deltaHack.
+   ^self receiver name ~= #NoReceiver.
+ !
+
+initialize
+	attributes := Dictionary new.
+	doc := (String new: 100) writeStream.!
+
+isInternal ^ <Boolean>
+    | value <Boolean> |
+    value := false.
+    self flagsDo: [ :name <Symbol> |
+        name == #Internal    ifTrue: [ value := true ].
+    ].
+    ^value!
+
+msgPattern ^ <DeltaMessagePattern>
+    ^msgPattern!
+
+msgPattern: m <DeltaMessagePattern>
+    msgPattern :=  m!
+
+needsLastDeltaFrame ^ <Boolean>
+    | value <Boolean>  |
+    value := true.
+    self flagsDo: [ :name <Symbol> |
+        name == #LastDeltaFrameNotNeeded	ifTrue: [ value := false ].
+    ].
+    ^value
+!
+
+numberOfParameters ^ <Int>
+  "number of parameters needed for a call"
+    | result <Int> |
+    result := self selector occurrencesOf: $:.
+    self hasReceiver ifTrue: [ result := result + 1 ].
+    self hasFailureBlock ifTrue: [ result := result - 1].
+    ^result!
+
+params
+	^params!
+
+params: p
+	params := p!
+
+qualifier: q
+  qualifier := q!
+
+receiver ^ <ObjectType>
+  ^receiver!
+
+receiver: r  <ObjectType>
+  receiver := r!
+
+receiverHTMLString ^ <String>
+	| name <String> |
+	name :=  receiver name asString.
+	^'&lt;<A href="types.html#', name, '">', name, '</A>&gt;'!
+
+returnHTMLString ^ <String>
+	| name <String>  |
+	name := msgPattern type range name asString.
+	^'&lt;<A href="types.html#', name, '">', name, '</A>&gt;'!
+
+returnType: t
+
+	self halt.
+	"returnType := t"
+!
+
+selector ^ <Symbol>
+    ^msgPattern selector!
+
+selector: s <Symbol>
+
+	self halt.
+	"selector := s"!
+
+signatureString
+	| l sig |
+	l :=OrderedCollection new.
+
+	"Return type"
+	l add: msgPattern type range name asString.
+
+	"Receiver type"
+	self hasReceiver ifTrue: [ l add: receiver name asString ].
+
+	"Argument types"
+	msgPattern type domain do: [:t| l add: t name asString ].
+
+	"Remove failureBlock type if present"
+	self hasFailureBlock ifTrue: [ l removeLast ].
+
+	"Construct string"
+	sig := '{ '.	
+	l do: [ :e |
+		sig := sig, '"', e, '"'
+	] andBetweenDo: [
+		sig := sig, ', '
+	].
+	^sig, '}'!
+
+type ^ <MsgSignature>
+
+| domain <OrdCltn[ObjectType]> |
+
+domain := OrderedCollection[ObjectType] new.
+self hasReceiver ifTrue:[domain add: self receiver.]
+                                   ifFalse:[^self msgPattern type].
+self msgPattern type domain do: [:e <ObjectType> | domain add: e].
+^DeltaMsgSignature new domain: domain range: self msgPattern type range.
+
+!
+
+typeHTMLString: name <Str> ^ <String>
+	^'&lt;<A href="types.html#', name, '">', name, '</A>&gt;'! !
+

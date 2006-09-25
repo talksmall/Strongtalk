@@ -1,0 +1,241 @@
+Delta define: #DeltaTypeId as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: 'id scope ')) !
+
+(Delta mirrorFor: #DeltaTypeId) revision: '$Revision: 1.8 $'!
+
+(Delta mirrorFor: #DeltaTypeId) group: 'ast'!
+
+(Delta mirrorFor: #DeltaTypeId)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaTypeId) methodsFor: 'Unclassified' !
+
+
+addRelevantTypeVar: tv <TypeVar>
+
+"No type variable is relevant to a type id, so do nothing"!
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^self asProtocol allSelfClassTVs!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^self asProtocol allSelfTVs!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self asType involvesTypeVariables
+   ifTrue:[self ref antimonotonicIn: tv]
+   ifFalse:[true].!
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool typeIdNode: self!
+
+asGeneric ^ <GenericDecl>
+    ^self ref  isGeneric
+    		ifTrue:[self ref asGeneric]
+    		ifFalse:[self reportError: (DeltaNotAGenericError new id: self name)]!
+
+asObjectType ^ <ObjectType>
+    ^self ref asObjectType!
+
+asProtocol ^ <Protocol>
+    ^self ref asProtocol!
+
+asSide ^ <Side>
+    ^self ref asSide!
+
+asType ^ <Type>
+    ^self ref asType!
+
+atomicTypes ^ <IdentitySet[ObjectType]>
+    ^self asObjectType atomicTypes!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self asProtocol bareAttributes!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self asProtocol bareSecondaryAttributes!
+
+basicLocator
+	^self ref basicLocator!
+
+branded ^ <Boolean>
+    ^self asProtocol branded!
+
+canonicalRep ^ <ObjectType>
+
+^self asObjectType canonicalRep!
+
+classProtocol ^ <Protocol>
+    ^DeltaUnaryTypeExpr new target: self selector: #class!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+
+^self ref asProtocol compositeSubstitute: t!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^self asProtocol declaredSubprotocolOf: p!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^self asProtocol declaredSuperMixinInvocationOf: m!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^self asProtocol declaredSuperprotocolOfGeneric: p!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^self asObjectType declaredSupertypes!
+
+dual ^ <Protocol>
+    ^self asProtocol dual!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a formatted name, which here is just the id"
+
+	^self name!
+
+invokeWith: actuals <OrdCltn[ObjectType] > ^ <Type>
+    ^self asGeneric invokeWith: actuals!
+
+involvesTypeVariables ^ <Boolean>
+    ^self asType involvesTypeVariables!
+
+isClass ^ <Boolean>
+    ^self ref isClass!
+
+isGeneric ^ <Boolean>
+    ^self ref isGeneric!
+
+isMonotonic ^ <Boolean>
+    ^self asProtocol isMonotonic!
+
+isObjectType ^ <Boolean>
+    ^self ref isObjectType!
+
+isProtocol ^ <Boolean>
+    ^self ref isProtocol!
+
+isTypeVar ^ <Boolean>
+
+^self ref isTypeVar!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self asProtocol localBareAttributes!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self asProtocol localBareSecondaryAttributes!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self asType involvesTypeVariables
+   ifTrue:[self ref monotonicIn: tv]
+   ifFalse:[true].!
+
+name ^ <NameType>
+
+    ^id!
+
+newref ^ <Type>
+
+(id at: 1) isUppercase ifTrue: [
+	| global globalType |
+	(global := DeltaGlobals at: id ifAbsent: [nil]) notNil
+		ifTrue: [	(globalType := CachedTypeIdRefs at: id ifAbsent: [nil]) isNil
+							ifTrue: [		globalType := Type forRef: global.
+												CachedTypeIdRefs at: id put: globalType ].
+						^globalType ] ].
+		
+^Type forRef: (self scope at: id ifAbsent:[^DeltaUndefinedTypeError new id: id]).
+
+
+
+!
+
+oldref ^ <Type>
+
+^Type forRef: (self scope at: id ifAbsent:[^DeltaUndefinedTypeError new id: id]).
+
+!
+
+privateToPublicSubstitution ^<Substitution> 
+
+^self asProtocol privateToPublicSubstitution!
+
+rawPrimaryInterface ^ <Interface>
+    ^self asProtocol rawPrimaryInterface!
+
+rawSecondaryInterface ^ <Interface>
+    ^self asProtocol rawSecondaryInterface!
+
+rawSelectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+    ^self asObjectType rawSelectMsg: selector ifAbsent: block!
+
+ref ^ <Type>
+
+	^Type forRef: (self scope at: id ifAbsent: [ ^DeltaUndefinedTypeError new id: id ])
+!
+
+scope ^ <Scope>
+    ^scope!
+
+scope: s <Scope > ^ <Self>
+    scope := s!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+    ^self asObjectType selectMsg: selector ifAbsent: block!
+
+selfClassTV ^ <TypeVar>
+    ^self asProtocol selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self asProtocol selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self asProtocol selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self asProtocol selfTV!
+
+setId: n <NameType > ^ <Self>
+    id := n.!
+
+subprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asProtocol subprotocolOf:p assuming: trail!
+
+substitute: s <Substitution > ^ <ObjectType>
+
+	s isEmpty ifTrue:[^self].
+	^s at: self ref ifAbsent:[self]!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asType subtypeOf: t assuming: trail.!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asType  superGenAppOf: p assuming: trail!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asType superprotocolOf:p assuming: trail!
+
+supertypeOfTypeVar: t <TypeVar >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asType supertypeOfTypeVar: t assuming: trail!
+
+supertypeOfUnion: u <UnionType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asObjectType supertypeOfUnion: u assuming: trail!
+
+typeOfClass ^ <Protocol>
+    ^self asObjectType typeOfClass!
+
+wellFormed ^ <Boolean>
+    | r <DeltaAST>  |
+
+(r := self ref) isError ifTrue: [
+	self reportError: r.
+	^false].
+r isType ifFalse: [
+	self reportError: (DeltaNotATypeError new id: self name).
+	^false].
+^true
+! !
+

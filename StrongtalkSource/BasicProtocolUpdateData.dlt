@@ -1,0 +1,160 @@
+Delta define: #BasicProtocolUpdateData as: (
+(Class subclassOf: 'BasicTypeData' instanceVariables: 'delta branded selfTV selfClassTV subtype superprotocol name scope relevantTypeVars ')) !
+
+(Delta mirrorFor: #BasicProtocolUpdateData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicProtocolUpdateData) group: 'ast'!
+
+(Delta mirrorFor: #BasicProtocolUpdateData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicProtocolUpdateData) classSide methodsFor: 'Unclassified' !
+
+
+name: n <Symbol >superprotocol: sp <Protocol >delta: d <ProtocolData >branded: b <Boolean >subtype: subT <Boolean > ^ <Instance>
+    ^self new name: n superprotocol: sp delta: d branded: b subtype: subT.! !
+
+! (Delta mirrorFor: #BasicProtocolUpdateData) methodsFor: 'Unclassified' !
+
+
+addRelevantTypeVar: tv <TypeVar>
+
+self relevantTypeVars add: tv.
+self delta addRelevantTypeVar: tv.
+self superprotocol addRelevantTypeVar: tv.!
+
+bareAttributes  ^ <Dict[Symbol,MsgSignature]>
+    ^self delta bareAttributes override: self superprotocol bareAttributes!
+
+bareSecondaryAttributes  ^ <Dict[Symbol,MsgSignature]>
+    ^self delta bareSecondaryAttributes override: self superprotocol bareSecondaryAttributes!
+
+branded ^ <Boolean>
+    ^branded!
+
+branded: b<Boolean>
+    branded := b!
+
+clearCaches
+
+relevantTypeVars := nil!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^(self delta compositeSubstitute:(self superprotocol compositeSubstitute: t))
+    substitute: self myLocalSubstitution!
+
+delta ^ <ProtocolData>
+    ^delta!
+
+localBareAttributes  ^ <Dict[Symbol,MsgSignature]>
+    ^self delta localBareAttributes!
+
+localBareSecondaryAttributes  ^ <Dict[Symbol,MsgSignature]>
+    ^self delta localBareSecondaryAttributes!
+
+messages  ^ <Dict[Symbol,Type]>
+
+^self delta messages!
+
+myLocalSubstitution ^ <Substitution>
+
+" This method returns a substitution that replaces my super protocol's
+type variables with my own. It is used to modify the signatures
+inherited from the super protocol so that all self reference uses
+my type variables. That is equivalent to invoking the super protocol's
+generator with the formal parameters of my generator during
+inheritance.
+"
+    | theta <Substitution>  superProtocol <Protocol>  |
+
+theta := DeltaSubstitution new initialize.
+superProtocol := self superprotocol.
+theta at: superProtocol selfTV put: self selfTV.
+theta at: superProtocol selfClassTV put: self selfClassTV.
+
+theta at: self delta selfTV put: self selfTV.
+theta at: self delta selfClassTV put: self selfClassTV.
+^theta!
+
+name ^ <Symbol>
+    ^name!
+
+name: n <Symbol>
+	name := n!
+
+name: n <Symbol >superprotocol: sp <Protocol >delta: d <ProtocolData >branded: b <Boolean >subtype: subT <Boolean > ^ <Self>
+    name := n.
+superprotocol := sp.
+delta := d.
+self branded: b.
+self subtype: subT.
+selfTV := DeltaTypeVar new name: #Self bound: self.
+selfClassTV := DeltaTypeVar new name: #SelfClass bound: self typeOfClass; isMeta: true.
+
+scope := DeltaScope new initialize: DeltaGlobals.
+self selfTV dual: self selfClassTV.
+self selfClassTV dual: self selfTV.
+self scope at: #Self put: self selfTV.
+!
+
+name: n <Symbol >superprotocol: sp <Protocol >delta: d <ProtocolData >branded: b <Boolean >subtype: subT <Boolean >typeOfInstances: t <Protocol > ^ <Self>
+    name := n.
+superprotocol := sp.
+delta := d.
+self branded: b.
+self subtype: subT.
+selfTV := DeltaTypeVar new name: #Self bound: t.
+selfClassTV := DeltaTypeVar new name: #SelfClass bound: t typeOfClass; isMeta: true.
+
+scope := DeltaScope new initialize: DeltaGlobals.
+self selfTV dual: self selfClassTV.
+self selfClassTV dual: self selfTV.
+self scope at: #Self put: self selfTV.
+!
+
+privateToPublicSubstitution ^<Substitution> 
+
+^DeltaSubstitution new initialize!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+relevantTypeVars isNil
+  ifTrue:[
+               relevantTypeVars := Set[TypeVar] new.
+               relevantTypeVars add: self selfTV;
+                                         add: self selfClassTV.
+               ].
+^relevantTypeVars.!
+
+scope ^ <Scope>
+    ^scope!
+
+selfClassTV ^ <TypeVar>
+    ^selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self selfClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self selfTV!
+
+selfTV ^ <TypeVar>
+    ^selfTV!
+
+subtype ^ <Boolean>
+    ^subtype!
+
+subtype: s <Boolean>
+    subtype := s!
+
+superprotocol ^ <Protocol>
+    ^superprotocol!
+
+superprotocol: p<Protocol>
+	superprotocol := p! !
+

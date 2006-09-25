@@ -1,0 +1,68 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Mixins</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="typesystem.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="ui.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">Mixins</h2>
+
+<p align="left">The Strongtalk system supports a simple, elegant
+alternative to multiple-inheritance, called a <em>mixin</em>.
+This is not to be confused with the mixins of the Lisp world.
+Mixins are very easy to understand, and do not suffer from the
+tricky conflict resolution issues involved in
+multiple-inheritance schemes. A full discussion is not possible
+here, but we can look at the basic idea and a simple example.</p>
+
+<p align="left">Basically, a mixin is what you get if you take a
+class, and turn it into a function that takes the superclass as an argument. When you <em>invoke</em>
+the mixin with a class S as its argument, it acts like a factory to produce a new class
+that has the methods of the original class, but which has S as its superclass.</p>
+
+<p align="left">Let's take <a DOIT="
+	(ClassOutliner for: (ClassMirror on: Magnitude)) launch">Magnitude</a> as an example. Magnitude is
+a normal class that is a subclass of Object. It implements the
+comparison operators, (&lt;=, &gt;, etc) in terms of the single
+operator &lt;. In most Smalltalk systems, if you want to create a
+class that is a Magnitude, you make it a subclass of Magnitude.
+But if your class is already a subclass of some other class, you
+can't do that, because Smalltalk doesn't have multiple
+inheritance. </p>
+
+<p align="left">A classic example of this situation occurs with
+strings. Strings are already part of the Collection hierarchy, so
+they can't inherit from Magnitude (Collections in general are not
+Magnitudes). So in most Smalltalks, strings have to reimplement
+all the comparison operators. In Strongtalk, the class involved
+is the read-only string class, <a DOIT="
+	(ClassOutliner for: (ClassMirror on: ReadString)) launch">ReadString</a>.</p>
+
+<p align="left">But in Strongtalk, we can turn any class into a
+mixin, and then invoke that mixin with some other superclass to produce a new class. If
+we say &quot;Magnitude mixin&quot; the class will return a mixin
+that contains all the methods from Magnitude, but which needs you
+to supply a superclass. You supply the superclass by <em>invoking</em>
+the mixin using the |&gt; operator, which takes the desired
+superclass as the argument. In the case of ReadString, which
+inherits from SequenceableCollection, we build the new superclass
+for ReadString using the expression &quot;Magnitude mixin |&gt;
+SequenceableCollection&quot;, which produces a new (anonymous)
+class with all the Magnitude methods that inherits from
+SequenceableCollection. Then we just use that class as the
+superclass for ReadString, and we are all done.</p>
+
+<p align="left">There is more to mixins than this, but this
+example gives the basic idea. Inside the Strongtalk VM, all classes are actually
+implemented using mixins. To learn more about mixins, look <a
+href="../mixins/index.html">here</a>.</p>
+
+<h3 align="right"><a href="ui.html"><strong>User Interface Framework ==&gt;</strong></a></h3>
+</body>
+</html>

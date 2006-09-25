@@ -1,0 +1,32 @@
+Delta define: #ParserBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: '')) !
+
+(Delta mirrorFor: #ParserBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ParserBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #ParserBenchmark)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ParserBenchmark) methodsFor: 'misc' !
+
+
+run
+	DeltaParser new parseMethod: 'foo ^ 42' 
+		within: (Mirror on: Object) scope 
+		ifError: [ :msg <Str> :pos <Int> | ]! !
+
+! (Delta mirrorFor: #ParserBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^0!
+
+name
+	^#Parser!
+
+parcplaceTime
+	^0! !
+

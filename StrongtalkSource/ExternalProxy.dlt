@@ -1,0 +1,404 @@
+Delta define: #ExternalProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #ExternalProxy) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #ExternalProxy) group: 'base'!
+
+(Delta mirrorFor: #ExternalProxy)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.6 $
+'!
+
+! (Delta mirrorFor: #ExternalProxy) classSide methodsFor: 'instance creation' !
+
+
+forHigh: h <Int> low: l <Int> ^<Instance>
+
+    ^self new setHigh: h low: l; yourself!
+
+forInt: i <Int> ^<Instance>
+
+	"%todo: make this work for largeintegers that are small enough for an untagged word"
+    ^self new set: i; yourself!
+
+forProxy: proxy <ExternalProxy> ^<Instance>
+
+    ^self new setHigh: proxy high low: proxy low; yourself! !
+
+! (Delta mirrorFor: #ExternalProxy) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^77! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'accessing' !
+
+
+asBoolean ^<Boolean>
+
+        ^self isNull not!
+
+asInteger ^<Int>
+	"Like asSmallInteger, but can be used on ExternalData, since integers support this also,
+		and it will eventually produce large integers when necessary"
+
+	"%todo: enhance to support largeintegers when needed"
+	^self asSmallInteger!
+
+asSmallInteger ^<SmallInt>
+
+	^{{self primitiveProxyGetIfFail: [:error <Symbol> | self error: error ]}}!
+
+byteAt: offset <Int> ^<SmallInt>
+
+	^{{self primitiveProxyByteAt: offset ifFail: [ :error <Symbol> | self error: error ]}}!
+
+byteAt: offset <Int> put: value <Int>  ^<SmallInt>
+
+	^{{self primitiveProxyByteAt: offset put: value ifFail: [ :error <Symbol> | self error: error ]}}!
+
+cStringAt: offset <Int> ^<CString>
+
+	^self subProxyAt: offset result: CString new!
+
+doubleByteAt: offset <Int>  ^<SmallInt>
+
+	^{{self primitiveProxyDoubleByteAt: offset ifFail: [ :error <Symbol> | self error: error ]}}!
+
+doubleByteAt: offset <Int> put: value <Int>  ^<SmallInt>
+
+	^{{self primitiveProxyDoubleByteAt: offset put: value
+			ifFail: [ :error <Symbol>  | self error: error ]}}!
+
+externalDataAt: offset <Int> ^<ExternalData>
+
+	^self proxyAt: offset!
+
+externalDataAt: offset <Int> put: value <ExternalData> ^<ExternalData>
+
+	^self proxyAt: offset put: value asExternalProxy!
+
+high ^<SmallInt>
+
+	^{{self primitiveProxyGetHigh}}!
+
+highSigned ^<SmallInt>
+
+	| val <Int> |
+	val := self high.
+
+	^val >= 16r8000
+		ifFalse: [ val ]
+		ifTrue: [ val - 16r10000 ]!
+
+isAllOnes ^<Boolean>
+
+        ^{{self primitiveProxyIsAllOnes}}!
+
+isNull ^<Boolean>
+
+        ^{{self primitiveProxyIsNull}}!
+
+low ^<SmallInt>
+
+	^{{self primitiveProxyGetLow}}!
+
+lowSigned ^<SmallInt>
+
+	| val <Int> |
+	val := self low.
+
+	^val >= 16r8000
+		ifFalse: [ val ]
+		ifTrue: [ val - 16r10000 ]!
+
+proxyAt: offset <Int> ^<Proxy>
+
+	^self proxyAt: offset result: ExternalProxy new!
+
+proxyAt: offset <Int> put: p <Proxy> ^<Proxy>
+
+	^{{self primitiveProxyProxyAt: offset put: p
+		ifFail: [ :error <Symbol> | self error: error ]}}!
+
+proxyAt: offset <Int> result: p <P> ^<P>
+	{ where P <ExternalProxy> is arg 2}
+
+	^{{self primitiveProxyProxyAt: offset result: p
+		ifFail: [ :error <Symbol> | self error: error ]}}!
+
+set: value <Int> ^<SmallInt>
+
+	^{{self primitiveProxySet: value ifFail: [:error <Symbol> | self error: error ]}}!
+
+setFromProxy: value <ExternalProxy>
+
+	self setHigh: value high low: value low!
+
+setHigh: h <Int> low: l <Int>
+    {{self primitiveProxySetHigh: h low: l ifFail: [ :err <Symbol> | self error: err ]}}!
+
+singlePrecisionFloatAt: offset <Int> ^<Float>
+	"Get the single precision float at the specified byte offset, convert it to double
+	  precision, and return the Smalltalk object for it."
+
+	^{{self primitiveProxySinglePrecisionFloatAt: offset ifFail: [ :error <Symbol> | self error: error ]}}!
+
+smallIntegerAt: offset <Int> ^<SmallInt>
+	"Get the small integer at the specified byte offset.  This causes
+		an error if the value at that location can't be represented as
+		a SmallInteger."
+
+	^{{self primitiveProxySmiAt: offset ifFail: [ :error <Symbol> | self error: error ]}}!
+
+smallIntegerAt: offset <Int> put: value <Int> ^<SmallInt>
+
+	^{{self primitiveProxySmiAt: offset put: value
+		ifFail: [ :error <Symbol> | self error: error ]}}!
+
+store: s <Str> asCStringAt: offset <Int>
+	"Copy the bytes of string s into the structure pointed to by the receiver
+	  starting at offset (0 based)."
+
+    1 to: s size do:
+        [ :i <Int> |
+            self byteAt: (i - 1) + offset put: (s at: i) asciiValue.    ].
+    self byteAt: s size + offset put: 0.
+!
+
+subProxyAt: offset <Int> ^<ExternalProxy>
+
+	^self subProxyAt: offset result: ExternalProxy new!
+
+subProxyAt: offset <Int> result: p <P> ^<P>
+		{where P <ExternalProxy> is arg 2}
+	"Get a proxy holding a pointer to the given offset within the structure pointed
+	  to by the receiver"
+
+	^{{self primitiveProxySubProxyAt: offset result: p
+		ifFail: [ :error <Symbol> | self error: error ]}}! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'converting' !
+
+
+asExternalProxy ^<ExternalProxy>
+
+	^self! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [ self equalsProxy: 
+					(ExternalProxy coerce: other
+						else: [ ^false ])]
+		!
+
+@= other <ExternalData> ^<Boolean>
+	"Compares two ExternalData objects to each other.  This will coerce between integers and proxies
+	  as needed"
+
+	^self = other asExternalProxy!
+
+@~= other <ExternalData> ^<Boolean>
+	"Compares two ExternalData objects to each other.  This will coerce between integers and proxies
+	  as needed"
+
+	^(self @= other) not!
+
+equalsProxy: other <ExternalProxy> ^<Boolean>
+
+	^self high = other high and: [ self low = other low ]!
+
+hash ^<Int>
+
+	^self low bitXor: self high! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutStream>
+
+	strm nextPutAll: self class name,'('.
+	self printValueOn: strm.
+	strm nextPut: $)
+!
+
+printValueOn: strm <CharOutStream>
+
+	strm show: '16r'.
+	4 to: 1 by: -1
+		do: [ :i <Int> |
+				strm put: (self high hexDigitAt: i) ].
+	4 to: 1 by: -1
+		do: [ :i <Int> |
+				strm put: (self low hexDigitAt: i) ].! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'evaluating' !
+
+
+APICallResult: result <X> ^<X>
+		{where X <subtypeOf: ExternalProxy> is arg 1}
+	"Call the external function pointed to by the receiver with specified argument[s], and store its
+	  result in the result proxy, which is then returned."
+
+	^{{self primitiveAPICallResult: result
+		ifFail: [ :err <Symbol> | self error: err ]	}}!
+
+APICallValue: arg1 <ExternalData> result: result <X> ^<X>
+		{where X <subtypeOf: ExternalProxy> is arg 2}
+	"Call the external function pointed to by the receiver with specified argument[s], and store its
+	  result in the result proxy, which is then returned."
+
+	^{{self primitiveAPICallValue: arg1 result: result
+		ifFail: [ :err <Symbol> | self error: err ]	}}!
+
+APICallValue: arg1 <ExternalData>
+value: arg2 <ExternalData>
+result: result <X>
+^<X>
+		{where X <subtypeOf: ExternalProxy> is arg 3}
+	"Call the external function pointed to by the receiver with specified argument[s], and store its
+	  result in the result proxy, which is then returned."
+
+	^{{self primitiveAPICallValue: arg1 value: arg2 result: result
+		ifFail: [ :err <Symbol> | self error: err ]	}}!
+
+APICallValue: arg1 <ExternalData>
+value: arg2 <ExternalData>
+value: arg3 <ExternalData>
+result: result <X>
+^<X>
+		{where X <subtypeOf: ExternalProxy> is arg 4}
+	"Call the external function pointed to by the receiver with specified argument[s], and store its
+	  result in the result proxy, which is then returned."
+
+	^{{self primitiveAPICallValue: arg1 value: arg2 value: arg3 result: result
+		ifFail: [ :err <Symbol> | self error: err ]	}}!
+
+APICallValue: arg1 <ExternalData>
+value: arg2 <ExternalData>
+value: arg3 <ExternalData>
+value: arg4 <ExternalData>
+result: result <X>
+^<X>
+		{where X <subtypeOf: ExternalProxy> is arg 5}
+	"Call the external function pointed to by the receiver with specified argument[s], and store its
+	  result in the result proxy, which is then returned."
+
+	^{{self primitiveAPICallValue: arg1 value: arg2 value: arg3 value: arg4 result: result
+		ifFail: [ :err <Symbol> | self error: err ]	}}!
+
+APICallValue: arg1 <ExternalData>
+value: arg2 <ExternalData>
+value: arg3 <ExternalData>
+value: arg4 <ExternalData>
+value: arg5 <ExternalData>
+result: result <X>
+^<X>
+		{where X <subtypeOf: ExternalProxy> is arg 6}
+	"Call the external function pointed to by the receiver with specified argument[s], and store its
+	  result in the result proxy, which is then returned."
+
+	^{{self primitiveAPICallValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 result: result
+		ifFail: [ :err <Symbol> | self error: err ]	}}! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'bit operations' !
+
+
+externalBitAnd: other <ExternalData> ^<ExternalData>
+
+	^other bitAndFromProxy: self!
+
+externalBitOr: other <ExternalData> ^<ExternalData>
+
+	^other bitOrFromProxy: self! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'double-dispatching' !
+
+
+bitAndFromProxy: other <ExternalProxy> ^<ExternalProxy>
+
+	^ExternalProxy forHigh: (self high bitAnd: other high) low: (self low bitAnd: other low)!
+
+bitAndFromSmallInteger: other <SmallInteger> ^<ExternalData>
+
+	^self bitAndFromProxy: other asExternalProxy!
+
+bitOrFromProxy: other <ExternalProxy> ^<ExternalProxy>
+
+	^ExternalProxy forHigh: (self high bitOr: other high) low: (self low bitOr: other low)!
+
+bitOrFromSmallInteger: other <SmallInteger> ^<ExternalProxy>
+
+	^self bitOrFromProxy: other asExternalProxy! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'testing' !
+
+
+hasBitsSet: mask <ExternalData> ^<Boolean>
+
+	^(self externalBitAnd: mask) @= mask! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'allocation' !
+
+
+calloc: size <Int>
+
+	self malloc: size.
+	0 to: size - 1 do: 
+		[ :i <Int> |
+			self byteAt: i put: 0 ].
+	"%todo: use a calloc primitive"
+!
+
+free
+
+	self assert: [ self isNull not ].
+
+	self debugAllocation
+		ifFalse: [ {{self primitiveProxyFree}} ].
+	self setHigh: 0 low: 0.!
+
+malloc: size <Int>
+
+	| adjsize <Int> |
+	adjsize := self debugAllocation
+		ifTrue: [ size + self extraForDebugMalloc ]
+		ifFalse: [ size ].
+    {{self primitiveProxyMalloc: adjsize ifFail: [:error <Symbol> | self error: error]}}.
+	self debugAllocation
+		ifTrue: [	0 to: adjsize - 1 do:
+							[ :i <Int> |		self byteAt: i put: 16r55 ]  ]. !
+
+mallocInts: nInts <Int>
+
+	self malloc: nInts * Platform wordSize! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'private' !
+
+
+debugAllocation ^<Boolean>
+	"Turns on various memory debugging features, including:
+			- filling malloc'd memory with a ridiculous bit pattern.
+			- free is disabled
+			- allocations are made larger by #extraForDebugMalloc bytes.
+		"
+	^false!
+
+extraForDebugMalloc ^<Int>
+	"# of extra bytes to allocate for each malloc when debugging alllocation"
+
+	^100! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+	self error: 'should not file out a proxy'.
+	^0! !
+

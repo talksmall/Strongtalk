@@ -1,0 +1,38 @@
+Delta define: #SECURITY_ATTRIBUTES as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #SECURITY_ATTRIBUTES) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #SECURITY_ATTRIBUTES) group: 'base'!
+
+(Delta mirrorFor: #SECURITY_ATTRIBUTES)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SECURITY_ATTRIBUTES) methodsFor: 'accessing' !
+
+
+bInheritHandle: flag <ExternalData>
+
+	self externalDataAt: self bInheritHandleOffset put: flag!
+
+nLength: i <Int>
+
+	self smallIntegerAt: self nLengthOffset put: i!
+
+structureSize ^<Int>
+
+	^12! !
+
+! (Delta mirrorFor: #SECURITY_ATTRIBUTES) methodsFor: 'offsets' !
+
+
+bInheritHandleOffset ^<Int>
+
+	^8!
+
+nLengthOffset ^<Int>
+
+	^0! !
+

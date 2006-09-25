@@ -1,0 +1,36 @@
+Delta define: #BenchmarkPrimTraceRunner as: (
+(Class subclassOf: 'BenchmarkRunner' instanceVariables: '')) !
+
+(Delta mirrorFor: #BenchmarkPrimTraceRunner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BenchmarkPrimTraceRunner) group: 'benchmark'!
+
+(Delta mirrorFor: #BenchmarkPrimTraceRunner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BenchmarkPrimTraceRunner) methodsFor: 'evaluating' !
+
+
+evaluate: bm
+	Transcript cr.
+	Profiler do: bm!
+
+evaluate: bm inner: inner
+	inner timesRepeat:  [ bm value ].
+	VM booleanAt: #TracePrims put: true.
+	bm value.
+	VM booleanAt: #TracePrims put: false.
+! !
+
+! (Delta mirrorFor: #BenchmarkPrimTraceRunner) methodsFor: 'printing' !
+
+
+showIteration: iter
+		Transcript
+				cr
+			;	show: 'Iteration =  '
+			;	show: iter printString
+			;	cr.! !
+

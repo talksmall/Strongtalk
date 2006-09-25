@@ -1,0 +1,49 @@
+Delta define: #XMouseConstraint as: (
+(Class subclassOf: 'UnaryConstraint' instanceVariables: 'xOffset')) !
+
+(Delta mirrorFor: #XMouseConstraint) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #XMouseConstraint) group: 'benchmark'!
+
+(Delta mirrorFor: #XMouseConstraint)
+comment: 
+'I am a unary input constraint that constrains a variable to the current x-coordinate of the mouse. I contain an offset to normalize the coordinate system to one convenient for the target variable.
+
+Instance variables:
+	xOffset		constant x-offset <Number>
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #XMouseConstraint) classSide methodsFor: 'instance creation' !
+
+
+var: aVariable offset: xOffset strength: strengthSymbol
+	"Install an XMouse constraint on the given variable with the given offset constant to be added to the raw mouse position."
+
+	^(self new) var: aVariable offset: xOffset strength: strengthSymbol! !
+
+! (Delta mirrorFor: #XMouseConstraint) methodsFor: 'initialize-release' !
+
+
+var: aVariable offset: aNumber strength: strengthSymbol
+	"Install myself with the given variable, x-offset, and strength."
+
+	xOffset := aNumber.
+	self var: aVariable strength: strengthSymbol.! !
+
+! (Delta mirrorFor: #XMouseConstraint) methodsFor: 'queries' !
+
+
+isInput
+	"I depend on the state of the mouse."
+
+	^true! !
+
+! (Delta mirrorFor: #XMouseConstraint) methodsFor: 'execution' !
+
+
+execute
+	"Enforce this constraint. Assume that it is satisfied."
+
+	output value: (Sensor mousePoint x + xOffset).! !
+

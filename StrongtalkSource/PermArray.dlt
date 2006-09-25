@@ -1,0 +1,44 @@
+Delta define: #PermArray as: (
+(Class subclassOf: 'Array' instanceVariables: 'pctr')) !
+
+(Delta mirrorFor: #PermArray) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #PermArray) group: 'benchmark'!
+
+(Delta mirrorFor: #PermArray)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #PermArray) methodsFor: 'misc' !
+
+
+pctr ^ pctr!
+
+pctr: p pctr := p!
+
+permInitialize
+	1 to: self size do: [:i | self at: i put: i - 1]!
+
+permSwap: a with: b
+	| t |
+	t := self at: a.
+	self at: a put: (self at: b).
+	self at: b put: t!
+
+permute: n 
+	pctr := pctr + 1.
+	n ~= 1
+		ifTrue: 
+			[self permute: n - 1.
+			n - 1
+				to: 1
+				by: -1
+				do: 
+					[:k | 
+					self permSwap: n with: k.
+					self permute: n - 1.
+					self permSwap: n with: k]]
+! !
+

@@ -1,0 +1,74 @@
+Delta define: #TEXTMETRIC as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #TEXTMETRIC) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #TEXTMETRIC) group: 'base'!
+
+(Delta mirrorFor: #TEXTMETRIC)
+comment: 
+'%todo: This currently uses only the nonunicode version of the structure, which has
+a different size if you use UNICODE.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #TEXTMETRIC) methodsFor: 'accessing' !
+
+
+structureSize ^<Int>
+
+	^56!
+
+tmAscent ^<Int>
+
+	^self smallIntegerAt: self tmAscentOffset!
+
+tmDescent ^<Int>
+
+	^self smallIntegerAt: self tmDescentOffset!
+
+tmExternalLeading ^<Int>
+
+	^self smallIntegerAt: self tmExternalLeadingOffset!
+
+tmHeight ^<Int>
+
+	^self smallIntegerAt: self tmHeightOffset!
+
+tmInternalLeading ^<Int>
+
+	^self smallIntegerAt: self tmInternalLeadingOffset!
+
+tmOverhang ^<Int>
+
+	^self smallIntegerAt: self tmOverhangOffset! !
+
+! (Delta mirrorFor: #TEXTMETRIC) methodsFor: 'offsets' !
+
+
+tmAscentOffset ^<Int>
+
+	^4!
+
+tmDescentOffset ^<Int>
+
+	^8!
+
+tmExternalLeadingOffset ^<Int>
+
+	^16!
+
+tmHeightOffset ^<Int>
+
+	^0!
+
+tmInternalLeadingOffset ^<Int>
+
+	^12!
+
+tmOverhangOffset ^<Int>
+
+	^32! !
+

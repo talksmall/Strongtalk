@@ -1,0 +1,41 @@
+Delta define: #NestedLoopBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: '')) !
+
+(Delta mirrorFor: #NestedLoopBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #NestedLoopBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #NestedLoopBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #NestedLoopBenchmark) methodsFor: 'misc' !
+
+
+nestedLoopTest
+	| sum |
+	sum := 0.
+	1 to: 100 do: [ :i | 1 to: 100 do: [ :j | sum := sum + 1 ] ].
+	^ sum!
+
+run
+	"NestedLoopBenchmark new run"
+	100 timesRepeat: [ self nestedLoopTest ]! !
+
+! (Delta mirrorFor: #NestedLoopBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^178!
+
+factor
+	^7!
+
+name
+	^#NestedLoop!
+
+parcplaceTime
+	^191! !
+

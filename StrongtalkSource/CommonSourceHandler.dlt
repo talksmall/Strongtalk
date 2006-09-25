@@ -1,0 +1,110 @@
+Delta define: #CommonSourceHandler as: (
+(Class subclassOf: 'SourceHandler' instanceVariables: '')) !
+
+(Delta mirrorFor: #CommonSourceHandler) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #CommonSourceHandler) group: 'reflection'!
+
+(Delta mirrorFor: #CommonSourceHandler)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CommonSourceHandler) methodsFor: 'Unclassified' !
+
+
+changedSubclasses
+
+	self changed: #subclasses.!
+
+comment ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler comment ].
+	^(self attributeAt: '#comment') first
+!
+
+comment: s <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler comment: s ].
+	self attributeAt: '#comment'  put: (OrderedCollection[Str] with: s).
+
+	self logComment: s.
+	self changed: #comment.
+!
+
+defaultGroup ^ <Str>
+
+	^'Unclassified'!
+
+defaultRevision ^ <Str>
+
+	^'$Revi', 'sion:$'			"Protect string from RCS !!"!
+
+group ^ <Str>
+
+	| group <Str> |
+	self isMeta ifTrue: [ ^self dualHandler group ].
+	group := (self attributeAt: '#group') first.
+	^group isEmpty
+		ifTrue: [ 	self defaultGroup ]
+		ifFalse: [ 	group ]
+!
+
+group: s <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler group: s ].
+	self attributeAt: '#group'  put: (OrderedCollection[Str] with: s).
+
+	self changed: #group.!
+
+isGeneric ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler isGeneric ].
+	^self booleanAttributeAt: '#isGeneric' 
+!
+
+isGeneric: b ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler isGeneric: b ].
+	self booleanAttributeAt: '#isGeneric'  put: b
+!
+
+logComment: s <Str> ^ <Int>
+
+	^self addSectionToChangeLog: [ :log <WriteStream> |
+		(DefinitionWriter for: self mirror) fileOutComment: s on: log ]
+	!
+
+logDefinition ^ <Int>
+
+	self isMeta 
+		ifTrue: [ ^self dualHandler logDefinition ].
+	^self isPersistent
+		ifTrue: [		| defStr <Str> |
+							defStr := (Mirror on: (Smalltalk at: self mirror name)) definitionString.
+							self addSectionToChangeLog: [ :log <WriteStream> |
+								(DefinitionWriter for: self mirror) fileOutDefinition: defStr on: log ] ] 
+		ifFalse: [	nil ] !
+
+logRemoveDefinition ^ <Int>
+
+	^self addSectionToChangeLog: [ :log <WriteStream> |
+		(DefinitionWriter for: self mirror) fileOutDefinitionRemovalOn: log ]!
+
+revision ^ <Str>
+
+	| revision <Str> |
+	self isMeta ifTrue: [ ^self dualHandler revision ].
+	revision := (self attributeAt: '#revision' ) first.
+	^revision isEmpty
+		ifTrue: [ 	self defaultRevision ]
+		ifFalse: [ 	revision ]
+!
+
+revision: s <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler revision: s ].
+	self attributeAt: '#revision'  put: (OrderedCollection[Str] with: s).
+
+	self changed: #revision.! !
+

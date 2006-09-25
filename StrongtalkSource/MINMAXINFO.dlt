@@ -1,0 +1,54 @@
+Delta define: #MINMAXINFO as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #MINMAXINFO) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #MINMAXINFO) group: 'base'!
+
+(Delta mirrorFor: #MINMAXINFO)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MINMAXINFO) methodsFor: 'accessing' !
+
+
+ptMaxSize ^<POINT>
+
+	^self subProxyAt: self ptMaxSizeOffset result: POINT new!
+
+ptMaxTrackSize ^<POINT>
+
+	^self subProxyAt: self ptMaxTrackSizeOffset result: POINT new!
+
+ptMinTrackSize ^<POINT>
+
+	^self subProxyAt: self ptMinTrackSizeOffset result: POINT new!
+
+structureSize ^<Int>
+
+	^40! !
+
+! (Delta mirrorFor: #MINMAXINFO) methodsFor: 'offsets' !
+
+
+ptMaxPositionOffset ^<Int>
+
+	^16!
+
+ptMaxSizeOffset ^<Int>
+
+	^8!
+
+ptMaxTrackSizeOffset ^<Int>
+
+	^32!
+
+ptMinTrackSizeOffset ^<Int>
+
+	^24!
+
+ptReservedOffset ^<Int>
+
+	^0! !
+

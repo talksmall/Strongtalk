@@ -1,0 +1,43 @@
+Delta define: #DeltaReturnStat as: (
+(Class subclassOf: 'DeltaStatement' instanceVariables: 'expr scope ')) !
+
+(Delta mirrorFor: #DeltaReturnStat) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaReturnStat) group: 'ast'!
+
+(Delta mirrorFor: #DeltaReturnStat)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaReturnStat) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool returnStatNode: self!
+
+expr ^ <Expression>
+    ^ expr!
+
+isReturnStatNode ^ <Boolean>
+    ^ true!
+
+return: anExpr <Expression > ^ <Self>
+    self assert: [anExpr isExpressionNode.].
+    expr := anExpr!
+
+scope ^ <Scope>
+    ^scope!
+
+scope: s <Scope > ^ <Self>
+    scope := s!
+
+type ^ <ObjectType>
+    | returnType <ObjectType>   eType <ObjectType>  |
+
+eType := self expr type.
+returnType := guaranteed <ObjectType>  (self scope at: #'.returnVal').
+^(eType subtypeOf: returnType assuming: DeltaGlobalTrail)
+    ifTrue:[DeltaBottomType new]
+    ifFalse:[self reportError: (DeltaReturnError new actualName: eType name; declaredName: returnType name)]! !
+

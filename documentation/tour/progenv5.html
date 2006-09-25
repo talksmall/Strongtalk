@@ -1,0 +1,81 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Programming Environment</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="progenv4.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="progenv6.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">The Programming Environment (cont.)</h2>
+
+<p align="left">Now accept the new method, and typecheck it at
+the same time, by pressing &lt;Ctrl&gt;&lt;Shift&gt;&lt;Enter&gt;
+(or clicking &quot;Typecheck and accept&quot; from the text
+context menu). Ouch! You should get a typechecking error: 'Type
+of actual argument 1 (URL|Object) is not a subtype of formal
+argument type URL', for the invocation of #bareModel:.
+Typechecking errors appear in a list box at the bottom of the
+method. Clicking on the error highlights the section of the text
+where the error occurs (this is helpful when there are multiple
+errors).</p>
+
+<h4 align="left">Dealing with a Typechecking Error</h4>
+
+<p align="left">What does the error message mean? '|' is the type
+<em>union</em> operator, which means that we are either passing
+in a URL <em>or</em> an Object, but the #bareModel: needs a URL
+for sure. Where did this union come from? If you look at where
+the argument value for #bareModel: comes from, it is apparent: it
+was returned by #popNextURLOrIfAbsent:, which returns either the
+next URL, <em>or</em> the value of the failBlk if the forwardURLs
+list was empty. And remember, our failBlk has the default value
+type of Object, so that is where &lt;URL | Object&gt; comes from.
+</p>
+
+<p align="left">So the problem is that we haven't correctly
+handled the case where there are no forwardURLs. This is a common
+kind of situation in Smalltalk. The way you handle it is to write
+'popNextURLOrIfAbsent: [ ^failBlk value ]' instead of
+'popNextURLOrIfAbsent: failBlk'. This ensures that we abort the
+execution of the expression in the empty case, so that the call
+to bareModel: never gets passed the result of calling the
+failBlk. So try changing the method as described above, and do
+&lt;Ctrl&gt;&lt;Shift&gt;&lt;Enter&gt; again.</p>
+
+<p align="left">Uh oh! We still have a type error, but a
+different one: we are returning the failBlk value, which is
+&lt;Object&gt;, but the method has the default return type of
+&lt;Self&gt;. Therefore we <em>have</em> to return self, so
+instead, you need to write: 'popNextURLOrIfAbsent: [ failBlk
+value. ^self ]'. Try that- it should be accepted and typechecked
+without any errors.</p>
+
+<p align="left">This example illustrates how two common kinds of
+bugs encountered with blocks are caught right away by the type
+system. The most insidious aspect of these kinds of bugs in
+normal Smalltalk is that they may not be caught right away during
+testing, since they only occur in an exceptional case, or in a
+case where the value is often not used, which is likely to be
+missed by testing. And if such bugs <em>are</em> exposed during
+testing, the bad value is likely to be passed somewhere else in
+the system before it causes an error, making it very hard to
+track down where the bug actually is. Fortunately, we now know
+for certain that this method is typesafe.</p>
+
+<p align="left">Note that unlike other strongly typed languages,
+Strongtalk lets you use the typechecker incrementally, as soon as
+you are ready, even on a method-by-method basis, so you can deal
+with the errors while the code is fresh in your mind. This works
+even if there are other typechecking errors in your class, as
+long as the messages, instance variables, etc. that you are using
+in the method you are writing have valid type signatures.</p>
+
+<h3 align="right"><a href="progenv6.html"><strong>Programming
+Environment, cont. ==&gt;</strong></a></h3>
+</body>
+</html>

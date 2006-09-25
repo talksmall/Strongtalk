@@ -1,0 +1,67 @@
+Delta define: #SuperclassTypeOutliner as: (
+(Class subclassOf: 'DefinitionItemOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #SuperclassTypeOutliner) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SuperclassTypeOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #SuperclassTypeOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SuperclassTypeOutliner) methodsFor: 'private' !
+
+
+aspectForUpdate ^ <Symbol>
+
+	^#superclassType
+
+!
+
+header ^ <Str>
+
+	^'Superclass type'
+!
+
+modelAsCharGlyphs ^ <CharGlyphs>
+
+	^self standardTextForString: self mirror superclassTypeString painter: self codePainter
+!
+
+storeAndOnSuccess: blk <[]>
+
+	"The right way to do this is to have a #superclasstype:ifFail: in MixinMirror  that will parse and
+		update accordingly.
+		
+		In the meantime, we parse an extra time here to check for errors and reevaluate the constructor.
+		This should be changed shortly."
+		
+	| sct <Str> eval <Str> constructor <Mirror> |
+	self deltaHack.
+	sct := self charGlyphModelAsString: self codeView.
+	DeltaParser new 
+		parseClassOrMixinExpr: sct
+		within: self mirror scope
+		ifError: [ :msg <Str> :pos <Int> | ^self showParseError: msg at: pos in: self codeView ].
+
+	self mirror superclassType: sct.
+	blk value.
+! !
+
+! (Delta mirrorFor: #SuperclassTypeOutliner) methodsFor: 'typechecking' !
+
+
+typecheck
+
+self typecheckAction:[self mirror typecheckSuperclassClause]
+		title: 'Typechecking ', self mirror name, ' superclass type'.
+! !
+
+! (Delta mirrorFor: #SuperclassTypeOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <SuperclassClauseLocator>
+
+^SuperclassClauseLocator ofDefinition: self mirror basicLocator! !
+

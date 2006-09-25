@@ -1,0 +1,30 @@
+Delta define: #DeltaUnaryUpdate as: (
+(Class subclassOf: 'DeltaUnaryClassExpr' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaUnaryUpdate) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaUnaryUpdate) group: 'ast'!
+
+(Delta mirrorFor: #DeltaUnaryUpdate)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaUnaryUpdate) methodsFor: 'Unclassified' !
+
+
+declaredSubprotocolOf: p <Protocol > ^ <Boolean>
+    ^self == p or:[self superprotocol declaredSubprotocolOf: p]!
+
+messages  ^ <Dict[Symbol,Type]>
+
+^self filteree messages!
+
+superprotocol ^ <Protocol>
+    ^self dual superprotocol classProtocol!
+
+typecheck
+
+"Not functional at the moment"
+self deltaHack.! !
+

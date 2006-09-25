@@ -1,0 +1,55 @@
+Delta define: #Test as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Test) revision: '$Revision: 1.11 $'!
+
+(Delta mirrorFor: #Test) group: 'ast'!
+
+(Delta mirrorFor: #Test)
+comment: 
+'Just a place to try things out.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'benchmarking' !
+
+
+benchmark: blk <[]> ^<Int>
+
+	| best <Int> |
+	best := SmallInteger maxVal.
+	10 timesRepeat: [
+		| time <Int> |
+		time := blk time.
+		Transcript show: time printString; space.
+		best := time min: best.	].
+	Transcript show: ' Best Time = '; print: best; cr.
+	^best! !
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
+
+
+evaluateBlock: blk
+
+	^blk value!
+
+fancyStoreIntoArray: a
+
+	^self evaluateBlock: [ a at: 1 put: 3 ]!
+
+notSoSimpleTest: n
+	"Test benchmark: [ Test notSoSimpleTest: 10000000 ]"
+
+	| a |
+	a := Array new: 1.
+	n timesRepeat:
+		[ self fancyStoreIntoArray: a  ]!
+
+simpleTest: n 
+	"Test benchmark: [ Test simpleTest: 10000000 ]"
+
+	| a  |
+	a := Array new: 1.
+	n timesRepeat:
+		[ a at: 1 put: 3.]! !
+

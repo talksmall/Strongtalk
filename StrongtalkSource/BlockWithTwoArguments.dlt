@@ -1,0 +1,19 @@
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+(Delta mirrorFor: #BlockWithTwoArguments) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BlockWithTwoArguments) group: 'base'!
+
+(Delta mirrorFor: #BlockWithTwoArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+! (Delta mirrorFor: #BlockWithTwoArguments) methodsFor: 'evaluating' !
+
+
+value: arg1 <A1> value: arg2 <A2>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2}}! !
+

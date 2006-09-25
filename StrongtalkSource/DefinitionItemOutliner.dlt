@@ -1,0 +1,75 @@
+Delta define: #DefinitionItemOutliner as: (
+(Class subclassOf: 'CodeApp |> MirrorOutliner' instanceVariables: 'codeVu')) !
+
+(Delta mirrorFor: #DefinitionItemOutliner) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DefinitionItemOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #DefinitionItemOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'private' !
+
+
+aspectForUpdate ^ <Symbol>
+
+	self subclassResponsibility!
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: self header painter: self definitionSectionPainter) asVisual.!
+
+codeViewClass ^ <CodeView class>
+
+^TypedCodeView!
+
+header ^ <Str>
+
+	self subclassResponsibility!
+
+initialOpenState ^ <Boolean>
+
+	^true!
+
+modelAsCharGlyphs ^ <CharGlyphs>
+
+	self subclassResponsibility!
+
+setCodeView
+
+	self codeView: (self buildCodeViewGetModel: [ self modelAsCharGlyphs ]
+									setModelOnSuccess: [ :blk <[]> | self storeAndOnSuccess: blk ]).!
+
+storeAndOnSuccess: blk <[]>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'input focus' !
+
+
+becomeFocusIfFail: blk <[]>
+
+	self codeView isNil
+		ifTrue: [		super becomeFocusIfFail: blk ]
+		ifFalse: [	self codeView becomeFocusIfFail: [ super becomeFocusIfFail: blk ] ]! !
+
+! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	| cgs <CharGlyphs> |
+	self inSessionProcessDo: [
+		aspect = self aspectForUpdate
+			ifTrue: [	self codeView model: self modelAsCharGlyphs ]
+	]! !
+
+! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'typechecking' !
+
+
+typecheck
+
+self subclassResponsibility! !
+

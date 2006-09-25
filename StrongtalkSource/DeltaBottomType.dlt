@@ -1,0 +1,108 @@
+Delta define: #DeltaBottomType as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaBottomType) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaBottomType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBottomType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBottomType) methodsFor: 'Unclassified' !
+
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^OrderedCollection[TypeVar]  new!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^OrderedCollection[TypeVar]  new!
+
+branded ^ <Boolean>
+    ^false!
+
+canonicalRep ^ <Protocol>
+    ^self!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+^t!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+
+^t!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^true!
+
+declaredSubprotocolOfGeneric: p <DeltaProtocol > ^ <Boolean>
+    ^true!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^false!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+	self testFailedBecause: DeltaBottomTypeNotSupertypeError new toEscape:[].
+    ^false!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+| c <OrdCltn[ObjectType]> |
+
+c := OrderedCollection[ObjectType] new.
+^c!
+
+domain ^ <VarOrdCltn[ObjectType]>
+    ^OrderedCollection new!
+
+forcedSubstitute: s <Substitution > ^ <Self>
+    ^self!
+
+inferTypeFrom: args <OrdCltn[Expression] > ^ <DeltaMsgSignature>
+    ^self!
+
+inheritedProtocolOf: p <Protocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+isMonotonic ^ <Boolean>
+    ^true!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^true!
+
+name ^ <Symbol>
+    ^#DoesNotMatter!
+
+range ^ <ObjectType>
+    ^self!
+
+rawSelectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+
+^self selectMsg: selector ifAbsent: block!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+    self deltaHack.
+    ^DeltaBottomTypeMsgSignature new!
+
+subprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+substitute: s <Substitution > ^ <Self>
+    ^self!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+	self testFailedBecause: DeltaBottomTypeNotSupertypeError new toEscape:[].
+    ^false!
+
+superprotocolOf: t <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+	self testFailedBecause: DeltaBottomTypeNotSupertypeError new toEscape:[].
+    ^false!
+
+wellFormed ^ <Boolean>
+    ^true! !
+

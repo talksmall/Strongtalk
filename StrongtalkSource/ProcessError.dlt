@@ -1,0 +1,53 @@
+Delta define: #ProcessError as: (
+(Class subclassOf: 'Object' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #ProcessError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ProcessError) group: 'base'!
+
+(Delta mirrorFor: #ProcessError)
+comment: 
+'A process error describes why a particular process stopped running.
+Each process holds an error, which can either be set explicitly or set by the scheduler.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProcessError) classSide methodsFor: 'test' !
+
+
+provoke
+	"A piece of test code provoking this particular error"
+
+	self subclassResponsibility!
+
+provokeAll
+	"Call provoke on all concrete subclasses."
+	[ ProcessBooleanError provoke ] fork.
+	[ ProcessHaltError provoke ] fork.
+	[ ProcessDLLLookupError provoke ] fork.
+	[ ProcessDoesNotUnderstandError provoke ] fork.
+	[ ProcessExplicitError provoke ] fork.
+	[ ProcessLookupError provoke ] fork.
+	[ ProcessNLRError provoke ] fork.
+	[ ProcessPrimitiveLookupError provoke ] fork.
+	[ ProcessStackOverflowError provoke ] fork.
+! !
+
+! (Delta mirrorFor: #ProcessError) methodsFor: 'accessing' !
+
+
+continuable ^ <Boolean>
+	"States whether the process can continue after this error"
+
+	^false!
+
+name ^ <Str>
+	"Error description"
+
+	^self class name!
+
+topFramesIgnored ^ <Int>
+	"Number of top-of-stack frames to discard  when presenting this error"
+
+	^0! !
+

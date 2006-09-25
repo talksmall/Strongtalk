@@ -1,0 +1,443 @@
+Delta define: #RowOrColumn as: (
+Generic forAll: '(SUB covar) <Visual> ' body: ((Class subclassOf: 'ComplexCompositeVisual[SUB]' instanceVariables: 'parts <WithableSeqCltn[SUB]>
+		') abstract)) !
+
+(Delta mirrorFor: #RowOrColumn) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #RowOrColumn) group: 'ui'!
+
+(Delta mirrorFor: #RowOrColumn)
+comment: 
+'Superclass for layout managers that line up their parts either in a row or a column.
+
+%design note: any methods that change the position of any child in the parts collection
+must ensure that the child''s id is updated to the new position.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #RowOrColumn) classSide methodsFor: 'instance creation' !
+
+
+holding: subs <WithableVarSeqCltn[SUB]> ^<Instance>
+	"Create a new instance using subs for the collection of children.  This differs
+	  from #withAll: in that #withAll: creates a new collection to hold the children,
+	  wherease this uses the collection you pass in. "
+
+	^super new initWithAll: subs!
+
+new ^<Instance>
+
+	^self holding: (OrderedCollection[SUB] new)!
+
+withAll: subs <Cltn[SUB]> ^<Instance>
+
+	^self holding: (OrderedCollection[SUB] withAll: subs)! !
+
+! (Delta mirrorFor: #RowOrColumn) methodsFor: 'initialization' !
+
+
+initWithAll: subs <WithableVarSeqCltn[SUB]>
+
+	parts := subs.
+	1 to: subs size do:
+		 [ :index <Int> |
+				(subs at: index) parent: self id: index	]! !
+
+! (Delta mirrorFor: #RowOrColumn) methodsFor: 'iteration' !
+
+
+do: f <[SUB]>
+
+	self doFromBack: f!
+
+doFromBack: f <[SUB]>
+
+	"We consider the first one to be in the back because we want the painter's algorithm to
+	  draw from left to right, so that character optimizations work"
+	self parts do: f!
+
+doFromFront: f <[SUB]>
+
+	self parts reverseDo: f! !
+
+! (Delta mirrorFor: #RowOrColumn) methodsFor: 'accessing' !
+
+
+add: child <SUB>
+
+	self changingALot.
+	self setParts: (self parts with: child).
+	child parent: self id: self parts size.!
+
+addAll: els <SeqCltn[SUB]>
+
+	self replaceFrom: self size + 1 to: self size with: els!
+
+at: childId <Int> ^<SUB>
+
+	| p <SUB> |
+	p := self parts at: childId.
+	self assert: [ p id = childId ].
+	^p!
+
+gridFor: p <Point> ^<Rect>
+
+	| pmaj <Int> default <Rect> |
+
+	default := super gridFor: p.
+	pmaj := self majorOf: p.
+	self doFromFront:
+		[ :l <SUB> |
+			| r <Rect> |
+			r := l allocationInParent enclosingRect.
+			((self majorHighOf: r) > pmaj and: [(self majorLowOf: r) <= pmaj ])
+				ifTrue: [ ^self rectWithLowMajor: (self majorLowOf: r)
+									lowMinor: (self minorLowOf: default)
+									highMajor: (self majorHighOf: r)
+									highMinor: (self minorHighOf: default) ] ].
+	^default!
+
+insert: els <SeqCltn[SUB]> before: index <Int>   ^<VarOrdCltn[SUB]>
+
+	^self replaceFrom: index to: index - 1 with: els!
+
+insertSingle: el <SUB> before: index <Int>
+
+	self insert: (Array[SUB] with: el) before: index!
+
+parts ^<WithableVarSeqCltn[SUB]>
+
+	^parts!
+
+remove: numEls <Int> at: index <Int>  ^<OrdCltn[SUB]>
+	"Remove the specified number of elements starting with index, and return them"
+
+	^self replaceFrom: index to: index + numEls - 1 with: #()!
+
+removeAll ^<OrdCltn[SUB]>
+
+	^self remove: self size at: 1!
+
+replaceFrom: start <Int> to: stop <Int> with: els <SeqCltn[SUB]> ^<OrdCltn[SUB]>
+	"replace the specified range of elements with the els.  The old elements
+	  are returned."
+
+	| old <OrdCltn[SUB]> |
+	old := OrderedCollection[SUB] new: stop - start + 1.
+	self changingALot.
+	start to: stop do:
+		[ :index <Int> |
+			old add: (self parts at: index) noParent. ].
+	self setParts: (self parts copyReplaceFrom: start to: stop with: els).
+	els keysAndValuesDo:
+		[ :index <Int> :el <Visual> |
+			el parent: self id: index + start - 1	].
+	start + els size to: self parts size do:
+		[ :index <Int> |
+			(self parts at: index) id: index		].
+	^old!
+
+size ^<Int>
+
+	^self parts size! !
+
+! (Delta mirrorFor: #RowOrColumn) methodsFor: 'private' !
+
+
+computePreferences
+
+	|	majorNat <Dist> majorMin <Dist> majorMax <Dist>
+		lowNat <Dist> lowMin <Dist> lowMax <Dist>
+		highNat <Dist> highMin <Dist> highMax <Dist> |
+	majorNat := majorMin := majorMax := 0.
+	lowNat := lowMin := lowMax := 0.
+	highNat := highMin := highMax := 0.
+
+	self doFromBack:
+		[ :each <SUB> |
+			| nat <Rect> mn <Rect> mx <Rect> |
+			nat := each natural enclosingRect.
+			mn := each min enclosingRect.
+			mx := each max enclosingRect.
+
+			majorNat := majorNat + (self majorTotalOf: nat).
+			majorMin := majorMin + (self majorTotalOf: mn).
+			majorMax := majorMax + (self majorTotalOf: mx).
+
+			lowNat := lowNat min: (self minorLowOf: nat).
+			lowMin := lowMin min: (self minorLowOf: mn).
+			lowMax := lowMax min: (self minorLowOf: mx).
+
+			highNat := highNat max: (self minorHighOf: nat).
+			highMin := highMin max: (self minorHighOf: mn).
+			highMax := highMax max: (self minorHighOf: mx).  ].
+
+	"For now, use low major edge as the major origin"
+	self natural: (self rectWithLowMajor: 0
+							lowMinor: lowNat
+							highMajor: majorNat
+							highMinor: highNat ).
+	self min: (self rectWithLowMajor: 0
+							lowMinor: lowMin
+							highMajor: majorMin
+							highMinor: highMin ).
+	self max: (self rectWithLowMajor: 0
+							lowMinor: lowMax
+							highMajor: majorMax
+							highMinor: highMax ).
+!
+
+layout
+"%remove"
+	|	majorPos <Dist>
+		shrinking <Boolean>
+		majorDiff <Dist>
+		minorDiff <Dist>
+		minorHigh <Dist>
+		minorLow <Dist>
+		alloc <Rect>
+		pool <Dist>
+		|
+	alloc := self allocation enclosedRect.
+	majorDiff := (self majorTotalOf: alloc) - (self majorTotalOf: self natural enclosedRect).
+	shrinking := majorDiff < 0.
+	minorDiff := (self minorTotalOf: alloc) - (self minorTotalOf: self natural enclosedRect).
+	minorHigh := self minorHighOf: alloc.
+	minorLow := self minorLowOf: alloc.
+	majorPos := 0.
+
+	"optimize the case when the alloc is the natural size"
+	"%todo: when compiler is working, see if this is really any faster"
+	(majorDiff = 0 and: [ minorDiff = 0 ])
+		ifTrue: [ self doFromBack:
+							[ :part <SUB> |
+								| pnat <Rect> partMinorLow <Dist>	partMinorHigh <Dist> partMax <Rect> palloc <Rect> |
+								pnat := part natural enclosingRect.
+								partMinorHigh := self minorHighOf: pnat.
+								partMinorLow := self minorLowOf: pnat.
+								majorPos := majorPos - (self majorLowOf: pnat).
+								(partMinorHigh = minorHigh and: [ partMinorLow = minorLow ])
+									ifTrue: [ palloc := pnat ]
+									ifFalse: [	"We still have to layout the minor sides since they may have to stretch"
+													partMax := part max enclosingRect.
+													partMinorHigh := minorHigh min: (self minorHighOf: partMax).
+													"max is used below because the lows are negative"
+													partMinorLow := minorLow max: (self minorLowOf: partMax).
+													palloc := self	rectWithLowMajor: (self majorLowOf: pnat)
+																			lowMinor: partMinorLow
+																			highMajor: (self majorHighOf: pnat)
+																			highMinor: partMinorHigh. 	].
+								part allocation: palloc at: (self pointWithMinor: 0 major: majorPos).
+								majorPos := majorPos + (self majorHighOf: pnat).	].
+						super layout.
+						^self  "^^^^^^^^^^^^^^^^"		].
+								
+
+	pool := 0.
+	shrinking
+		ifFalse: [	self doFromBack:
+							[ :part <Visual> |
+								pool := pool + (self majorTotalOf: part max enclosingRect) - (self majorTotalOf: part natural enclosingRect)	]. ]
+		ifTrue: [	self doFromBack:
+							[ :part <Visual> |
+								pool := pool + (self majorTotalOf: part natural enclosingRect) - (self majorTotalOf: part min enclosingRect)	]. ].
+
+	self doFromBack:
+		[ :part <Visual> |
+			|	partPoolSide <Dist>
+				partNatSide <Dist>
+				partLimitSide <Dist>
+				partExcessSide <Dist>
+				partNat <Rect>
+				partMin <Rect>
+				partMax <Rect>
+				partLimit <Rect>
+				partMajorLow <Dist>	partMajorHigh <Dist>
+				partMinorLow <Dist>	partMinorHigh <Dist>
+				|
+			partNat := part natural enclosingRect.
+			partMin := part min enclosingRect.
+			partMax :=part max enclosingRect.
+
+			"Do low side.  Note that partNatSide, partLimitSide, partPoolSide, and partExcessSide are negative for the low case,
+		      which affects many of the arithmetic ops and min/max operations"
+			partNatSide := self majorLowOf: partNat.
+			shrinking
+				ifTrue: [	partLimit := partMin.
+								partLimitSide := self majorLowOf: partLimit.
+								partPoolSide := partNatSide - partLimitSide. ]
+				ifFalse: [	partLimit := partMax.
+								partLimitSide := self majorLowOf: partLimit.
+								partPoolSide := partLimitSide - partNatSide ].
+			partPoolSide = 0
+				ifTrue: [ partMajorLow := partNatSide. ]
+				ifFalse: [	partExcessSide := (majorDiff * partPoolSide) // pool.
+								pool := pool + partPoolSide.
+								majorDiff := majorDiff + partExcessSide.
+
+								partMajorLow := shrinking
+									ifTrue: [ (partNatSide + partExcessSide) min: partLimitSide ]
+									ifFalse: [ (partNatSide + partExcessSide) max: partLimitSide	] 	].
+			
+			"Do high side"
+			partNatSide := self majorHighOf: partNat.
+			shrinking
+				ifTrue: [	partLimitSide := self majorHighOf: partLimit.
+								partPoolSide := partNatSide - partLimitSide. ]
+				ifFalse: [	partLimitSide := self majorHighOf: partLimit.
+								partPoolSide := partLimitSide - partNatSide ].
+			partPoolSide = 0
+				ifTrue: [ partMajorHigh := partNatSide. ]
+				ifFalse: [	partExcessSide := (majorDiff * partPoolSide) // pool.
+								pool := pool - partPoolSide.
+								majorDiff := majorDiff - partExcessSide.
+
+								partMajorHigh := shrinking
+									ifTrue: [ (partNatSide + partExcessSide) max: partLimitSide ]
+									ifFalse: [ (partNatSide + partExcessSide) min: partLimitSide	] ].
+
+			"Do the minor sides"
+			partMinorHigh := minorHigh min: (self minorHighOf: partMax).
+			partMinorLow := minorLow max: (self minorLowOf: partMax).	"max is used because these are negative"
+
+			part allocation: (self rectWithLowMajor: partMajorLow
+												lowMinor: partMinorLow
+												highMajor: partMajorHigh
+												highMinor: partMinorHigh	)
+					at: (self pointWithMinor: 0 major: majorPos - partMajorLow).
+
+			majorPos := majorPos - partMajorLow + partMajorHigh.		].
+
+	"%testing"
+	self assert: [ pool = 0 ].
+
+	super layout.!
+
+majorHighOf: r <Rect> ^<Dist>
+	"Return the part of the major dimension of r that lies above the origin"
+
+	self subclassResponsibility!
+
+majorLowOf: r <Rect> ^<Dist>
+	"Return the part of the major dimension of r that lies below the origin"
+
+	self subclassResponsibility!
+
+majorOf: p <Point> ^<Dist>
+	"Return the value of p in the major dimension"
+
+	self subclassResponsibility!
+
+majorTotalOf: r <Rect> ^<Dist>
+	"Return the dimension of r in the major dimension"
+
+	self subclassResponsibility!
+
+minorHighOf: r <Rect> ^<Dist>
+	"Return the part of the minor dimension of r that lies above the origin"
+
+	self subclassResponsibility!
+
+minorLowOf: r <Rect> ^<Dist>
+	"Return the part of the minor dimension of r that lies below the origin"
+
+	self subclassResponsibility!
+
+minorTotalOf: r <Rect> ^<Dist>
+	"Return the dimension of r in the minor dimension"
+
+	self subclassResponsibility!
+
+pointWithMinor: minor <Dist> major: major <Dist>  ^<Point>
+
+	self subclassResponsibility!
+
+rectWithLowMajor: lowMajor <Dist>
+lowMinor: lowMinor <Dist>
+highMajor: highMajor <Dist>
+highMinor: highMinor <Dist>
+^<Rect>
+	"Create a rectangle from the provided dimensions"
+
+	self subclassResponsibility!
+
+setParts: p <WithableVarSeqCltn[SUB]>
+
+	parts := p!
+
+tryIncrementalLayout ^<Boolean>
+
+	self optimizeIncrementalLayout
+		ifFalse: [ ^false ].
+	self do:
+		[ :child <SUB> |
+			| status <Int> |
+			status := child layoutStatus.
+			status = Visual invalid
+				ifTrue: [ ^false ].
+			status = Visual needsRelayout
+				ifTrue: [ (self tryIncrementalLayoutFor: child)
+								ifFalse: [ ^false ] . ]		].
+	^true!
+
+tryIncrementalLayoutFor: child <SUB> ^<Boolean>
+
+	"optimization: if the child would fit in its previous allocation then we just relayout the single child in place"
+
+	|	oldPrefs <SeqCltn[Region]>
+		oldMin <Rect>
+		oldMax <Rect>
+		oldNat <Rect>
+		newMin <Rect>
+		newMax <Rect>
+		newNat <Rect>
+		alloc <Rect>
+		palloc <Rect> |
+	oldPrefs := child oldPrefs.
+
+	"Make sure the major preferences are the same"
+	oldMin := (oldPrefs at: 1) enclosingRect.
+	newMin := child min enclosingRect.	
+	(self majorLowOf: oldMin) = (self majorLowOf: newMin)
+		ifFalse: [ ^false ].
+	(self majorHighOf: oldMin) = (self majorHighOf: newMin)
+		ifFalse: [ ^false ].
+
+	oldNat := (oldPrefs at: 2) enclosingRect.
+	newNat := child natural enclosingRect.
+	(self majorLowOf: oldNat) = (self majorLowOf: newNat)
+		ifFalse: [ ^false ].
+	(self majorHighOf: oldNat) = (self majorHighOf: newNat)
+		ifFalse: [ ^false ].
+
+	oldMax := (oldPrefs at: 3) enclosingRect.
+	newMax := child max enclosingRect.
+	(self majorLowOf: oldMax) = (self majorLowOf: newMax)
+		ifFalse: [ ^false ].
+	(self majorHighOf: oldMax) = (self majorHighOf: newMax)
+		ifFalse: [ ^false ].
+
+	"Make sure the minor natural is <= (abs) our minor allocation"
+
+	alloc := self allocation enclosedRect.
+	((self minorLowOf: newNat) >= (self minorLowOf: alloc)
+				and: [ (self minorHighOf: newNat) <= (self minorHighOf: alloc) ])
+		ifFalse: [ ^false ].
+
+	"Looks ok, so the new allocation is the old alloc's major with the minor
+		being the minimum of the minor and the part's max"
+	palloc := child allocation enclosingRect.
+	palloc := self	rectWithLowMajor: (self majorLowOf: palloc)
+							lowMinor: ((self minorLowOf: newMax) min: (self minorLowOf: alloc))
+							highMajor: (self majorHighOf: palloc)
+							highMinor: ((self minorHighOf: newMax) min: (self minorHighOf: alloc)).
+
+	child invalidate.
+	child allocation: palloc at: child position.
+	child invalidate.
+
+	^true
+! !
+

@@ -1,0 +1,78 @@
+Delta define: #ASTCompilerCopyTool as: (
+(Class subclassOf: 'DeltaASTTool' instanceVariables: 'result <DeltaASTNode>')) !
+
+(Delta mirrorFor: #ASTCompilerCopyTool) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ASTCompilerCopyTool) group: 'ast'!
+
+(Delta mirrorFor: #ASTCompilerCopyTool)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ASTCompilerCopyTool) methodsFor: 'node traversal' !
+
+
+andOrNode: node <DeltaAndOr>
+	self result: (
+		DeltaAndOr new
+	)!
+
+assignmentNode: node <DeltaAssignment>
+	self result: (
+		DeltaAssignment new
+			to: (self copy: node var)
+			assign: (self copy: node expr)
+	)!
+
+cascadedSendNode: node!
+
+codeBodyNode: node <DeltaCodeBody>
+	self result: (
+		DeltaCodeBody new
+			parameters: node parameters copy
+			temporaries: node temporaries copy
+			statements: node statements copy
+			scope: node scope copy
+	)!
+
+dllCallNode: node!
+
+globalVarNode: node!
+
+literalNode: node
+!
+
+loopNode: node!
+
+messageNode: node!
+
+methodNode: node!
+
+refNode: node!
+
+returnStatNode: node <DeltaReturnStat>
+	self result: (
+		DeltaReturnStat new
+			return: (self copy: node expr)
+			scope: node scope copy
+	)! !
+
+! (Delta mirrorFor: #ASTCompilerCopyTool) methodsFor: 'private - helpers' !
+
+
+copy: node <N> ^ <N>
+	{ where N <DeltaASTNode> is arg 1 }
+	node apply: self.
+	self assert: [ node class == self result class ].
+	^ guaranteed <N> (self result)! !
+
+! (Delta mirrorFor: #ASTCompilerCopyTool) methodsFor: 'private - accessing' !
+
+
+result ^ <DeltaASTNode>
+	^ result!
+
+result: node <DeltaASTNode>
+	result := result! !
+

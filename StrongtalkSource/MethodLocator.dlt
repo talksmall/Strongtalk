@@ -1,0 +1,105 @@
+Delta define: #MethodLocator as: (
+(Class subclassOf: 'DeltaLocator[ClassMirror | MixinDeclMirror ]' instanceVariables: 'selector <Symbol>')) !
+
+(Delta mirrorFor: #MethodLocator) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #MethodLocator) group: 'ast'!
+
+(Delta mirrorFor: #MethodLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MethodLocator) methodsFor: 'initialization' !
+
+
+definition: d <BasicLocator > selector: s <Symbol >
+	self definition: d.
+	self selector: s.
+! !
+
+! (Delta mirrorFor: #MethodLocator) methodsFor: 'accessing' !
+
+
+actualName ^ <String>
+	| s  <WriteStream> |
+	s := (String new: 8) writeStream.
+	s nextPutAll: (self definition locationOfMethod: self selector ifAbsent: [self definition]) name.
+	s nextPut: $>.
+	s nextPut: $>.
+	s nextPutAll: self selector.
+	^s contents
+!
+
+deltaMethod ^ <DeltaMethod>
+	^self deltaMethodIfAbsent: [self error: 'method not found']
+
+!
+
+deltaMethodIfAbsent: blk <[^X def]>  ^ <DeltaMethod | X>
+	^self definition selectMethod: self selector ifAbsent: blk
+
+!
+
+isMethodLocator ^ <Boolean>
+
+^true!
+
+name ^ <String>
+	| s  <WriteStream> |
+	s := (String new: 8) writeStream.
+	s nextPutAll: self definitionName.
+	s nextPut: $>.
+	s nextPut: $>.
+	s nextPutAll: self selector.
+	^s contents
+	!
+
+parseTree  ^ <ParseTree>
+	^DeltaParser new parseMethod: self source within: self mirror scope ifError: [self halt].
+	!
+
+printOn: aStream <WriteStream>
+	super printOn: aStream.
+	aStream nextPut: $(.
+	aStream nextPutAll: self astIndex printString.
+	aStream nextPut: $)!
+
+selector ^ <Symbol>
+    ^selector!
+
+selector: s <Symbol >
+	selector := s.
+!
+
+source ^ <Str>
+	| s <Str> |
+	s := self mirror sourceForSelector: self selector.
+	^s isEmpty
+		ifTrue: [ 'Source not available' ]
+		ifFalse: [ s ]
+!
+
+sourceHighlight ^ <Tuple[Int,Int]>
+
+	^self parseTree positionForIndex: self astIndex.
+!
+
+typeInfo ^ <DeltaMsgSignature>
+    ^super typeInfo selectMsg: self selector! !
+
+! (Delta mirrorFor: #MethodLocator) methodsFor: 'locator matching' !
+
+
+matchesDefinitionLocator: l ^ <Boolean>
+	^false!
+
+matchesLocator: l ^ <Boolean>
+	^l matchesMethodLocator: self!
+
+matchesMethodLocator: l ^ <Boolean>
+	^(self definition matches: l definition ignoreSide: false) and: [self selector = l selector]!
+
+matchesMethodNodeLocator: l ^ <Boolean>
+	^(self definition matches: l definition ignoreSide: false) and: [self selector = l selector and: [self astIndex = l astIndex]]! !
+

@@ -1,0 +1,237 @@
+Delta define: #HTMLElement as: (
+(Class subclassOf: 'HTMLNode' instanceVariables: 'attributes <OrdCltn[Tuple[Str,Str]]>
+parts <OrdCltn[HTMLNode]>
+isSingleton <Boolean>') classVariables: 'ElementClasses <KeyedSet[Str,HTMLElement class]>') !
+
+(Delta mirrorFor: #HTMLElement) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #HTMLElement) group: 'HTML'!
+
+(Delta mirrorFor: #HTMLElement)
+comment: 
+'The superclass for all html element nodes.
+(An element is a <X>...<\X> construct in HTML, for any X)
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #HTMLElement) classSide methodsFor: 'instance creation' !
+
+
+fromStartTag: tag <HTMLTag>
+parts: p <OrdCltn[HTMLNode]>
+^<HTMLElement>
+
+	^(self elementClassFor: 'Element', tag name ifAbsent: [ self shouldNotHappen ])
+			newWithAttributes: tag attributes
+			 parts: p!
+
+newWithAttributes: attrs <OrdCltn[Tuple[Str,Str]]>
+parts: p <OrdCltn[HTMLNode]>  ^<Instance>
+
+	^self new initAttributes: attrs parts: p! !
+
+! (Delta mirrorFor: #HTMLElement) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	ElementClasses := KeyedSet[Str,HTMLElement class]
+				newKeyedBy: [ :cl <HTMLElement class> |
+													cl name ].
+	self installElementClasses! !
+
+! (Delta mirrorFor: #HTMLElement) classSide methodsFor: 'private' !
+
+
+elementClassFor: nm <Str> ifAbsent: blk <[^X def]> ^<HTMLElement class | X>
+
+	^self elementClasses at: nm ifAbsent: blk!
+
+elementClasses ^<KeyedSet[Str,HTMLElement class]>
+
+	^ElementClasses!
+
+installElementClasses
+
+	self elementClasses
+		include: ElementBODY;
+		include: ElementHEAD;
+		include: ElementHTML;
+		include: ElementLI;
+		include: ElementP;
+		include: ElementTITLE;
+		include: ElementUL;
+		include: ElementH1;
+		include: ElementH2;
+		include: ElementB;
+		include: ElementI;
+		include: ElementDFN;
+		include: ElementA;
+		include: ElementDL;
+		include: ElementDT;
+		include: ElementDD;
+		include: ElementBR;
+		include: ElementHR;
+		include: ElementPRE;
+		include: ElementH3;
+		include: ElementH4;
+		include: ElementH5;
+		include: ElementH6;
+		include: ElementIMG;
+		include: ElementSMAPPL;
+		include: ElementADDRESS;
+		include: ElementSTRONG;
+		include: ElementEM.
+		! !
+
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'initialization-private' !
+
+
+initAttributes: attrs <OrdCltn[Tuple[Str,Str]]>
+parts: p <OrdCltn[HTMLNode]>
+
+	attributes := attrs.
+	parts := p.! !
+
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'accessing- private' !
+
+
+attributeAt: name <Str> ^<Str>
+
+	^self attributeAt: name
+			ifAbsent: [ self error: 'attribute ', name printString, ' not found' ]!
+
+attributeAt: name <Str> ifAbsent: blk <[^X def]>  ^<Str | X>
+
+	self attributes == nil
+		ifTrue: [ ^blk value ].
+	self attributes do:
+		[ :t <Tuple[Str,Str]> |
+			t at1 = name
+				ifTrue: [ ^t at2 ].
+		].
+	^blk value!
+
+attributes ^<OrdCltn[Tuple[Str,Str]]>
+
+	^attributes!
+
+parts ^<OrdCltn[HTMLNode]>
+
+	^parts! !
+
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'accessing' !
+
+
+alignment ^<Symbol>
+	"returns the alignment attribute, or nil if none specified"
+
+	| val <Str> |
+	val := (self attributeAt: #ALIGN ifAbsent: [ ^nil ]) asLowercase.
+	val = #right
+		ifTrue: [ ^HTMLBuilder alignRight ].
+	val = #center
+		ifTrue: [ ^HTMLBuilder alignCenter ].
+	val = #left
+		ifTrue: [ ^HTMLBuilder alignLeft ].
+	self error: 'unknown alignment type'! !
+
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	self do:
+		[ :node <HTMLNode> |
+			node buildFor: builder		]!
+
+textOn: strm <CharOutputStream>
+
+	self do:
+		[ :el <HTMLNode> |
+			el textOn: strm ]! !
+
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'private' !
+
+
+aligningFor: builder <HTMLBuilder> do: blk <[]>
+	"evaluate blk with any alignment attributes in effect"
+
+	| old <Symbol> new <Symbol> |
+	new := self alignment.
+	old := builder alignment.
+	(new isNil or: [ new = old ])
+		ifTrue: [ blk value ]
+		ifFalse: [	builder alignment: new.
+							blk ensure: [ builder alignment: old ].
+						]!
+
+for: builder <HTMLBuilder> withColorsFromAttributesDo: blk <[]>
+
+	| oldTextPaint <Paint> oldLinkPaint <Paint> |
+	oldTextPaint := builder textPaint.
+	oldLinkPaint := builder linkPaint.
+	self setLinkPaintIfHaveFor: builder.
+	self setTextPaintIfHaveFor: builder.
+	blk ensure:
+		[	builder	textPaint: oldTextPaint;
+							linkPaint: oldLinkPaint	].!
+
+hexDigitValueFrom: strm <CharInputStream> ifFail: fail <AbortBlock> ^<Int>
+
+	| c <Character> |
+	c := strm next asUppercase.
+	^('0123456789ABCDEF' indexOf: c ifAbsent: [ self halt.^fail value]) - 1!
+
+indentWidth ^<Int>
+
+	^10!
+
+parseColorSpec: spec <Str> ifFail: fail <AbortBlock>  ^<Paint>
+
+	| strm <CharInputStream> r <Int> g <Int> b <Int> |
+	strm := spec readStream.
+	spec size = 7
+		ifFalse: [ ^fail value ].
+	strm next = $#
+		ifFalse: [ ^fail value ].
+
+	r := self hexDigitValueFrom: strm ifFail: [ ^fail value].
+	r := (r * 16) + (self hexDigitValueFrom: strm ifFail: [ ^fail value]).
+	
+	g := self hexDigitValueFrom: strm ifFail: [ ^fail value].
+	g := (g * 16) + (self hexDigitValueFrom: strm ifFail: [ ^fail value]).
+	
+	b := self hexDigitValueFrom: strm ifFail: [ ^fail value].
+	b:= (b * 16) + (self hexDigitValueFrom: strm ifFail: [ ^fail value]).
+	
+	^(Paint red: r green: g blue: b)
+!
+
+setLinkPaintIfHaveFor: builder <HTMLBuilder>
+
+	| spec <Str> |
+	spec := self attributeAt: #LINK ifAbsent: [ ^self ].
+	builder linkPaint: (self parseColorSpec: spec ifFail: [ ^self ]).!
+
+setTextPaintIfHaveFor: builder <HTMLBuilder>
+
+	| spec <Str> |
+	spec := self attributeAt: #TEXT ifAbsent: [ ^self ].
+	builder textPaint: (self parseColorSpec: spec ifFail: [ ^self ]).! !
+
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'iterating' !
+
+
+do: blk <[HTMLNode]>
+
+	self parts isNil
+		ifTrue: [ ^self ].
+	self parts do: blk!
+
+linksDo: blk <[ElementA]>
+
+	self do:
+		[ :n <HTMLNode> |
+			n linksDo: blk ]! !
+

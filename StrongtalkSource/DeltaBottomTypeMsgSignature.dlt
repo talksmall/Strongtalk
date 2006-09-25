@@ -1,0 +1,53 @@
+Delta define: #DeltaBottomTypeMsgSignature as: (
+(Class subclassOf: 'DeltaMsgSignature' instanceVariables: 'domainSize ')) !
+
+(Delta mirrorFor: #DeltaBottomTypeMsgSignature) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaBottomTypeMsgSignature) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBottomTypeMsgSignature)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBottomTypeMsgSignature) methodsFor: 'Unclassified' !
+
+
+domain ^ <VarOrdCltn[ObjectType]>
+ | d <VarOrdCltn[ObjectType]> |
+
+d := OrderedCollection[ObjectType] new.
+1 to: self domainSize do:[:i <Integer> | 
+                                               d add: (DeltaTypeId new setId: #Object; 
+                                                                                                scope: DeltaGlobals)
+                                               ].
+^d!
+
+domainSize ^ <Integer>
+
+^domainSize isNil ifTrue:[0] ifFalse:[domainSize]!
+
+domainSize: n <Integer>
+
+domainSize := n
+!
+
+range ^ <ObjectType>
+    ^DeltaBottomType new!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^(t supertypeOfMsgSignature: self assuming: trail)
+       or:[t supertypeOfPolyMsgSignature: self assuming: trail]!
+
+subtypeOfMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+^true!
+
+subtypeOfPolyMsgSignature: m <PolyMsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    | sub <Substitution>  shouldRetract <Boolean>  result <Boolean>  |
+
+^true!
+
+supertypeOfMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+	self testFailedBecause: DeltaBottomTypeNotSupertypeError new toEscape:[].
+    ^false! !
+

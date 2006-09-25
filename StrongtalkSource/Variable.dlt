@@ -1,0 +1,240 @@
+Delta define: #Variable as: (
+(Class subclassOf: 'DeltaBlue' instanceVariables: 'value constraints determinedBy walkStrength stay mark')) !
+
+(Delta mirrorFor: #Variable) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Variable) group: 'benchmark'!
+
+(Delta mirrorFor: #Variable)
+comment: 
+'I represent a constrained variable. In addition to my value, I maintain the structure of the constraint graph, the current dataflow graph, and various parameters of interest to the DeltaBlue incremental constraint solver.
+
+Instance variables:
+	value			my value; changed by constraints, read by client <Object>
+	constraints		normal constraints that reference me <Array of Constraint>
+	determinedBy	the constraint that currently determines
+					my value (or nil if there isn''''t one) <Constraint>
+	walkStrength		my walkabout strength <Strength>
+	stay			true if I am a planning-time constant <Boolean>
+	mark			used by the planner to mark constraints <Number>
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Variable) classSide methodsFor: 'instance creation' !
+
+
+new
+
+	^super new initialize!
+
+value: aValue
+
+	^(super new) initialize; value: aValue! !
+
+! (Delta mirrorFor: #Variable) methodsFor: 'initialize-release' !
+
+
+initialize
+
+	value := 0.
+	constraints := OrderedCollection new: 2.
+	determinedBy := nil.
+	walkStrength := Strength absoluteWeakest.
+	stay := true.
+	mark := 0.!
+
+release
+	"Break cycles (but leave me printable)."
+
+	self initialize.! !
+
+! (Delta mirrorFor: #Variable) methodsFor: 'access' !
+
+
+addConstraint: aConstraint
+	"Add the given constraint to the set of all constraints that refer to me."
+
+	constraints add: aConstraint.!
+
+constraints
+	"Answer the set of constraints that refer to me."
+
+	^constraints!
+
+determinedBy
+	"Answer the constraint that determines my value in the current dataflow."
+
+	^determinedBy!
+
+determinedBy: aConstraint
+	"Record that the given constraint determines my value in the current data flow."
+
+	determinedBy := aConstraint.!
+
+mark
+	"Answer my mark value."
+
+	^mark!
+
+mark: markValue
+	"Set my mark value."
+
+	mark := markValue.!
+
+removeConstraint: c
+	"Remove all traces of c from this variable."
+
+	constraints remove: c ifAbsent: [].
+	(determinedBy == c) ifTrue: [determinedBy := nil].!
+
+stay
+	"Answer my stay flag."
+
+	^stay!
+
+stay: aBoolean
+	"Set my stay flag."
+
+	stay := aBoolean!
+
+value
+	"Answer my value."
+
+	^value!
+
+value: anObject
+	"Set my value."
+
+	value := anObject.!
+
+walkStrength
+	"Answer my walkabout strength in the current dataflow."
+
+	^walkStrength!
+
+walkStrength: aStrength
+	"Set my walkabout strength in the current dataflow."
+
+	walkStrength := aStrength.! !
+
+! (Delta mirrorFor: #Variable) methodsFor: 'changes' !
+
+
+changeIn: aBlock strength: strengthSymbol
+	"Attempt to add an edit constraint of the given strength to myself and execute the given block only if this constraint can be satisfied (i.e. no stronger constraint prevents me from changing)."
+
+	| editConstraint |
+	editConstraint := EditConstraint var: self strength: strengthSymbol.
+	(editConstraint isSatisfied) ifTrue:
+		[aBlock value.
+		 Planner propagateFrom: self].
+	editConstraint destroyConstraint.!
+
+setAll: variables to: values strength: strengthSymbol
+	"Attempt to assign the given values to the given variables using the given strength. This is an all-or-nothing operation; if any variable cannot be changed due to a stronger constraint then no variable is changed."
+
+	| allSatisfied editConstraints editConstraint |
+	(variables size = values size) ifFalse:
+		[^self error: 'variable and value lists must be same size'].
+
+	"add edit constraints"
+	allSatisfied := true.		"true iff all edit constraints are satisfied"
+	editConstraints := variables collect:
+		[: v |
+		 editConstraint := EditConstraint var: v strength: strengthSymbol.
+		 (editConstraint isSatisfied) ifFalse: [allSatisfied := false].
+		 editConstraint].
+
+	(allSatisfied) ifTrue:
+		["do the assignments only if all edit constraints are satisfied"
+		 variables with: values do:
+			[: thisVar : thisValue |
+			 thisVar value: thisValue.
+			 Planner propagateFrom: thisVar]].
+
+	"remove edit constraints"
+	editConstraints do: [: c | c destroyConstraint].!
+
+setValue: aValue
+	"Attempt to assign the given value to me using a strength of #preferred."
+
+	self setValue: aValue strength: #preferred.!
+
+setValue: aValue strength: strengthSymbol
+	"Attempt to assign the given value to me using the given strength."
+
+	| editConstraint |
+	editConstraint := EditConstraint var: self strength: strengthSymbol.
+	(editConstraint isSatisfied) ifTrue:
+		[self value: aValue.
+		 Planner propagateFrom: self].
+	editConstraint destroyConstraint.! !
+
+! (Delta mirrorFor: #Variable) methodsFor: 'stay constraints' !
+
+
+defaultStay
+
+	^StayConstraint var: self strength: #default!
+
+preferredStay
+
+	^StayConstraint var: self strength: #preferred!
+
+requiredStay
+
+	^StayConstraint var: self strength: #required!
+
+strongDefaultStay
+
+	^StayConstraint var: self strength: #strongDefault!
+
+strongPreferredStay
+
+	^StayConstraint var: self strength: #strongPreferred!
+
+weakDefaultStay
+
+	^StayConstraint var: self strength: #weakDefault! !
+
+! (Delta mirrorFor: #Variable) methodsFor: 'equality constraints' !
+
+
+requireEquals: aVariable
+	"Install a required equality constraint between me and the given variable."
+
+	^EqualityConstraint var: self var: aVariable strength: #required! !
+
+! (Delta mirrorFor: #Variable) methodsFor: 'printing' !
+
+
+longPrintOn: aStream
+
+	self shortPrintOn: aStream.
+	aStream nextPutAll: '   Constraints: '.
+	(constraints isEmpty)
+		ifTrue: [aStream cr; tab; nextPutAll: 'none']
+		ifFalse:
+			[constraints do:
+				[: c | aStream cr; tab. c shortPrintOn: aStream]].
+	(determinedBy isNil) ifFalse:
+		[aStream cr; nextPutAll: '   Determined by: '.
+		 aStream cr; tab. determinedBy shortPrintOn: aStream].
+	aStream cr.!
+
+printOn: aStream
+
+	(Sensor leftShiftDown)
+		ifTrue: [self longPrintOn: aStream]
+		ifFalse: [self shortPrintOn: aStream].!
+
+shortPrintOn: aStream
+
+	aStream nextPutAll: 'V(', self asOop printString, ', '.
+	aStream nextPutAll: walkStrength printString, ', '.
+	(stay isNil) ifFalse:
+		[aStream nextPutAll: (stay ifTrue: ['stay, '] ifFalse: ['changing, '])].
+	aStream nextPutAll: value printString.
+	aStream nextPutAll: ')'.
+	aStream cr.! !
+

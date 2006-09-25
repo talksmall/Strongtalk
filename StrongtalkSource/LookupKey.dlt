@@ -1,0 +1,33 @@
+Delta define: #LookupKey as: (
+Generic forAll: 'K , V ' body: ((Class subclassOf: 'Association[K,V]' instanceVariables: ''))) !
+
+(Delta mirrorFor: #LookupKey) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #LookupKey) group: 'base'!
+
+(Delta mirrorFor: #LookupKey)
+comment: 
+'Don''t use this class; it is going away.
+%remove: this class is bogus.  Remove along
+with all uses.
+
+Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #LookupKey) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	| othera <Assoc[Object,Object]> |
+	othera := LookupKey[Object,Object] coerce: other else: [ ^false ].
+	^self key = othera key
+!
+
+hash ^<Int>
+
+	^self key hash! !
+

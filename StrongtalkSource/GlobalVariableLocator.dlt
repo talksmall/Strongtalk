@@ -1,0 +1,44 @@
+Delta define: #GlobalVariableLocator as: (
+(Class subclassOf: 'DefinitionLocator[GlobalVariableMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlobalVariableLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #GlobalVariableLocator) group: 'ast'!
+
+(Delta mirrorFor: #GlobalVariableLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GlobalVariableLocator) methodsFor: 'accessing' !
+
+
+ast ^ <ObjectType>
+
+^self mirror varDecl type!
+
+mirror  ^ <GlobalVariableMirror>
+	^GlobalVariableMirror on: (Smalltalk assocAt: self definitionName)
+!
+
+parseTree  ^ <ParseTree[VarDecl]>
+	^DeltaParser new parseOptionalTypeExpr: self source 
+										within: DeltaGlobals 
+										ifError: [:s <Str> :i <Int> | self error: s].
+	!
+
+source ^ <Str> 
+
+^self mirror declaredTypeString! !
+
+! (Delta mirrorFor: #GlobalVariableLocator) methodsFor: 'locator matching' !
+
+
+matchesGlobalVariableLocator: l <GlobalVariableLocator> ^ <Boolean>
+
+^self definitionName = l definitionName!
+
+matchesLocator: l <Locator> ^ <Boolean>
+
+^l matchesGlobalVariableLocator: self! !
+

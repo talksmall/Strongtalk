@@ -1,0 +1,661 @@
+Delta define: #ListBox as: (
+(Class subclassOf: 'Win32Control' instanceVariables: 'xStretchy <Boolean>
+			"If true, then the listbox can stretch in the x dimension; otherwise max width = natural width"
+yStretchy <Boolean>
+naturalWidth <Int>
+			"The natural width of the selection box.  This can get set one of three ways: explicitly,
+				or by sending the #resetNaturalWidth message, which will set it based on the
+				maximum item length at the time the message is sent, or automatically, since if
+				it has no value when it is needed, #resetNaturalWidth is used at that point."
+naturalHeight <Int>
+			"Like naturalWidth, with corresponding ways of setting"
+numItemsVisible <Int>
+			"If non-nil, then this # is used rather than numItems when computing #resetNaturalHeight"
+allowMultipleSelections <Boolean>
+simpleMultiple <Boolean>
+			"If allowMultipleSelections, then this flag indicates what model of multiple
+				selection to use.  true indicates that you just single click on each multiple entry.
+				false indicates that it acts like a single selection box for single clicks, but you can
+				use ctrl- and shift- modifiers to add to or extend the range of the selections,
+				respectively."
+visualBlock <[Int,Boolean,^Visual]>
+				"A block that takes an item index, a flag that is true if the item is selected, and
+				  returns the visual to display for that item."
+numItems <Int>
+selections <Cltn[Int]>
+			"The set of selection indices"
+toValidateChange <[ListBox,Cltn[Int],^Boolean]>
+			"Evaluated to decide whether to allow a change in the set of selections. The
+			  first argument is the receiver with its selections unchanged, the second argument
+			  is the proposed change in the selection, and the return type is a boolean
+			  indicating whether to proceed with the change"
+onSelChange <[ListBox]>
+			"A block tbat is evaluated with the receiver as its argument
+				whenever the selection changes"
+onDoubleClick <[ListBox]>
+			"A block that is evaluated with the receiver as its argument whenever
+				the list box receives a double click"
+variableItemHeight <Boolean>
+			"Allow variable item heights?  True is neat, but slow for lots of items"
+		') classVariables: 'ListBoxClassName <CString>	"The windows class name"
+BackPainter <Painter>	"painter for the default selection background"
+		') !
+
+(Delta mirrorFor: #ListBox) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #ListBox) group: 'ui'!
+
+(Delta mirrorFor: #ListBox)
+comment: 
+'Native list boxes, for either single or multiple selection.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 
+'!
+
+! (Delta mirrorFor: #ListBox) classSide methodsFor: 'instance creation' !
+
+
+forMultipleSelections ^<Instance>
+
+	^super new initialize allowMultipleSelections: true!
+
+forSingleSelection ^<Instance>
+
+	^super new initialize allowMultipleSelections: false! !
+
+! (Delta mirrorFor: #ListBox) methodsFor: 'initialization' !
+
+
+allowMultipleSelections: f <Boolean>
+
+	allowMultipleSelections := f!
+
+initialize
+
+	super initialize.
+	numItems := 0.
+	onSelChange := onDoubleClick := [ :lb <ListBox> | ].
+	self xStretchy: true.
+	self yStretchy: true.
+	self setSelections: Set[Int] new.
+	simpleMultiple := true.
+	self variableItemHeight: false.
+	self toValidateChange: [ :before <ListBox> :new <Cltn[Int]> |  true ].
+!
+
+naturalHeight: h <Int>
+	"Used to explicitly set the natural height.  This sets the yStretchy state to false, so if you
+		want it to stretch, you should set yStretchy: true after this call"
+
+	naturalHeight := h.
+	self yStretchy: false.!
+
+naturalWidth: w <Int>
+	"Used to explicitly set the natural width.  This sets the xStretchy state to false, so if you
+		want it to stretch, you should set xStretchy: true after this call"
+
+	naturalWidth := w.
+	self xStretchy: false.!
+
+simpleMultiple: f <Boolean>
+
+	simpleMultiple := f!
+
+xStretchy: f <Boolean>
+
+	xStretchy := f!
+
+yStretchy: f <Boolean>
+
+	yStretchy := f! !
+
+! (Delta mirrorFor: #ListBox) methodsFor: 'private' !
+
+
+addBackgroundTo: v <Visual> ^<Visual>
+
+	^v withBackdrop: self backPainter!
+
+backPainter ^<Painter>
+
+	BackPainter isNil
+		ifTrue: [ BackPainter := Painter new paint: self selectionPaint ].
+	^BackPainter!
+
+buildWin32Handle
+
+	| pos <Point> container <Window|Win32Control> |
+
+	pos := self nativePosition.
+	container := self parent nativeWindow.
+	"Note that we inset the dimensions by 1 because windows grabs an extra pixel
+		for the nonexistent border, which we have to cancel out.  %todo: remove if works without"
+	win32Handle := {{<user ExternalProxy CreateWindowExA>
+		extendedStyle: self extendedWin32Style
+		className: self listBoxClassName
+		caption: Win32 NULL	
+		style: self win32Style
+		xpos: pos x asInteger" + 1"
+		ypos: pos y asInteger" + 1"
+		xsize: self allocation enclosedRect width asInteger" - 2"
+		ysize: self allocation enclosedRect height asInteger" - 2"
+		parent: container win32Handle
+        id: self controlId
+		program: container hInstance
+		params: Win32 NULL }}.
+
+	self	setCount;
+			updateNativeSelections;
+			visible: true.!
+
+configureItem: item <Visual> at: index <Int>
+
+	(item hasSession not or: [ item session ~= self session ])
+		ifTrue: [ item session: self session ].!
+
+createVisible ^<Boolean>
+
+	^false!
+
+defaultMaxNaturalItemsVisible ^<Int>
+
+	^15!
+
+defaultNumItemsVisible ^<Int>
+
+	^10!
+
+getSelectionCount ^<Int>
+
+	^(self sendMessage: Win32 LB_GETSELCOUNT wparam: 0 lparam: 0)
+		asSmallInteger!
+
+itemAt: index <Int> selected: flag <Boolean> ^<Visual>
+
+	| item <Visual> |
+	item := self visualBlock value: index value: flag.
+	self configureItem: item at: index.
+	^item!
+
+itemsDo: blk <[Visual]>
+
+	1 to: self numItems do:
+		[ :i <Int> |
+			blk value: (self itemAt: i selected: false) ]!
+
+listBoxClassName ^<CString>
+
+	ListBoxClassName isNil
+		ifTrue: [ ListBoxClassName := CString for: 'listbox' ].
+	^ListBoxClassName!
+
+maxWidth ^<Int>
+
+	^self xStretchy
+		ifTrue: [ UI huge ]
+		ifFalse: [ self natural width ]!
+
+minClientWidth ^<Int>
+	"Min width of client area (not counting scrollbar)"
+
+	"Just some reasonable value > 0 so it doesn't look silly when empty"
+	^30!
+
+minHeight ^<Int>
+
+	^self yStretchy
+		ifFalse: [ self natural y ]
+		ifTrue: [ self numItems > 0
+						ifTrue: [ (self itemAt: 1 selected: false) natural enclosingRect height ]
+						ifFalse: [ 0 ]  ]!
+
+minWidth ^<Int>
+
+	^self xStretchy
+		ifTrue: [ self minClientWidth + Scroller verticalScrollBarDefaultWidth  ]
+		ifFalse: [ self natural width ]!
+
+msgSetSel: state <Boolean> at: zindex <Int>
+
+	(self sendMessage: Win32 LB_SETSEL wparam: state asExternalData lparam: zindex) 
+			@= Win32 LB_ERR
+		ifTrue: [ Win32 handleError ]!
+
+numItemsVisible: n <Int>
+
+	numItemsVisible := n!
+
+processMultipleSelectionChanged
+
+	| newSels <Set[Int]> count <Int> sels <ExternalProxy> |
+	count := self getSelectionCount.
+	sels := ExternalProxy new mallocInts: count + 1.
+	(self sendMessage: Win32 LB_GETSELITEMS wparam: count + 1 lparam: sels) asSmallInteger = count
+		ifFalse: [ self shouldNotHappen ].
+	newSels := Set[Int] new: count.
+	0 to: count - 1 do:
+		[ :i <Int> |
+			newSels include: (sels smallIntegerAt: i * Platform wordSize) + 1		].
+	sels free.
+
+	self proposeSelectionChange: newSels.!
+
+processSelectionChanged
+
+	self allowMultipleSelections
+		ifTrue: [ self processMultipleSelectionChanged ]
+		ifFalse: [	self processSingleSelectionChanged ]!
+
+processSingleSelectionChanged
+
+	| sel <ExternalData> newSels <Set[Int]> |
+	sel := self sendMessage: Win32 LB_GETCURSEL wparam: 0 lparam: 0.
+	newSels := Set[Int] new.
+	sel @= Win32 LB_ERR
+		ifFalse: [ newSels include: sel asSmallInteger + 1 ].
+
+	self proposeSelectionChange: newSels.!
+
+proposeSelectionChange: newSels <Set[Int]>
+	"Sent when a user has changed the selection, with the proposed new selections, for validation.
+	  If validation fails, then the native selection will be restored to its previous state."
+
+	"Only perform the change if the set of selections has actually changed (since cursor movements
+		can supposedly cause this method to execute spuriously) and the change is approved by the validation
+		function"
+	newSels ~= self selections
+		ifFalse: [ ^self ].
+	(self toValidateChange value: self value: newSels)
+		ifTrue: [	self validatedSelectionsFromUser: newSels updateScreen: false.		]
+		ifFalse: [ self updateNativeSelections	]!
+
+selectionPaint ^<Paint>
+
+	"%todo: hook this to the right system color"
+	^Paint blueGreen!
+
+setCount
+
+	self assert: [ self numItems notNil ].
+
+	self variableItemHeight
+		ifTrue: [	| dummy <CString> |
+
+						dummy := CString forStr: ''.
+						self numItems timesRepeat:
+							[	| ret <ExternalData> |
+								ret := self sendMessage: Win32 LB_ADDSTRING wparam: 0 lparam: dummy.
+								(ret @= Win32 LB_ERR or: [ ret @= Win32 LB_ERRSPACE ])
+									ifTrue: [ self error: 'Cannot add item to listbox' ].	].
+						dummy free.	]
+		ifFalse: [	self sendMessage: Win32 LB_SETCOUNT wparam: self numItems lparam: Win32 NULL. ]!
+
+setSelections: sels <Cltn[Int]>
+
+	selections := sels!
+
+stringVisualFor: s <Str> selected: flag <Boolean>  ^<Visual>
+
+	| textPainter <Painter> backPainter <Painter> v <Visual> |
+	textPainter := Painter default.
+	flag
+		ifTrue: [	textPainter := Painter new
+							paint: (textPainter paint contrastingWith: self backPainter paint).		].
+	v := (StringGlyph for: s painter: textPainter) stretchy: true; asVisual.
+
+	^flag
+		ifFalse: [ v ]
+		ifTrue: [ self addBackgroundTo: v ]!
+
+updateNativeMultipleSelections
+
+	self deferringRedrawDo:
+		[	| min <Int> |
+			"We defer setting the lowest selection until last, since that is where the focus will go"
+			min := SmallInteger maxVal.
+			self msgSetSel: false at: -1.	"Clear all selections"
+			self selections do:
+				[ :sel <Int> |
+					sel < min
+						ifTrue: [	min < SmallInteger maxVal
+											ifTrue: [ self msgSetSel: true at: min - 1 ].
+										min := sel. ]
+						ifFalse: [	self msgSetSel: true at: sel - 1 ].	].
+			min < SmallInteger maxVal
+				ifTrue: [ self msgSetSel: true at: min - 1 ]. ]!
+
+updateNativeSelections
+
+	self allowMultipleSelections
+		ifTrue: [ self updateNativeMultipleSelections ]
+		ifFalse: [ self updateNativeSingleSelection ]!
+
+updateNativeSingleSelection
+
+	| index <Int> |
+
+	self assert: [ self selections size < 2 ].
+	index := self selections size = 1
+		ifTrue: [ self selections anElement - 1 ]
+		ifFalse: [ -1 ].
+	self sendMessage: Win32 LB_SETCURSEL
+		wparam: index lparam: 0.!
+
+validatedSelectionsFromUser: newSels <Cltn[Int]>
+updateScreen: updateScreen <Boolean>
+	"Set the list box selections without performing validation, and then notify the program of the change.
+		If flag is true, then the screen is updated as well."
+
+	self setSelections: newSels.
+	self onSelChange value: self.
+
+	updateScreen
+		ifTrue: [ self updateNativeSelections	]!
+
+win32Style ^<ExternalData>
+
+	| s <ExternalData> |
+	s := super win32Style externalBitOr: (Win32 LBS_NOINTEGRALHEIGHT
+										externalBitOr: (Win32 WS_VSCROLL
+										externalBitOr: Win32 LBS_NOTIFY)).
+
+	self variableItemHeight
+		ifTrue: [ s := s externalBitOr: (Win32 LBS_OWNERDRAWVARIABLE
+										externalBitOr: Win32 LBS_HASSTRINGS)	]
+		ifFalse: [ s := s externalBitOr: (Win32 LBS_OWNERDRAWFIXED
+										externalBitOr: Win32 LBS_NODATA)	].
+
+	self allowMultipleSelections 
+		ifTrue: [ s := s externalBitOr: ( self simpleMultiple
+															ifTrue: [ Win32 LBS_MULTIPLESEL ]
+															ifFalse: [ Win32 LBS_EXTENDEDSEL ]	).	].
+	^s! !
+
+! (Delta mirrorFor: #ListBox) methodsFor: 'accessing' !
+
+
+allowMultipleSelections ^<Boolean>
+
+	^allowMultipleSelections!
+
+naturalHeight ^<Int>
+
+	naturalHeight isNil
+		ifTrue: [ self resetNaturalHeight ].
+	^naturalHeight!
+
+naturalWidth ^<Int>
+
+	naturalWidth isNil
+		ifTrue: [ self resetNaturalWidth ].
+	^naturalWidth!
+
+numItems ^<Int>
+
+	^numItems!
+
+numItemsVisible ^<Int>
+
+	^numItemsVisible!
+
+onDoubleClick ^<[ListBox]>
+
+	^onDoubleClick!
+
+onDoubleClick: blk <[ListBox]>
+
+	onDoubleClick := blk!
+
+onSelChange ^<[ListBox]>
+
+	^onSelChange!
+
+onSelChange: blk <[ListBox]>
+
+	onSelChange := blk!
+
+selections ^<Cltn[Int]>
+
+	^selections!
+
+selections: sels <Cltn[Int]>
+
+	self setSelections: sels.
+	self hasWin32Handle
+		ifTrue: [ self updateNativeSelections ]!
+
+simpleMultiple ^<Boolean>
+
+	^simpleMultiple!
+
+toValidateChange ^<[ListBox,Cltn[Int],^Boolean]>
+
+	^toValidateChange!
+
+toValidateChange: blk <[ListBox,Cltn[Int],^Boolean]>
+	"Sets the validate change block, which is evaluated to decide whether to allow changes
+	    in the set of selections. The
+		 first argument is the receiver with its selections unchanged, the second argument
+		 is the proposed change in the selection, and the return type is a boolean
+		 indicating whether to proceed with the change.  
+
+		 Hint: If you want a dialog box to validate this change, remember that the dialog box completes
+		 asynchronously, so its result can't be returned by this block.  The way to do it is to write a
+		 validation block that returns false, and then launches a dialog box that sets the
+		 list box's selections to the proposed new selections when it completes, using the
+		 #validatedSelectionsFromUser: message, instead of #selections, which would not notify the program."
+
+	toValidateChange := blk!
+
+validatedSelectionsFromUser: newSels <Cltn[Int]>
+
+	self validatedSelectionsFromUser: newSels updateScreen: true!
+
+variableItemHeight ^<Boolean>
+
+	^variableItemHeight!
+
+variableItemHeight: flag <Boolean>
+	"Indicate whether the item visuals can be variable height.
+
+	  By default this is false, since variable height list boxes are
+	  very slow to create and destroy when you have lots of items (A WindowsWeirdness- variable height listboxes
+	  must have strings associated with each item (for some reason), added separately using an API call that is incredibly
+	  slow (for some reason))."
+
+	variableItemHeight := flag!
+
+visualBlock ^<[Int,Boolean,^Visual]>
+
+	^visualBlock!
+
+xStretchy ^<Boolean>
+
+	^xStretchy!
+
+yStretchy ^<Boolean>
+
+	^yStretchy! !
+
+! (Delta mirrorFor: #ListBox) methodsFor: 'control' !
+
+
+resetContents
+	"Completely rebuild the list box contents, using the current numItems."
+
+	self hasWin32Handle
+		ifTrue: [	self deferringRedrawDo:
+						  	[	self sendMessage: Win32 LB_RESETCONTENT wparam: 0 lparam: 0.
+								self setCount ]	]!
+
+resetNaturalHeight
+	"Make the natural height sufficient to show all items (or numItemsVisible, if provided)"
+
+	self resetNaturalHeight: 
+		(self numItemsVisible notNil
+			ifTrue: [ self numItemsVisible ]
+			ifFalse: [ self numItems min: self defaultMaxNaturalItemsVisible ])!
+
+resetNaturalHeight: n <Int>
+	"Cause the natural height of the receiver to be big enough to show n items, where the first item is used as the sample.
+		This will change the window's preferences.  If there are no items, a sample one is used."
+
+	| item <Visual> |
+	self hasMedium
+		ifFalse: [	self numItemsVisible: n.
+						^self ].
+	self changing.
+	self numItems = 0
+		ifFalse: [	item := self itemAt: 1 selected: false. ]
+		ifTrue: [	item := self stringVisualFor: ' ' selected: false.		"Use a dummy entry"
+						self configureItem: item at: 1	].
+	naturalHeight := n * item natural enclosingRect height.
+!
+
+resetNaturalWidth
+	"Cause the natural width of the receiver to be computed based on the natural widths of the items.
+		This will change the window's preferences."
+
+	self changing.
+	naturalWidth := self minClientWidth.
+	1 to: (self numItems min: (numItemsVisible notNil ifTrue: [ numItemsVisible ] ifFalse: [ 30 ])) do:
+		[ :index <Int> |
+			| item <Visual> |
+			item := self itemAt: index selected: false.
+			naturalWidth := naturalWidth max: item natural enclosingRect width ].
+	naturalWidth := naturalWidth + Scroller verticalScrollBarDefaultWidth.! !
+
+! (Delta mirrorFor: #ListBox) methodsFor: 'geometry-local' !
+
+
+max ^<Region>
+
+	^0@0 corner: self maxWidth @ UI huge!
+
+min ^<Region>
+
+	^0@0 corner: self minWidth @ self minHeight!
+
+natural ^<Region>
+
+	^0@0 corner: self naturalWidth @ self naturalHeight! !
+
+! (Delta mirrorFor: #ListBox) methodsFor: 'restricted-win32' !
+
+
+drawItemMsg: data <DRAWITEMSTRUCT> ^<ExternalData>
+
+	| hdc <Canvas> r <RECT> |
+
+	hdc := data hDC.
+	r := data rcItem.
+	hdc doWithCopy:
+		[ :canvas <Canvas> |
+			| item <Visual> |
+
+			"%todo: use the window background color for this"
+			canvas withPainter: (Painter new paint: Paint white)
+				do: [ canvas displayFilledRectangle: (0@0 corner: r right @ (r bottom - r top)) ].
+
+			data itemID >= 0
+				ifTrue: [	"List box isn't empty"
+								item := self	itemAt: data itemID + 1
+													selected: (data itemState hasBitsSet: Win32 ODS_SELECTED).
+								item layoutStatus = Visual valid
+									ifFalse: [	item allocationInParent: (0@0 extent:
+																				self allocation enclosedRect width
+																			@ item natural enclosingRect height)		].
+								canvas atOffset: item position do:
+									[ item localDisplayOn: canvas ].		].	].
+
+	"Draw the focus if necessary"
+	(self isFocus
+		and: [  ((self allowMultipleSelections and: [data itemState hasBitsSet: Win32 ODS_FOCUS])
+							or: [self allowMultipleSelections not and: [ data itemState hasBitsSet: Win32 ODS_SELECTED ] ] )
+				 ]
+	)	ifTrue: [ hdc doWithCopy:
+							[ :canvas <Canvas> |
+								{{<user ExternalProxy DrawFocusRect>
+									hdc: canvas rect: data rcItem
+						  		}} asBoolean
+									ifFalse: [ Win32 handleError ]		]].
+	^true asExternalData!
+
+measureItemMsg: data <MEASUREITEMSTRUCT> ^<ExternalData>
+
+	| item <Visual> |
+	self variableItemHeight
+		ifTrue: [	item := self itemAt: data itemID + 1 selected: false. ]
+		ifFalse: [	item := self stringVisualFor: ' ' selected: false.		"Create a dummy entry"
+						self configureItem: item at: 1	].
+	data itemHeight: item natural enclosingRect height.
+	data itemWidth: item natural enclosingRect width.
+	^true asExternalData!
+
+notificationMsg: notifyCode <ExternalData>
+
+	notifyCode @= Win32 LBN_SELCHANGE
+		ifTrue: [ ^self processSelectionChanged ].
+
+	notifyCode @= Win32 LBN_DBLCLK
+		ifTrue: [ 	self onDoubleClick value: self.
+						^self	 ].
+
+	super notificationMsg: notifyCode.! !
+
+! (Delta mirrorFor: #ListBox) methodsFor: 'list management' !
+
+
+list: l <SeqCltn[X]> converter: blk <[X,^Str]>
+			{where X is returnType of #anElement message of arg 1}
+	"Set the list of items to be the strings produced by blk from the elements of l.
+	  If the list changes in place, it is the responsibility of the caller to make sure
+	  the list box is updated (for example, by sending this message again)."
+
+	"This doesn't use simpleVisualBlock:numItems: because with strings we can do a better job
+		with the appearance of selected text"
+	self visualBlock:
+				[ :index <Int> :selected <Boolean> |
+					self stringVisualFor: (blk value: (l at: index)) selected: selected 	]
+		   numItems: l size.!
+
+simpleVisualBlock: blk <[Int,^Visual]> numItems: n <Int>
+	"Like #visualBlock:, but handles the selection background automatically."
+
+	self visualBlock:
+				[ :index <Int> :selected <Boolean> |
+					| v <Visual> |
+					v := blk at: index.
+					(selected not and: [ v hasParent and: [ v parent = self medium]])
+						ifFalse: [ v noParent ].
+					selected
+						ifTrue: [ v := self addBackgroundTo: v ].
+					self configureItem: v at: index.
+					v	 ]
+			numItems: n!
+
+stringList: strs <SeqCltn[Str]>
+	"Set the listbox to show the specified list of strings"
+
+	self list: strs converter: [ :s <Str> | s ]!
+
+visualBlock: blk <[Int,Boolean,^Visual]> numItems: n <Int>
+	"The receiver will use blk to access the visuals to display for each item.  The block is invoked
+		with the index of the item needed and a flag indicating whether the item is selected.  The block must
+		handle the selection appearance.  This is the most general way to specify the list box items."
+
+	visualBlock := blk.
+	numItems := n.
+	self resetContents.!
+
+visuals: visuals <SeqCltn[Visual]>
+	"Show the specified visuals, adding a colored background when selected"
+
+	self simpleVisualBlock:
+				[ :index <Int> |
+					visuals at: index ]
+			numItems: visuals size! !
+

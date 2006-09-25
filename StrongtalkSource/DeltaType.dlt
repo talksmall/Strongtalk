@@ -1,0 +1,310 @@
+Delta define: #DeltaType as: (
+(Class subclassOf: 'DeltaFilter' instanceVariables: '') classVariables: 'DefinitionClasses TypeInfo '; abstract) !
+
+(Delta mirrorFor: #DeltaType) revision: '$Revision: 1.9 $'!
+
+(Delta mirrorFor: #DeltaType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaType) classSide methodsFor: 'Unclassified' !
+
+
+addMagicType: typeInfo   <Generic[Protocol]> ^ <Generic[Protocol]>
+
+^self typeData at: typeInfo put: typeInfo                
+!
+
+atAlias: element   <TypeAlias> put: typeInfo <Type> ^<Type>
+
+^self atDefinition: element put: typeInfo
+!
+
+atClass: element   <Class> put: typeInfo <InvocationSide> ^<InvocationSide>
+
+typeInfo klass:  element.
+^self typeData at: element put: typeInfo                           
+
+!
+
+atDefinition: element   <Definition> put: typeInfo <Type> ^ <Type>
+"Private"
+
+^self typeData at: element put: typeInfo                
+
+!
+
+atMixin: element   <Mixin> put: typeInfo <Side> ^ <Side>
+
+typeInfo klass:  element.
+^self typeData at: element put: typeInfo                           
+ !
+
+atProtocol: element   <Protocol> put: typeInfo <DeltaProtocol> ^ <DeltaProtocol>
+
+^self atDefinition: element put: typeInfo!
+
+doChecks: blk <[]> ^ <TypeErrorHandler>
+
+| eh <TypeErrorHandler> |
+
+eh := DeltaTypeErrorHandler new.
+self doChecks: blk handler: eh.
+^eh
+!
+
+doChecks: blk <[]> handler: eh <TypeErrorHandler>
+
+DeltaProtocol flushSelectorCache.
+DeltaGlobalTrail := DeltaTrail new initialize.
+eh catchErrorsFor: blk.
+"Transcript cr; show: ProtocolSelectorCache hitRatio printString; cr."
+DeltaGlobalTrail := DeltaTrail new initialize.
+DeltaProtocol flushSelectorCache.
+!
+
+for: element  <Object> ^ <ObjectType>
+
+^self for: element ifAbsent: [self error: 'Type information not found']!
+
+for: element <Object> ifAbsent: blk <[]> ^ <Type>
+
+^(self isDefinition: element) ifTrue:[self forDefinition: element]
+                                         ifFalse:[blk value].
+!
+
+forClass: element  <Class> ^ <InvocationSide> 
+
+^self forDefinition: element
+"^self forClass: element ifAbsent: [self error: 'Type information not found']"
+!
+
+forDefinition: element <Definition> ^ <Type> 
+
+^self typeData at: element 
+                              ifAbsent: [ (Mirror on: element) createTypeStructure.
+                                                 self typeData at: element.
+                                                  ].
+!
+
+forInvocation: element  <Class> ^ <InvocationSide> 
+
+^self forDefinition: element
+"^self forInvocation: element ifAbsent: [self error: 'Type information not found']"
+!
+
+forInvocation: element <Class> ifAbsent: blk <[]> ^ <InvocationSide> 
+
+^self typeData at: element ifAbsent: blk
+            !
+
+forMixin: element  <Mixin> ^ <Side>
+
+^self forDefinition: element
+"^self forMixin: element 
+          ifAbsent: [self error: 'Type information not found']"!
+
+forProtocol: element  <Protocol> ^ <DeltaDeclaredProtocol>
+
+^self forDefinition: element
+"^self forProtocol: element ifAbsent: [self error: 'Type information not found']"!
+
+forRef: r <Class | Mixin | Protocol | TypeAlias | GlobalVarDecl | Type> ^ <Type>
+"assume that r is a reference that was looked up in a scope. Either we have
+type information for it (i.e., it is a definition or a global variable declaration)
+or it is itself a type. Therefore, if no entry for r is found, we return r itself."
+
+
+"^self for: r 
+          ifAbsent:[
+                            self assert:[(self isGlobalVarNode: r) or:[self isType: r]]."
+                            r isGlobalVarNode ifTrue:[^r mirroredType].
+                            r class = DeltaGeneric ifTrue:[^r].
+                            ^r asType
+!
+
+forTypeAlias: element  <TypeAlias> ^ <Type>
+
+^self forDefinition: element
+"^self forAlias: element ifAbsent: [self error: 'Type information not found']"!
+
+hasTypeInfoFor: e <Object> ^ <Boolean>
+
+^self typeData includesKey: e!
+
+init
+
+DefinitionClasses := IdentitySet[Class] new.
+
+DefinitionClasses add: Class; add: Metaclass;
+                                    add: ClassMixin; add: MetaClassMixin;
+                                    add: MixinDerivation; add: MixinComposition;
+                                    add: Protocol;  add: MetaProtocol;
+                                    add: TypeAlias.
+
+self zapAllTypes.!
+
+isDefinition: e <Object> ^ <Boolean>
+
+^Metaclass = e class class or:[DefinitionClasses includes: e class]
+
+!
+
+isGlobalVarNode: r  <Class | Mixin | Protocol | GlobalVarDecl | Type> ^ <Boolean>
+
+self deltaHack.
+"We should have a mechanism for checking that r is a global var, without relying on
+the isGlobalVarNode message. Eventually, dynamic typechecking might do it. ."
+^r isGlobalVarNode!
+
+isType: r  <Class | Mixin | Protocol | GlobalVarDecl | Type> ^ <Boolean>
+
+self deltaHack.
+"We should have a mechanism for checking that r is a type, without relying on
+the isType message. Eventually, dynamic typechecking might do it. In the 
+medium term , we might keep a dictionary of all type classes, and see if
+r class is in it or not."
+^r isType or:[r class = DeltaGeneric]!
+
+typeData  ^<Dictionary[Decl, Type]>
+	^TypeInfo!
+
+zapAllTypes
+
+TypeInfo := IdentityDictionary[Object, Type] new.
+DeltaPrimitives := DeltaPrimitiveTypeInfo new.
+DeltaUnionCache := DeltaCacheForUnion new setDimension: 0.
+DeltaMethodsToRevisit := OrderedCollection new.
+! !
+
+! (Delta mirrorFor: #DeltaType) classSide methodsFor: 'type errors' !
+
+
+batchErrors: errors <OrdCltn[TypeError]> ^ <OrdCltn[OrdCltn[TypeError]]>
+
+| d <VarDict[Str, OrdCltn[TypeError]]> |
+
+d := Dictionary[Str, OrdCltn[TypeError]] new.
+errors do:[:e <TypeError> |
+					(d 	at: e loc name 
+							ifAbsent:[d at: e loc name put: OrderedCollection[TypeError] new])
+						add: e
+					].
+^ d values
+
+! !
+
+! (Delta mirrorFor: #DeltaType) methodsFor: 'Unclassified' !
+
+
+asGeneric ^ <DeltaGeneric>
+    ^self reportError: (DeltaNotAGenericError new id: self name)!
+
+asObjectType ^ <ObjectType>
+    ^self reportError: (DeltaNotAnObjectTypeError new id: self name)!
+
+asProtocol ^ <Protocol>
+    ^self reportError: (DeltaNotAProtocolError new id: self name)!
+
+asSide ^ <Side>
+    ^self reportError: (DeltaNotAClassError new id: self name)!
+
+asType ^ <Type>
+    ^self!
+
+equals: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^(self subtypeOf: t assuming: trail) and:[t subtypeOf: self assuming: trail]!
+
+firstClassRepType  ^ <ObjectType>
+
+"Here is where the magical type of first class types must be created"
+| actuals <OrdCltn[ObjectType]> |
+
+actuals := OrderedCollection[ObjectType] new.
+actuals add: (DeltaTypeId new setId: self name; scope: DeltaGlobals).
+^DeltaGenericApplicationType new target: #DynamicallyTypecheckable
+                                                                      actuals: actuals.
+!
+
+isError ^ <Boolean>
+    ^false!
+
+isGenericInvocation ^ <Boolean>
+
+^false!
+
+isType ^ <Boolean>
+    ^true!
+
+isTypeVar ^ <Boolean>
+
+^false!
+
+isUnspecified ^ <Boolean>
+
+^false!
+
+mirrorClass
+
+self deltaHack.
+^TypeAliasMirror!
+
+mirroredType
+"The rest of this method is out of date, and is probably never called.
+Most likely it can be eliminated"
+self deltaHack.
+" We should have a specialized behavior for types of classes and types, that respond
+properly to this message, whereas this yields a type error"
+self halt.
+^self dual
+
+
+!
+
+mirrorsAType   ^ <Boolean>
+
+self deltaHack.
+^true!
+
+printOn: aStream <WriteStream[Character] > ^ <Self>
+    super printOn: aStream.
+aStream nextPutAll: '(', self name, ')'.!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    self subclassResponsibility!
+
+superInterfaceOf: i <Interface >assuming: trail <DeltaTrail > ^ <Boolean>
+    self subclassResponsibility!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    self subclassResponsibility!
+
+supertypeOfMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^false!
+
+supertypeOfPolyMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+self testFailedBecause: DeltaMsgToPolyMsgError new toEscape:[^false].
+    ^false!
+
+supertypeOfTypeVar: t <TypeVar >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t subtypeOfNonTypeVar: self assuming: trail!
+
+supertypeOfUnion: u <UnionType >assuming: trail <DeltaTrail > ^ <Boolean>
+    self subclassResponsibility!
+
+testFailedBecause: error <DeltaTypeError>toEscape: b <[]>
+
+	self errorHandler reportSubtypingError: error at: self toEscape: b
+!
+
+typeInfo
+	self deltaHack.
+	^self
+!
+
+wellFormed ^ <Boolean>
+    self subclassResponsibility! !
+

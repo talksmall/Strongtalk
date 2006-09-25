@@ -1,0 +1,373 @@
+Delta define: #CodeView as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> TextView[CharGlyphs]' instanceVariables: 'receiver <Object>
+	"Receiver for expression evaluation (doit). This is nil unless explicitly set, 
+		which is fine since in a ''pure'' workspace ''self'' is thought of as being nil"
+evalBlock <[]>
+	"Block to be evaluated whenever an expression is evaluated."')) !
+
+(Delta mirrorFor: #CodeView) revision: '$Revision: 1.12 $'!
+
+(Delta mirrorFor: #CodeView) group: 'ui'!
+
+(Delta mirrorFor: #CodeView)
+comment: 
+'A code view is a view  for  Smalltalk code. 
+
+One may create a CodeView using CodeView forText.
+
+This creates a code view whose model is a CharGlyphs (a SeqCltn[CharacterGlyph]).
+
+Such code views convert program text into a sequence of CharacterGlyphs corresponding
+to the characters in the source code, which in turn is converted into a view by treating those
+glyphs representing carriage return as line breaks. Conversely, a view can be converted
+into a model by filtering out all non-character glyphs, and these can be converted back into
+program text by extracting the characters they represent.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CodeView) classSide methodsFor: 'instance creation' !
+
+
+forText ^<CodeView>
+
+	| inst <CodeView> |
+	inst := self new.
+	inst	glyphBuilder: 
+				[ :s <CharGlyphs> |
+					inst split: s collecting: [ :cg <CharacterGlyph> |  cg ] ];
+			modelBuilder: 
+				[ :gls <SeqCltn[SeqCltn[Glyph]]> |
+						| text <OrdCltn[CharacterGlyph]> |
+						text := OrderedCollection[CharacterGlyph] new: (gls size * 10).		"heuristic"
+						inst glyphsIn: gls do:
+							[ :gl <Glyph> |
+								CharacterGlyph coerce: gl
+									do: [ :cg <CharacterGlyph> |
+												text addLast: cg	]
+							].
+						text
+				].
+	^inst! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'menus' !
+
+
+menuBar ^<Menu>
+
+	^super menuBar add: self smalltalkMenu!
+
+popUpMenu ^<Menu>
+
+	^super popUpMenu
+		add: self smalltalkMenu!
+
+smalltalkMenu ^ <Menu>
+
+	^Menu new name: '&Smalltalk';
+		add: (MenuAction new
+					name: '&Do It';
+					action: [ self doIt ]);
+		add: (MenuAction new
+					name: '&Show It';
+					action: [ self showIt ]);
+		add: (MenuAction new
+					name: '&Inspect It';
+					action: [ self inspectIt ]);
+		add: (MenuAction new
+					name: '&File It In';
+					action: [ self fileItIn ]);
+		add: (MenuAction new
+					name: 'Build Doit &Button';
+					action: [ self buildDoItButton ]);
+		add: (MenuAction new
+						name: 'Open definition';
+						active: [ Smalltalk includesKey: self selectionString asSymbol ];
+						action: [ self openDefinition ])! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+
+
+buildDoItButton
+	"Take the current selection and attempt to compile a Smalltalk
+		method for it.  If successful, a button that when pressed evaluates
+		the block is created and substituted for the selection"
+	
+	| blk <[]> but <Button> label <Str> maxLabel <Int>  |
+	blk := self buildClosureIfFail: [^self].
+	label := String withAll: (self selectionString select: [ :c <Character> | c ~= Character cr ]).
+	maxLabel := 30.
+	label size > maxLabel
+		ifTrue: [ label := String withAll: (label copyFrom: 1 to: maxLabel) ].
+
+	but := Button labeled: label action: [ :b <Button> | blk fork ].
+	self replaceSelectionWithGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: but)).
+	self lines rightArrow.
+
+!
+
+buildDoItButtonFor: expr <Str>
+	
+	| blk <[]> but <Button> label <Str> maxLabel <Int>  |
+	blk := self buildClosureFor: expr
+		ifFail: [	self error: 'Cannot compile: ', expr.
+					^self].
+	label := String withAll: (expr select: [ :c <Character> | c ~= Character cr ]).
+	maxLabel := 30.
+	label size > maxLabel
+		ifTrue: [ label := String withAll: (label copyFrom: 1 to: maxLabel) ].
+
+	but := Button labeled: label action: [ :b <Button> | blk fork ].
+	self replaceSelectionWithGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: but)).
+	self lines rightArrow.
+
+!
+
+doIt
+
+	(self buildClosureIfFail: [^self]) fork
+!
+
+fileItIn
+
+	[ self selectionString readStream fileIn ] fork!
+
+inspectIt
+
+	(Inspector on: (self computeValueIfFail: [^self])) launch
+!
+
+openDefinition
+
+	| mirror <Mirror> |
+	self selection at1 = self selection at2
+		ifTrue: [		"empty selection, so figure one out"
+						self selectRange.	].
+	mirror := Smalltalk mirrorFor: self selectionString asSymbol ifAbsent: [ ^self ].
+	(DefOutliner on: mirror) launch.
+	!
+
+showIt
+
+	| oop <Object> pstr <Str> result <Visual> |
+	oop := self computeValueIfFail: [^self].
+	pstr := oop printString.
+	result := (StringGlyph for: pstr painter: self showItPainter) asVisual withBackdrop: self showItBackdrop.
+	result := (PressHandler for: result) onPress: [ (Inspector on: oop) launch ].
+	result := (PopUpMenuHandler for: result) menuBlock: [ self showItMenuFor: result text: pstr ].
+	self replaceModelFrom: self selectionEnd to: self selectionEnd withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: result)).
+	self selection: self selectionEnd ,, self selectionEnd.
+! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'indexing' !
+
+
+linearIndexForGlyph: glyph <Glyph> ifAbsent: blk <[^DoesNotMatter]> ^ <Integer>
+"Return the linear index of glyph in the view"
+| ctr <Integer> |
+
+ctr := 0.
+self glyphsIn: self rows 
+		do:	[:g <Glyph> | 
+				 ctr := ctr + 1.
+				 glyph = g ifTrue:[^ctr]
+				].
+"if glyph is absent, execute blk"
+^blk value.!
+
+linearViewIndexFromSourceIndex: i <Integer> ^ <Integer>
+"Convert a source index into a linear position in the view;
+these may differ because the view contains non-source glyphs"
+| gCtr <Integer> cCtr <Integer> fixedI <Int> |
+
+fixedI := i max: 1.
+cCtr := 1.
+gCtr := 1.
+self 	glyphsIn: self rows
+			do:[:g <Glyph> | "scan thru glyphs, til we have counted i chars"
+					cCtr = fixedI ifTrue:[^gCtr]."Here is the ith char. Return glyph index"
+					gCtr := gCtr + 1. "Keep track of how many glyphs we've seen"
+					CharacterGlyph coerce: g do:[:cg <CharacterGlyph> |  cCtr := cCtr + 1].
+					].
+"If i was at the end of the source, we won't reach it until AFTER we
+scan thru all glyphs"
+cCtr  = fixedI ifTrue:[^gCtr ].
+^self error: 'Invalid source index ', fixedI printString.
+											!
+
+sourceIndexFromViewIndex: p <Point> ^ <Integer>
+" Translate points in the view into source indices"
+|   i <Integer> gCtr <Integer> cCtr <Integer> |
+
+cCtr := 1.
+gCtr := 1.
+i := self linearIndexFor: p. "Get the index of the glyph at p"
+self glyphsIn: self rows
+		 do:[:g <Glyph> | "scan thru glyphs until we reach the desired index"
+		 			gCtr = i ifTrue:[^cCtr]. "We've found it. Return the index of the current char"
+		 			gCtr := gCtr + 1.
+					CharacterGlyph coerce: g do:[:cg <CharacterGlyph> |  cCtr := cCtr + 1].
+					 "Keep track of how many chars we've seen"
+				].
+"If p was at the end of the view, we will not reach it until AFTER we
+scan thru all glyphs"
+gCtr  = i ifTrue:[^cCtr].
+self error: 'Invalid source index ', i printString!
+
+spotForGlyph: glyph <Glyph> ifAbsent: blk <[^DoesNotMatter]> ^ <Point>
+"Return the the point where glyph is located"
+^self linearSpotAt: (self linearIndexForGlyph: glyph ifAbsent: blk) ifAbsent:[self shouldNotHappen]!
+
+viewIndexFromSourceIndex: i <Integer> ^ <Point>
+"Return the point corresponding to the ith character. 
+First convert find the index of the corresponding glyph, then
+convert the result into a point"
+^self 	linearSpotAt: (self linearViewIndexFromSourceIndex: i) 
+			ifAbsent: [self error: 'Invalid source index ', i printString].! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'selection' !
+
+
+sourceSelection ^ <Tuple[Integer, Integer]>
+"Return the range of characters currently selected"
+^	(self sourceIndexFromViewIndex: self selection at1) ,,
+	(self sourceIndexFromViewIndex: self selection at2)!
+
+sourceSelection: selection <Tuple[Integer, Integer]>
+" Select  the range of characters given by selection. "
+
+| stop <Point>  |
+
+stop := self 	linearSpotAt: ((self linearViewIndexFromSourceIndex: selection at2))
+						ifAbsent:[self shouldNotHappen].
+self selection: (self viewIndexFromSourceIndex: selection at1) ,, stop.
+! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'event processing' !
+
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	(super keyDown: key focus: focus event: ev)
+		ifTrue: [	^true ].
+		
+	(key = #D and: [ ev ctrlPressed ])
+		ifTrue: [	self doIt.
+						^true ].
+	(key = #I and: [ ev ctrlPressed ])
+		ifTrue: [	self inspectIt.
+						^true ].
+	(key = #F and: [ ev ctrlPressed ])
+		ifTrue: [	self fileItIn.
+						^true ].
+	(key = #O and: [ ev ctrlPressed ])
+		ifTrue: [	self openDefinition.
+						^true ].
+	
+	self isReadOnly
+		ifTrue: [ ^false ].
+	
+	(key = #S and: [ ev ctrlPressed ])
+		ifTrue: [	self showIt.
+						^true ].
+	(key = #B and: [ ev ctrlPressed ])
+		ifTrue: [	self buildDoItButton.
+						^true ].
+
+	^false
+! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'private' !
+
+
+autoSelectRegionIfNeeded
+
+	self lines selectionIsEmpty
+		ifTrue: [ self selectCodeParagraphBackFrom: self selection at1 y asInteger ]!
+
+buildClosureFor: expr <Str> ifFail: blk <[^X def]> ^ <[] | X>
+
+	| result <[]> |
+	result := Smalltalk
+		blockToEvaluateFor: expr
+		receiver: self receiver
+		ifError: [ :err <Str> :pos <Int> |
+						^blk value ].
+	^[ result ensure: self evalBlock ]
+!
+
+buildClosureIfFail: blk <[^X def]> ^ <[] | X>
+
+	| result <[]> |
+	self autoSelectRegionIfNeeded.
+	result := Smalltalk
+		blockToEvaluateFor: self selectionString
+		receiver: self receiver
+		ifError: [ :err <Str> :pos <Int> |
+			self showParseError: err at: self linearSelection at1 + pos in: self.
+			^blk value ].
+	^[ result ensure: self evalBlock ]
+!
+
+computeValueIfFail: blk <[^X def]> ^ <Object | X>
+
+	| oop <Object> success <Boolean> done <Semaphore> action <[]> |
+	success := false.
+	done := Semaphore new.
+	action := self buildClosureIfFail: [^blk value].
+	[
+		[	oop := action value.
+			success := true.
+		] ensure: [
+			done signal
+		]
+	] fork.
+	done wait.
+	^success 
+		ifTrue: 	[ oop ]
+		ifFalse: 	blk
+
+!
+
+rows ^ <SeqCltn[SeqCltn[Glyph]]>
+
+^self lines glyphsFrom: 1@1 to: self endSpot!
+
+showItMenuFor: v <Visual> text: t <Str> ^ <Menu>
+
+	^Menu new add: 
+		(MenuAction new
+			name: 'Convert to text';
+			action: [ 	| spot <Point> |
+								spot := self spotForGlyph: v ifAbsent: [ self shouldNotHappen ].
+								self replaceFrom: spot to: ((spot x + 1) @ spot y) withModel: (self standardTextForString: t painter: self painter) ]
+		)
+! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'accessing' !
+
+
+evalBlock ^ <[]>
+
+	^evalBlock!
+
+evalBlock: blk <[]>
+
+	evalBlock := blk!
+
+receiver ^ <Object>
+
+	^receiver!
+
+receiver: oop <Object>
+
+	receiver := oop! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self evalBlock: []! !
+

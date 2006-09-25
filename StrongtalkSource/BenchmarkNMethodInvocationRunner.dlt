@@ -1,0 +1,32 @@
+Delta define: #BenchmarkNMethodInvocationRunner as: (
+(Class subclassOf: 'BenchmarkRunner' instanceVariables: '')) !
+
+(Delta mirrorFor: #BenchmarkNMethodInvocationRunner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BenchmarkNMethodInvocationRunner) group: 'benchmark'!
+
+(Delta mirrorFor: #BenchmarkNMethodInvocationRunner)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BenchmarkNMethodInvocationRunner) methodsFor: 'evaluate' !
+
+
+evaluate: bm
+	| i |
+	self showName: bm name.
+	i := Debug numberOfNMethodInvocations.
+	bm value.
+	Transcript show: (Debug numberOfNMethodInvocations - i) printString; cr.! !
+
+! (Delta mirrorFor: #BenchmarkNMethodInvocationRunner) methodsFor: 'printing' !
+
+
+format
+	^'#NMethod invocations'!
+
+name
+	^'NMethod incovations'! !
+

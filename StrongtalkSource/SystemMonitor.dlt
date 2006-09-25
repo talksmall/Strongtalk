@@ -1,0 +1,149 @@
+Delta define: #SystemMonitor as: (
+(Class subclassOf: 'Application' instanceVariables: 'entries <SeqCltn[Tuple[Str, [^Float]]]>	"List with activity names and computation blocks"
+table <Table> 	"Embedded table"
+monitorData <SystemMonitorData>	"VM data currently displayed"
+')) !
+
+(Delta mirrorFor: #SystemMonitor) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #SystemMonitor) group: 'ui'!
+
+(Delta mirrorFor: #SystemMonitor)
+comment: 
+'Tags: %User %UI
+
+Displays where the time goes, based on SystemMonitorData
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #SystemMonitor) classSide methodsFor: 'instance creation' !
+
+
+new ^ <Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #SystemMonitor) methodsFor: 'private' !
+
+
+addConstantEntriesToTable
+	| painter <Painter> |
+	
+	painter := Painter new font: (Font forSpec: (FontSpec new points: 11; typeface: 'Times Roman')).
+
+	self entries: OrderedCollection[Tuple[Str, [^Float]]] new.
+	self entriesDo: [ :title <String> :blk <[^Float]> | | bar <ValueBar> |
+		bar := ValueBar new .
+		entries add: blk ,, bar.
+		self table atRow: entries size column: 1 put:
+			(StringGlyph for: title painter: painter) asVisual.
+		self table atRow: entries size column: 2 put: (bar withBorder: (Border standard3DWithColor: Paint gray raised: false)).
+	]
+!
+
+addValuesToTable
+
+	| value <Float> |
+	1 to: self entries size do: [ :index <Int> | | blk <[^Float]> bar <ValueBar> |
+		blk :=  (entries at: index) at1.
+		bar := (entries at: index) at2.
+		bar remoteValue: blk value
+	]
+	
+!
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	self table: (Table rows: 7 columns: 2).
+	self addConstantEntriesToTable.
+	self startUpdateProcess.
+	^self table imbeddedVisual" withBorder: (Border standard3DWithColor: Paint gray raised: false)"
+!
+
+entries ^ <SeqCltn[Tuple[Str, [^Float]]]>
+	
+	^entries!
+
+entries: e <SeqCltn[Tuple[Str, [^Float]]]>
+	
+	entries := e!
+
+monitorData: d <SystemMonitorData>
+
+	monitorData := d!
+
+startUpdateProcess
+
+	[	| delay <Delay> |
+		delay := Delay forMilliseconds: self updateDelay.
+		[
+			delay  wait.
+			self monitorData: SystemMonitorData new.
+			self addValuesToTable.
+		] repeat
+	] fork
+!
+
+table ^ <Table>
+
+	^table!
+
+table: t  <Table>
+
+	table := t! !
+
+! (Delta mirrorFor: #SystemMonitor) methodsFor: 'private - painters' !
+
+
+activityPainter ^ <Painter>
+
+	^Painter default
+	
+!
+
+valuePainter ^ <Painter>
+
+	^Painter default
+	
+! !
+
+! (Delta mirrorFor: #SystemMonitor) methodsFor: 'private  - initialization' !
+
+
+entriesDo: blk <[Str, [^Float]]>
+	"Iterates over all entries for the table"
+	
+	blk value: 'Optimized code'		value: [ self monitorData inCompiledCode ].
+	blk value: 'Interpreted code'		value: [ self monitorData inInterpretedCode ].
+	blk value: 'PIC code' 					value: [ self monitorData inPICCode ].
+	blk value: 'Compiling' 					value: [ self monitorData inCompiler ].
+	blk value: 'Garbage Collector'	value: [ self monitorData inGarbageCollector ].
+	blk value: 'Stub code'					value: [ self monitorData inStubCode ].
+	blk value: 'Primitives/DLL'			value: [ self monitorData inVM ]!
+
+initialize
+	super initialize.
+	self monitorData: SystemMonitorData new.! !
+
+! (Delta mirrorFor: #SystemMonitor) methodsFor: 'accessing' !
+
+
+hasWinBackdrop ^<Boolean>
+
+	^true!
+
+monitorData ^ <SystemMonitorData>
+
+	^monitorData!
+
+updateDelay ^ <Int>
+
+	"Update delay in milliseconds"
+	
+	^500!
+
+winBackdrop ^<Painter>
+
+	^Painter new paint: Paint backgroundGray! !
+

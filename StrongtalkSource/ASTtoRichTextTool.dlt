@@ -1,0 +1,472 @@
+Delta define: #ASTtoRichTextTool as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'DeltaASTTool' instanceVariables: 'result <SeqCltn[Tuple[[Character,^E],Tuple[Int,Int]]]>
+parseTrees <Cltn[ParseTree[ASTNode]]>
+currentParseTree <ParseTree[ASTNode]>
+selectorEnd <Int>
+selectorBuilder <[Character,^E]>
+codeBuilder <[Character,^E]>
+commentBuilder <[Character,^E]>
+typeexpressionBuilder <[Character,^E]>
+inferenceclauseBuilder <[Character,^E]>
+defaultBuilder <[Character,^E]>
+'))) !
+
+(Delta mirrorFor: #ASTtoRichTextTool) revision: '$Revision: 1.8 $'!
+
+(Delta mirrorFor: #ASTtoRichTextTool) group: 'ast'!
+
+(Delta mirrorFor: #ASTtoRichTextTool)
+comment: 
+'Tool generating information for printing sources with rich text.
+
+The tool generates a sequencable collection of elements of type E.
+The generated collection will have the same size as the source.
+E is the type of the rich text used for each character, e.g. Glyph.
+
+The elements in the resulting collection are built by the 5 builders:
+
+	selectorBuilder <[Character,^E]>
+	typeexpressionBuilder <[Character,^E]>
+	inferenceclauseBuilder <[Character,^E]>
+	codeBuilder <[Character,^E]>
+	commentBuilder <[Character,^E]>
+
+The tool has to be parameterized with these 5 builder blocks. 
+It is also possible to set a default builder block
+
+	defaultBuilder <[Str, ^E]>
+	
+which will be used if one of the above mentioned are not specified.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'node traversal' !
+
+
+assignmentNode: node <DeltaAssignment >
+    node expr apply: self.!
+
+blockNode: node <DeltaBlock> ^ <Self>
+    node body apply: self.
+!
+
+cascadedSendNode: node <DeltaCascadedSend>
+    node prevSend apply: self.
+    node msg apply: self.!
+
+classVarNode: node <DeltaInstVar > 
+
+	self varNode: node!
+
+codeBodyNode: node <DeltaCodeBody >
+    node parameters do: [ :d <DeltaParameter>  | d apply: self ].
+    node temporaries do: [ :d <DeltaTemporary>  | d apply: self ].
+    node statements do: [ :d <DeltaStatement>  | d apply: self ]!
+
+dllCallNode: node <DeltaDLLCall>
+    node msg apply: self.!
+
+genericApplicationExpressionNode: node <DeltaGenericApplicationExpression >
+
+	"Mark the actuals of the generic application as a type expression"
+
+	| position <Tuple[Int,Int]> | 
+	position := self currentParseTree positionForNode: node.
+	self addToResultCheckOverlap: self typeexpressionBuilder ,, ((position at1 + node target name size) ,, position at2).
+	node target apply: self.
+    !
+
+guaranteedNode: node <DeltaGuaranteed >
+
+	"Mark the declared type as a type expression"
+
+	| nodePosition <Tuple[Int,Int]> typePosition <Tuple[Int,Int]> | 
+	nodePosition := self currentParseTree positionForNode: node.
+	typePosition := self findTypeExprIntervalFrom: (self currentParseTree positionForNode: node declaredType).
+	self addToResultCheckOverlap: self typeexpressionBuilder ,, (nodePosition at1 ,, typePosition at2).
+    node expr apply: self.
+    !
+
+instVarNode: node <DeltaInstVar > 
+
+	self varNode: node!
+
+literalNode: node <DeltaLiteral >!
+
+messageNode: node <DeltaMessage >
+    node args do: [ :s <DeltaExpression>  | s apply: self].!
+
+messagePatternNode: node <MessagePattern>
+    node type apply: self
+!
+
+methodDeclNode: node <DeltaMethod>
+    node filteree apply: self.
+!
+
+methodNode: node <DeltaMethod>
+    node type apply: self.
+    node body apply: self.
+!
+
+msgSignatureNode: node <DeltaMsgSignature>
+
+	"We process the type nodes in the domain here. Note that we have to skip them when traversing the
+		method parameters, see #parameterNode:. This should be changed at some point - they should
+		only be reachable from one place"
+	
+	| position <Tuple[Int,Int]> domainPosition <Tuple[Int,Int]> |
+	
+	node domain do: [ :domainNode <DeltaType>  | 
+		domainNode isError
+			ifFalse: [	domainPosition := self currentParseTree positionForNode: domainNode. 
+								self addToResultCheckOverlap: self typeexpressionBuilder ,, (self findTypeExprIntervalFrom: domainPosition) ] ].
+	
+    position := self currentParseTree positionForNode: node range.
+    self selectorEnd: position at1.
+    (position at2 - position at1) > 0
+    	ifTrue: [	"An explicit return type was given"
+    					self addToResultCheckOverlap: self typeexpressionBuilder ,, (self findReturnTypeExprIntervalFrom: position) ]
+!
+
+normalSendNode: node <DeltaSend>
+    node recv apply: self.
+    node msg apply: self.!
+
+parameterNode: node <DeltaParameter>
+
+	| methodScope <Scope> realParameterNode <DeltaParameter> position <Tuple[Int,Int]> |
+	
+	"The first hack below is due to the fact that the rewriter inserts artificial parameters into the AST
+		when rewriting loops.
+		The second hack below is due to the fact that the types of method parameters are reachable
+		from both the method message signature and the parameters in the method code body.
+		This should be changed at some point. Also note that CodeScopes hold state and have the parameters 
+		copied down for method code bodies. The real parameter present in the parse tree can in this case be 
+		found in the super scope. This should really be changed at some point."
+	
+	self deltaHack.
+	node isIntroducedByRewriter ifTrue: [ ^ self ].						"Ignore index parameter inserted by the rewriter."
+		
+	methodScope := self currentParseTree body scope.		"This is a CodeScope"
+	(methodScope parameters includes: node)
+		ifTrue: [		"We are in a method code body. We should only process the parameter name.
+								The type node is processed in #msgSignatureNode:"
+							realParameterNode := methodScope superScope at: node name.
+							position := self currentParseTree positionForNode: realParameterNode.
+							self addToResultCheckOverlap: self codeBuilder ,, (position at1 ,, (position at1 + realParameterNode name size)) ]
+		ifFalse: [	self varNode: node  ].
+!
+
+polyMsgSignatureNode: node <PolyMsgSignature>
+
+	"The formals contain the inferred type variables Some stem from magical
+	'def' clauses and others stem from a real inference clause. The latter will have
+	their inference clause node present in the parse tree for the method. We take
+	any one of them and use it for selecting the entire {where ...} expression."
+	
+	| tvPos <Tuple[Int,Int]> inferenceClausePos <Tuple[Int,Int]> |
+	node formals do: [ :tv <InferredTypeVar> |
+		(tvPos := self currentParseTree positionForNode: tv inferenceClause ifAbsent: [nil]) notNil
+			ifTrue: [	inferenceClausePos := tvPos ] ].
+	inferenceClausePos notNil
+		ifTrue: [	self addToResultCheckOverlap: self inferenceclauseBuilder ,, (self findInferenceClauseIntervalFrom: inferenceClausePos) ].
+
+	node body apply: self.!
+
+primitiveNode: node <DeltaPrimitiveNode>
+    node recv isNil ifFalse:[node recv apply: self].
+    node msg apply: self.!
+
+refNode: node <DeltaRef>
+!
+
+returnStatNode: node <DeltaReturnStat>
+    node expr apply: self.
+!
+
+superSendNode: node <DeltaSuperSend>
+    node msg apply: self.!
+
+temporaryNode: node <DeltaTemporary>
+
+	self deltaHack.
+	node isIntroducedByRewriter ifTrue: [ ^ self ].		"ignore temporaries introduced by rewriter"
+	self varNode: node! !
+
+! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'private' !
+
+
+addToResult: t <Tuple[[Character,^E],Tuple[Int,Int]]>
+	"Add tuple to result without checking for overlap with existing intervals"
+	self result addLast: t!
+
+addToResultCheckOverlap: t <Tuple[[Character,^E],Tuple[Int,Int]]>
+	"Add tuple to result and checking for overlap with existing intervals.
+	The existing intervals can only be fully embedded in the new interval."
+
+	| embeddedIntervals <SeqCltn[Tuple[Int,Int]]> nextBegin <Int> |
+	embeddedIntervals := OrderedCollection[Tuple[Int,Int]] new.
+	self result do: [ :e <Tuple[[Character,^E],Tuple[Int,Int]]> |
+		(t at2 at1 < e at2 at1 and: [ e at2 at2 < t at2 at2 ])
+			ifTrue: [	embeddedIntervals add: e at2 ] ].
+	embeddedIntervals := embeddedIntervals asSortedCollection:
+		[ :i1 <Tuple[Int,Int]> :i2 <Tuple[Int,Int]> |
+			i1 at1 <= i2 at1 ].
+	nextBegin := t at2 at1.
+	embeddedIntervals do: [ :i <Tuple[Int,Int]> |
+		self result add: t at1 ,, (nextBegin ,, i at1).
+		nextBegin := i at2 ].
+	self result add: t at1 ,, (nextBegin ,, t at2 at2).
+!
+
+currentParseTree ^ <ParseTree[ASTNode]>
+
+	^currentParseTree!
+
+currentParseTree: pt <ParseTree[ASTNode]>
+
+	currentParseTree := pt!
+
+findInferenceClauseIntervalFrom: position <Tuple[Int,Int]> ^ <Tuple[Int,Int]>
+
+	| begin <Int> end <Int> |
+	begin := position at1.
+	end := position at2.
+	[ (self source at: begin) = ${ ] whileFalse: [
+		begin := begin - 1.
+		self assert: [ begin > 0 ] ].
+	[ (self source at: end) = $} ] whileFalse: [
+		end := end + 1.
+		self assert: [ end <= self source size ] ].
+	^begin ,, (end + 1)
+	
+	!
+
+findReturnTypeExprIntervalFrom: position <Tuple[Int,Int]> ^ <Tuple[Int,Int]>
+
+	| returnPos <Int> begin <Int> |
+	returnPos := self findTypeExprIntervalFrom: position.
+	begin := returnPos at1.
+	[ (self source at: begin) = $^] whileFalse: [
+		begin := begin - 1.
+		self assert: [ begin > 0 ] ].
+	^begin ,, returnPos at2
+
+
+
+
+
+!
+
+findTypeExprIntervalFrom: position <Tuple[Int,Int]> ^ <Tuple[Int,Int]>
+
+	| begin <Int> end <Int> |
+	begin := position at1.
+	end := position at2.
+	[ (self source at: begin) = $< ] whileFalse: [
+		begin := begin - 1.
+		self assert: [ begin > 0 ] ].
+	[ (self source at: end) = $> ] whileFalse: [
+		end := end + 1.
+		self assert: [ end <= self source size ] ].
+	^begin ,, (end + 1)
+	
+	!
+
+insertCommentIntervals
+
+	"All parsetrees will hold the same source and comment positions"
+	self parseTrees first commentPositions do: [ :cp <Tuple[Int,Int]> |
+		self addToResult: self commentBuilder ,, cp ]
+!
+
+insertSelectorAndCodeIntervals
+
+	| newIntervals <SeqCltn[Tuple[[Character,^E],Tuple[Int,Int]]]> nextBegin <Int> currentBuilder <[Character,^E]> |
+	self sortResult.
+	currentBuilder := self selectorBuilder.
+	nextBegin := 1.
+	newIntervals := OrderedCollection[Tuple[[Character,^E],Tuple[Int,Int]]] new.
+	self result do: [ :e <Tuple[[Character,^E],Tuple[Int,Int]]> |
+		nextBegin >= self selectorEnd
+			ifTrue: [		currentBuilder := self codeBuilder ].
+		e at2 at1 > nextBegin
+			ifTrue: [ 		(nextBegin < self selectorEnd and: [self selectorEnd < e at2 at1])
+									ifTrue: [	newIntervals add: currentBuilder ,, (nextBegin ,, self selectorEnd).
+													currentBuilder := self codeBuilder.
+													nextBegin := self selectorEnd ].
+								newIntervals add: currentBuilder ,, (nextBegin ,, e at2 at1) ].
+		nextBegin := e at2 at2 ].
+	nextBegin > self source size 
+			ifFalse: [ 	nextBegin < self selectorEnd
+									ifTrue: [	newIntervals add: currentBuilder ,, (nextBegin ,, self selectorEnd).
+													currentBuilder := self codeBuilder.
+													nextBegin := self selectorEnd ].
+								currentBuilder := self codeBuilder.
+								newIntervals add: currentBuilder ,, (nextBegin ,, (self source size + 1)) ].
+	newIntervals do: [ :e <Tuple[[Character,^E],Tuple[Int,Int]]> |
+		self addToResult: e ].!
+
+result ^ <SeqCltn[Tuple[[Character,^E],Tuple[Int,Int]]]>
+
+	^result!
+
+result: r <SeqCltn[Tuple[[Character,^E],Tuple[Int,Int]]]>
+
+	result := r!
+
+selectorEnd ^ <Int>
+
+	selectorEnd isNil
+		ifTrue: [		^0 ]								"#selectorEnd: not called, assume no selector in source"
+		ifFalse: [	^selectorEnd ]!
+
+selectorEnd: i <Int>
+
+	self assert: [ i isNil or: [ selectorEnd isNil ]].
+	selectorEnd := i!
+
+sortResult
+
+	self result: 
+		(OrderedCollection[Tuple[[Character,^E],Tuple[Int,Int]]] withAll:
+			(self result asSortedCollection: 
+				[ :t1 <Tuple[[Character,^E],Tuple[Int,Int]]> :t2 <Tuple[[Character,^E],Tuple[Int,Int]]> |
+					t1 at2 at1 <= t2 at2 at1 ]))
+!
+
+source ^ <Str>
+
+	^self parseTrees first source!
+
+varNode: node <DeltaVar>
+
+	| position <Tuple[Int,Int]> |
+	position := self currentParseTree positionForNode: node.
+	self addToResultCheckOverlap: self codeBuilder ,, (position at1 ,, (position at1 + node name size)).
+	node type isError
+		ifFalse: [	position := self currentParseTree positionForNode: node type. 
+							self addToResultCheckOverlap: self typeexpressionBuilder ,, (self findTypeExprIntervalFrom: position) ]! !
+
+! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'private - initialization' !
+
+
+initialize
+
+	self result: OrderedCollection[Tuple[[Character,^E],Tuple[Int,Int]]] new.
+	self selectorEnd: nil.
+	self currentParseTree: nil.
+	! !
+
+! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'builders' !
+
+
+codeBuilder ^ <[Character,^E]>
+
+	^codeBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	codeBuilder ]
+		!
+
+codeBuilder: b <[Character,^E]>
+
+	codeBuilder := b!
+
+commentBuilder ^ <[Character,^E]>
+
+	^commentBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	commentBuilder ]
+		!
+
+commentBuilder: b <[Character,^E]>
+
+	commentBuilder := b!
+
+defaultBuilder ^ <[Character,^E]>
+
+	defaultBuilder isNil
+		ifTrue: [	self error: 'Default builder not specified' ].
+	^defaultBuilder!
+
+defaultBuilder: b <[Character,^E]>
+
+	defaultBuilder := b!
+
+inferenceclauseBuilder ^ <[Character,^E]>
+
+	^inferenceclauseBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	inferenceclauseBuilder ]
+		!
+
+inferenceclauseBuilder: b <[Character,^E]>
+
+	inferenceclauseBuilder := b!
+
+selectorBuilder ^ <[Character,^E]>
+
+	^selectorBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	selectorBuilder ]
+		!
+
+selectorBuilder: b <[Character,^E]>
+
+	selectorBuilder := b!
+
+typeexpressionBuilder ^ <[Character,^E]>
+
+	^typeexpressionBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	typeexpressionBuilder ]
+		!
+
+typeexpressionBuilder: b <[Character,^E]>
+
+	typeexpressionBuilder := b! !
+
+! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'accessing' !
+
+
+compute ^ <SeqCltn[E]>	
+	
+	| value <SeqCltn[E]> |
+	self insertCommentIntervals.								"Add comment intervals from scanner"
+	self parseTrees do: [ :pt <ParseTree> |
+		self currentParseTree: pt.
+		pt body apply: self ].											"Add AST based intervals"
+	self insertSelectorAndCodeIntervals.			"Add remaining intervals"
+	self sortResult.
+
+	value := OrderedCollection[E] new: self source size.
+	self result do: [ :e <Tuple[[Character,^E], Tuple[Int,Int]]> | 
+		e at2 at1 to: e at2 at2 - 1 do: [ :index <Int> |
+			value add: (e at1 value: (self source at: index)) ] ].
+
+	self assert: [ value size = self source size ].
+	^value
+!
+
+parseTree: pt <ParseTree[ASTNode]>
+
+	self parseTrees: (OrderedCollection[ParseTree[ASTNode]] with: pt).
+!
+
+parseTrees ^ <Cltn[ParseTree[ASTNode]]>
+
+	^parseTrees!
+
+parseTrees: pts <Cltn[ParseTree[ASTNode]]>
+
+	| src <Str> |
+	self initialize.
+
+	"Verify that the source pointers in the list of parse trees are identical"
+	self assert: [ pts size > 0 ].
+	src := pts first source.
+	2 to: pts size do: [ :i <Int> | self assert: [ (pts at: i) source = src ] ].
+	
+	parseTrees := pts! !
+

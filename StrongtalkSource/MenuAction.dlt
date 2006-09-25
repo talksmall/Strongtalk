@@ -1,0 +1,253 @@
+Delta define: #MenuAction as: (
+(Class subclassOf: 'MenuItem' instanceVariables: 'name <Str>
+			"Name, if image is nil"
+image <Image>
+			"If not nil, use image instead of name"
+checked <[^Boolean]>
+active <[^Boolean]>
+displayedActive <Boolean>
+			"The active state last told to the native window system, if any"
+action <[^Object]>
+		') classVariables: 'TimeActions <Boolean>
+		') !
+
+(Delta mirrorFor: #MenuAction) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #MenuAction) group: 'base'!
+
+(Delta mirrorFor: #MenuAction)
+comment: 
+'Tags:  %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #MenuAction) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #MenuAction) classSide methodsFor: 'debugging' !
+
+
+timeActions ^<Boolean>
+
+	TimeActions isNil
+		ifTrue: [ TimeActions := false ].
+	^TimeActions!
+
+timeActions: b <Boolean>
+
+	TimeActions := b! !
+
+! (Delta mirrorFor: #MenuAction) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self active: [ true ].! !
+
+! (Delta mirrorFor: #MenuAction) methodsFor: 'accessing' !
+
+
+action ^<[^Object]>
+
+	^action!
+
+action: b <[^Object]>
+
+	action := b.!
+
+active ^<[^Boolean]>
+
+	^active!
+
+active: b <[^Boolean]>
+
+	active := b.
+	self rebuildIfNeeded.!
+
+checked ^<[^Boolean]>
+
+	^checked!
+
+checked: c <[^Boolean]>
+
+	checked := c.
+	self rebuildIfNeeded.!
+
+hasChecked ^<Boolean>
+
+	^checked notNil!
+
+hasImage ^<Boolean>
+
+	^image notNil!
+
+image ^<Image>
+
+	^image!
+
+image: i <Image>
+
+	image := i.
+	self rebuildIfNeeded.!
+
+name ^<Str>
+
+	^name!
+
+name: nm <Str>
+
+	name := nm.
+	self rebuildIfNeeded.! !
+
+! (Delta mirrorFor: #MenuAction) methodsFor: 'control' !
+
+
+buildFor: menu <Menu> at: index <Int>
+
+	self doWithConfiguration:
+		[ :flags <ExternalData> :content <ExternalData> |
+			self parent appendWithFlags: flags item: self id content: content	].
+
+	self hasChecked
+		ifTrue: [ {{<user ExternalProxy SetMenuItemBitmaps>
+							menu: menu win32Handle
+							item: index - 1
+							flags: Win32 MF_BYPOSITION
+							unchecked: Win32 NULL
+							checked: Win32 NULL
+					  }} asBoolean
+						ifFalse: [ Win32 handleError ]		].
+!
+
+execute
+
+	self actualClass timeActions
+		ifTrue: [ Transcript print: [ self action value ] time; cr. ]
+		ifFalse: [ self action value ]!
+
+newbuildFor: menu <Menu> at: index <Int>
+"%todo: use when whole world is win32"
+	| info <MENUITEMINFO> cname <CString> mask <ExternalData> |
+	info := MENUITEMINFO new allocate.
+	mask := Win32 MIIM_ID externalBitOr:	Win32 MIIM_TYPE.
+	info wID: self id.
+
+	self hasImage
+		ifTrue: [ self unimplemented ]
+		ifFalse: [	cname := CString for: self name.
+						info	fType: Win32 MFT_STRING;
+								dwTypeData: cname;
+								cch: self name size.	].
+	displayedActive := true.
+
+	info fMask: mask.
+
+	self parent insertWithInfo: info at: index.
+
+	info free.
+	self hasImage
+		ifFalse: [ cname free ].!
+
+release
+
+	displayedActive := true.
+	super release.!
+
+updateFor: menu <Menu> at: index <Int>
+
+	| newActive <Boolean> |
+	newActive := self active value.
+	(newActive ~= displayedActive or: [ self hasChecked ])
+		ifTrue: [	displayedActive := newActive.
+						self updateStateFor: menu at: index	].! !
+
+! (Delta mirrorFor: #MenuAction) methodsFor: 'private' !
+
+
+doWithConfiguration: blk <[ExternalData,ExternalData]>
+	"Evaluate blk with the flags and contents value for the AppendMenu
+		or ChangeMenu functions"
+
+	| content <ExternalData> contentString <CString> flags <ExternalData>  |
+	flags := 0.
+		
+	self hasImage
+		ifTrue: [	content := 0.
+						self unimplemented ]
+		ifFalse: [	content := contentString := CString for: self name.
+							flags := flags externalBitOr: Win32 MF_STRING. 	].
+
+	displayedActive := self active value.
+	flags := flags externalBitOr: 
+		(displayedActive
+			ifTrue: [ Win32 MF_ENABLED ]
+			ifFalse: [ Win32 MF_GRAYED ]).
+	(self hasChecked and: [ self checked value ])
+		ifTrue: [ flags := flags externalBitOr: Win32 MF_CHECKED ]
+		ifFalse: [ flags := flags externalBitOr: Win32 MF_UNCHECKED ].
+
+	blk value: flags value: content.
+
+	self hasImage
+		ifFalse: [ contentString free ].!
+
+newupdateStateFor: menu <Menu> at: index <Int>
+"%todo: use when whole world using win95 interface"
+	| info <MENUITEMINFO> mask <ExternalData> state <ExternalData> |
+
+	info := MENUITEMINFO new allocateZeroed.
+	mask := Win32 MIIM_STATE.
+
+	state := 0.
+	displayedActive
+		ifFalse: [	state := state externalBitOr: Win32 MFS_GRAYED ]
+		ifTrue: [	state := state externalBitOr: Win32 MFS_ENABLED ].
+	(self hasChecked and: [ checked value ])
+		ifTrue: [	state := state externalBitOr: Win32 MFS_CHECKED ]
+		ifFalse: [	state := state externalBitOr: Win32 MFS_UNCHECKED ].
+
+	info	fMask: mask;
+			fState: state.
+	{{<user ExternalProxy SetMenuItemInfoA>
+		menu: menu win32Handle
+		index: index - 1
+		byPosition: true asExternalData
+		info: info
+	 }} asBoolean
+		ifFalse: [ Win32 handleError ].
+
+	info free.!
+
+postCopy
+
+	super postCopy.
+	displayedActive := nil.!
+
+updateStateFor: menu <Menu> at: index <Int>
+
+	self doWithConfiguration:
+		[ :flags <ExternalData> :content <ExternalData> |
+			{{<user ExternalProxy ModifyMenuA>
+				menu: self parent win32Handle
+				index: index - 1
+				flags: (flags externalBitOr: Win32 MF_BYPOSITION)
+				item: self id
+				content: content
+			 }} asBoolean
+				ifFalse: [ Win32 handleError ].	].
+! !
+
+! (Delta mirrorFor: #MenuAction) methodsFor: 'restricted-win32' !
+
+
+mergeInto: menu <Menu>
+
+	menu add: self! !
+

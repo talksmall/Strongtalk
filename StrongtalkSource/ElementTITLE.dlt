@@ -1,0 +1,26 @@
+Delta define: #ElementTITLE as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementTITLE) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ElementTITLE) group: 'HTML'!
+
+(Delta mirrorFor: #ElementTITLE)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementTITLE) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	| tstrm <CharReadWriteStream> |
+	tstrm := String new writeStream.
+	
+	self do:
+		[ :node <HTMLNode> |
+			node textOn: tstrm	].
+
+	builder title: tstrm contentsWritten.! !
+

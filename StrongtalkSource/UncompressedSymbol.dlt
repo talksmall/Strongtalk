@@ -1,0 +1,63 @@
+Delta define: #UncompressedSymbol as: (
+(Class subclassOf: 'UncompressedReadString' instanceVariables: '') protocols: 'Symbol') !
+
+(Delta mirrorFor: #UncompressedSymbol) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #UncompressedSymbol) group: 'base'!
+
+(Delta mirrorFor: #UncompressedSymbol)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #UncompressedSymbol) classSide methodsFor: 'instance creation' !
+
+
+intern: s <Str> ^<Symbol>
+
+	^Symbol intern: s!
+
+new ^<Instance>
+
+	self shouldNotImplement! !
+
+! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+	^self! !
+
+! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'converting' !
+
+
+asString ^<String>
+
+	^String withAll: self!
+
+asSymbol ^<Symbol>
+
+	^self! !
+
+! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm nextPut: $#.
+	super printOn: strm.! !
+
+! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'comparing' !
+
+
+equalsSymbol: other <Symbol> ^<Boolean>
+
+	^self == other! !
+
+! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'hashing' !
+
+
+hash ^<Int>
+
+	^self identityHash! !
+

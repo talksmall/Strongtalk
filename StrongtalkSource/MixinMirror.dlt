@@ -1,0 +1,88 @@
+Delta define: #MixinMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: '')) !
+
+(Delta mirrorFor: #MixinMirror) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #MixinMirror) group: 'reflection'!
+
+(Delta mirrorFor: #MixinMirror)
+comment: 
+'This is an abstract superclass for the mixin mirror hierarchy
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MixinMirror) classSide methodsFor: 'Unclassified' !
+
+
+classFor: m <Mixin> ^ <MixinMirror class>
+"Private"
+"This is not at all object-oriented. However, it maintains the complete separation of
+Mirrors from mixins, and is quite simple "
+
+m class == ClassMixin ifTrue:[^MixinDeclMirror].
+m class == MetaClassMixin ifTrue:[^MixinDeclMirror].
+m class == MixinDerivation ifTrue:[^MixinDerivationMirror].
+m class == MixinComposition ifTrue:[^MixinCompositionMirror].
+self error: 'Unknown type of mixin!!'.
+!
+
+createNewMixin  ^ <Instance>
+"g"
+| mixin <Instance> |
+
+mixin := self new reflect: (MixinVMMirror createNewMixin).
+self addTypeStructureForMixin: mixin.
+^mixin
+
+!
+
+on: mixin <Mixin> ^ <Instance> 
+
+^(self classFor: mixin) on: mixin! !
+
+! (Delta mirrorFor: #MixinMirror) methodsFor: 'Unclassified' !
+
+
+* m <Mixin > ^ <Mixin>
+
+self isMeta ifTrue:[self error: 'MetaMixins should not be composed'].
+
+    ^MixinCompositionMirror new inputMixin: m outputMixin: self!
+
+adjustBounds
+"Private"
+
+self typeInfo  asGeneric adjustBoundToTrivialApplication.		"Update name of target in trivial application"
+self  classSide typeInfo asGeneric adjustBoundToTrivialApplication.
+!
+
+classSide ^ <MixinDeclMirror>
+
+^self class new reflect: self mixinDecl classSide!
+
+instanceSide ^ <MixinDeclMirror>
+
+^self class new reflect: self mixinDecl instanceSide!
+
+komment
+
+"This is an abstract superclass for the mixin mirror hierarchy"!
+
+nestInGenericWithTypeArguments: tas  <Str>
+
+| formals <OrdCltn[TypeFormal]> |
+
+formals :=  (DeltaParser new parseTypeArgs: tas within: DeltaGlobals) collect: [ :pt | pt body].
+self typeInfo generifyWithFormals: formals.
+self classSide typeInfo generifyWithFormals: formals.
+self sourceInfo isGeneric: true.!
+
+typeInfo  ^ <MixinSide>
+
+self subclassResponsibility
+
+!
+
+|> c <ClassMirror > ^ <ClassMirror>
+    self subclassResponsibility! !
+

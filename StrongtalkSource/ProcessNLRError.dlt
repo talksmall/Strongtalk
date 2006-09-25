@@ -1,0 +1,36 @@
+Delta define: #ProcessNLRError as: (
+(Class subclassOf: 'ProcessError' instanceVariables: '')) !
+
+(Delta mirrorFor: #ProcessNLRError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ProcessNLRError) group: 'base'!
+
+(Delta mirrorFor: #ProcessNLRError)
+comment: 
+'Process stopped because context for non-local return did not exist.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProcessNLRError) classSide methodsFor: 'test' !
+
+
+provoke
+	"A piece of test code provoking this particular error"
+	
+	self nlrError value
+! !
+
+! (Delta mirrorFor: #ProcessNLRError) classSide methodsFor: 'private' !
+
+
+nlrError ^ <[]>
+
+	^[ ^[] ]! !
+
+! (Delta mirrorFor: #ProcessNLRError) methodsFor: 'accessing' !
+
+
+name ^ <Str>
+
+	^'Context for non-local return does not exist'! !
+

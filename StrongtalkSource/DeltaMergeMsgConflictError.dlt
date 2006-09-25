@@ -1,0 +1,26 @@
+Delta define: #DeltaMergeMsgConflictError as: (
+(Class subclassOf: 'DeltaBasicTypeError' instanceVariables: 'conflictingSelector ')) !
+
+(Delta mirrorFor: #DeltaMergeMsgConflictError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaMergeMsgConflictError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMergeMsgConflictError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMergeMsgConflictError) methodsFor: 'Unclassified' !
+
+
+conflictingSelector ^ <Symbol>
+
+^conflictingSelector!
+
+conflictingSelector: sel  <Symbol>
+
+conflictingSelector := sel!
+
+errorMessage  ^ <String>
+    ^self conflictingSelector, ' is not equal in both merged protocols '! !
+

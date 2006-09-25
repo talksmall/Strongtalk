@@ -1,0 +1,97 @@
+Delta define: #TaskState as: (
+(Class subclassOf: 'RBObject' instanceVariables: 'packetPending taskWaiting taskHolding')) !
+
+(Delta mirrorFor: #TaskState) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #TaskState) group: 'benchmark'!
+
+(Delta mirrorFor: #TaskState)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TaskState) classSide methodsFor: 'instance creation' !
+
+
+packetPending
+    ^super new packetPending
+!
+
+running
+    ^super new running
+!
+
+waiting
+    ^super new waiting
+!
+
+waitingWithPacket
+    ^super new waitingWithPacket
+! !
+
+! (Delta mirrorFor: #TaskState) methodsFor: 'initialize' !
+
+
+packetPending
+    packetPending := true.
+    taskWaiting := false.
+    taskHolding := false
+!
+
+running
+    packetPending := taskWaiting := taskHolding := false
+!
+
+waiting
+    packetPending := taskHolding := false.
+    taskWaiting := true
+!
+
+waitingWithPacket
+    taskHolding := false.
+    taskWaiting := packetPending := true
+! !
+
+! (Delta mirrorFor: #TaskState) methodsFor: 'accessing' !
+
+
+isPacketPending
+    ^packetPending
+!
+
+isTaskHolding
+    ^taskHolding
+!
+
+isTaskWaiting
+    ^taskWaiting
+!
+
+taskHolding: aBoolean
+    taskHolding := aBoolean
+!
+
+taskWaiting: aBoolean
+    taskWaiting := aBoolean
+! !
+
+! (Delta mirrorFor: #TaskState) methodsFor: 'testing' !
+
+
+isRunning
+    ^packetPending not and: [taskWaiting not and: [taskHolding not]]
+!
+
+isTaskHoldingOrWaiting
+    ^taskHolding or: [packetPending not and: [taskWaiting]]
+!
+
+isWaiting
+    ^packetPending not and: [taskWaiting and: [taskHolding not]]
+!
+
+isWaitingWithPacket
+    ^packetPending and: [taskWaiting and: [taskHolding not]]
+! !
+

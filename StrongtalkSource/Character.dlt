@@ -1,0 +1,343 @@
+Delta define: #Character as: (
+(Class subclassOf: 'Magnitude[Character]' instanceVariables: 'code <SmallInt> "Unicode"
+		') classVariables: 'NonAsciiCharacters <VarDict[Int, Character]>
+			"Holds any non-ascii characters that have been previously referenced"
+
+Classifications <ByteArray>
+			"Table for determining character classifications for ascii characters;
+			  each value is a bit mask indicating the various classifications of each 
+			  character.  See the class category restricted-classification for the bit interpretation"
+
+UpperToLowerMap <Array[Character]>
+LowerToUpperMap <Array[Character]>
+			"maps codes in range 0 -> 128 from uppercase to lowercase, or vice-versa.
+				The mapping is from (code + 1) -> Character"
+		') !
+
+(Delta mirrorFor: #Character) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #Character) group: 'base'!
+
+(Delta mirrorFor: #Character)
+comment: 
+'Tags: %BlueBook  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $
+'!
+
+! (Delta mirrorFor: #Character) classSide methodsFor: 'testing' !
+
+
+test
+	"self test"
+
+	'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'  do:
+		[ :c <Character> |
+			self test: 1 is: [ c = (Character digitValue: c digitValue) ]	].
+	self test: 2 is: [ $a digitValue = $A digitValue ].
+	self test: 3 is: [ $z digitValue = $Z digitValue ].
+
+	'aeiouAEIOU' do:
+		[ :c <Character> |
+			self test: 4 is: [ c isVowel ]	].
+	self test: 5 is: [ $b isVowel not ].! !
+
+! (Delta mirrorFor: #Character) classSide methodsFor: 'instance creation' !
+
+
+digitValue: i <Int> ^<Character>
+
+	^'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'  at: i + 1!
+
+new ^<Instance>
+
+	self shouldNotImplement!
+
+value: code <Int> ^<Instance>
+  "get the character with the specified unicode value (this works for ascii too, since
+  the ascii codes are the same as the first Unicode values"
+
+	"%todo: make this work for unicode values"
+	^AsciiCharacters at: code + 1
+! !
+
+! (Delta mirrorFor: #Character) classSide methodsFor: 'private' !
+
+
+classify: chars <Str> as: mask <Int>
+
+	chars do:
+		[ :c <Character> |
+			Classifications at: c asciiValue + 1 put: ((Classifications at: c asciiValue + 1) bitOr: mask)	].!
+
+initializeClassifications
+
+	Classifications := ByteArray new: 128.
+	Classifications atAllPut: 0.
+	self classify:
+			'0123456789',
+			'ABCDEFGHIJKLMNOPQRSTUVWXYZ_',
+			'abcdefghijklmnopqrstuvwxyz'
+		as: self alphaNumericMask.
+
+	self classify:
+			(OrderedCollection[Character] new
+				add: Character space;
+				add: Character tab;
+				add: Character cr;
+				add: Character lf;
+				add: Character formFeed;
+				yourself)
+		as: self separatorMask.
+
+	self classify: 'aeiouAEIOU'
+		as: self vowelMask.
+
+	self classify: '`''1234567890-=~!!@#$%^&*()_+qwertyuio',
+			'p[]\QWERTYUIOP{}|asdfghjkl;ASDFGHJKL:"zxcvbnm,./ZXCVBNM<>? '
+		as: self printableMask! !
+
+! (Delta mirrorFor: #Character) classSide methodsFor: 'class initialization' !
+
+
+initialize
+
+	NonAsciiCharacters := Dictionary[Int, Character] new.
+	self initializeUpperLowerMappings.
+	self initializeClassifications.!
+
+initializeUpperLowerMappings
+
+	| max <Int> upperLowerDiff <Int> |
+	max := 128.
+	upperLowerDiff := $a asciiValue - $A asciiValue.
+	UpperToLowerMap := Array[Character] new: max.
+	LowerToUpperMap := Array[Character] new: max.
+	0 to: max - 1 do:
+		[ :code <Int> |
+			UpperToLowerMap at: code + 1 put: (Character value: code).
+			LowerToUpperMap at: code + 1 put: (Character value: code). ].
+	$a asciiValue to: $z asciiValue do:
+		[ :code <Int> |
+			LowerToUpperMap at: code + 1 put: (Character value: code - upperLowerDiff)	].
+	$A asciiValue to: $Z asciiValue do:
+		[ :code <Int> |
+			UpperToLowerMap at: code + 1 put: (Character value: code + upperLowerDiff)	].
+! !
+
+! (Delta mirrorFor: #Character) classSide methodsFor: 'constants' !
+
+
+cr ^<Character>
+	"carriage-return"
+
+	"%note: There should be an entry for all constants in #constantNameIfNone:"
+
+	^self value: 13!
+
+formFeed ^<Character>
+	
+	"%note: There should be an entry for all constants in #constantNameIfNone:"
+
+	^self value: 12!
+
+lf ^<Character>
+	"line-feed"
+
+	"%note: There should be an entry for all constants in #constantNameIfNone:"
+
+	^self value: 10!
+
+space ^<Character>
+
+	"%note: There should be an entry for all constants in #constantNameIfNone:"
+
+	^self value: 32!
+
+tab ^<Character>
+
+	"%note: There should be an entry for all constants in #constantNameIfNone:"
+
+	^self value: 9! !
+
+! (Delta mirrorFor: #Character) classSide methodsFor: 'restricted-classification' !
+
+
+alphaNumericMask ^<Int>
+
+	^1 rawBitShift: 0!
+
+printableMask ^<Int>
+
+	^1 rawBitShift: 3!
+
+separatorMask ^<Int>
+
+	^1 rawBitShift: 1!
+
+vowelMask ^<Int>
+
+	^1 rawBitShift: 2! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'initialization' !
+
+
+initUnicode: c <SmallInt>
+
+	code := c! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'testing' !
+
+
+isAlphaNumeric ^<Boolean>
+
+	^self isClassifiedAs: self actualClass alphaNumericMask!
+
+isDigit ^<Boolean>
+
+	^self between: $0 and: $9!
+
+isLetter ^<Boolean>
+
+	^(self between: $a and: $z) or: [ self between: $A and: $Z ]!
+
+isLowercase ^<Boolean>
+
+	^self between: $a and: $z!
+
+isPrintable ^<Boolean>
+	"true if the character is printable (i.e. is an ascii character that moves the carriage
+		one constant distance forward horizontally).  This includes the space key, but
+		not things like tab or cr.
+		%todo: check to make sure we have all the right classifications here"
+
+	^self isClassifiedAs: self actualClass printableMask!
+
+isSeparator ^<Boolean>
+
+	^self isClassifiedAs: self actualClass separatorMask!
+
+isUppercase ^<Boolean>
+
+	^self between: $A and: $Z!
+
+isVowel ^<Boolean>
+
+	^self isClassifiedAs: self actualClass vowelMask! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'accessing' !
+
+
+asInteger ^<Int>
+
+	^self unicodeValue!
+
+asciiValue ^<Int>
+
+	self assert: [ code < 256 ].
+	^code!
+
+digitValue ^<Int>
+
+	| c <Int> |
+	c := code.	 	
+	^(c >= 48 and: [ c <= 57 ])
+		ifTrue: [ c - 48 ] 									"(48= $0 asInteger)"
+		ifFalse: [ (c >= 65 and: [ c <= 90 ])					" $A = 65, $Z = 90"
+					ifTrue: [ c - 55 ]
+					ifFalse: [ (c >=97 and: [ c <= 122 ])  	"$a = 97, $z = 122"
+								ifTrue: [ c - 87 ]
+								ifFalse: [ -1 ]	]]!
+
+hash ^<Int>
+
+	^self asciiValue - $a asciiValue "subtract offset to lowercase letters, since they are the most common"!
+
+unicodeValue ^<SmallInt>
+	^code! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+	^self! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'private' !
+
+
+isClassifiedAs: mask <Int> ^<Boolean>
+
+	^(Classifications at: self unicodeValue + 1 ifAbsent: [ ^false ]) allMask: mask! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'comparing' !
+
+
+< other <Character> ^<Boolean>
+
+	^self unicodeValue < other unicodeValue!
+
+<= other <Character> ^<Boolean>
+
+	"%remove when Magnitude uses inherited types"
+	^self unicodeValue <= other unicodeValue!
+
+> other <Character> ^<Boolean>
+
+	"%remove when Magnitude uses inherited types"
+	^self unicodeValue > other unicodeValue!
+
+>= other <Character> ^<Boolean>
+
+	"%remove when Magnitude uses inherited types"
+	^self unicodeValue >= other unicodeValue!
+
+compare: other <Character>  ^<Int>
+
+	| diff <Int> |
+	diff := self unicodeValue - other unicodeValue.
+	^0 < diff
+		ifTrue: [ 1 ]
+		ifFalse: [ 0 == diff
+							ifTrue: [ 0 ] ifFalse: [ -1 ]  ]! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'printing' !
+
+
+constantNameIfNone: blk <[^Str]> ^<Str>
+
+	self = Character cr
+		ifTrue: [ ^'cr' ].
+	self = Character formFeed
+		ifTrue: [ ^'formFeed' ].
+	self = Character lf
+		ifTrue: [ ^'lf' ].
+	self = Character space
+		ifTrue: [ ^'space' ].
+	self = Character tab
+		ifTrue: [ ^'tab' ].
+	^blk value!
+
+printOn: strm <CharOutputStream>
+
+	| special <Str> |
+	special := self constantNameIfNone: 
+		[	strm nextPut: $$; nextPut: self.
+			^self ].
+	strm putAll: 'Character '; putAll: special.! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'converting' !
+
+
+asLowercase ^<Character>
+
+	^UpperToLowerMap at: self unicodeValue + 1 ifAbsent: [ self ]!
+
+asString ^<String>
+
+	^String with: self!
+
+asUppercase ^<Character>
+
+	^LowerToUpperMap at: self unicodeValue + 1 ifAbsent: [ self ]! !
+

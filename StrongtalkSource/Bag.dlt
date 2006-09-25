@@ -1,0 +1,239 @@
+Delta define: #Bag as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'Collection[E]' instanceVariables: 'contents <VarDict[E,Int]>
+			"holds (element -> occurrence)"
+		') protocols: 'Extensible[E]')) !
+
+(Delta mirrorFor: #Bag) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #Bag) group: 'base'!
+
+(Delta mirrorFor: #Bag)
+comment: 
+'Bags are unordered collections of possibly duplicate elements.
+
+Contrast this with Sets, which will hold no more than one entry
+for a given object (as distinguished by #=).
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Bag) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initCapacity: 8!
+
+new: capacity <Int> ^<Instance>
+
+	^super new initCapacity: 0!
+
+with: val1 <E> ^<Instance>
+
+	^(self new: 1) add: val1; yourself!
+
+with: val1 <E> with: val2 <E> ^<Instance>
+
+	^(self new: 2) add: val1; add: val2; yourself!
+
+with: val1 <E> with: val2 <E> with: val3 <E> ^<Instance>
+
+	^(self new: 3) add: val1; add: val2; add: val3; yourself!
+
+with: val1 <E> with: val2 <E> with: val3 <E> with: val4 <E> ^<Instance>
+
+	^(self new: 4) add: val1; add: val2; add: val3; add: val4; yourself!
+
+withAll: cltn <Cltn[E]> ^<Instance>
+
+	^(self new: cltn size) addAll: cltn; yourself! !
+
+! (Delta mirrorFor: #Bag) classSide methodsFor: 'testing' !
+
+
+test
+	"self test"
+
+	| bag <Bag[Int]> |
+	bag := Bag[Int] with: 1.
+	self test: 1 is: [ bag = (Bag[Int] with: 1) ].
+	self test: 2 is: [ bag ~= (Bag[Int] with: 2) ].
+	bag add: 1.
+	bag include: 9.
+	self test: 3 is: [ bag = (Bag[Int] with: 1 with: 1 with: 9) ].
+	bag include: 9.
+	self test: 3 is: [ bag = (Bag[Int] with: 1 with: 1 with: 9) ].
+	self test: 4 is: [ bag ~= (Bag[Int] with: 1) ].
+	self test: 5 is: [ bag ~= (Bag[Int] with: 1 with: 2) ].
+	self test: 6 is: [ (bag occurrencesOf: 1) = 2 ].
+	self test: 7 is: [ (bag occurrencesOf: 5) = 0 ].
+	self test: 8 is: [ bag size = 3 ].
+	bag remove: 1.
+	self test: 9  is: [ (bag occurrencesOf: 1) = 1 ].
+	self test: 10 is: [ bag includes: 1 ].
+	bag copy remove: 1.
+	self test: 11 is: [ bag includes: 1 ].
+	bag remove: 1.
+	self test: 12  is: [ (bag includes: 1) not ].! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'restricted' !
+
+
+contents ^<VarDict[E,Int]>
+
+	^contents! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'testing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [ self equalsBag: (Bag[Object] coerce: other else: [ ^false ]) ]!
+
+includes: el <Object> ^<Boolean>
+
+	^self contents includesKey: el! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'iterating' !
+
+
+do: f <[E]>
+
+	self contents keysAndValuesDo:
+		[ :el <E> :occurrences <Int> |
+			occurrences timesRepeat:
+				[ f value: el ]		].! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'accessing' !
+
+
+occurrencesOf: o <Object> ^<Int>
+
+	^self contents at: o ifAbsent: [ 0 ]!
+
+size ^<Int>
+
+	^self contents inject: 0 into:
+		[ :tot <Int> :occurrences <Int> |
+			tot + occurrences	]! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'initialization' !
+
+
+initCapacity: cap <Int>
+
+	self contents: (Dictionary[E,Int] new: cap).! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'adding/removing' !
+
+
+add: el <E> ^<E>
+
+	^self add: el withOccurrences: 1!
+
+add: el <E> withOccurrences: oc <Int> ^<E>
+
+	self contents at: el put: oc + (self occurrencesOf: el) .
+	^el!
+
+addAll: els <Cltn[E]> ^<Cltn[E]>
+
+	^els do: [ :el <E> |	self add: el ]!
+
+include: el <E> ^<E>
+
+	| ocs <Int> |
+	ocs := self occurrencesOf: el.
+	ocs > 0	
+		ifFalse: [ self contents at: el put: 1 ].
+	^el!
+
+include: el <E> ifNew: blk <[]> ^<E>
+
+	| new <Boolean> |
+	new := self includes: el.
+	self include: el.
+	new
+		ifTrue: [ blk value ].
+	^el!
+
+includeAll: els <Cltn[E]> ^<Cltn[E]>
+
+	^els do: [ :el <E> |	self include: el ]!
+
+remove: el <E> ^<E>
+
+	^self remove: el ifAbsent: [ self error: 'Element not found' ]!
+
+remove: el <E> ifAbsent: f <[^X def]> ^<E | X>
+
+	^self remove: el withOccurrences: 1 ifAbsent: f!
+
+remove: el <E> withOccurrences: ocs <Int> ifAbsent: f <[^X def]> ^<E | X>
+
+	| curOcs <Int> |
+	curOcs := self occurrencesOf: el.
+	^ocs > curOcs
+		ifTrue: [ f value ]
+		ifFalse: [  curOcs = ocs
+					ifTrue: [	self contents removeKey: el ]
+					ifFalse: [ self contents at: el put: curOcs - ocs ].
+				   el	]!
+
+removeAll: els <Cltn[E]> ^<Cltn[E]>
+
+	els do: [ :el <E> |
+				self remove: el ].
+	^els!
+
+removeAllSuchThat: test <[E,^Boolean]> 
+
+	self copy do:
+		[ :el <E> |
+			(test value: el)
+				ifTrue: [ self remove: el ]		]!
+
+removeEvery: el <E> ^<E>
+
+	self contents removeKey: el ifAbsent: [].
+	^el! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'private' !
+
+
+contents: d <VarDict[E,Int]>
+
+	contents := d!
+
+equalsBag: other <Bag[Object]> ^<Boolean>
+
+	"%kludge: This is ugly, but will have to do until typecase can deal with type variables.  It is safe
+	  since we know that dictionaries can actually perform an at:ifAbsent: safely with
+	  an arbitrary key type, even thought its signature doesn't reflect that currently (although it could)"
+
+	self contents size = other contents size
+		ifFalse: [ ^false ].
+	self contents keysAndValuesDo:
+		[ :el <E> :occurrences <Int> |
+			(other contents at: el ifAbsent: [ 0 ]) = occurrences
+				ifFalse: [ ^false ].	].
+	^true!
+
+postCopy
+
+	super postCopy.
+	self contents: self contents copy.! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'converting' !
+
+
+asBag ^<Bag[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+
+	"The guaranteed is safe because of the inference clause"
+	^guaranteed <Bag[EX]> self! !
+

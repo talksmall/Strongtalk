@@ -1,0 +1,123 @@
+Delta define: #Pacifier as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'pacified <Boolean>
+containsFocus <Boolean>
+	')) !
+
+(Delta mirrorFor: #Pacifier) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Pacifier) group: 'ui'!
+
+(Delta mirrorFor: #Pacifier)
+comment: 
+'Pacifiers can be wrapped around any visual, and can ''pacify'' that visual
+according to blocks that it is parameterized by.  This can be used to make
+visual read-only (and invisible) based on dynamic criteria.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Pacifier) classSide methodsFor: 'instance creation' !
+
+
+for: v <Visual> pacified: b <Boolean> ^<Instance>
+
+	^self new initializePart: v pacified: b! !
+
+! (Delta mirrorFor: #Pacifier) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	self pacified 
+		ifFalse: [ super localDisplayOn: can ]! !
+
+! (Delta mirrorFor: #Pacifier) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	pacified := false!
+
+initializePart: v <Visual> pacified: b  <Boolean>
+
+	pacified := b.
+	self part: v.
+
+
+	! !
+
+! (Delta mirrorFor: #Pacifier) methodsFor: 'accessing' !
+
+
+enabled ^ <Boolean>
+
+	^self pacified not and: [ super enabled ]!
+
+pacified ^ <Boolean>
+
+	^pacified!
+
+pacified: b <Boolean>
+
+	pacified = b ifFalse: [
+		pacified := b .
+		self containsFocus
+			ifTrue: [ self session noInputFocus ].
+		self hasPart 
+			ifTrue: [ self part: self removePart ] ]
+! !
+
+! (Delta mirrorFor: #Pacifier) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self pacified
+		ifTrue: [ false ]
+		ifFalse: [ super character: c focus: focus event: ev ]
+!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self pacified
+		ifTrue: [ false ]
+		ifFalse: [ super keyDown: key focus: focus event: ev ]
+!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self pacified
+		ifTrue: [ false ]
+		ifFalse: [ super keyUp: key focus: focus event: ev ]
+!
+
+mouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
+
+	^self pacified
+		ifTrue: [ false ]
+		ifFalse: [ super mouseEvent: type at: loc event: ev ]
+! !
+
+! (Delta mirrorFor: #Pacifier) methodsFor: 'input focus' !
+
+
+containsFocus ^ <Boolean>
+
+	^containsFocus isNil
+		ifTrue: [ 	false ]
+		ifFalse: [	containsFocus ]!
+
+containsFocus: flag <Boolean>
+
+	containsFocus := flag.
+	super containsFocus: flag!
+
+focusCandidatesDo: blk <[Visual]>
+
+	self pacified
+		ifFalse: [ super focusCandidatesDo: blk ]! !
+

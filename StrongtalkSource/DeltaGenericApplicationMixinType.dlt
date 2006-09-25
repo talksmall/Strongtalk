@@ -1,0 +1,22 @@
+Delta define: #DeltaGenericApplicationMixinType as: (
+(Class subclassOf: 'DeltaGenericApplicationClassType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaGenericApplicationMixinType) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaGenericApplicationMixinType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericApplicationMixinType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericApplicationMixinType) methodsFor: 'Unclassified' !
+
+
+asSide ^ <SideUpdate>
+    ^self target asGeneric body asMixinSide!
+
+mixinSubstitute: t <Interface> ^ <Interface>
+
+^t substitute: self actualForFormalSubstitution! !
+

@@ -1,0 +1,65 @@
+Delta define: #DictionaryMerge as: (
+(Class subclassOf: 'Dictionary' instanceVariables: 'dict1 dict2 ')) !
+
+(Delta mirrorFor: #DictionaryMerge) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DictionaryMerge) group: 'misc'!
+
+(Delta mirrorFor: #DictionaryMerge)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DictionaryMerge) methodsFor: 'Unclassified' !
+
+
+associationsDo: blk <[T,^Object] > ^ <Self>
+	self dict1 associationsDo: blk.
+	self dict2 associationsDo: blk.!
+
+at: key <K > ^ <V>
+	^self at: key ifAbsent: [self error: 'Key is missing']
+!
+
+at: key <K >ifAbsent: b <[^V] > ^ <V>
+	"This is not elegant but avoids excessive stack usage"
+	| value absent |
+	absent := false.
+	value := self dict1 at: key ifAbsent: [absent := true].
+	^absent
+		ifTrue: [self dict2 at: key ifAbsent: b]
+		ifFalse: [value]
+!
+
+dict1 ^ <Dict[K,V]>
+    ^dict1!
+
+dict1: d1 <Dict[K,V] >dict2: d2 <Dict[K,V] > ^ <Self>
+	dict1 := d1.
+	dict2 := d2!
+
+dict2 ^ <Dict[K,V]>
+    ^dict2!
+
+do: blk <[V,^Xdef] > ^ <Self>
+	self dict1 do: blk.
+	self dict2 do: blk.!
+
+includesKey: key
+	^(self dict1 includesKey: key) or:[self dict2 includesKey: key].!
+
+keys ^ <Set>
+    ^self dict1 keys addAll: self dict2 keys; yourself!
+
+size ^ <Int>
+    ^self dict1 size + self dict2 size!
+
+values ^ <Bag>
+    ^self dict1 values addAll: self dict2 values; yourself! !
+
+! (Delta mirrorFor: #DictionaryMerge) methodsFor: 'virtual operations' !
+
+
+virtualSelectorClass ^ <Self>
+    ^VirtualDictSelector! !
+

@@ -1,0 +1,479 @@
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #Integer) revision: '$Revision: 1.11 $'!
+
+(Delta mirrorFor: #Integer) group: 'base'!
+
+(Delta mirrorFor: #Integer)
+comment: 
+'%notes:
+    - This class implements generalized algorithms that handle both large and small integers.
+    -  >,>=,<= are not implemented here for generalized integers; the Magnitude versions
+          are fine.  SmallInteger implements its own for efficiency.
+    * When the generalized algorithms are written, they should be designed to coerce either or
+          both of receiver and argument to largeinteger format if they are smallintegers, because
+         the overflow/underflow code in SmallInteger depends on that.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Integer) classSide methodsFor: 'utility' !
+
+
+readFrom: s <CharInputStream> ^<Int>
+
+	| negative <Boolean> i <Int> |
+	s atEnd
+		ifTrue: [ ^ 0 ].
+	negative := s peek = $-.
+	negative
+		ifTrue: [ s next ].
+	i := 0.
+	[ s atEnd not and: [ s peek isDigit ] ]
+		whileTrue: [	i := (i*10) + s next digitValue
+	].
+	negative
+		ifTrue: [ i := i negated ].
+	^i! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'comparison' !
+
+
+< a <Number> ^<Boolean>
+
+	^a lessFromInteger: self!
+
+= a <Object> ^<Boolean>
+
+"%todo: use this typesafe version when coerce: is fast
+	^(Number coerce: a else: [ ^false ]) equalFromInteger: self
+"
+	^a Number
+		ifTrue: [ (guaranteed <Number> a) equalFromInteger: self ]
+		ifFalse: [ false ]
+!
+
+@= other <ExternalData> ^<Boolean>
+	"Compares two ExternalData objects to each other.  This will coerce between integers and proxies
+	  as needed"
+	"%opt- this builds two proxies when comparing two integers; use double dispatching instead"
+
+	^other = self asExternalProxy!
+
+@~= other <ExternalData> ^<Boolean>
+	"Compares two ExternalData objects to each other.  This will coerce between integers and proxies
+	  as needed"
+
+	^(self @= other) not! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+
+
+* a <Number> ^<X>
+			{where X <Number> is returnType of #multiplyFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a multiplyFromInteger: self)!
+
++ a <Number> ^<X>
+			{where X <Number> is returnType of #addFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a addFromInteger: self)!
+
+- a <Number> ^<X>
+			{where X <Number> is returnType of #subtractFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a subtractFromInteger: self)!
+
+/ a <Number> ^<X>
+			{where X <Number> is returnType of #divideFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a divideFromInteger: self)!
+
+// arg <Number> ^<Int>
+
+	"%todo: fix when coerce is fast"
+	| cl <Class> |
+	cl := arg class.
+	^cl == LargeInteger
+		ifTrue: [ self asLargeInteger // arg ]
+		ifFalse: [ cl == SmallInteger
+							ifTrue: [ self asLargeInteger // (guaranteed <SmallInteger> arg) asLargeInteger ]
+							ifFalse: [ super // arg ]
+					 ]!
+
+\\ a <Number> ^<X>
+			{where X <Number> is returnType of #moduloFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a moduloFromInteger: self)!
+
+abs ^<Integer>
+
+	^self < self zero
+		ifTrue: [ self negated ]
+		ifFalse: [ self ]!
+
+ceiling ^<Int>
+
+	^self!
+
+floor ^<Int>
+
+	^self!
+
+gcd: other <Integer> ^<Integer>
+	"greatest common divisor"
+
+	| myabs <Int> otherabs <Int> lower <Int> higher <Int> |
+	myabs := self abs.
+	otherabs := other abs.
+
+	myabs < otherabs
+		ifTrue: [	lower := myabs.
+						higher := otherabs.	]
+		ifFalse: [	lower := otherabs.
+						higher := myabs.		].
+	[ lower == 0 ]
+		whileFalse:
+			[	| oldHigher <Int> |
+				oldHigher := higher.
+				higher := lower.
+				lower := oldHigher \\ lower.	].
+	^higher!
+
+truncated ^<Int>
+
+	^self! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'converting' !
+
+
+asExternalProxy ^<ExternalProxy>
+
+	^ExternalProxy forInt: self!
+
+asFloat ^<Float>
+	self unimplemented!
+
+asInteger ^<Integer>
+
+	^self! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+
+
+denominator ^<Integer>
+	^1!
+
+hash ^<Int>
+
+	^self!
+
+hexDigitAt: nybble <Int> ^<Character>
+	"Return the hex character for the ith nybble (4 bits, index of lowest sig. = 1)"
+
+	^'0123456789ABCDEF'
+		at: ((self bitShift: (nybble - 1 * 4) negated) bitAnd: 16rF) + 1!
+
+identityHash ^<Int>
+
+	^self!
+
+negated ^<Int>
+
+	^self zero - self!
+
+numerator ^<Integer>
+	^self! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+
+
+addFromInteger: o <Integer> ^<Integer>
+
+	^o + self asLargeInteger!
+
+addFromSmallInteger: o <SmallInteger> ^<Integer>
+	"%generated code- do not modify"
+	^self addFromInteger: o!
+
+equalFromInteger: o <Integer> ^<Boolean>
+
+	^o = self asLargeInteger!
+
+equalFromSmallInteger: o <SmallInteger> ^<Boolean>
+	"%generated code- do not modify"
+	^self equalFromInteger: o!
+
+lessFromInteger: o <Integer> ^<Boolean>
+
+	^o < self asLargeInteger!
+
+lessFromSmallInteger: o <SmallInteger> ^<Boolean>
+	"%generated code- do not modify"
+	^self lessFromInteger: o!
+
+moduloFromInteger: o <Integer> ^<Integer>
+
+	| tmp <Int> |
+	tmp :=  self asLargeInteger.
+	^o - ((o // tmp) * tmp)!
+
+moduloFromSmallInteger: o <SmallInteger> ^<Integer>
+	"%generated code- do not modify"
+	^o \\ self!
+
+multiplyFromInteger: o <Integer> ^<Integer>
+
+	^o * self asLargeInteger!
+
+multiplyFromSmallInteger: o <SmallInteger> ^<Integer>
+	"%generated code- do not modify"
+	^self multiplyFromInteger: o!
+
+subtractFromInteger: o <Integer> ^<Integer>
+
+	^o - self asLargeInteger!
+
+subtractFromSmallInteger: o <SmallInteger> ^<Integer>
+	"%generated code- do not modify"
+	^self subtractFromInteger: o! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+
+
+allMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) = mask!
+
+anyMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) ~= 0!
+
+bitAnd: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	self unimplemented!
+
+bitAt: index <Int> ^<Int>
+	"Return the bit at the specified bit index, with the low bit being index 1"
+
+	^1 bitAnd: (self bitShift: (1 - index))!
+
+bitInvert ^<Int>
+
+	^-1 - self!
+
+bitOr: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	self unimplemented!
+
+bitShift: shift <Int> ^<Int>
+
+	self unimplemented!
+
+bitXor: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	self unimplemented!
+
+highBit ^<SmallInt>
+
+	self unimplemented!
+
+noMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) = 0!
+
+rawBitShift: numBits <Int> ^<Int>
+	"This is like bit shift, except that the result is truncated to a smallinteger, rather than
+		overflowing to a largeinteger.  The receiver cannot be a largeinteger."
+
+	self error: 'this message only works for small integers'! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'truncation and rounding' !
+
+
+rounded ^<Int>
+
+	^self! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'iteration' !
+
+
+timesRepeat: f <[]> ^<Object>
+
+	1 to: self do: [ :i <Int> |
+		f value  ].
+	^nil!
+
+to: stop <Int> by: step <Int> do: f <[Int]> ^<Object>
+
+	| v <Int> |
+	v := self.
+	step < 0
+		ifFalse: [ [ v <= stop ]
+					whileTrue: [	f value: v.
+								v := v + step  ]]
+		ifTrue: [ [ v >= stop ]
+					whileTrue: [ f value: v.
+								v := v + step  ]].
+	^nil!
+
+to: stop <Int> do: f <[Int]> ^<Object>
+
+	| v <Int> |
+	v := self.
+	[ v <= stop ]
+		whileTrue: [	f value: v.
+					v := v + 1  ].
+	^nil!
+
+to: stop <Int> intervals: n <Int> do: f <[Int]> ^<Object>
+	"Evaluate f with n + 1 values as evenly spaced 
+	 as possible between the
+	 receiver and stop, inclusive."
+
+	| interval <RationalNumber> current <RationalNumber> |
+	interval := (stop - self) / n.
+	current := self.
+	n + 1 timesRepeat:
+		[	f value: current asInteger.
+			current := current + interval.	].! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'printing' !
+
+
+printBareHexDigits: nDigits <Int> on: strm <CharOutputStream>
+
+	nDigits to: 1 by: -1
+		do: [ :i <Int> |
+					strm put: (self hexDigitAt: i) ]!
+
+printBareHexOn: strm <CharOutputStream>
+
+	(self = (self bitAnd: 16rF))
+		ifFalse: [ (self bitShift: -4) printBareHexOn: strm ].
+	strm put: (self hexDigitAt: 1).!
+
+printHexOn: strm <CharOutputStream>
+
+	strm putAll: '16r'.
+	self printBareHexOn: strm.!
+
+printOn: strm <CharOutputStream>
+
+	self printOn: strm radix: 10!
+
+printOn: strm <CharOutputStream> radix: radix <Int>
+
+	| abs <Int> |
+	self negative
+		ifTrue: [	strm nextPut: $-.
+						abs := self negated. ]
+		ifFalse: [	abs := self. ].
+	abs printNonNegativeOn: strm radix: radix! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'constants' !
+
+
+unit ^<Integer>
+
+	^1!
+
+zero ^<Integer>
+
+	^0! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'benchmarking' !
+
+
+recurse
+	self > 0 ifTrue: [
+		(self - 1) recurse.
+		(self - 1) recurse.
+	]!
+
+sumTo: end <Int>  ^<Int>
+	| sum <Int> | 
+	sum := 0.
+	self to: end do: [ :i <Int> | sum := sum + i ].
+	^sum! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-to large integers' !
+
+
+asLargeInteger ^<LargeInteger>
+	"This message must ONLY be sent by large integers to construct a temporary large integer
+		during mixed-mode integer operations.  The result of this message must NEVER be
+		used by other code, since large integers that can be encoded as SmallIntegers
+		are never supposed to exist outside the large integer class"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'mathematical functions' !
+
+
+factorial ^<Int>
+
+	self assert: [ self >= self zero ].
+	^self <= 1
+		ifTrue: [ 1 ]
+		ifFalse: [ self * (self - 1) factorial ]!
+
+nfib ^<Int>
+	^self <= 1
+			ifTrue: [1]
+			ifFalse: [(self - 1) nfib +
+							(self - 2) nfib +
+							1]! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'proxy operations' !
+
+
+externalBitAnd: other <ExternalData> ^<ExternalData>
+
+	"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'!
+
+externalBitOr: other <ExternalData> ^<ExternalData>
+
+		"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'!
+
+hasBitsSet: mask <ExternalData> ^<Boolean>
+
+	"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-to integers' !
+
+
+printNonNegativeOn: strm <CharOutputStream> radix: radix <Int>
+	"Like printOn:radix:, but assumes the receiver is nonnegative"
+
+	| digit <Int> |
+	self >= radix
+		ifTrue: [	(self // radix) printNonNegativeOn: strm radix: radix.
+						digit := self \\ radix. ]
+		ifFalse: [ digit := self ].
+	strm put: (Character digitValue: digit).! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'private-proxy double dispatching' !
+
+
+bitAndFromSmallInteger: other <SmallInteger> ^<ExternalData>
+
+	^self bitAnd: other!
+
+bitOrFromSmallInteger: other <SmallInteger> ^<Int>
+
+	^self bitOr: other! !
+

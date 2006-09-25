@@ -1,0 +1,421 @@
+Delta define: #Inspector as: (
+(Class subclassOf: 'ObjectIterator mixin |> ProgrammingEnvironment' instanceVariables: 'mirror <VMMirror>
+	"Inspected object"
+column <Column[Visual]>
+	"Column holding entries (including headers)"
+oops <OrdCltn[Tuple[Int,Object]]>
+	"Field values and their column index (displayed entries only)"
+equalizer <Equalizer>
+	"Equalizer for left justifying field values"
+objectSize <Int>
+	"Size of inspected object (in words)"
+indexableSize <Int>
+	"Indexable size of inspected object (in elements)"
+indexableCount <Int>
+	"Number of indexables currently shown"
+indexables <Array[Object]>
+	"All indexable values"
+safePrinting <Boolean>
+	"Flag for local safe printing"') classVariables: 'GlobalSafePrinting <Boolean>
+	"Flag for global safe printing"
+') !
+
+(Delta mirrorFor: #Inspector) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Inspector) group: 'outliner'!
+
+(Delta mirrorFor: #Inspector)
+comment: 
+'General object inspector.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Inspector) classSide methodsFor: 'instance creation' !
+
+
+launchOn: o <Object>
+
+	(self on: o) launch!
+
+on: o <Object> ^ <Instance>
+
+	^self new initFor: (VMMirror on: o)
+! !
+
+! (Delta mirrorFor: #Inspector) classSide methodsFor: 'accessing' !
+
+
+globalSafePrinting ^<Boolean>
+
+	GlobalSafePrinting isNil
+		ifTrue: [	GlobalSafePrinting := false ].
+	^GlobalSafePrinting!
+
+globalSafePrinting: b <Boolean>
+
+	GlobalSafePrinting := b! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'private' !
+
+
+addEntry: name <Str> oop: value <Object>
+
+	self addEntry: name oop: value print: (self printOop: value)!
+
+addEntry: name <Str> oop: value <Object> print: s <Str>
+
+	| label <ToggleButton> val <Visual> p <Painter> |
+	p := self safePrinting
+				ifTrue: [		self inspectorSafeFieldPainter ]
+				ifFalse: [	self inspectorFieldPainter ].
+	label := self 
+						buildLabel: name 
+						painter: self codePainter
+						action: [ self launchOn: value ].
+	val := (StringGlyph for: s painter: p) asVisual.
+	self column add: (Row[Visual] holding: 
+		(OrderedCollection[Visual] 
+			with: (self equalizer for: label) 
+			with: (Glue xRigid: 5)
+			with: val)). 
+			
+	self oops add: (self column size ,, value)!
+
+addHexEntry: name <Str> value: value <Int>
+
+	| strm <CharReadWriteStream> |
+	strm := (String new: 4) writeStream.
+	value printHexOn: strm.
+	self addEntry: name oop: value print: strm contentsWritten!
+
+addIndexableEntry: index <Int> oop: value <Object>
+
+	self indexables at: index put: value.
+	index <= self indexableCount
+		ifTrue: [	self addEntry: index printString oop: value print: (self printOop: value) ]
+!
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	| ws <Workspace> |
+	ws := Workspace withDesiredRows: self desiredWorkspaceRows columns: self desiredWorkspaceColumns.
+	ws receiver: self mirror reflectee.
+	ws evalBlock: [ self update ].
+	self update.		"Computes column"
+	^Column[Visual] holding: (OrderedCollection[Visual]
+		 with: self column
+		 with: (self editorBorderFor: ws))
+!
+
+column ^ <Column[Visual]>
+
+	^column!
+
+column: c <Column[Visual]>
+
+	column := c!
+
+desiredWorkspaceColumns ^<Int>
+
+	^50!
+
+desiredWorkspaceRows ^<Int>
+
+	^2!
+
+equalizer ^ <Equalizer>
+
+	^equalizer!
+
+equalizer: e <Equalizer>
+
+	equalizer := e!
+
+indexableBatchSize ^<Int>
+	"Additional number of indexables shown per increment"
+
+	^50!
+
+indexableCount ^ <Int>
+
+	^indexableCount!
+
+indexableCount: s <Int>
+
+	indexableCount := s!
+
+indexableSize ^ <Int>
+
+	^indexableSize!
+
+indexableSize: s <Int>
+
+	indexableSize := s!
+
+indexables ^<Array[Object]>
+
+	^indexables!
+
+indexables: a <Array[Object]>
+
+	indexables := a!
+
+initFor: m <VMMirror>
+
+	self safePrinting: self actualClass globalSafePrinting.
+	self indexableCount: self indexableBatchSize.
+	self column: Column[Visual] new.
+	mirror := m.
+!
+
+launchOn: value <Object>
+	"Launch new inspector on value"
+
+	(Inspector on: value) safePrinting: (self safePrinting or: [self actualClass globalSafePrinting]); launch!
+
+mirror ^ <VMMirror>
+
+	^mirror!
+
+objectSize ^ <Int>
+
+	^objectSize!
+
+objectSize: s <Int>
+
+	objectSize := s!
+
+oops ^<OrdCltn[Tuple[Int,Object]]>
+
+	^oops!
+
+oops: o <OrdCltn[Tuple[Int,Object]]>
+
+	oops := o!
+
+printOop: o <Object> ^ <Str>
+
+	^self safePrinting
+		ifTrue: [ (VMMirror on: o) safePrintString ] 
+		ifFalse: [ o printString ]
+!
+
+update
+	"Fill column with entries. In unsafe mode, the column is first filled with safe print strings and subsequently
+		the unsafe strings are computed in a separate process. The unsafe strings are sent back through a shared
+		queue. In case of failure, an inspector with still appear but with some fields displaying safe values only."
+	
+	self safePrinting
+		ifTrue: 	[	self updateColumn ]
+		ifFalse: [	| queue <SharedQueue[Tuple[Int, Str]]> |
+							[ 	self safePrinting: true.
+								self updateColumn
+							] ensure: [
+								self safePrinting: false
+							].
+							queue := SharedQueue[Tuple[Int, Str]] new.
+							[ self updateNonsafeFields: queue ] fork.
+							[ queue atEnd ] whileFalse: [
+								| t <Tuple[Int,Str]> row <Row[Visual]> |
+								t := queue next.
+								row := Row[Visual] coerce: (self column at: t at1).
+								"Replace safe value with unsafe value"
+								row remove: 1 at: 3.
+								row add: (StringGlyph for: t at2 painter: self inspectorFieldPainter) asVisual.
+							].
+						]
+!
+
+updateColumn
+	"Perform actual iteration"
+	
+	| size <Int> |
+	size := self column size.
+	size > 0
+		ifTrue: [	 self column remove: size at: 1 ].
+	self oops: OrderedCollection[Tuple[Int,Object]] new.
+	self equalizer: Equalizer forX.
+	self mirror iterate: self.
+!
+
+updateNonsafeFields: queue <SharedQueue[Tuple[Int, Str]]>
+	"Compute unsafe print stings and push them on queue"
+	
+	[	self oops do: [ :t <Tuple[Int,Object]> | queue nextPut: t at1 ,, (self printOop: t at2) ]
+	] ensure:[ 
+		queue close ]! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'accessing' !
+
+
+safePrinting ^<Boolean>
+
+	^safePrinting!
+
+safePrinting: b <Boolean>
+
+	safePrinting := b!
+
+windowTitle ^ <Str>
+
+	^'Inspector on ', self mirror reflectee class name! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'named  parts' !
+
+
+name: n <Str> byte: value <Int>
+
+	self addEntry: n oop: value!
+
+name: n <Str> doubleByte: value <Int>
+
+	self addEntry: n oop: value!
+
+name: n <Str> hex: value <Int>
+
+	self addHexEntry: n value: value!
+
+name: n <Str> oop: value <Object>
+
+	self addEntry: n oop: value! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'indexed part' !
+
+
+index: i <Int> byte: value <Int>
+
+	self addIndexableEntry: i oop: value!
+
+index: i <Int> doubleByte: value <Int>
+
+	self addIndexableEntry: i oop: value!
+
+index: i <Int> oop: value <Object>
+
+	self addIndexableEntry: i oop: value! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'structure' !
+
+
+beginClassVariables
+
+	self column add: (StringGlyph for: 'Class variables' painter: self inspectorSectionPainter) asVisual
+!
+
+beginHeader
+
+	self column add: (StringGlyph for: (self printOop: self mirror reflectee) painter: self inspectorSectionPainter) asVisual.
+!
+
+beginIndexables: size <Int>
+
+	self indexableSize: size.
+	self indexables: (Array[Object] new: size).
+	self column add: (StringGlyph for: 'Indexables: ', size printString painter: self inspectorSectionPainter) asVisual
+!
+
+beginInstanceVariables
+
+	self column add: (StringGlyph for: 'Instance variables' painter: self inspectorSectionPainter) asVisual
+!
+
+beginObject: size <Int>
+
+	self objectSize: size! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+					name: '&Refresh';
+					action: [	self update ] );
+		add: (MenuAction new
+					name: '&Browse class';
+					action: [	self launchClassBrowser ] )!
+
+hasMenu ^ <Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self optionsMenu!
+
+optionsMenu ^ <Menu>
+
+	^Menu new name: '&Options';
+		add: (MenuAction new
+					name: 'Use safe printing &locally';
+					checked: [ self safePrinting ];
+					action: [	self toggleLocalSafePrinting ] );
+		add: (MenuAction new
+					name: 'Use safe printing &globally';
+					checked: [ self actualClass globalSafePrinting ];
+					action: [	self toggleGlobalSafePrinting ] );
+		addSeparator;
+		add: (MenuAction new
+					name: 'Display additional indexables';
+					active: [ self indexableSize notNil and: [ self indexableSize > self indexableCount ]];
+					action: [ self addMoreIndexables ]);
+		add: (MenuAction new
+					name: 'Display object size...';
+					action: [	self launchObjectSize ] )
+! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'control' !
+
+
+addMoreIndexables
+	"Display additional indexables (if possible)"
+	
+	| newIndexableCount <Int> |
+	newIndexableCount := self indexableSize min: (self indexableCount + self indexableBatchSize).
+	self indexableCount + 1 to: newIndexableCount do: [ :index <Int> |
+		| value <Object> |
+		value := self indexables at: index.
+		self addEntry: index printString oop: value print: (self printOop: value) ].
+	self indexableCount: newIndexableCount.
+	!
+
+launchClassBrowser
+	"Open browser on the inspected objects' class"
+	
+	| m <AbstractClassMirror> |
+	m := (Mirror on: self mirror reflectee class) instanceSide.	"Only non-meta classes are browseable"
+	(DefOutliner on: m) launch
+	!
+
+launchObjectSize
+	"Display message box with real object size"
+	
+	| strm <CharReadWriteStream> |
+	strm := String new writeStream.
+	strm nextPutAll: 'Object size: '.
+	strm nextPutAll: self objectSize printString.
+	strm nextPutAll: ' words'; cr.
+	self indexableSize isNil
+		ifFalse: [	strm nextPutAll: 'Indexable size: '.
+							strm nextPutAll: self indexableSize printString.
+							strm nextPutAll: ' elements'; cr ].
+	self visual
+		promptOk: strm contentsWritten
+		title: 'Size of ', (self printOop: self mirror reflectee)
+		type: #info
+		action: []!
+
+toggleGlobalSafePrinting
+
+	self actualClass globalSafePrinting: self actualClass globalSafePrinting not 
+	!
+
+toggleLocalSafePrinting
+
+	self session noInputFocus.
+	self safePrinting: self safePrinting not.
+	self update! !
+

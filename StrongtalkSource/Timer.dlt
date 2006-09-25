@@ -1,0 +1,90 @@
+Delta define: #Timer as: (
+(Class subclassOf: 'Object' instanceVariables: 'action <[]>
+win32Handle <Win32Handle>
+interval <Float>
+session <Session>
+		')) !
+
+(Delta mirrorFor: #Timer) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Timer) group: 'ui'!
+
+(Delta mirrorFor: #Timer)
+comment: 
+'Timers are used to execute an action at specified intervals.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Timer) classSide methodsFor: 'instance creation' !
+
+
+atIntervals: interval <Float> do: blk <[]> in: sess <Session> ^<Instance>
+
+	^super new initInterval: interval action: blk in: sess! !
+
+! (Delta mirrorFor: #Timer) methodsFor: 'accessing' !
+
+
+action ^<[]>
+
+	^action!
+
+interval ^<Float>
+
+	^interval!
+
+session ^<Session>
+
+	^session!
+
+win32Handle ^<Win32Handle>
+
+	^win32Handle! !
+
+! (Delta mirrorFor: #Timer) methodsFor: 'private-initialization' !
+
+
+initInterval: i <Float> action: blk <[]> in: sess <Session>
+
+	interval := i.
+	action := blk.
+	session := sess.
+	self registerTimer.! !
+
+! (Delta mirrorFor: #Timer) methodsFor: 'private' !
+
+
+registerTimer
+
+	win32Handle := {{<user Win32Handle SetTimer>
+									hwnd: Win32 NULL
+									id: Win32 NULL
+									interval: (self interval * 1000.0) asInteger
+									fn: Win32 NULL
+							  }}.
+	win32Handle isNull
+		ifTrue: [ Win32 handleError ].! !
+
+! (Delta mirrorFor: #Timer) methodsFor: 'control' !
+
+
+execute
+
+	self action value!
+
+release
+	"destroy the timeout"
+
+	self assert: [ self win32Handle notNil ].
+	self session unregisterTimer: self.
+	^{{<user ExternalProxy KillTimer>
+		hwnd: Win32 NULL
+		id: self win32Handle
+	}} asBoolean
+		ifFalse: [ Win32 handleError ].
+	win32Handle := nil! !
+

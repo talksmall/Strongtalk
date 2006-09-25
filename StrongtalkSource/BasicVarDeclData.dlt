@@ -1,0 +1,29 @@
+Delta define: #BasicVarDeclData as: (
+(Class subclassOf: 'Object' instanceVariables: 'type name ')) !
+
+(Delta mirrorFor: #BasicVarDeclData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicVarDeclData) group: 'ast'!
+
+(Delta mirrorFor: #BasicVarDeclData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicVarDeclData) methodsFor: 'Unclassified' !
+
+
+declaredType ^ <Type>
+    ^self type!
+
+name ^ <Symbol>
+    ^name!
+
+name: aName <Symbol >type: aType <Type > ^ <Self>
+    self assert: [aName isSymbol.].
+    name := aName.
+    type := aType!
+
+type ^ <Type>
+    ^type! !
+

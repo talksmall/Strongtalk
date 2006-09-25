@@ -1,0 +1,410 @@
+Delta define: #ReadString as: (
+(Class subclassOf: 'Magnitude[ReadString] mixin |> SequenceableCollection[Character]' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #ReadString) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #ReadString) group: 'base'!
+
+(Delta mirrorFor: #ReadString)
+comment: 
+'This class implements most of the common protocol for string-like collections.
+It does not implement any mutation operations, since some subclasses aren''t mutable.
+Subclasses must also decide how to actually store their contents, since this class simply works based on subclass''
+implementation of the #at: and #size messages.
+
+Compatibility note: The behaviors of <,<=,>=, and > are different than those defined in the BlueBook, since our
+versions are case sensitive.  This is done to preserve the important property that (a <= b) = (a < b or: [a = b]), 
+which is NOT true for the BlueBook definitions, since = is case sensitive.
+@<, @>, @<=, @>=, @~=, as well as @= (which is equivalent to #sameAs:)
+are provided as case insensitive comparison operators.
+
+Typing note:  In standard Smalltalks, many of the methods from SequenceableCollection, such as
+#copyReplaceFrom:to:, are not implemented in a semantically general manner for Strings, since you can
+only substitute characters.  This library generalizes these messages so they return Strings if possible,
+or some more general collection type like Array if necessary.  The tradeoff, however, is that the type
+system cannot tell statically whether a string is returned or not for the standard messages inherited
+from SeqCltn, so if you want to typecheck your code when using these messages on Strs, you should
+use the string forms of these messages (see the ''string copying'' message category). - D.G.
+
+%optional unicodeAt:	- subclasses will usually want to reimplement this for speed
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $.'!
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'private' !
+
+
+caseInsensitiveEqualsStr: s <Str> ^<Boolean>
+
+	"We check the size first as an optimization, since compare: must scan even if the sizes
+	 aren't equal"
+	^self size = s size
+		and: [ (self caseInsensitiveCompare: s) = 0 ]!
+
+equalsStr: s <Str> ^<Boolean>
+
+	"We check the size first as an optimization, since compare: must scan even if the sizes
+	 aren't equal"
+	^self size = s size
+		and: [ (self compare: s) = 0 ]!
+
+hashAt: index <Int> ^<Int>
+
+	^self unicodeAt: index! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'fake brands' !
+
+
+Str ^<Boolean> ^true! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'converting' !
+
+
+asLowercase ^<String>
+
+	| s <String> |
+	s := String new: self size.
+	1 to: self size do:
+		[ :i <Int> |
+			s at: i put: (self at: i) asLowercase.	].
+	^s!
+
+asString ^<String>
+	self subclassResponsibility!
+
+asSymbol ^<Symbol>
+	self subclassResponsibility!
+
+asUppercase ^<String>
+
+	| s <String> |
+	s := String new: self size.
+	1 to: self size do:
+		[ :i <Int> |
+			s at: i put: (self at: i) asUppercase.	].
+	^s! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'copying' !
+
+
+, other <Str>	^<String>
+
+	|	copy <String>
+		sz <Int>
+		osz <Int> |
+	sz := self size.
+	osz := other size.
+	copy := String new: sz + osz.
+	1 to: sz do:
+		[ :i <Int> |
+			copy at: i put: (self at: i) ].
+	sz + 1 to: sz + osz do:
+		[ :i <Int> |
+			copy at: i put: (other at: i - sz) ].
+	^copy!
+
+copyWithSize: s <Int> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee below is typesafe since EX must be a Character.  This would not be
+	  necessary if the typechecker implementation could deal with a bound on EX in
+	  this situation (see last note in SequenceableCollection>>copyWithSize:) - D.G."
+	^guaranteed <VarSeqCltn[EX]> (self stringCopyWithSize: s)!
+
+copyWithout: el <Object> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee below is typesafe because EX is always Character for strings.  If you want
+		a return type of String, use #stringCopyWithout:"
+	^guaranteed <VarSeqCltn[EX]> (self copyReplaceAll: (Array[Object] with: el) with: '')!
+
+stringCopyFrom: start <Int> to: stop <Int>   ^<String>
+	"Like #copyFrom:to:, but has a stronger return type for strings"
+
+	"We can make the following guarantee because we know what kind of copies
+	  this class creates"
+	^guaranteed <String> (self copyFrom: start to: stop)!
+
+stringCopyReplaceAll: oldSub <Str> with: newSub <Str>   ^<String>
+	"Like #copyReplaceAll:with:, but has a string specific signature"
+
+	"We can make the following guarantee because we know what kind of copies
+	  this class creates"
+	^guaranteed <String> (self copyReplaceAll: oldSub with: newSub)!
+
+stringCopyReplaceFrom: start <Int> to: stop <Int> with: other <Str>   ^<String>
+	"Like #copyReplaceFrom:to:with:, but has a string specific signature"
+
+	"We can make the following guarantee because we know what kind of copies
+	  this class creates"
+	^guaranteed <String> (self copyReplaceFrom: start to: stop with: other)!
+
+stringCopyWithSize: s <Int> ^<String>
+	"{where EX is returnType of #anElement message of receiverType}"
+
+	"%todo: implement this as a primitive?"
+	| a <String> |
+	a := String new: s.
+	a replaceFrom: 1 to: (self size min: s) with: self.
+	^a! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm nextPut: $'.
+	1 to: self size do:
+		[ :i <Int> |
+			| c <Character> |
+			strm nextPut: (c := self at: i).
+			c = $' ifTrue: [ strm nextPut: c ].	].
+	strm nextPut: $'.! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'streaming' !
+
+
+readStream ^<CharacterReadStream>
+
+	^CharacterReadStream over: self! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case sensitive' !
+
+
+< other <Str> ^<Boolean>
+
+	^(self compare: other) == -1!
+
+<= other <Str> ^<Boolean>
+	"%todo: remove when using inherited types"
+	^(self compare: other) <= 0!
+
+= other <Object> ^<Boolean>
+
+	^self == other
+"%todo: use when coerce works:
+		or: [	self equalsStr: (Str coerce: other else: [ ^false ])   ]
+"
+		or: [ other Str ifFalse: [ ^false ].
+			self equalsStr: (guaranteed <Str> other)	]!
+
+> other <Str> ^<Boolean>
+	"%todo: remove when using inherited types"
+	^(self compare: other) == 1!
+
+>= other <Str> ^<Boolean>
+	"%todo: remove when using inherited types"
+	^(self compare: other) >= 0!
+
+compare: other <Str>  ^<Int>
+
+	| mySize <Int> otherSize <Int> |
+		
+	mySize := self size.
+	otherSize := other size.
+	1 to: (mySize min: otherSize) do:
+		[ :i <Int> |
+			| diff <Int> |
+			diff := (self at: i) compare: (other at: i).
+			diff == 0
+				ifFalse: [ ^diff ]
+		].
+	^mySize compare: otherSize! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case insensitive' !
+
+
+@< other <Str> ^<Boolean>
+	"Case insensitive <"
+
+	^(self caseInsensitiveCompare: other) == -1!
+
+@<= other <Str> ^<Boolean>
+	"Case insensitive <="
+
+	^(other @< self) not!
+
+@= other <Str> ^<Boolean>
+	"Case insensitive ="
+
+	^self sameAs: other!
+
+@> other <Str> ^<Boolean>
+	"Case insensitive >"
+
+	^other @< self!
+
+@>= other <Str> ^<Boolean>
+	"Case insensitive >="
+
+	^(self @< other) not!
+
+@~= other <Str> ^<Boolean>
+	"Case insensitive ~="
+
+	^(self @= other) not!
+
+caseInsensitiveCompare: other <Str>  ^<Int>
+
+	| mySize <Int> otherSize <Int> diff <Int> c1 <Character> c2 <Character> |
+	mySize := self size.
+	otherSize := other size.
+	1 to: (mySize min: otherSize) do:
+		[ :i <Int> |
+			c1 := self at: i.
+			c2 := other at: i.
+			c1 == c2
+				ifFalse: [	diff := c1 asLowercase asInteger - c2 asLowercase asInteger.
+								0 < diff
+									ifTrue: [ ^-1 ]
+									ifFalse: [ 0 == diff
+													ifFalse: [ ^1 ]		]]].
+	^mySize compare: otherSize!
+
+sameAs: other <Str> ^<Boolean>
+	"Case insensitive ="
+
+	^0 == (self caseInsensitiveCompare: other)! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'pattern matching' !
+
+
+match: s <Str> ^ <Boolean>
+	"pattern match the receiver against candidate string s, ignoring case.  The receiver is a pattern that
+	 can contain single ($#) and multiple (#*) character wildcard indicators."
+
+	^self match: s ignoreCase: true!
+
+match: str <Str> ignoreCase: b <Boolean> ^ <Boolean>
+
+	^self match: str ignoreCase: b single: $# multiple: $*!
+
+match: str <Str>
+ignoreCase: b <Boolean>
+single: single <Character>
+multiple: multiple <Character>
+^ <Boolean>
+
+	| 	
+	patternSize <Int> 
+	stringSize <Int> 
+	patternIndex <Int> 
+	stringIndex <Int> 
+	c <Character> 
+	patternStartScan <Int> 
+	stringStartScan <Int> 
+	t <Character> 
+	|
+
+	patternSize := self size.
+	stringSize := str size.
+	patternIndex := 1.
+	stringIndex := 1.
+
+	[patternIndex <= patternSize] whileTrue: [
+		c := self at: patternIndex.
+		patternIndex :=  patternIndex + 1.
+		c = multiple
+			ifTrue: [
+				patternIndex > patternSize ifTrue: [^true].
+				stringStartScan := stringIndex.
+				patternStartScan := patternIndex ] 
+			ifFalse: [
+				stringIndex > stringSize ifTrue: [^false].
+				t := str at: stringIndex.
+				stringIndex := stringIndex + 1.
+				(t = c or: [c = single or: [b and: [t asUppercase = c asUppercase]]]) 
+					ifTrue: [
+						(patternIndex > patternSize and: [stringIndex <= stringSize]) 
+							ifTrue: [
+								stringStartScan isNil ifTrue: [^false].
+								stringIndex := stringIndex + (patternStartScan - patternIndex) + 1.
+								patternIndex := patternStartScan ] ] 
+					ifFalse: [
+						stringStartScan isNil ifTrue: [^false].
+						stringIndex := stringIndex + (patternStartScan - patternIndex) + 1.
+						patternIndex := patternStartScan ] ] ].
+	^stringIndex > stringSize
+!
+
+platformMatch: str <Str>^ <Boolean>
+
+	^self platformMatch: str ignoreCase: true!
+
+platformMatch: str <Str> ignoreCase: b <Boolean> ^ <Boolean>
+
+	^self match: str ignoreCase: b
+			single: Platform singleMatchWildcardCharacter
+			multiple: Platform multipleMatchWildcardCharacter! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'accessing' !
+
+
+unicodeAt: index <Int> ^<Int>
+	"Like at:, but returns a unicode integer rather than a character"
+
+	"Subclasses should reimplement this for speed"
+	^(self at: index) unicodeValue! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'searching' !
+
+
+collection: cltn <SeqCltn[Character]>
+matchesElementsAt: index <Int>
+caseSensitive: caseSens <Boolean>
+^<Boolean>
+	"like collection:matchesElementsAt:, but takes only characters, and can do case insensitive
+			comparison."
+
+	| offset <Int> xform <[Character,^Character]> |
+	offset := index - 1.
+	xform :=
+		caseSens
+			ifTrue: [ [ :c <Character> | c ] ]
+			ifFalse: [ [ :c <Character> | c asUppercase ] ].
+	1 to: cltn size do:
+		[ :i <Int> |
+			(xform value: (cltn at: i)) = (xform value: (self at: i+offset))
+				ifFalse: [ ^false ]		].
+	^true!
+
+indexOfStr: sub <Str>
+startingAt: index <Int>
+caseSensitive: caseSens <Boolean>
+ifAbsent: f <[^X def]>
+^<Int | X>
+
+	index to: (self size - sub size) + 1 do:
+		[ :i <Int> |
+			(self collection: sub matchesElementsAt: i caseSensitive: caseSens)
+				ifTrue: [ ^i ]		].
+	^f value! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'restricted' !
+
+
+newCopyOfSize: size <Int>
+thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
+^<VarSeqCltn[EX | X]>
+		{where X is returnType of #anElement message of arg 2;
+		     where EX is returnType of #anElement message of receiverType}
+
+	"%todo: use Str instead of ReadString below when have first class protocols & typecase"
+	other Str
+		ifFalse: [ 	"The guarantee is safe because the super call returns <VarSeqCltn[Character|X]>, and
+							EX = Character for strings.  This is only necessary because the current typechecker
+							impl. can't deal with a <Character> bound on EX for some reason"
+						^guaranteed <VarSeqCltn[EX | X]>
+								(super newCopyOfSize: size thatCanAlsoHoldElementsOf: other) ].
+
+	"We can make the guarantee below because we know that both the receiver and the other hold only characters"
+	^guaranteed <VarSeqCltn[EX | X]> (String new: size)! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'string copying' !
+
+
+stringCopyWith: char <Character>  ^<String>
+	"{where EX is returnType of #anElement message of receiverType; X is arg 1}"
+
+	^self , (String with: char)! !
+

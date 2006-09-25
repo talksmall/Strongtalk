@@ -1,0 +1,25 @@
+Delta define: #DoubleByteArrayVMMirror as: (
+(Class subclassOf: 'OopsVMMirror' instanceVariables: '')) !
+
+(Delta mirrorFor: #DoubleByteArrayVMMirror) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DoubleByteArrayVMMirror) group: 'reflection'!
+
+(Delta mirrorFor: #DoubleByteArrayVMMirror)
+comment: 
+'Low level mirror on a double byte array.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DoubleByteArrayVMMirror) methodsFor: 'iteration' !
+
+
+iterateIndexables: iterator <ObjectIterator>
+
+	| size <Int> |
+	size := self reflectee primitiveSize.
+	iterator beginIndexables: size.
+	1 to: size do: [ :index <Int> |
+		iterator index: index doubleByte: (self reflectee at: index) ].
+	iterator endIndexables.! !
+

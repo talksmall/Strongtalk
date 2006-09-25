@@ -1,0 +1,54 @@
+Delta define: #DeltaGenericApplicationExpression as: (
+(Class subclassOf: 'DeltaExpression' instanceVariables: 'target actuals end ')) !
+
+(Delta mirrorFor: #DeltaGenericApplicationExpression) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaGenericApplicationExpression) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericApplicationExpression)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericApplicationExpression) methodsFor: 'Unclassified' !
+
+
+actuals ^ <OrdCltn[ObjectType]>
+    ^actuals!
+
+apply: aTool <DeltaTool > ^ <Self>
+    aTool genericApplicationExpressionNode: self!
+
+apply: id <DeltaRef >to: tas <OrdCltn[ObjectType] > ^ <Self>
+    target := id.
+actuals := tas.!
+
+implementedPrivateProtocol ^ <Protocol>
+    ^self generic implementedPrivateProtocol forcedSubstitute: (self generic substitutionOfFormalsWithActuals: self actuals)!
+
+isGenericApplicationExpressionNode ^ <Boolean>
+    ^ true!
+
+nameNeededForTheSuperclassTypeName
+  ^self generic name!
+
+privateProtocol ^ <Protocol>
+    ^self generic privateProtocol forcedSubstitute: (self generic substitutionOfFormalsWithActuals: self actuals)!
+
+target ^ <DeltaVar>
+    ^target!
+
+type ^ <ObjectType>
+    | myType <DeltaGenericApplicationType>  |
+
+" This will have to change to accomodate generic terms that are not classes  - mixins, or (in the near future) reflective representatives of a types. We also need to verify that the target is a term. For the immediate future, this is sufficient to type generic classes only.
+"
+
+myType := DeltaUnaryTypeExpr new target:(DeltaGenericApplicationType new apply: (DeltaTypeId new setId: self target name; scope: DeltaGlobals) to: self actuals) selector: #class.
+myType wellFormed.
+^myType!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+    ^self generic unimplementedMessages! !
+

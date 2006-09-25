@@ -1,0 +1,29 @@
+Delta define: #DeltaFloatify as: (
+(Class subclassOf: 'DeltaFloatExpression' instanceVariables: 'obj ')) !
+
+(Delta mirrorFor: #DeltaFloatify) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaFloatify) group: 'ast'!
+
+(Delta mirrorFor: #DeltaFloatify)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaFloatify) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+    aTool floatifyNode: self!
+
+isFloatifyNode
+	^ true!
+
+obj
+	^ obj!
+
+obj: o
+	self assert: [ EnableFloatValues ].
+	self assert: [ o isExpressionNode ].
+	obj := o! !
+

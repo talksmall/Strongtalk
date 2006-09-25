@@ -1,0 +1,45 @@
+Delta define: #BasicProtocolSideData as: (
+(Class subclassOf: 'BasicTypeData' instanceVariables: 'interface selfTV pDecl ')) !
+
+(Delta mirrorFor: #BasicProtocolSideData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicProtocolSideData) group: 'ast'!
+
+(Delta mirrorFor: #BasicProtocolSideData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicProtocolSideData) methodsFor: 'Unclassified' !
+
+
+addRelevantTypeVar: tv <TypeVar>
+
+self relevantTypeVars add: tv.!
+
+interface ^ <Interface>
+    ^interface!
+
+pDecl ^ <ProtocolDecl>
+    ^pDecl!
+
+pDecl: pd <ProtocolDecl > ^ <Self>
+    pDecl := pd.
+selfTV := DeltaTypeVar new name: #Self bound: self pDecl.
+interface := BasicInterfaceData new initialize.!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+set := Set[TypeVar] new.
+set add: self selfTV;
+       add: self selfClassTV.
+^set.!
+
+selfPublicTV ^ <TypeVar>
+    ^self selfTV!
+
+selfTV ^ <TypeVar>
+    ^selfTV! !
+

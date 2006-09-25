@@ -1,0 +1,323 @@
+Delta define: #DefWithMsgSourceHandler as: (
+(Class subclassOf: 'CommonSourceHandler' instanceVariables: '')) !
+
+(Delta mirrorFor: #DefWithMsgSourceHandler) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #DefWithMsgSourceHandler) group: 'reflection'!
+
+(Delta mirrorFor: #DefWithMsgSourceHandler)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'Unclassified' !
+
+
+addCategory: c <Str>
+
+	(self categories includes: c) ifFalse: [
+		self categories: (self categories addLast: c; yourself).
+		self changed: #categories ]
+!
+
+addTag: s <Str> forSelector: sel <Symbol>
+
+	((self tagsForSelector: sel) includes: s) 
+		ifFalse: [ self tags: ((self tagsForSelector: sel) addLast: s; yourself) forSelector: sel ]
+!
+
+categories ^ <Cltn[Str]>
+
+	^(self attributeAt: '#categories') copyWithout: ''
+!
+
+categories: c <Cltn[Str]>
+
+	self attributeAt: '#categories'  put: c
+!
+
+category: s <Str> forSelector: sel <Symbol>
+
+	| list <OrdCltn[Str]> oldValue <Str> |
+	oldValue := self categoryForSelector: sel.
+	self addCategory: s.
+	list := self attributeAt: sel.
+	list size < self minimumIndex ifTrue: [ self shouldNotHappen ].
+	list at: self categoryIndex put: s.
+	self attributeAt: sel put: list.
+
+	oldValue = s
+		ifFalse: [	self changed: #category with: s.
+							self changed: #category with: oldValue ] 
+!
+
+categoryForSelector: sel <Symbol>  ^ <Str>
+
+	^self categoryForSelector: sel ifAbsent: [ self error: 'Selector ', sel,' not found' ].!
+
+categoryForSelector: sel <Symbol> ifAbsent: blk <[^X def]> ^ <Str | X>
+
+	| list <OrdCltn[Str]> |
+	(self hasSelector: sel)
+		ifFalse: [	^blk value ].
+	list := self attributeAt: sel.
+	list size < self minimumIndex ifTrue: [ self shouldNotHappen ].
+	^(self attributeAt: sel) at: self categoryIndex
+!
+
+hasSelector: selector <Symbol> ^ <Boolean>
+
+	^self indexDict includesKey: selector!
+
+logRemoveSelector: sel <Symbol> ^ <Int>
+
+	^self addSectionToChangeLog: [ :log <WriteStream> |
+		(DefinitionWriter for: self mirror) fileOutSelectorRemoval: sel on: log ]
+!
+
+logSelectorSource: s <Str> category: cat <Str> ^ <Int>
+
+	^self addSectionToChangeLog: [ :log <WriteStream> |
+		(DefinitionWriter for: self mirror) fileOutSelectorSource: s category: cat on: log ]
+!
+
+removeCategory: c <Str> ifFail: blk <[]>
+
+	(self categories includes: c) ifTrue: [
+		self selectorsDo: [ :sel <Symbol> | 
+			(self categoryForSelector: sel ifAbsent: [ self shouldNotHappen ]) = c ifTrue: [ ^blk value ] ].
+		self categories: (self categories remove: c; yourself).
+		self changed: #categories ]
+!
+
+removeSelector: sel <Symbol> ifAbsent: blk <[]>
+
+	| cat <Str> |
+	cat := self categoryForSelector: sel ifAbsent: [ ^blk value ].
+	self removeAttributeAt: sel ifAbsent: [ self shouldNotHappen ].
+	self logRemoveSelector: sel.
+
+	self changed: #category with: cat
+!
+
+removeTag: s <Str> forSelector: sel <Symbol>
+
+	((self tagsForSelector: sel) includes: s) 
+		ifTrue: [ self tags: ((self tagsForSelector: sel) remove: s; yourself) forSelector: sel ]
+!
+
+renameCategory: src <Str> to: dst <Str>
+
+	| list <OrdCltn[Str]> index <Int> |
+	src = dst
+		ifTrue:	[ ^self ].		"Nothing to do"
+	(self categories includes: src) ifTrue: [
+		(self categories includes: dst) ifFalse: [
+			index := self categories indexOf: src.
+			self categories: (self categories at: index put: dst; addLast: src; yourself) ].
+		self selectorsDo: [ :sel <Symbol> | 
+			(self categoryForSelector: sel) = src ifTrue: [ 
+				list := self attributeAt: sel.
+				list size < 2 ifTrue: [ self shouldNotHappen ].
+				list at: 2 put: dst.
+				self attributeAt: sel put: list ] ].
+		self categories: (self categories remove: src; yourself).
+
+		self changed: #categories ].!
+
+selectorsDo: blk <[Symbol]>
+
+	self indexDict keysDo: [ :s <Symbol> | s first = $# ifFalse: [blk value: s] ]!
+
+selectorsFor: cat <Str> ^ <OrdCltn[Symbol]>
+
+	| sels <Set[Symbol]> |
+	sels := Set[Symbol] new.
+	self selectorsDo: [ :sel <Symbol> | 
+		(self categoryForSelector: sel) = cat ifTrue: [ 
+			sels add: sel ] ].
+	^sels
+!
+
+source: s <Str> category: cat <Str> visibility: v <Symbol> typeFormat: t <Str> forSelector: sel <Symbol> 
+
+	| list <OrdCltn[Str]> oldCat <Str> pos <Int> |
+	self addCategory: cat.
+	list := self attributeAt: sel.
+	list size < 2
+		ifTrue: [ 	list := OrderedCollection with: nil with: nil ]
+		ifFalse: [	oldCat := list at: 2 ].
+	pos := self logSelectorSource: s category: cat.
+	list at: 1 put: pos printString.
+	list at: 2 put: cat.
+
+	"Temporary compatability hack below"
+	list size = 2 ifTrue: [ list add: nil ].
+	
+	list at: 3 put: (self convertTypeFormat: t toVisibility: v).
+
+	self attributeAt: sel put: list.
+
+	self changed: #selector with: sel.						"Update dependents on selector itself."
+																						"This HAS to be done before updating the categories"
+
+	(oldCat notNil and: [ oldCat ~= cat ])				"Update dependents on old category"
+		ifTrue: [	self changed: #category with: oldCat ].
+
+	self changed: #category with: cat.					"Update dependents on current category"
+																						"This has to be done always since the user could have
+																						accepted an existing method and changed the selector
+																						to one already present"
+!
+
+sourceForSelector: sel <Symbol> ^ <Str> 
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: sel.
+	list size < 2 ifTrue: [ self shouldNotHappen ].
+	(list at: 1) do: [ :e <Character> | e isDigit ifFalse: [ self shouldNotHappen ] ].
+	self changeLog position: (Integer readFrom: (list at: 1) readStream).
+	^self changeLog nextChunk!
+
+tags: s <OrdCltn[Str]> forSelector: sel <Symbol>
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: sel.
+	list size < 3 ifTrue: [ self shouldNotHappen ].
+	self attributeAt: sel put: (list copyReplaceFrom: 4 to: list size with: s)!
+
+tagsForSelector: sel <Symbol>  ^ <OrdCltn[Str]>
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: sel.
+	list size < 3 ifTrue: [ self shouldNotHappen ].
+	^list copyFrom: 4 to: list size.!
+
+typeFormatForSelector: sel <Symbol> ^ <Str> 
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: sel.
+	list size < 2 ifTrue: [ self shouldNotHappen ].
+	list size < 3 
+		ifTrue: [	"Temporary compatability hack"
+						| colonCount <Int> s <CharOutputStream> |
+						colonCount := sel occurrencesOf: $:.
+						s := String new writeStream.
+						s nextPut: $0.															"Default to non polymorphic public signature"
+						colonCount timesRepeat: [ s nextPut: $: ].		"Default to unspecified types"
+						^s contents ].
+	^list at: 3!
+
+typeFormattedSelector: sel <Symbol>
+selectorBuilder: sBlk <[Str,^E def]>
+typeBuilder: tBlk <[Str,^E]>
+inferenceBuilder: iBlk <[Str,^E]> ^ <OrdCltn[E]>
+
+	| 	typeFormat <Str> 
+		typeStream <CharInputStream> 
+		signatureTag <Character> 
+		result <OrdCltn[E]>
+		selectorColonCount <Int>
+		typeColonCount <Int>
+		unaryOrKeywordSelector <Boolean> |
+
+	typeFormat := self typeFormatForSelector: sel.
+	typeStream := typeFormat readStream.
+	self assert: [ typeStream atEnd not ].
+	signatureTag := typeStream next.																								"Signature tag"
+	self assert: [ signatureTag digitValue >= 0 and: [ signatureTag digitValue <= 5 ]].		"Just checking"
+
+	result := OrderedCollection[E] new.
+	selectorColonCount := sel occurrencesOf: $:.
+	typeColonCount := typeFormat occurrencesOf: $:.
+	unaryOrKeywordSelector := selectorColonCount = typeColonCount.
+	self assert: [ unaryOrKeywordSelector or: [ selectorColonCount = 0 and: [ typeColonCount = 1 ]]].	"Verify binary selector case"
+
+	typeColonCount = 0
+		ifTrue: [		"No arguments"
+							result add: (sBlk value: sel) ]		
+		ifFalse: [	"One or more arguments"
+							| selStream <CharInputStream> nextSel <Str> nextType <Str> |
+							selStream := sel readStream.
+							typeColonCount timesRepeat: [
+								nextSel := selStream upTo: $:.
+								result add: (unaryOrKeywordSelector
+									ifTrue: [		sBlk value: nextSel, ':' ]
+									ifFalse: [	sBlk value: nextSel ]).
+								nextType := typeStream upTo: $:.
+								nextType isEmpty
+									ifFalse: [	result add: (tBlk value: ' <', nextType, '> ') ].
+							]
+						].
+	typeStream atEnd
+		ifFalse: [	"Return type"
+							| returnType <Str> |
+							returnType := typeStream upTo: $:.
+							self assert: [ typeStream atEnd ].
+							self assert: [ returnType isEmpty not ].						
+							result add: (tBlk value: (typeColonCount = 0 ifTrue: [' ^<'] ifFalse: ['^<']), returnType, '>') ].
+	
+	signatureTag digitValue >= 4
+		ifTrue: [		"Inference clause with real 'where' clause present"
+							result add: (iBlk value: ' {...}') ].
+	^result
+!
+
+visibilityForCategory: cat <Str> ^ <Symbol> 
+
+	"A category is private if it contains private messages only, otherwise we consider it to be public"
+
+	(self selectorsFor: cat) do: [ :sel <Symbol> |
+		(self visibilityForSelector: sel) = #public
+			ifTrue: [ ^#public ]
+	].
+	^#private
+		!
+
+visibilityForSelector: sel <Symbol> ^ <Symbol> 
+
+	| signatureTag <Character> |
+	signatureTag := (self typeFormatForSelector: sel) at: 1.
+	^signatureTag digitValue even
+		ifTrue: [		#public ]
+		ifFalse: [	#private ]
+		! !
+
+! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'private-indices' !
+
+
+categoryIndex ^ <Int>
+
+	^2!
+
+minimumIndex ^ <Int>
+
+	^2		"Change to 3 shortly"!
+
+sourceIndex ^ <Int>
+
+	^1!
+
+tagIndex ^ <Int>
+
+	^4!
+
+typeFormatIndex ^ <Int>
+
+	^3! !
+
+! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'private' !
+
+
+convertTypeFormat: t <Str> toVisibility: v <Symbol> ^ <Str>
+
+	v = #public
+		ifTrue: [		^t ]
+		ifFalse: [	| s <CharOutputStream> |
+							self assert: [ v = #private ].
+							s := (String new: t size) writeStream.
+							s nextPut: (Character digitValue: (t at: 1) digitValue + 1).
+							2 to: t size do: [ :i <Int> | s nextPut: (t at: i) ].
+							^s contents ]
+! !
+

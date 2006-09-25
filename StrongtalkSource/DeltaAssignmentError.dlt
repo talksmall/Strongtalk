@@ -1,0 +1,37 @@
+Delta define: #DeltaAssignmentError as: (
+(Class subclassOf: 'DeltaStatementError' instanceVariables: 'varName exprName ')) !
+
+(Delta mirrorFor: #DeltaAssignmentError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaAssignmentError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaAssignmentError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaAssignmentError) methodsFor: 'Unclassified' !
+
+
+errorMessage
+	^'Type of expression ', self exprName, ' is not a subtype of type of ', self varName!
+
+exprName
+	^exprName!
+
+exprName: aSymbol
+	exprName := aSymbol!
+
+subtypeExpr ^ <DeltaType>
+	^ self loc astNode expr type
+!
+
+supertypeExpr ^ <DeltaType>
+	^ self loc astNode var type!
+
+varName
+	^varName!
+
+varName: aSymbol
+	varName := aSymbol! !
+

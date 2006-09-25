@@ -1,0 +1,63 @@
+Delta define: #PaletteModifier as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'palette <Palette>
+	')) !
+
+(Delta mirrorFor: #PaletteModifier) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #PaletteModifier) group: 'ui'!
+
+(Delta mirrorFor: #PaletteModifier)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #PaletteModifier) methodsFor: 'accessing' !
+
+
+palette ^<Palette>
+
+	^palette!
+
+palette: p <Palette>
+
+	self isAttached
+		ifTrue: [ self installPalette ].
+	palette := p! !
+
+! (Delta mirrorFor: #PaletteModifier) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self addNonLocalCount: 1.! !
+
+! (Delta mirrorFor: #PaletteModifier) methodsFor: 'notification' !
+
+
+detaching
+
+	self nativeWindow noPalette.
+	super detaching.!
+
+nativePositionChanged
+
+	self installPalette.
+	super nativePositionChanged.! !
+
+! (Delta mirrorFor: #PaletteModifier) methodsFor: 'private' !
+
+
+installPalette
+
+	self nativeWindow palette: self palette.! !
+
+! (Delta mirrorFor: #PaletteModifier) methodsFor: 'geometry-local' !
+
+
+allocation: a <Region> at: pos <Point>
+
+	super allocation: a at: pos.
+	self isAttached
+		ifTrue: [ self installPalette ].! !
+

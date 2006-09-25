@@ -1,0 +1,102 @@
+Delta define: #ExternalOutputStream as: (
+Generic forAll: 'DESCRIPTOR <ExternalStreamDescriptor> ' body: ((Class subclassOf: 'BasicOutputStream[Int] mixin |> ExternalStream[DESCRIPTOR]' instanceVariables: 'dirty <Boolean>
+			"indicates whether the buffer contains unflushed modified data"
+'))) !
+
+(Delta mirrorFor: #ExternalOutputStream) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ExternalOutputStream) group: 'base'!
+
+(Delta mirrorFor: #ExternalOutputStream)
+comment: 
+'%responsibility #updateBufferLocationAfterFlush
+    This method may have to be reimplemented (for example in read/write streams) depending
+    on whether the buffer contains only written elements, or a mix of read/written elements.
+
+%todo: we must make sure when %finalization is implemented that instances of this class are finalized before their descriptors, so that the buffer can be flushed.  See #finalize.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #ExternalOutputStream) methodsFor: 'control' !
+
+
+close
+    self flush.
+    super close.!
+
+externalFlush
+	
+	self flush.
+	self descriptor flushIfFail: [ :err <ExternalError> | self error: err ]!
+
+flush
+	
+	self dirty
+		ifTrue: [	self bufferNumElements > 0
+					ifTrue: [	self writeBuffer; updateBufferLocationAfterFlush. 	].
+				self dirty: false.	].!
+
+logicalFlush
+    
+    self dirty
+        ifTrue: [    self bufferNumElements > 0
+                    ifTrue: [    self writeBuffer; updateBufferLocationAfterFlush.     ].
+                self dirty: false.    ].! !
+
+! (Delta mirrorFor: #ExternalOutputStream) methodsFor: 'private' !
+
+
+advanceBufferLocation
+
+	self bufferOrigin: self bufferOrigin + self bufferNumElements;
+		nextBufferPosition: 0;
+		bufferNumElements: 0.!
+
+arrangeForFinalization
+
+	"%todo: arrange for the finalize message to be sent to the stream before gc."!
+
+dirty ^<Boolean>
+
+	^dirty!
+
+dirty: b <Boolean>
+
+	dirty := b!
+
+finalize
+
+	self close!
+
+nextPut: byte <Int> ^<Int>
+    | pos <Int> |
+    pos := self nextBufferPosition.
+    self buffer byteAt: pos put: byte.
+    pos := pos + 1.
+    self nextBufferPosition: pos;
+        bufferNumElements: (pos max: self bufferNumElements).
+    pos >= self bufferSize
+        ifTrue: [    self writeBuffer; advanceBuffer; dirty: false. ]
+        ifFalse: [ self dirty: true ].
+    ^byte!
+
+updateBufferLocationAfterFlush
+
+	self advanceBufferLocation!
+
+writeBuffer
+    "Caller is responsible for updating dirty"
+    self descriptor
+        write: self bufferNumElements 
+        at: self bufferOrigin
+        ifFail: [ :err |  self error: err ]! !
+
+! (Delta mirrorFor: #ExternalOutputStream) methodsFor: 'initialization' !
+
+
+initDescriptor: d <DESCRIPTOR> 
+    super initDescriptor: d.
+    self dirty: false.! !
+

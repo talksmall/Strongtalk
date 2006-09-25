@@ -1,0 +1,59 @@
+Delta define: #MixinOutliner as: (
+(Class subclassOf: 'DefWithMsgOutliner[MixinMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #MixinOutliner) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #MixinOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #MixinOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MixinOutliner) methodsFor: 'private' !
+
+
+definitionOutlinerClass ^ <MixinDefinitionOutliner class>
+
+	^MixinDefinitionOutliner!
+
+definitionTitle ^ <Str>
+
+	^'Mixin'!
+
+entryPainter ^ <Painter>
+
+	^self mixinPainter!
+
+sideOutlinerClass ^ <SideWithMethodsOutliner class>
+
+	^SideWithMethodsOutliner! !
+
+! (Delta mirrorFor: #MixinOutliner) methodsFor: 'menus' !
+
+
+typecheckingMenu ^ <Menu>
+
+^super typecheckingMenu
+	add: (MenuAction new
+					name: 'Typecheck methods';
+					action: [self typecheckMethods])
+
+! !
+
+! (Delta mirrorFor: #MixinOutliner) methodsFor: 'control' !
+
+
+typecheck
+
+self typecheckMethods
+!
+
+typecheckMethods
+
+ self typecheckAction:[
+											self mirror typecheck.
+											self mirror classSide typecheck.
+											]
+		title: 'Typechecking ', self mirror name.! !
+

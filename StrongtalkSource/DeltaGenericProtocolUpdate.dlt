@@ -1,0 +1,136 @@
+Delta define: #DeltaGenericProtocolUpdate as: (
+(Class subclassOf: 'DeltaGeneric' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaGenericProtocolUpdate) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaGenericProtocolUpdate) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericProtocolUpdate)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericProtocolUpdate) methodsFor: 'Unclassified' !
+
+
+adjustBoundToTrivialApplication  ^ <Self> 
+
+    self body selfTV declaredBound: self trivialApplication.
+!
+
+asObjectType ^ <Type>
+    ^self reportError:(DeltaGenericNotATypeError new id: self name)!
+
+branded ^ <Boolean>
+    ^self body branded!
+
+branded: b <Boolean>
+    self body branded: b!
+
+classProtocol  ^ <Protocol>
+	"This is probably not correct, since the classprotocol will be non-generic.
+	It should have a DeltaGenericProtocolUpdate wrapped around it."
+	self deltaHack.
+    ^self body classProtocol!
+
+firstClassRepType  ^ <ObjectType>
+
+| actuals <OrdCltn[ObjectType]> actualsForMe <OrdCltn[ObjectType]> |
+
+^self asType
+"
+self hasUnrelatedFormals ifTrue:[^DeltaTypeId setId: #Object; scope: DeltaGlobals].
+actualsForMe := self formals collect:[:f <TypeFormal> | self h: f variance].
+
+actuals := OrderedCollection [ObjectType] new.
+actuals add: (DeltaGenericApplicationType new target: self target
+                                                                                                actuals: actualsForMe
+                         ).
+^DeltaGenericApplicationType new target: #DynamicallyTypecheckable
+                                                                      actuals: actuals.
+"
+!
+
+generifyWithFormals: fs <OrdCltn[TypeFormal]>
+
+"since I am already generic, I just have to update my formals"
+
+self formals do:[:f <TypeFormal>  | self genericScope removeKey: f typeVar name].
+"remove my previous formals from the scope, then change to the new ones, and place them in the scope"
+self formals: fs.
+self formals do:[:f <TypeFormal>  | self genericScope at: f typeVar name put: f typeVar].
+
+self adjustBoundToTrivialApplication
+!
+
+h: variance <Symbol> ^ <TypeId>
+
+"This routine computes the function H defined in the language spec as:
+
+H(covar) = Object
+H(contra) = BottomType
+"
+variance = #covar ifTrue:[^DeltaTypeId new setId: #Object; scope: DeltaGlobals].
+variance = #contra ifTrue:[^DeltaTypeId new setId: #BottomType; scope: DeltaGlobals].
+self error: 'This routine should not be called if there are unrelated formal type parameters'.!
+
+hasUnrelatedFormals ^ <Boolean>
+
+self formals detect:[:f <TypeFormal> | f variance = #unrelated]
+                         ifNone:[^false].
+^true.!
+
+messages  ^ <Dict[Symbol,Type]>
+
+^self body messages
+!
+
+name: n  <Symbol>
+    super name: n.
+    self body name: n.!
+
+subtype ^ <Boolean>
+    ^self body subtype!
+
+subtype: s <Boolean>
+    self body subtype: s!
+
+superprotocol: p<Protocol>
+    self body superprotocol: p
+!
+
+trivialApplication ^ <Protocol>
+
+| trivialActuals <OrdCltn[ObjectType]>  |
+
+trivialActuals := self formals collect:[:f <TypeFormal>  | f typeVar].
+^DeltaGenericApplicationType new apply: (DeltaTypeId new setId: self name; scope: DeltaGlobals) to: trivialActuals.
+! !
+
+! (Delta mirrorFor: #DeltaGenericProtocolUpdate) methodsFor: 'typechecking' !
+
+
+typecheckMessage: m <Message > ^ <Self>
+
+"Typecheck signatures and body of method"
+
+self body typecheckMessage: m.
+!
+
+typecheckSuperprotocol
+
+self errorHandler pushDefinition: self.
+self setupTypeAssumptions.
+self body typecheckSuperprotocol.
+self retractTypeAssumptions.
+self errorHandler popDefinition.
+
+! !
+
+! (Delta mirrorFor: #DeltaGenericProtocolUpdate) methodsFor: 'private typechecking' !
+
+
+wellFormedMessage: m <Message >
+
+self body wellFormedMessage: m! !
+

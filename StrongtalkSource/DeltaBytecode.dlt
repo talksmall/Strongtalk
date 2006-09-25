@@ -1,0 +1,61 @@
+Delta define: #DeltaBytecode as: (
+(Class subclassOf: 'Object' instanceVariables: 'code ')) !
+
+(Delta mirrorFor: #DeltaBytecode) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaBytecode) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBytecode)
+comment: 
+'A temporary class needed for bootstrapping: In the virtual world, bytecode used to be
+	stored as characters in the HCode, and character literals were stored as character 
+	memOops. This works fine, but in the bootstrapped world one cannot distinguish between
+	them!!
+	We therefore now store bytecodes as instances of this class and character literals simply
+	as themselves. See DeltaHCode>>holdsOopAt:.
+
+	The correct solution would be to generate two separate arrays during compilation, one for
+	bytecodes and another for oops, since this is required by the VM anyway.
+	The conversion is currently done by Smalltalk>>createMethod:code:nofArgs:flags:debugInfo:
+	and after the change this should be removed and the primitive called directly instead.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBytecode) classSide methodsFor: 'Unclassified' !
+
+
+code: b <SmallInteger> ^ <Instance>
+
+	^self new code: b! !
+
+! (Delta mirrorFor: #DeltaBytecode) methodsFor: 'Unclassified' !
+
+
+asInteger ^<SmallInteger>
+
+	^self code!
+
+code ^<SmallInteger>
+
+	^code!
+
+code: b <SmallInteger>
+
+	self assert: [(0 <= b) & (b < 256)].
+	code := b
+!
+
+komment
+
+	"A temporary class needed for bootstrapping: In the virtual world, bytecode used to be
+	stored as characters in the HCode, and character literals were stored as character 
+	memOops. This works fine, but in the bootstrapped world one cannot distinguish between
+	them!!
+	We therefore now store bytecodes as instances of this class and character literals simply
+	as themselves. See DeltaHCode>>holdsOopAt:.
+
+	The correct solution would be to generate two separate arrays during compilation, one for
+	bytecodes and another for oops, since this is required by the VM anyway.
+	The conversion is currently done by Smalltalk>>createMethod:code:nofArgs:flags:debugInfo:
+	and after the change this should be removed and the primitive called directly instead."! !
+

@@ -1,0 +1,99 @@
+Delta define: #Region as: (
+(Class subclassOf: 'Object' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #Region) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Region) group: 'ui'!
+
+(Delta mirrorFor: #Region)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #Region) methodsFor: 'accessing' !
+
+
+aRegion ^<Region>
+
+	^self!
+
+enclosedRect ^<Rect>
+
+	self subclassResponsibility!
+
+enclosingRect ^<Rect>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Region) methodsFor: 'region operations' !
+
+
+pruningRegionForSubRegionsOf: other <Region> ^<Region>
+
+	^(self surelyContains: other)
+		ifTrue: [ InfiniteRegion the ]
+		ifFalse: [ self ]!
+
+regionEnclosingMerge: other <Region> ^<Region>
+
+	^self enclosingRect merge: other enclosingRect! !
+
+! (Delta mirrorFor: #Region) methodsFor: 'restricted-double dispatching' !
+
+
+relativeTo: p <Point> mightIntersectRect: other <Rect> ^<Boolean>
+
+	^(self relativeTo: p) mightIntersect: other!
+
+surelyContainedByRect: r <Rect> ^<Boolean>
+
+	^r contains: self enclosingRect!
+
+translatedBy: p <Point> surelyContainedByRect: r <Rect> ^<Boolean>
+
+	^r contains: (self enclosingRect translatedBy: p)! !
+
+! (Delta mirrorFor: #Region) methodsFor: 'testing' !
+
+
+containsPoint: p <Point> ^<Boolean>
+
+	self subclassResponsibility!
+
+mightIntersect: other <Region> ^<Boolean>
+
+	^self enclosingRect intersects: other enclosingRect!
+
+relativeTo: orig <Point> containsPoint: p <Point> ^<Boolean>
+
+	^self containsPoint: p - orig!
+
+relativeTo: p <Point> mightIntersect: r <Region>  ^<Boolean>
+	"A  combined operation that is equivalent to (self relativeTo: p) mightIntersect:r, but
+	 which offers more opportunities for optimization"
+
+	^(self relativeTo: p) mightIntersect: r!
+
+relativeTo: p <Point> surelyContains: r <Region>  ^<Boolean>
+	"A  combined operation that is equivalent to (self relativeTo: p) mightIntersect:r, but
+	 which offers more opportunities for optimization"
+
+	^(self relativeTo: p) surelyContains: r!
+
+surelyContainedBy: other <Region> ^<Boolean>
+
+	^other surelyContains: self!
+
+surelyContains: other <Region> ^<Boolean>
+	"This is like #contains:, but is conservative in that it might return
+	  false negatives"
+
+	^other surelyContainedByRect: self enclosedRect!
+
+translatedBy: p <Point> mightIntersect: r <Region>  ^<Boolean>
+	"A  combined operation that is equivalent to (self translatedBy: p) mightIntersect:r, but
+	 which offers more opportunities for optimization"
+
+	^(self translatedBy: p) mightIntersect: r! !
+

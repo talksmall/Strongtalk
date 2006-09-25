@@ -1,0 +1,36 @@
+Delta define: #APICallBack as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+(Delta mirrorFor: #APICallBack) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #APICallBack) group: 'base'!
+
+(Delta mirrorFor: #APICallBack)
+comment: 
+'APICallBack implements a Windows API call back entry into Delta.
+The calling convension:
+  - the caller pushes the arguments from right to left and
+  - the callee pops the arguments before returning
+
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
+
+! (Delta mirrorFor: #APICallBack) classSide methodsFor: 'registration' !
+
+
+invoke: callBack
+	^{{primitiveCallBackInvokePascal2: callBack ifFail: [ :err | self error: err]}}!
+
+register: block parameters: params
+    | new index |
+    new   := super new.
+    index := CallBackArray add: new.
+    {{primitiveCallBackRegisterPascalCall: CallBackArray size
+                         numberOfArguments: params size
+                                    result: new ifFail: [:err | self error: err]}}.
+    new parameters: params.
+    new block: block.
+    ^new
+! !
+

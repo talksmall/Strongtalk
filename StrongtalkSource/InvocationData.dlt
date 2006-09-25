@@ -1,0 +1,38 @@
+Delta define: #InvocationData as: (
+(Class subclassOf: 'AbstractInvocationData' instanceVariables: 'invocations <OrdCltn[Class]> ')) !
+
+(Delta mirrorFor: #InvocationData) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #InvocationData) group: 'reflection'!
+
+(Delta mirrorFor: #InvocationData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #InvocationData) classSide methodsFor: 'Unclassified' !
+
+
+new ^ <Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #InvocationData) methodsFor: 'Unclassified' !
+
+
+addInvocation: inv <Class>
+
+	self invocations add: inv!
+
+initialize
+
+	self invocations: OrderedCollection[Class] new.!
+
+invocations  ^ <OrdCltn[Class]> 
+
+	^invocations!
+
+invocations: invs <OrdCltn[Class]> 
+
+	invocations := invs! !
+

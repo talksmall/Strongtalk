@@ -1,0 +1,270 @@
+Delta define: #Win32FilePath as: (
+(Class subclassOf: 'FilePath mixin |>(ExternalStreamableObject mixin |>(ExternalObject mixin |>Win32FilePattern))' instanceVariables: '')) !
+
+(Delta mirrorFor: #Win32FilePath) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #Win32FilePath) group: 'base'!
+
+(Delta mirrorFor: #Win32FilePath)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Win32FilePath) classSide methodsFor: 'instance creation' !
+
+
+currentDirectory ^<FilePath>
+
+	| buf <CString> buflen <Int> |
+	buflen := 1000.
+	buf := CString new malloc: buflen.
+	^[		{{<kernel ExternalProxy GetCurrentDirectoryA>
+				size: buflen
+				buf: buf
+			}} isNull
+				ifTrue: [ Win32 handleError ]
+				ifFalse: [ self new pattern: buf asString ]
+	  ] ensure: [ buf free ]! !
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'testing' !
+
+
+exists ^<Boolean>
+
+	self win32FileAttributesIfFail: [ ^false ].
+	^true!
+
+isDirectory ^<Boolean>
+
+	^((self win32FileAttributesIfFail: [ ^false ])
+			externalBitAnd: Win32 FILE_ATTRIBUTE_DIRECTORY
+	  ) @~= 0!
+
+isReadOnly ^<Boolean>
+
+	^((self win32FileAttributesIfFail: [ ^false ])
+			externalBitAnd: Win32 FILE_ATTRIBUTE_READONLY
+	  ) @~= 0!
+
+isSyntaxValid ^<Boolean>
+
+	"Extend inherited version to ensure no wildcard characters"
+	^super isSyntaxValid and: [ self unimplemented ]! !
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'private' !
+
+
+createValueFor: mode <Symbol>  ^<ExternalData>
+
+	mode = #read
+		ifTrue: [ ^3		"OPEN_EXISTING" ].
+	mode = #write
+		ifTrue: [ ^2		"CREATE_ALWAYS" ].
+	mode = #readWrite
+		ifTrue: [ ^4		"OPEN_ALWAYS" ].
+	self shouldNotHappen!
+
+deleteDirectoryIfFail: blk <[Symbol]>
+
+	| name <CString> |
+	name := CString for: self name.
+	[	{{<kernel ExternalProxy RemoveDirectoryA>
+				name: name
+		}} asBoolean
+			ifFalse: [ blk value: #ErrorDeletingDirectory ]
+	] ensure: [ name free ]!
+
+deleteFileIfFail: blk <[Symbol]>
+
+	| name <CString> |
+	name := CString for: self name.
+	[	{{<kernel ExternalProxy DeleteFileA>
+				name: name
+		}} asBoolean
+			ifFalse: [ blk value: #ErrorDeletingFile ]
+	] ensure: [ name free ]!
+
+fileAttributesFor: mode <Symbol>  ^<ExternalData>
+    
+    mode = #read
+        ifTrue: [ ^ExternalProxy new
+                    setHigh:    16r0800        "FILE_FLAG_SEQUENTIAL_SCAN"
+                    low:            16r80        "FILE_ATTRIBUTE_NORMAL"    ].
+    (mode = #write)
+        ifTrue: [ ^ExternalProxy new
+                    setHigh:    16r0000
+                    low:            16r80        "FILE_ATTRIBUTE_NORMAL"    ].
+    (mode = #readWrite)
+        ifTrue: [ ^ExternalProxy new
+                    setHigh:    16r0000    
+                    low:            16r80        "FILE_ATTRIBUTE_NORMAL"    ].
+    self shouldNotHappen.!
+
+fileDescriptorClass ^<FileDescriptor class>
+
+	^Win32FileDescriptor!
+
+modeProxyFor: mode <Symbol> ^<ExternalData>
+
+	mode = #read
+		ifTrue: [ ^ExternalProxy new setHigh: 16r8000 low: 0 ].
+	mode = #write
+		ifTrue: [ ^ExternalProxy new setHigh: (16r4000 bitOr: 16r8000) low: 0 ].
+	mode = #readWrite
+		ifTrue: [ ^ExternalProxy new setHigh: (16r4000 bitOr: 16r8000) low: 0 ].!
+
+sharingValueFor: mode <Symbol> ^<ExternalData>
+
+	mode = #read
+		ifTrue: [ ^1 	"FILE_SHARE_WRITE" ].
+	"in all other cases"
+	^0 "no sharing"!
+
+win32FileAttributesIfFail: blk <[^X def]> ^<ExternalProxy | X>
+
+	| name <CString> |
+	name := CString for: self name.
+	^[	| result <ExternalProxy> |
+		result := {{<kernel ExternalProxy GetFileAttributesA>
+							name: name
+						}}.
+		result @= (ExternalProxy forHigh: 16rFFFF low: 16rFFFF)
+			ifTrue: [ blk value ]
+			ifFalse: [ result ]
+	 ] ensure: [ name free ]! !
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'restricted' !
+
+
+openInternalFor: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalProxy | X>
+
+	"%todo: use overlapped io"
+	|	dname <ExternalProxy>
+		dmode <ExternalData>
+		dsharing <ExternalData>
+		dcreate <ExternalData>
+		dattributes <ExternalData>
+		proxy <ExternalProxy> |
+	dname := self nameProxy.
+	dmode := self modeProxyFor: mode.
+	dsharing := self sharingValueFor: mode.
+	dcreate := self createValueFor: mode.
+	dattributes := self fileAttributesFor: mode.
+
+	proxy := self win32CreateFile_name: dname
+		mode: dmode
+		sharing: dsharing
+		security: 0
+		create: dcreate
+		attributes: dattributes
+		template: 0.
+
+	dname free.
+	^proxy isAllOnes
+		ifFalse: [ proxy ]
+		ifTrue: [ err value: #cannotOpenFile ]!
+
+win32CreateFile_name: dname    <ExternalData>
+mode: dmode            <ExternalData>
+sharing: dsharing        <ExternalData>
+security: dsecurity        <ExternalData>
+create: dcreate            <ExternalData>
+attributes: dattributes    <ExternalData>
+template: dtemplate        <ExternalData>
+^<ExternalProxy>
+    ^{{<kernel ExternalProxy CreateFileA>
+        name: dname
+        mode: dmode
+        sharing: dsharing
+        security: dsecurity
+        create: dcreate
+        attributes: dattributes
+        template: dtemplate}}! !
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'control' !
+
+
+createDirectoryIfFail: fail <[Symbol]>
+
+	| name <CString> sec <SECURITY_ATTRIBUTES> |
+	name := CString for: self name.
+	sec := SECURITY_ATTRIBUTES new allocateZeroed.
+	sec nLength: sec structureSize.
+
+	[	{{<kernel ExternalProxy CreateDirectoryA>
+			name: name
+			security: sec
+		}} asBoolean
+			ifFalse: [ Win32 getLastError @= Win32 ERROR_ALREADY_EXISTS
+								ifFalse: [ fail value: #CannotCreateFile ] ]
+	] ensure: [	name free.
+						sec free.	 ]! !
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'restricted-double dispatching' !
+
+
+deletePathIfFail: blk <[Symbol]>
+
+	self exists
+		ifFalse: [	blk value: #NoSuchFileOrDirectory.
+						^self		].
+	self isDirectory
+		ifTrue: [ self deleteDirectoryIfFail: blk ]
+		ifFalse: [ self deleteFileIfFail: blk ]! !
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'copying-moving' !
+
+
+copyAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+
+	| csrc <CString> cdest <CString> |
+	csrc := CString for: self name.
+	cdest := CString for: newPath name.
+	[	{{<kernel ExternalProxy CopyFileA>
+				source: csrc
+				dest: cdest
+				failIfExists: false asExternalData
+		}} asBoolean
+			ifFalse: [	fail value:
+								('Error copying file: ', Win32 getLastError printString) asSymbol ]
+	] ensure:
+		[	csrc free.
+			cdest free	]!
+
+moveAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+
+	| csrc <CString> cdest <CString> |
+	csrc := CString for: self name.
+	cdest := CString for: newPath name.
+	[	{{<kernel ExternalProxy MoveFileA>
+				source: csrc
+				dest: cdest
+		}} asBoolean
+			ifFalse: [	| err <ExternalData> |
+							err := Win32 getLastError.
+							err @= Win32 ERROR_ALREADY_EXISTS
+								ifTrue: [	fail value: #AlreadyExists.
+												 ^self.  ].
+							err @= Win32 ERROR_SHARING_VIOLATION
+								ifTrue: [	fail value: #SharingViolation.
+												 ^self.  ].
+							fail value:
+								('Error moving file: ', Win32 getLastError printString) asSymbol ]
+	] ensure:
+		[	csrc free.
+			cdest free	]! !
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'accessing' !
+
+
+type ^<Str>
+	"The file type (on most platforms this is the part after the $. at the end)"
+
+	| indices <SeqCltn[Int]> |
+	indices := self name indicesOfSubCollection: '.'.
+	indices isEmpty
+		ifTrue: [ ^'' ].
+	^self name
+			copyFrom: indices last + 1
+			to: self name size! !
+

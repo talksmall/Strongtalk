@@ -1,0 +1,182 @@
+Delta define: #DeltaTypeErrorHandler as: (
+(Class subclassOf: 'Object' instanceVariables: 'subtypeStack supertypeStack errors reportMultipleErrors reportSubtypingErrors subtypeCheckDepth ') classVariables: 'Current ') !
+
+(Delta mirrorFor: #DeltaTypeErrorHandler) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaTypeErrorHandler) group: 'ast'!
+
+(Delta mirrorFor: #DeltaTypeErrorHandler)
+comment: 
+'Type error handlers manage the process of reporting type errors .
+One error handler is used throughout a particular typecheck.
+As typechecking proceeds,  type information from different definitions is
+checked and used. The typechecker informs the current type error handler
+what definition(s) are being evaluated at any time. 
+
+Errors get reported to the current handler as well. When an error is reported
+the handler determines the location of the error, and produces a locator,
+which it gives to the error so it can display itself later.
+
+Subtyping errors involve a comparison among two types. The handler maintains two
+stacks that keep track of the definitions involved in subtyping - one for the presumed 
+subtype, and one for the presumed supertype.
+
+
+
+
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaTypeErrorHandler) classSide methodsFor: 'Unclassified' !
+
+
+current ^<Instance>
+	Current isNil ifTrue: [ Current := DeltaSilentTypeErrorHandler new ].
+	^Current!
+
+current: eh <Instance>
+	Current := eh
+!
+
+new ^<Instance>
+    ^super new initialize! !
+
+! (Delta mirrorFor: #DeltaTypeErrorHandler) methodsFor: 'Unclassified' !
+
+
+catchErrorsFor: blk <[^X def]> ^ <X>
+	| oldErrorHandler <Self> |
+	oldErrorHandler := self class current.
+	self class current: self.
+	^blk ensure: [self class current: oldErrorHandler].
+!
+
+clearErrors
+	"Dismiss all reported errors"
+	self errors: OrderedCollection new.
+	self subtypeStack: DeltaTypeErrorHandlerStack new.
+	self supertypeStack: DeltaTypeErrorHandlerStack new.
+	self subtypeCheckDepth: 0!
+
+errors  ^<Cltn[DeltaTypeError]>
+	"Private"
+	^errors!
+
+errors: es  <Cltn[DeltaTypeError]>
+	"Private"
+	errors := es!
+
+initialize
+	"Private"
+	self clearErrors.
+	self reportMultipleErrors: true.
+	self reportSubtypingErrors: false.
+!
+
+popDefinition
+	self subtypeStack popDefinition.
+	self supertypeStack popDefinition!
+
+popDefinitions
+	self subtypeStack popDefinition.
+	self supertypeStack popDefinition!
+
+popSelector
+	self subtypeStack popSelector.
+	self supertypeStack popSelector!
+
+popSubtypeCheckDepth
+	self subtypeCheckDepth > 0 ifFalse: [self error: 'cannot decrease subtype check depth'].
+	self subtypeCheckDepth: self subtypeCheckDepth - 1!
+
+pushClassSideDefinitions
+	self deltaHack.
+	self subtypeStack pushDefinition: (self subtypeStack currentDefinition copy isMetaSide: true).
+	self supertypeStack pushDefinition: (self supertypeStack currentDefinition copy isMetaSide: true).
+!
+
+pushDefinition: def <Decl|Type>
+	self subtypeStack pushDefinition: def basicLocator.
+	self supertypeStack pushDefinition: def basicLocator.
+!
+
+pushDefinitions: subDef <Decl|Type> and: superDef <Decl|Type>
+	self subtypeStack pushDefinition: subDef basicLocator.
+	self supertypeStack pushDefinition: superDef basicLocator
+!
+
+pushSelector: sel <Symbol>
+	self subtypeStack pushSelector: sel.
+	self supertypeStack pushSelector: sel.
+!
+
+pushSubtypeCheckDepth
+	self subtypeCheckDepth: self subtypeCheckDepth + 1!
+
+reportError: error <DeltaTypeError> at: node <DeltaASTNode>
+	error setLocationFor: node unfiltered using: self.
+	self errors detect: [ :e | e matchesError: error ] ifNone: [self errors addLast: error].
+
+!
+
+reportMultipleErrors ^ <Boolean>
+    ^reportMultipleErrors!
+
+reportMultipleErrors: b <Boolean>
+    reportMultipleErrors := b!
+
+reportSubtypingError: error <DeltaTypeError> at: node <DeltaASTNode> toEscape: b <[]>
+
+	(self reportSubtypingErrors and: [self subtypeCheckDepth = 0]) 
+		ifTrue: [
+			self reportError: error at: node.
+			self reportMultipleErrors ifFalse: b 
+		]
+		ifFalse: b
+!
+
+reportSubtypingErrors ^ <Boolean>
+    ^reportSubtypingErrors!
+
+reportSubtypingErrors: b <Boolean>
+    reportSubtypingErrors := b!
+
+reportedErrors ^ <Cltn[DeltaTypeError]>
+	^self errors
+!
+
+reportedErrorsFor: loc <DeltaLocator> ^ <Cltn[DeltaTypeError]>
+	^self reportedErrors select: [ :e | e matchesLocator: loc ]
+!
+
+subtypeCheckDepth ^ <Int>
+	"Private"
+	^subtypeCheckDepth!
+
+subtypeCheckDepth: i <Int>
+	"Private"
+	subtypeCheckDepth := i!
+
+subtypeLocFor: node <DeltaASTNode> ^ <DeltaLocator>
+	^self subtypeStack locatorFor: node!
+
+subtypeStack ^<DeltaTypeErrorHandlerStack>
+	"Private"
+	^subtypeStack!
+
+subtypeStack: s <DeltaTypeErrorHandlerStack>
+	"Private"
+	subtypeStack := s!
+
+supertypeLocFor: node  <DeltaASTNode> ^ <DeltaLocator>
+	^self supertypeStack locatorFor: node!
+
+supertypeStack ^<DeltaTypeErrorHandlerStack>
+	"Private"
+	^supertypeStack!
+
+supertypeStack: s <DeltaTypeErrorHandlerStack>
+	"Private"
+	supertypeStack := s! !
+

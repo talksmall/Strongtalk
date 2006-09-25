@@ -1,0 +1,45 @@
+Delta define: #DeltaPrimitiveTypeInfo as: (
+(Class subclassOf: 'Object' instanceVariables: 'primitives <VarDict[Symbol, MsgSignature]>')) !
+
+(Delta mirrorFor: #DeltaPrimitiveTypeInfo) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaPrimitiveTypeInfo) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPrimitiveTypeInfo)
+comment: 
+'The repository of type information for primitives.
+There should be a unique instance of this class,  available as the global
+variable DeltaPrimitives.
+ The class has one instance variable, ''primitives", which is
+ a dictionary mapping the selectors of primitives to their types.
+ 
+ The typechecker looks up type information for primitives by calling
+ selectMsg: ifAbsent: on DeltaPrimitives to obtain the type. This in turn looks
+ up the definition in the primitives dictionary.
+ 
+ The primitives dictionary is initialized upon its first use using DeltaPrimitivesGenerator.
+  
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPrimitiveTypeInfo) methodsFor: 'Unclassified' !
+
+
+primitives ^ <VarDict[Symbol, MsgSignature]>
+
+primitives isNil ifTrue: [DeltaPrimitiveGenerator setPrimitives: self].
+^primitives!
+
+primitives: d  <VarDict[Symbol, MsgSignature]>
+
+primitives := d!
+
+selectMsg: s <Symbol> ^ <MsgSignature>
+
+^self selectMsg: s ifAbsent:[^DeltaPrimitiveUndefinedError new selector: s]!
+
+selectMsg: s <Symbol> ifAbsent: blk <[^MsgSignature]> ^ <MsgSignature>
+
+^self primitives at: s ifAbsent: blk! !
+

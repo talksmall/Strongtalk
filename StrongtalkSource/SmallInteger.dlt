@@ -1,0 +1,478 @@
+Delta define: #SmallInteger as: (
+(Class subclassOf: 'Integer' instanceVariables: '') classVariables: 'MinVal <Integer>
+		MaxVal <Integer>
+		') !
+
+(Delta mirrorFor: #SmallInteger) revision: '$Revision: 1.10 $'!
+
+(Delta mirrorFor: #SmallInteger) group: 'base'!
+
+(Delta mirrorFor: #SmallInteger)
+comment: 
+'Implements limited precision integer arithmetic, overflowing into
+infinite precision arithmetic.  This class should normally not be
+referred to directly by user code.
+
+Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.9 $
+'!
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'instance creation' !
+
+
+primitiveNew ^<Instance>
+
+	self shouldNotImplement! !
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'constants' !
+
+
+maxVal ^<Integer>
+
+	^MaxVal!
+
+minVal ^<Integer>
+
+	^MinVal! !
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'private' !
+
+
+computedMaxVal ^<SmallInteger>
+
+	| v <SmallInt> |
+	v := 3.
+	[	| newV <SmallInt> |
+		newV := v times: 2 ifFail: [ ^v ].
+		v := newV +!! 1.	"Set the low bit"
+		] repeat! !
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	MaxVal := self computedMaxVal.
+	MinVal := MaxVal negated - 1.! !
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^66! !
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'testing' !
+
+
+test
+
+	| r <Random> |
+	r := Random new.
+	-10000 to: 10000 do:
+		[ :i <Int> |
+			| strm <CharReadWriteStream> ps <Str> norm <Str> |
+			strm := (String new: 5) writeStream.
+			i printOn: strm.
+			ps := i printString.
+			norm := strm contentsWritten.
+			[ ps = strm contentsWritten ] verify.
+		].! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'comparison' !
+
+
+< a <Number> ^<Boolean>
+
+	^{{self primitiveLessThan: a
+		ifFail: [ :err <Symbol> |
+				a lessFromSmallInteger: self	]}}!
+
+<= a <Number> ^<Boolean>
+
+	^{{self primitiveLessThanOrEqual: a
+		ifFail: [ :err <Symbol> | super <= a	]}}!
+
+= a <Object> ^<Boolean>
+
+	^{{self primitiveSmallIntegerEqual: a 
+		ifFail: [ :err <Symbol> |
+						self nonPrimitiveEqual: a ]}}!
+
+> a <Number> ^<Boolean>
+
+	^{{self primitiveGreaterThan: a
+		ifFail: [ :err <Symbol> | super > a	]}}!
+
+>= a <Number> ^<Boolean>
+
+	^{{self primitiveGreaterThanOrEqual: a
+		ifFail: [ :err <Symbol> | super >= a	]}}!
+
+@= other <ExternalData> ^<Boolean>
+	"Compares two ExternalData objects to each other.  This will coerce between integers and proxies
+	  as needed"
+
+	^{{self primitiveSmallIntegerEqual: other 
+		ifFail: [ :err <Symbol> |
+						err = #FirstArgumentHasWrongType
+							ifTrue: [ other = self asExternalProxy ]
+							ifFalse: [ self error: err ]  ] }}!
+
+~= a <Object> ^<Boolean>
+
+	^{{self primitiveSmallIntegerNotEqual: a 
+		ifFail: [ :err <Symbol> | super ~= a ]}}! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'operations' !
+
+
+* a <Number> ^<X>
+			{where X <Number> is returnType of #multiplyFromSmallInteger: message of arg 1}
+	^guaranteed <X> {{self primitiveMultiply: a
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveMultiply: a error: err ]}}!
+
++ a <Number> ^<X>
+			{where X <Number> is returnType of #addFromSmallInteger: message of arg 1}
+	^guaranteed <X> {{self primitiveAdd: a
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveAdd: a error: err ]}}!
+
+- a <Number> ^<X>
+			{where X <Number> is returnType of #subtractFromSmallInteger: message of arg 1}
+	^guaranteed <X> {{self primitiveSubtract: a
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveSubtract: a error: err ]}}!
+
+/ a <Number> ^<X>
+			{where X <Number> is returnType of #divideFromSmallInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a divideFromSmallInteger: self)!
+
+// arg <Number> ^<Int>
+	"The integer quotient of self / arg, with truncation towards negative infinity"
+
+	^{{self primitiveDiv: arg
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveDiv: arg error: err	]}}!
+
+\\ a <Number> ^<X>
+			{where X <Number> is returnType of #moduloFromSmallInteger: message of arg 1}
+	^guaranteed <X> {{self primitiveMod: a
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveModulo: a error: err ]}}!
+
+quo: arg <Number> ^<Int>
+
+	^{{self primitiveQuo: arg
+		ifFail: [ :err <Symbol> |
+				self nonPrimitiveQuo: arg error: err	]}}! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'converting' !
+
+
+asFloat ^<Float>
+
+	^{{self primitiveAsFloat}}!
+
+asSmallInteger ^<SmallInt>
+
+	^self! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'restricted-double dispatching' !
+
+
+addFromSmallInteger: o <SmallInteger> ^<Int>
+	self error: 'can''t happen because of double dispatching, but need for typing'!
+
+equalFromSmallInteger: o <SmallInteger> ^<Boolean>
+	self error: 'can''t happen because of double dispatching'!
+
+lessFromSmallInteger: o <SmallInteger> ^<Boolean>
+	self error: 'can''t happen because of double dispatching'!
+
+moduloFromSmallInteger: o <SmallInteger> ^<SmallInteger>
+	self error: 'can''t happen because of double dispatching'!
+
+multiplyFromSmallInteger: o <SmallInteger> ^<Int>
+	self error: 'can''t happen because of double dispatching, but need for typing'!
+
+subtractFromSmallInteger: o <SmallInteger> ^<Int>
+	self error: 'can''t happen because of double dispatching, but need for typing'! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'bit operations-un-mixed-mode' !
+
+
+bareBitShift: numBits <SmallInt> ^<SmallInt>
+	"Like bitShift:, but drops bits off the high end if needed
+	 rather than overflow into a large integer."
+
+	^{{self primitiveBitShift: numBits
+		ifFail: [ :err <Symbol> | self error: 'SmallInteger bareBitShift: ', err  ]}}! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'operations-un-mixed-mode' !
+
+
+*!! a <SmallInt> ^<SmallInt>
+	"un-mixed-mode multiplication.  This causes a runtime error on overflow or underflow.  If it returns, you are guaranteed that the
+	  result is a SmallInteger."
+	^guaranteed <X> {{self primitiveMultiply: a
+		ifFail: [ :err <Symbol> |
+				self error: 'SmallInteger un-mixed-mode multiplication: ', err ]	}}!
+
++!! a <SmallInt> ^<SmallInt>
+	"un-mixed-mode addition.  This causes a runtime error on overflow or underflow.  If it returns, you are guaranteed that the
+	  result is a SmallInteger."
+	^guaranteed <X> {{self primitiveAdd: a
+		ifFail: [ :err <Symbol> |
+				self error: 'SmallInteger un-mixed-mode addition: ', err ]	}}!
+
+-!! a <SmallInt> ^<SmallInt>
+	"un-mixed-mode subtraction.  This causes a runtime error on overflow or underflow.  If it returns, you are guaranteed that the
+	  result is a SmallInteger."
+	^guaranteed <X> {{self primitiveSubtract: a
+		ifFail: [ :err <Symbol> |
+				self error: 'SmallInteger un-mixed-mode subtraction: ', err ]	}}!
+
+/!! a <SmallInt> ^<SmallInt>
+	"un-mixed-mode integer division.  This causes a runtime error on overflow or underflow.  If it returns, you are guaranteed that the
+	  result is a SmallInteger."
+	^guaranteed <X> {{self primitiveDiv: a
+		ifFail: [ :err <Symbol> |
+				self error: 'SmallInteger un-mixed-mode division: ', err ]	}}!
+
+\!! a <SmallInt> ^<SmallInt>
+	"un-mixed-mode integer modulo.  This causes a runtime error on overflow or underflow.  If it returns, you are guaranteed that the
+	  result is a SmallInteger."
+	^guaranteed <X> {{self primitiveMod: a
+		ifFail: [ :err <Symbol> |
+				self error: 'SmallInteger un-mixed-mode modulo: ', err ]	}}!
+
+times: a <SmallInt> ifFail: f <[^X def]> ^<SmallInt | X>
+	"un-mixed-mode multiplication with a failure block executed on overflow or underflow."
+
+	^{{self primitiveMultiply: a
+		ifFail: [ :err <Symbol> |
+						err = #SmallIntegerOverflow
+								ifTrue: [ f value ]
+								ifFalse: [ self error: err ] 		]}}! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'bit operations' !
+
+
+bitAnd: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^guaranteed <Self|X>
+		{{self primitiveBitAnd: o ifFail: [ :err <Symbol> |  super bitAnd: o ]}}!
+
+bitOr: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^guaranteed <Self|X>
+		{{self primitiveBitOr: o ifFail: [ :err <Symbol> |  super bitOr: o ]}}!
+
+bitShift: numBits <Int> ^<Int>
+
+	^{{self primitiveBitShift: numBits
+		ifFail: [ :err <Symbol> | super bitShift: numBits ]}}!
+
+bitXor: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^guaranteed <Self|X>
+		{{self primitiveBitXor: o ifFail: [ :err <Symbol> |  super bitOr: o ]}}!
+
+rawBitShift: numBits <Int> ^<Int>
+
+	^{{self primitiveRawBitShift: numBits
+		ifFail: [ :err <Symbol> | super rawBitShift: numBits ]}}! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'patch' !
+
+
+printCharacter
+	"%remove when TempTranscript gone"
+
+    {{self primitivePrintCharacterIfFail: [:err <Symbol> | self error: err ]}}
+! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'private' !
+
+
+digitsForAbs: v <Int> ^<Int>
+
+	v < 10
+		ifTrue: [ ^1 ].
+	v < 100
+		ifTrue: [ ^2 ].
+	v < 1000
+		ifTrue: [ ^3 ].
+	v < 10000
+		ifTrue: [ ^4 ].
+	v < 100000
+		ifTrue: [ ^5 ].
+	v < 1000000
+		ifTrue: [ ^6 ].
+	v < 10000000
+		ifTrue: [ ^7 ].
+	v < (10000*10000)			"v < 100000000"		"cannot parse this bootstrapped"
+		ifTrue: [ ^8 ].
+	v < (100000*10000)		"v < 1000000000"	"cannot parse this bootstrapped"
+		ifTrue: [ ^9 ].
+	^10	"Smallintegers can't be any bigger"!
+
+nonPrimitiveAdd: a <Number> error: err <Symbol> ^<Number>
+	"This is invoked on primitive failure"
+
+	^err == #FirstArgumentHasWrongType
+			ifTrue: [  a addFromSmallInteger: self ]
+			ifFalse: [ err == #SmallIntegerOverflow 
+								ifTrue:  [ a addFromInteger: self ]
+								ifFalse: [ self error: 'SmallInteger addition: ', err]	]!
+
+nonPrimitiveDiv: a <Number> error: err <Symbol> ^<Int>
+	"This is invoked on primitive failure"
+
+	^err == #FirstArgumentHasWrongType
+			ifTrue: [ super // a ]
+			ifFalse: [ self error: 'SmallInteger //: ', err ]!
+
+nonPrimitiveEqual: a <Object> ^<Boolean>
+	"This is invoked on primitive equality failure"
+
+"%todo: use this typesafe version when coerce: is fast
+	^(Number coerce: a else: [ ^false ]) equalFromFloat: self
+"
+	^a Number
+		ifTrue: [ (guaranteed <Number> a) equalFromSmallInteger: self ]
+		ifFalse: [ false ]
+
+
+!
+
+nonPrimitiveModulo: a <Number> error: err <Symbol> ^<Number>
+	"This is invoked on primitive failure"
+
+	^err == #FirstArgumentHasWrongType
+					ifTrue: [ a moduloFromSmallInteger: self ]
+					ifFalse: [ err == #SmallIntegerOverflow
+							ifTrue: [ "The guarantee is typesafe because the primitive verified
+												it"
+											self moduloFromInteger: (guaranteed <Integer> a) ]
+							ifFalse: [ self error: 'SmallInteger modulo: ', err ]	]!
+
+nonPrimitiveMultiply: a <Number> error: err <Symbol> ^<Number>
+	"This is invoked on primitive failure"
+
+	^err == #FirstArgumentHasWrongType
+		ifTrue: [  a multiplyFromSmallInteger: self ]
+		ifFalse: [ err == #SmallIntegerOverflow 
+							ifTrue:  [ a multiplyFromInteger: self ]
+							ifFalse: [ self error: 'SmallInteger multiply: ', err]	]!
+
+nonPrimitiveQuo: a <Number> error: err <Symbol> ^<Int>
+	"This is invoked on primitive failure"
+
+	^err == #FirstArgumentHasWrongType
+			ifTrue: [ super quo: a ]
+			ifFalse: [ self error: 'SmallInteger quo: ', err ]!
+
+nonPrimitiveSubtract: a <Number> error: err <Symbol> ^<Number>
+	"This is invoked on primitive subtraction failure"
+
+	^err == #FirstArgumentHasWrongType
+		ifTrue: [  a subtractFromSmallInteger: self ]
+		ifFalse: [ err == #SmallIntegerOverflow 
+							ifTrue:  [ a subtractFromInteger: self ]
+							ifFalse: [ self error: 'SmallInteger subtraction: ', err]	]! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'proxy operations' !
+
+
+externalBitAnd: other <ExternalData> ^<ExternalData>
+
+	^other bitAndFromSmallInteger: self!
+
+externalBitOr: other <ExternalData> ^<ExternalData>
+
+	^other bitOrFromSmallInteger: self!
+
+hasBitsSet: mask <ExternalData> ^<Boolean>
+
+	^(self externalBitAnd: mask) @= mask! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'private-proxy double dispatching' !
+
+
+bitAndFromProxy: other <ExternalProxy> ^<ExternalProxy>
+
+	^other bitAndFromProxy: self asExternalProxy!
+
+bitOrFromProxy: other <ExternalProxy> ^<ExternalProxy>
+
+	^other bitOrFromProxy: self asExternalProxy! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'accessing' !
+
+
+identityHash ^<Int>
+
+	^self! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'file out' !
+
+
+fileOutOn:  d <Dumper>
+    self >= 0 ifTrue: [
+		d putByte: 48.
+		d putInteger: self.
+    ] ifFalse: [
+		d putByte: 45.
+		d putInteger: self abs.
+    ]! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'printing' !
+
+
+printString ^<Str>
+
+	| digits <Int> abs <Int> s <String> zeroCode <Int> i <Int> |
+	self negative
+		ifTrue: [	abs := self negated. ]
+		ifFalse: [	abs := self. ].
+	digits := self digitsForAbs: abs.
+
+	abs == self
+		ifFalse: [	i := 1.
+						digits := digits + 1.
+						s := String new: digits.
+						s at: 1 put: $-.
+						]
+		ifTrue: [	i := 0.
+						s := String new: digits. ].
+
+	zeroCode := $0 unicodeValue.
+	[	s at: digits putUnicode: zeroCode + (abs \\ 10).
+		digits := digits - 1.
+		digits > i
+		]	whileTrue: [ abs := abs // 10 ].
+	^s! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'restricted-to large integers' !
+
+
+asLargeInteger ^<LargeInteger>
+
+	^LargeInteger forSmallInteger: self! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'debugging' !
+
+
+asObject ^<Object>
+	"Returns the object in object id table at index 'self'"
+	
+	^{{self primitiveAsObjectIfFail: [ :err <Symbol> | self error: err]}}! !
+

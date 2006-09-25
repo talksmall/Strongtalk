@@ -1,0 +1,59 @@
+Delta define: #HBITMAP as: (
+(Class subclassOf: 'Win32Handle' instanceVariables: 'extent <Point>
+	')) !
+
+(Delta mirrorFor: #HBITMAP) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #HBITMAP) group: 'base'!
+
+(Delta mirrorFor: #HBITMAP)
+comment: 
+'Handle for a Win32 bitmap
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #HBITMAP) classSide methodsFor: 'creation' !
+
+
+fromWin32File: f <File> ^<HBITMAP>
+
+	^self fromWin32File: f ifFail: [ self error: 'Error opening bitmap file' ]!
+
+fromWin32File: f <FilePath> ifFail: blk <[^X def]> ^<HBITMAP | X>
+
+	| inst <HBITMAP> nm <CString> |
+	nm := CString for: f name.
+	[	inst := {{<user HBITMAP LoadImageA>
+					hinstance: Win32 NULL
+					name: nm
+					type: Win32 IMAGE_BITMAP
+					xSize: 0		"We will use the size in the file"
+					ySize: 0
+					flags: (Win32 LR_DEFAULTCOLOR
+								externalBitOr: Win32 LR_LOADFROMFILE)
+				  }}.
+		inst isNull
+			ifTrue: [ ^blk value ].
+	] ensure: [ nm free ].
+	^inst! !
+
+! (Delta mirrorFor: #HBITMAP) methodsFor: 'accessing' !
+
+
+extent ^<Point>
+
+	extent isNil
+		ifTrue: [	| b <BITMAP> |
+						b := BITMAP new allocate.
+						[	{{<gdi ExternalProxy GetObjectA>
+								bitmap: self
+								len: b structureSize
+								buf: b
+							}} isNull
+								ifTrue: [ Win32 handleError ].
+							extent := b bmWidth @ b bmHeight.
+						   ] ensure: [ b free ].		].
+	^extent! !
+

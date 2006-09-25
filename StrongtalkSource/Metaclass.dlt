@@ -1,0 +1,42 @@
+Delta define: #Metaclass as: (
+(Class subclassOf: 'ClassDescription' instanceVariables: 'instanceClass')) !
+
+(Delta mirrorFor: #Metaclass) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Metaclass) group: 'base'!
+
+(Delta mirrorFor: #Metaclass)
+comment: 
+'Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Metaclass) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^65! !
+
+! (Delta mirrorFor: #Metaclass) methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^65! !
+
+! (Delta mirrorFor: #Metaclass) methodsFor: 'accessing' !
+
+
+instanceClass ^ <Class>
+	^instanceClass!
+
+instanceClass: ic <Class>
+	instanceClass := ic!
+
+name ^ <Symbol>
+	^(self instanceClass name, ' class') asSymbol!
+
+name: n <Symbol> ifFail: fb <[]>
+	fb value! !
+

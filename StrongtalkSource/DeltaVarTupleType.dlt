@@ -1,0 +1,77 @@
+Delta define: #DeltaVarTupleType as: (
+(Class subclassOf: 'DeltaTupleType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaVarTupleType) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaVarTupleType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaVarTupleType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaVarTupleType) classSide methodsFor: 'naming' !
+
+
+publicTupleName  ^ <Symbol>
+
+^#VarTuple!
+
+publicTupleName: n <Int > ^ <Symbol>
+
+^n = 0 ifTrue:[#Object]
+           ifFalse:[#VarTuple].!
+
+tupleName: n <Int > ^ <Symbol>
+    ^(n printString, '_argVarTuple') asSymbol.! !
+
+! (Delta mirrorFor: #DeltaVarTupleType) classSide methodsFor: 'private' !
+
+
+addAtPutMessage: n <Int >to: g <DeltaGenericProtocol > ^ <Self>
+    | range <ObjectType>   selector <Str>  msg <MsgSignature>  domain <VarOrdCltn[ObjectType]>   i <Interface>  |
+
+i := g body delta rawPrimaryInterface.
+domain := OrderedCollection[ObjectType]  new.
+
+selector := self atPutMsgSelector: n.
+domain addLast: ( DeltaTypeId new setId: ('A', n printString) asSymbol; 
+                                                                      scope: g genericScope).
+range := DeltaTypeId new setId: ('A', n printString) asSymbol; scope: g genericScope.
+msg := DeltaMsgSignature new domain: domain range: range.
+i at: selector  put: msg.!
+
+addCharacteristicMessage: n <Integer> to: g <GenericProtocol>
+
+self addAtPutMessage: n to: g!
+
+atPutMsgSelector: n <Integer> ^ <Symbol>
+
+^('at', n printString, 'Put:') asSymbol.!
+
+createSuper: n <Integer> ^ <DeltaProtocol>
+
+^n > 1 
+	ifTrue: [DeltaProtocolMerge new type1: self new type2: DeltaTupleType new]  
+					 "Will be completed  later in createTupleType:"
+	ifFalse: [DeltaTupleType new ].!
+
+patchMerge: sp <ProtocolMerge> arity: n <Integer> within: aScope <Scope>
+
+| t1 <VarTupleType> t2 <TupleType> |
+
+t1 := self patchGenericSuper: sp type1 arity: n within: aScope.
+t2 := self patchGenericSuper: sp type2 arity: n + 1 within: aScope.
+!
+
+patchSuper: sp <Protocol> arity: n <Integer> within: aScope <Scope>
+
+| actuals <OrdCltn[TypeId]> |
+
+actuals := OrderedCollection [TypeId]  new.
+n = 1 
+	ifTrue: [self patchGenericSuper: sp arity: 2 within: aScope	]
+	ifFalse: [self patchMerge: sp arity: n within: aScope].
+
+! !
+

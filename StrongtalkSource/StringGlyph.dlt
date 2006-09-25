@@ -1,0 +1,158 @@
+Delta define: #StringGlyph as: (
+(Class subclassOf: 'Glyph' instanceVariables: 'medium <Medium>
+            "The medium for which the allocation was calculated"
+allocation <Rect>
+            "The allocation acts as a kind of inline-cache for a given medium"
+string <Str>
+
+painter <Painter>
+stretchy <Boolean>
+			"If true, then we allow the x dimension to stretch, while
+				keeping left justified"
+		')) !
+
+(Delta mirrorFor: #StringGlyph) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #StringGlyph) group: 'ui'!
+
+(Delta mirrorFor: #StringGlyph)
+comment: 
+'StringGlyphs are a composite glyph for convenience and efficiency when dealing with
+fixed read-only strings for display in a uniform font.
+
+Tags: %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #StringGlyph) classSide methodsFor: 'instance creation' !
+
+
+for: s <Str> ^<Instance>
+
+	^self for: s painter: Painter default!
+
+for: s <Str> painter: p <Painter>  ^<Instance>
+	
+	^super new initFor: s painter: p! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'initialization' !
+
+
+initFor: s <Str> painter: p <Painter>
+
+	string := s.
+	self painter: p.
+	self stretchy: false.! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'geometry-local' !
+
+
+allocationFor: context <VisualGlyph>  ^<Region>
+
+	^self allocationIn: context medium!
+
+maxIn: m <Medium> ^<Region>
+
+	| r <Rect> |
+	r := self allocationIn: m.
+	self stretchy
+		ifTrue: [ r := r origin corner: UI huge @ r bottom ].
+	^r!
+
+naturalIn: m <Medium> ^<Region>
+
+	^self allocationIn: m! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'accessing' !
+
+
+font ^<Font>
+
+	^self painter font!
+
+paint ^<Paint>
+
+	^self painter paint!
+
+painter ^<Painter>
+
+	^painter!
+
+stretchy ^<Boolean>
+
+	^stretchy!
+
+stretchy: f <Boolean>
+
+	stretchy := f!
+
+string ^<Str>
+
+	^string! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas> for: context <VisualGlyph>
+
+	can withPainter: self painter
+		do: [ can displayString: self string allocation: (self allocationFor: context) enclosingRect ]! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'private' !
+
+
+allocationIn: m <Medium>  ^<Region>
+
+	| protoAlloc <Rect> p <Painter> width <Int> gl <CharacterGlyph> |
+	m = self medium
+		ifFalse: [	self medium: m.
+							p := self painter.
+							gl := p charGlyphFor: $a.
+						
+							"use the canonicalized painter for speed"
+							self painter: (p := gl painter).
+						
+							protoAlloc := (gl naturalIn: m) enclosingRect.
+							width := 0.
+							self string do:
+								[ :c <Character> |
+									width := width + (((p charGlyphFor: c) naturalIn: m) enclosingRect) width.
+								].
+							allocation := protoAlloc origin corner: width @ protoAlloc bottom.		].
+	^allocation!
+
+medium ^<Medium>
+
+	^medium!
+
+medium: m <Medium>
+
+	medium := m!
+
+painter: p <Painter>
+
+	painter := p! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'testing' !
+
+
+isRectangularAndOpaque ^<Boolean>
+
+	^false!
+
+isSurelyRigid ^<Boolean>
+
+	^self stretchy not! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream> indent: level <Int>
+
+	level timesRepeat: [ strm show: '    ' ].
+	strm show: self class name.
+	strm show: '('; print: self string; show: ')'.
+	strm cr.! !
+

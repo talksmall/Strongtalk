@@ -1,0 +1,166 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Virtual Machine</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="virtualmachine3.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="virtualmachine4.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">Examining Compilation and Controlling Compiled
+Code</h2>
+
+<h3 align="left">Looking at Compiled Code Space Usage</h3>
+
+<p align="left">The fact that the compiler inlines and customizes
+methods means that methods can potentially have many compiled
+versions, each in a different inlining or customization context.
+This brings up an important point: it would seem like this might
+consume a large amount of space for compiled code. In practice,
+the opposite is true: the system uses a remarkably small amount
+of space for compiled code. This is because only performance
+critical code is optimized, and most systems spend most of their
+time running a quite small set of performance critical code, as
+mentioned before. </p>
+
+<p align="left">You can tell the VM to print a summary of the
+compiled code space usage, which appears in the console window
+(not the Trancript). This is done using the
+&quot;System/Compiler/Print Compiled Code Space Usage
+(Zone)&quot; menu item on the Launcher. The first number is the
+total size of the compiled code space, including unused space.
+The size of this area is fixed at startup, but can be changed
+using the CodeSize option in the <a
+doit="(CodeEditor on: (FilePath for: '.strongtalkrc')) launch">.strongtalkrc</a>
+startup options file. The third line contains the most important
+information, which is the number of compiled top-level methods
+(not counting methods inlined into them), and how much space they
+use. Typically compiled code occupies 1-3 megabytes for a
+programming session.</p>
+
+<h3 align="left">Showing Compilations</h3>
+
+<p align="left">You can tell the VM to show every method it is
+compiling, which is an interesting way to watch the adaptive
+optimization process in action. This is done by selecting
+&quot;System/Compiler/Print Compilations&quot; from the Launcher
+menu.</p>
+
+<h3 align="left">Changing the Compilation Threshold</h3>
+
+<p align="left">The threshold at which code is considered to be
+performance-sensitive, and thus compiled, can be changed. This is
+done by setting a different value for InvocationCounterLimit in
+the <a
+doit="(CodeEditor on: (FilePath for: '.strongtalkrc')) launch">.strongtalkrc</a>
+file. This value is 10000 by default. The number indicates the
+number of times a method or loop body must execute before the
+compiler tries to produce an optimized version of that code (and
+perhaps the calling and called code too). Increasing this value
+will cause a smaller amount of compiled code to be compiled, and
+decreasing it will cause more code to be compiled. The
+performance effect of changing it is not so obvious. The most
+performance critical code will be compiled for almost any
+reasonable value, so peak performance is not affected. Code that
+is marginally performance sensitive is the most affected by
+changing the limit. Increasing the limit also has the effect of
+making the system somewhat more stable, since less of the system
+is compiled.</p>
+
+<h3 align="left">The Inlining Database</h3>
+
+<p align="left">Because of the adaptive nature of the compiler,
+the compiled code naturally differs depending on the way that the
+system is being used. Thus, subtle changes in the way that a user
+interacts with the system can cause slightly different
+optimization results. For production application deployment, this
+may not be a desirable feature, since the exact compiled code
+produced can vary every single time the system is run, and that
+may make the testing team uncomfortable.</p>
+
+<p align="left">To deal with these sorts of issues, the
+Strongtalk VM is capable of storing in an external directory
+structure the exact inlining format that the system is using, and
+can be told to reuse that same inlining structure on subsequent
+runs. This can make the performance of the system more
+predictable, and in fact, you can even turn off all compilation
+for any method not in the inlining database, so that the compiled
+code is virtually identical between runs. Or, you can allow the
+compiler to run normally, in addition to using the inlining
+database.</p>
+
+<p align="left">To create an inlining database, you run the
+system until you have the system in a state where the code you
+care about has been optimized. Then, you dump the inlining
+database using the Launcher menu item
+&quot;System/Compiler/Create Inlining Database&quot;. This will
+create a directory called &quot;Inlining&quot; under the
+strongtalk home directory. The directory contains a subdirectory
+for each class that has optimized code associated with it, and in
+those directories there is a file for each optimized method,
+containing the inlining structure in the same format we saw on
+the previous page.</p>
+
+<p align="left">Once you have created an inlining database, there
+are several flags that control the inlining database operation.
+These flags are in the <a
+doit="(CodeEditor on: (FilePath for: '.strongtalkrc')) launch">.strongtalkrc</a> file.
+The options have either a + before them to enable them, or a - to
+disable them.</p>
+
+<ul>
+    <li><p align="left"><strong>UseInliningDatabase</strong>:
+        this option indicates whether or not the inlining
+        database should be used.</p>
+    </li>
+    <li><p align="left"><strong>UseInliningDatabaseEagerly</strong>:
+        this option indicates whether the inlining database
+        should be used eagerly or not. When this flag is off, the
+        inlining database is referred to only when a method has
+        been used enough to become performance critical, and it
+        is then compiled using the database inlining structure.
+        When the database is used eagerly, two things happen: the
+        method is compiled using the inlining database structure
+        immediately the first time it is invoked, and a
+        background process starts when the system starts up to
+        eagerly compile all the code in the inlining database.
+        Eager use of the database can cause the system to start
+        up a little bit slower, since compilation happens
+        up-front, but the system then reaches top performance
+        much sooner and more predictably than when using the
+        database lazily.</p>
+    </li>
+    <li><p align="left"><strong>UseRecompilation</strong>: This
+        flag actually isn't directly for the inlining database,
+        but it interacts with it. This is the master flag that
+        tells the system whether to compile performance critical
+        code. If this is off, the system runs in interpreted
+        mode, except for any methods in the inlining database (if
+        it is enabled), which are the only ones optimized. If the
+        compiler is on, then the optimizer runs normally,
+        although the inlining database is referred to for those
+        methods it contains.</p>
+    </li>
+</ul>
+
+<p align="left">The inlining database is also a great tool for
+exploring exactly what the adaptive compiler has done. Try
+dumping the inlining database and looking at its contents if you
+are interested in the adaptive compiler. One important thing to
+note is that sometimes there is no entry in the database for a
+method you are sure is performance critical. This can happen
+because the inlining database may have inlined that method into
+the body of some <em>other</em> calling method instead, so it may
+not need its own top-level compiled method. Adaptive optimization
+may compile many different versions of a method, either
+customized for different subclasses, or inlined into different
+optimized calling methods.</p>
+
+<h3 align="right"><a href="virtualmachine4.html"><strong>Continue
+with the tour ==&gt;</strong></a></h3>
+</body>
+</html>

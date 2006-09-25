@@ -1,0 +1,53 @@
+Delta define: #TakBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: '')) !
+
+(Delta mirrorFor: #TakBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #TakBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #TakBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TakBenchmark) methodsFor: 'misc' !
+
+
+run
+	"TakBenchmark new run"
+	| r |
+	r := self takX: 18 Y: 12 Z: 6.
+	r ~= 7 ifTrue: [ self error: 'tak results are incorrect' ].!
+
+takX: x Y: y Z: z 
+	y < x ifFalse: [^z]
+		ifTrue: [^self
+				takX: (self
+						takX: x - 1
+						Y: y
+						Z: z)
+				Y: (self
+						takX: y - 1
+						Y: z
+						Z: x)
+				Z: (self
+						takX: z - 1
+						Y: x
+						Z: y)]! !
+
+! (Delta mirrorFor: #TakBenchmark) methodsFor: 'times' !
+
+
+digitalkTime
+	^27!
+
+factor
+	^75!
+
+name
+	^#Tak!
+
+parcplaceTime
+	^32! !
+

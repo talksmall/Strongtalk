@@ -1,0 +1,277 @@
+Delta define: #OutputStreamView as: (
+(Class subclassOf: 'InstanceCritical |> (CharacterOutput |> (BasicOutputStream[Character] delta |> Application))' instanceVariables: 'textView <TextView[CharGlyphs]>
+bufferStream <ReadWriteStream[Character]>
+logging <Boolean>
+logStream <CharOutputStream>
+doneUpdating <Semaphore>
+')) !
+
+(Delta mirrorFor: #OutputStreamView) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #OutputStreamView) group: 'ui'!
+
+(Delta mirrorFor: #OutputStreamView)
+comment: 
+'Textview with transcript logging behavior.
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #OutputStreamView) classSide methodsFor: 'instance creation' !
+
+
+withDesiredRows: r <Int> columns: c <Int> ^ <Instance>
+
+	| inst <Instance> |
+	inst := self new.
+	inst textView
+		desiredRows: r;
+		desiredColumns: c.
+	^inst
+! !
+
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'private' !
+
+
+bufferStream ^<ReadWriteStream[Character]>
+	"Must be accessed in a critical region"
+
+	^bufferStream!
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	| v <Visual> |
+	self critical:
+		[	| gls <CharGlyphs> |
+			self bufferStream position: 0.
+			gls := self bufferStream contentsRemaining collect: 
+				[ :c <Character> | self textView painter charGlyphFor: c ].
+			textView model: gls.
+			self newBufferStream	].
+	v := self textView bareVisualTop: top.
+	^top 
+		ifTrue: [		v withBorder: (Border standard3DWithColor: Paint gray raised: false) ]
+		ifFalse: [	v ]!
+
+desiredColumns ^<Int>
+
+	^60!
+
+desiredRows ^<Int>
+
+	^13!
+
+doEmpty
+
+	self critical:
+		[ self textView model: OrderedCollection[CharacterGlyph] new ]!
+
+newBufferStream
+
+	bufferStream := (String new: 32) readWriteStream.!
+
+saveAs: f <FilePath> onSuccess: blk <[]>
+
+	| strm <CharOutputStream> |
+	strm := f charOutputStream.
+	[ self textView model do: [ :cg <CharacterGlyph> | strm put: cg character ] ]
+		ensure: [ strm close ].
+	blk value
+!
+
+saveAsAndOnSuccess: blk <[]>
+
+	self visual
+		userPickSaveFileWithAction:
+			[ :f <FilePath> | self saveAs: f onSuccess: blk ]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'All Files' ,, '*.*' with: 'Text Files' ,, '*.txt' )
+		defaultFile: nil
+		defaultDir: nil
+		title: 'Save File'!
+
+textView ^<TextView[CharGlyphs]>
+
+	^textView!
+
+textViewClass ^ <TextView[CharGlyphs] class>
+
+	^TextView[CharGlyphs] !
+
+update
+
+	(self hasVisual and: [ self visual layoutValid ])
+		ifTrue: [	| done <Semaphore> |
+						self critical:
+							[	| endSpot <Point> |
+								endSpot := self textView endSpot.
+								self bufferStream position: 0.
+								self bufferStream atEnd
+									ifFalse: [	| gls <CharGlyphs> |
+														gls := self bufferStream contentsRemaining collect: 
+															[ :c <Character> | self textView painter charGlyphFor: c ].
+														self textView
+															replaceFrom: endSpot
+															to: endSpot
+															withModel: gls.
+														self newBufferStream.
+														endSpot := self textView endSpot.
+														self textView selection: endSpot ,, endSpot.	].
+							].
+						self session updateLayoutsIfNeeded.
+						self textView displayNowIfInvalid.
+
+						self critical:
+							[	done := self doneUpdating.
+								"We create a new event each time"
+								doneUpdating := Semaphore new.
+							].
+						done signalEvent.
+					]! !
+
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'accessing' !
+
+
+cr
+
+	super cr.
+	self flush!
+
+doneUpdating ^<Semaphore>
+
+	^doneUpdating!
+
+logStream ^<CharOutputStream>
+
+	^logStream!
+
+logStream: s <CharOutputStream>
+
+	self critical:
+		[ logStream := s ]!
+
+logging ^<Boolean>
+
+	^logging!
+
+nextPut: c <Character> ^<Character>
+
+	self critical:
+		[	| update <Boolean> |
+			update := self bufferStream isEmpty.
+			self bufferStream nextPut: c.
+			self logging
+				ifTrue: [ self logStream nextPut: c ].
+			(update and: [ self hasVisual ])
+				ifTrue: [ self session inProcessDo:
+								[ self update ]
+							].
+		].
+	^c! !
+
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self newBufferStream.
+	doneUpdating := Semaphore new.
+	self logging: false.
+	self logStream: Platform errorStream.		"Default stream for logging"
+	
+	textView := self textViewClass forText.
+	textView scrollable: true.
+	textView doneBlock:
+		[ :save <Boolean> :onSuccess <[]> |
+			save
+				ifTrue: [		self saveAsAndOnSuccess: onSuccess ]
+				ifFalse: [	self empty ]		
+		].
+	textView infiniteUndo.
+	textView
+			desiredRows: self desiredRows;
+			desiredColumns: self desiredColumns.
+! !
+
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'menus' !
+
+
+fileMenu ^<Menu>
+
+	^Menu new name: '&File';
+			add: (MenuAction new
+					name: '&Save as...';
+					action: [ self saveAsAndOnSuccess: [] ]);
+			add: (MenuAction new
+					name: '&Clear';
+					action: [ self empty ]);
+			add: (MenuAction new
+					name: '&Logging';
+					checked: [ self logging ];
+					action: [ self logging: self logging not ]);
+		 addSeparator;
+		 add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self])!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+hasPopUpMenuForTop ^<Boolean>
+	
+	^true!
+
+menuBar ^<Menu>
+
+	^self textView menuBar
+		prependItems: (Array[Menu] with: self fileMenu)!
+
+popUpMenu ^<Menu>
+
+	^Menu new
+		addAll: self textView smalltalkMenu removeAll;
+		addSeparator;
+		add: self fileMenu;
+		add: self textView editMenu;
+		add: self textView propertiesMenu! !
+
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'control' !
+
+
+empty
+
+	self session  inProcessDo: [ self doEmpty ]!
+
+flush
+
+	| event <Semaphore> |
+	self logStream notNil
+		ifTrue: [ self logStream flush ].
+
+	(self hasVisual and: [ self visual layoutValid ])
+		ifTrue: [	"We do it this way to be absolutely sure that an update doesn't occur between the test below, and the
+							accessing of the event"
+						Processor activeProcess = self session process
+							ifTrue: [ self update ]
+							ifFalse: [	self critical:
+												[	self bufferStream isEmpty
+														ifFalse: [ event := self doneUpdating ].
+												].
+											event notNil
+												ifTrue: [ event wait ]
+										 ].
+					].!
+
+logging: f <Boolean>
+
+	logging := f! !
+
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'utility' !
+
+
+showDoIt: s <Str> ^<Str>
+
+	^self show: s! !
+

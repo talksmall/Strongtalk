@@ -1,0 +1,68 @@
+Delta define: #DeltaPrimitive as: (
+(Class subclassOf: 'DeltaSend' instanceVariables: 'recv ')) !
+
+(Delta mirrorFor: #DeltaPrimitive) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaPrimitive) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPrimitive)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPrimitive) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool primitiveNode: self!
+
+args ^ <OrdCltn[Expression]>
+    ^self recv isNil ifTrue:[self msg args]
+                        ifFalse:[self msg args copy addFirst: self recv; yourself.].!
+
+funType ^ <DeltaMsgSignature>
+
+^DeltaPrimitives selectMsg: self msg selector ifAbsent: [
+	self reportError: (DeltaSelectorUndefinedError new selector: self msg selector)].
+
+
+!
+
+inferTypeFrom: ft  <MsgSignature> ^ <MsgSignature>
+
+^ft  inferTypeFrom: self args!
+
+isPrimitiveNode ^ <Boolean>
+    ^ true!
+
+msg ^ <DeltaMessage>
+    ^ msg!
+
+recv ^ <Expression>
+    ^ recv!
+
+selector ^ <Symbol>
+    ^self recv isNil
+   ifTrue:[self msg selector]
+   ifFalse:[
+              ('recvr:', self msg selector) asSymbol.
+              ].!
+
+to: anExpr <Expression >send: aMsg <DeltaMessage > ^ <Self>
+    self assert: [((anExpr isNil) or: [anExpr isExpressionNode])].
+    self assert: [aMsg isMessageNode].
+    recv := anExpr.
+    msg := aMsg!
+
+type ^ <ObjectType>
+    | functionType <DeltaMsgSignature>  i <Int>   |
+
+functionType := self functionType.
+self checkArityAgainstSignature: functionType 
+         ifFail:[functionType isError 
+                      ifTrue:[( guaranteed <TypeError> functionType) domainSize: self args size]
+                      ifFalse:[^self reportError: DeltaPrimitiveCallArityError new.].
+                    ].
+self checkArgsAgainstSignature: functionType.
+^functionType range.! !
+

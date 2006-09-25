@@ -1,0 +1,103 @@
+Delta define: #Random as: (
+(Class subclassOf: 'BasicInputStream[Float]' instanceVariables: 'seed <Float>
+		')) !
+
+(Delta mirrorFor: #Random) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Random) group: 'base'!
+
+(Delta mirrorFor: #Random)
+comment: 
+'Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #Random) classSide methodsFor: 'constants' !
+
+
+defaultSeed ^<Float>
+
+	^1.0! !
+
+! (Delta mirrorFor: #Random) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new seed: self defaultSeed!
+
+newWithSeed: f <Float> ^<Instance>
+	"s should be a float between 1.0 and 2147483647.0"
+
+	self assert: [ f between: 1.0 and: self modulus ].
+	^super new seed: f! !
+
+! (Delta mirrorFor: #Random) classSide methodsFor: 'testing' !
+
+
+test
+
+	| s <Random> |
+	s := self newWithSeed: 1.0.
+	10000 timesRepeat: [ s next ].
+"%todo: fix all the hacks like below when have bigints"
+	[ s seed = (10436180 asFloat * 100.0 + 65 asFloat) "1043618065" ] verify.! !
+
+! (Delta mirrorFor: #Random) classSide methodsFor: 'private' !
+
+
+modulus ^<Float>
+
+	"^2147483647.0"
+	^ (2147 asFloat * 1000000 asFloat) + 483647 asFloat!
+
+multiplier ^<Float>
+
+	^16807 asFloat! !
+
+! (Delta mirrorFor: #Random) methodsFor: 'accessing' !
+
+
+nextInteger ^<Int>
+
+	^(SmallInteger maxVal * self next) asInteger!
+
+peekInteger ^<Int>
+
+	^(SmallInteger maxVal * self peek) asInteger!
+
+seed ^<Float>
+
+	^seed!
+
+seed: s <Float>
+
+	seed :=  s.! !
+
+! (Delta mirrorFor: #Random) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+
+	^false!
+
+actualNext ^<Float>
+
+	| temp <Float> |
+
+	temp := self multiplier * self seed.
+	temp := temp - (self modulus * (temp/ self modulus) truncated asFloat).
+	self seed: temp.
+	temp := temp / self modulus.
+	^temp!
+
+modulus ^<Float>
+
+	^self actualClass modulus!
+
+multiplier ^<Float>
+
+	^self actualClass multiplier! !
+

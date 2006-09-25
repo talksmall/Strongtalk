@@ -1,0 +1,54 @@
+Delta define: #SequenceableVirtualSelector as: (
+Generic forAll: '(T covar) ' body: ((Class subclassOf: 'SequenceableCollection[T]' instanceVariables: 'cltn filter ') protocols: 'VirtualSelector[T]'; classProtocols: 'VirtualSelector[T] class')) !
+
+(Delta mirrorFor: #SequenceableVirtualSelector) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #SequenceableVirtualSelector) group: 'misc'!
+
+(Delta mirrorFor: #SequenceableVirtualSelector)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SequenceableVirtualSelector) classSide methodsFor: 'Unclassified' !
+
+
+on: c <Collection[T] >filter: b <[X,^Boolean] > ^ <Instance>
+    ^super new on: c filter: b! !
+
+! (Delta mirrorFor: #SequenceableVirtualSelector) methodsFor: 'Unclassified' !
+
+
+at: i <Int > ^ <T>
+
+^self at: i ifAbsent: [self error: 'Index out of bounds'].
+!
+
+at: i <Int > ifAbsent: blk <[^V]>  ^ <T>
+    | j <Int>  |
+
+j := 0.
+self cltn do:[: e <T>  |  (self filter value: e) ifTrue:[j := j+1]. j = i ifTrue:[^e]].
+^blk value
+!
+
+cltn ^ <Collection[T]>
+    ^cltn!
+
+cltnSpecies
+
+^self cltn cltnSpecies!
+
+do: blk <[T,^Object] > ^ <Self>
+    cltn do: [ :e <X>  | (filter value: e) ifTrue:[ blk value: e] ]!
+
+filter ^ <[T,^Boolean]>
+    ^filter!
+
+on: c <Collection[T] >filter: b <[T,^Boolean] > ^ <Self>
+    cltn := c.
+    filter := b.!
+
+size ^ <Int>
+    ^cltn size! !
+

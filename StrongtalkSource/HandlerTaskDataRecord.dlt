@@ -1,0 +1,54 @@
+Delta define: #HandlerTaskDataRecord as: (
+(Class subclassOf: 'RBObject' instanceVariables: 'workIn deviceIn')) !
+
+(Delta mirrorFor: #HandlerTaskDataRecord) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HandlerTaskDataRecord) group: 'benchmark'!
+
+(Delta mirrorFor: #HandlerTaskDataRecord)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #HandlerTaskDataRecord) classSide methodsFor: 'instance creation' !
+
+
+create
+    ^super new create
+! !
+
+! (Delta mirrorFor: #HandlerTaskDataRecord) methodsFor: 'initialize' !
+
+
+create
+    workIn := deviceIn := NoWork
+! !
+
+! (Delta mirrorFor: #HandlerTaskDataRecord) methodsFor: 'accessing' !
+
+
+deviceIn
+    ^deviceIn
+!
+
+deviceIn: aPacket
+    deviceIn := aPacket
+!
+
+deviceInAdd: packet
+    deviceIn := self append: packet head: deviceIn
+!
+
+workIn
+    ^workIn
+!
+
+workIn: aWorkQueue
+    workIn := aWorkQueue
+!
+
+workInAdd: packet
+    workIn := self append: packet head: workIn
+! !
+

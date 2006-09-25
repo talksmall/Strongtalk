@@ -1,0 +1,21 @@
+Delta define: #DeltaMsgArgumentMismatch as: (
+(Class subclassOf: 'DeltaMsgNotSubtypesError' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaMsgArgumentMismatch) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaMsgArgumentMismatch) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMsgArgumentMismatch)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMsgArgumentMismatch) methodsFor: 'Unclassified' !
+
+
+errorMessage  ^ <String>
+    ^'Number of arguments for ', self subtypeLoc name, ' does not match number of arguments for ', self supertypeLoc name!
+
+isExplainable
+	^false! !
+

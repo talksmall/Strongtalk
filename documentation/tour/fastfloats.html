@@ -1,0 +1,67 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Virtual Machine</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right">
+ <a href="toc.html">Contents</a> |
+ <a href="virtualmachine4.html"><strong>Return to the Tour ==&gt;</strong></a></h3>
+<h2 align="left">The Virtual Machine (cont.)</h2>
+
+<h3 align="left">Experimental Fast Floating Point</h3>
+
+<p align="left">One of the classic performance problems in
+Smalltalk is the performance of double-precision (64 bit)
+floating point operations. This is due to the fact that all
+numbers are objects in Smalltalk, and on current machines object
+references are 32 bits, with 1 or 2 bits reserved for tag bits,
+which is far too small to encode a double-precision floating
+point value. This is not a problem for integers, since 30 or 31
+bits is plenty to represent numbers up to at least 1 billion. But
+a single precision floating point value with tag bits subtracted,
+which is all you can fit into an immediate object reference, has
+far too few digits of precision (about 7) for most floating point
+applications. Thus, they have to be allocated as real objects,
+and this causes a massive performance penalty of one or two
+orders of magnitude for double-precision floating point
+calculations, since a new object must be allocated for the result
+of every operation.</p>
+
+<p align="left">The Strongtalk system includes an experimental
+scheme for performing fast double-precision arithmetic without
+allocation. This scheme was not developed very far, and has
+several drawbacks and limitations:</p>
+
+<ul>
+    <li><p align="left">It requires use of a special
+        &lt;FloatVal&gt; type annotation that is <em>not</em>
+        integrated with the type system, although it uses the
+        same syntax. If this syntax is not used, normal allocated
+        double precision operation is used.</p>
+    </li>
+    <li><p align="left">It requires explicit conversion between
+        boxed (allocated) and unboxed (optimized) doubles, and
+        does not allow passing of unboxed doubles across method
+        boundaries.</p>
+    </li>
+</ul>
+
+<p align="left">However, if a significant number of operations
+are combined in a single method, it can produce huge speedups by
+eliminating all the allocation for intermediate results. Click
+<a DOIT="Mandelbrot new launch">here</a> to launch a primitive sample application that uses fast floating point
+to compute the Mandelbrot set. Use the
+&quot;Control/Compute&quot; menu item to run the program. You can
+compare the performance relate to both normal Smalltalk
+&quot;boxed&quot; floats, and to a C routine, using the options
+menu. The compute time in milliseconds is printed in the
+Transcript.</p>
+
+<h3 align="right"><a href="virtualmachine4.html"><strong>Return to the Tour ==&gt;</strong></a></h3>
+</body>
+</html>

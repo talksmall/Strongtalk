@@ -1,0 +1,61 @@
+Delta define: #PALETTEENTRY as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #PALETTEENTRY) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #PALETTEENTRY) group: 'base'!
+
+(Delta mirrorFor: #PALETTEENTRY)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #PALETTEENTRY) classSide methodsFor: 'accessing' !
+
+
+structureSize ^<Int>
+
+	^4! !
+
+! (Delta mirrorFor: #PALETTEENTRY) methodsFor: 'accessing' !
+
+
+peBlue: v <Int>
+
+	self byteAt: self peBlueOffset put: v!
+
+peFlags: v <Int>
+
+	self byteAt: self peFlagsOffset put: v!
+
+peGreen: v <Int>
+
+	self byteAt: self peGreenOffset put: v!
+
+peRed: v <Int>
+
+	self byteAt: self peRedOffset put: v!
+
+structureSize ^<Int>
+
+	^self actualClass structureSize! !
+
+! (Delta mirrorFor: #PALETTEENTRY) methodsFor: 'offsets' !
+
+
+peBlueOffset ^<Int>
+
+	^2!
+
+peFlagsOffset ^<Int>
+
+	^3!
+
+peGreenOffset ^<Int>
+
+	^1!
+
+peRedOffset ^<Int>
+
+	^0! !
+

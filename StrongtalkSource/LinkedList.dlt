@@ -1,0 +1,151 @@
+Delta define: #LinkedList as: (
+Generic forAll: 'L <Link> ' body: ((Class subclassOf: 'SequenceableCollection[L]' instanceVariables: 'first <L>
+last <L> '))) !
+
+(Delta mirrorFor: #LinkedList) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #LinkedList) group: 'base'!
+
+(Delta mirrorFor: #LinkedList)
+comment: 
+'This class is bogus and should become obsolete, but it is in the BlueBook, so it is here.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #LinkedList) methodsFor: 'accessing' !
+
+
+add: link <L> ^<L>
+
+	self isEmpty
+		ifFalse: [ link nextLink: self first ]
+		ifTrue: [ self last: link ].
+	self first: link.
+	^link!
+
+addFirst: link <L> ^<L>
+
+	self isEmpty
+		ifFalse: [ link nextLink: self first ]
+		ifTrue: [ self last: link ].
+	self first: link.
+	^link!
+
+addLast: link <L> ^<L>
+
+	self isEmpty
+		ifFalse: [ self last nextLink: link ]
+		ifTrue: [ self first: link ].
+	self last: link.
+	^link!
+
+at: index <Int>  ^<L>
+
+	^self first linkAt: index!
+
+first ^<L>
+
+	^first!
+
+isEmpty ^<Boolean>
+
+	^first == nil!
+
+last ^<L>
+
+	^last!
+
+predecessorOf: link <L>
+ifFirst: onFirst <[^X def]>
+ifAbsent: onAbsent <[^Y def]>
+^<L | X | Y>
+
+	| havePred <Boolean> pred <L> |
+	havePred := false.
+	self do:
+		[ :l <L> |
+			l == link
+				ifTrue: [	^havePred ifTrue: [ pred ] ifFalse: [ onFirst value ]  ]
+				ifFalse: [	pred := l.
+								havePred := true. ].	].
+	^onAbsent value!
+
+remove: link <L> ^<L>
+
+	^self remove: link ifAbsent: [ self error: 'Link not found' ]!
+
+remove: link <L> ifAbsent: fail <[^X def]>  ^<L | X>
+
+	| pred <L> |
+	pred := self	predecessorOf: link
+						ifFirst: [		self first: (link nextLinkIfFail:
+																[	self removeAll.
+																	link noNextLink.
+																	^link	]	).	]
+						ifAbsent: [	^fail value ].
+	pred	nextLink: (link nextLinkIfFail:
+								[	pred noNextLink.
+									self last: pred.
+									link noNextLink.
+									^link		]).
+	link noNextLink.
+	^link!
+
+removeAll
+
+	first := nil.
+	last := nil.!
+
+removeFirst ^<L>
+
+	| link <L> |
+	self isEmpty
+		ifTrue: [ self error: 'Empty LinkedList' ].
+	link := self first.
+	self first: (link nextLinkIfFail: 
+		[	self removeAll.
+			^link	]).
+	^link!
+
+removeLast ^<L>
+
+	| link <L> final <L> next <L> |
+	self isEmpty
+		ifTrue: [ self error: 'Empty LinkedList' ].
+	final := self last.
+	link := self first.
+	link == final
+		ifTrue: [	self removeAll.
+						^final	].
+	[	next := link nextLink.
+		next == final
+		] whileFalse: [ link := next ].
+	link noNextLink.
+	self last: link.
+	^final!
+
+size ^<Int>
+
+	^self first size! !
+
+! (Delta mirrorFor: #LinkedList) methodsFor: 'private' !
+
+
+first: link <L>
+
+	first := link!
+
+last: link <L>
+
+	last := link! !
+
+! (Delta mirrorFor: #LinkedList) methodsFor: 'iterating' !
+
+
+do: fn <[L]>
+
+	self isEmpty
+		ifFalse: [ self first linksDo: fn ]! !
+

@@ -1,0 +1,29 @@
+Delta define: #DeltaInferredTypeVar as: (
+(Class subclassOf: 'DeltaTypeVar' instanceVariables: 'inferenceClause ')) !
+
+(Delta mirrorFor: #DeltaInferredTypeVar) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaInferredTypeVar) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInferredTypeVar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInferredTypeVar) methodsFor: 'Unclassified' !
+
+
+inferFrom: sig <InferenceSignature > ^ <ObjectType>
+    | inferredType <ObjectType>  |
+
+^inferredType := self inferenceClause inferFrom: sig.
+!
+
+inferenceClause ^ <InferenceClause>
+    ^inferenceClause!
+
+name: n <Symbol >bound: b <Bound >inferenceClause: ic <InferenceClause >subtype: st <Boolean > ^ <Self>
+    super name: n bound: b.
+subtype := st.
+inferenceClause := ic.! !
+

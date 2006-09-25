@@ -1,0 +1,126 @@
+Delta define: #DeltaMixinInvocationSide as: (
+(Class subclassOf: 'DeltaMixinInvocationSideBehavior' instanceVariables: 'superclassType klass mirror dual selfTV selfPublicTV typeOfInstances mixinType scope loopMarker ')) !
+
+(Delta mirrorFor: #DeltaMixinInvocationSide) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaMixinInvocationSide) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMixinInvocationSide)
+comment: 
+'Concrete class representing sides of mixin invocations.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMixinInvocationSide) methodsFor: 'Unclassified' !
+
+
+basicLocator
+	^self myMixin basicLocator!
+
+dual ^ <Protocol>
+
+^dual!
+
+dual: d <Protocol>
+
+dual := d.
+
+!
+
+initialize
+
+loopMarker := false.
+super initialize.!
+
+initializeWithin: lexicalScope <Scope>
+
+loopMarker := false.
+super initializeWithin: lexicalScope.!
+
+klass ^ <DeltaClass>
+    ^klass!
+
+klass: k <DeltaClass > ^ <Self>
+    klass := k.
+
+!
+
+lookupTypeOfInstances ^ <ObjectType>
+
+| key <ObjectType> result   <ObjectType> |
+
+^loopMarker 
+   ifFalse:[
+                 loopMarker := true.
+                 key := self superclassType asProtocol canonicalRep.
+                 result := self myMixin invocationCache at: key 
+                        ifAbsent:[self myMixin invocationCache at: key
+                                                                  put: self typeOfInstances].
+                 loopMarker := false.
+                 result.
+                 ]
+  ifTrue:[typeOfInstances := super typeOfInstances].!
+
+messages: ms
+
+self deltaHack.
+!
+
+methods: ms
+
+self deltaHack.!
+
+mirror ^ <Mirror>
+
+mirror isNil ifTrue:[mirror :=super mirror].
+^mirror!
+
+mixinType
+"Can this state info be eliminated"
+^mixinType!
+
+mixinType: mt
+
+mixinType := mt.
+self heirScope delta: mt localScope.
+" (DeltaScopeReference for: mt accessBlk: [:x | x localScope])."!
+
+scope ^<Scope>
+    ^scope!
+
+scope: s <Scope>
+    scope := s!
+
+selfPublicTV ^ <TypeVar>
+    ^self myMixin selfPublicTV!
+
+selfPublicTV: stv <TypeVar>
+    selfPublicTV := stv!
+
+selfTV ^ <TypeVar>
+    ^self myMixin selfTV!
+
+selfTV: stv <TypeVar>
+    selfTV := stv!
+
+superclassType ^ <ClassNode>
+    ^superclassType!
+
+superclassType: st <ClassNode > ^ <Self>
+
+superclassType := st.
+self heirScope base: st heirScope.
+!
+
+typeOfInstances ^ <ObjectType>
+
+"This method returns and caches the public protocol of the side. The actual 
+construction of the value is handled by super's version of the
+method. "
+
+    ^typeOfInstances isNil
+   ifTrue:[
+             typeOfInstances := self lookupTypeOfInstances.
+             ]
+   ifFalse:[typeOfInstances].! !
+

@@ -1,0 +1,28 @@
+Delta define: #DeltaFloatRef as: (
+(Class subclassOf: 'DeltaFloatExpression' instanceVariables: 'decl ')) !
+
+(Delta mirrorFor: #DeltaFloatRef) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaFloatRef) group: 'ast'!
+
+(Delta mirrorFor: #DeltaFloatRef)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaFloatRef) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+    aTool floatRefNode: self!
+
+decl
+	^ decl!
+
+decl: aVar
+	self assert: [ EnableFloatValues ].
+	decl := aVar!
+
+isFloatRefNode
+	^ true! !
+

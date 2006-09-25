@@ -1,0 +1,39 @@
+Delta define: #DeltaDecl as: (
+(Class subclassOf: 'DeltaFilter' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaDecl) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaDecl) group: 'ast'!
+
+(Delta mirrorFor: #DeltaDecl)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaDecl) methodsFor: 'Unclassified' !
+
+
+asGeneric ^ <GenericDecl>
+    ^ DeltaNotAGenericError new id: self name!
+
+asSide ^ <Side>
+    ^self reportError: (DeltaNotAClassError new id: self name)!
+
+firstClassRepType  ^ <ObjectType>
+
+self subclassResponsibility
+!
+
+isError ^ <Boolean>
+    ^false!
+
+isGeneric ^ <Boolean>
+    ^false!
+
+isKlass ^ <Boolean>
+    ^false!
+
+printOn: aStream <WriteStream[Character] > ^ <Self>
+    super printOn: aStream.
+aStream nextPutAll: '(', self name, ')'.! !
+

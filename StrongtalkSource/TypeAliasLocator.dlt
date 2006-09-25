@@ -1,0 +1,44 @@
+Delta define: #TypeAliasLocator as: (
+(Class subclassOf: 'DefinitionLocator[TypeAliasMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #TypeAliasLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #TypeAliasLocator) group: 'ast'!
+
+(Delta mirrorFor: #TypeAliasLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TypeAliasLocator) methodsFor: 'accessing' !
+
+
+ast ^ <ObjectType>
+
+^Type forTypeAlias: self mirror reflectee!
+
+mirror  ^ <TypeAliasMirror>
+	^TypeAliasMirror on: (Smalltalk at: self definitionName)
+!
+
+parseTree  ^ <ParseTree[ObjectType]>
+	^DeltaParser new parseTypeExpr: self source 
+										within: DeltaGlobals 
+										ifError: [:s <Str> :i <Int> | self error: s].
+	!
+
+source ^ <Str>
+
+^self mirror aliasString! !
+
+! (Delta mirrorFor: #TypeAliasLocator) methodsFor: 'locator matching' !
+
+
+matchesLocator: l <Locator> ^ <Boolean>
+
+^l matchesTypeAliasLocator: self!
+
+matchesTypeAliasLocator: l <TypeAliasLocator> ^ <Boolean>
+
+^self definitionName = l definitionName! !
+

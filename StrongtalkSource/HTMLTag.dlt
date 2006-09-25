@@ -1,0 +1,73 @@
+Delta define: #HTMLTag as: (
+(Class subclassOf: 'Object' instanceVariables: 'name <Str>
+attributes <OrdCltn[Tuple[Str,Str]]>
+isEnd <Boolean>')) !
+
+(Delta mirrorFor: #HTMLTag) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HTMLTag) group: 'HTML'!
+
+(Delta mirrorFor: #HTMLTag)
+comment: 
+'Tags: %HTML %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #HTMLTag) classSide methodsFor: 'instance creation' !
+
+
+name: nm <Str>
+attributes: attrs <OrdCltn[Tuple[Str,Str]]>
+isEnd: e <Boolean>
+^<Instance>
+
+	^self new initName: nm attributes: attrs isEnd: e! !
+
+! (Delta mirrorFor: #HTMLTag) methodsFor: 'initialization-private' !
+
+
+initName: nm <Str>
+attributes: attrs <OrdCltn[Tuple[Str,Str]]>
+isEnd: e <Boolean>
+
+	name := nm.
+	attributes := attrs.
+	isEnd := e.! !
+
+! (Delta mirrorFor: #HTMLTag) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm put: $<.
+	self isEnd
+		ifTrue: [ strm put: $/ ].
+	strm putAll: self name.
+	self attributes notNil
+		ifTrue: [ self attributes do:
+						[ :attr <Tuple[Str,Str]> |
+							strm space.
+							strm putAll: attr at1.
+							attr at2 isNil
+								ifFalse: [ strm put: $=; print: attr at2 ]
+						].
+					].
+	strm put: $>.! !
+
+! (Delta mirrorFor: #HTMLTag) methodsFor: 'accessing' !
+
+
+attributes ^<OrdCltn[Tuple[Str,Str]]>
+
+	^attributes!
+
+isEnd ^<Boolean>
+
+	^isEnd!
+
+name ^<Str>
+
+	^name! !
+

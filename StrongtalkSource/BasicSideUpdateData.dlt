@@ -1,0 +1,32 @@
+Delta define: #BasicSideUpdateData as: (
+(Class subclassOf: 'BasicSideData' instanceVariables: 'supportedProtocol superclassType ')) !
+
+(Delta mirrorFor: #BasicSideUpdateData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicSideUpdateData) group: 'ast'!
+
+(Delta mirrorFor: #BasicSideUpdateData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicSideUpdateData) methodsFor: 'Unclassified' !
+
+
+initialize ^ <Self>
+    selfTV := DeltaTypeVar new name: #Self bound: self.
+messages := Dictionary[Symbol, Message]  new.
+"typeOfInstances := DeltaProtocolUpdate new filter: self using: DeltaSubstitution new initialize."!
+
+superclassType ^ <Class>
+    ^superclassType!
+
+superclassType: st <Class > ^ <Self>
+    superclassType := st!
+
+supportedProtocol ^ <Protocol>
+    ^supportedProtocol!
+
+supportedProtocol: p <Protocol > ^ <Self>
+    supportedProtocol := p.! !
+

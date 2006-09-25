@@ -1,0 +1,65 @@
+Delta define: #DeltaMixinInvocation as: (
+(Class subclassOf: 'DeltaDecl' instanceVariables: 'name myMixin myClass ')) !
+
+(Delta mirrorFor: #DeltaMixinInvocation) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaMixinInvocation) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMixinInvocation)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMixinInvocation) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^self myMixin abstract!
+
+branded ^ <Boolean>
+    ^self myMixin branded!
+
+extensionsAreSubtypes ^ <Boolean>
+    ^self myMixin extensionsAreSubtypes!
+
+mix: m <Mixin >on: c <Class > ^ <Self>
+    myMixin := m.
+myClass := c.!
+
+monotonic ^ <Boolean>
+    ^self myMixin monotonic!
+
+myClass ^ <Class>
+    ^myClass!
+
+myMixin ^ <Mixin>
+    ^myMixin!
+
+name ^ <Symbol>
+    ^name isNil ifFalse:[name]
+                    ifTrue:[(self myMixin name, '|>', self myClass name) asSymbol].!
+
+selfClassTV ^ <TypeVar>
+    ^self myMixin selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self myMixin selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self myMixin selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self myMixin selfTV!
+
+subtype ^ <Boolean>
+    ^self myMixin subtype!
+
+type ^ <ClassType>
+    | c <Class>  |
+
+(self myClass type mixinCompatibleWith: self myMixin bound) ifFalse:[
+	^self reportError: (DeltaInvalidMixinInvocationError new actualName: self myClass name; declaredName: self myMixin bound name; mixinName: self myMixin name)].
+c := DeltaClassTypeDecl new type: self myMixin bound.!
+
+typeOfInstances ^ <ObjectType>! !
+

@@ -1,0 +1,223 @@
+Delta define: #DeltaPrimitiveGenerator as: (
+(Class subclassOf: 'Object' instanceVariables: 'primitives <OrderedCollection[DeltaPrim]>')) !
+
+(Delta mirrorFor: #DeltaPrimitiveGenerator) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #DeltaPrimitiveGenerator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPrimitiveGenerator)
+comment: 
+'This class is used to file in (read and parse) primitive definitions. It reads them in from
+a file and parses them using DeltaPrimitiveParser
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) classSide methodsFor: 'action' !
+
+
+doit
+
+	DeltaPrimitives := DeltaPrimitiveTypeInfo new.
+	self setPrimitives: DeltaPrimitives.
+! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) classSide methodsFor: 'HTML' !
+
+
+generateHTML ^ <Instance>
+  ^self new generateHTML! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) classSide methodsFor: 'instance creation' !
+
+
+new ^ <Instance>
+  ^super new initialize! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) classSide methodsFor: 'type setup' !
+
+
+setPrimitives: ps <DeltaPrimitiveTypeInfo>
+
+	| gen <Instance> d  <VarDict[Symbol, MsgSignature]> |
+	gen := self new.
+	(FilePath for: 'prims.src') exists
+		ifTrue: [	gen fileIn fileOut "removeSourceFile" ].
+	d := Dictionary[Symbol, MsgSignature] new.
+	gen primitives do: [ :prim <DeltaPrim> |
+		d at: prim selector put: prim type ].
+	ps primitives: d.
+! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'HTML' !
+
+
+fileOutHTML
+
+	| cat <Set[Str]> stream |	
+	cat := Set[Str] new. 
+	self primitives do: [ :v | cat include: v getCategoryName ].
+	
+	"Generate index file"
+	
+	stream := (FilePath for: 'primitives.html') charOutputStream. 
+	[
+		self fileOutHTMLFrame: 'Delta Primitives' on: stream do: [
+			stream nextPutAll: '<UL>'; cr.
+			cat do: [  :e <Str> |
+				stream nextPutAll: '<LI>'; cr.
+				stream nextPutAll: '<A href="', e, '.html">', e, '</A>'.
+				stream cr.
+			].
+			stream nextPutAll: '</UL>'; cr.
+		]
+	] ensure: [ stream close ].
+
+	"Generate a file per category"
+	cat do: [  :e <Str> |
+		self fileOutHTML: e fileName: e
+	]!
+
+fileOutHTML: category <Str> fileName: name <Str>
+
+	| stream  |
+	stream := (FilePath for: name, '.html') charOutputStream. 
+	[
+		self fileOutHTMLFrame: category on: stream do: [
+			stream nextPutAll: '<UL>'; cr.
+			self primitives do: [ :v |
+				v getCategoryName = category ifTrue: [
+					stream nextPutAll: '<HR>' ; cr.
+					stream nextPutAll: '<LI>'; cr.
+					v fileOutHTMLOn: stream.
+					stream cr.
+				]
+			].
+			stream nextPutAll: '</UL>'; cr.
+		]
+	] ensure: [ stream close ].
+!
+
+fileOutHTMLFrame: title <Str> on: stream do: blk
+
+	stream nextPutAll: '<HTML>'; cr.
+	stream nextPutAll: '<HEAD>'; cr.
+	stream nextPutAll: '<TITLE>'; cr. 
+	stream nextPutAll: title; cr. 
+	stream nextPutAll: '</TITLE>'; cr. 
+	stream nextPutAll: '</HEAD>'; cr.
+	
+	stream nextPutAll: '<BODY>'; cr.
+
+	stream nextPutAll: '<H1>'; cr.
+	stream nextPutAll: title; cr.
+	stream nextPutAll: '</H1>'; cr.
+	
+	blk value.
+
+	stream nextPutAll: '</BODY>'; cr.
+	stream nextPutAll: '</HTML>'; cr.
+!
+
+fileOutHTMLOn: stream
+	| category oldCategory |
+	stream nextPutAll: '<HTML>'; cr.
+	stream nextPutAll: '<HEAD>'; cr.
+	stream nextPutAll: '<TITLE>'; cr. 
+	stream nextPutAll: 'Delta Primitive Interface'; cr. 
+	stream nextPutAll: '</TITLE>'; cr. 
+	stream nextPutAll: '</HEAD>'; cr.
+	
+	stream nextPutAll: '<BODY>'; cr.
+
+	stream nextPutAll: '<H1>'; cr.
+	stream nextPutAll: 'Primitive Interface'; cr.
+	stream nextPutAll: '</H1>'; cr.
+
+	stream nextPutAll: '<UL>'; cr.
+	self primitives do: [ :v |
+		category := v getCategoryName.
+		category = oldCategory ifFalse: [
+			stream nextPutAll: '<H2>'; cr.
+			stream nextPutAll: category; cr.
+			stream nextPutAll: '</H2>'; cr.
+		].
+		oldCategory := category.
+		stream nextPutAll: '<LI>'; cr.
+		v fileOutHTMLOn: stream.
+		stream cr.
+	] andBetweenDo: [
+		stream nextPutAll: '<HR>' ; cr
+	].
+	stream nextPutAll: '</UL>'; cr.
+	stream nextPutAll: '</BODY>'; cr.
+	stream nextPutAll: '</HTML>'; cr.!
+
+generateHTML
+	self initialize.
+	self fileIn.
+	self fileOutHTML! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'private' !
+
+
+initialize
+  self primitives: OrderedCollection[DeltaPrim] new
+! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'accessing' !
+
+
+primitives ^ <OrderedCollection[DeltaPrim]>
+
+^primitives!
+
+primitives: pl  <OrderedCollection[DeltaPrim]>
+
+primitives := pl.! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'private file in' !
+
+
+fileIn
+	| file |
+	file := (FilePath for: 'prims.src') charInputStream. 
+	[ self fileInFrom: file ] ensure: [ file close ].
+!
+
+fileInFrom: stream
+	| aString aPrim |
+	[(aString := stream nextChunk) isEmpty] whileFalse: [
+		aPrim := DeltaPrimitiveParser new parsePrimitiveDecl: aString within: DeltaGlobals.
+		self primitives addLast: aPrim].! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'private file out' !
+
+
+fileOut
+	| file |
+	file := (FilePath for: 'prims.inc') charOutputStream. 
+	[ self fileOutOn: file ] ensure: [ file close ].
+!
+
+fileOutOn: stream
+	| counter <Integer> sortedPrimitives <OrderedCollection[DeltaPrim]> |
+	
+	sortedPrimitives := primitives asSortedCollection: [ :a <DeltaPrim> :b <DeltaPrim> | a selector <= b selector ].
+	
+	counter := 0.
+	sortedPrimitives do: [:v |
+		v fileOut: counter on: stream.
+		counter := counter + 1.
+	].
+	stream nextPutAll: 'static int size_of_primitive_table = ', sortedPrimitives size printString, '; ' ; cr.
+	stream nextPutAll: 'static primitive_desc* primitive_table[] = { '; cr.
+	counter := 0.
+	sortedPrimitives do: [ :v |
+		stream nextPutAll: '  &primitive_'.
+		stream nextPutAll: counter printString.
+		counter := counter + 1.
+	] andBetweenDo: [
+		stream nextPutAll: ',' ; cr
+	].
+	stream cr; nextPutAll: '}; '; cr.! !
+

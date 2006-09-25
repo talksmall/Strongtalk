@@ -1,0 +1,38 @@
+Delta define: #HandlerTask as: (
+(Class subclassOf: 'TaskControlBlock' instanceVariables: '')) !
+
+(Delta mirrorFor: #HandlerTask) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HandlerTask) group: 'benchmark'!
+
+(Delta mirrorFor: #HandlerTask)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #HandlerTask) methodsFor: 'scheduling' !
+
+
+doTask: work data: data
+	 | workPacket count devicePacket |
+            NoWork == work
+                ifFalse: [WorkPacketKind == work kind
+                    ifTrue: [data workInAdd: work]
+                    ifFalse: [data deviceInAdd: work]].
+            ^NoWork == (workPacket := data workIn)
+                ifTrue: [TheBench wait]
+                ifFalse:
+                    [count := workPacket datum.
+                    count > 4
+                        ifTrue:
+                            [data workIn: workPacket link.
+                            TheBench queuePacket: workPacket]
+                        ifFalse:
+                            [NoWork == (devicePacket := data deviceIn)
+                                ifTrue: [TheBench wait]
+                                ifFalse:
+                                    [data deviceIn: devicePacket link.
+                                    devicePacket datum: (workPacket data at: count).
+                                    workPacket datum: count + 1.
+                                    TheBench queuePacket: devicePacket]]]! !
+

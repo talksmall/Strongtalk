@@ -1,0 +1,44 @@
+Delta define: #IntMM2Matrix as: (
+(Class subclassOf: 'Array' instanceVariables: '')) !
+
+(Delta mirrorFor: #IntMM2Matrix) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #IntMM2Matrix) group: 'benchmark'!
+
+(Delta mirrorFor: #IntMM2Matrix)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #IntMM2Matrix) classSide methodsFor: 'misc' !
+
+
+new: i by: j
+	| r |
+	r := self new: i.
+	1 to: i do: [ :x | r at: x put: (IntMM2Array new: j) ].
+	^r! !
+
+! (Delta mirrorFor: #IntMM2Matrix) methodsFor: 'misc' !
+
+
+* m 
+	| r |
+	r := self class new: self rowSize by: self colSize.
+	1 to: self rowSize do: [:i | 1 to: m colSize do: [:j | (r at: i)
+				at: j put: ((self at: i)
+					innerProductWith: m col: j)]].
+	^r!
+
+colSize ^ (self at: 1) size!
+
+init: bench
+	| temp |
+	1 to: self rowSize do: [ :i |
+		1 to: self colSize do: [ :j |
+			temp := bench newValue.
+			(self at: i) at: j put: temp - ((temp // 120) * 120) - 60]]!
+
+rowSize ^self size! !
+

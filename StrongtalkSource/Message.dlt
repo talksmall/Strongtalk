@@ -1,0 +1,66 @@
+Delta define: #Message as: (
+(Class subclassOf: 'Object' instanceVariables: 'receiver <Object>
+		selector <Symbol>
+		arguments <Array[Object]>
+		')) !
+
+(Delta mirrorFor: #Message) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Message) group: 'base'!
+
+(Delta mirrorFor: #Message)
+comment: 
+'A message holds information about a particular message send: the receiver, the selector, and the arguments.  It is generally used in error handling operations where the message needs to be handled "reflectively."
+
+Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #Message) classSide methodsFor: 'instance creation' !
+
+
+receiver: r <Object>
+selector: sel <Symbol>
+arguments: args <SeqCltn[Object]>
+^<Instance>
+
+	^self new receiver: r selector: sel arguments: args! !
+
+! (Delta mirrorFor: #Message) methodsFor: 'control' !
+
+
+perform ^<Object>
+	"Perform the message specified by the receiver, and return the result.  This
+	  is NOT typesafe"
+
+	^self receiver perform: self selector withArguments: self arguments! !
+
+! (Delta mirrorFor: #Message) methodsFor: 'initialization' !
+
+
+receiver: r <Object>
+selector: sel <Symbol>
+arguments: args <SeqCltn[Object]>
+
+	receiver := r.
+	selector := sel.
+	arguments := args asArray.! !
+
+! (Delta mirrorFor: #Message) methodsFor: 'accessing' !
+
+
+arguments ^<Array[Object]>
+	^arguments!
+
+receiver ^<Object>
+	^receiver!
+
+selector ^<Symbol>
+	^selector!
+
+value ^<Object>
+
+	^self perform! !
+

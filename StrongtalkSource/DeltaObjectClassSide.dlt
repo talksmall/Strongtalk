@@ -1,0 +1,51 @@
+Delta define: #DeltaObjectClassSide as: (
+(Class subclassOf: 'DeltaSideUpdate' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaObjectClassSide) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaObjectClassSide) group: 'ast'!
+
+(Delta mirrorFor: #DeltaObjectClassSide)
+comment: 
+'The class side of Object is represented by me.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaObjectClassSide) methodsFor: 'Unclassified' !
+
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^t substitute: self privateToPublicSubstitution!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+
+ ^t!
+
+crossoverSubstitution  ^ <Substitution>
+
+| theta  <Substitution>  b <Side> | 
+
+theta := DeltaSubstitution new initialize.
+
+Delta behaviorHierarchy do:[ :sym <Symbol> |
+                                                     b := Type forClass: (Delta at: sym).
+                                                     theta at: b selfTV put: self selfTV.
+                                                     theta at: b selfClassTV put: self classProtocol.
+                                                     theta at: b selfPublicTV put: self selfPublicTV.
+                                                     theta at: b selfPublicClassTV put: self classProtocol.
+                                                     ].
+^theta!
+
+privateProtocolsConstructor ^ <ProtocolUpdate class>
+
+^ DeltaObjectClassProtocol!
+
+superAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^ self superprotocol bareAttributes virtualCollect:[:a  <MsgSignature> | a substitute: self crossoverSubstitution]
+!
+
+superSelect: sel <Symbol> ifAbsent: blk <[]> ^ <DeltaMsgSignature>
+
+^self compositeSubstitute: ((self superclass privateProtocol bareAttributes at: sel ifAbsent: blk) substitute: self crossoverSubstitution).! !
+

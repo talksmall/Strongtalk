@@ -1,0 +1,91 @@
+Delta define: #AbstractClassOutliner as: (
+(Class subclassOf: 'DefWithMsgOutliner[AbstractClassMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #AbstractClassOutliner) revision: '$Revision: 1.9 $'!
+
+(Delta mirrorFor: #AbstractClassOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #AbstractClassOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'private' !
+
+
+definitionOutlinerClass ^ <ClassDefinitionOutliner class>
+
+	^ClassDefinitionOutliner!
+
+sideOutlinerClass ^ <SideWithMethodsOutliner class>
+
+	^SideWithMethodsOutliner! !
+
+! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+					name: 'Spawn s&uperclass';
+					active: [ self mirror superclass notNil ];
+					action: [ self spawnSuperclass ] );
+		add: (MenuAction new
+					name: 'Spawn &hierarchy in context';
+					action: [ (ClassHierarchyOutliner withSuperclassesFor: self mirror)
+														launch ] );		
+		add: (MenuAction new
+					name: 'Spawn hierarchy';
+					action: [ self spawnHierarchy ] );		
+		addSeparator;
+		add: (MenuAction new
+					name: 'R&eferences to class';
+					action: [ self launchReferencesToGlobalName: self mirror name ] );
+		add: (MenuAction new
+					name: '&Add subclass...';
+					action: [ self addSubclassTo: self mirror ] )
+! !
+
+! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'control' !
+
+
+spawnHierarchy
+
+	(ClassHierarchyOutliner for: self mirror) launch!
+
+spawnSuperclass
+
+	"Change this once we have a good way of browsing anonymous invocations"
+	| sc <AbstractClassMirror> |
+	sc := self mirror superclass.
+	[ sc isMixinInvocation ] whileTrue: [ 
+		sc := sc superclass ].
+	(DefWithMsgOutliner on: sc) launch!
+
+typecheckMethods
+
+	Transcript show: 'AbstractClassOutliner>>typecheck methods unimplemented'; cr! !
+
+! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'toolbar' !
+
+
+buildToolBar
+
+	self buildFindButtons.
+	self toolBar addSpace.
+	self mirror name ~= #Object
+		ifTrue: [ self toolBar
+						addButtonWithImageFrom: 'resources/superclass.bmp'
+							action: [ :b <Button> |	self spawnSuperclass ];
+						addButtonWithImageFrom: 'resources/incontext.bmp'
+								action: [ :b <Button> |	
+												(ClassHierarchyOutliner withSuperclassesFor: self mirror)
+														launch		].
+					].
+	self toolBar
+		addButtonWithImageFrom: 'resources/hierarchy.bmp'
+				action: [ :b <Button> |	self spawnHierarchy ].
+	self toolBar addSpace.
+	self	buildOpenCloseChildrenButtons.! !
+

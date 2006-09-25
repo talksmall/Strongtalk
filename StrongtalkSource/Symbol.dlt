@@ -1,0 +1,66 @@
+Delta define: #Symbol as: (
+(Class subclassOf: 'ReadString' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #Symbol) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Symbol) group: 'base'!
+
+(Delta mirrorFor: #Symbol)
+comment: 
+'Symbols are read-only strings that are managed in such a way that every symbol instance represents a unique string.
+This means that two symbols are = if and only if they are the same object (==).
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Symbol) classSide methodsFor: 'instance creation' !
+
+
+intern: str <Str> ^<Symbol>
+
+	^str asSymbol!
+
+new ^<Instance>
+
+	self shouldNotImplement! !
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
+
+
+asString ^<String>
+
+	^String withAll: self!
+
+asSymbol ^<Symbol>
+
+	^self! !
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm nextPut: $#.
+	super printOn: strm.! !
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'hashing' !
+
+
+hash ^<Int>
+
+	^self identityHash! !
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'comparing' !
+
+
+equalsSymbol: other <Symbol> ^<Boolean>
+	"This is like #=, except it requires a Symbol as an argument.
+	  As a result, it can be slightly faster since it doesn't have to
+	  worry about Str substitutability, and is better than explicit use of
+	  == since it doesn't reveal any reflective stuff at the call site."
+
+	^self == other! !
+

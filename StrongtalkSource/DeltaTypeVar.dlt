@@ -1,0 +1,186 @@
+Delta define: #DeltaTypeVar as: (
+(Class subclassOf: 'DeltaObjectType' instanceVariables: 'name declaredBound dual subtype isMeta ')) !
+
+(Delta mirrorFor: #DeltaTypeVar) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaTypeVar) group: 'ast'!
+
+(Delta mirrorFor: #DeltaTypeVar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaTypeVar) methodsFor: 'Unclassified' !
+
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self ~= tv!
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool typeVarNode: self.!
+
+asProtocol ^ <Protocol>
+    self halt!
+
+bound ^ <ObjectType>
+    ^DeltaGlobalTrail typeVarBoundFor: self!
+
+branded ^ <Boolean>
+    ^self bound branded!
+
+canonicalRep ^ <Protocol>
+    ^self!
+
+declareBoundToTrail: trail <DeltaTrail > ^ <Self>
+    self subtype ifTrue:[trail assume: self isSubtypeOf: self declaredBound]
+                    ifFalse:[trail assume: self isInheritedTypeOf: self declaredBound].!
+
+declaredBound ^ <ObjectType>
+    ^declaredBound!
+
+declaredBound: d <ObjectType > ^ <Self>
+    declaredBound := d!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^self bound declaredSupertypes!
+
+dual ^ <TypeVar>
+    ^dual isNil ifFalse:[dual]
+                 ifTrue:[dual := DeltaTypeVar new name: self name, ' class' bound: self declaredBound typeOfClass; isMeta: true;  dual: self].!
+
+dual: d <TypeVar > ^ <Self>
+    dual := d!
+
+hasBoundDeclaredToTrail: trail <DeltaTrail > ^ <Boolean>
+    ^self subtype ifTrue:[trail answer: self isSubtypeOf: self declaredBound]
+                    ifFalse:[trail answer: self isInheritedTypeOf: self declaredBound].!
+
+involvesTypeVariables ^ <Boolean>
+    ^true!
+
+isMeta ^ <Boolean>
+
+^isMeta
+"^self name size > self dual name size or:[(self name = #Self or:[self name = #PublicSelf]) and:[self declaredBound isMeta]].
+"!
+
+isMeta: im <Boolean>
+
+isMeta := im
+"^self name size > self dual name size or:[(self name = #Self or:[self name = #PublicSelf]) and:[self declaredBound isMeta]].
+"!
+
+isMonotonic ^ <Boolean>
+    ^true!
+
+isTypeVar ^ <Boolean>
+
+^true!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^true!
+
+myOldTypeVarSubstitution ^ <Substitution>
+    | theta <Substitution>  |
+
+theta := DeltaSubstitution new initialize.
+self bound allSelfClassTVs do:[: s <TypeVar>  | theta at: s put: self dual.].
+self bound allSelfTVs do:[: s <TypeVar>  | theta at: s put: self.].
+^theta!
+
+myTypeVarSubstitution ^ <Substitution>
+"
+This method is only useful if this type variable is defined to be
+an inherited type of a protocol.
+
+This method returns a substitution that replaces my type variables
+with my self and my dual. This is the substitution needed to in order
+select msgs from the type variable when it is known to be an
+inherited type of its bound. 
+
+There is some question as to whether we could just have type
+variables inherit the implemention from DeltaProtocol.
+"
+    | theta <Substitution>  |
+
+theta := DeltaSubstitution new initialize.
+theta at: self bound selfClassTV put: self dual.
+theta at: self bound selfTV put: self.
+^theta!
+
+name ^ <NameType>
+    ^name!
+
+name: n <Symbol >bound: b <ObjectType > ^ <Self>
+
+name := n.
+self declaredBound: b.
+subtype := true.
+self isMeta: false. "default"!
+
+rawSelectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <DeltaMsgSignature>
+   ^self bound rawSelectMsg: selector ifAbsent: block!
+
+retractBoundFromTrail: trail <DeltaTrail > ^ <Self>
+    self subtype ifTrue:[trail forget: self isSubtypeOf: self declaredBound]
+                    ifFalse:[trail forget: self isInheritedTypeOf: self declaredBound]!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <DeltaMsgSignature>
+    ^(DeltaGlobalTrail answer: self isInheritedTypeOf: self bound)
+    ifTrue:[
+             (self bound rawSelectMsg: selector ifAbsent: block)
+                                                                 substitute: self myTypeVarSubstitution.
+              ]
+   ifFalse:[self bound selectMsg: selector ifAbsent: block.].!
+
+selfClassTV ^ <TypeVar>
+    ^self bound selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self bound selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self bound selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self bound selfTV!
+
+substitute: s <Substitution > ^ <ObjectType>
+    ^s at: self ifAbsent: [self].!
+
+subtype ^ <Boolean>
+    ^subtype!
+
+subtype: st <Boolean > ^ <Self>
+    subtype := st!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t supertypeOfTypeVar: self assuming: trail!
+
+subtypeOfNonTypeVar: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^trail answerTypeVar: self isSubtypeOf: t!
+
+subtypeOfTypeVar: t <TypeVar >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t == self or:[trail answerTypeVar: self isSubtypeOf: t].!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+
+	self testFailedBecause: (DeltaTypeVarsNotSupertypesError new typeVarName: self name) toEscape:[^false].
+    ^false!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+	
+	self testFailedBecause: (DeltaTypeVarsNotSupertypesError new typeVarName: self name) toEscape:[^false].
+    ^false!
+
+supertypeOfTypeVar: t <TypeVar >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t subtypeOfTypeVar: self assuming: trail.!
+
+typeOfClass ^ <ObjectType>
+    ^self isMeta ifFalse:[self dual]
+                    ifTrue:[DeltaTypeId new setId: #Class; scope: DeltaGlobals]!
+
+wellFormed ^ <Boolean>
+    ^self declaredBound wellFormed! !
+

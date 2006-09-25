@@ -1,0 +1,401 @@
+Delta define: #DeltaTypeError as: (
+(Class subclassOf: 'DeltaType' instanceVariables: 'timeStamp domainSize ') protocols: 'DeltaProtocol') !
+
+(Delta mirrorFor: #DeltaTypeError) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #DeltaTypeError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaTypeError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaTypeError) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^false!
+
+abstract: a!
+
+addRelevantTypeVar: tv <TypeVar>!
+
+adjustBoundToTrivialApplication  ^ <Self> 
+
+    ^self
+!
+
+allDeclaredSupertypes ^ <Cltn[ObjectType]>
+
+^OrderedCollection[ObjectType] new !
+
+antimonotonicIn: tv <TypeVar > ^ <Self>
+    ^true!
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool typeErrorNode: self!
+
+asGeneric ^ <GenericDecl>
+    ^self!
+
+asMixinSide ^ <Side>
+    ^self!
+
+asObjectType ^ <ObjectType>
+    ^self!
+
+asProtocol ^ <Protocol>
+    ^self!
+
+asSide ^ <Side>
+    ^self!
+
+asType ^ <Self>
+    ^self!
+
+at: k <Symbol > ^ <Type>
+    ^self!
+
+at: k <Symbol >ifAbsent: b <[^Type] > ^ <Type>
+    ^self!
+
+atomicTypes ^ <IdentitySet[ObjectType]>
+    ^IdentitySet[ObjectType]  new add: self; yourself!
+
+attributes ^ <Dict[Symbol,Type]>
+	^Dictionary new!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^Dictionary[Symbol, MsgSignature] new!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^Dictionary[Symbol, MsgSignature] new!
+
+basicLocator
+	^DeltaBasicErrorLocator new errorMsg: self errorMessage!
+
+body!
+
+branded ^ <Boolean>
+    ^true!
+
+branded:b!
+
+canonicalRep ^ <Protocol>
+    ^self!
+
+classInterface ^ <Self>
+    ^self!
+
+classProtocol ^ <Self>
+    ^self!
+
+classVarDecls
+
+^OrderedCollection new.!
+
+classVarDeclsDo: b!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+self deltaHack.
+ ^t!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+self deltaHack.
+ ^t!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+	^true!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^true
+!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^OrderedCollection[ObjectType] new !
+
+defaultInvocation ^ <GenericApplicationType>
+
+^self!
+
+delta ^ <Self>
+    ^self!
+
+domain ^ <VarOrdCltn[ObjectType]>
+
+| domain <VarOrdCltn[ObjectType]> |
+
+domain := OrderedCollection new: self domainSize.
+self domainSize timesRepeat: [domain addLast: self].
+^domain
+!
+
+domainSize  ^<Int>
+
+^domainSize isNil
+	ifTrue: [0]
+	ifFalse: [domainSize]
+!
+
+domainSize: anInt <Int>
+
+domainSize := anInt!
+
+dual ^ <Self>
+    ^self!
+
+errorMessage ^ <Str>
+	self subclassResponsibility
+!
+
+extensionsAreSubtypes
+
+^true!
+
+extensionsAreSubtypes: e
+
+!
+
+firstClassRepType  ^ <ObjectType>
+
+!
+
+forcedSubstitute: s <Substitution > ^ <Self>
+    ^self!
+
+formals ^ <OrdCltn[TypeFormal]>
+
+| formals <VarOrdCltn[ObjectType]> |
+formals := OrderedCollection new: self domainSize.
+self domainSize timesRepeat: [formals addLast: self].
+^formals
+!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a formatted name, which here is just the empty string.
+		This will parse as an unspecified type error"
+
+	^''!
+
+heirScope
+
+^DeltaScope new initialize: nil
+
+!
+
+implementedPrivateProtocol ^ <Self>
+    ^self!
+
+inferTypeFrom: args <OrdCltn[Expression] > ^ <DeltaMsgSignature>
+    ^self!
+
+instVarDecls
+
+^OrderedCollection new.!
+
+instanceInterface ^ <Self>
+    ^self!
+
+invokeWith: actuals <OrdCltn[ObjectType] > ^ <Self>
+    ^self!
+
+involvesTypeVariables ^ <Boolean>
+    ^false!
+
+isClass ^ <Boolean>
+    ^true!
+
+isError ^ <Boolean>
+    ^true!
+
+isExplainable
+	"Answers whether an explanation of why two entities weren't subtypes is available.
+	  If this flag is true, the class should support the messages 'subtype' and 'supertype'."
+	^false!
+
+isGeneric ^ <Boolean>
+    ^true!
+
+isInferenceError  ^ <Boolean>
+
+^false!
+
+isKlass ^ <Boolean>
+    ^false!
+
+isMonotonic ^ <Boolean>
+    ^true!
+
+isObjectType ^ <Boolean>
+    ^true!
+
+isProtocol ^ <Boolean>
+    ^true!
+
+isSuperMixinInvocationOf: p  <ProtocolOfSideUpdate> ^ <Boolean>
+
+^true!
+
+loc ^ <DeltaLocator>
+
+self subclassResponsibility!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^Dictionary[Symbol, MsgSignature] new!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^Dictionary[Symbol, MsgSignature] new!
+
+matchesError: e
+	^self class == e class!
+
+matchesErrorType: e
+	^self class == e class!
+
+merge: i <Interface > ^ <Interface>
+    ^self
+!
+
+messages ^ <Dict[Symbol, Message]>
+
+^Dictionary[Symbol, Message] new.!
+
+methods ^ <Dict[Symbol, DeltaMethod]>
+
+^Dictionary[Symbol, DeltaMethod] new.!
+
+monotonicIn: tv <TypeVar > ^ <Self>
+    ^true!
+
+name ^ <Symbol>
+    ^self errorMessage asSymbol!
+
+override: i <Interface > ^ <Interface>
+    ^self
+!
+
+primaryInterface ^ <Interface>
+    ^self!
+
+privateProtocol ^ <Self>
+    ^self!
+
+privateToPublicSubstitution
+
+^DeltaSubstitution new initialize!
+
+range ^ <Self>
+    ^self!
+
+rawPrimaryInterface ^ <Interface>
+    ^self!
+
+rawSecondaryInterface ^ <Interface>
+    ^self!
+
+rawSelectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <Self>
+    ^self!
+
+retractTypeAssumptions!
+
+scope: s <Scope>!
+
+secondaryInterface ^ <Interface>
+    ^self!
+
+selectMsg: selector <Symbol > ^ <Self>
+    ^self!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <Self>
+    ^self!
+
+selfClassTV ^ <TypeVar>
+    ^self!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self!
+
+selfPublicTV ^ <TypeVar>
+    ^self!
+
+selfTV ^ <TypeVar>
+    ^self!
+
+setupTypeAssumptions!
+
+subprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+substitute: s <Substitution > ^ <Self>
+    ^self!
+
+substitutionOfFormalsWithActuals: actuals <OrdCltn[ObjectType] > ^ <Substitution>
+
+^DeltaSubstitution new initialize!
+
+subtype ^ <Boolean>
+    ^true!
+
+subtype: s
+   !
+
+subtypeExpr ^<DeltaType>
+	"Expression used for deriving explanations of errors. Overridden in explainable errors."
+	^self!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+superInterfaceOf: i <Interface >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+superclassType: s!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+supertypeExpr ^<DeltaType>
+	"Expression used for deriving explanations of errors. Overridden in explainable errors."
+	^self!
+
+supertypeOfMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+supertypeOfPolyMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+supertypeOfUnion: u <UnionType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^true!
+
+timeStamp ^ <TimeStamp>
+	^timeStamp!
+
+timeStamp: t <TimeStamp>
+	timeStamp := t!
+
+typeInfo
+    ^ self!
+
+typeOfClass ^ <Protocol>
+    ^self!
+
+unimplementedMessages ^ <Set[Symbol]>
+    ^Set[Symbol] new!
+
+updateExplainerInterface: explainer <DeltaTypeExplainer > ^ <Self>
+
+    explainer setNoTypeFields.!
+
+variance
+	^#covar!
+
+wellFormed
+
+self reportError: self.
+^false! !
+

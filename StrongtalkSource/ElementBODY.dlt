@@ -1,0 +1,44 @@
+Delta define: #ElementBODY as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementBODY) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ElementBODY) group: 'HTML'!
+
+(Delta mirrorFor: #ElementBODY)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementBODY) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	self processBGColorFor: builder.
+	self processLinkColorFor: builder.
+	self processTextColorFor: builder.
+	super buildFor: builder! !
+
+! (Delta mirrorFor: #ElementBODY) methodsFor: 'private' !
+
+
+processBGColorFor: builder <HTMLBuilder>
+
+	| spec <Str> |
+	spec := self attributeAt: #BGCOLOR ifAbsent: [ ^self ].
+	builder backdrop: (Painter new paint: 
+											(self parseColorSpec: spec ifFail: [ ^self ])	).!
+
+processLinkColorFor: builder <HTMLBuilder>
+
+	| spec <Str> |
+	spec := self attributeAt: #LINK ifAbsent: [ ^self ].
+	builder linkPaint: (self parseColorSpec: spec ifFail: [ ^self ]).!
+
+processTextColorFor: builder <HTMLBuilder>
+
+	| spec <Str> |
+	spec := self attributeAt: #TEXT ifAbsent: [ ^self ].
+	builder textPaint: (self parseColorSpec: spec ifFail: [ ^self ]).! !
+

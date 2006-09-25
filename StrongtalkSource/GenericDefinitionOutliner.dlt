@@ -1,0 +1,132 @@
+Delta define: #GenericDefinitionOutliner as: (
+Generic forAll: 'M <Mirror> ' body: ((Class subclassOf: 'DefinitionOutliner[M]' instanceVariables: 'typeArgumentOutliner <TypeArgumentOutliner>
+addingGenericity <Boolean> ') abstract)) !
+
+(Delta mirrorFor: #GenericDefinitionOutliner) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #GenericDefinitionOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #GenericDefinitionOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'private' !
+
+
+addingGenericity ^ <Boolean>
+
+	^addingGenericity!
+
+addingGenericity: b <Boolean>
+
+	addingGenericity := b!
+
+insertGenericDefinition: col <Column[Visual]>
+
+	(self mirror isGeneric or: [self addingGenericity])
+		ifTrue: [		self typeArgumentOutliner: (TypeArgumentOutliner for: self mirror).
+							col add: (self addChild: self typeArgumentOutliner) imbeddedVisual ]
+		ifFalse: [	self typeArgumentOutliner: nil ]
+
+!
+
+typeArgumentOutliner ^ <TypeArgumentOutliner>
+
+	^typeArgumentOutliner!
+
+typeArgumentOutliner: o <TypeArgumentOutliner>
+
+	typeArgumentOutliner := o! !
+
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^ <Boolean> 
+
+	^true!
+
+menuBar ^ <Menu>
+
+	| m <Menu> sm <Menu> |
+	m := Menu new.
+	(sm := self smalltalkMenuBar) items size > 0
+		ifTrue: [	m addAll: sm removeAll.
+						m addSeparator ].
+	m addAll: self strongtalkMenuBar removeAll.
+	m addAll: self strongtalkUncommonMenuBar removeAll.
+	^m!
+
+smalltalkMenuBar ^ <Menu>
+
+	^Menu new!
+
+strongtalkMenuBar ^ <Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'Add type arguments';
+					active: [ self mirror isGeneric not and: [self typeArgumentOutliner isNil]];
+					action: [ self addTypeArguments ])!
+
+strongtalkUncommonMenuBar ^ <Menu>
+
+	| subtype <Boolean> |
+	subtype := self mirror isSubtype.
+	^Menu new
+		add: (MenuAction new
+					name: (subtype ifTrue: [ 'Make non-subtype' ] ifFalse: [ 'Make subtype' ]);
+					action: [ self makeSubtype: subtype not ])! !
+
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'control' !
+
+
+addTypeArguments
+
+	self open: true.
+	self addingGenericity: true.
+	[ self updateBody ] ensure: [ self addingGenericity: false ].
+	self typeArgumentOutliner notNil
+		ifTrue: [ self inSessionProcessDo: [ 
+							self typeArgumentOutliner becomeFocusIfFail: [] ] ]
+	!
+
+makeSubtype: b <Boolean>
+
+	self mirror subtype: b
+	! !
+
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+	
+	self inSessionProcessDo: [
+		aspect = #typeArguments
+			ifTrue: [		self updateHeaders.
+							self mirror typeArgumentString isEmpty = self typeArgumentOutliner isNil
+								ifFalse: [	self updateBody ] ].
+
+		aspect = #subtype
+			ifTrue: [	self updateHeaders ].
+	]
+! !
+
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'private-initilization' !
+
+
+initialize
+
+	super initialize.
+	self addingGenericity: false.! !
+
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'accessing' !
+
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+TypeArgumentLocator
+	coerce: loc 
+	do:[:l <TypeArgumentLocator> | ^self typeArgumentOutliner]
+! !
+

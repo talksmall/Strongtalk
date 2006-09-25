@@ -1,0 +1,32 @@
+Delta define: #BenchmarkPrimitiveRunner as: (
+(Class subclassOf: 'BenchmarkRunner' instanceVariables: '')) !
+
+(Delta mirrorFor: #BenchmarkPrimitiveRunner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BenchmarkPrimitiveRunner) group: 'benchmark'!
+
+(Delta mirrorFor: #BenchmarkPrimitiveRunner)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BenchmarkPrimitiveRunner) methodsFor: 'evaluating' !
+
+
+evaluate: bm
+	self showName: bm name.
+	Transcript cr.
+	{{primitiveClearPrimitiveCounters}}.
+	bm value.
+	{{primitivePrintPrimitiveCounters}}.! !
+
+! (Delta mirrorFor: #BenchmarkPrimitiveRunner) methodsFor: 'printing' !
+
+
+format
+	^'group, #calls'!
+
+name
+	^'Primitive calls'! !
+

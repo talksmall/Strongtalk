@@ -1,0 +1,83 @@
+Delta define: #FooVisual as: (
+(Class subclassOf: 'Visual' instanceVariables: 'palette <Palette> increment <SolidPaint> colors <Array[SolidPaint]> ')) !
+
+(Delta mirrorFor: #FooVisual) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #FooVisual) group: 'ui'!
+
+(Delta mirrorFor: #FooVisual)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
+
+! (Delta mirrorFor: #FooVisual) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	| top <Int> bottom <Int> painter <Painter> |
+
+	top := self allocation enclosedRect top.
+	bottom := self allocation enclosedRect bottom.
+	painter := Painter new.
+	can withPainter: painter do:
+		[ 1 to: self width do:
+				[ :x <Int> |
+					painter paint: (colors at: x).
+					can displayLineFrom: x @ top to: x @ bottom.	].
+		].! !
+
+! (Delta mirrorFor: #FooVisual) methodsFor: 'accessing' !
+
+
+height ^<Int>
+
+	^150!
+
+increment ^<SolidPaint>
+
+	^increment!
+
+increment: v <SolidPaint>
+
+	| c <SolidPaint> |
+	increment := v.
+
+	super initialize.
+	colors := Array[SolidPaint] new: self width.
+	c := Paint black.
+	1 to: self width do:
+		[ :i <Int> |
+			colors at: i put: c.
+			c := SolidPaint
+						red: c red + self increment red
+						green: c green + self increment green
+						blue: c blue + self increment blue.	].
+	self palette: (Palette for: colors).!
+
+palette ^<Palette>
+
+	^palette!
+
+palette: p <Palette>
+
+	palette := p!
+
+width ^<Int>
+
+	^150! !
+
+! (Delta mirrorFor: #FooVisual) methodsFor: 'geometry' !
+
+
+natural ^<Region>
+
+	^0@0 extent: self width @ self height! !
+
+! (Delta mirrorFor: #FooVisual) methodsFor: 'private' !
+
+
+isRectangularAndOpaque ^<Boolean>
+
+	^true! !
+

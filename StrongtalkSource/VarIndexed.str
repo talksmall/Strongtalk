@@ -1,0 +1,28 @@
+Delta define: #VarIndexed as: (
+Generic forAll: 'I , E ' body: (Protocol superProtocol: '<Indexed[I,E]>')) !
+
+(Delta mirrorFor: #VarIndexed) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #VarIndexed) group: 'base'!
+
+(Delta mirrorFor: #VarIndexed)
+comment: 
+'Note: indexOf:[ifAbsent:] is here rather than in Indexed
+so that Indexed can be contravariant on I.  The analogous
+thing was not done for Dict because it was decided that the
+richness of the key querying protocol was more important
+than the contravariant flexibility, since now Indexed
+can be used to get contravariant behavior on a limited
+protocol for Dicts when needed.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VarIndexed) methodsFor: 'Unclassified' !
+
+
+at: index <I> put: <E> ^<E> !
+
+indexOf: value <Object> ^<I> !
+
+indexOf: value <Object> ifAbsent: <[^X def]> ^<I | X> ! !
+

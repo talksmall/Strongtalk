@@ -1,0 +1,88 @@
+Delta define: #Workspace as: (
+(Class subclassOf: 'OutputStreamView' instanceVariables: '')) !
+
+(Delta mirrorFor: #Workspace) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Workspace) group: 'ui'!
+
+(Delta mirrorFor: #Workspace)
+comment: 
+'Workspace for evaluating Smalltalk expressions. A receiver can be set in 
+which case the expressions will be evaluated in the scope of that object.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Workspace) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	Launcher registerMenu: self launcherMenu for: self! !
+
+! (Delta mirrorFor: #Workspace) classSide methodsFor: 'private' !
+
+
+launcherMenu ^<Menu>
+
+	^Menu new
+			add: (Menu new name: '&Tools';
+						add: (MenuAction new
+									name: '&Workspace';
+									action: [ self new launch ])
+					)! !
+
+! (Delta mirrorFor: #Workspace) methodsFor: 'private' !
+
+
+codeView ^ <CodeView>
+
+	^CodeView coerce: self textView
+!
+
+textViewClass ^ <TextView[CharGlyphs] class>
+
+	^CodeView
+! !
+
+! (Delta mirrorFor: #Workspace) methodsFor: 'accessing' !
+
+
+evalBlock ^ <[]>
+
+	^self codeView evalBlock!
+
+evalBlock: blk <[]>
+
+	self codeView evalBlock: blk!
+
+receiver ^<Object>
+
+	^self codeView receiver
+!
+
+receiver: oop <Object>
+
+	self codeView receiver: oop
+! !
+
+! (Delta mirrorFor: #Workspace) methodsFor: 'utility' !
+
+
+showDoIt: s <Str> ^<Str>
+
+	"We have to use a semaphore to be sure that
+	 we don't write anything else to the stream
+	 before the button gets inserted asynchronously"
+	| sem <Semaphore> |
+	sem := Semaphore new.
+	self flush.
+	self codeView session inProcessDo:
+			[	self codeView buildDoItButtonFor: s.
+				sem signal ].
+	sem wait.
+	^s! !
+

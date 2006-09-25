@@ -1,0 +1,35 @@
+Delta define: #ElementH2 as: (
+(Class subclassOf: 'HeadElement' instanceVariables: '') classVariables: 'CachedPainter <Painter>') !
+
+(Delta mirrorFor: #ElementH2) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ElementH2) group: 'HTML'!
+
+(Delta mirrorFor: #ElementH2)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementH2) methodsFor: 'private' !
+
+
+painterFor: builder <HTMLBuilder> ^<Painter>
+
+	^Painter new
+				font: (FontSpec new
+									typeface: 'Times New Roman';
+									points: 18;
+									boldness: 0.8
+							) font;
+				paint: builder textPaint
+! !
+
+! (Delta mirrorFor: #ElementH2) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	builder verticalWhitespace.
+	super buildFor: builder.
+	builder verticalWhitespace.! !
+

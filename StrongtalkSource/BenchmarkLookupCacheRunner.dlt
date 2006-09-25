@@ -1,0 +1,41 @@
+Delta define: #BenchmarkLookupCacheRunner as: (
+(Class subclassOf: 'BenchmarkRunner' instanceVariables: '')) !
+
+(Delta mirrorFor: #BenchmarkLookupCacheRunner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BenchmarkLookupCacheRunner) group: 'benchmark'!
+
+(Delta mirrorFor: #BenchmarkLookupCacheRunner)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BenchmarkLookupCacheRunner) methodsFor: 'evaluate' !
+
+
+evaluate: bm
+	|a b c| 
+	self showName: bm name.
+	a := VM numberOfPrimaryLookupCacheHits.
+	b := VM numberOfSecondaryLookupCacheHits.
+	c := VM numberOfLookupCacheMisses.
+
+	bm value.
+
+	Transcript
+					show:  (VM numberOfPrimaryLookupCacheHits - a) printString; tab
+				;	show:  (VM numberOfSecondaryLookupCacheHits - b) printString; tab
+				;	show:  (VM numberOfLookupCacheMisses - c) printString; cr.
+
+	! !
+
+! (Delta mirrorFor: #BenchmarkLookupCacheRunner) methodsFor: 'printing' !
+
+
+format
+	^'#primary hits, #secondary hits, #misses'!
+
+name
+	^'LookupCache'! !
+

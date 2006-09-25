@@ -1,0 +1,222 @@
+Delta define: #CodeApp as: (
+Mixin superclassType: 'CommonProgEnvOutliner' body: ((Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'errors <OrdCltn[SelectableTypeError]>
+codeView <CodeView>
+errorView <Column[Visual]>
+') abstract)) !
+
+(Delta mirrorFor: #CodeApp) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #CodeApp) group: 'outliner'!
+
+(Delta mirrorFor: #CodeApp)
+comment: 
+'Manages the display of errors in typed code.
+
+Specifically, a CodeApp includes a code view for displaying
+code, and an error view that is displayed whenever type errors
+are detected. In addition, the code app manages the
+display and highlighting of the code related to individual
+type errors.
+
+
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CodeApp) methodsFor: 'accessing' !
+
+
+body ^ <Column[Visual]>
+
+^(guaranteed <Column[Visual]> (super body))!
+
+codeView ^ <CodeView>
+
+^codeView!
+
+codeView: cv  <CodeView>
+
+codeView := cv!
+
+errorView ^ <Column[Visual]>
+
+^errorView!
+
+errorView: ev  <Column[Visual]>
+
+errorView := ev.
+ev isNil
+	ifFalse:[self body size =1
+						ifTrue:[self body add: ev]
+						ifFalse:[ | oc <OrdCltn[Visual]> |
+										oc := OrderedCollection[Visual] new add: ev; yourself.
+										self body replaceFrom: 2 to: 2 with: oc.
+										]
+					]
+	 ifTrue: [self body size = 1 ifFalse:[self body remove: 1 at: 2]].!
+
+errors ^ <OrdCltn[SelectableTypeError]>
+
+^errors 
+!
+
+errors: es <OrdCltn[TypeError]>
+
+
+errors :=  nil = es	ifTrue:[nil] 
+								ifFalse:[es collect:[:te <TypeError> |
+																	SelectableTypeError onTypeError: te
+																												inView: self codeView.
+																	].
+												].
+!
+
+locator ^ <Locator>
+
+self subclassResponsibility
+
+! !
+
+! (Delta mirrorFor: #CodeApp) methodsFor: 'type errors' !
+
+
+displayErrors
+
+self errors isNil ifTrue:[^self].
+self errors isEmpty ifTrue:[^self].
+"We sort the errors according to their starting index in the source code.
+This is necessary to ensure that the glyphs will bracket correctly"
+(self errors asSortedCollection:[: te1 <SelectableTypeError> :te2 <SelectableTypeError> | 
+																	te1 te loc sourceHighlight at1 <= te2 te loc sourceHighlight at1 ]) 
+				do:[: te <SelectableTypeError> | self markTypeError: te].
+self showErrorNumber: 1.
+!
+
+displayErrors: es <OrdCltn[TypeError]> title: t <Str>
+
+| 
+batchedErrors <OrdCltn[OrdCltn[TypeError]]> 
+localBatch <OrdCltn[TypeError]> 
+|
+
+es isEmpty ifTrue:[^self].
+batchedErrors  := Type batchErrors: es.
+localBatch := batchedErrors 
+	detect: 	[:tes <OrdCltn[TypeError]> |
+						tes first loc matchesLocator: self locator.
+					]
+					ifNone:	[^self 	launchErrorLocList: batchedErrors
+												title: t.
+									].		
+		
+self errors: localBatch.
+self errorView: (self 	errorViewForBatches: batchedErrors 
+										localBatch: localBatch
+										title: t ).
+self displayErrors.
+!
+
+displayLocalErrorBatch: es <OrdCltn[TypeError]> title: t <Str>
+
+| bes <OrdCltn[OrdCltn[TypeError]]> |
+	
+self errors: es.
+bes := OrderedCollection[OrdCltn[TypeError]] new add: es; yourself.
+self errorView: (self 	errorViewForBatches: bes 
+										localBatch: es
+										title: t ).
+self displayErrors.
+!
+
+markTypeError: te <SelectableTypeError>
+"Mark a type error in the text of the method. In our case, insert a pair of buttons
+delimiting the erroneous code fragment"
+
+te mark
+!
+
+showErrorNumber: i <Integer> 
+
+| te <SelectableTypeError> |
+
+	te := self errors at: i.
+	self listBox selections: (OrderedCollection[Integer] new add: i; yourself).
+	te selectIfFail: [
+								self visual 	promptOk: 'Sorry, source has changed too much'
+														title: self locator name
+														type: #exclamation
+														action: [^self].
+								self shouldNotHappen.
+								].
+	
+	
+	
+!
+
+showTypeError: te <SelectableTypeError> 
+
+	te selectIfFail: [	
+								self visual 	promptOk: 'Sorry, source has changed too much'
+														title: self locator name
+														type: #exclamation
+														action: [^self].
+								self shouldNotHappen.
+								].
+	self codeView becomeFocusIfFail:[].
+	
+! !
+
+! (Delta mirrorFor: #CodeApp) methodsFor: 'private' !
+
+
+buildBody ^ <Column[Visual]>
+
+	| col <Column[Visual]> editor <Visual>  oc <OrdCltn[Visual]> |
+
+	self setCodeView.
+	self codeView codeManager: self.
+	editor := self editorBorderFor: self codeView.
+	oc := OrderedCollection[Visual] with: editor.
+	self errors isNil ifFalse:[oc add: self errorView].
+	^Column[Visual] holding: oc.!
+
+errorViewForBatches: bes <OrdCltn[OrdCltn[TypeError]]> 
+localBatch: localBatch <OrdCltn[TypeError]>
+title: t <Str>  ^ <Visual>
+
+| btn <Button>  oc <OrdCltn[Visual]> lb <ListBox> |
+
+oc := OrderedCollection[Visual] new.												
+lb := ListBox forSingleSelection.
+lb list: localBatch
+	converter: [: te <TypeError> | te errorMessage];
+	onSelChange:[: lbox <ListBox> | 
+								self showTypeError: (self errors at: lbox selections anElement).
+								].
+oc add: (lb withBorder: (Border standard3DRaised: false)).
+bes size > 1 
+	ifTrue:[
+				btn := Button 	labeled: 'List all errors' 
+											action:[:b <Button> | self 	launchErrorLocList: bes 
+																	title: t].	
+				oc add: btn.
+				].
+^Column[Visual] holding: oc
+!
+
+listBox ^ <ListBox>
+
+^ ListBox coerce: (self errorView at: 1) part else: [self shouldNotHappen]!
+
+setCodeView
+
+self subclassResponsibility!
+
+typecheckAction: blk <[]> title: t <Str>
+
+| eh <DeltaTypeErrorHandler> |
+
+eh := Type doChecks: blk.
+self displayErrors: eh reportedErrors
+ 		title: t.! !
+

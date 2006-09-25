@@ -1,0 +1,178 @@
+Delta define: #Dumper as: (
+(Class subclassOf: 'Object' instanceVariables: 'stream						<OutputStream[Integer]>		"The stream where the world goes"
+	marked					<VarDict[Object, Integer]>	"Remeber the object we have processed"
+	emptyMethodArray <Array[Method]>					"Reusable array when filing out"
+')) !
+
+(Delta mirrorFor: #Dumper) revision: '$Revision: 1.8 $'!
+
+(Delta mirrorFor: #Dumper) group: 'base'!
+
+(Delta mirrorFor: #Dumper)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.8 $'!
+
+! (Delta mirrorFor: #Dumper) classSide methodsFor: 'instance creation' !
+
+
+fileOut
+	| stream <OutputStream[Integer]> t <Float> |
+	stream :=  (FilePath for: 'test.bst') outputStream.
+	t := Time secondsToRun: [ (self on: stream) fileOut].
+	stream close.
+	Transcript
+			show: 'fileOut = '
+		;	show: t printString
+		;	show: ' sec.'
+		;	cr.
+!
+
+on: aStream <OutputStream>
+	^super new initialize: aStream! !
+
+! (Delta mirrorFor: #Dumper) classSide methodsFor: 'saving system file' !
+
+
+binarySmalltalkFileName ^ <Str>
+
+^'strongtalk.bst'!
+
+saveSystem
+
+	self saveSystemToFile: (FilePath for: self binarySmalltalkFileName)!
+
+saveSystemToFile: file <FilePath>
+
+	| tempFile <FilePath> bakFile <FilePath> out <OutputStream[Integer]> |
+	tempFile := file.
+	[ tempFile exists ]
+		whileTrue: [	tempFile := FilePath for: tempFile name, '.new' ].
+	out := tempFile outputStream.
+	[ (Dumper on: out) fileOut ] ensure: [ out close ].
+
+	"If we reach here the transport was successful"
+
+	SourceHandler systemBeingSaved.
+
+	file = tempFile
+		ifFalse: [	"The file was present. Rename .new and create .bak file"
+							bakFile := FilePath for: file name, '.bak'.
+							bakFile exists
+								ifTrue: [	bakFile delete ].
+							file moveAs: bakFile.
+							tempFile moveAs: file ].
+! !
+
+! (Delta mirrorFor: #Dumper) methodsFor: 'initialize' !
+
+
+initialize: aStream <OutputStream[Integer]>
+	stream							:= aStream.
+	marked							:= IdentityDictionary[Object,Integer] new: 42  * 1024.
+	emptyMethodArray	:= Array[Method] new: 0.! !
+
+! (Delta mirrorFor: #Dumper) methodsFor: 'testing' !
+
+
+at: obj <Object> ifPresent: pBlk <[Integer]> ifAbsentPut: aBlk <[Integer]>
+
+	aBlk value:
+		(marked at: obj
+			ifPresent:
+				[ :id <Int> |
+					pBlk value: id.
+					^self ]
+			ifAbsentPut:
+				[	marked size	]
+		)! !
+
+! (Delta mirrorFor: #Dumper) methodsFor: 'accessing' !
+
+
+emptyArray ^<Array[Object]>
+
+	^emptyMethodArray
+!
+
+putByte: byte <Integer>
+	stream nextPut: byte!
+
+putInteger: int <Integer>
+	"Stores an encoding of int. int should  to be unsigned. "
+	int < 128 ifTrue: [
+		stream nextPut:  int
+	] ifFalse: [	"%opt: should optimize the following, or wait until compiler can opt"
+		stream nextPut: (int \\ 128 + 128).
+		self putInteger:  (int // 128)
+	]! !
+
+! (Delta mirrorFor: #Dumper) methodsFor: 'file out' !
+
+
+fileOut
+    "Insert the bytecode version number"
+	self putInteger: self version.
+	self rootsDo: [:obj <Object> | obj fileOutOn: self ].
+!
+
+rootsDo: blk <[Object]>
+	blk value: self systemDictionary.
+
+	blk value: nil.
+	blk value: true.
+	blk value: false.
+	
+    blk value: (self at: #SmallInteger).
+    blk value: (self at: #Object).
+    blk value: (self at: #Array).
+    blk value: (self at: #ByteArray).
+    blk value: (self at: #CompressedSymbol).
+    blk value: (self at: #Float).
+    blk value: (self at: #Method).
+    blk value: (self at: #GlobalAssociation).
+
+    blk value: (self at: #BlockWithoutArguments).
+
+	blk value: (self at: #BlockWithOneArgument).
+	blk value: (self at: #BlockWithTwoArguments).
+	blk value: (self at: #BlockWithThreeArguments).
+	blk value: (self at: #BlockWithFourArguments).
+	blk value: (self at: #BlockWithFiveArguments).
+	blk value: (self at: #BlockWithSixArguments).
+	blk value: (self at: #BlockWithSevenArguments).
+	blk value: (self at: #BlockWithEightArguments).
+	blk value: (self at: #BlockWithNineArguments).
+
+    blk value: (self at: #Context).
+    blk value: (self at: #AsciiCharacters).
+    blk value: (self at: #Activation)!
+
+version
+	"The version number must be incremented whenever a change is made to the
+	  bytecode generation"
+	^102! !
+
+! (Delta mirrorFor: #Dumper) methodsFor: 'private' !
+
+
+at: name <Symbol> ^<Object>
+	| size  <Integer> assoc <Association> |
+	size := {{primitiveSmalltalkSize}}.
+	1 to: size do: [ :index |
+		assoc := {{primitiveSmalltalkAt: index ifFail: [ :err | self error: err]}}.
+		assoc key = name ifTrue: [ ^assoc value].
+	].
+	self error: 'Class not found'.
+	^self!
+
+emptyMethodArray ^<Array[Method]>
+	^emptyMethodArray!
+
+methodsForClass: class <Class> ^<Array[Methods]>
+	^self emptyMethodArray
+	!
+
+systemDictionary
+	^{{primitiveSmalltalkArray}}! !
+

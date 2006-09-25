@@ -1,0 +1,49 @@
+Delta define: #OopsVMMirror as: (
+(Class subclassOf: 'VMMirror' instanceVariables: '')) !
+
+(Delta mirrorFor: #OopsVMMirror) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #OopsVMMirror) group: 'reflection'!
+
+(Delta mirrorFor: #OopsVMMirror)
+comment: 
+'Low level mirror on a regular object.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'iteration' !
+
+
+iterateInstanceVariables: iterator <ObjectIterator>
+
+	| start <Integer> end <Integer> class <Class> |
+	class := Reflection classOf: self reflectee.
+	start := self reflectee fileOutHeaderSize + 1.
+	end := class fileOutNonIndexableSize.
+	start <= end
+		ifTrue: [	iterator beginInstanceVariables.
+						(ClassVMMirror on: class) instVarNamesDo: [ :name <Symbol> | 
+							self assert: [ start <= end ].
+							iterator name: name oop: (self reflectee fileOutInstVarAt: start).
+							start := start + 1 ].
+						self assert: [ start = (end + 1) ].
+						iterator endInstanceVariables ].
+! !
+
+! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'printing' !
+
+
+safePrintString ^ <Str>
+
+	| strm <CharWriteStream> cn <Str> |
+	nil = self reflectee ifTrue: [ ^nil printString ].
+	true = self reflectee ifTrue: [ ^true printString ].	
+	false = self reflectee ifTrue: [ ^false printString ].
+	strm := CharacterReadWriteStream on: (String new: 8).
+	cn := self reflectee class name.
+	strm	nextPutAll: (self articleFor: cn);
+				nextPut: Character space;
+				nextPutAll: cn.
+	^strm contentsWritten
+! !
+

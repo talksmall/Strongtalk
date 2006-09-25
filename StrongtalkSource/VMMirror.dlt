@@ -1,0 +1,137 @@
+Delta define: #VMMirror as: (
+(Class subclassOf: 'Object' instanceVariables: 'reflectee <Object>') abstract) !
+
+(Delta mirrorFor: #VMMirror) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #VMMirror) group: 'reflection'!
+
+(Delta mirrorFor: #VMMirror)
+comment: 
+'The VM mirrors are low level mirrors accessing VM information.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'private' !
+
+
+primitiveFailed: e <Symbol>
+
+	self error: 'Primitive failure ', e.!
+
+primitiveFailed: e <Symbol> handler: fb <[Str]>
+
+	fb value: 'Primitive failure ', e.! !
+
+! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'instance creation' !
+
+
+on: o <Object> ^ <VMMirror>
+
+	"This is not object-oriented at all but it keeps the VM reflection system separate."
+	| format <Symbol> |
+	format := {{primitiveBehaviorVMType: o class ifFail: [:e <CompressedSymbol> | self error: e]}}.
+	format = #Oops ifTrue: [ ^OopsVMMirror new reflectee: o ].
+	format = #SmallInteger ifTrue: [ ^SmallIntegerVMMirror new reflectee: o ].
+	format = #Symbol ifTrue: [	^SymbolVMMirror new reflectee: o ].
+	format = #Method ifTrue: [ ^MethodVMMirror new reflectee: o ].
+	format = #Array ifTrue: [	^ArrayVMMirror new reflectee: o ].
+	format = #ByteArray ifTrue: [	^ByteArrayVMMirror new reflectee: o ].
+	format = #Block ifTrue: [	^BlockVMMirror new reflectee: o ].
+	format = #Context ifTrue: [	^ContextVMMirror new reflectee: o ].
+	format = #Process ifTrue: [	^ProcessVMMirror new reflectee: o ].
+	format = #Proxy ifTrue: [	^ProxyVMMirror new reflectee: o ].
+	format = #Activation ifTrue: [	^ActivationVMMirror new reflectee: o ].
+	format = #Mixin ifTrue: [	^MixinVMMirror new reflectee: o ].
+	format = #GlobalAssociation ifTrue: [	^GlobalAssociationVMMirror new reflectee: o ].
+	format = #Float ifTrue: [ ^FloatVMMirror new reflectee: o ].
+	format = #WeakArray ifTrue: [	^WeakArrayVMMirror new reflectee: o ].
+	format = #DoubleByteArray ifTrue: [	^DoubleByteArrayVMMirror new reflectee: o ].
+	format = #FloatValueArray ifTrue: [	^FloatValueArrayVMMirror new reflectee: o ].
+	format = #Class ifTrue: [	
+		format := {{primitiveBehaviorVMType: o ifFail: [:e <CompressedSymbol> | self error: e]}}.
+		format = #Oops ifTrue: [	^OopsClassVMMirror new reflectee: o ].
+		format = #SmallInteger ifTrue: [ ^SmallIntegerClassVMMirror new reflectee: o ].
+		format = #Symbol ifTrue: [	^SymbolClassVMMirror new reflectee: o ].
+		format = #Method ifTrue: [ ^MethodClassVMMirror new reflectee: o ].
+		format = #Array ifTrue: [	^ArrayClassVMMirror new reflectee: o ].
+		format = #ByteArray ifTrue: [	^ByteArrayClassVMMirror new reflectee: o ].
+		format = #Block ifTrue: [	^BlockClassVMMirror new reflectee: o ].
+		format = #Context ifTrue: [	^ContextClassVMMirror new reflectee: o ].
+		format = #Process ifTrue: [	^ProcessClassVMMirror new reflectee: o ].
+		format = #Proxy ifTrue: [	^ProxyClassVMMirror new reflectee: o ].
+		format = #Activation ifTrue: [	^ActivationClassVMMirror new reflectee: o ].
+		format = #Mixin ifTrue: [	^MixinClassVMMirror new reflectee: o ].
+		format = #GlobalAssociation ifTrue: [	^GlobalAssociationClassVMMirror new reflectee: o ].
+		format = #Float ifTrue: [ ^FloatClassVMMirror new reflectee: o ].
+		format = #WeakArray ifTrue: [	^WeakArrayClassVMMirror new reflectee: o ].
+		format = #DoubleByteArray ifTrue: [	^DoubleByteArrayClassVMMirror new reflectee: o ].
+		format = #FloatValueArray ifTrue: [	^FloatValueArrayClassVMMirror new reflectee: o ].
+		format = #Class  ifTrue: [	^ClassClassVMMirror new reflectee: o ].
+	].
+	self shouldNotHappen.
+! !
+
+! (Delta mirrorFor: #VMMirror) methodsFor: 'private' !
+
+
+primitiveFailed: e <Symbol>
+
+	self error: 'Primitive failure ', e.!
+
+primitiveFailed: e <Symbol> handler: fb <[Str]>
+
+	fb value: 'Primitive failure ', e.! !
+
+! (Delta mirrorFor: #VMMirror) methodsFor: 'accessing' !
+
+
+reflectee ^ <Object>
+
+	^reflectee!
+
+reflectee: r <Object>
+
+	reflectee := r! !
+
+! (Delta mirrorFor: #VMMirror) methodsFor: 'iteration' !
+
+
+innerIterateHeader: iterator <ObjectIterator>
+
+	iterator name: 'class' oop: self reflectee class.
+!
+
+iterate: iterator <ObjectIterator>
+	"Iterate over the reflectee's structure with callbacks to the iterator"
+
+	iterator beginObject: self reflectee fileOutSize.
+	self iterateHeader: iterator.
+	self iterateClassVariables: iterator.
+	self iterateInstanceVariables: iterator.
+	self iterateIndexables: iterator.
+	iterator endObject.
+	!
+
+iterateClassVariables: iterator <ObjectIterator>
+!
+
+iterateHeader: iterator <ObjectIterator>
+
+	iterator beginHeader.
+	self innerIterateHeader: iterator.
+	iterator endHeader.
+!
+
+iterateIndexables: iterator <ObjectIterator>
+!
+
+iterateInstanceVariables: iterator <ObjectIterator>
+! !
+
+! (Delta mirrorFor: #VMMirror) methodsFor: 'printing' !
+
+
+safePrintString ^ <Str>
+
+	self subclassResponsibility! !
+

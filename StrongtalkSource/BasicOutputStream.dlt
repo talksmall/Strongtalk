@@ -1,0 +1,68 @@
+Delta define: #BasicOutputStream as: (
+Generic forAll: 'E' body: ((Class subclassOf: 'Object' instanceVariables: '') protocols: 'OutputStream[E]'; abstract)) !
+
+(Delta mirrorFor: #BasicOutputStream) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #BasicOutputStream) group: 'base'!
+
+(Delta mirrorFor: #BasicOutputStream)
+comment: 
+'This class provides the standard implementation of the OutputStream protocol.  It implements all functionality in terms of the message #nextPut:, which subclasses must provide.
+
+%responsibility #flush
+    Subclasses may have to reimplement this to flush any internal buffers.
+
+%todo: if this class doesn''t end up with more methods than next:put: and nextPutAll:, then we
+should remove it and copy those two methods into its subclasses and invocations.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #BasicOutputStream) methodsFor: 'accessing' !
+
+
+externalFlush
+	"Flush both internal Smalltalk buffers and any buffers external to Smalltalk"
+
+	"By default do regular flush.  Subclasses should extend to deal with any external buffers"
+	self flush!
+
+flush
+	"Flush any information buffered in Smalltalk.  This does NOT
+	 flush the external medium; use #externalFlush for that."
+
+	"By default do nothing"!
+
+next: nElements <Int> put: el <E> ^<E>
+
+	nElements timesRepeat: [
+		self nextPut: el		].
+	^el!
+
+nextPut: el <E> ^<E>
+
+	self subclassResponsibility!
+
+nextPutAll: els <Cltn[E]> ^<Cltn[Object]> 
+
+	els do: [ :el <E> |
+		self nextPut: el		].
+	^els!
+
+put: el <E> ^<E>
+	"A better name for nextPut:"
+
+	^self nextPut: el!
+
+putAll: els <Cltn[E]> ^<Cltn[Object]>
+	"Better name for nextPutAll:"
+
+	^self nextPutAll: els!
+
+show: els <Cltn[E]> ^<Cltn[Object]>
+	"basically like for #nextPutAll, except that it should flush immediately."
+
+	self nextPutAll: els; flush.
+	^els! !
+

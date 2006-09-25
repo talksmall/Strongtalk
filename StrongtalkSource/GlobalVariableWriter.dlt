@@ -1,0 +1,39 @@
+Delta define: #GlobalVariableWriter as: (
+(Class subclassOf: 'DefinitionWriter' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlobalVariableWriter) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #GlobalVariableWriter) group: 'reflection'!
+
+(Delta mirrorFor: #GlobalVariableWriter)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GlobalVariableWriter) methodsFor: 'file out' !
+
+
+fileOutDefinition: s <Str> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+
+	pos := stream position.
+	stream	
+		nextPutAll: s;
+		nextPutAll: ' !!'; 
+		cr; cr.
+	^pos
+!
+
+fileOutOn: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+
+	pos := stream position.
+	self fileOutDefinition: self mirror definitionString on: stream.
+	self fileOutRevision: self mirror revision on: stream.
+	self fileOutGroup: self mirror group on: stream.
+	self fileOutComment: self mirror comment on: stream.
+	^pos
+! !
+

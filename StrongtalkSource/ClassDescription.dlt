@@ -1,0 +1,41 @@
+Delta define: #ClassDescription as: (
+(Class subclassOf: 'Behavior' instanceVariables: '')) !
+
+(Delta mirrorFor: #ClassDescription) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ClassDescription) group: 'base'!
+
+(Delta mirrorFor: #ClassDescription)
+comment: 
+'Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #ClassDescription) methodsFor: 'accessing' !
+
+
+name ^ <Symbol>
+
+	self subclassResponsibility!
+
+nameIfAbsent: blk <[^X def]> ^<Symbol | X>
+
+	^self name! !
+
+! (Delta mirrorFor: #ClassDescription) methodsFor: 'file-in compatibility' !
+
+
+instanceVariableNames: clsIvars <Str>
+	
+	[ clsIvars isEmpty ] verify!
+
+methodsFor: category <String> ^<DefinitionReader>
+
+    ^DefinitionReader for: (ClassMirror on: self) category: category asSymbol!
+
+methodsFor: category <String> stamp: stmp <Str> ^<DefinitionReader>
+
+    ^self methodsFor: category! !
+

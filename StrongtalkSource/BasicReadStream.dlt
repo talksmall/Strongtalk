@@ -1,0 +1,213 @@
+Delta define: #BasicReadStream as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'BasicInputStream[E]' instanceVariables: 'actualPosition <Int>
+		') protocols: 'ReadStream[E]'; abstract)) !
+
+(Delta mirrorFor: #BasicReadStream) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BasicReadStream) group: 'base'!
+
+(Delta mirrorFor: #BasicReadStream)
+comment: 
+'This class provides the standard implementation of the ReadStream protocol. 
+
+Subclass responsibilities:
+    %responsibility actualPosition:
+        Should be extended in subclasses to change any external position cursor, if necessary.
+    %responsibility actualNext
+        Subclasses must ensure that their implementation of next and nextFromPeek increments the position.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #BasicReadStream) classSide methodsFor: 'instance creation' !
+
+
+on: sc <SeqCltn[E]> ^<ReadStream[E]>
+	"Create a new read stream on sc, assuming that all of its elements are readable.
+		This message is here for BlueBook compatibility.  For good style, use (sc readStream)
+		instead. "
+
+	^SeqCltnReadStream[E] on: sc!
+
+on: sc <SeqCltn[E]> from: firstIndex <Int> to: lastIndex <Int>  ^<ReadStream[E]>
+	"Create a new read stream on a copy of the elements in sc from firstIndex to lastIndex, inclusive"
+
+	^self on: (sc copyFrom: firstIndex to: lastIndex)! !
+
+! (Delta mirrorFor: #BasicReadStream) classSide methodsFor: 'testing' !
+
+
+test: s <ReadStream[E]> containing: els <SeqCltn[E]>
+
+	super test: s copy containing: els.
+	self test: 0 is: [ (s copy position: 1) contentsRemaining
+					= (els copyFrom: 2 to: els size) ].
+	self test: 1 is: [ s collection = els ].
+	self test: 2 is: [ s isEmpty not ].
+	self test: 3 is: [ s size = els size ].
+	s next.
+	self test: 4 is: [ s position = 1 ].
+	s position: els size - 1.
+	self test: 5 is: [ s atEnd not ].
+	self test: 6 is: [ s size = els size ].
+	self test: 7 is: [ s atEnd not ].
+	self test: 8 is: [ s next = (els at: els size) ].
+	self test: 9 is: [ s atEnd ].
+	s position: 0.
+	self test: 10 is: [ s atEnd not ].
+	s setToEnd.
+	self test: 11 is: [ s atEnd ].
+	self test: 12 is: [ s contentsRemaining size = 0 ].! !
+
+! (Delta mirrorFor: #BasicReadStream) methodsFor: 'initialization' !
+
+
+initialize
+    super initialize.
+    self initializeActualPosition!
+
+initializeActualPosition
+    self actualPosition: 0! !
+
+! (Delta mirrorFor: #BasicReadStream) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+
+	^self actualPosition >= self size!
+
+actualPosition ^<Int>
+
+	^actualPosition!
+
+actualPosition: p <Int>
+
+	actualPosition := p! !
+
+! (Delta mirrorFor: #BasicReadStream) methodsFor: 'accessing' !
+
+
+at: index <Int> ^<E>
+
+	| pos <Int> result <E> |
+	pos := self position.
+	self position: index - 1.
+	result := self next.
+	self position: pos.
+	^result!
+
+collection  ^<SeqCltn[E]>
+
+	| cltn <VarSeqCltn[E]> origPos <Int> |
+
+	cltn := self newCollectionOfSize: self size.
+	origPos := self position.
+	self position: 0.
+	1 to: self size do: [ :i <Int> |
+		cltn at: i put: self next.	].
+	self position: origPos.
+	^cltn!
+
+contents  ^<SeqCltn[E]>
+	"Obsolete: this method is included purely for BlueBook compatibility.  If possible, use 
+	 #contentsRemaining and #contentsWritten, which will work when a ReadWriteStream
+	 is substituted for a ReadStream or a WriteStream, unlike this method"
+
+	^self contentsRemaining!
+
+contentsRemaining  ^<SeqCltn[E]>
+
+	| cltn <VarSeqCltn[E]> n <Int> |
+
+	n :=  self size - self position.
+	cltn := self newCollectionOfSize: n.
+	1 to: n do: [ :i <Int> |
+		cltn at: i put: self next.	].
+	^cltn!
+
+copyFrom: start <Int> to: stop <Int> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	| pos <Int> n <Int> result <Array[EX]> offset <Int> |
+	pos := self position.
+	n := (stop - start) + 1.
+	result := Array[EX] new: n.
+	offset := start - 1.
+	1 to: n do:
+		[ :i <Int> |
+			"guarantee is safe because of inference clause"
+			result at: i put: (guaranteed <EX> (self repositioningAt: offset + i)). ].
+	self position: pos.
+	^result!
+
+isEmpty ^<Boolean>
+
+	^self size = 0!
+
+position ^<Int>
+
+	^self havePeeked
+		ifFalse: [ self actualPosition ]
+		ifTrue: [ self actualPosition - 1 ]!
+
+position: p <Int>
+
+	self actualPosition: p.
+	self noPeekVal.!
+
+repositioningAt: index <Int> ^<E>
+	"Like at:, but may leave the position changed"
+
+	^self at: index!
+
+reset
+
+	self position: 0.!
+
+setToEnd
+
+	self position: self size.!
+
+size ^<Int>
+
+	self subclassResponsibility!
+
+skip: nElements <Int>
+
+	self position: (self position + nElements max: self size)!
+
+skipTo: o <Object> ^<Boolean>
+
+	| pos <Int> n <Int> sz <Int> |
+	sz := self size.
+	pos := self position.
+	pos + 1 to: sz do:
+		[ :i <Int> |
+			(self repositioningAt: i) = o
+				ifTrue: [	self position: i.
+								^true ]
+		].
+	self position: sz.
+	^false!
+
+upTo: delimiter <Object> ^<SeqCltn[E]>
+
+	| pos <Int> n <Int> result <SeqCltn[E]> |
+	pos := self position.
+	^(self skipTo: delimiter)
+		ifTrue: [ self copyFrom: pos + 1 to: self position - 1 ]
+		ifFalse: [ self copyFrom: pos + 1 to: self position ]
+
+"	| pos <Int> n <Int> result <Array[E]> |
+	pos := self position.
+	self skipTo: delimiter.
+	n := (self position - pos) - 1.
+	self position: pos.
+	result := Array[E] new: n.
+	1 to: n do:
+		[ :i <Int> |
+			result at: i put: self next ].
+	self nextIfAbsent: [].
+	^result"! !
+

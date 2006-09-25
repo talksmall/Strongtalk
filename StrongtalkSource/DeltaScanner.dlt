@@ -1,0 +1,467 @@
+Delta define: #DeltaScanner as: (
+(Class subclassOf: 'Object' instanceVariables: 'buffer <String>
+	bufferPos <Int>
+	error <[Str,Int, ^DoesNotMatter]>
+	source <Str>
+	sourcePos <Int>
+	char <Character>
+	char2 <Character>
+	tokenBeg <Int>
+	tokenEnd <Int>
+	tokenVal <Object>
+	token <Symbol>
+	commentPositions <SeqCltn[Tuple[Int,Int]]>
+') classVariables: 'Classifier <Array[Symbol]> LFChar <Character> NullChar <Character>') !
+
+(Delta mirrorFor: #DeltaScanner) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #DeltaScanner) group: 'ast'!
+
+(Delta mirrorFor: #DeltaScanner)
+comment: 
+'A DeltaScanner scans a string (source) and decomposes it into Smalltalk tokens.
+
+    Instance variables:
+
+    buffer								a buffer used to compose selectors and strings
+    bufferPos						point to the end of the buffer
+    source							the source string
+    sourcePos					the current source position
+    token								the type of the current  token
+    tokenVal						the value of the current  token, if any
+    tokenBeg						the source position of the first character of the current token
+    tokenEnd						the source position of the first character after the current token
+											(i.e. tokenEnd - tokenBeg = tokenLength)
+    char								the current character
+    char2								the character after the current character
+	commentPositions	the locations of comments in the source string
+	
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaScanner) classSide methodsFor: 'initialization' !
+
+
+initialize
+    "Initializes DeltaScanner."
+
+    NullChar := Character value: 0.
+	LFChar := Character value: 10.
+    Classifier := Array new: 127.
+    1 to: $  asInteger do: [ : i | Classifier at: i put: #whitespace].
+    $0 asInteger to: $9 asInteger do: [ : i | Classifier at: i put: #digit].
+    $A asInteger to: $Z asInteger do: [ : i | Classifier at: i put: #letter].
+    $a asInteger to: $z asInteger do: [ : i | Classifier at: i put: #letter].
+    Classifier
+          at: $!! asInteger put: #special
+        ; at: $" asInteger put: #dquote
+        ; at: $# asInteger put: #hash
+        ; at: $$ asInteger put: #dollar
+        ; at: $% asInteger put: #special
+        ; at: $& asInteger put: #special
+        ; at: $' asInteger put: #quote
+        ; at: $( asInteger put: #lparen
+        ; at: $) asInteger put: #rparen
+        ; at: $* asInteger put: #special
+        ; at: $+ asInteger put: #special
+        ; at: $, asInteger put: #special
+        ; at: $- asInteger put: #special
+        ; at: $. asInteger put: #period
+        ; at: $/ asInteger put: #special
+        ; at: $: asInteger put: #colon
+        ; at: $; asInteger put: #semicolon
+        ; at: $< asInteger put: #special
+        ; at: $= asInteger put: #special
+        ; at: $> asInteger put: #special
+        ; at: $? asInteger put: #special
+        ; at: $@ asInteger put: #special
+        ; at: $[ asInteger put: #lbracket
+        ; at: $\ asInteger put: #special
+        ; at: $] asInteger put: #rbracket
+        ; at: $^ asInteger put: #arrow
+        ; at: $_ asInteger put: #letter
+        ; at: $` asInteger put: #undefined
+        ; at: ${ asInteger put: #lbrace
+        ; at: $| asInteger put: #special
+        ; at: $} asInteger put: #rbrace
+        ; at: $~ asInteger put: #special! !
+
+! (Delta mirrorFor: #DeltaScanner) classSide methodsFor: 'instance creation' !
+
+
+new ^ <Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #DeltaScanner) methodsFor: 'scanning' !
+
+
+aDigit: aChar <Character> ^ <Boolean>
+    ^ (self classOf: aChar) == #digit!
+
+aLetter: aChar <Character> ^ <Boolean>
+    ^ (self classOf: aChar) == #letter!
+
+aSpecial: aChar <Character> ^ <Boolean>
+    ^ (self classOf: aChar) == #special!
+
+aWhitespace: aChar <Character> ^ <Boolean>
+    ^ (self classOf: aChar) == #whitespace!
+
+classOf: aChar <Character> ^ <Symbol>
+    "Answers classification code of aChar
+    according to the Classifier character table."
+    | i <Int> |
+    i := aChar asInteger.
+    (1 <= i and: [i <= Classifier size]) ifTrue: [^ Classifier at: i].
+    ^#eos!
+
+commentPositions ^ <SeqCltn[Tuple[Int,Int]]>
+
+	^commentPositions!
+
+copy
+    "Answers a copy of the scanner that may be used
+    to scan arbitrary many tokens ahead."
+    | c <Self> |
+    c := self shallowCopy.
+    c buffer: buffer shallowCopy.
+    c commentPositions:  (OrderedCollection[Tuple[Int,Int]] new).
+    ^c!
+
+error: aString <Str>^ <DoesNotMatter>
+    error isNil
+        ifTrue: [super error: aString]
+        ifFalse: [error value: aString value: tokenBeg]!
+
+mergeMinusAndNumber ^ <Boolean>
+    "
+    Heuristics used to get 'correct' minus and number parsing.
+    Note: When mergeMinusAndNumber is called, token and tokenEnd still are the values for the
+    previous token, while tokenBeg has already the value of the current token. Thus, if tokenEnd
+    is less than tokenBeg, there is white space between the previous and the current token.
+    "
+    ^ tokenEnd < tokenBeg
+        ifTrue: [
+            "If there is white space before the minus, merge"
+            true
+        ]
+        ifFalse: [
+            "Otherwise merge if the previous token wasn't either an identifier,
+            a number or closing parentheses."
+            ((token ~= #identifier) and: [token ~= #number]) and: [token ~= #rparen]
+        ]!
+
+notifier: aBlock <[Str,^Object] > ^ <Self>
+
+	self halt.
+	"notifier := aBlock"
+!
+
+scan: code <Symbol> ^ <Symbol>
+    tokenVal := nil.
+    code = #letter ifTrue: [
+        tokenVal := self identifierOrKeyword.
+        (tokenVal at: tokenVal size) = $:
+            ifTrue: [^ #keyword]
+            ifFalse: [^ #identifier]
+    ].
+    code = #digit ifTrue: [tokenVal := self number. ^ #number].
+    code = #special ifTrue: [
+        (((char = $-) and: [self aDigit: char2]) and: [self mergeMinusAndNumber]) ifTrue: [tokenVal := self number. ^ #number].
+        ((char = $<) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #<. ^ #less].
+        ((char = $>) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #>. ^ #greater].
+	   ((char = $>) and: [ char2 = $, ]) ifTrue: [ self nextChar. tokenVal := #>. ^ #greater ]. self deltaHack.
+        ((char = $|) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #|. ^ #vbar].
+        ((char = $/) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #/. ^ #slash].
+        ((char = $,) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #,. ^ #comma].
+        tokenVal := self binarySel. ^ #binarySel
+    ].
+    code = #quote ifTrue: [tokenVal := self string. ^ #string].
+    code = #dollar ifTrue: [tokenVal := self character. ^ #character].
+    code = #colon ifTrue: [
+        self nextChar.
+        char = $=
+            ifTrue: [self nextChar. ^ #becomes]
+            ifFalse: [^ #colon]
+    ].
+    code = #lbrace ifTrue: [
+        self nextChar.
+        char = ${
+            ifTrue: [self nextChar. ^ #dlbrace]
+            ifFalse: [^ #lbrace]
+    ].
+    code = #rbrace ifTrue: [
+        self nextChar.
+        char = $}
+            ifTrue: [self nextChar. ^ #drbrace]
+            ifFalse: [^ #rbrace]
+    ].
+    self nextChar. ^ code!
+
+source ^ <Str>
+    ^ source!
+
+token ^ <Symbol>
+    "Returns next source token."
+    self skipWhitespaceAndComments.
+    tokenBeg := sourcePos - 2.
+    token := self scan: (self classOf: char).
+    tokenEnd := sourcePos - 2.
+    ^ token!
+
+tokenBeg ^ <Int>
+    ^ tokenBeg!
+
+tokenEnd ^ <Int>
+    ^ tokenEnd!
+
+tokenVal ^ <Object>
+    ^ tokenVal!
+
+valueOf: aDigit <Character> ^ <Integer>
+    "
+    Answers a number corresponding to the digit value of aDigit.
+    Answers a negative value if aDigit cannot be interpreted as a digit.
+    "
+    (($0 <= aDigit) and: [aDigit <= $9]) ifTrue: [^ (aDigit asInteger - $0 asInteger)].
+    (($A <= aDigit) and: [aDigit <= $Z]) ifTrue: [^ (aDigit asInteger - $A asInteger + 10)].
+    ^ -1! !
+
+! (Delta mirrorFor: #DeltaScanner) methodsFor: 'private' !
+
+
+binarySel
+    "
+    Private. Answers the binary selector value as a symbol.
+    $ binarySel = special [{special} anySpecialCharExceptMinus].
+    "
+    self assert: [self aSpecial: char].
+    self initBuffer.
+    [self aSpecial: char] whileTrue: [
+        self saveChar.
+        self nextChar
+    ].
+
+    "Remove the last character if it is a $- and the selector is
+    longer than one character."
+    ((bufferPos > 2) and: [(buffer at: bufferPos - 1) = $-]) ifTrue: [
+        bufferPos := bufferPos - 1.
+        self prevChar
+    ].
+
+    ^ self bufferContents asSymbol!
+
+buffer: aBuffer <String>
+    "Private. Used for copy."
+    buffer := aBuffer!
+
+bufferContents ^ <Str>
+    "Private. Returns the buffer contents as string."
+    ^ buffer copyFrom: 1 to: bufferPos - 1!
+
+character ^ <Character>
+    "
+    Private. Answers the character value.
+    $ character = '$' char.
+    "
+    | ch <Character> |
+    self check: $$.
+    ch := char.
+    self nextChar.
+    ^ ch!
+
+check: aChar <Character>
+    "Private."
+    char = aChar ifFalse: [self error: aChar printString, ' expected'].
+    self nextChar!
+
+commentPositions:  cps <SeqCltn[Tuple[Int,Int]]>
+	"Private"
+	commentPositions := cps!
+
+digits: b <Integer> ^ <Integer>
+    "
+    Private. Answers the value of a sequence of digits to the base b.
+    $ digits := digit {digit}.
+    $ digit := '0' .. '9' | 'A' .. 'Z'.
+    "
+    | x <Int> d <Int> |
+    x := 0.
+    d := self valueOf: char.
+    ((0 <= d) and: [d < b]) ifFalse: [self error: 'first digit must be between 0 and ', b printString].
+    [   x := x * b + d.
+        self nextChar.
+        d := self valueOf: char.
+        ((0 <= d) and: [d < b])
+    ]   whileTrue.
+    ^ x!
+
+floatMantissa
+    "
+    Private. Answers the value of a sequence of digits to the base b.
+    $ digits := digit {digit}.
+    $ digit := '0' .. '9'
+    "
+	| value factor digitValue |
+	
+	factor := 0.1.
+	value := 0.0.
+
+    digitValue := self valueOf: char.
+    ((0 <= digitValue) and: [digitValue <= 9]) ifFalse: [self error: 'first digit must be between 0 and 9'].
+    [   value := value + (factor * digitValue).
+       self nextChar.
+        factor := factor / 10.0.
+        digitValue := self valueOf: char.
+        ((0 <= digitValue) and: [digitValue <= 9])
+    ]   whileTrue.
+    ^ value!
+
+identifierOrKeyword ^ <Symbol>
+    "
+    Private. Answers the identifier or keyword value.
+    $ identifier = letter {letter | digit}.
+    $ keyword = identifier ':'.
+    "
+    (self aLetter: char) ifFalse: [self halt].
+    self initBuffer.
+    [(self aLetter: char) or: [self aDigit: char]] whileTrue: [self saveChar ; nextChar].
+    ((char = $:) and: [char2 ~= $=]) ifTrue: [self saveChar ; nextChar].
+    ^ self bufferContents asSymbol!
+
+initBuffer
+    "Private."
+    bufferPos := 1!
+
+nextChar
+    "Private. Reads the next character from source.
+    At end of source a NullChar is returned,
+    NullChars in the source are translated to spaces."
+    | ch <Character> |
+    char := char2.
+    sourcePos > source size
+        ifTrue: [ch := NullChar]
+        ifFalse: [
+            ch := source at: sourcePos.
+            ch = NullChar ifTrue: [ch := $ ]
+        ].
+    char2 := ch.
+    sourcePos := sourcePos + 1!
+
+number ^ <Number>
+    "
+    Private.
+    $ number = ['-'] digits ['r' digits
+                                             | '.' digits [('E'|'e') ['-'] digits] ['D'|'d']].
+    "
+    | neg <Boolean> x <Number> y <Number>  e <Int> |
+    (neg := char = $-) ifTrue: [self nextChar].
+    x := self digits: 10.
+    char = $r
+        ifTrue: [
+            self nextChar.
+            ((2 <= x) and: [x <= 36]) ifFalse: [self error: 'base must be between 2 and 36'. x := 10].
+            char = $- ifTrue: [self nextChar. neg := neg not]. "for compatibility with Smalltalk/V only"
+            x := self digits: x
+        ]
+        ifFalse: [
+            "following section should be massively improved for floats (and: exponent not working yet)"
+            ((char = $.) and: [self aDigit: char2]) ifTrue: [
+                self nextChar.
+                y := self floatMantissa.
+                x := (x + y) asFloat.
+
+                ((char = $E) or: [char = $e]) ifTrue: [
+                    self nextChar.
+                    char = $- ifTrue: [self nextChar].
+                    e := self digits: 10
+                ].
+
+				"Remove this at some point - not allowed anymore"
+                ((char = $D) or: [char = $d]) ifTrue: [self nextChar]. "skip double specifier"
+            ]
+        ].
+
+    ^ neg
+        ifTrue: [x negated]
+        ifFalse: [x]!
+
+prevChar
+    "Private. Undoes nextChar."
+    | ch |
+    char2 := char.
+    sourcePos <= 3
+        ifTrue: [ch := NullChar]
+        ifFalse: [
+            ch := source at: sourcePos - 3.
+            ch = NullChar ifTrue: [ch := $ ]
+        ].
+    char := ch.
+    sourcePos := sourcePos - 1!
+
+saveChar
+    "Private. Saves char in buffer."
+    | newBuffer |
+    bufferPos > buffer size ifTrue: [ "double buffer size"
+        newBuffer := String new: 2 * buffer size.
+        1 to: buffer size do: [ :i | newBuffer at: i put: (buffer at: i)].
+        buffer := newBuffer
+    ].
+    buffer at: bufferPos put: char.
+    bufferPos := bufferPos + 1!
+
+skipComment
+    "Private. Skips a comment."
+    | commentBegin <Int> commentEnd <Int> |
+    commentBegin := sourcePos - 2.
+    self check: $".
+    [(char ~= $") and: [char ~= NullChar]] whileTrue: [self nextChar].
+    char = NullChar ifTrue: [self error: 'unfinished comment'].
+    commentEnd := sourcePos - 1.	"The intervals exclude the end position"  
+    self commentPositions add: commentBegin ,, commentEnd.
+    self nextChar.!
+
+skipWhitespace
+    "Private. Skips whitespace."
+    [self aWhitespace: char] whileTrue: [self nextChar]!
+
+skipWhitespaceAndComments
+    "Private. Skips both whitespace and comments."
+    [char = $" or: [self aWhitespace: char]] whileTrue: [
+        char = $"
+            ifTrue: [self skipComment]
+            ifFalse: [self skipWhitespace]
+    ]!
+
+string ^ <Str>
+    "
+    Private. Answers the string value.
+    $ string = `'` {char} `'`.
+    "
+    self check: $'.
+    self initBuffer.
+    [((char ~= $') or: [char2 = $']) and: [char ~= NullChar]] whileTrue: [
+		char = LFChar ifFalse: [ "ignore LF's in CR LF sequences"
+        	char = $' ifTrue: [self nextChar].
+        	self saveChar
+		].
+		self nextChar
+    ].
+    self check: $'.
+    ^ self bufferContents! !
+
+! (Delta mirrorFor: #DeltaScanner) methodsFor: 'initialization' !
+
+
+initialize
+	buffer := String new: 100.
+	self commentPositions:  (OrderedCollection[Tuple[Int,Int]] new).!
+
+open: aString <Str>  ifError: aBlock <[Str, Int, ^DoesNotMatter]>
+    error := aBlock.
+    source := aString. 
+    sourcePos := 1.
+    token := #undefined.
+    self nextChar ; nextChar. "two chars lookahead"! !
+

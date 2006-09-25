@@ -1,0 +1,95 @@
+Delta define: #ExternalInputStream as: (
+Generic forAll: 'DESCRIPTOR <ExternalStreamDescriptor> ' body: ((Class subclassOf: 'BasicInputStream[Int] mixin |> ExternalStream[DESCRIPTOR]' instanceVariables: ''))) !
+
+(Delta mirrorFor: #ExternalInputStream) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ExternalInputStream) group: 'base'!
+
+(Delta mirrorFor: #ExternalInputStream)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'accessing' !
+
+
+atEnd ^<Boolean>
+
+	"Reimplemented for speed since we have ensured that atEnd and actualAtEnd mean
+	  the same thing"
+
+	^self actualAtEnd!
+
+next ^<Int>
+
+	"Reimplemented for speed since we have ensured that next and actualNext mean
+	  the same thing"
+
+	^self actualNext!
+
+peek ^<Int>
+
+	"Reimplement so that we can ensure that next and actualNext are the same, for
+	 speed, since by design we always know we have another buffer byte to look at."
+
+	self assert: [ self atEnd not ].
+	^self buffer byteAt: self nextBufferPosition!
+
+peekIfAbsent: f <[^X def]>  ^<E | X>
+
+	"Reimplement so that we can ensure that next and actualNext are the same, for
+	 speed, since by design we always know we have another buffer byte to look at."
+
+	^self atEnd
+		ifTrue: [ f value ]
+		ifFalse: [ self buffer byteAt: self nextBufferPosition ]! !
+
+! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+    ^self nextBufferPosition >= self bufferNumElements!
+
+actualNext ^<Int>
+
+    | pos <Int> byte <Int> |
+	self actualAtEnd
+		ifTrue: [ self error: 'attempt to read past the end of an external stream' ].
+    pos := self nextBufferPosition.
+    byte := self buffer byteAt: pos.
+    pos := pos + 1.
+    pos >= self bufferSize
+        ifFalse: [ self nextBufferPosition: pos ]
+        ifTrue: [    self advanceBuffer ].
+    ^byte!
+
+arrangeForFinalization
+    "%todo: arrange for the finalize message to be sent to the stream before gc.
+    Is this right?"
+    "self descriptor register."!
+
+fillBuffer
+    self bufferNumElements:
+        (self descriptor readAt: self bufferOrigin
+            ifFail: [ :err <ExternalError> | self error: err ]).!
+
+newCollectionOfSize: n <Int> ^<ByteArray>
+
+	^ByteArray new: n! !
+
+! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'initialization' !
+
+
+initDescriptor: d <DESCRIPTOR> 
+
+	super initDescriptor: d.
+	self fillBuffer.! !
+
+! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'control' !
+
+
+close
+    "We have to reimplement this because BasicInputStream mixin in an inappropriate version"
+    self doClose.! !
+

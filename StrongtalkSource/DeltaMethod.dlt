@@ -1,0 +1,184 @@
+Delta define: #DeltaMethod as: (
+(Class subclassOf: 'DeltaASTNode' instanceVariables: 'selector <Symbol>  type <MsgSignature> visibility <Symbol> body <DeltaCodeBody> timeSaved <Time> timeTypechecked <Time>')) !
+
+(Delta mirrorFor: #DeltaMethod) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #DeltaMethod) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMethod)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMethod) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool methodNode: self!
+
+body ^ <DeltaCodeBody>
+	^body!
+
+body: b <DeltaCodeBody>
+     body := b.!
+
+category: c <Str>
+	
+	"Just a dummy, so we can disconnect the compiler"!
+
+clearBody
+
+	self body: nil.
+!
+
+isCompleteTerm ^ <Boolean>
+	^true!
+
+isMethodNode ^ <Boolean>
+    ^ true!
+
+name ^ <Symbol>
+
+^self selector!
+
+noteSuccessfulTypecheck
+
+self timeTypechecked: self timeSaved.
+DeltaMethodsToRevisit do:[:dm | dm deltaMethod = self ifTrue:[DeltaMethodsToRevisit remove: dm]].
+
+!
+
+parameters ^ <OrdCltn[VarDecl]>
+	^ self body parameters!
+
+representsMessage ^ <Boolean>
+
+| statement <Statement> stmts <OrdCltn[Statement]> | 
+"check if the body consists of a self subclassResponsibility message"
+
+stmts := self body statements.
+stmts size = 1 ifFalse:[^false].
+statement := stmts first.
+statement isSendNode ifFalse:[^false].
+statement msg selector  == #subclassResponsibility ifFalse:[^false].
+statement recv isRefNode ifFalse:[^false].
+statement recv name == #self ifFalse:[^false].         
+^true!
+
+retractTypeAssumptions ^ <Self>
+    self type retractTypeAssumptions!
+
+scope ^ <DeltaScope>
+    ^self  body scope!
+
+selector ^ <Symbol>
+    ^ selector!
+
+selector: s <Symbol>
+
+selector := s.!
+
+selector: sel <Symbol> type: t <MsgSignature> visibility: v <Symbol>
+
+	selector := sel.
+	type := t.
+	visibility := v.
+!
+
+selector: sel <Symbol> type: t <MsgSignature> visibility: v <Symbol> body: b <DeltaCodeBody>
+
+	self selector: sel type: t visibility: v.
+	self body: b.
+	self scope at: #'.returnVal' put: self type range ifThere: [
+		(self scope at: #'.returnVal') == (self type range) ifFalse: [
+			self error: 'Internal inconsistency'
+		]
+	]!
+
+setupTypeAssumptions ^ <Self>
+    self type setupTypeAssumptions.!
+
+substitute: s <Substitution > ^ <Self>
+
+^DeltaMethodDecl new filter: self using: s!
+
+temporaries ^ <OrdCltn[VarDecl]>
+    ^ self body temporaries!
+
+timeSaved  ^ <Time>
+
+^timeSaved!
+
+timeSaved: ts  <Time> ^ <Time>
+
+timeSaved := ts.!
+
+timeTypechecked  ^ <Time>
+
+^timeTypechecked!
+
+timeTypechecked: tt  <Time> ^ <Time>
+
+timeTypechecked := tt.!
+
+type ^ <MsgSignature>
+    ^type!
+
+type: t <MsgSignature>
+    type := t!
+
+typeForNode: n <ASTNode>  ^ <ObjectType>
+
+| otype <ObjectType> |
+
+self setupTypeAssumptions.
+otype := n type.
+self retractTypeAssumptions.
+^otype!
+
+typeNameForNode: n <ASTNode>  ^ <String>
+
+| typename <String> |
+
+self setupTypeAssumptions.
+typename := n type name.
+self retractTypeAssumptions.
+^typename!
+
+typecheck ^ <Self>
+    | lastType <ObjectType>  |
+
+self setupTypeAssumptions.
+self type wellFormed.
+lastType := self body type.
+self body isEmpty ifTrue: [lastType := DeltaTypeId new setId: #Self; scope: self scope].
+
+((self scope at: #Self) subtypeOf: self type range assuming: DeltaGlobalTrail)
+  ifFalse:[
+             (lastType subtypeOf: DeltaBottomType new assuming: DeltaGlobalTrail)
+                     ifFalse:[self reportError: (DeltaReturnSelfError new declaredName: self type range name)].
+             ].
+self retractTypeAssumptions.
+self errorHandler reportedErrors isEmpty 
+    ifTrue:[self noteSuccessfulTypecheck]
+    ifFalse:[self errorHandler reportedErrors do:[:e <TypeError> | e timeStamp: self timeSaved].].
+!
+
+typecheckInterface ^ <Self>
+    | lastType <ObjectType>  |
+
+self setupTypeAssumptions.
+self type wellFormed.
+self retractTypeAssumptions.
+!
+
+typecheckedSuccessfully  ^ <Boolean>
+
+^self timeTypechecked >= self timeSaved.!
+
+visibility ^ <Symbol>
+    ^visibility!
+
+visibility: v <Symbol > ^ <Symbol>
+    visibility := v! !
+

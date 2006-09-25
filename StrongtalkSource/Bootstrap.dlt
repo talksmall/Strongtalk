@@ -1,0 +1,573 @@
+Delta define: #Bootstrap as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Bootstrap) revision: '$Revision: 1.29 $'!
+
+(Delta mirrorFor: #Bootstrap) group: 'base'!
+
+(Delta mirrorFor: #Bootstrap)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Bootstrap) classSide methodsFor: 'notification' !
+
+
+checkNotification
+	[ 
+		{{primitiveNotificationQueueGetIfFail: [ :err |^self]}}  notify.
+	] repeat.! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'private' !
+
+
+cpuBenchmark
+
+	Transcript print: [ 3 timesRepeat: [ self testBlueBookCPUBoundClasses ] ] time; cr.!
+
+newListBox
+	| lb |
+	lb := ListBox forMultipleSelections" forSingleSelection".
+													lb xStretchy: true; variableItemHeight: false.
+													lb stringList: #(hello goodbye atest andanotherstring 'Hi Urs' lsdfsdfsdfsdfsd sdkfljsdlkfjsdlkjf lksdfjlksdjfklsdjfklsdf lksdfj kksdlf lksdfj sdflj lsdjflksjdkfjlk ksldfjlksdfjklsjdf sdkfjl sdklfjkljlksdj lksdjfl ksdjf sdfsdfsf sdfsdfsdfsf sdfsdfsdfsf) .
+													lb onSelChange: [ :lb | Transcript print: lb selections; cr. ].
+													lb onDoubleClick: [ :lb | Transcript show: 'DOUBLE!!'; print: lb selections; cr. ].
+													lb simpleMultiple: false.
+													lb resetNaturalHeight: 10.
+													lb selections: (Set withAll: #(2)).
+	^lb withBorder: (Border standard3DRaised: false)
+!
+
+newWidget
+
+	^self newListBox!
+
+streamRead
+
+	| p s c |
+	p := FilePath for: 'foo.dat'.
+	Transcript print: [
+	s := p charInputStream.
+	c := 0.
+	[ s atEnd ]
+		whileFalse: [ self assert: [ s next == $a ].
+								c := c + 1. ].
+	self assert: [ c = 1000000 ].
+	s close. ] time; cr.!
+
+streamRead2
+
+	| p s c v |
+	p := FilePath for: 'foo.dat'.
+	Transcript print: [
+	s := p charInputStream.
+	c := 0.
+	[ s atEnd ]
+		whileFalse: [ c = 10000 ifTrue: [ self halt. ].	v := s upTo: Character cr.
+								self assert: [  v size = 98 ].
+								c := c + 1. ].
+	self assert: [ c = 10000 ].
+	s close. ] time; cr.!
+
+streamWrite
+
+	| p s |
+	p := FilePath for: 'foo.dat'.
+	Transcript print: [
+	s := p charOutputStream.
+	1000000 timesRepeat:
+		[ s put: $a ].
+	s close. ] time; cr.!
+
+streamWrite2
+
+	| p s |
+	p := FilePath for: 'foo.dat'.
+	Transcript print: [
+	s := p charOutputStream.
+	10000 timesRepeat:
+		[	98 timesRepeat: [ s put: $a ].
+			s cr. ].
+	s close. ] time; cr.! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'utilities' !
+
+
+clearLookupCache
+	{{primitiveClearLookupCache}}!
+
+decodeAllMethods
+	{{primitiveDecodeAllMethods}}.!
+
+printObjectHistogram
+	{{primitivePrintObjectHistogram}}!
+
+setupInlining
+	"Set inlining flags for helping the inlining compiler. Experimental"
+	
+	((Mirror on: HashedCollection) 	compiledMethodAt: #at: 					ifFail: []) neverInline.
+	((Mirror on: Dictionary) 					compiledMethodAt: #at:put:				ifFail: []) neverInline.
+	((Mirror on: Dictionary) 					compiledMethodAt: #at:put:ifNew:	ifFail: []) alwaysInline.
+	((Mirror on: OutputStreamView) 	compiledMethodAt: #cr						ifFail: []) neverInline.
+	((Mirror on: Object) 							compiledMethodAt: #assert:				ifFail: []) alwaysInline.
+! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'test code' !
+
+
+doubleOverflowCheck
+	| number |
+	number := 2.0.
+	[ number isFinite ] whileTrue: [
+		Transcript print: number; cr.
+		number := number * number.
+	]!
+
+indexTest
+	   'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1!
+
+testContext
+	self testContext: 1 and: 2 and: 3!
+
+testContext: a and: b and: c
+	[ (a + b) printString. self deoptimize ] value!
+
+testNLR
+	| f |
+	f := self testNLRBlock.
+	f value.
+	
+!
+
+testNLRBlock
+	^[^self]! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'typechecker tests' !
+
+
+displayErrorsFromHandler: eh  <DeltaTypeErrorHandler>  
+
+eh reportedErrors isEmpty 
+   ifTrue:[Transcript  show: 'No type errors'; cr.]
+   ifFalse:[eh reportedErrors do:[: e <TypeError> | Transcript show: e errorMessage; cr.]].!
+
+tryNewClass!
+
+tryNewMixin!
+
+typecheckMinWorld!
+
+typecheckMirror: m <Mirror>
+
+m typecheck. 
+m classSide typecheck
+! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'dave''s benchmarks' !
+
+
+dictAtBenchmark
+"	Foo isNil
+		ifTrue: [ Dictionary performanceTestPrep. Foo := 1 ]."
+	2 timesRepeat: [ Dictionary  atPerformanceTest ].
+Transcript show: '-------------------------------------- starting Dict>>at: benchmark'; cr.
+	Transcript print:
+		[ Dictionary atPerformanceTest ] time; cr.!
+
+dictAtPutBenchmark
+"	Foo isNil
+		ifTrue: [ Dictionary performanceTestPrep. Foo := 1 ]."
+	2 timesRepeat: [ Dictionary  atPutPerformanceTest ].
+Transcript show: '-------------------------------------- starting Dict>>at:put: benchmark'; cr.
+	Transcript print:
+		[ Dictionary atPutPerformanceTest ] time; cr.!
+
+dictBenchmark
+"	Foo isNil
+		ifTrue: [ Dictionary performanceTestPrep. Foo := 1 ]."
+	2 timesRepeat: [ Dictionary  performanceTest ].
+Transcript show: '-------------------------------------- starting benchmark'; cr.
+	Transcript print:
+		[ Dictionary performanceTest ] time; cr.!
+
+hashingBenchmarks
+
+	self dictAtBenchmark; dictAtPutBenchmark; setIncludeBenchmark; setIncludesBenchmark!
+
+setIncludeBenchmark
+
+	2 timesRepeat: [ Set  includePerformanceTest ].
+Transcript show: '-------------------------------------- starting Set>>include: benchmark'; cr.
+	Transcript print:
+		[ Set includePerformanceTest ] time; cr.!
+
+setIncludesBenchmark
+
+	2 timesRepeat: [ Set  includesPerformanceTest ].
+Transcript show: '-------------------------------------- starting Set>>includes: benchmark'; cr.
+	Transcript print:
+		[ Set includesPerformanceTest ] time; cr.! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'library testing' !
+
+
+testBlueBookCPUBoundClasses
+
+	Number test.
+    SeqCltnReadWriteStream test.
+     SeqCltnReadStream  test.
+    Bag test.
+    KeyedSet  test.
+   Set  test.
+	 Dictionary test.
+   SortedCollection test.
+     OrderedCollection  test.
+   String  test.
+   Character  test.
+	 Interval test.
+	 Behavior test.
+	 Random test.
+	 BlockWithoutArguments  test.
+	 Queue test.
+
+	
+!
+
+testBlueBookClasses
+
+    self test: Number title: 'Number'.
+    self test: SmallInteger title: 'SmallInteger'.
+    self test: SeqCltnReadWriteStream title: 'SeqCltnReadWriteStream'.
+    self test: SeqCltnReadStream   title: 'SeqCltnReadStream'.
+    self test: Bag title: 'Bag'.
+    self test: KeyedSet title: 'KeyedSet'.
+    self test: Set title: 'Set'.
+	self test: Dictionary title: 'Dictionary'.
+    self test: SortedCollection title: 'SortedCollection'.
+    self test: OrderedCollection title: 'OrderedCollection'.
+    self test: String title: 'String'.
+    self test: Character title: 'Character'.
+	self test: Interval title: 'Interval'.
+	self test: Behavior title: 'Behavior'.
+	self test: Random title: 'Random'.
+	self test: BlockWithoutArguments title: 'BlockWithoutArguments'.
+
+    self test: ExternalReadWriteStream title: 'ExternalReadWriteStream'.
+    self test: SharedQueue title: 'SharedQueue'.
+	
+!
+
+testLibrary
+	
+	| t <Int> |
+	t := [	self testBlueBookClasses.
+    		self test: FilePath title: 'FilePath'.
+			self test: CharacterReadConverter title: 'CharacterReadConverter'.	] time.
+	Transcript show: 'Time = '; print: t; cr.
+! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'new menus' !
+
+
+benchmarkMenu ^<Menu>
+
+	^Menu new
+		add: (Menu new name: '&Benchmarks';
+					add: (MenuAction new
+							name: 'Livermore &Benchmark';
+							action: [ self livermoreBenchmark ] );
+					add: (MenuAction new
+							name: 'Livermore Benchmark (w/FloatValues)';
+							action: [ self livermoreFloatValueBenchmark ] );
+					add: (MenuAction new
+							name: 'CPU benchmark';
+							action: [ self cpuBenchmark ] );
+					add: (MenuAction new
+							name: 'Stream write';
+							action: [ self streamWrite ] );
+					add: (MenuAction new
+							name: 'Stream read';
+							action: [ self streamRead ] );
+					add: (MenuAction new
+							name: 'Stream lines write';
+							action: [ self streamWrite2 ] );
+					add: (MenuAction new
+							name: 'Stream lines read';
+							action: [ self streamRead2 ] );
+					add: (MenuAction new
+							name: '&Hashing Benchmarks';
+							action: [ self hashingBenchmarks ] );
+					add: (MenuAction new
+							name: 'OrderedCollection Benchmark';
+							action: [ self ocBenchmark ] );
+					add: (MenuAction new
+							name: 'Array Benchmark';
+							action: [ self arrayBenchmark ] );
+					add: (MenuAction new
+							name: 'Random Benchmark';
+							action: [ Transcript print: [ 10 timesRepeat: [ Random test ] ] time; cr. ] )
+					)!
+
+compilationMenu ^<Menu>
+
+	^Menu new name: '&Compiler';
+					add: (MenuAction new
+							name: '&Compiler Enabled';
+							checked: [ VM recompilation ];
+							action: [ VM recompilation: VM recompilation not ]	);
+					add: (MenuAction new
+							name: '&Print Compilations';
+							checked: [ VM printCompilation ];
+							action: [ VM printCompilation: VM printCompilation not ]	);
+					add: (MenuAction new
+							name: 'Print Compiled Code Space Usage (Zone)';
+							action: [	VM printZone ] );
+					addSeparator;
+					add: (MenuAction new
+							name: 'Use &Inlining Database as needed';
+							checked: [ VM useInliningDatabase ];
+							action: [	InliningDatabase checkLookupTable.
+											VM useInliningDatabase: VM useInliningDatabase not.
+										  ]	);
+					add: (MenuAction new
+							name: 'Compile Whole Inlining Database';
+							action: [ InliningDatabase compileAll ]	);
+					add: (MenuAction new
+							name: 'Create &Inlining Database';
+							action: [ InliningDatabase dump ]	);
+					addSeparator;
+					add: (MenuAction new
+							name: '&Flush Inline Caches';
+							action: [ {{primitiveClearInlineCaches}} ]	)!
+
+developmentMenu ^<Menu>
+
+	^Menu new
+		add: (Menu new name: '&System';
+					add: self compilationMenu;
+					add: self gcMenu;
+					add: self uiMenu;
+					add: self typeSystemMenu;
+					add: self profilingMenu)!
+
+gcMenu ^<Menu>
+
+	^Menu new name: '&Object Memory';
+					add: (MenuAction new
+							name: '&Collect Garbage';
+							action: [ VM collectGarbage ]	);
+					add: (MenuAction new
+							name: '&Scavenge';
+							action: [ VM scavengeGarbage ]	);
+					addSeparator;
+					add: (MenuAction new
+							name: 'Print Scavenges';
+							checked: [ VM printScavenge ];
+							action: [ VM printScavenge: VM printScavenge not ]	);
+					add: (MenuAction new
+							name: 'Print Allocated Object &Histogram';
+							action: [ {{primitivePrintObjectHistogram}} ]	)!
+
+profilingMenu ^<Menu>
+
+	^Menu new name: '&Profiling and Debugging';
+					add: (MenuAction new
+							name: '&Profiling';
+							checked: [ Profiler profiling ];
+							action: [ Profiler profiling: Profiler profiling not ]	);
+					add: (MenuAction new
+							name: '&Print Profile';
+							action: [ Profiler profiling: false.
+										  Profiler printStats. ]	);
+					add: (MenuAction new
+							name: '&Reset Profile Stats';
+							action: [ Profiler resetStats. ]	);
+					addSeparator;
+					add: (MenuAction new
+							name: '&Time Menu Actions';
+							checked: [ MenuAction timeActions ];
+							action: [ MenuAction timeActions: MenuAction timeActions not ]	);
+					addSeparator;
+					add: (MenuAction new
+							name: '&Temp Debug';
+							checked: [ TempDebug == true ];
+							action: [	TempDebug isNil ifTrue: [ TempDebug := false ].
+											TempDebug := TempDebug not.	]	)
+				!
+
+registerTmpMenus
+
+	Launcher registerMenu: self developmentMenu for: #Development.!
+
+testMenu ^<Menu>
+
+	^Menu new
+		add: (Menu new name: '&Testing';
+					add: (MenuAction new
+							name: 'Text Editor';
+							action: [ self textEditor ] );
+					add: (MenuAction new
+							name: 'Test Library';
+							action: [ self testLibrary ] );
+					add: (MenuAction new
+							name: 'Test Dialog';
+							action: [ self testDialog ] );
+					add: (MenuAction new
+							name: 'Mandelbrot';
+							action: [ self mandelbrot ] );
+					add: (MenuAction new
+							name: 'Transcript test';
+							action: [	[	1 to: 100 do: [ :i | Transcript print: i; cr. ]. ] fork
+										] );
+					add: (MenuAction new
+							name: 'Transcript test 2';
+							action: [	[	1 to: 100 do: [ :i | Transcript print: i; cr; flush. ]. ] fork
+										] );
+					add: (MenuAction new
+							name: 'Transcript test 3';
+							action: [	[	1 to: 100 do: [ :i | i = 50 ifTrue: [ TempDebug := true ]. Transcript print: i; cr; flush. ]. ] fork.
+											[	100 to: 1 by: -1 do: [ :i | Transcript print: i; cr; flush. ]. ] fork.
+										] )
+					)!
+
+typeSystemMenu ^<Menu>
+
+	^Menu new name: '&Type System';
+					add: (MenuAction new
+							name: '&Report Type Loading';
+							checked: [ ReportTypeLoading == true ];
+							action: [ ReportTypeLoading := ReportTypeLoading not ]	);
+					add: (MenuAction new
+							name: 'Zap all Type data';
+							action: [ Type zapAllTypes]	)!
+
+uiMenu ^<Menu>
+
+	^Menu new name: '&UI';
+					add: (MenuAction new
+							name: 'Double Buffering';
+							checked: [ Window bufferingPossible ];
+							action: [	Window bufferingPossible: Window bufferingPossible not]	);
+					add: (MenuAction new
+							name: '&Smooth Scrolling';
+							checked: [ ScrollState smoothScroll ];
+							action: [	ScrollState smoothScroll: ScrollState smoothScroll not]	);
+					addSeparator;
+					add: (MenuAction new
+							name: 'Debug UI &Invalidation';
+							checked: [ Session debugInvalidation ];
+							action: [	Session debugInvalidation: Session debugInvalidation not	]	);
+					add: (MenuAction new
+							name: '&Debug Events';
+							checked: [ Session debugEvents ];
+							action: [ Session debugEvents: Session debugEvents not ]	);
+					add: (MenuAction new
+							name: '&Debug Incremental Layout';
+							checked: [ Session debugIncrementalLayout ];
+							action: [	Session debugIncrementalLayout: Session debugIncrementalLayout not]	)! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'startup' !
+
+
+arrayBenchmark
+
+	1 timesRepeat: [ Array performanceTest ].
+Transcript show: '-------------------------------------- starting benchmark'; cr.
+	Transcript print:
+		[ Array performanceTest ] time; cr.!
+
+livermoreBenchmark
+
+	|	n		
+		size
+		x		
+		y		
+		q 		
+		r 		
+		z 		
+		t 		
+		|
+
+	n := 1001.
+	size := n + 12.
+	x := Array new: size.
+	y := (Array new: size) atAllPut: 1.1234.
+	z := (Array new: size) atAllPut: 1.1234.
+	q := r := t := 1.234.
+
+	Transcript show: 'Livermore seconds equivalent:', (((Time millisecondsToRun: 
+		[	1000 timesRepeat:
+				[	1 to: n do:
+						[ :k  |
+							x at: k put: 
+								(q + ( (y at: k) * (r*(z at: k + 10)) + (t*(z at: k + 11)) ))
+						]
+				]
+		]) * 10) asFloat / 1000.0) printString; cr.!
+
+livermoreFloatValueBenchmark
+
+	|	n		
+		size
+		x		
+		y		
+		q 		
+		r 		
+		z 		
+		t 		
+		|
+
+	n := 1001.
+	size := n + 12.
+	x := Array new: size.
+	y := (Array new: size) atAllPut: 1.1234.
+	z := (Array new: size) atAllPut: 1.1234.
+	q := r := t := 1.234.
+
+	Transcript show: 'Livermore seconds equivalent:', (((Time millisecondsToRun: 
+		[	1000 timesRepeat:
+				[	self livermoreFloatValueInner: x y: y z: z ]
+		]) * 10) asFloat / 1000.0) printString; cr.!
+
+livermoreFloatValueInner: x y: y z: z
+
+	|	n		
+		size
+		q 		<FloatValue>
+		r 		<FloatValue>
+		t 		<FloatValue>
+		|
+
+	n := 1001.
+	size := n + 12.
+	q := r := t := 1.234.
+
+	1 to: n do:
+		[ :k  |
+			x at: k put: 
+					(q + ( (y at: k) asFloatValue * (r*(z at: k + 10) asFloatValue) + (t*(z at: k + 11) asFloatValue) )) asFloat
+		]!
+
+ocBenchmark
+
+	1 timesRepeat: [ OrderedCollection performanceTest ].
+Transcript show: '-------------------------------------- starting benchmark'; cr.
+	Transcript print:
+		[ OrderedCollection performanceTest ] time; cr.!
+
+test: class title: title
+    Transcript show: 'Testing '; show: title; cr.
+    class test.
+    Transcript show: 'end'; cr
+! !
+

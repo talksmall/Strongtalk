@@ -1,0 +1,101 @@
+Delta define: #Reflection as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Reflection) revision: '$Revision: 1.8 $'!
+
+(Delta mirrorFor: #Reflection) group: 'base'!
+
+(Delta mirrorFor: #Reflection)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Reflection) classSide methodsFor: 'reflection' !
+
+
+classOf: o <Object> ^<Behavior>
+	"This is the 'official' way to reflectively get at the actual VM class of an object.  The #class
+	  message usually returns the same value, but may return some other class that the
+	  object is pretending to be an instance of."
+
+	^{{primitiveClassOf: o}}!
+
+identityHashOf: o <Object> ^<Int>
+
+	^{{primitiveHashOf: o}}
+!
+
+in: o <Object> indexedInstVarAt: i <Int> ^<Object>
+	"return the ith instance variable of o.  This is the equivalent of the BlueBook message
+ 	 basicAt:"
+
+	self unimplemented!
+
+in: o <Object> indexedInstVarAt: i <Int> put: val <Object> ^<Object>
+	"return the ith instance variable of o.  This is NOT typesafe.  This is the equivalent 
+	 of the BlueBook message basicAt:put:"
+
+	self unimplemented!
+
+in: o <Object> instVarAt: i <Int> ^<Object>
+	"return the ith instance variable of o. This is the equivalent of the BlueBook message
+	 instVarAt:"
+
+	self unimplemented!
+
+in: o <Object> instVarAt: i <Int> put: val <Object> ^<Object>
+	"return the ith instance variable of o.  This is NOT typesafe. This is the equivalent of
+	 the BlueBook message instVarAt:put:"
+
+	self unimplemented!
+
+isDefinition: e <Object> ^ <Boolean>
+
+^Metaclass = (Reflection classOf: (Reflection classOf: e))
+	or:[ClassMixin = (Reflection classOf: e)
+			or:[Protocol = (Reflection classOf: e) 
+					or:[TypeAlias = (Reflection classOf: e) ]]]!
+
+isGlobalVariable: a <GlobalAssociation> ^ <Boolean>
+
+^a isConstant not or:[(self isDefinition: a value) not]!
+
+sizeOf: o <Object> ^<SmallInt>
+	"This is the 'official' way to reflectively get at the number of indexed instance variables of o"
+
+	self unimplemented!
+
+superclassOf: class <Behavior> ^<Behavior | Nil>
+
+	^{{primitiveSuperclassOf: class ifFail: [:err <Symbol> | self error: err]}}! !
+
+! (Delta mirrorFor: #Reflection) classSide methodsFor: 'browsing' !
+
+
+allObjects ^<Array[Object]>
+	^self allObjectsLimit: self maxLimit!
+
+allObjectsLimit: limit <Integer> ^<Array[Object]>
+	^{{primitiveAllObjectsLimit: limit  ifFail: [ :err <Symbol> | self error: err]}}!
+
+instancesOf: class <Class> ^<Array[Object]>
+	^self instancesOf: class limit: self maxLimit!
+
+instancesOf: class <Class> limit: limit <Integer> ^<Array[Object]>
+	^{{primitiveInstancesOf: class limit: limit ifFail: [ :err <Symbol> | self error: err]}}!
+
+maxLimit	^<SmallInteger>
+	^SmallInteger maxVal!
+
+referencesTo: obj <Object> ^<Array[Object]>
+	^self referencesTo: obj limit: self maxLimit!
+
+referencesTo: obj <Object> limit: limit <Integer> ^<Array[Object]>
+	^{{primitiveReferencesTo: obj limit: limit ifFail: [ :err <Symbol> | self error: err]}}!
+
+referencesToInstancesOf: class <Class> ^<Array[Object]>
+	^self referencesToInstancesOf: class limit: self maxLimit!
+
+referencesToInstancesOf: class <Class> limit: limit <Integer> ^<Array[Object]>
+	^{{primitiveReferencesToInstancesOf: class limit: limit ifFail: [ :err <Symbol> | self error: err]}}! !
+

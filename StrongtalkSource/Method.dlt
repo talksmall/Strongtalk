@@ -1,0 +1,185 @@
+Delta define: #Method as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Method) revision: '$Revision: 1.14 $'!
+
+(Delta mirrorFor: #Method) group: 'base'!
+
+(Delta mirrorFor: #Method)
+comment: 
+'This class represents methods in the system.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Method) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^74! !
+
+! (Delta mirrorFor: #Method) methodsFor: 'file out' !
+
+
+fileOutBodyOn: d <Dumper>
+	| array |
+	array := {{self primitiveMethodBody}}.
+	1 to: array size by: 2 do: [ :index |
+		(array at: index) ifTrue: [
+        		d putByte: 52.
+        		d putByte: (array at: index + 1)
+		] ifFalse: [
+        		d putByte: 53.
+			(array at: index + 1) fileOutOn: d.
+		]
+	]!
+
+fileOutDebugInfo: d
+	| result |
+	result := {{self primitiveMethodDebugInfo}}.
+	result do: [ :e | e == 0 ifFalse: [ ^result ]].
+	^d emptyArray
+!
+
+fileOutHeaderOn: d <Dumper>
+	super fileOutHeaderOn: d.
+	(self fileOutDebugInfo: d)			fileOutOn: d.
+	self fileOutSelectorOrMethod	fileOutOn: d.
+	self fileOutSizeAndFlags 			fileOutOn: d.!
+
+fileOutSelectorOrMethod
+	^{{self primitiveMethodOuterIfFail: [:err | {{self primitiveMethodSelector}}]}}!
+
+fileOutSignature ^<Integer>
+    ^106!
+
+fileOutSizeAndFlags
+	^{{self primitiveMethodSizeAndFlags}}! !
+
+! (Delta mirrorFor: #Method) methodsFor: 'accessing' !
+
+
+convertToClosure: receiver <Object>
+	"Converts this method into a block. This is only valid for block methods.
+	  This should be really not be visible at this level. We should change this
+	   when the scheme for creating methods is changed."
+
+	self deltaHack.
+	self assert: [self selector = #block].		"Block methods are named #block in the VM"
+	^{{self primitiveMethodAllocateBlock: receiver ifFail: [:e <CompressedSymbol> | self error: e]}} 
+!
+
+enclosingMethod ^ <Method>
+
+	^self isBlockMethod
+		ifTrue: [		{{self primitiveMethodOuterIfFail: [:e <CompressedSymbol> | self error: e]}} enclosingMethod ]
+		ifFalse: [	self ]!
+
+enclosingMethod: method <Method>
+	"Sets the unused selector of block methods to the enclosing method.
+	  This should be really not be visible at this level. We should change this
+	   when the scheme for creating methods is changed."
+
+	self deltaHack.
+	self assert: [self selector = #block].		"Block methods are named #block in the VM"
+	{{self primitiveMethodOuter: method ifFail: [:e <CompressedSymbol> | self error: e]}} !
+
+isAbstract ^ <Boolean>
+	"Returns true if the method contains exactly one send and the selector for this
+		send is #subclassResponsibility."
+		
+	| senders <Array[Symbol]> |
+	senders := self referencedSenders.
+	^senders size = 1 and: [ (senders at: 1) = #subclassResponsibility ]
+!
+
+isBlockMethod
+
+	^(Reflection classOf: {{self primitiveMethodOuterIfFail: [:e <CompressedSymbol> | self error: e]}} ) = Method
+!
+
+numberOfArguments  ^<Integer> 
+
+^{{self primitiveMethodNumberOfArguments}}
+!
+
+referencedClassVarNames ^<Array[Symbol]>
+
+	^{{self primitiveMethodReferencedClassVarNames}}
+!
+
+referencedGlobalNames ^<Array[Symbol]>
+
+	^{{self primitiveMethodReferencedGlobalNames}}!
+
+referencedInstVarNamesFor: holder <Mixin> ^<Array[Symbol]>
+
+	^{{self primitiveMethodReferencedInstVarNamesMixin: holder ifFail: [:e <CompressedSymbol> | self error: 'Primitive failure' ]}}
+!
+
+referencedSenders  ^ <Array[Symbol]> 
+
+	^{{self primitiveMethodSenders}}!
+
+referencesGlobalName: name <Symbol> ^ <Boolean>
+
+	^self referencedGlobalNames includes: name
+!
+
+referencesInstVarName: name <Symbol> for: holder <Mixin> ^<Boolean>
+
+	^(self referencedInstVarNamesFor: holder) includes: name!
+
+referencesSender: selector <Symbol> ^ <Boolean>
+
+	^self referencedSenders includes: selector
+!
+
+referencesSenderMatching: pattern <Str> ^ <Boolean>
+
+	self referencedSenders do: [ :sender <Symbol> | (pattern platformMatch: sender) ifTrue: [ ^true ] ].
+	^false.
+!
+
+selector  ^<Symbol> 
+
+^{{self primitiveMethodSelector}}
+	! !
+
+! (Delta mirrorFor: #Method) methodsFor: 'debugging' !
+
+
+printCodes
+	"Prints the method byte codes on Platform errorStream.
+		This method is temporarily here for debugging purposes."
+		
+	{{self primitiveMethodPrintCodes}}.
+! !
+
+! (Delta mirrorFor: #Method) methodsFor: 'inlining' !
+
+
+alwaysInline ^<Symbol>
+
+	^self inlining: #Always!
+
+inlining	^<Symbol>
+
+	^{{self primitiveMethodInliningInfo}}
+!
+
+inlining: info <Symbol> ^<Symbol>
+	"Set the inlining info for the method and return the old info"
+	"#Normal, #Never, or #Always"
+	
+	{{self primitiveMethodSetInliningInfo: info ifFail:  [ :err <Symbol > | self error: err]}}
+!
+
+neverInline ^<Symbol>
+
+	^self inlining: #Never!
+
+normalInline ^<Symbol>
+
+	^self inlining: #Normal! !
+

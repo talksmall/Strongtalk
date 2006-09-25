@@ -1,0 +1,70 @@
+Delta define: #OverlappingVisual as: (
+Generic forAll: '(V covar) ' body: ((Class subclassOf: 'VisualWithNativeWindow[V]' instanceVariables: ''))) !
+
+(Delta mirrorFor: #OverlappingVisual) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #OverlappingVisual) group: 'ui'!
+
+(Delta mirrorFor: #OverlappingVisual)
+comment: 
+'Because this system allows intermixing of native and lightweight visuals, any composite visual that
+wishes to overlap child visuals, in situations where an occluded child might contain native visuals,
+must make sure the occluding children are native visuals.  This can be accomplished for lightweight
+visuals by ''wrapping'' them in an OverlappingVisual, which simply establishes a native window
+for its single child.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
+'!
+
+! (Delta mirrorFor: #OverlappingVisual) methodsFor: 'private' !
+
+
+layout
+
+	self part allocation: self allocation at: Point origin.
+	super layout.! !
+
+! (Delta mirrorFor: #OverlappingVisual) methodsFor: 'geometry-local' !
+
+
+allocation: a <Region> at: pos <Point>
+
+	"We override this to use the incremental layout algorithm, which will
+		take care of any invalidation needed, which may not otherwise
+		happen if this window's allocation was the same as it is now"
+
+	(self layoutStatus > Visual invalid and: [ self allocation = a ])
+		ifTrue: [ self allocation: a at: pos
+						toLayout: [ self relayoutAndInvalidate ].	]
+		ifFalse: [ super allocation: a at: pos ]!
+
+max ^<Region>
+
+	^self part max!
+
+min ^<Region>
+
+	^self part min!
+
+natural ^<Region>
+
+	^self part natural! !
+
+! (Delta mirrorFor: #OverlappingVisual) methodsFor: 'control' !
+
+
+relayoutAndInvalidate
+
+	"We override this to avoid complete invalidation if possible
+		by passing it along to the child, in case it can do a better job."
+
+	"We can skip telling the child its allocation if it had one before, because
+		relayout for this class doesn't change the child size"
+	self part layoutStatus = Visual invalid
+		ifTrue: [ super layout ]
+		ifFalse: [	self layoutStatus: Visual valid.
+						self part relayoutAndInvalidate.	]! !
+

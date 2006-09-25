@@ -1,0 +1,42 @@
+Delta define: #DeltaAssignment as: (
+(Class subclassOf: 'DeltaExpression' instanceVariables: 'var expr ')) !
+
+(Delta mirrorFor: #DeltaAssignment) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaAssignment) group: 'ast'!
+
+(Delta mirrorFor: #DeltaAssignment)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaAssignment) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+    aTool assignmentNode: self!
+
+expr ^ <Expression>
+    ^ expr!
+
+isAssignmentNode ^ <Boolean>
+    ^ true!
+
+to: aVar <DeltaRef >assign: anExpr <Expression > ^ <Self>
+	self assert: [ aVar isRefNode ].
+	self assert: [ anExpr isExpressionNode ].
+	var := aVar.
+	expr := anExpr!
+
+type ^ <Type>
+    | etype <ObjectType>  |
+
+etype := self expr type.
+^(etype subtypeOf: self var type assuming: DeltaGlobalTrail)
+    ifTrue:[etype]
+    ifFalse:[self reportError: (DeltaAssignmentError new exprName: etype name; varName: self var name)]
+!
+
+var ^ <DeltaVariable>
+    ^ var! !
+

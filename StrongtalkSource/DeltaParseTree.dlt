@@ -1,0 +1,120 @@
+Delta define: #DeltaParseTree as: (
+Generic forAll: 'M ' body: ((Class subclassOf: 'Object' instanceVariables: 'body <M> 
+	source <Str>
+	nodePositions <IdentityDictionary[ASTNode,Tuple[Int,Int]]>
+	commentPositions <SeqCltn[Tuple[Int,Int]]>
+	'))) !
+
+(Delta mirrorFor: #DeltaParseTree) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #DeltaParseTree) group: 'ast'!
+
+(Delta mirrorFor: #DeltaParseTree)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaParseTree) methodsFor: 'Unclassified' !
+
+
+body  ^<M>
+
+	^body!
+
+body: b <M> 
+source: src <Str>
+nodePositions: np <IdentityDictionary[ASTNode,Tuple[Int,Int]]> 
+commentPositions: cp <SeqCltn[Tuple[Int,Int]]>
+
+	body := b.
+	source := src.
+	nodePositions := np.
+	commentPositions := cp.
+	!
+
+commentPositions ^ <SeqCltn[Tuple[Int,Int]]>
+
+	^commentPositions!
+
+indexForNode: n <ASTNode>  ^ <Int> 
+
+	^self indexForNode: n ifAbsent: [ self error: 'node not found' ]
+!
+
+indexForNode: n <ASTNode> ifAbsent: blk <[^X def]> ^ <Int | X> 
+
+	| i <Int>  |
+	(i := DeltaASTLocationTool indexForNode: n startingFrom: self body) = 0 
+		ifTrue: [	^blk value ].
+	^i
+!
+
+nodeAtIndex: i <Int>  ^ <ASTNode> 
+
+	^self nodeAtIndex: i ifAbsent: [ self error: 'index not found'].
+!
+
+nodeAtIndex: i <Int> ifAbsent: blk <[^X def]> ^ <ASTNode | X> 
+
+	| n <ASTNode>  |
+	(n := DeltaASTLocationTool nodeForIndex: i startingFrom: self body) isNil
+		ifTrue: [ ^blk value ].
+	^n
+!
+
+nodeForPosition: p <Tuple[Int,Int]>  ^<ASTNode>
+
+	^self nodeForPosition: p ifNone: [self error: 'no enclosing node found']!
+
+nodeForPosition: p <Tuple[Int,Int]> ifNone: blk <[^X def]> ^<ASTNode | X>
+
+	| 
+	currentNode <ASTNode> 
+	currentPos <Tuple[Int,Int]> 
+	currentIndex <Int> 
+	newIndex <Int> 
+	|
+	self nodePositions keysAndValuesDo: [ :node <ASTNode> :pos <Int> | 
+		(node isCompleteTerm and: [self selection: p enclosedBy: pos]) ifTrue: [ 
+			(currentNode isNil or: [
+				((self selection: pos enclosedBy: currentPos) and: [(self selection: currentPos enclosedBy: pos) not]) or: [
+					(currentPos = pos) and: [(self indexForNode: node) < currentIndex]]])
+						ifTrue: [ 
+							currentNode := node.
+							currentPos := pos.
+							currentIndex := self indexForNode: node ]]].
+	^currentNode isNil 
+		ifTrue: 	blk
+		ifFalse: [ currentNode ]
+!
+
+nodePositions  ^<IdentityDictionary[ASTNode,Tuple[Int,Int]]>
+	"Private"
+	^nodePositions!
+
+positionForIndex: i <Int>  ^<Tuple[Int,Int]> 
+
+	^self positionForIndex: i ifAbsent: [ self error: 'index not found' ]!
+
+positionForIndex: i <Int> ifAbsent: blk <[^X def]> ^<Tuple[Int,Int] | X> 
+
+	^self positionForNode: (self nodeAtIndex: i ifAbsent: [ ^blk value ])!
+
+positionForNode: n <ASTNode>  ^<Tuple[Int,Int]>
+
+	^self positionForNode: n ifAbsent: [self error: 'node not found']
+!
+
+positionForNode: n <ASTNode> ifAbsent: blk <[^X def]> ^<Tuple[Int,Int] | X>
+
+	^self nodePositions at: n ifAbsent: blk
+!
+
+selection: a <Tuple[Int,Int]> enclosedBy: b <Tuple[Int,Int]> ^ <Boolean>
+
+	^(b at1) <= (a at1) and: [ (a at1) <= (b at2) and: [ (b at1) <= (a at2) and: [ (a at2) <= (b at2) ]]]!
+
+source ^ <Str>
+
+	^source! !
+

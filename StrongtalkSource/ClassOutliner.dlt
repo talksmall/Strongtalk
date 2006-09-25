@@ -1,0 +1,45 @@
+Delta define: #ClassOutliner as: (
+(Class subclassOf: 'AbstractClassOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #ClassOutliner) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #ClassOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #ClassOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+
+
+definitionTitle ^ <Str>
+
+	^'Class'!
+
+entryPainter ^ <Painter>
+
+	^self classPainter! !
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'control' !
+
+
+typecheckMethods
+"%remove the profiling code"
+ self typecheckAction:[ "Profiler gatherDuring: ["
+											self mirror typecheck.
+											self mirror classSide typecheck.
+											"]"	]
+		title: 'Typechecking ', self mirror name.! !
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'menus' !
+
+
+typecheckingMenu ^ <Menu>
+
+^super typecheckingMenu
+	add: (MenuAction new
+					name: 'Typecheck entire class';
+					action: [self typecheckMethods])
+! !
+

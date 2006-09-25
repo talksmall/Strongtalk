@@ -1,0 +1,473 @@
+Delta define: #OutlinerApp as: (
+(Class subclassOf: 'Application' instanceVariables: 'wrapper <VisualWrapper>
+			"Cache for wrapper returned from buildBareVisualTop:"
+row <GlyphRow>
+			"Cache for header row"
+button <View[Boolean]>
+			"Button in header"
+pacifier <Pacifier>
+			"Enabling wrapper around button"
+body <Visual>
+			"Cache for body visual"
+framedBody <Visual>
+			"Cache for body frame"
+closedHeader <Visual>
+			"Cache for closed header"
+openHeader <Visual>
+			"Cache for open header"
+parent <OutlinerApp>
+			"Enclosing outliner, if any"
+children <Set[OutlinerApp]>
+			"Enclosed outliners"
+toolBar <ToolBar>') classVariables: 'UnpressedBorder <Border>
+			"Shared empty border for unpressed state"
+PressedBorder <Border>
+			"Shared  border for pressed state"
+DefaultOpenGlyph <Glyph>
+DefaultClosedGlyph <Glyph>
+		'; abstract) !
+
+(Delta mirrorFor: #OutlinerApp) revision: '$Revision: 1.12 $'!
+
+(Delta mirrorFor: #OutlinerApp) group: 'outliner'!
+
+(Delta mirrorFor: #OutlinerApp)
+comment: 
+'General outliner.
+
+Subclass Responsibilities:
+	%responsibility #buildClosedHeader
+	%responsibility #buildBody
+	%optional #buildOpenHeader
+	%optional #openLook
+	%optional #closedLook
+	%optional #indent
+	%optional #openSink:
+	%optional #frameForBody:
+	%optional #initialOpenState
+	%optional #initialPacifiedState
+	%optional #showBodyOnlyForTop
+
+Tags: %User %UI
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'accessing' !
+
+
+body ^<Visual>
+
+	body isNil ifTrue: [ 
+		body := self buildBody ].
+	^body!
+
+closedHeader ^<Visual>
+
+	closedHeader isNil ifTrue: [ 
+		closedHeader := self buildClosedHeader ].
+	^closedHeader!
+
+closedLook ^ <Visual>
+
+	^self defaultClosedGlyph asVisual!
+
+framedBody ^<Visual>
+
+	framedBody isNil ifTrue: [ 
+		framedBody := (self frameForBody: self body) baselined ySide: #top ].
+	^framedBody!
+
+hasBeenOpen ^ <Boolean>
+
+	^body notNil!
+
+indent ^<Int>
+
+	^self defaultIndent!
+
+open ^<Boolean>
+
+	^self button isNil
+		ifTrue: [		self assert: [ self showBodyOnlyForTop ].		"The outliner is in a top window with only the body displayed"
+							true ]
+		ifFalse: [	self button model ]!
+
+open: o <Boolean>
+
+	self button model = o 
+		ifFalse: [	self button model: o.
+							self wrapper notNil
+								ifTrue: [ self buildPart  ]
+						]
+!
+
+openHeader ^<Visual>
+
+	openHeader isNil ifTrue: [ 
+		openHeader := self buildOpenHeader ].
+	^openHeader!
+
+openLook ^ <Visual>
+
+	^self defaultOpenGlyph asVisual!
+
+openSink: b <Boolean>
+
+	"Hook for side effects of open/close"!
+
+pacified ^ <Boolean>
+
+	^self pacifier isNil 
+		ifTrue: [ 	self initialPacifiedState ]
+		ifFalse: [	self pacifier pacified ]!
+
+pacified: b <Boolean>
+
+	self pacified = b
+		ifFalse: [ 	self pacifier pacified: b.
+						b ifTrue: [ self open: false ] ].
+! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	self wrapper: VisualWrapper new.
+	(top and: [ self showBodyOnlyForTop ])
+		ifTrue: [		self wrapper part: self body ]
+		ifFalse: [	self pacifier: (Pacifier for: self button pacified: self pacified).
+							self row: (Row[Visual] withAll: (Array[Visual] with: self pacifier)).
+							self buildPart ].
+	^self wrapper
+!
+
+buildBody ^<Visual>
+
+	self subclassResponsibility!
+
+buildClosedHeader ^ <Visual>
+
+	self subclassResponsibility!
+
+buildOpenHeader ^ <Visual>
+
+	"By default the same as the closed header"
+	^self closedHeader!
+
+buildPart
+
+	self wrapper hasPart 
+		ifTrue: [	self wrapper part == self row
+							ifTrue: [		self wrapper removePart ]																		"Unparent row from wrapper"
+							ifFalse: [	(Column[Visual] coerce: self wrapper part) remove: 2 at: 1 ] 		"Unparent body and row from column"
+					].				
+
+	self row size > 1 
+		ifTrue: [ self row remove: 1 at: 2 ].													"Remove header from row"
+
+	self open
+		ifTrue: [		self row add: self openHeader.
+							self wrapper part: ((Column[Visual] withAll: (Array[Visual]
+																		with: self row
+																		with: self framedBody		)
+								) optimizeIncrementalLayout: false) ]
+		ifFalse: [	self row add: self closedHeader.
+							self wrapper part: self row ].
+!
+
+button ^<View[Boolean]>
+
+	button isNil
+		ifTrue: [		self button: 
+								((ToggleButton withTrueLook: self openLook falseLook: self closedLook initialLook: self initialOpenState)
+									unpressedBorder: self unpressedBorder;
+									pressedBorder: self pressedBorder) ].
+	^button!
+
+button: b <View[Boolean]>
+
+	button := b.
+	b modelSink:
+		[ :state <Boolean> |
+			self userOpen: state ].!
+
+children ^ <Set[OutlinerApp]>
+
+	children isNil
+		ifTrue: [ self children: Set[OutlinerApp] new ].
+	^children!
+
+children: c <Set[OutlinerApp]>
+
+	children := c!
+
+initialOpenState ^ <Boolean>
+
+	^false!
+
+initialPacifiedState ^ <Boolean>
+
+	^false!
+
+makeVisible
+
+	self session updateLayoutsIfNeeded.
+	self visual scrollIfNeededToMakeVisible.!
+
+pacifier ^ <Pacifier>
+
+	^pacifier!
+
+pacifier: p <Pacifier>
+
+	pacifier := p!
+
+pressedBorder ^<Border>
+
+	PressedBorder isNil
+		ifTrue: [ PressedBorder := Border standard3DWithExtraInteriorSpace: 0 raised: false ].
+	^PressedBorder!
+
+row ^<GlyphRow>
+
+	^row!
+
+row: r <GlyphRow>
+
+	row := r!
+
+showBodyOnlyForTop ^ <Boolean>
+
+	^false!
+
+unpressedBorder ^<Border>
+
+	UnpressedBorder isNil
+		ifTrue: [	UnpressedBorder := Border withRigidInset: 2 ].
+	^UnpressedBorder!
+
+userOpen: state <Boolean>
+
+	self openSink: state.
+	self buildPart.
+	self makeVisible.!
+
+wrapper ^ <VisualWrapper>
+
+	^wrapper!
+
+wrapper: w <VisualWrapper>
+
+	wrapper := w! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'updating' !
+
+
+updateBody
+
+	| oldBody <Visual> |
+	oldBody := body.
+	body := nil.
+	framedBody := nil.
+	self open 
+		ifTrue: [	(self wrapper hasPart and: [ self wrapper part == oldBody ])
+							ifTrue: [		"The outliner is in a top window with only the body displayed"
+												self wrapper removePart.
+												self wrapper part: self body ]
+							ifFalse: [	self buildPart ] ]
+
+!
+
+updateClosedHeader
+
+	closedHeader := nil.
+	self open ifFalse: [ self buildPart ].
+!
+
+updateHeaders
+
+	openHeader := nil.
+	closedHeader := nil.
+	self buildPart.
+!
+
+updateOpenHeader
+
+	openHeader := nil.
+	self open ifTrue: [ self buildPart ].
+! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'default constants' !
+
+
+defaultClosedGlyph ^<Glyph>
+
+	DefaultClosedGlyph isNil
+		ifTrue: [ DefaultClosedGlyph :=
+						(Image fromFile: (FilePath for: 'resources\closedItem.bmp'))
+							alignLowerLeft. 	].
+	^DefaultClosedGlyph!
+
+defaultIndent ^<Int>
+
+	^20!
+
+defaultOpenGlyph ^<Glyph>
+
+	DefaultOpenGlyph isNil
+		ifTrue: [ DefaultOpenGlyph :=
+						(Image fromFile: (FilePath for: 'resources\openItem.bmp'))
+							alignLowerLeft. 	].
+	^DefaultOpenGlyph! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'frames' !
+
+
+bracketFrameForBody: body <Visual> ^ <Frame>
+
+	^(Frame for: body) border: Border leftBracket!
+
+frameForBody: body <Visual> ^ <Frame>
+
+	^(Frame for: body) border: (Border withRigidInset: (self indent @ 0 corner: Point origin))
+!
+
+threeDframeForBody: body <Visual> ^ <Frame>
+
+	^(Frame for: 
+		((Frame for: body)
+			border: (Border standard3DWithColor: Paint gray extraInteriorSpace: 2 raised: false)))
+		border: (Border withRigidInset: (self indent @ 0 corner: Point origin))
+! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'accessing child/parent' !
+
+
+addChild: o <OutlinerApp> ^ <OutlinerApp>
+
+	o hasParent
+		ifTrue: [ self error: 'Attempt to set parent twice' ]
+		ifFalse: [ 	self children add: o.
+						o parent: self ].
+	^o!
+
+childrenDo: blk <[OutlinerApp]>
+
+	self children do: blk!
+
+hasParent ^ <Boolean>
+
+	^self parent notNil!
+
+parent ^ <OutlinerApp>
+
+	^parent!
+
+parent: o <OutlinerApp>
+
+	parent := o!
+
+removeAllChildren
+
+	self childrenDo: [ :o <OutlinerApp> |
+		self removeChild: o ifAbsent: [ self shouldNotHappen ] ]!
+
+removeChild: o <OutlinerApp> ifAbsent: blk <[]>
+
+	self children remove: o ifAbsent: [ ^blk value ].
+	o parent: nil.
+!
+
+topParent ^ <OutlinerApp>
+
+	^self hasParent
+		ifTrue: [ self parent topParent ]
+		ifFalse: [ self ]! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'control' !
+
+
+closeChildrenAllLevels
+
+	self childrenDo: [ :o <OutlinerApp> | 
+		o open: false.
+		o closeChildrenAllLevels ]
+!
+
+closeChildrenOneLevel
+
+	self childrenDo: [ :o <OutlinerApp> | 
+		o open: false ]!
+
+closeRequest: toClose <[]>
+
+	self sendCloseRequest: toClose toAll: self children.
+	super closeRequest: toClose.!
+
+openChildrenAllLevels
+
+	self body.													"Force body to be built, otherwise children may not be computed"
+	self childrenDo: [ :o <OutlinerApp> | 
+		o body.													"Force body to be built again"
+		o openChildrenAllLevels ].
+	self open: true.!
+
+openChildrenOneLevel
+
+	self body.												"Force body to be built, otherwise children may not be computed"
+	self childrenDo: [ :o <OutlinerApp> | 
+		o open: true ].
+	self open: true.! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'menus' !
+
+
+viewMenu ^<Menu>
+
+	^Menu new name: '&View';
+		add: (MenuAction new
+					name: '&Expand one level';
+					action: [ self openChildrenOneLevel ] );
+		add: (MenuAction new
+					name: 'Expand all levels';
+					action: [ self openChildrenAllLevels ] );
+		add: (MenuAction new
+					name: '&Collapse one level';
+    					action: [ self closeChildrenOneLevel ] );
+		add: (MenuAction new
+					name: 'Collapse all levels';
+					action: [ self closeChildrenAllLevels ] )! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'toolbar' !
+
+
+buildOpenCloseChildrenButtons
+
+	self toolBar
+			addButtonWithImageFrom: 'resources/openSomewhat.bmp'
+					action: [ :b <Button> |	self openChildrenOneLevel ];
+			addButtonWithImageFrom: 'resources/openAll.bmp'
+					action: [ :b <Button> |	self openChildrenAllLevels ];
+			addButtonWithImageFrom: 'resources/closeAll.bmp'
+					action: [ :b <Button> |	self closeChildrenAllLevels ];
+			yourself!
+
+buildToolBar
+
+	self	buildOpenCloseChildrenButtons.!
+
+hasToolBar ^<Boolean>
+
+	^true!
+
+toolBar ^<ToolBar>
+
+	toolBar isNil
+		ifTrue: [	toolBar := ToolBar new.
+						self buildToolBar. 	].
+
+	^toolBar! !
+

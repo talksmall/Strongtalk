@@ -1,0 +1,183 @@
+Delta define: #SortedCollection as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'AddableSequenceableCollection[E]' instanceVariables: 'usesDefaultSortBlock <Boolean> sortBlock <[E,E,^Boolean]>
+		') abstract)) !
+
+(Delta mirrorFor: #SortedCollection) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #SortedCollection) group: 'base'!
+
+(Delta mirrorFor: #SortedCollection)
+comment: 
+'Sorted collections are addable collections that always keep their elements in sorted order.  The
+sort order is determined by the sortPredicate, which is a function that compares 2 elements and
+returns true if the first argument should be before the second argument in the collection.
+The sortPredicate should be provided when the collection is created.
+
+Unfortunately, Smalltalk defines SortedCollection as having a default sortPredicate that uses #<= to compare
+elements.  This is NOT typesafe, since there are many kinds of objects that you might want to sort that don''t support
+the #<= operator; however, this feature is retained in Strongtalk for compatibility.   If you wish to write typesafe programs,
+then SortedCollections should always be given a sort block when they are created.  This involves using the creation
+messages #new:sortBlock:, #sortBlock: and the Collection utility message #asSortedCollection: instead of #new:, #new,
+and #asSortedCollection, respectively.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+'!
+
+! (Delta mirrorFor: #SortedCollection) classSide methodsFor: 'instance creation' !
+
+
+new: capacity <Int>
+sortBlock: sort <[E,E,^Boolean]>
+^<Instance>
+
+	^(self new: capacity) sortBlock: sort!
+
+sortBlock: sort <[E,E,^Boolean]> ^<Instance>
+
+	^self new: self defaultCapacity sortBlock: sort! !
+
+! (Delta mirrorFor: #SortedCollection) classSide methodsFor: 'testing' !
+
+
+test
+	"self test"
+
+	| r <Random> c <Array[Int]> s <SortedCollection[Int]> index <Int> |
+
+	"A binary search test"
+	1 to: 9 do:
+		[ :i <Int> |
+			index := #(1 2 3 4 5 6 7 8 9) binarySearchFor: i toCompare: [ :i1 <Int> :i2 <Int> | i1 <= i2 ].
+			[ index = i or: [ index = ( i + 1) ] ] verify.
+		].
+
+	"A descending sort"
+	r := Random new.
+	100 timesRepeat:
+		[	c := Array[Int] new: (r next * 500) asInteger.
+			1 to: c size do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			[ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ] verify.		].
+
+	"and an ascending sort"
+	r := Random new.
+	100 timesRepeat:
+		[	c := Array[Int] new: (r next * 500) asInteger.
+			1 to: c size do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			[ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 >= i2 ]) isSorted ] verify.		].
+
+	"An insertion sort test"
+	s := SortedCollection[Int] sortBlock: Integer defaultSort.
+	s add: 5; add: 2; add: 6; add: 8; add: 9; add: 1; add: 123; add: 4321; add: 12.
+	[ s isSorted ] verify.! !
+
+! (Delta mirrorFor: #SortedCollection) classSide methodsFor: 'restricted' !
+
+
+defaultSortBlock ^<[E,E,^Boolean]>
+
+	^[ :el1 <E> :el2 <E> |
+		"The default sort block for SortedCollections is is not typesafe, but is included for
+		 Smalltalk compatibility (that's the way Smalltalk is!!)."
+		(guaranteed <Magnitude[E]> el1) <= el2	].! !
+
+! (Delta mirrorFor: #SortedCollection) methodsFor: 'private' !
+
+
+indexFor: el <E> ^<Int>
+	"This returns an internal index such that if el was inserted before it
+	  the collection would remain sorted"
+
+	^self contents
+		binarySearchFor: el
+		between: self startGap + 1
+		and: self lastIndex
+		toCompare: self sortBlock
+"	| low <Int> high <Int> |
+	low := self startGap + 1.
+	high := self lastIndex.
+	[ low <= high ]
+		whileTrue: [	| mid <Int> |
+					mid := (low + high) // 2.
+	  				(self element: (self contents at: mid) isBefore: el)
+						ifTrue: [ low := mid + 1 ]	
+						ifFalse: [ high := mid - 1 ].	].
+	
+	^low"!
+
+sort
+	usesDefaultSortBlock
+		ifTrue: [	self contents defaultSort: self startGap + 1 to: self lastIndex ]
+		ifFalse: [ self contents sort: self startGap + 1 to: self lastIndex using: self sortBlock ]! !
+
+! (Delta mirrorFor: #SortedCollection) methodsFor: 'accessing' !
+
+
+add: el <E> ^<E>
+
+	| index <Int> |
+	index := self indexFor: el.
+	index > self contents size
+		ifFalse: [ index := self makeSpace: 1 beforeIndex: index. ]
+		ifTrue: [	self needSpaceAtEnd: 1.
+						self lastIndex: self lastIndex + 1. ].
+	^self contents at: index put: el.!
+
+addAll: els <Cltn[E]> ^<Cltn[E]>
+
+	els size > (self size // 8) 		 "%todo: do measurements to see if 8 is reasonable"
+		ifTrue: [ 	self needSpaceAtEnd: els size.
+				els do: [ :el <E> |
+					self lastIndex: self lastIndex + 1.
+					self contents at: self lastIndex put: el.	].
+				self sort.		]
+		ifFalse: [ els do: [ :el <E> |
+					self add: el	]].
+	^els!
+
+sortBlock ^<[E,E,^Boolean]>
+
+	^sortBlock!
+
+sortBlock: sort <[E,E,^Boolean]>
+
+	sortBlock := sort.
+	usesDefaultSortBlock := false.
+	self isEmpty
+		ifFalse: [ self sort. ].!
+
+usesDefaultSortBlock ^<Boolean>
+	^usesDefaultSortBlock! !
+
+! (Delta mirrorFor: #SortedCollection) methodsFor: 'initialization' !
+
+
+initCapacity: cap <Int>
+
+	super initCapacity: cap.
+	sortBlock := self actualClass defaultSortBlock.
+	usesDefaultSortBlock := true.! !
+
+! (Delta mirrorFor: #SortedCollection) methodsFor: 'converting' !
+
+
+asSortedCollection ^<SeqCltn[Object]>
+
+	^self! !
+
+! (Delta mirrorFor: #SortedCollection) methodsFor: 'testing' !
+
+
+isSorted ^<Boolean>
+	"testing function used for sort routine validation"
+
+	^self isSortedBy: self sortBlock! !
+

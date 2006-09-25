@@ -1,0 +1,99 @@
+Delta define: #CoreSampler as: (
+(Class subclassOf: 'Application' instanceVariables: 'core <OrderedCollection[Glyph]>
+column <Column[Visual]>')) !
+
+(Delta mirrorFor: #CoreSampler) revision: '$Revision:$'!
+
+(Delta mirrorFor: #CoreSampler) group: 'Unclassified'!
+
+(Delta mirrorFor: #CoreSampler)
+comment: 
+'If you launch an instance of this class, you can use <Ctrl>-<LeftMouseClick> in any OTHER window
+to inspect a list of all the widgets, from outmost to innermost, that contain the spot you clicked on.
+	Try: (CoreSampler new launch)
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CoreSampler) classSide methodsFor: 'creation' !
+
+
+new ^<Instance>
+	^super new initialize! !
+
+! (Delta mirrorFor: #CoreSampler) methodsFor: 'dispatching' !
+
+
+end
+	"| t <TempTranscript> |
+	t := TempTranscript new.
+	t show: '-------------'; cr.
+	core do: [ :e | t print: e class; cr ]."
+	
+	self session  inProcessDo: [ self showCore ].!
+
+in: v <Visual> sampleEvent: type <Symbol> at: loc <Point> event: ev <UIEvent>
+
+	(v topWindow ~= self visual topWindow and: [ type = #primaryButtonDown and: [ ev ctrlPressed ]  ])
+		ifTrue: [	self start.
+						v drillAt: loc for: self.
+						self end.	]!
+
+record: v <Glyph>
+	core addLast: v!
+
+start
+	core := OrderedCollection[Glyph] new.! !
+
+! (Delta mirrorFor: #CoreSampler) methodsFor: 'init' !
+
+
+initialize
+	Sampler := self! !
+
+! (Delta mirrorFor: #CoreSampler) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+	
+	Sampler := nil.
+	super closeRequest: toClose! !
+
+! (Delta mirrorFor: #CoreSampler) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	| v <Visual> |
+	v := column := Column[Visual] new.
+				
+	v := (Scroller viewportFor: v) useContinuousGrid.
+	v := (PreferenceModifier for: v)
+				newNatural: (0@0 extent: 200@500).
+	v := v with3DBorder.
+	^v!
+
+showCore
+
+	column removeAll.
+	core do:
+		[ :g <Glyph> |
+			column add:
+				(ProgrammingEnvironment new
+					buildLabel: g printString 
+					painter: Painter default
+					action: [ (Inspector on: g) launch ]
+				)
+		].
+	core := nil.! !
+
+! (Delta mirrorFor: #CoreSampler) methodsFor: 'accessing' !
+
+
+hasWinBackdrop ^<Boolean>
+
+	^true!
+
+winBackdrop ^<Painter>
+
+	^Painter new paint: Paint backgroundGray! !
+

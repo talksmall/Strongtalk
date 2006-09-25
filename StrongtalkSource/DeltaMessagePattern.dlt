@@ -1,0 +1,38 @@
+Delta define: #DeltaMessagePattern as: (
+(Class subclassOf: 'DeltaFilter' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaMessagePattern) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaMessagePattern) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMessagePattern)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMessagePattern) methodsFor: 'Unclassified' !
+
+
+apply: aTool <ASTTool>
+	aTool messagePatternNode: self.!
+
+clearBody!
+
+retractTypeAssumptions
+
+self type retractTypeAssumptions!
+
+selector ^ <Symbol>
+    ^self filteree selector!
+
+selector: s <Symbol >type: t <DeltaMsgSignature > ^ <Self>
+
+^self class new filter:(BasicMessagePatternData new selector: s type: t) using: DeltaSubstitution new initialize.!
+
+setupTypeAssumptions
+
+self type setupTypeAssumptions!
+
+type ^ <DeltaMsgSignature>
+    ^self filteree type substitute: self substitution! !
+

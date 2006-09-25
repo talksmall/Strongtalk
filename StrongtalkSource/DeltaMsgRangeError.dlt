@@ -1,0 +1,38 @@
+Delta define: #DeltaMsgRangeError as: (
+(Class subclassOf: 'DeltaMsgNotSubtypesError' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaMsgRangeError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaMsgRangeError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMsgRangeError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMsgRangeError) methodsFor: 'Unclassified' !
+
+
+errorMessage  ^ <String>
+    ^'Returntype of ', self subtypeLoc name, ' is not a subtype of returntype of ', self supertypeLoc name!
+
+setLocationFor: node <ASTNode> using: eh <TypeErrorHandler>
+
+	| tempLoc <Locator> tempDeltaMethod <DeltaMethod> |
+	tempLoc :=eh subtypeLocFor: node.
+	(tempDeltaMethod :=  tempLoc deltaMethodIfAbsent: [nil]) isNil
+		ifTrue: [ self subtypeLoc: tempLoc ]
+		ifFalse: [ self subtypeLoc: (eh subtypeLocFor: tempLoc deltaMethod type range) ].
+	tempLoc := eh supertypeLocFor: node.
+	(tempDeltaMethod :=  tempLoc deltaMethodIfAbsent: [nil]) isNil
+		ifTrue: [ self supertypeLoc: tempLoc ]
+		ifFalse: [ self supertypeLoc: (eh supertypeLocFor: tempLoc deltaMethod type range) ].
+
+!
+
+subtypeExpr  ^ <DeltaType>
+    ^super subtypeExpr range!
+
+supertypeExpr  ^ <DeltaType>
+    ^super supertypeExpr range! !
+

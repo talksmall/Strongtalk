@@ -1,0 +1,28 @@
+Delta define: #DeltaFloatNullaryOp as: (
+(Class subclassOf: 'DeltaFloatExpression' instanceVariables: 'f ')) !
+
+(Delta mirrorFor: #DeltaFloatNullaryOp) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaFloatNullaryOp) group: 'ast'!
+
+(Delta mirrorFor: #DeltaFloatNullaryOp)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaFloatNullaryOp) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+    aTool floatNullaryNode: self!
+
+f
+	^ f!
+
+f: op
+	self assert: [ EnableFloatValues ].
+	f := op!
+
+isFloatNullaryOpNode
+	^ true! !
+

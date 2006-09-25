@@ -1,0 +1,187 @@
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"')) !
+
+(Delta mirrorFor: #Process) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #Process) group: 'base'!
+
+(Delta mirrorFor: #Process)
+comment: 
+'Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Process) classSide methodsFor: 'instance creation' !
+
+
+for: block <[]> ^<Instance>
+	"Create and return a new process that will execute the block at the
+	 specified priority.  The new process is suspended."
+
+	| i <Instance> |
+	i := (guaranteed <Instance>
+		{{self primitiveProcessCreate: [ i recordId. block value ]
+				ifFail: [ :err <Symbol> | self error: err ]
+		}}
+	  ) initFor: block.
+	^i! !
+
+! (Delta mirrorFor: #Process) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^80! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'private-initialization' !
+
+
+initFor: block <[]>
+
+	body := block.
+
+	self register.
+	
+!
+
+recordId
+
+	win32Handle := {{<kernel Win32Handle GetCurrentThreadId> call}}! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'accessing' !
+
+
+priority ^<Int>
+
+	^priority!
+
+priority: prio <Int>
+
+	priority := prio!
+
+processError ^ <ProcessError>
+
+	^processError
+!
+
+status ^<Symbol>
+	"One of:
+		#Initialized				- State right after creation.
+		#Yielded					- Gave up control by calling yield.
+		#InAsyncDLL			- Gave up control but continues to execute asynchronous DLL.
+		#Stopped				- Gave up control by calling stop.
+		#Preempted			- Was preempted by system.
+		#Running					- Currently running
+		#Completed			- Ran to completion.
+		#Killed						- The process has been terminated.
+		#BooleanError		- A boolean was expected at hardcoded control structure.
+		#LookupError			- The receiver does not understand doesNotUnderstand:.
+		#PrimitiveLookupError	- Binding a primitive failed.
+		#DLLLookupError				 - Binding a DLL function failed.
+		#NLRError				- Context for NLR did not exist.
+		#StackOverflow		- Stack exhausted.
+	"
+
+	^{{self primitiveProcessStatus}}! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'testing' !
+
+
+running ^<Boolean>
+	"Not suspended, dying, or dead. (This includes processes blocked in async dll calls)"
+
+	^Processor isRunning: self!
+
+suspended ^<Boolean>
+	"Not on the running list, but can be resumed"
+
+	| s <Symbol> |
+	self running
+		ifTrue: [ ^false ].
+	s := self status.
+	^s == #Yielded
+		or: [ s == #InAsyncDLL
+		or: [ s == #Initialized
+		or: [ s == #Preempted
+		or: [ s == #Stopped ]   ]]]! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'control' !
+
+
+resume
+
+	Processor resume: self!
+
+suspend
+
+	Processor suspend: self.
+	Processor activeProcess = self
+		ifTrue: [ self yield ]!
+
+terminate
+
+	Processor terminating: self.
+	self vmTerminate.	!
+
+waitUntilDead
+	"can be called after a process has been terminated to wait until it has completed
+		unwinding its stack etc, and is truly dead.  This loops currently, so it is not
+		a good way for waiting for the death of a process that has not been terminated.
+		This may never return if the process that has been terminated does not ever
+		finish cleaning up."
+	
+	[ self running ]
+		whileTrue: [ Processor yield ]! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
+
+
+activationStack ^ <Array[Activation]>
+
+	^{{self primitiveProcessStackLimit: 100 ifFail: [ :err <CompressedSymbol>  | self error: err]}}!
+
+processError: e <ProcessError>
+
+	processError := e
+!
+
+stopInEvaluator
+
+	Processor stopInEvaluator: self!
+
+traceStack
+
+	{{self primitiveProcessTraceStack: 20 ifFail: [ :err <Symbol> | self error: err]}}
+!
+
+win32Handle ^<Win32Handle>
+	"This is valid only after the process has begun to actually execute"
+
+	^win32Handle!
+
+yield
+	{{primitiveProcessYield}}! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^112! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'private' !
+
+
+register
+
+	Processor register: self.!
+
+vmTerminate
+
+	{{self primitiveProcessTerminateIfFail: [ :err <Symbol> | self error: err ]}}! !
+

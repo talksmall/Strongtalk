@@ -1,0 +1,114 @@
+Delta define: #DeltaSide as: (
+(Class subclassOf: 'DeltaObjectSideBehavior' instanceVariables: 'classDecl klass mirror messages methods selfTV selfPublicTV typeOfInstances scope ')) !
+
+(Delta mirrorFor: #DeltaSide) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaSide) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSide)
+comment: 
+'Concrete class representing the instance side of Object.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSide) methodsFor: 'Unclassified' !
+
+
+basicLocator
+	^DeltaBasicMixinLocator new id: #Object; isMetaSide: false!
+
+classDecl ^ <DeltaClassUpdate>
+    ^classDecl!
+
+classDecl: cd <DeltaClassUpdate > ^ <Self>
+    classDecl := cd!
+
+hasMethodsLoaded ^ <Boolean>
+
+^methods isNil not
+!
+
+klass ^ <DeltaClass>
+    ^klass!
+
+klass: k <DeltaClass > ^ <Self>
+    
+klass := k.
+self isMetaSide ifFalse:[self scope at: #Instance put: self selfTV]
+                         ifTrue:[
+                                   self selfTV isMeta: true.
+                                   self selfPublicTV isMeta: true.
+                                   self scope at: #Instance put: self selfClassTV.
+                                   self scope at: #PublicInstance put: self selfPublicClassTV.
+                                   self selfTV dual: self selfClassTV.
+                                   self selfClassTV dual: self selfTV.
+                                   self selfPublicTV dual: self selfPublicClassTV.
+                                   self selfPublicClassTV dual: self selfPublicTV.
+                                   ].
+"Whatever class is linked to me, must have my type var in its scope"!
+
+messages ^ <Dict[Symbol,Message]>
+
+messages isNil ifTrue:[self mirror createMethodTypeStructure].
+    ^messages!
+
+messages: ms<Dict[Symbol,Message]>
+    messages := ms!
+
+methods ^ <Dict[Symbol,Method]>
+
+methods isNil ifTrue:[self mirror createMethodTypeStructure].
+    ^methods!
+
+methods: ms<Dict[Symbol,Method]>
+    methods := ms!
+
+mirror ^ <Mirror>
+
+mirror isNil ifTrue:[mirror := super mirror].
+^mirror!
+
+scope ^<Scope>
+    ^scope!
+
+scope: s <Scope>
+    scope := s!
+
+selfPublicTV ^ <TypeVar>
+    ^selfPublicTV!
+
+selfPublicTV: stv <TypeVar>
+    selfPublicTV := stv.
+    self localScope at: #PublicSelf put:  stv.!
+
+selfTV ^ <TypeVar>
+    ^selfTV!
+
+selfTV: stv <TypeVar>
+    selfTV := stv.
+    self localScope at: #Self put:  stv.!
+
+superclassType ^ <Class>
+    ^nil!
+
+supportedProtocol ^ <Protocol>
+    ^nil!
+
+supportedProtocol: p <Protocol>
+	"Do nothing"!
+
+typeOfInstances ^ <ObjectType>
+"This method returns the public protocol of the side.  For the class side,
+we delegate responsibility to the dual.
+
+For the instance side,  we create a protocol update, using self as the
+filteree.
+We must take care to replace private type variables with public ones;
+this is done by using the appropriate substitution"
+
+^typeOfInstances isNil
+   ifTrue:[
+             typeOfInstances := super typeOfInstances.
+             ]
+   ifFalse:[typeOfInstances].! !
+

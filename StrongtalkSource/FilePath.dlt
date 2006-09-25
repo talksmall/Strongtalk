@@ -1,0 +1,289 @@
+Delta define: #FilePath as: (
+(Class subclassOf: 'ExternalStreamableObject mixin |> (ExternalObject mixin |> FilePattern)' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #FilePath) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #FilePath) group: 'base'!
+
+(Delta mirrorFor: #FilePath)
+comment: 
+'FilePaths are FilePatterns without wildcard characters, which means
+they match individual files, not sets of files.
+
+Tags:  %User
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #FilePath) classSide methodsFor: 'instance creation' !
+
+
+currentDirectory ^<FilePath>
+
+	^Platform pathClass currentDirectory!
+
+for: name <Str>  ^<FilePath>
+
+	^Platform pathClass new pattern: name! !
+
+! (Delta mirrorFor: #FilePath) classSide methodsFor: 'testing' !
+
+
+test
+
+	| f <FilePath> f2 <FilePath> |
+
+	f := FilePath for: 'tmpDir'.
+	[ f exists not ] verify.
+
+	f createDirectoryIfFail: [ :err <Symbol> | Win32 handleError ].
+	[ f exists ] verify.
+	[ f isDirectory ] verify.
+	[ f isWriteable ] verify.
+
+	f2 := f , (FilePath for: 'sub').
+	[ f2 exists not ] verify.
+
+	f2 createDirectoryIfFail: [ :err <Symbol> | Win32 handleError ].
+	[ f2 exists ] verify.
+	[ f isDirectory ] verify.
+	[ f isWriteable ] verify.
+
+	[ (self tryToDeleteTestDir: f) not ] verify.
+	[ self tryToDeleteTestDir: f2 ] verify.
+	[ self tryToDeleteTestDir: f ] verify.
+
+	[ f2 exists not ] verify.
+	[ f exists not ] verify.
+!
+
+tryToDeleteTestDir: dir <FilePath> ^<Boolean>
+
+	dir deleteIfFail: [ :err <Symbol> |  ^false ].
+	^true! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'accessing' !
+
+
+, extension <FilePattern> ^<EXTENDED>
+	{where EXTENDED is returnType of #extendPath: message of arg 1}
+
+	"This guarantee is safe because of the inference clause"
+	^guaranteed <EXTENDED> (extension extendPath: self)!
+
+containingDirectory ^<FilePath>
+
+	"use when coerce: works with mixins"
+"	^FilePath coerce: super containingDirectory"
+	^guaranteed <FilePath> (super containingDirectory)!
+
+elements ^<SeqCltn[FilePath]>
+
+	"A file path's elements must also be filepaths"
+	^guaranteed <SeqCltn[FilePath]> (super elements)!
+
+name ^<Str>
+
+	^self pattern!
+
+type ^<Str>
+	"The file type (on most platforms this is the part after the $. at the end)"
+	
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'restricted' !
+
+
+openInternalFor: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalProxy | X>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'opening' !
+
+
+open: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<FileDescriptor | X>
+	"Modes: #read, #write, #readWrite"
+
+	^(self fileDescriptorClass for: self mode: mode)
+		openIfFail: [ :e <ExternalError> | 
+			^err value: e ]! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'private' !
+
+
+fileDescriptorClass ^<FileDescriptor class>
+
+	self subclassResponsibility!
+
+nameProxy ^<CString>
+	"Returns a proxy for the name, which must be freed"
+
+	^CString for: self name! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'byte streaming' !
+
+
+extendPath: path <FilePath> ^<FilePath>
+
+	^FilePath for: (self patternExtending: path)!
+
+inputStream ^<InputStream[Int]>
+
+	"We are using this for now since read streams are faster at things like upTo: than input streams"
+    ^self readStream!
+
+outputStream ^<OutputStream[Int]>
+
+    ^ExternalOutputStream onDescriptor: (self open: #write ifFail: [ :err <ExternalError> | self error: err ])!
+
+readStream ^<ExternalReadStream>
+
+    ^ExternalReadStream onDescriptor:
+		(self open: #read ifFail: [ :err <ExternalError> | self error: err ])!
+
+readWriteStream ^<ExternalReadWriteStream>
+    ^ExternalReadWriteStream onDescriptor: (self open: #readWrite ifFail: [ :err <ExternalError> | self error: err ])!
+
+writeStream ^<ExternalReadWriteStream>
+    ^ExternalReadWriteStream onDescriptor: (self open: #write ifFail: [ :err <ExternalError> | self error: err ])! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'testing' !
+
+
+exists ^<Boolean>
+
+	self unimplemented!
+
+isDirectory ^<Boolean>
+
+	self subclassResponsibility!
+
+isPath ^<Boolean>
+
+	^true!
+
+isReadOnly ^<Boolean>
+
+	self unimplemented!
+
+isWriteable ^<Boolean>
+
+	^self isReadOnly not! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'iterating' !
+
+
+pathsDo: blk <[FilePath]>
+
+	self exists
+		ifTrue: [  blk value: self ]! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'restricted-double dispatching' !
+
+
+deletePathIfFail: blk <[Symbol]>
+	"This is how the #delete operation is implemented.  API level users should
+		use #delete instead"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'control' !
+
+
+createDirectoryIfFail: fail <[Symbol]>
+	"Create the directory with the given name, if it does not exist.
+		If the directory can not be created and did not previously exist,
+		the fail block is evaluated with an error symbol"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'restricted-initialization' !
+
+
+pattern: p <Str>
+
+	super pattern: p.
+	self assert: [ (self actualClass patternHasWildcards: p) not ].! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'character streaming' !
+
+
+charInputStream ^<CharInputStream>
+
+	^super charInputStream
+
+	"Override to use a ReadConverter, which is faster for things like upTo:"
+	"^CharacterReadConverter on: self readStream"!
+
+charInputStreamDo: blk <[CharInputStream, ^X def]>
+ifFail: fail <[^Y def]>
+^<X | Y>
+
+	"%kludge: this is a quick hack that catches only some kinds of
+		problems"
+	^self exists
+		ifFalse: [ fail value ]
+		ifTrue: [ super charInputStreamDo: blk ]!
+
+charOutputStream ^<CharOutputStream>
+
+	^CharacterInputOutputConverter on: self writeStream! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'copying-moving' !
+
+
+copyAs: newPath <FilePath>
+
+	self copyAs: newPath
+		ifFail: [ :err <Symbol> |
+						self error: err	]!
+
+copyAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+
+	self subclassResponsibility!
+
+copyNamed: name <Str> ^<FilePath>
+	"create a copy in the same directory with the specified name. The
+		new path is returned."
+
+	^self copyNamed: name ifFail: [ :err <Symbol> | self error: err ]!
+
+copyNamed: name <Str> ifFail: fail <[ExternalError]>  ^<FilePath>
+	"create a copy in the same directory with the specified name. The
+		new path is returned."
+
+	| newPath <FilePath> |
+	newPath := self containingDirectory, (FilePath for: name).
+	self copyAs: newPath
+		ifFail: [ :err <Symbol> |
+						self error: err	].
+	^newPath!
+
+moveAs: newPath <FilePath>
+
+	self moveAs: newPath
+		ifFail: [ :err <Symbol> |
+						self error: err	]!
+
+moveAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+	"Move the file to the specified new path, which includes the new name of the
+		file as well.  Among the possible failures are: #(AlreadyExists SharingViolation)."
+
+	self subclassResponsibility!
+
+rename: name <Str> ^<FilePath>
+	"rename in the same directory.  The new path is returned."
+
+	^self rename: name ifFail: [ :err <Symbol> | self error: err ]!
+
+rename: name <Str> ifFail: fail <[ExternalError]> ^<FilePath>
+	"rename in the same directory.   The new path is returned."
+
+	| newPath <FilePath> |
+	newPath := self containingDirectory, (FilePath for: name).
+	self moveAs: newPath
+		ifFail: [ :err <Symbol> |
+						self error: err	].
+	^newPath! !
+

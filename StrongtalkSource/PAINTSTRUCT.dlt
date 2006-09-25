@@ -1,0 +1,51 @@
+Delta define: #PAINTSTRUCT as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #PAINTSTRUCT) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #PAINTSTRUCT) group: 'base'!
+
+(Delta mirrorFor: #PAINTSTRUCT)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #PAINTSTRUCT) methodsFor: 'accessing' !
+
+
+rcPaint ^<RECT>
+
+	^self subProxyAt: self rcPaintOffset result: RECT new!
+
+structureSize ^<Int>
+
+	^64! !
+
+! (Delta mirrorFor: #PAINTSTRUCT) methodsFor: 'offsets' !
+
+
+fEraseOffset ^<Int>
+
+	^4!
+
+fIncUpdateOffset ^<Int>
+
+	^28!
+
+fRestoreOffset ^<Int>
+
+	^24!
+
+hdcOffset ^<Int>
+
+	^0!
+
+rcPaintOffset ^<Int>
+
+	^8!
+
+rgbReservedOffset ^<Int>
+
+	^32! !
+

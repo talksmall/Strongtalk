@@ -1,0 +1,67 @@
+Delta define: #TreeSortBenchmark as: (
+(Class subclassOf: 'QuicksortBenchmark' instanceVariables: 'tree')) !
+
+(Delta mirrorFor: #TreeSortBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #TreeSortBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #TreeSortBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TreeSortBenchmark) methodsFor: 'run' !
+
+
+run
+	self initarr.
+	tree := TreeSortNodeBenchmark new val: (sortlist at: 1).
+	2 to: QSortelements do: [:i | self insert: (sortlist at: i)
+			Into: tree].
+	(self checkTree: tree)
+		ifFalse: [self error: ' Error in Tree.']! !
+
+! (Delta mirrorFor: #TreeSortBenchmark) methodsFor: 'private' !
+
+
+checkTree: p 
+	| result |
+	result := true.
+	p left notNil ifTrue: [p left val <= p val
+			ifTrue: [result := false]
+			ifFalse: [result := (self checkTree: p left)
+							and: [result]]].
+	p right notNil ifTrue: [p right val >= p val
+			ifTrue: [result := false]
+			ifFalse: [result := (self checkTree: p right)
+							and: [result]]].
+	^result!
+
+createNode: n
+	^TreeSortNodeBenchmark new val: n!
+
+insert: n Into: t 
+	n > t val
+		ifTrue: [t left isNil
+				ifTrue: [t left: (self createNode: n)]
+				ifFalse: [self insert: n Into: t left]]
+		ifFalse: [n < t val ifTrue: [t right isNil
+					ifTrue: [t right: (self createNode: n)]
+					ifFalse: [self insert: n Into: t right]]]! !
+
+! (Delta mirrorFor: #TreeSortBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^144!
+
+factor
+	^11!
+
+name
+	^#TreeSort!
+
+parcplaceTime
+	^241! !
+

@@ -1,0 +1,111 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>A Tour of the Strongtalk System</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right">	
+ <a href="toc.html">Contents</a> |
+ <a href="differences.html"><strong>Next ==&gt;</strong></a></h3>
+
+<h1 align="center">A Tour of the Strongtalk System</h1>
+
+<h4 align="left">David Griswold<br>
+May 2002</h4>
+
+<p>Note: This tour is designed to be viewed using the Strongtalk browser, not a regular html browser, because it contains Smalltalk code.</p>
+<h3 align="left">Introduction</h3>
+
+<p align="left">The Strongtalk system is a fundamental redesign
+of the Smalltalk-80 system. While maintaining the basic syntax
+and semantics of the Smalltalk-80 language, it contains
+significant advances in a variety of areas relative to previous
+Smalltalk implementations, including:</p>
+
+<ul>
+    <li><p align="left">a virtual machine that executes Smalltalk
+        <em>much</em> faster than any other implementation,</p>
+    </li>
+    <li><p align="left">the first workable strong, static type
+        system for Smalltalk (use of which is completely optional
+        and incremental, and which does not affect performance),
+        as well as a typed &quot;Blue Book&quot; library,</p>
+    </li>
+    <li><p align="left">a flyweight, glyph-based user interface
+        that nonetheless allows integration of native widgets,
+        and which provides automatic layout using Tex-style
+        &quot;shrink/stretch&quot; semantics,</p>
+    </li>
+    <li><p align="left">native threads with both synchronous and
+        asynchronous (non-blocking) C callouts, and</p>
+    </li>
+    <li><p align="left">an advanced, outliner-based programming
+        environment</p>
+    </li>
+    <li><p align="left">use of mixins to provide a simple,
+        elegant alternative to multiple inheritance</p>
+    </li>
+</ul>
+
+<p align="left">This document is designed as a tour of the unique
+aspects of the Strongtalk system for researchers and serious
+Smalltalkers, so it assumes a solid understanding of Smalltalk
+systems and their architecture. It gives just enough tutorial
+information so that you can browse around the system, and
+otherwise dives right into cool nitty-gritty stuff.</p>
+
+<h4 align="left">How the Strongtalk System Came About</h4>
+
+<p align="left">The system is based on many years of work by a
+variety of people, starting with pioneering research done by the
+Self group at Sun Microsystem's Labs as well as at Horizon
+Technologies, Inc.. The current system was developed in secret at
+a small startup company, Animorphic Systems (officially LongView
+Technologies, Inc.), that was started in 1994. Unfortunately for
+Strongtalk, the rapid and unexpected (by anyone, I think) rise of
+Sun Microsystem's Java forced Animorphic to halt work on the
+Strongtalk system before it was ever released. Animorphic was
+acquired by Sun Microsystems in 1997, and parts of the Animorphic
+virtual machine technology became the core of what is currently
+Sun's production Java virtual machine implementation.</p>
+
+<p align="left">Because of this history, very few people have
+ever gotten their hands on the Strongtalk system, although
+rumours have floated around about it for years. Fortunately, Sun
+Microsystems has recently graciously agreed to release the
+Strongtalk system as unsupported software, so that the research
+and Smalltalk communities can finally get their hands on it. The
+released system includes full source code for all Smalltalk
+source code under a Berkeley-style open source license, and a
+&quot;Wintel&quot; binary for the virtual machine under a free,
+non-commercial use license (Note that I don't work for Sun
+Microsystems any more, and so don't speak for them and didn't
+decide on that policy).</p>
+
+<p align="left">At the point at which initial development stopped
+on the Strongtalk system, it was running quite nicely in
+pre-alpha release form. However, it was certainly not completely
+finished, and so of course there are a fair number of messy
+corners still in the system, although on the whole the system is
+surprisingly robust. Many of the messy corners are actually
+pretty easy to clean up, and I for one will be doing a bit of
+that. The fact that the VM allows C callouts without modification
+or relinking of the VM means that virtually any part of the
+libraries can be changed and extended. <em>All</em> user
+interface and I/O code is in Smalltalk.</p>
+
+<p align="left">The Strongtalk system was developed by (in
+alphabetical order): Lars Bak, Gilad Bracha, Steffen Grarup,
+Robert Griesemer, David Griswold, and Urs Hoelzle. Special thanks
+to the members of the Self group for their pioneering VM
+research.</p>
+
+<h3 align="right"><a href="differences.html"><strong>Begin the
+Tour ==&gt;</strong></a></h3>
+
+</body>
+</html>

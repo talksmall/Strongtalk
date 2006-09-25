@@ -1,0 +1,145 @@
+Delta define: #DeltaSideType as: (
+(Class subclassOf: 'DeltaSideTypeBehavior' instanceVariables: 'side ')) !
+
+(Delta mirrorFor: #DeltaSideType) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaSideType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSideType)
+comment: 
+'This class is intended to capture the behavior of the type of a side of a class.
+This means it reflects that type information that is required to check the validity
+of inheritance.
+
+The class is not used at the moment, and has not been tested.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSideType) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^self side abstract!
+
+branded ^ <Boolean>
+    ^self side branded!
+
+classVarTypes ^ <Dict[Symbol,ObjectType]>
+    ^Dictionary[Symbol, ObjectType]  new.!
+
+dualClassType ^ <ClassType>
+    ^DeltaUnaryClassTypeExpr new target: self selector: #class.!
+
+extensionsAreSubtypes ^ <Boolean>
+    ^self side extensionsAreSubtypes!
+
+functions ^ <Dict[Symbol,MsgDecl]>
+    ^self side functions  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+heirScope ^ <Scope>
+    ^self side heirScope substitute: self substitution!
+
+implementedPrivateProtocol ^ <Protocol>
+    ^self side implementedPrivateProtocol substitute: self substitution!
+
+instVarTypes ^ <Dict[Symbol,ObjectType]>
+    ^self side varDecls virtualCollect:[:iv <VarDecl>  | iv type].!
+
+komment
+
+"This class is intended to capture the behavior of the type of a side of a class.
+This means it reflects that type information that is required to check the validity
+of inheritance.
+
+The class is not used at the moment, and has not been tested.
+"!
+
+localScope ^ <Scope>
+    ^self side localScope substitute: self substitution!
+
+messages ^ <Dict[Symbol,MsgDecl]>
+    ^self side messages  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+methods ^ <Dict[Symbol,MsgDecl]>
+    ^self side methods  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+mixinCompatibleWith: st <SideType > ^ <Boolean>
+    (self side subtypeOf: st side assuming: DeltaGlobalTrail)
+  ifFalse:[^false].
+(self privateProtocol structuralSubprotocolOf: st privateProtocol)
+   ifFalse:[^false].
+
+st instVarTypes associationsDo:
+   [:a <Assoc[Symbol,ObjectType]>  |
+   ((self instVarTypes at: a key ifAbsent:[^false])  equal: a value assuming: DeltaGlobalTrail) ifFalse:[^false]
+   ].
+
+st classVarTypes associationsDo:
+   [:a <Assoc[Symbol,ObjectType]>  |
+   ((self classVarTypes at: a key ifAbsent:[^false])  equal: a value assuming: DeltaGlobalTrail) ifFalse:[^false]
+   ].
+^true!
+
+monotonic ^ <Boolean>
+    ^self side monotonic!
+
+on: s <Side > ^ <Self>
+    self side: s.!
+
+privateFunctions ^ <Dict[Symbol,MsgSignature]>
+    ^self side privateFunctions  virtualCollect:[:f <Method>  | f type substitute: self substitution].!
+
+privateMessages ^ <Dict[Symbol,MsgSignature]>
+    ^self side privateMessages  virtualCollect:[:f <Method>  | f type substitute: self substitution].!
+
+privateMethods ^ <Dict[Symbol,MsgSignature]>
+    ^self side privateMethods virtualCollect:[:f <Method>  | f type substitute: self substitution].!
+
+privateProtocol ^ <Protocol>
+    ^self side privateProtocol substitute: self substitution!
+
+publicFunctions ^ <Dict[Symbol,MsgSignature]>
+    ^self side publicFunctions  virtualCollect:[:f <Method>  | f type substitute: self substitution].!
+
+publicMessages ^ <Dict[Symbol, MsgSignature]>
+    ^self side publicMessages  virtualCollect:[:f <Method>  | f type substitute: self substitution].!
+
+publicMethods ^ <Dict[Symbol, MsgSignature]>
+    ^self side publicMethods  virtualCollect:[:f <Method>  | f type substitute: self substitution].!
+
+publicProtocol ^ <Protocol>
+    ^self side typeOfInstances!
+
+selfClassTV ^ <TypeVar>
+    ^self side selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self side selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self side selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self side selfTV!
+
+side ^ <Side>
+    ^side!
+
+side: s <Side > ^ <Self>
+    side := s.!
+
+subtype ^ <Boolean>
+    ^self side subtype!
+
+typeOfInstances ^ <ObjectType>
+
+^self side typeOfInstances substitute: self substitution!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+    ^self side unimplementedMessages!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+    ^self side varDecls  virtualCollect:[:v <VarDecl>  | v type substitute: self substitution].! !
+

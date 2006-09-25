@@ -1,0 +1,33 @@
+Delta define: #DeltaParameter as: (
+(Class subclassOf: 'DeltaActivationVar' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaParameter) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaParameter) group: 'ast'!
+
+(Delta mirrorFor: #DeltaParameter)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaParameter) classSide methodsFor: 'Unclassified' !
+
+
+declare: aName of: type inScope: scope ifThere: blk
+
+^scope declareParameter: aName of: type ifThere: blk! !
+
+! (Delta mirrorFor: #DeltaParameter) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool parameterNode: self!
+
+isParameterNode ^ <Boolean>
+    ^ true!
+
+printOn: strm <CharOutputStream>
+
+	super printOn: strm.
+	strm nextPutAll: '(', self name, ')'! !
+

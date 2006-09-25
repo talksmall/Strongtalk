@@ -1,0 +1,1016 @@
+Delta define: #DeltaCodeScope as: (
+(Class subclassOf: 'DeltaScope' instanceVariables: 'parameters temporaries subScopes superVars containsReturn accessesSelf containsFloatValues isInlined nilOrContextOnly mapsAreComputed stackMap floatMap heapMap stackInfo floatInfo heapInfo heapParameters nofStackTemporaries nofStackFloatValues begin end ')) !
+
+(Delta mirrorFor: #DeltaCodeScope) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaCodeScope) group: 'ast'!
+
+(Delta mirrorFor: #DeltaCodeScope)
+comment: 
+'WARNING: DO NOT TOUCH ANY OF THE CODESCOPE''S CODE UNLESS YOU FULLY
+	UNDERSTAND WHAT IS GOING ON. THIS IS MORE COMPLICATED THAN IT LOOKS.
+
+	DeltaCodeScope represent method and block scopes in the AST. They collect
+	the bindings of ActivationVars to their variable names (symbols). During the AST
+	rewrite phase, a scope may be inlined within its enclosing scope. As a consequence,
+	e.g., a scope that originally was a block scope may become a method scope
+	(if it has been inlined within the topmost code scope), and if it formerly contained
+	a NLR (non-local return), this NLR will disappear too since it became a ordinary
+	return after inlining.
+
+	Note: All information (such as containsNLR, needsSelf) is recomputed whenever
+	needed and no such information is cached; the scope stores only static source
+	infomation (doesReturn, accessesSelf) and whether it has been inlined or not.
+	That is, inlining could be undone by simply resetting the isInlined flag.
+
+
+	Instance variables:
+
+	subScopes						the set or (inlined or real) subscopes; i.e., scopes for
+											which superScope is self
+
+	superVars						the set of ActivationVars defined in any of the super
+											scopes but accessed within this or any of its subscopes
+											(transitive)
+
+	containsReturn				true if the statements belonging to this scope
+											contain a return statement; false otherwise
+
+	accessesSelf					true if any of the statements belonging to this scope
+											accesses self; false otherwise
+
+	hasFloatValues				true if the scope stores FloatValues, false otherwise.
+
+	isInlined							true if the scope is inlined; false otherwise
+
+	stackMap							an IdentityDictionary mapping temporaries allocated on the
+											stack to a stack frame offset (temporary -> offset).
+
+	floatMap							an IdentityDictionary mapping float temporaries allocated on the
+											stack to a stack frame offset (temporary -> offset).
+
+	heapMap							an IdentityDictionary mapping temporaries allocated on the
+											heap to a context ptr offset (temporary -> offset).
+
+	heapParameters				an OrderedCollection of temporaries containing all the parameters
+											that have to be copied into the heap context.
+
+	nofStackTemporaries		the number of temporaries allocated on the stack
+											(i.e. the stack size used for this scope).
+
+    begin, end						the bci range of bytecodes generated for this scope.
+											end points to the first bytocode after the scope.
+    
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaCodeScope) methodsFor: 'Unclassified' !
+
+
+accessSelf
+	"
+	Informs the scope that self is accessed within this scope.
+	"
+	accessesSelf := true.
+	self at: #self		"make sure that self is visible"!
+
+accessesSelf
+	"
+	Answers true if this scope is accessing self; answers
+	false otherwise. A scope needs access to self if it or
+	any of its inlined subscopes need access to self.
+	Note that accesses to self within non-inlined
+	subscopes are not considered!!
+	"
+	accessesSelf ifTrue: [ ^ true ].
+	self inlinedSubScopesDo: [ :scope |
+		scope accessesSelf ifTrue: [ ^ true ]
+	].
+	self realSubScopesDo: [ :scope |
+		scope incoming = #self ifTrue: [ ^ true ].	"self is pushed for closure allocation"
+		scope incoming = #context ifTrue: [
+			scope superVarsContainSelf ifTrue: [ ^ true ]
+		]
+	].
+	^ false!
+
+addSubScope: scope
+	"
+	Adds scope to the set of subscopes. Called from within
+	the initialization routine for creating new code scopes.
+	"
+	self assert: [ (self subScopes includes: scope) not ].
+	self subScopes add: scope!
+
+addTemps: tmap startAt: offs0 floats: fmap startAt: fno0
+	"
+	Private.
+	Adds the temporaries of this scope and its inlined subscopes to
+	map, starting at offs0. Offsets are assigned in an overlapping
+	manner to temporaries of subscopes. Answers the highest
+	offset ever assigned + 1.
+	"
+	| offs1 offs2 fno1 fno2 p |
+	self assert: [ self isInlined ].
+	offs1 := offs0.
+	fno1 := fno0.
+
+	"Map parameters"
+	self parameters do: [ :par |
+		tmap at: par put: offs1.
+		offs1 := offs1 + 1
+	].
+
+	"Map temporaries"
+	self nofTemporaries > 0 ifTrue: [
+		stackInfo := OrderedCollection new.
+		stackInfo add: offs1.
+		floatInfo := OrderedCollection new.
+		floatInfo add: fno1.
+		self temporaries do: [ :temp |
+			temp isFloatValue
+				ifTrue: [
+					self assert: [ EnableFloatValues ].
+					self usesFloatValues.
+					fmap at: temp put: fno1.
+					floatInfo add: temp name.
+					fno1 := fno1 + 1
+				]
+				ifFalse: [
+					tmap at: temp put: offs1.
+					stackInfo add: temp name.
+					offs1 := offs1 + 1
+				]
+		]
+	].
+
+    "Compute mapping of inlined scopes"
+	offs2 := offs1.
+	fno2 := fno1.
+	self inlinedSubScopesDo: [ :scope |
+		p := scope addTemps: tmap startAt: offs1 floats: fmap startAt: fno1.
+		offs2 := offs2 max: p x.
+		fno2 := fno2 max: p y
+	].
+	^ offs2 @ fno2!
+
+addTo: map startAt: offs0
+	"
+	Private.
+	Adds the temporaries of this scope and its inlined subscopes to
+	map, starting at offs0. Offsets are assigned in an overlapping
+	manner to temporaries of subscopes. Answers the highest
+	offset ever assigned + 1.
+	"
+	| offs1 offs2 |
+	self assert: [ self isInlined ].
+	offs1 := offs0.
+
+	"Map parameters"
+	self parameters do: [ :par |
+		map at: par put: offs1.
+		offs1 := offs1 + 1
+	].
+
+	"Map temporaries"
+	self nofTemporaries > 0 ifTrue: [
+		stackInfo := OrderedCollection new.
+		stackInfo add: offs1.
+		self temporaries do: [ :temp |
+			map at: temp put: offs1.
+			stackInfo add: temp name.
+			offs1 := offs1 + 1
+		]
+	].
+
+    "Compute mapping of inlined scopes"
+	offs2 := offs1.
+	self inlinedSubScopesDo: [ :scope |
+		offs2 := offs2 max: (scope addTo: map startAt: offs1)
+	].
+	^ offs2!
+
+allocatesContext
+	"
+	Answers true if the scope allocates some of its own ActivationVars
+	in a context or is the home of non-local returns; answers false otherwise.
+	"
+	^ self isMethodScope
+		ifTrue: [ self containsNLR or: [ self isInlineable not ] ]
+		ifFalse: [ self isInlineable not ]!
+
+at: node error: msg
+	"Simple soultion for now - fix this at some point"
+	Transcript show: 'error: ', msg ; cr.
+	self halt!
+
+at: key ifAbsent: blk
+	"
+	Answers the value associated with aKey in this or one of the
+	superScopes or the value of aBlock if aKey is absent. Imported
+	temporaries, i.e. temporaries from super scopes are collected in
+	the set of superVars.
+	"
+	
+	"Optimization note: This is written using [nil] blocks to avoid passing 
+		non-clean blocks dynamically down the scope structure."
+
+	| value <T> |
+	(value := self bindings at: key ifAbsent: [ nil ]) notNil
+		ifTrue: [ ^value ].
+	self superScope isNil
+		ifTrue: [ ^blk value ].
+	(value := self superScope at: key ifAbsent: [ nil ]) notNil
+		ifTrue: [ value isActivationVarNode 
+							ifTrue: [ (self superVars includes: value) 
+												ifFalse: [ self superVars add: value ] ].
+						^value ].
+	^blk value
+!
+
+begin
+	^ begin!
+
+begin: b end: e
+	"
+	Sets the bci range for which this scope is valid.
+	beg is the bci of the first bytecode belonging to this
+	scope, end is the bci of the first bytecode following
+	the end of the scope.
+	"
+	begin := b.
+	end := e!
+
+collectStackInfo: info
+	"
+	Private.
+	Adds non-empty stackInfos/floatInfos of inlined scopes to info.
+	Answers info.
+	"
+	(stackInfo notNil or: [ floatInfo notNil ]) ifTrue: [
+		info add: self begin.
+		info add: self end
+	].
+
+	stackInfo notNil ifTrue: [
+		stackInfo do: [ :e |
+			info add: (
+				e isInteger
+					ifTrue: [ e - 1 ]	"-1 correction because of different numbering scheme in the VM"
+					ifFalse: [ Delta createSymbol: e ]
+			)
+		]
+	].
+
+	floatInfo notNil ifTrue: [
+		floatInfo do: [ :e |
+			info add: (
+				e isInteger
+					ifTrue: [ e - 1 ]	"-1 correction because of different numbering scheme in the VM"
+					ifFalse: [ Delta createSymbol: e ]
+			)
+		]
+	].
+
+	self inlinedSubScopesDo: [ :scope | scope collectStackInfo: info ].
+	^ info!
+
+computeDebugInfo
+	"
+	Computes debugging information out of the stack and heap maps.
+	Format:
+		Name*									parameters (first parameter first, i.e. left to right)
+		Offset Name*						stack-allocated temporaries
+		Offset Name*						stack-allocated floats (Offset is always 0)
+		Offset Name*						heap-allocated parameters and temporaries
+		(Range									inlined scopes:
+			Offset Name*						temporaries
+			Offset Name*						floats
+		)*
+
+	Note: In the VM, temporaries are numbered starting with 0 for the first real
+	temporary, the receiver is treated separately. Therefore there's a -1 correction
+	required when computing the debuging information. See also comment in
+	nofStackVariables. This should be rewritten and unified at some point.
+	(gri 3/13/96).
+	"
+	| info sc |
+	info := OrderedCollection new.
+
+	"Add parameters"
+	self parameters do: [ :e |
+		info add: (Delta createSymbol: e name)
+	].
+
+    "Add stack-allocated temporaries"
+    stackInfo do: [ :e |
+        info add:  (e isInteger ifTrue: [e - 1] ifFalse: [ Delta createSymbol: e ])
+	].	"-1 correction because of different numbering scheme in the VM"
+
+	"Add stack-allocated floats"
+	floatInfo do: [ :e |
+		info add: (e isInteger ifTrue: [ e ] ifFalse: [ Delta createSymbol: e ])
+	].
+
+    "Add heap-allocated arguments and temporaries"
+    heapInfo do: [ :e |
+        info add:  (e isInteger ifTrue: [e] ifFalse: [ Delta createSymbol: e ])
+	].
+
+    "Add stack-allocated temporaries of inlined scopes"
+    self inlinedSubScopesDo: [ :scope | info := scope collectStackInfo: info].
+
+    ^ Delta createObjArray:  info
+!
+
+computeHeapMap: heapSet
+	"
+	Private.
+	Computes the heap map, i.e. an IdentityDictionary mapping
+	a temporary to a heap context location (i.e. an offset). Computes
+	also an OrderedCollection of temporaries to be copied into the
+	heap context.
+	"
+	| offs |
+	"Allocate temporaries on the heap."
+	heapMap := IdentityDictionary new.
+	heapInfo := OrderedCollection new.
+	heapParameters := OrderedCollection new.
+	offs := 0.
+
+	"Allocate self first"
+	heapSet do: [ :var |
+		var isReceiverNode ifTrue: [
+			self assert: [ var isFloatValue not ].
+			heapMap at: var put: offs.
+			heapParameters add: var.
+			offs := offs + 1
+		]
+	].
+	self assert: [(offs = 0) | (offs = 1)].
+
+	"Allocate parameters before anything else, but after receiver"
+	heapInfo add: offs.
+	heapSet do: [ :var |
+		var isParameterNode ifTrue: [
+			var isFloatValue ifTrue: [ self at: var error: var name, ' is FloatValue within context - not supported yet' ].
+			heapMap at: var put: offs.
+			heapInfo add: var name.
+			heapParameters add: var.
+			offs := offs + 1
+		]
+	].
+
+	"Allocate remaining temporaries"
+	heapSet do: [ :var |
+		var isTemporaryNode ifTrue: [
+			var isFloatValue ifTrue: [ self at: var error: var name, ' is FloatValue within context - not supported yet' ].
+			heapMap at: var put: offs.
+			heapInfo add: var name.
+			offs := offs + 1
+		]
+	]!
+
+computeHeapSet
+	"
+	Private.
+	Computes the heapSet containing the OrderedCollection of ActivationVars
+	belonging to this scope which have to be in the heap context. All the vars
+	belonging to this scope which are accessed from a real (i.e., non-inlined) sub-
+	scope that expects a context need to be in the heapSet.
+	Note: The heapSet is an OrderedCollection instead of a Set because the
+	element ordering must stay the same for a given scope independent of the
+	compilation.
+	"
+	| heapSet |
+	self assert: [ self isInlined not ].
+	heapSet := OrderedCollection new.
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					self assert: [ var isActivationVarNode ].
+					(heapSet includes: var) ifFalse: [ heapSet add: var ].
+				]
+			]
+		]
+	].
+	^ heapSet!
+
+computeMaps
+	"
+	Computes the stack & heap maps. A map maps an ActivationVar to an offset.
+	Note that though a parameter should be accessed from the stack within
+	the scope it is defined, it may also appear in the heapMap if it is used from
+	within subscopes. Usually called from the compiler before starting code
+	generation for a scope.
+	"
+	| heapSet |
+	heapSet := self computeHeapSet.
+	self computeStackMap: heapSet.
+	self computeHeapMap: heapSet.
+	mapsAreComputed := true!
+
+computeStackMap: heapSet
+	"
+	Private.
+	Computes the stackMap, i.e. an IdentityDictionary mapping
+	ActivationVars to stack locations, and stackInfo, a Collection
+	holding debugging information.
+	"
+	| incoming offs offs0 var fno fno0 p |
+	incoming := self incoming.
+	stackMap := IdentityDictionary new.
+	stackInfo := OrderedCollection new.
+	floatMap := IdentityDictionary new.
+	floatInfo := OrderedCollection new.
+	
+	"Map parameters"
+	offs := self nofParameters negated.
+	self parameters do: [ :par |
+		par isFloatValue ifTrue: [ self at: par error: par name, ' is FloatValue as parameter - not supported yet' ].
+		stackMap at: par put: offs.
+		offs := offs + 1
+	].
+
+	"Starting offset"
+	offs := 0.
+
+	"Location 0"
+	var := nil.
+	self accessesSelf
+		ifTrue: [ var := self at: #self ]
+		ifFalse: [
+			incoming = #param ifTrue: [
+				var := self superVars first
+			]
+		].
+	var notNil ifTrue: [
+		stackMap at: var put: offs.
+		"stackInfo add: var name."	"fix this & move stackInfo add: offs"
+		offs := offs + 1
+	].
+
+	"Compute starting offset"
+	offs :=
+		self allocatesContext
+			ifTrue: [ 2 ]
+			ifFalse: [
+				self isMethodScope
+					ifTrue: [ 1 ]
+					ifFalse: [ 2 ]
+				"
+				Originally this was:
+
+				(self isMethodScope or: [ incoming = #nil ])
+					ifTrue: [ 1 ]
+					ifFalse: [ 2 ]
+
+				changed so that context temp (temp0) is garantied to
+				be always there in blocks - fixes block bug in compiled
+				code reported by Urs - This should be fixed at some point
+				- gri 4/23/96
+				"
+			].
+	self containsFloatValues ifTrue: [ offs := 3 ]. "recv, temp0 & temp1"
+	fno := 0.
+
+	"Allocate local temporaries"
+	stackInfo add: offs.
+	floatInfo add: fno.
+	self temporaries do: [ :temp |
+		(heapSet includes: temp) ifFalse: [
+			temp isFloatValue
+				ifTrue: [
+					self assert: [ EnableFloatValues ].
+					self usesFloatValues.
+					floatMap at: temp put: fno.
+					floatInfo add: temp name.
+					fno := fno + 1
+				]
+				ifFalse: [
+					stackMap at: temp put: offs.
+					stackInfo add: temp name.
+					offs := offs + 1
+				]
+		]
+	].
+
+	"Compute mapping of inlined scopes"
+	offs0 := offs.
+	fno0 := fno.
+	self inlinedSubScopesDo: [ :scope |
+		p := scope addTemps: stackMap startAt: offs0 floats: floatMap startAt: fno0.
+		offs := offs max: p x.
+		fno := fno max: p y
+	].
+	nofStackTemporaries := offs.
+	nofStackFloatValues := fno!
+
+containsFloatValues
+	"
+	Private.
+	Answers true if the scope contains FloatValue expresssions;
+	answers false otherwise. A scope contains FloatValue expressions
+	if itself or an inlined block scope contains such expressions.
+	"
+	containsFloatValues ifTrue: [ ^ true ].
+	self inlinedSubScopesDo: [ :scope |
+		scope containsFloatValues ifTrue: [ ^ true ]
+	].
+	^ false!
+
+containsNLR
+	"
+	Private.
+	Answers true if the scope contains a non-local return;
+	answers false otherwise. A scope contains a non-local
+	return if it is or contains a (non-inlined) block scope that
+	contains a return.
+	"
+	self isMethodScope
+		ifTrue: [
+			self realSubScopesDo: [ :scope |
+				scope containsNLR ifTrue: [ ^ true ]
+			]
+		]
+		ifFalse: [
+			self containsReturn ifTrue: [ ^ true ].
+			self subScopes do: [ :scope |
+				scope containsNLR ifTrue: [ ^ true ]
+			]
+		].
+	^ false!
+
+containsReturn
+	^ containsReturn!
+
+doesReturn
+	containsReturn := true!
+
+end
+	^ end!
+
+hasParametersInContext
+	^ heapParameters notNil and: [ heapParameters size > 0 ]!
+
+head
+	"
+	Private.
+	Answers self or the scope into which self has been inlined.
+	"
+	| s |
+	s := self.
+	[ s isInlined ] whileTrue: [ s := s superScope ].
+	^ s!
+
+heapParameters
+	^ heapParameters!
+
+incoming
+	"
+	Answers what the scope is expected to get at run-time
+	via its activating closure. A scope may expect any of
+	the following:
+
+	#nil				the scope is 'clean', i.e. it accesses no super variable
+	#self			the only super variable accessed is the receiver
+	#param		the only super variable accessed is a parameter
+	#context		the scope expects a full context
+
+	(a super variable is any ActivationVar defined in a superScope)
+	"
+	| vars |
+	self isMethodScope ifTrue: [ ^ #self ].
+	self containsNLR ifTrue: [ ^ #context	"NLR requires a context" ].
+	vars := self superVars.
+	vars size > 1 ifTrue: [ ^ #context			"more than one superVar requires a context" ].
+	vars size = 1 ifTrue: [
+		nilOrContextOnly ifFalse: [
+			vars first isReceiverNode ifTrue: [ ^ #self			"receiver can be passed in directly" ].
+			vars first isParameterNode ifTrue: [ ^ #param		"one parameter can be passed in directly"]
+		].
+		"otherwise: context required"
+		^ #context
+	].
+	"No superVars accessed ('clean' block)"
+	^ #nil!
+
+initialize: scope
+	"
+	Private.
+	"
+	super initialize: scope.
+	(scope notNil and: [scope isCodeScope]) ifTrue: [scope addSubScope: self].
+	self subScopes: OrderedCollection new.		"no Set because order must be always the same"
+	self superVars: OrderedCollection new.			"no Set because order must be always the same"
+	accessesSelf := false.
+	containsReturn := false.
+	containsFloatValues := false.
+	isInlined := false.
+	mapsAreComputed := false.
+
+	"
+	Set this flag to true if you want to use the delta.bst with the optimizing compiler -
+	or if there is any problem with the interpretation
+	"
+	nilOrContextOnly := true!
+
+inline
+	"
+	Marks a scope as inlined. Inlined scopes disappear in the scope
+	tree if looked at via the realSubScopes and realSuperScopes
+	methods. Its superscope is becoming the (real) superscope of its
+	subscopes and vice versa. Note: The topmost CodeScope
+	(the method scope) cannot be inlined.
+	"
+	self assert: [ self isMethodScope not ].
+	self assert: [ self isInlined not ].
+	isInlined := true!
+
+inlinedSubScopesDo: block
+    "
+    Sends value: scope to block for each direct subscope
+    that has been inlined. Answers the receiver.
+    "
+    self subScopes do: [ :scope |
+        scope isInlined ifTrue: [ block value: scope ]
+    ]!
+
+isBlockScope
+	^ self isMethodScope not!
+
+isCodeScope
+	^ true!
+
+isInlineable
+	"
+	Answers true if the scope can be inlined within its superscope;
+	answers false otherwise. A scope is inlineable, if its heapset is
+	empty. The reason for not calling computeHeapSet is speed.
+
+	NB: Maybe this is too conservative (can scoes that only have
+	parameters accessed from below not be inlined? Parameters
+	can never change (e.g. self). Should think about this.
+	"
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					^ false
+				]
+			]
+		]
+	].
+	^ true!
+
+isInlined
+	^ isInlined!
+
+isMethodScope
+	"
+	Answers true if this scope is, or is inlined within,
+	the topmost CodeScope. Answers false, otherwise.
+	"
+	| s |
+	s := self head superScope.
+	^ s isNil or: [ s isCodeScope not ]!
+
+komment
+	"
+	WARNING: DO NOT TOUCH ANY OF THE CODESCOPE'S CODE UNLESS YOU FULLY
+	UNDERSTAND WHAT IS GOING ON. THIS IS MORE COMPLICATED THAN IT LOOKS.
+
+	DeltaCodeScope represent method and block scopes in the AST. They collect
+	the bindings of ActivationVars to their variable names (symbols). During the AST
+	rewrite phase, a scope may be inlined within its enclosing scope. As a consequence,
+	e.g., a scope that originally was a block scope may become a method scope
+	(if it has been inlined within the topmost code scope), and if it formerly contained
+	a NLR (non-local return), this NLR will disappear too since it became a ordinary
+	return after inlining.
+
+	Note: All information (such as containsNLR, needsSelf) is recomputed whenever
+	needed and no such information is cached; the scope stores only static source
+	infomation (doesReturn, accessesSelf) and whether it has been inlined or not.
+	That is, inlining could be undone by simply resetting the isInlined flag.
+
+
+	Instance variables:
+
+	subScopes						the set or (inlined or real) subscopes; i.e., scopes for
+											which superScope is self
+
+	superVars						the set of ActivationVars defined in any of the super
+											scopes but accessed within this or any of its subscopes
+											(transitive)
+
+	containsReturn				true if the statements belonging to this scope
+											contain a return statement; false otherwise
+
+	accessesSelf					true if any of the statements belonging to this scope
+											accesses self; false otherwise
+
+	hasFloatValues				true if the scope stores FloatValues, false otherwise.
+
+	isInlined							true if the scope is inlined; false otherwise
+
+	stackMap							an IdentityDictionary mapping temporaries allocated on the
+											stack to a stack frame offset (temporary -> offset).
+
+	floatMap							an IdentityDictionary mapping float temporaries allocated on the
+											stack to a stack frame offset (temporary -> offset).
+
+	heapMap							an IdentityDictionary mapping temporaries allocated on the
+											heap to a context ptr offset (temporary -> offset).
+
+	heapParameters				an OrderedCollection of temporaries containing all the parameters
+											that have to be copied into the heap context.
+
+	nofStackTemporaries		the number of temporaries allocated on the stack
+											(i.e. the stack size used for this scope).
+
+    begin, end						the bci range of bytecodes generated for this scope.
+											end points to the first bytocode after the scope.
+    "!
+
+map: node toHeap: heap
+	"
+	Private.
+	Maps an ActivationVarNode used in a subscope to a heap allocated
+	ActivationVar (via a context). These variables must always be
+	taken from the heap context because they're used in a subscope,
+	even though they might be on the stack too (e.g., the parameters).
+	"
+	self assert: [ node isActivationVarNode ].
+	self assert: [ self mapsAreComputed ].
+
+	self allocatesContext
+		ifTrue: [
+			(heapMap includesKey: node)
+				ifTrue: [ heap value: 0 value: (heapMap at: node) ]
+				ifFalse: [
+					self realSuperScope map: node toHeap: [ :level :offset | heap value: level + 1 value: offset ]
+				]
+		]
+		ifFalse: [
+			"no own heap context for this scope"
+			self realSuperScope map: node toHeap: heap
+		]!
+
+map: node toStack: stack toFloat: float toHeap: heap
+	"
+	Maps an ActivationVarNode to either a stack allocated or a heap
+	allocated variable (via a context). stack, float and heap are blocks
+	called with the appropriate arguments:
+
+	stack value: offset						called with the stack offset, parameters have offsets < 0
+														(last parameter has offset -1), temporaries have an offset >= 0
+														(receiver has offset 0, first temporary has offset 1).
+
+	float value: fno							called with the float number fno, floats are numbered
+														from 0 to nofFloatTemporaries - 1.
+
+	heap value: level value: offset	called with the context level (>= 0) and offset (>= 0), the context
+														in the current stack frame (stored in temp 0) has level 0
+	"
+ 	self assert: [ node isActivationVarNode ].
+	self assert: [ self mapsAreComputed ].
+
+	"stack allocated variables"
+	(stackMap includesKey: node) ifTrue: [
+		stack value: (stackMap at: node).
+		^ self
+	].
+
+	"float values allocated on the stack"
+	(floatMap includesKey: node) ifTrue: [
+		float value: (floatMap at: node).
+		^ self
+	].
+
+	"heap allocated variables"
+	self allocatesContext
+		ifTrue: [
+			(heapMap includesKey: node)
+				ifTrue: [ heap value: 0 value: (heapMap at: node) ]
+				ifFalse: [
+					self realSuperScope map: node toHeap: [ :level :offset | heap value: level + 1 value: offset ]
+				]
+		]
+		ifFalse: [
+			"no own heap context for this scope"
+			self realSuperScope map: node toHeap: heap
+		]!
+
+mapsAreComputed
+	"
+	Answers true if the ActivationVar mapping
+	(stack- and heap layout) has been computed.
+	"
+	^ mapsAreComputed!
+
+mustBeCustomizedToClass
+	"
+	Answers true if a (mixin) method needs to be compiled for
+	the class it is used in; answers false if the code can be shared.
+	For the time beeing: conservative
+	"
+	^ true!
+
+nilOrContextOnly
+	^ nilOrContextOnly!
+
+nofFloatTemporaries
+    "Answers the number of float temporaries allocated on the stack."
+
+    self assert: [ self mapsAreComputed ].
+    ^ floatMap size!
+
+nofHeapTemporaries
+    "Answers the number of temporaries to be allocated in the heap context."
+
+    self assert: [ self mapsAreComputed ].
+    ^ heapMap size!
+
+nofParameters
+	^ self parameters size!
+
+nofStackVariables
+	"
+	Answers the number of temporaries to be allocated on the stack.
+
+	Note: Within the bytecode compiler, temporaries are allocated starting at 0
+	and up, with 0 denoting the receiver. Outside (i.e. within the VM) it is always
+	assumed that the receiver is treated specially and that there is one temporary
+	allocated (in the VM starting with 0 but here starting with 1). Therefore the number
+	of stack variables is nofStackTemporaries - 1. This is probably not working
+	anymore if nilOrContextOnly is false => computation of stack map needs
+	correction at some point - should be done after bootstrap. (gri 3/13/96)
+
+	PS: When creating the debug information, a -1 correction is made also
+	to comply with the VM numbering scheme for temporaries.
+	"
+	| n |
+	self assert: [ self mapsAreComputed ].
+	self assert: [ nofStackTemporaries > 0 ].	"one temporary always for the receiver"
+	n := nofStackTemporaries - 1.
+	self containsFloatValues ifTrue: [
+		self assert: [ EnableFloatValues ].
+		n < 2 ifTrue: [ n := 2 ].					"n must be at least 2"
+		n \\ 2 ~= 0 ifTrue: [ n := n + 1]		"n must be even if there are floats on the stack"
+	].
+	^ n!
+
+nofTemporaries
+	^ self temporaries size!
+
+parameters
+	^ parameters!
+
+parameters: oc
+	self assert: [ oc isCollection ].
+	oc do: [ :par |
+		self assert: [ par isParameterNode ].
+		self assert: [ self bindings includes: par ]
+	].
+	parameters := oc!
+
+printOn: aStream
+	aStream nextPutAll: (
+		self isMethodScope
+			ifTrue: [ 'Method' ]
+			ifFalse: [ 'Block' ]
+	).
+	aStream nextPutAll: 'Scope'.
+	aStream cr ; cr.
+
+	aStream nextPutAll: 'Parameters: '.
+	self parameters do: [ :par |
+		aStream nextPutAll: par name.
+		aStream nextPut: $ .
+	].
+	aStream cr.
+
+	aStream nextPutAll: 'Temporaries: '.
+	self temporaries do: [ :temp |
+		aStream nextPutAll: temp name.
+		aStream nextPut: $ .
+	].
+	aStream cr.
+
+	aStream nextPutAll: 'SuperVars: '.
+	self superVars do: [ :var |
+		aStream nextPutAll: var name.
+		aStream nextPut: $ .
+	].
+	aStream cr.
+
+	aStream nextPutAll: 'incoming value = '.
+	self incoming printOn: aStream.
+	aStream cr.
+
+	aStream nextPutAll: 'accesses self = '.
+	accessesSelf printOn: aStream.
+	aStream cr.
+
+	aStream nextPutAll: 'allocates context = '.
+	self allocatesContext printOn: aStream.
+	aStream cr.
+
+	aStream nextPutAll: 'contains NLR = '.
+	self containsNLR printOn: aStream.
+	aStream cr.
+
+	aStream nextPutAll: 'is inlineable = '.
+	self isInlineable printOn: aStream.
+	aStream cr.
+
+	aStream nextPutAll: 'is inlined = '.
+	isInlined printOn: aStream.
+	aStream cr!
+
+realSubScopesDo: block
+    "
+    Sends value: scope to block for each (direct) real subscope of this
+    scope, i.e. to each scope for which the real super scope is self.
+    "
+    self subScopes do: [ :scope |
+        scope isInlined
+            ifTrue: [scope realSubScopesDo: block]
+            ifFalse: [block value: scope]
+    ]!
+
+realSuperScope
+    "
+    Answers the first scope in the super scope chain
+    that has not been inlined.
+    "
+    self superScope isNil ifTrue: [^ nil].
+    (self superScope isCodeScope and: [self superScope isInlined]) ifTrue: [^ self superScope realSuperScope].
+    ^ self superScope!
+
+selfDistance
+	"
+	Answers the context no. of the context which contains self
+	as context variable 0. The context no. starts with 0 for the context
+	that can be seen in this scope. It is assumed that the context for
+	this scope is already allocated if it exists at all.
+	"
+	| d |
+	self incoming = #context ifTrue: [
+		d := self realSuperScope selfDistance.
+		^ self allocatesContext
+			ifTrue: [ d + 1 ]
+			ifFalse: [ d ]
+	].
+	self assert: [ self incoming = #self ].
+	self assert: [ self allocatesContext ].
+	^ 0!
+
+subScopes
+	^ subScopes!
+
+subScopes: oc
+	self assert: [ oc isCollection ].
+	subScopes := oc!
+
+superVars
+    "
+    Answers the set of variables 'imported' from super scopes.
+    See also the comment method.
+    "
+    ^ superVars!
+
+superVars: oc
+	self assert: [ oc isCollection ].
+	superVars := oc!
+
+superVarsContainSelf
+	self superVars do: [ :var |
+		var isReceiverNode ifTrue: [ ^ true ]
+	].
+	^ false!
+
+temporaries
+	^ temporaries!
+
+temporaries: oc
+	self assert: [ oc isCollection ].
+	oc do: [ :temp |
+		self assert: [ temp isTemporaryNode ].
+		self assert: [ self bindings includes: temp ]
+	].
+	temporaries := oc!
+
+usesFloatValues
+	self assert: [ EnableFloatValues ].
+	containsFloatValues := true! !
+

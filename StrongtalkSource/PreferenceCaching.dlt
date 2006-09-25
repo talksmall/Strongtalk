@@ -1,0 +1,126 @@
+Delta define: #PreferenceCaching as: (
+Mixin superclassType: 'Visual' body: ((Class subclassOf: 'Visual' instanceVariables: 'natural <Region>	
+				min <Region>
+				max <Region>
+				'))) !
+
+(Delta mirrorFor: #PreferenceCaching) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #PreferenceCaching) group: 'base'!
+
+(Delta mirrorFor: #PreferenceCaching)
+comment: 
+'Implements geometry preference caching for visuals.
+
+Subclass responsibilities:
+
+%responsibility - preferences
+		Subclasses can compute preferences one of two ways: compute min,max, & natural all at once, or separately.
+		To compute them all at once, implement the method #computePreferences.  To compute them individually,
+		implement the three methods #computeMin, #computeMax, and #computeNatural.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #PreferenceCaching) methodsFor: 'accessing' !
+
+
+max ^<Region>
+
+	max isNil
+		ifTrue: [ self computeMax ].
+	^max!
+
+min ^<Region>
+
+	min isNil
+		ifTrue: [ self computeMin ].
+	^min!
+
+natural ^<Region>
+
+	natural isNil
+		ifTrue: [  self computeNatural ].
+	^natural! !
+
+! (Delta mirrorFor: #PreferenceCaching) methodsFor: 'private' !
+
+
+computeMax
+
+	self computePreferences!
+
+computeMin
+
+	self computePreferences!
+
+computeNatural
+
+	self computePreferences!
+
+computePreferences
+
+	self computeNatural;  computeMin; computeMax.!
+
+max: r <Region>
+
+	max := r.
+	self prefsStatus: Visual valid.!
+
+min: r <Region>
+
+	min := r.
+	self prefsStatus: Visual valid.!
+
+natural: r <Region>
+
+	natural := r.
+	self prefsStatus: Visual valid.!
+
+printStateOn: strm <CharOutputStream>
+
+	super printStateOn: strm.
+	strm putAll: ' natural= '; print: natural;
+			putAll: ' min= '; print: min;
+			putAll: ' max= '; print: max
+!
+
+skipCheckLayout ^<Boolean>
+	"This should be implemented to return true for visuals
+	    like wrappers that are too trivial to register themselves with the incremental
+		layout mechanism, so that their prefs will be
+		flushed correctly.  Otherwise, it should return false."
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #PreferenceCaching) methodsFor: 'restricted to parts' !
+
+
+prerecordPrefsIfNeeded
+
+	self prefsStatus = Visual valid
+		ifTrue: [ 	"We don't need to prerecord the prefs because we have a cache, but we need to ensure
+						  that the cache is up-to-date."
+						self min; max; natural.	]! !
+
+! (Delta mirrorFor: #PreferenceCaching) methodsFor: 'restricted-to session' !
+
+
+checkLayout: oldPrefs <SeqCltn[Region]>
+
+		"We must flush the caches so that when we we compute new prefs when they are asked for."
+	min := max := natural := nil.
+	super checkLayout: oldPrefs.! !
+
+! (Delta mirrorFor: #PreferenceCaching) methodsFor: 'control' !
+
+
+changing
+
+	super changing.
+
+	self skipCheckLayout
+		ifTrue: [	"flush our preferences"
+						min := max := natural := nil.	].! !
+

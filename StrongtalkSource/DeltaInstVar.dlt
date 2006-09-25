@@ -1,0 +1,37 @@
+Delta define: #DeltaInstVar as: (
+(Class subclassOf: 'DeltaVar' instanceVariables: 'ordinalNumber ')) !
+
+(Delta mirrorFor: #DeltaInstVar) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaInstVar) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInstVar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInstVar) classSide methodsFor: 'Unclassified' !
+
+
+declare: aName of: type inScope: scope ifThere: blk
+
+^self new name: aName type: type! !
+
+! (Delta mirrorFor: #DeltaInstVar) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaASTTool > ^ <Self>
+	aTool instVarNode: self!
+
+isInstVarNode ^ <Boolean>
+    ^ true!
+
+ordinalNumber
+
+"To be removed when constructors are in place"
+^ordinalNumber!
+
+ordinalNumber: on
+
+ordinalNumber := on! !
+

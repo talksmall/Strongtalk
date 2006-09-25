@@ -1,0 +1,82 @@
+Delta define: #SYSTEMTIME as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #SYSTEMTIME) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SYSTEMTIME) group: 'base'!
+
+(Delta mirrorFor: #SYSTEMTIME)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SYSTEMTIME) methodsFor: 'accessing' !
+
+
+structureSize ^<Int>
+
+	^8*2!
+
+wDay ^<Int>
+
+	^self doubleByteAt: self wDayOffset!
+
+wHour ^<Int>
+
+	^self doubleByteAt: self wHourOffset!
+
+wMilliseconds ^<Int>
+
+	^self doubleByteAt: self wMillisecondsOffset!
+
+wMinute ^<Int>
+
+	^self doubleByteAt: self wMinuteOffset!
+
+wMonth ^<Int>
+
+	^self doubleByteAt: self wMonthOffset!
+
+wSecond ^<Int>
+
+	^self doubleByteAt: self wSecondOffset!
+
+wYear ^<Int>
+
+	^self doubleByteAt: self wYearOffset! !
+
+! (Delta mirrorFor: #SYSTEMTIME) methodsFor: 'offsets' !
+
+
+wDayOfWeekOffset ^<Int>
+
+	^4!
+
+wDayOffset ^<Int>
+
+	^6!
+
+wHourOffset ^<Int>
+
+	^8!
+
+wMillisecondsOffset ^<Int>
+
+	^14!
+
+wMinuteOffset ^<Int>
+
+	^10!
+
+wMonthOffset ^<Int>
+
+	^2!
+
+wSecondOffset ^<Int>
+
+	^12!
+
+wYearOffset ^<Int>
+
+	^0! !
+

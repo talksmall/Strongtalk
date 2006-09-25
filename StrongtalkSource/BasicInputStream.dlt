@@ -1,0 +1,234 @@
+Delta define: #BasicInputStream as: (
+Generic forAll: 'E' body: ((Class subclassOf: 'Collection[E]' instanceVariables: 'havePeeked <Boolean>	"If true, then peekVal is the next element"
+peekVal <E>
+		') protocols: 'InputStream[E]'; abstract)) !
+
+(Delta mirrorFor: #BasicInputStream) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #BasicInputStream) group: 'base'!
+
+(Delta mirrorFor: #BasicInputStream)
+comment: 
+'This class provides the standard implementation of the InputStream protocol.  It implements all functionality
+in terms of the two messages #actualNext and #actualAtEnd, which subclasses must provide.
+
+Note that streams support all collection operations.  However, when using collection messages with
+streams, the caller must be aware that iteration on a stream changes the state of the stream, so that
+iterations are not repeatable.  Also, care must be taken with infinite streams, since most collection
+messages will not terminate on their own for infinite streams.
+
+%responsibility #newCollectionOfSize:
+    Optionally override
+%responsibility #close
+    Close must be reimplemented if any work must be done when the stream is closed.
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #BasicInputStream) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #BasicInputStream) classSide methodsFor: 'testing' !
+
+
+test: s <InputStream[E]> containing: els <SeqCltn[E]>
+
+	| c <InputStream[E]> |
+	c := s copy.
+	self test: 1 is: [ c contentsRemaining = els ].
+	c := s copy.
+	1 to: els size - 1 do: [ :i <Int> |
+		self test: 2 is: [ c next = (els at: i) and: [ c atEnd not ] ].		].
+	self test: 3 is: [ c peek = (els at: els size) and: [ c atEnd not ] ].
+	self test: 4 is: [ c peek = (els at: els size) and: [ c atEnd not ] ].
+	self test: 5 is: [ c next = (els at: els size) and: [ c atEnd ] ].
+	c := s copy.
+	self test: 6 is: [ (c next: els size) = els ].
+	self test: 7 is: [ (s skipTo: nil) not ].! !
+
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'private-constants' !
+
+
+defaultExpected ^<Int>
+	^10! !
+
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'private' !
+
+
+accumulateUntil: predicate <[^Boolean]>  ^<SeqCltn[E]>
+
+	| build <ReadWriteStream[E]> |
+
+	build := self newBuildStream.
+	[ predicate value ]
+		whileFalse: [	build nextPut: self next   ].
+	^build contentsWritten!
+
+actualAtEnd ^<Boolean>
+	"Test whether there are elements remaining in the stream, disregarding peekVal"
+
+	self subclassResponsibility!
+
+actualNext ^<E>
+	"Return the next element of the stream, disregarding peekVal"
+
+	self subclassResponsibility!
+
+atEndOrPeekIs: delimiter <Object> ^<Boolean>
+
+	^(self peekIfAbsent: [ ^true ]) = delimiter!
+
+havePeeked ^<Boolean>
+	^havePeeked!
+
+havePeeked: f <Boolean>
+
+	f ifFalse: [ peekVal := nil ].
+	havePeeked := f.!
+
+newBuildStream ^<ReadWriteStream[E]>
+	"Returns a readwrite stream to be used for accumulating elements
+	 for the various contents messages, etc."
+
+	^BasicReadWriteStream[E] on: (self newCollectionOfSize: self defaultExpected)!
+
+newCollectionOfSize: n <Int> ^<VarSeqCltn[E]>
+	"Create and return a new collection of a class appropriate for
+	 holding elements of this stream.  By overriding this, subclasses
+	can customize the kind of collection returned by the various
+	contents messages, as well as #upTo:, etc."
+
+	^Array[E] new: n!
+
+nextFromPeek ^<E>
+
+	| v <E> |
+	v := self peekVal.
+	self	noPeekVal.
+	^v!
+
+noPeekVal
+
+	havePeeked := false.
+	peekVal := nil!
+
+peekVal ^<E>
+	^peekVal!
+
+peekVal: e <E> 
+	peekVal := e! !
+
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'accessing' !
+
+
+atEnd ^<Boolean>
+
+	^self havePeeked
+		ifTrue: [ false ]
+		ifFalse: [ self actualAtEnd ]!
+
+contentsRemaining ^<SeqCltn[E]>
+
+	^self accumulateUntil: [ self atEnd ]!
+
+do: f <[E]> 
+
+	[ self atEnd ]
+		whileFalse: [ f value: self next ]!
+
+next ^<E>
+
+	^self havePeeked
+		ifTrue: [ self nextFromPeek ]
+		ifFalse: [ self actualNext ]!
+
+next: nElements <Int>  ^<SeqCltn[E]>
+
+	| cltn <VarSeqCltn[E]> |
+
+	cltn := self newCollectionOfSize: nElements.
+	1 to: nElements do: [ :i <Int> |
+		self atEnd
+			ifTrue: [ self error: 'Not enough elements' ].
+		cltn at: i put: self next.	].
+	^cltn!
+
+nextIfAbsent: f <[^X def]> ^<E | X>
+
+	^self havePeeked
+		ifTrue: [ self nextFromPeek ]
+		ifFalse: [ self actualAtEnd
+							ifFalse: [ self actualNext ]
+							ifTrue: [ ^f value ]	 ]!
+
+nextMatchFor: o <Object> ^<Boolean>
+
+	^self next = o!
+
+peek ^<E>
+
+	self havePeeked
+		ifFalse: [	self peekVal: self actualNext.
+				self havePeeked: true.	 ].
+	^self peekVal!
+
+peekFor: o <Object> ^<Boolean>
+
+	^self peek = o
+		ifTrue: [	self next.
+				true	]
+		ifFalse: [	false ]!
+
+peekIfAbsent: f <[^X def]>  ^<E | X>
+
+	self havePeeked
+		ifFalse: [	self actualAtEnd
+							ifTrue: [ ^f value ].
+						self peekVal: self actualNext.
+						self havePeeked: true.	 ].
+	^self peekVal!
+
+skip: nElements <Int>
+
+	nElements timesRepeat: [ self next ]!
+
+skipTo: o <Object> ^<Boolean>
+
+	[ self atEnd ] whileFalse: [ 
+			self next = o
+				ifTrue: [ ^true ]	].
+	^false!
+
+upTo: delimiter <Object> ^<SeqCltn[E]>
+
+	| s <SeqCltn[E]> |
+	s := self accumulateUntil: [ self atEndOrPeekIs: delimiter ].
+	self nextIfAbsent: [ ].
+	^s! !
+
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'control' !
+
+
+close
+	"by default, do nothing"! !
+
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self havePeeked: false.! !
+
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm	nextPutAll: self class name! !
+

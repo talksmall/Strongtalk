@@ -1,0 +1,30 @@
+Delta define: #BasicDeclaredProtocolUpdateData as: (
+(Class subclassOf: 'BasicProtocolUpdateData' instanceVariables: 'protocolValue ')) !
+
+(Delta mirrorFor: #BasicDeclaredProtocolUpdateData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicDeclaredProtocolUpdateData) group: 'ast'!
+
+(Delta mirrorFor: #BasicDeclaredProtocolUpdateData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicDeclaredProtocolUpdateData) methodsFor: 'Unclassified' !
+
+
+name ^ <Symbol>
+
+^ self protocolValue name!
+
+protocolValue ^ <Protocol>
+
+^protocolValue
+!
+
+value: v <Protocol >superprotocol: sp <Protocol >delta: d <ProtocolData >branded: b <Boolean >subtype: subT <Boolean > typeOfInstances: t <Protocol >  ^ <Self>
+ 
+protocolValue := v.
+super  name: v name superprotocol: sp  delta: d  branded: b subtype: subT typeOfInstances: t.
+! !
+

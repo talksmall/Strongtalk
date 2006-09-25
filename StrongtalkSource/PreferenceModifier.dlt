@@ -1,0 +1,90 @@
+Delta define: #PreferenceModifier as: (
+(Class subclassOf: 'PreferenceCaching |> VisualWrapper' instanceVariables: 'prefsBlock <[PreferenceModifier]>
+		"Is called whenever the preferences need to be computed.  The block takes the receiver
+			as its argumetn, and should compute
+	      the min,max, and natural, and use the #natural:min:max: message to store
+		  them in the receiver."
+gridBlock <[PreferenceModifier,Point, ^Rectangle]>
+	')) !
+
+(Delta mirrorFor: #PreferenceModifier) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #PreferenceModifier) group: 'ui'!
+
+(Delta mirrorFor: #PreferenceModifier)
+comment: 
+'Modifies the preferences of its child based on a block that computes the new 
+preferences.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 
+'!
+
+! (Delta mirrorFor: #PreferenceModifier) methodsFor: 'accessing' !
+
+
+continuousGridFor: p <Point> ^<Rect>
+
+	"This method is here to make the inherited method public"
+	^super continuousGridFor: p!
+
+gridBlock ^<[PreferenceModifier,Point, ^Rectangle]>
+
+	^gridBlock!
+
+gridBlock: b <[PreferenceModifier,Point, ^Rectangle]>
+
+	gridBlock := b!
+
+natural: nat <Region> min: mn <Region> max: mx <Region>
+
+	self natural: nat; min: mn; max: mx!
+
+newNatural: nat <Rect>
+	"This sets the prefsBlock to one that changes the natural size of the child only.  The min and max are left the
+		same, other than making sure that min <= natural <= max."
+
+	self prefsBlock:
+		[ :pm <PreferenceModifier> |
+			self
+				natural: nat
+				min: (pm part min enclosingRect intersect: nat)
+				max: (pm part max enclosingRect merge: nat).
+		]!
+
+prefsBlock ^<[PreferenceModifier]>
+
+	^prefsBlock!
+
+prefsBlock: blk <[PreferenceModifier]>
+
+	prefsBlock := blk! !
+
+! (Delta mirrorFor: #PreferenceModifier) methodsFor: 'private' !
+
+
+computePreferences
+
+	self prefsBlock value: self!
+
+skipCheckLayout ^<Boolean>
+
+	^false! !
+
+! (Delta mirrorFor: #PreferenceModifier) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self prefsBlock:
+		[ :pm <PreferenceModifier> |
+			pm	natural: pm part natural
+					min: pm part min
+					max: pm part max ].
+	self gridBlock:
+		[ :pm <PreferenceModifier> :loc <Point> |
+			pm part gridFor: loc ]! !
+

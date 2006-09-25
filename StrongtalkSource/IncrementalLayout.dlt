@@ -1,0 +1,113 @@
+Delta define: #IncrementalLayout as: (
+Mixin superclassType: 'Visual' body: ((Class subclassOf: 'Visual' instanceVariables: 'needsFullLayout <Boolean>
+		"If this is true, then major changes have been made that will defeat any
+			optimized incremental layout algorithm (i.e. the preferences have changed, etc.)."
+	optimizeIncrementalLayout <Boolean>
+		"If false, defeat incremental layout optimizations"
+	'))) !
+
+(Delta mirrorFor: #IncrementalLayout) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #IncrementalLayout) group: 'base'!
+
+(Delta mirrorFor: #IncrementalLayout)
+comment: 
+'This can be mixed into Visuals to add hooks to do incremental layout
+optimization.  The full optimization layout should be implement by the #layout method,
+as usual.
+
+%optional changingALot
+	  use (self changing) when minor things change, but use (self changingALot) when major things
+	  that can''t be dealt with incrementally happen.  This will force a complete layout rather than
+	  an incremental one (layout rather than tryIncrementalLayout will be called).
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #IncrementalLayout) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initIncrementalLayoutFlags! !
+
+! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'initialization' !
+
+
+initIncrementalLayoutFlags
+
+	needsFullLayout := true.
+	optimizeIncrementalLayout := false.! !
+
+! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'private' !
+
+
+layout
+
+	super layout.
+	needsFullLayout := false.!
+
+needsFullLayout ^<Boolean>
+
+	^needsFullLayout!
+
+runIncrementalLayout ^<Boolean>
+
+	| result <Boolean> |
+	result := self tryIncrementalLayout.
+	self session debugIncrementalLayout
+		ifTrue: [ Platform errorStream show: 'tried incremental layout on ', self class name; show: ' : '; print: result; cr. ].
+	result
+		ifTrue: [ self layoutComplete ].
+	^result!
+
+tryIncrementalLayout ^<Boolean>
+	"This method must be implemented to perform the incremental layout.  It will only be sent when the receiver
+	    has previously been layed out.  If during incremental layout you find that a change significant enough to change
+		the receivers preferences has occured, then the incremental layout should be abandoned, and false should be
+		returned.  A true return value signals successful incremental layout. 
+		You can test child visuals to see if they are candidates for incremental layout by testing their
+		layout status.  Children whose preferences have changed in place will respond true to the
+		#needsRelayout message.  You can then lay them out individually by setting their allocation
+		as normal using #allocation:at:.  You must also invalidate any affected regions if layout succeeds.
+		"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'restricted-to session' !
+
+
+checkLayout: oldPrefs <SeqCltn[Region]>
+
+	(self layoutStatus = Visual invalid
+				or: [ self needsFullLayout
+				or: [ self optimizeIncrementalLayout not
+				or: [ self runIncrementalLayout not ]]])
+		ifTrue: [ super checkLayout: oldPrefs ]
+		ifFalse: [ self prefsStatus: Visual valid ].! !
+
+! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'control' !
+
+
+changingALot
+	"Like #changing, but also sets a flag that can be tested with #needsFullLayout during relayout
+		to indicate that a full layout is needed"
+
+	self changing.
+	needsFullLayout := true.
+	self layoutStatus = Visual valid
+		ifTrue: [ self layoutStatus: Visual needsRelayout ]! !
+
+! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'accessing' !
+
+
+optimizeIncrementalLayout ^<Boolean>
+
+	^optimizeIncrementalLayout!
+
+optimizeIncrementalLayout: f <Boolean>
+
+	self changing.
+	optimizeIncrementalLayout := f.! !
+

@@ -1,0 +1,341 @@
+Delta define: #CompositeVisual as: (
+Generic forAll: '(SUB covar) <Visual> ' body: ((Class subclassOf: 'CompositeRegion mixin |> Visual' instanceVariables: '') protocols: 'VisualParent'; abstract)) !
+
+(Delta mirrorFor: #CompositeVisual) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #CompositeVisual) group: 'ui'!
+
+(Delta mirrorFor: #CompositeVisual)
+comment: 
+'Implements the basic algorithms for managing subvisuals of type SUB.
+
+Composites can draw a ''backdrop'' if desired behind their children.  The backdrop must cover the enclosedRect of the
+allocation when painted.  If that is not suitable, the backdrop should be reified and made one of the children, not
+by the backdrop feature of this class.
+
+%todo: see if I should remove the CompositeRegion mixin; just treat this like a single region.
+
+Subclass responsibilities:
+
+%responsibility - parenting - When new subvisuals are introduced, they must be sent #parent:id:, and when
+	they are removed, they must be sent noParent.
+
+%fulfills #attachedOn: #detaching #release - must be forwarded to any subvisuals.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	self displaySubvisualsOn: can.! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'private' !
+
+
+directChildContaining: v <Visual>  ^<Visual>
+
+	^v parentThatIsDirectChildOf: self!
+
+displaySubvisualsOn: can <Canvas>
+
+	self optimizeOverlappedRendering
+		ifFalse: [ self displaySubvisualsUsingPaintersAlgorithmOn: can ]
+		ifTrue: [ self displaySubvisualsWithSomeClippingOn: can ]!
+
+displaySubvisualsUsingPaintersAlgorithmOn: can <Canvas>
+
+	self near: can pruningRegion doFromBack:
+		[ :sub <Visual> |
+			sub displayOn: can ]!
+
+displaySubvisualsWithSomeClippingOn: can <Canvas>
+
+	"%todo: This should render as follows: make composites support at: & size, and then use a
+	  recursive algorithm starting with the frontmost potentially intersecting: build a conservative
+	  disjunction region between the pruning & rendering regions (ie. build a region that is sure to contain
+	  all the areas of the pruning region outside of the rendering region, but might include some of the
+	  rendering region), and then if it is not an empty region, first recursively do the same thing using the
+	  disjunction as the pruning region for ones behind, and then render the current one against the original
+	  pruning region"
+
+	self unimplemented!
+
+hasBackdrop ^<Boolean>
+	"By default there is no backdrop"
+
+	^false!
+
+propagateSession
+
+	self do:
+		[ :part <SUB> |
+			part session: self session ].!
+
+subregionsDo: f <[Region]>
+
+	"We use the simplification that if there is a backdrop, it subsumes all the other children, so they
+     don't need to be enumerated (at least for region operations)"
+	self hasBackdrop
+		ifTrue: [	"We use the allocation's enclosed rect because that is what the backdrop must
+							exactly cover even in the remote case that the allocation is not rectangular"
+							f value: self allocation enclosedRect ]
+		ifFalse: [	self halt. "%bug: we have to translate the subs by their positions"
+						self doFromFront: 
+							[ :sub <Region> |
+								f value: sub 	]]! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'private-testing' !
+
+
+isRectangularAndOpaque ^<Boolean>
+
+	^self hasBackdrop!
+
+optimizeOverlappedRendering ^<Boolean>
+
+	"By default, we use the painter's algorithm"
+	^false! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'notification' !
+
+
+detaching
+
+	self isNonLocal
+		ifTrue: [	self do:
+							[ :child <SUB> |
+								child detaching ].
+						super detaching.	]
+		ifFalse: [ super detaching ]!
+
+nativePositionChanged
+
+	self isNonLocal
+		ifTrue: [ self doFromFront:
+						[ :child <SUB> |
+							child nativePositionChanged ]	]! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'control' !
+
+
+release
+
+	self doFromFront:
+		[ :sub <Visual> |
+			sub release ].
+	super release.! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'restricted-to parts' !
+
+
+invalidate: r <Region> forChild: child <Visual>
+
+	self invalidate: (self translateRect: r enclosingRect fromChild: child)!
+
+parentVisualOfChild ^<Visual>
+
+	^self!
+
+popUpMenuIfAbsent: f <[^X def]> ^<Menu | X>
+
+	^self parent popUpMenuIfAbsent: f!
+
+positionInContainingNativeWindowOf: child <Visual> ^<Point>
+
+	^self translate: self positionInContainingNativeWindow
+			fromChild: child!
+
+positionInTopWindowOf: child <Visual>
+
+	^self translate: self positionInTopWindow
+			fromChild: child! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'accessing' !
+
+
+partAt: childId <Int> ^<Visual>
+	"Return the child designated by the id"
+
+	"By default, this numbers the children in order"
+	| c <Int> |
+	c := 1.
+	self doFromFront:
+		[ :v <Visual> |
+			c = childId ifTrue: [ ^v ].
+			c := c + 1.		].
+	self shouldNotHappen.! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'iterating' !
+
+
+do: f <[SUB]>
+	"Iterate over the subvisuals, in an order that would make as much sense as possible
+	  to a user (i.e. tab order).  Subclasses can override this to change the order if necessary"
+
+	self doFromFront: f!
+
+doFromBack: f <[SUB]>
+	"Iterate over the subvisuals from back (away from the viewer in the z direction) to front"
+
+	self subclassResponsibility!
+
+doFromFront: f <[SUB]>
+	"Iterate over the subvisuals that might intersect r 
+	  from front (closest to the viewer in the z direction) to back"
+
+	self subclassResponsibility!
+
+near: r <Region> doFromBack: f <[SUB]>
+	"Iterate over the subvisuals that might intersect r (in local coordinates)
+	  from back (away from the viewer in the z direction) to front"
+
+	self doFromBack: 
+		[ :sub <Visual> |
+			(sub inParentMightIntersect: r)
+				ifTrue: [ f value: sub ]  ].!
+
+near: r <Region> doFromFront: f <[SUB]>
+	"Iterate over the subvisuals that might intersect r 
+	  from front (towards the viewer in the z direction) to back"
+
+	self doFromFront: 
+		[ :sub <Visual> |
+			(sub inParentMightIntersect: r)
+				ifTrue: [ f value: sub ]  ].! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'input focus' !
+
+
+focusCandidatesDo: blk <[Visual]>
+	"Iterate over the visuals that are willing to accept the input focus, in tab order.  This can be overriden"
+
+	super focusCandidatesDo: blk.
+	self do:
+		[ :sub <Visual> |
+			sub focusCandidatesDo: blk ]! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	"Composite visuals try to forward this message to the child that contains the
+      focus.  If processing in the receiver is desired, this method can be extended
+	  by subclasses."
+
+	^(self == focus or: [ ev isGrabbed ])
+		ifFalse: [	(self directChildContaining: focus)
+							character: c focus: focus event: ev  ]
+		ifTrue: [ false ]!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	"Composite visuals try to forward this message to the child that contains the
+      focus.  If processing in the receiver is desired, this method can be extended
+	  by subclasses."
+
+	^(self == focus or: [ ev isGrabbed ])
+		ifFalse: [	(self directChildContaining: focus)
+							keyDown: key focus: focus event: ev  ]
+		ifTrue: [ false ]!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	"Composite visuals try to forward this message to the child that contains the
+      focus.  If processing in the receiver is desired, this method can be extended
+	  by subclasses."
+
+	^(self == focus or: [ ev isGrabbed ])
+		ifFalse: [	(self directChildContaining: focus)
+							keyUp: key focus: focus event: ev  ]
+		ifTrue: [ false ]!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	| child <Visual> |
+
+	child := self childIntersecting: loc
+			ifAbsent: [ ^self nonChildMouseEvent: type at: loc event: ev ].
+	^self forChild: child mouseEvent: type at: loc event: ev! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'private-event handling for children' !
+
+
+forChild: child <Visual> mouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
+	"Sent for composite visuals when the event hits a child.  The loc is in the receiver's coordinates."
+
+	"By default, we pass the event to the child, after transforming the location."
+	^child	mouseEvent: type
+				at: (self translate: loc toChild: child)
+				event: ev! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'private-event handling for receiver' !
+
+
+nonChildMouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
+	"Sent for composite visuals when the event hits the background, not a child"
+
+	"By default, we do nothing with this"
+	^false! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'hit testing' !
+
+
+childIntersecting: loc <Point> ifAbsent: blk <[^X def]> ^<SUB | X>
+
+	self near: (loc corner: (loc x + 1) @ (loc y + 1)) doFromFront:
+		[ :child <SUB> |
+			(child inParentContainsPoint: loc)
+				ifTrue: [ ^child ]  ].
+	^blk value! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream> indent: level <Int>
+
+	super dumpOn: strm indent: level.
+
+	self do: [ :child <SUB> |
+					child dumpOn: strm indent: level + 1.	].! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'translation' !
+
+
+translate: p <Point> fromChild: child <Visual> ^<Point>
+
+	"Translate p from the child's coordinates to ours"
+	^p translatedBy: child position!
+
+translate: p <Point> toChild: child <Visual> ^<Point>
+
+	"Translate p from our coordinates to the child's"
+	^p relativeTo: child position!
+
+translateRect: r <Rect> fromChild: child <Visual> ^<Rect>
+
+	"Translate p from the child's coordinates to ours"
+	^r translatedBy: child position!
+
+translateRect: r <Rect> toChild: child <Visual> ^<Rect>
+
+	"Translate p from the child's coordinates to ours"
+	^r relativeTo: child position! !
+
+! (Delta mirrorFor: #CompositeVisual) methodsFor: 'core sampler' !
+
+
+drillAt: loc <Point> for: sampler <CoreSampler>
+	| child <Visual> |
+
+	super drillAt: loc for: sampler.
+	child := self childIntersecting: loc
+			ifAbsent: [ ^self ].
+	child drillAt: (self translate: loc toChild: child) for: sampler.! !
+

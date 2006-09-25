@@ -1,0 +1,98 @@
+Delta define: #OPENFILENAME as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #OPENFILENAME) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #OPENFILENAME) group: 'base'!
+
+(Delta mirrorFor: #OPENFILENAME)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #OPENFILENAME) methodsFor: 'accessing' !
+
+
+Flags ^<ExternalData>
+
+	^self externalDataAt: self FlagsOffset!
+
+Flags: v <ExternalData>
+
+	self externalDataAt: self FlagsOffset put: v!
+
+hwndOwner: v <ExternalData>
+
+	self externalDataAt: self hwndOwnerOffset put: v!
+
+lStructSize: v <Int>
+
+	self smallIntegerAt: self lStructSizeOffset put: v!
+
+lpstrFile: v <ExternalData>
+
+	self externalDataAt: self lpstrFileOffset put: v!
+
+lpstrFilter: v <ExternalData>
+
+	self externalDataAt: self lpstrFilterOffset put: v!
+
+lpstrInitialDir: v <ExternalData>
+
+	self externalDataAt: self lpstrInitialDirOffset put: v!
+
+lpstrTitle: v <ExternalData>
+
+	self externalDataAt: self lpstrTitleOffset put: v!
+
+nFilterIndex: v <Int>
+
+	self smallIntegerAt: self nFilterIndexOffset put: v!
+
+nMaxFile: v <Int>
+
+	self smallIntegerAt: self nMaxFileOffset put: v!
+
+structureSize ^<Int>
+
+	^(18*Platform wordSize)+(2 *(Platform wordSize // 2))! !
+
+! (Delta mirrorFor: #OPENFILENAME) methodsFor: 'offsets' !
+
+
+FlagsOffset ^<Int>
+
+	^52!
+
+hwndOwnerOffset ^<Int>
+
+	^4!
+
+lStructSizeOffset ^<Int>
+
+	^0!
+
+lpstrFileOffset ^<Int>
+
+	^28!
+
+lpstrFilterOffset ^<Int>
+
+	^12!
+
+lpstrInitialDirOffset ^<Int>
+
+	^12!
+
+lpstrTitleOffset ^<Int>
+
+	^48!
+
+nFilterIndexOffset ^<Int>
+
+	^24!
+
+nMaxFileOffset ^<Int>
+
+	^32! !
+

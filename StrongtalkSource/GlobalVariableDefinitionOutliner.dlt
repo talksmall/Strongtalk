@@ -1,0 +1,86 @@
+Delta define: #GlobalVariableDefinitionOutliner as: (
+(Class subclassOf: 'CodeApp |> MirrorOutliner[GlobalVariableMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlobalVariableDefinitionOutliner) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #GlobalVariableDefinitionOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #GlobalVariableDefinitionOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GlobalVariableDefinitionOutliner) methodsFor: 'private' !
+
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: 'Declared type' painter: self sectionPainter) asVisual.
+
+!
+
+codeViewClass ^ <CodeView class>
+
+^TypedCodeView!
+
+declaredTypeAsCharGlyphs ^ <CharGlyphs>
+
+	| painter <Painter> |
+	painter := self useRichTextForSources 
+		ifTrue: [ 		self typeExpressionPainter ]
+		ifFalse: [	self codePainter ].
+	^self standardTextForString: self mirror declaredTypeString painter: painter
+!
+
+declaredTypeView ^ <TextView[Str]>
+
+	^self codeView!
+
+declaredTypeView: v<TextView[Str]>
+
+	self codeView:  v!
+
+initialOpenState ^ <Boolean>
+
+	^true
+!
+
+setCodeView
+
+	self codeView: (self buildCodeViewGetModel: [ self declaredTypeAsCharGlyphs ]
+									setModelOnSuccess: [ :blk <[]> | self storeDeclaredTypeAndOnSuccess: blk ]).!
+
+storeDeclaredTypeAndOnSuccess: blk <[]>
+		
+	| dt <Str> |
+	self deltaHack.
+	dt := self charGlyphModelAsString: self declaredTypeView.
+	self mirror declaredType: dt 
+						ifFail: [:s <Str> :i <Int> | 
+									self error: s.
+									].
+	blk value.
+! !
+
+! (Delta mirrorFor: #GlobalVariableDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #declaredType
+			ifTrue: [	self declaredTypeView notNil 
+								ifTrue: [	self declaredTypeView model: self declaredTypeAsCharGlyphs ] ]
+	]! !
+
+! (Delta mirrorFor: #GlobalVariableDefinitionOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <GlobalVariableLocator>
+
+^GlobalVariableLocator new id: self mirror name!
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+^self! !
+

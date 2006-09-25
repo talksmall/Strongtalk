@@ -1,0 +1,46 @@
+Delta define: #SieveBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: '')) !
+
+(Delta mirrorFor: #SieveBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SieveBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #SieveBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SieveBenchmark) methodsFor: 'misc' !
+
+
+run
+	| size iter flags prime k |
+	size := 8190.
+	iter := 10.
+	flags := (Array new: size + 1)
+				atAllPut: true.
+	iter timesRepeat: [
+		0 to: size do: [:i | (flags at: i + 1) ifTrue: [
+			prime := i + i + 3.
+			k := i + prime.
+			[k <= size] whileTrue: [
+				flags at: k put: false.
+				k := k + prime]]]]
+	"SieveBenchmark new run"! !
+
+! (Delta mirrorFor: #SieveBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^198!
+
+factor
+	^8!
+
+name
+	^#Sieve!
+
+parcplaceTime
+	^218! !
+

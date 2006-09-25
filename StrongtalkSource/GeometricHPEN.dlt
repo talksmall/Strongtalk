@@ -1,0 +1,96 @@
+Delta define: #GeometricHPEN as: (
+(Class subclassOf: 'HPEN' instanceVariables: 'lineWidth <Int>
+endStyle <Symbol>
+joinStyle <Symbol>') classVariables: 'GeometricPens <VarDict[GeometricHPEN,GeometricHPEN]>
+			"The canonical geometric pens"
+		') !
+
+(Delta mirrorFor: #GeometricHPEN) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #GeometricHPEN) group: 'base'!
+
+(Delta mirrorFor: #GeometricHPEN)
+comment: 
+'A handle for an extended Win32 Geometric pen
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #GeometricHPEN) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	GeometricPens := Dictionary[GeometricHPEN,GeometricHPEN] new.! !
+
+! (Delta mirrorFor: #GeometricHPEN) classSide methodsFor: 'instance creation' !
+
+
+sharedWithPaint: p <Paint>
+width: w <Int>
+style: s <Symbol>
+joinStyle: join <Symbol>
+endStyle: end <Symbol>
+^<GeometricHPEN>
+
+	| inst <GeometricHPEN> |
+	inst := GeometricHPEN new initPaint: p width: w style: s joinStyle: join endStyle: end.
+	^self cosmeticPens at: inst
+		ifAbsent: [	inst := inst buildCanonicalGeometricHPEN.
+							self geometricPens at: inst put: inst.
+							inst  ]! !
+
+! (Delta mirrorFor: #GeometricHPEN) classSide methodsFor: 'private' !
+
+
+geometricPens ^<VarDict[GeometricHPEN,GeometricHPEN]>
+
+	^GeometricPens! !
+
+! (Delta mirrorFor: #GeometricHPEN) methodsFor: 'private' !
+
+
+equalsInstance:  other <Object> ^<Boolean>
+	"compare to another instance guaranteed by the caller to be of the same class as self"
+
+	^(super equalsInstance: other)
+		and: [	| otherPen <GeometricHPEN> |
+					otherPen := guaranteed <GeometricHPEN> other.
+					self lineWidth = otherPen lineWidth
+						and: [ self endStyle = otherPen endStyle
+						and: [ self joinStyle = otherPen joinStyle ]	] ]! !
+
+! (Delta mirrorFor: #GeometricHPEN) methodsFor: 'initialization' !
+
+
+buildCanonicalGeometricHPEN
+
+	self unimplemented!
+
+initPaint: p <Paint> width: w <Int> style: s <Symbol> joinStyle: join <Symbol> endStyle: end <Symbol>
+
+	super initPaint: p style: s.
+	lineWidth := w.
+	endStyle := end.
+	joinStyle := join.! !
+
+! (Delta mirrorFor: #GeometricHPEN) methodsFor: 'accessing' !
+
+
+endStyle ^<Symbol>
+
+	^endStyle!
+
+hash ^<Int>
+
+	^super hash bitXor: self lineWidth hash!
+
+joinStyle ^<Symbol>
+
+	^joinStyle!
+
+lineWidth ^<Int>
+
+	^lineWidth! !
+

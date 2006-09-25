@@ -1,0 +1,122 @@
+Delta define: #Boolean as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Boolean) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #Boolean) group: 'base'!
+
+(Delta mirrorFor: #Boolean)
+comment: 
+'Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+'!
+
+! (Delta mirrorFor: #Boolean) methodsFor: 'operations' !
+
+
+& other <Boolean>	^<Boolean>
+	"and"
+
+	self subclassResponsibility!
+
+eqv: other <Boolean>	^<Boolean>
+	"equivalence (obsolete; use = instead)"
+
+	^self == other!
+
+not ^<Boolean>
+
+	self subclassResponsibility!
+
+xor: other <Boolean>	^<Boolean>
+	"exclusive-or"
+
+	^self ~~ other!
+
+| other <Boolean>	^<Boolean>
+	"or"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Boolean) methodsFor: 'control' !
+
+
+&& f <[^Boolean]>	^<Boolean>
+	"Synonym for and:"
+
+	self subclassResponsibility!
+
+and: f <[^Boolean]>	^<Boolean>
+	self subclassResponsibility!
+
+ifFalse: then <[]> ^<Object>
+	self subclassResponsibility!
+
+ifFalse: then <[^X def]> ifTrue: else <[^Y def]> ^<X|Y>
+	self subclassResponsibility!
+
+ifTrue: then <[]> ^<Object>
+	self subclassResponsibility!
+
+ifTrue: then <[^X def]> ifFalse: else <[^Y def]> ^<X|Y>
+	self subclassResponsibility!
+
+or: f <[^Boolean]>	^<Boolean>
+	self subclassResponsibility!
+
+|| f <[^Boolean]>	^<Boolean>
+	"Synonym for or:"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Boolean) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+	^self! !
+
+! (Delta mirrorFor: #Boolean) methodsFor: 'converting' !
+
+
+asExternalData ^<Int>
+	"Convert to C boolean representation"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Boolean) methodsFor: 'utility' !
+
+
+onFalse: blk <[^Object]>  ^<Boolean>
+	"Like onTrue:, but evaluates block when false."
+
+	self subclassResponsibility!
+
+onTrue: blk <[^Object]>  ^<Boolean>
+	"Like ifTrue: except that the receiver is returned.  This is sometimes useful when an expensive
+	  side effect is needed based on the result of (a conditional expression whose
+	  result must be returned or preserved), and where factoring out parts of the conditional expression
+	  would obfusticate the control flow.   Example:  
+
+				^<john can run a marathon>
+						onTrue: [ <john, run marathon> ] 
+
+	  is prettier (some think) than any of the alternatives:
+
+		1) 	^<john can run a marathon>
+						ifTrue: [ <john, run marathon>.
+									  true ]
+						ifFalse: [ false ]
+
+		2)		| result <Boolean> |
+				result :=  <john can run a marathon>.
+				result
+					ifTrue: [ <john, run marathon> ].
+				^result
+
+		3)		^<john can run a marathon> and: [ <john, run marathon>.  true ]
+	  "
+
+	self subclassResponsibility! !
+

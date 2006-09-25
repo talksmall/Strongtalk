@@ -1,0 +1,66 @@
+Delta define: #DeltaCodeBody as: (
+(Class subclassOf: 'DeltaASTNode' instanceVariables: 'parameters temporaries statements scope ')) !
+
+(Delta mirrorFor: #DeltaCodeBody) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaCodeBody) group: 'ast'!
+
+(Delta mirrorFor: #DeltaCodeBody)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaCodeBody) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool codeBodyNode: self!
+
+body ^ <DeltaStatementList>
+    "Should go away: use statements - gri"
+    self halt.
+    ^ statements!
+
+isCodeBodyNode ^ <Boolean>
+    ^true!
+
+isEmpty  ^ <Boolean>
+    ^self statements isEmpty!
+
+parameters  ^ <OrdCltn[VarDecl]>
+    ^ parameters!
+
+parameters: pars temporaries: temps statements: stats scope: s
+    self assert: [pars isCollection].
+    self assert: [temps isCollection].
+    self assert: [stats isCollection].
+    parameters := pars.
+    temporaries := temps.
+    statements := stats.
+    scope := s!
+
+scope ^ <DeltaScope>
+    ^ scope!
+
+statements
+    ^ statements!
+
+temporaries  ^ <OrdCltn[VarDecl]>
+    ^ temporaries!
+
+type ^ <ObjectType>
+
+    | lastStatementType <ObjectType>  |
+
+    self temporaries do:[:t <VarDecl>  | t type wellFormed].
+
+	"Parameters are not typechecked here. For method bodies, the parameters are
+	copied from the signature and are checked there. For block bodies, the parameters
+	are checked in DeltaBlock>>type. The copying hack should go away when the code
+	scopes are factored out of the ASTs."
+
+"^self body type."
+    lastStatementType := DeltaTypeId new setId: #Nil; scope: DeltaGlobals.
+    statements isEmpty ifFalse:[statements do:[:s <Statement>  | lastStatementType := s type].].
+    ^lastStatementType.! !
+

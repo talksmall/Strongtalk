@@ -1,0 +1,456 @@
+Delta define: #MixinVMMirror as: (
+(Class subclassOf: 'OopsVMMirror' instanceVariables: '')) !
+
+(Delta mirrorFor: #MixinVMMirror) revision: '$Revision: 1.14 $'!
+
+(Delta mirrorFor: #MixinVMMirror) group: 'reflection'!
+
+(Delta mirrorFor: #MixinVMMirror)
+comment: 
+'Low level mirror on a mixin.
+
+Note that class variables are only physically present on the class side, 
+but conceptually present on both sides.
+
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MixinVMMirror) classSide methodsFor: 'instance creation' !
+
+
+createNewMixin ^ <MixinVMMirror>
+"a"
+| mm <MixinVMMirror> rawMixin <ClassMixin> rawMetaMixin <MetaClassMixin> |
+
+rawMixin := ClassMixin new.
+rawMetaMixin := MetaClassMixin new.
+{{primitiveMixinSetClassMixinOf: rawMixin 
+    to: rawMetaMixin 
+    ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}.
+{{primitiveMixinSetClassMixinOf: rawMetaMixin to: (Mirror on: Metaclass) mixin reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}.
+rawMetaMixin instanceMixin: rawMixin ifFail: [:e | self error: e].
+^self on: rawMixin!
+
+on: mixin <Mixin> ^ <MixinVMMirror> 
+	"For compatability"
+	^self new reflectee: mixin!
+
+onCopyOf: mixin <Mixin> ^ <MixinVMMirror> 
+
+| mixinCopy <Mixin> metaMixinCopy <Mixin> |
+
+"Mixins are always copied in pairs. If we need to copy the meta mixin, we 
+recurse on the instance side,  and return the copied pair's class (meta) side."
+
+mixin isMeta ifTrue:[^(self onCopyOf: mixin instanceMixin) classSide].
+mixinCopy := mixin shallowCopy.
+metaMixinCopy := (self on: mixin) classSide reflectee shallowCopy.
+metaMixinCopy instanceMixin: mixinCopy ifFail:[self error: 'Failure setting inst mixin'].
+{{primitiveMixinSetClassMixinOf: mixinCopy 
+         to: metaMixinCopy 
+         ifFail: [:e <CompressedSymbol> |  self error: 'copy of mixin failed ', e]}}.
+^self on: mixinCopy
+! !
+
+! (Delta mirrorFor: #MixinVMMirror) methodsFor: 'accessing' !
+
+
+addClassVarName: name  <Symbol>  ifFail: blk  <[Str]> 
+
+self isMeta ifTrue: [^blk value].
+self classVarNamesDo: [:cn <Symbol> | cn = name ifTrue:[^blk value]].                
+{{primitiveMixin: self reflectee addClassVariable: name ifFail: [:e <CompressedSymbol> | self primitiveFailed: e handler: blk]}}.!
+
+addInstVarName: name  <Symbol>  ifFail: fb <[Str]>
+
+self instVarNamesDo: [:n <Symbol> | n = name ifTrue:[^fb value: 'Instance variable ', n , ' already exists']].
+{{primitiveMixin: self reflectee addInstanceVariable: name ifFail:[:e <CompressedSymbol> | self primitiveFailed: e handler: fb]}}!
+
+addMethod: method  <Method>  ifFail: blk <[Str]>
+
+ {{primitiveMixin: self reflectee addMethod: method ifFail: [:e <CompressedSymbol> | self primitiveFailed: e handler: blk]}} 
+ 
+	!
+
+addPoolDictionaryName: name  <Symbol>  ifFail: fb <[Str]>
+
+	self unimplemented.!
+
+canBeInvoked  ^<Boolean> 
+| masterInvocation <Class> |
+
+(masterInvocation := self masterInvocation) isNil ifTrue: [^true].
+^(ClassVMMirror on: masterInvocation) canBeSubclassed
+ !
+
+changeClassVariablesTo: list <Cltn[Symbol]>
+"Private"
+
+| newDecls <Cltn[Symbol]> deletedDecls <Cltn[Symbol]> |
+
+newDecls := OrderedCollection[Symbol] new.
+deletedDecls := OrderedCollection[Symbol] new.
+
+list do: [ :v <Symbol> | 
+	(self hasClassVarName: v) ifFalse: [ newDecls add: v ] ].
+
+self classVarNamesDo: [ :v <Symbol> | 
+	list detect: [ :e <Symbol> | e  = v  ] ifNone: [ deletedDecls add: v ] ].
+
+"Remove surplus class vars"
+deletedDecls do: [ :v <Symbol> | 
+	self removeClassVarName: v  
+			ifFail: [ : e <Str> | 
+						self error: 'Cannot remove class variable ', v , ' from ', self name, ': ', e ] ].
+
+"Add new class vars"
+newDecls do: [ :v <Symbol> | 
+	self addClassVarName: v  
+			ifFail: [:e <Str> | self error: 'Cannot add class variable ', v , ' to ', self name, ': ', e ] ].
+!
+
+changeInstanceVariablesTo: list <Cltn[Symbol]>
+"Private"
+"We have to remove all inst vars, even those in use, and then add
+the entire list, to preserve the ordering in the source code"
+| deletedDecls <Cltn[Symbol]> |
+
+deletedDecls := OrderedCollection[Symbol] new.
+
+self instVarNamesDo: [ :v <Symbol> | 
+	list detect: [ :e <Symbol> | e  = v  ] ifNone: [ deletedDecls add: v ] ].
+
+"Remove surplus inst vars. These are removed using the usual remove routine,
+so that  we check that they are not  used."
+deletedDecls do: [ :v <Symbol> | 
+	self removeInstVarName: v  
+	ifFail: [ :e <Str> | self error: 'Cannot remove instance variable ', v , ' from ', self name, ': ', e  ] ].
+
+"Remove remaining inst vars. These are removed by force, since they
+may have methods referring to them"
+self forciblyRemoveAllInstanceVariables.
+
+"Add new inst vars"
+list do: [ :v <Symbol> | 
+	self addInstVarName: v  
+			ifFail: [:e <Str> |  self error: 'Cannot add instance variable ', v , ' to ', self name, ': ', e  ] ].
+!
+
+classSide  ^<MixinVMMirror> 
+
+^MixinVMMirror on:{{primitiveMixinClassMixinOf: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}
+!
+
+forciblyRemoveAllInstanceVariables
+"Private"
+"We need to create the collection of names first, because we cannot iterate over the same
+collection we are modifying "
+| names <OrdCltn[Symbol]> |
+
+names := OrderedCollection[Symbol] new.
+self instVarNamesDo: [: n <Symbol> | names add: n].
+names do:
+   [: n <Symbol> | 
+   self forciblyRemoveInstVarName: n 
+            ifFail:[:e <Str> |self error: 'Internal inconsistency - missing instance variable in ', self name]
+   ].
+!
+
+forciblyRemoveInstVarName: name  <Symbol>  ifFail: blk <[^Object]>  ^ <Object> 
+	
+"Private"
+| i   <SmallInteger> |
+
+i := self indexForInstVarNamed: name ifFail: blk.
+{{primitiveMixin: self reflectee removeInstanceVariableAt: i ifFail: [ :e <CompressedSymbol> | self primitiveFailed: e]}}.         !
+
+format ^ <Symbol>
+
+self hasIndexedByteInstVars ifTrue:[^#IndexedByteInstanceVariables].
+self hasIndexedDoubleByteInstVars ifTrue:[^#IndexedDoubleByteInstanceVariables].
+self hasIndexedInstVars ifTrue:[^#IndexedInstanceVariables].
+self hasIndexedWeakInstVars ifTrue:[^#IndexedNextOfKinInstanceVariables].
+self masterInvocation isNil
+  ifFalse:[
+           	     	self masterInvocation  = Process ifTrue:[^#Process].
+       			  	self masterInvocation = ProcessorScheduler ifTrue:[^#Process].
+					self masterInvocation  = ExternalProxy ifTrue:[^#ExternalProxy].
+                 ].
+^#Oops!
+
+hasClassVarName: n <Symbol> ^ <Boolean>
+
+self indexForClassVarNamed: n ifFail:[ :str <Str> | ^false].
+^true!
+
+hasIndexedByteInstVars  ^<Boolean> 
+	
+^self reflectee  == IndexedByteInstanceVariables
+ !
+
+hasIndexedDoubleByteInstVars  ^<Boolean> 
+
+^self reflectee  == IndexedDoubleByteInstanceVariables!
+
+hasIndexedInstVars  ^<Boolean> 
+
+^self reflectee  == IndexedInstanceVariables!
+
+hasIndexedWeakInstVars  ^<Boolean> 
+
+^self reflectee  == IndexedNextOfKinInstanceVariables!
+
+hasInstVarName: n <Symbol> ^ <Boolean>
+
+self indexForInstVarNamed: n ifFail:[ :str <Str> | ^false].
+^true!
+
+hasSpecialLayout  ^<Boolean> 
+| mi <Class> mim <ClassVMMirror> |
+
+(self hasIndexedInstVars or: [
+	self hasIndexedByteInstVars or: [
+		self hasIndexedDoubleByteInstVars or: [
+				self hasIndexedWeakInstVars]]]) ifTrue: [^true].
+(mi := self masterInvocation) isNil ifTrue: [^false].
+mim := ClassVMMirror on: mi.
+^mim hasSpecialLayout.
+!
+
+indexForClassVarNamed: name <Symbol> ifFail: fb  <[Str]> ^  <SmallInteger>
+"Private"
+
+self isMeta ifTrue:[^self instanceSide indexForClassVarNamed: name ifFail: fb].
+1 to: self numberOfClassVariables do: [:i  <SmallInteger> | 
+                    name =  {{primitiveMixin: self reflectee classVariableAt:  i ifFail:[:e <CompressedSymbol> | self primitiveFailed: e handler: fb] }} 
+                       ifTrue:[^i]
+                    ].
+
+^fb value: name, ' not found'.!
+
+indexForInstVarNamed: name <Symbol> ifFail: fb  <[Str]> ^  <SmallInteger>
+"Private"
+
+
+1 to: self numberOfInstanceVariables do: [:i  <SmallInteger> | 
+	name =  {{primitiveMixin: self reflectee instanceVariableAt:  i ifFail:[:e <CompressedSymbol> | self primitiveFailed: e handler: fb]}}
+		ifTrue:[^i]
+].
+
+^fb value: name, ' not found'.
+!
+
+indexForMethodNamed: sel <Symbol> ifFail: fb  <[Str]> ^  <SmallInteger>
+"Private"
+
+
+1 to: self numberOfMethods do: [:i  <SmallInteger> | 
+                    sel =  {{primitiveMixin: self reflectee methodAt:  i ifFail:[:e <CompressedSymbol> | self primitiveFailed: e handler: fb] }} selector
+                       ifTrue:[^i]
+                    ].
+
+^fb value: sel, ' not found'.!
+
+indexForPoolNamed: name <Symbol> ifFail: fb  <[Str]> ^  <SmallInteger>
+
+	self unimplemented.!
+
+install
+
+" The VM keeps track of what is installed and what isn't 
+"
+
+{{primitiveMixinSetInstalled: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}
+          !
+
+installed  ^ <Boolean>
+
+" The VM keeps track of what is installed and what isn't 
+"
+
+^{{primitiveMixinIsInstalled: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}
+          !
+
+instanceSide  ^<MixinVMMirror> 
+
+^self class on: self reflectee instanceMixin.
+
+!
+
+isMeta ^ <Boolean>
+
+^self reflectee isMeta!
+
+masterInvocation  ^<Class> 
+
+^{{primitiveMixinPrimaryInvocationOf: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}.
+
+!
+
+masterInvocation: class <Class>  ifFail: fb <[Str]>
+
+{{primitiveMixinSetPrimaryInvocationOf: self reflectee to: class ifFail: [:e <CompressedSymbol> | self primitiveFailed: e handler: fb]}}.!
+
+methodAt: selector  <Symbol>  ifFail: blk <[^X def]> ^ <Method | X> 
+	| n  <SmallInteger>  mtd <Method> |
+
+n := self numberOfMethods.
+1 to: n do: [:i  <SmallInteger> | 
+                    mtd :=  {{primitiveMixin: self reflectee methodAt:  i ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}.
+                    selector = mtd selector ifTrue:[^mtd]
+                    ]. 
+^blk value.
+
+!
+
+name  ^ <Symbol> 
+
+^self nameIfAbsent:[self error: 'Internal flaw: name should be defined at this point'].!
+
+name: n  <Symbol> ifFail: fb <[Str]>
+
+			self reflectee name: n ifFail: fb.
+ !
+
+nameIfAbsent: blk <[^Symbol]> ^ <Symbol> 
+	| name <Symbol> |
+	(name := self reflectee name) isNil
+		ifTrue: [^blk value]
+		ifFalse: [^name]
+!
+
+numberOfClassVariables  ^ <SmallInteger>
+
+self isMeta ifTrue:[^self instanceSide numberOfClassVariables].
+ ^{{primitiveMixinNumberOfClassVariablesOf: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}.
+	!
+
+numberOfInstanceVariables  ^ <SmallInteger>
+
+ ^{{primitiveMixinNumberOfInstanceVariablesOf: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}.!
+
+numberOfMethods  ^ <SmallInteger>
+
+ ^{{primitiveMixinNumberOfMethodsOf: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}.
+	!
+
+numberOfPoolDictionaries  ^ <SmallInteger>
+
+	self unimplemented.!
+
+removeAllClassVariables
+
+"We need to create the collection of names first, because we cannot iterate over the same
+collection we are modifying "
+| names <OrdCltn[Symbol]> |
+
+names := OrderedCollection[Symbol] new.
+self classVarNamesDo: [: n <Symbol> | names add: n].
+names do:
+   [: n <Symbol> | 
+   self removeClassVarName: n 
+            ifFail:[:e <Str> | self error: 'Internal inconsistency - missing class variable in ', self name]
+   ].
+!
+
+removeAllInstanceVariables
+
+"We need to create the collection of names first, because we cannot iterate over the same
+collection we are modifying "
+| names <OrdCltn[Symbol]> |
+
+names := OrderedCollection[Symbol] new.
+self instVarNamesDo: [: n <Symbol> | names add: n].
+names do:
+   [: n <Symbol> | 
+   self removeInstVarName: n 
+            ifFail:[:e <Str> |self error: 'Internal inconsistency - missing instance variable in ', self name]
+   ].
+!
+
+removeClassVarName: name  <Symbol>  ifFail: blk <[Str]>  ^ <Object> 
+	| i <SmallInteger> assoc <Association> classVar |
+"what is this supposed to return"
+
+self isMeta ifTrue: [^blk value: 'Cannot remove class variable thru metamixin'].	
+i := self indexForClassVarNamed: name ifFail: blk.
+"find any methods actually referring to the class var 'name'.
+If there are any, we fail"
+
+self methodsDo:[:m <Method> | (m referencedClassVarNames includes: name) ifTrue:[blk value: name, ' referenced in method']].
+self classSide methodsDo:[:m <Method> | (m referencedClassVarNames includes: name) ifTrue:[blk value: name, ' referenced in class method']].
+
+{{primitiveMixin: self reflectee removeClassVariableAt: i 
+         ifFail: [:e <CompressedSymbol> | self primitiveFailed: e handler: blk]}}.  !
+
+removeInstVarName: name  <Symbol>  ifFail: blk <[Str]>  ^ <Object> 
+	
+| i   <SmallInteger> |
+
+i := self indexForInstVarNamed: name ifFail: blk.
+"find any methods actually referring to the inst var 'name'.
+If there are any, we fail"
+self methodsDo:[:m <Method> | ((m referencedInstVarNamesFor: self reflectee) includes: name) 
+	ifTrue:[blk value: 'Instance variable ', name, ' is in use']].
+{{primitiveMixin: self reflectee removeInstanceVariableAt: i ifFail: [ :e <CompressedSymbol> | self primitiveFailed: e]}}. 
+!
+
+removeMethodAt: selector  <Symbol>  ifFail: blk <[^Object]>  ^ <Object> 
+	
+| i   <SmallInteger> |
+
+i := self indexForMethodNamed: selector ifFail: [ :e <Str> | ^blk value: e ].
+ {{primitiveMixin: self reflectee removeMethodAt: i ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}!
+
+removePoolDictionaryName: name  <Symbol>  ifFail: blk <[^Object]>  ^ <Object> 
+
+	self unimplemented.!
+
+uninstall
+
+" The VM keeps track of what is installed and what isn't 
+"
+
+{{primitiveMixinSetUnInstalled: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}
+          ! !
+
+! (Delta mirrorFor: #MixinVMMirror) methodsFor: 'iterating' !
+
+
+classVarNamesDo: blk  <[Symbol]> 
+
+	self isMeta
+		ifTrue: [		self instanceSide classVarNamesDo: blk ]
+		ifFalse: [	1 to: self numberOfClassVariables do: [:i  <SmallInteger> |                    
+                    			blk value: {{primitiveMixin: self reflectee classVariableAt:  i ifFail:[:e <CompressedSymbol> | self error: 'Internal failure ', e, ' in MixinVMMirror>>classVarNamesDo:'] }} ]
+                    	]!
+
+instVarNamesDo: blk  <[Symbol]> 
+	
+"performs blk on all instance variables defined locally in this mixin"
+
+1 to: self numberOfInstanceVariables do: [:i  <SmallInteger> | 
+                    blk value: {{primitiveMixin: self reflectee instanceVariableAt:  i ifFail:[:e <CompressedSymbol> | self primitiveFailed: e] }}.                     
+                    ].!
+
+methodsDo: blk  <[Method]> 
+	
+1 to: self numberOfMethods do: [:i  <SmallInteger> |
+                    blk value: {{primitiveMixin: self reflectee methodAt:  i ifFail:[:e <CompressedSymbol> | self primitiveFailed: e] }}.                     
+                    ].!
+
+poolDictionaryNamesDo: blk  <[Symbol]> 
+
+self halt.! !
+
+! (Delta mirrorFor: #MixinVMMirror) methodsFor: 'printing' !
+
+
+printOn: aStream  <Stream> 
+	aStream 
+		nextPutAll: self class name;
+		nextPutAll: ' on ';
+		nextPutAll: (self nameIfAbsent: 'an unnamed class').
+! !
+

@@ -1,0 +1,490 @@
+Delta define: #SequenceableCollection as: (
+Generic forAll: '(E covar) ' body: ((Class subclassOf: 'Collection[E]' instanceVariables: '') protocols: 'Indexed[Int,E]'; abstract)) !
+
+(Delta mirrorFor: #SequenceableCollection) revision: '$Revision: 1.9 $'!
+
+(Delta mirrorFor: #SequenceableCollection) group: 'base'!
+
+(Delta mirrorFor: #SequenceableCollection)
+comment: 
+'This class implements the read-only protocol for indexed collections that order their
+elements using integer indices.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'accessing' !
+
+
+after: o <Object> ^<E>
+
+	^self at: (self indexOf: o) + 1!
+
+at: i <Int> ^<E>
+
+	self subclassResponsibility!
+
+at: index <Int> ifAbsent: fail <[^X def]> ^<E|X>
+
+	^(index between: 1 and: self size)
+		ifTrue: [ self at: index ]
+		ifFalse: [ fail value ]!
+
+before: o <Object> ^<E>
+
+	^self at: (self indexOf: o) - 1!
+
+collection: cltn <SeqCltn[Object]>
+matchesElementsAt: index <Int>
+^<Boolean>
+	"Test whether we contain the given subcollection at index.  This method assumes
+	  that there are at least as many elements in this collection after index as cltn size"
+
+	| offset <Int> |
+	offset := index - 1.
+	1 to: cltn size do:
+		[ :i <Int> |
+			(cltn at: i) = (self at: i+offset)
+				ifFalse: [ ^false ]		].
+	^true!
+
+findFirst: predicate <[E,^Boolean]>  ^<Int>
+
+	1 to: self size do:
+		[ :i <Int> |
+			(predicate value: (self at: i))
+				ifTrue: [ ^i ]	].
+	^0!
+
+findLast: predicate <[E,^Boolean]>  ^<Int>
+
+	self size to: 1 by: -1 do:
+		[ :i <Int> |
+			(predicate value: (self at: i))
+				ifTrue: [ ^i ]	].
+	^0!
+
+first ^<E>
+
+	^self at: 1!
+
+hash ^<Int>
+
+	"This function should not be changed, since it is designed to produce the
+		same results as the identityHash primitive, for strings and symbols"
+	| sz <Int> val <Int> |
+	sz := self size.
+	sz < 2
+		ifTrue: [ ^sz = 1 ifTrue: [ self hashAt: 1 ] ifFalse: [ 1 ] ].
+	val := (self hashAt: 1).
+	val := (val rawBitShift: 3) bitXor: ((self hashAt: 2) bitXor: val).
+	val := (val rawBitShift: 3) bitXor: ((self hashAt: sz) bitXor: val).
+	val := (val rawBitShift: 3) bitXor: ((self hashAt: sz - 1) bitXor: val).
+	val := (val rawBitShift: 3) bitXor: ((self hashAt: (sz rawBitShift: -1) + 1) bitXor: val).
+	val := (val rawBitShift: 3) bitXor: (sz bitXor: val).
+
+	"mask it to 20 bits to match VM"
+	val := val bitAnd: 16rFFFFF.
+	^val!
+
+indexOf: el <Object> ^<Int>
+
+	^self indexOf: el ifAbsent: [ 0 ]!
+
+indexOf: el <Object> ifAbsent: f <[^X def]>  ^<Int | X>
+
+	1 to: self size do:
+		[ :i <Int> |
+			(self at: i) = el
+				ifTrue: [ ^i ]	].
+	^f value!
+
+indexOfSubCollection: sub <SeqCltn[Object]>
+startingAt: index <Int>
+^<Int>
+
+	^self
+		indexOfSubCollection: sub
+		startingAt: index
+		ifAbsent: [ self error: 'subcollection not found' ]!
+
+indexOfSubCollection: sub <SeqCltn[Object]>
+startingAt: index <Int>
+ifAbsent: f <[^X def]>
+^<Int | X>
+
+	index to: (self size - sub size) + 1 do:
+		[ :i <Int> |
+			(self collection: sub matchesElementsAt: i)
+				ifTrue: [ ^i ]		].
+	^f value!
+
+indicesOfSubCollection: sub <SeqCltn[Object]>  ^<SeqCltn[Int]>
+
+	^self indicesOfSubCollection: sub startingAt: 1!
+
+indicesOfSubCollection: sub <SeqCltn[Object]>
+startingAt: index <Int>
+^<SeqCltn[Int]>
+
+	| indices <OrdCltn[Int]> subSize <Int> current <Int> |
+	indices := OrderedCollection[Int] new.
+	subSize := sub size.
+	current := index.
+	[ current := self indexOfSubCollection: sub startingAt: current ifAbsent: [ 0 ].
+	  current = 0
+		] whileFalse: 
+			[	indices addLast: current.
+				current := current + subSize.		].
+	^indices!
+
+last ^<E>
+
+	^self at: self size!
+
+size ^<Int>
+
+	self subclassResponsibility!
+
+species ^<Collection[E] class>
+
+	^Array[E]! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'iterating' !
+
+
+collect: map <[E, ^R def]> ^<SeqCltn[R]>
+
+	^self collectUsingAtPut: map!
+
+do: f <[E]>
+
+	1 to: self size do:
+		[ :i <Int> |
+			f value: (self at: i)	]!
+
+keysAndValuesDo: f <[Int,E]>
+
+	1 to: self size do:
+		[ :i <Int> |
+			f value: i value: (self at: i)	]!
+
+reverseDo: f <[E]>
+
+	self size to: 1 by: -1 do:
+		[ :i <Int> |
+			f value: (self at: i)	]!
+
+with: other <SeqCltn[X def]> do: f <[E,X]>
+
+	self assert: [ self size = other size ].
+	1 to: self size do:
+		[ :i <Int> |
+			f value: (self at: i) value: (other at: i)	].! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'private' !
+
+
+collectUsingAtPut: map <[E, ^R def]> ^<SeqCltn[R]>
+
+	| c <VarSeqCltn[R]> |
+	"See #newForCollect: for explanation of why the guarantee is safe"
+	c := (guaranteed <VarSeqCltn[R]> (self newForCollectUsingAtPut: self size)).
+	1 to: self size do:
+		[ :i <Int> |
+			c at: i put: (map value: (self at: i))  ].
+	^c!
+
+hashAt: index <Int> ^<Int>
+
+	^(self at: index) hash!
+
+newForCollectUsingAtPut: size <Int> ^<VarSeqCltn[Object]>
+
+	"Return a new extensible collection that is as closely related to the receiver's class as possible.  The
+	 returned collection must be unaliased and empty, so it is safe for the caller to guarantee that the type
+	 variable is of a more specific type"
+
+	^Array[Object] new: size! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'copying' !
+
+
+concatenate: other <SeqCltn[X]>  ^<VarSeqCltn[EX | X]>
+	{where EX is returnType of #anElement message of receiverType;
+			where X is returnType of #anElement message of arg 1}
+
+	"Return a new VarSeqCltn holding the elements of self followed by the elements of other.  This
+	  is the generalized equivalent of the string #, operation.  It should be used instead of #, for non-strings;
+	  it is more general because other can contain any kind of element"
+
+	| safeself <SeqCltn[EX]> |
+
+	"The following guarantee is safe because the inference clause ensures that E < EX
+		at the call site"
+	safeself := guaranteed <SeqCltn[EX]> self.
+
+	^safeself copyReplaceFrom: self size + 1 to: self size with: other!
+
+copyFrom: start <Int> to: stop <Int>   ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is typesafe since the inference clause guarantees that E < EX at the call site"
+	| copy <VarSeqCltn[EX]> safeme <SeqCltn[EX]> |
+	safeme := guaranteed <SeqCltn[EX]> self.
+	copy := guaranteed <VarSeqCltn[EX]> 
+				(self newCopyOfSize: (stop - start) + 1 thatCanAlsoHoldElementsOf: safeme).
+	copy replaceFrom: 1 to: copy size with: safeme startingAt: start.
+	^copy!
+
+copyReplaceAll: oldSub <SeqCltn[Object]> with: newSub <SeqCltn[X]>  ^<VarSeqCltn[EX | X]>
+	{where EX is returnType of #anElement message of receiverType;
+			where X is returnType of #anElement message of arg 2}
+
+	|	spots <SeqCltn[Int]>
+		subDelta <Int>
+		copy <VarSeqCltn[EX | X]>
+		current <Int>
+		offset <Int>
+		newSubSize <Int>
+		oldSubSize <Int>
+		safeself <SeqCltn[EX]>
+		|
+	newSubSize := newSub size.
+	oldSubSize := oldSub size.
+	subDelta := newSub size - oldSubSize.
+	spots := self indicesOfSubCollection: oldSub.
+
+	"This guarantee is typesafe since the inference clause guarantees that E < EX at the call site"
+	safeself := guaranteed <SeqCltn[EX]> self.
+
+	spots size = 0 
+		ifTrue: [	copy :=  safeself newCopyOfSize: self size
+								thatCanAlsoHoldElementsOf: newSub.
+						copy replaceFrom: 1 to: self size with: safeself.
+						^copy
+						].
+
+	copy := safeself newCopyOfSize: self size + (spots size * subDelta)
+				thatCanAlsoHoldElementsOf: newSub.
+	current := 1.
+	offset := 0.
+	spots do: 
+		[ :spot <Int> |	| offspot <Int> |
+			offspot := spot + offset.
+
+			"copy segment of self before the next occurrence"
+			copy	replaceFrom: current + offset
+					to: offspot - 1
+					with: safeself
+					startingAt: current.
+			"copy the new subcollection at the next occurrence"
+			copy	replaceFrom: offspot
+					to: (offspot + newSubSize) - 1
+					with: newSub.
+			current := spot + oldSubSize.
+			offset := offset + subDelta.	].
+	"copy the final segment from self after the last occurrence"
+	copy	replaceFrom: current + offset
+			to: copy size
+			with: safeself
+			startingAt: current.
+	^copy!
+
+copyReplaceFrom: start <Int> to: stop <Int> with: other <SeqCltn[X]>  ^<VarSeqCltn[EX | X]>
+	{where EX is returnType of #anElement message of receiverType;
+			where X is returnType of #anElement message of arg 3}
+
+	|	copy <VarSeqCltn[EX | X]>
+		sizeChange <Int>
+		sz <Int>
+		afterNew <Int>
+		safeself <SeqCltn[EX]> |
+
+	"The guarantee is typesafe since the inference clause guarantees that E < EX at the call site"
+	safeself := guaranteed <SeqCltn[EX]> self.
+
+	sizeChange := other size - ((stop - start) + 1).
+	sz := self size.
+	copy := safeself newCopyOfSize: sz + sizeChange
+				thatCanAlsoHoldElementsOf: other.
+	afterNew := start + other size.
+	copy replaceFrom: 1 to: start - 1 with: safeself startingAt: 1.
+	copy replaceFrom: start to: afterNew - 1 with: other.
+	copy replaceFrom: afterNew to: copy size with: (guaranteed <SeqCltn[EX]> self) startingAt: stop + 1.
+	^copy!
+
+copyWith: el <X>  ^<VarSeqCltn[EX | X]>
+	{where EX is returnType of #anElement message of receiverType;
+			where X is arg 1}
+
+	| safeself <SeqCltn[EX]> |
+
+	"The following guarantee is safe because the inference clause ensures that E < EX
+		at the call site"
+	safeself := guaranteed <SeqCltn[EX]> self.
+
+	^safeself concatenate: (Array[X] with: el)!
+
+copyWithSize: s <Int> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+	
+	"return a mutable copy of the receiver of a different size, that is either truncated
+		or extended with nils as necessary.  Note this works even if the receiver itself
+		is not mutable"
+
+	"%note: the inference clause above is a tricky way of doing something very difficult:
+	  it allows us to effectively return a mutable copy of the receiver in a typesafe way,
+	  even though the
+	  receiver itself may not be mutable.  This would be impossible to type reasonably
+	  without the inference clause, because we would have to have a return type of
+	  <VarSeqCltn[E]>, which isn't typesafe since  E is a 'covariant' generic variable of this
+	  class, whereas E is an 'unrelated' generic variable in VarSeqCltn. - D.G."
+	  
+	"%note: The inference clause above should really read ... EX <E> ..., but the type
+		system implementation for some reason can't deal with implementations
+		of such a method in subclasses that have bound E (i.e. are not generic on E).
+		For an example, see the implementation in ReadString, which would not have to
+		have a guarantee in the method body if this worked right - D.G."
+
+	self subclassResponsibility!
+
+copyWithout: el <Object>  ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	| safeself <SeqCltn[EX]> |
+
+	"The following guarantee is safe because the inference clause ensures that E < EX
+		at the call site"
+	safeself := guaranteed <SeqCltn[EX]> self.
+
+	^safeself copyReplaceAll: (Array[Object] with: el) with: #()
+!
+
+reverse   ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantees are typesafe since the inference clause guarantees that E < EX at the call site"
+	| copy <VarSeqCltn[EX]> |
+	copy := guaranteed <VarSeqCltn[EX]>
+		(self newCopyOfSize: self size thatCanAlsoHoldElementsOf: self).
+	1 to: self size do: 
+		[ :i <Int> |
+			| el <EX> |
+			el :=  (guaranteed <VarSeqCltn[EX]> self) at: i.
+			copy at: self size + 1 - i put: el.	].
+	^copy! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'testing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [ self class = other class
+				and: [ "We have the same class, so we can guarantee other is a SeqCltn"
+					  self hasSameElementsAndOrderAs: (guaranteed <SeqCltn[Object]> other)   ]]!
+
+hasSameElementsAndOrderAs: other <SeqCltn[Object]>  ^<Boolean>
+	"Like #hasSameElementsAs:, but also requires the elements to be in the same order"
+
+	self size = other size
+		ifFalse: [ ^false ].  
+	1 to: self size do:
+		[ :i <Int> |
+			(self at: i) = (other at: i)
+				ifFalse: [ ^false ]	].
+	^true!
+
+includesIndex: index <Int> ^<Boolean>
+
+	^index between: 1 and: self size!
+
+isSortedBy: compare <[E,E,^Boolean]> ^<Boolean>
+	"Returns true if the receiver is in sorted order, using the specified comparison"
+
+	| last <E> |
+	self size < 2
+		ifTrue: [ ^true ].
+	last := self at: 1.
+	2 to: self size do:
+		[ :i <Int> |
+			(compare value: last value: (self at: i))
+				ifFalse: [ ^false ]	].
+	^true! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'streaming' !
+
+
+readStream ^<ReadStream[E]>
+
+	^SeqCltnReadStream[E] on: self! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'restricted' !
+
+
+newCopyOfSize: size <Int>
+thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
+^<VarSeqCltn[EX | X]>
+		{where X is returnType of #anElement message of arg 2;
+		     where EX is returnType of #anElement message of receiverType}
+
+	"Return a fresh collection of a closely related type
+	that can hold both elements of self and elements of the other collection"
+
+	^Array[EX | X] new: size! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'virtual operations' !
+
+
+virtualCollect: blk <[E, ^X def]> ^<VirtualCollector[X]>
+
+	^SequenceableVirtualCollector[X] on: self map: blk!
+
+virtualSelectorClass  ^<SequenceableVirtualSelector[E] class>
+
+	^SequenceableVirtualSelector[E]! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'utility' !
+
+
+binarySearchFor: el <EL>
+between: start <Int>
+and: end <Int>
+toCompare: compare <[EL def,EL,^Boolean]>
+^<Int>
+			{where CONSTRAINER <EL> is returnType of #anElement message of receiverType}
+	"This does a binary search for the index such that if el was inserted before it
+	  the receiver would remain sorted.  The receiver must be sorted relative to the
+	  comparison block.  The comparison block should return true if the first block argument
+	  cannot appear after the second block argument"
+
+	| low <Int> high <Int> |
+	low := start.
+	high := end.
+	[ low <= high ]
+		whileTrue:
+				[	| mid <Int> |
+					mid := (low + high) // 2.
+	  				"The guaranteed below is safe because of the inference clause"
+					(compare value: (guaranteed <EL> (self at: mid)) value: el)
+						ifTrue: [ low := mid + 1 ]	
+						ifFalse: [ high := mid - 1 ].
+				].
+	^low!
+
+binarySearchFor: el <EL>
+toCompare: compare <[EL def,EL,^Boolean]>
+^<Int>
+			{where CONSTRAINER <EL> is returnType of #anElement message of receiverType}
+
+	"The guarantee is safe because of the inference clause"
+	^(guaranteed <SeqCltn[EL]> self)
+			binarySearchFor: el
+			between: 1
+			and: self size
+			toCompare: compare! !
+

@@ -1,0 +1,91 @@
+Delta define: #InferenceClausePresentTool as: (
+(Class subclassOf: 'DeltaASTTool' instanceVariables: 'formalNames <Set[Symbol]>')) !
+
+(Delta mirrorFor: #InferenceClausePresentTool) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #InferenceClausePresentTool) group: 'ast'!
+
+(Delta mirrorFor: #InferenceClausePresentTool)
+comment: 
+'This tool traverses a poly message signature node and determines
+whether an actual ''where'' inference clause was present.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #InferenceClausePresentTool) classSide methodsFor: 'instance creation' !
+
+
+new ^ <Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #InferenceClausePresentTool) methodsFor: 'node traversal' !
+
+
+blockApplicationTypeNode: node <BlockApplicationType>
+
+	node actuals do: [ :e <ObjectType> | e apply: self].
+!
+
+genericApplicationTypeNode: node <GenericApplicationType>
+
+	node actuals do: [ :e <ObjectType> | e apply: self].
+!
+
+msgSignatureNode: node <MsgSignature>
+
+	node domain do: [ :e <ObjectType> | e apply: self ]
+!
+
+polyMsgSignatureNode: node <PolyMsgSignature>
+
+	self formalNames: (Set[Symbol] withAll: (node formals collect: [ :tv <TypeVar> | tv name ])).
+	node body apply: self.
+!
+
+tupleTypeNode: node <TupleType>
+
+	node actuals do: [ :e <ObjectType> | e apply: self].!
+
+typeErrorNode: node <DeltaTypeError >!
+
+typeIdNode: node <TypeIdNode>
+!
+
+unaryTypeExprNode: node <UnaryTypeExpr>
+
+	node selector = #def
+		ifTrue: [	self formalNames remove: node target name ifAbsent: [ self shouldNotHappen] ]!
+
+unionTypeNode: node  <UnionType>
+
+	node type1 apply: self.
+	node type2 apply: self.
+! !
+
+! (Delta mirrorFor: #InferenceClausePresentTool) methodsFor: 'private' !
+
+
+formalNames ^ <Set[Symbol]>
+
+	^formalNames!
+
+formalNames: d <Set[Symbol]>
+
+	formalNames := d! !
+
+! (Delta mirrorFor: #InferenceClausePresentTool) methodsFor: 'accessing' !
+
+
+hasInferenceClausePresent ^ <Boolean>
+
+	^self formalNames isEmpty not! !
+
+! (Delta mirrorFor: #InferenceClausePresentTool) methodsFor: 'private - initialization' !
+
+
+initialize
+
+	self formalNames: Set[Symbol] new.! !
+

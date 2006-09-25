@@ -1,0 +1,119 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Virtual Machine</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="virtualmachine.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="virtualmachine3.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">The Virtual Machine (cont.)</h2>
+
+<h3 align="left">A Micro Benchmark</h3>
+
+<p align="left">To illustrate the impact of adaptive optimization
+on Smalltalk performance, let's look at a very small
+micro-benchmark. A micro-benchmark is too small to predict
+performance very accurately, however, it can be used to
+demonstrate the basic points, and show the compilation process in
+action.</p>
+
+<p align="center"><smappl visual="
+	| b v |
+	b := ClassOutliner for: (ClassMirror on: Test).
+    v := b topVisualWithHRule: false.
+    b openSide: true selector: #simpleTest:.
+	v := v withBorder: (Border standard3DRaised: true).
+    v
+"><br>
+<strong>A micro-benchmark in the Test class</strong> <a
+doit="| b v |
+	b := ClassOutliner for: (ClassMirror on: Test).
+    v := b topVisualWithHRule: false.
+    b openSide: true selector: #simpleTest:.
+    v launch">(spawn)</a></p>
+
+<p align="left">The above micro-benchmark, #simpleArray:, simply
+loops 10 million times, each time storing an integer into an
+array. A really good optimizer could probably even optimize away
+the actual store itself, but Strongtalk does not currently do
+this, so the benchmark really does do the work it appears to. Run
+the benchmark by clicking on the following doIt: <a
+doit="Test benchmark: [ Test simpleTest: 10000000 ]">Test
+benchmark: [ Test simpleTest: 10000000 ]</a>. The benchmark is
+run 10 times, with the number of milliseconds for each run
+displayed in the Transcript, followed by the best time. I
+intentionally did not use any type annotations in this benchmark,
+so that it is clear that the type-system is not used for
+optimization.</p>
+
+<p align="left">The first thing to notice is that after one or
+two runs, the runs are dramatically faster. This is because
+initially the code is not determined to be performance-critical,
+so it is run by the interpreter. At some point, it becomes
+compiled, and subsequent runs are much faster. The compiler
+actually runs in the middle of the first run or two, but the
+current version of the VM doesn't use the compiled version until
+the next run, which is why it is important to run benchmarks
+multiple times. It is technically possible for the VM to switch
+to fully optimized code in the middle of the loop, but that work
+was not completed on this VM.</p>
+
+<p align="left">On my machine, an Intel Pentium III (Tualatin)
+running Windows XP at 1Ghz, this benchmark produced a best time
+of 100 milliseconds. Under VisualWorks V5i.4 (non-commercial),
+which does dynamic translation to native code and is the fastest
+previous implementation of Smalltalk (as far as I know), it
+produced a best time of 456ms. This is a speedup factor of 4.6.
+As mentioned before, micro-benchmarks are not that accurate, and
+this is probably an overstatement of the actual speedup that
+Strongtalk would produce for a real program. On a large, more
+representative set of benchmarks, we computed a number of years ago that the
+Strongtalk speedup was approximately 3.5 over VisualWorks, on
+Smalltalk code written in a normal style, although this has not been rechecked recently.</p>
+
+<h4 align="left">Adding Sends and a Block Closure</h4>
+
+<p align="left">Now, let's do something more interesting. One of
+the main points we have been making is that not only is
+Strongtalk much faster in an absolute sense, but that it
+dramatically reduces the <em>relative cost</em> of writing
+well-structured code (i.e. code that is more finely factored and
+uses block closures freely to implement custom control
+structures). So let's add some message sends and a block closure
+to our benchmark, and see what the effect on the performance is.</p>
+
+<p align="left">Open the method #notSoSimpleTest: in the browser
+above. Follow its execution path down into #fancyStoreIntoArray:
+and then into #evaluateBlock:. You can see it does the same basic
+computation that #simpleTest: did, but it moves the array store
+down into a block closure in another method, that is then passed
+to yet another method and finally evaluated. In other Smalltalks,
+this adds a large amount of additional work, because not only do
+we have three additional message sends, but we are forcing a
+block closure (of the <em>copying</em> type) to be created in the
+intervening method, which normally requires an actual closure
+object to be allocated <em>every</em> time #fancyStoreIntoArray:
+is called (to hold the array reference). This is a big cost in
+performance-critical code. Here is a doIt that will run the
+#notSoSimpleTest: <a
+doit="Test benchmark: [ Test notSoSimpleTest: 10000000 ]">Test
+benchmark: [ Test notSoSimpleTest: 10000000 ]</a>.</p>
+
+<p align="left">On my machine, VisualWorks runs this new
+benchmark in 1232ms, which is 270% slower than the first version
+of the benchmark. Strongtalk runs it in 136ms, which is only 36%
+slower than the first version of the benchmark. And in fact, with
+a small amount of improvement to the Strongtalk code generator,
+it should be able to run this benchmark without any slowdown <em>at
+all</em>, since the adaptive optimizer is already completely
+eliminating the additional message sends and the block closure.</p>
+
+<h3 align="right"><a href="virtualmachine3.html"><strong>The
+Virtual Machine, cont. ==&gt;</strong></a></h3>
+</body>
+</html>

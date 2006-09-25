@@ -1,0 +1,236 @@
+Delta define: #VarSequenceableCollection as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'SequenceableCollection[E]' instanceVariables: '') protocols: 'VarIndexed[Int,E]'; abstract)) !
+
+(Delta mirrorFor: #VarSequenceableCollection) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #VarSequenceableCollection) group: 'base'!
+
+(Delta mirrorFor: #VarSequenceableCollection)
+comment: 
+'This class extends SequenceableCollection[E] with mutation operations defined in terms of #at:put:. 
+The SeqCltn[E] protocol is defined from this class'' interface.
+
+Tags:  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'streaming' !
+
+
+readWriteStream ^<ReadWriteStream[E]>
+    ^SeqCltnReadWriteStream[E] on: self!
+
+writeStream ^<WriteStream[E]>
+    ^self readWriteStream! !
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'replacing' !
+
+
+replaceFrom: start <Int>
+to: stop <Int>
+with: other <SeqCltn[E]>
+
+	"replace the elements of the receiver from start to stop with elements from other,
+	  starting with the first element of other."
+
+	^self replaceFrom: start to: stop with: other startingAt: 1!
+
+replaceFrom: start <Int>
+to: stop <Int>
+with: other <SeqCltn[E]>
+startingAt: repStart <Int>
+
+	"replace the elements of the receiver from start to stop with elements from other,
+	  starting with the element of other with index repStart."
+
+	| otheri <Int> |
+
+	repStart < start
+		ifFalse: [ otheri := repStart.
+				  start to: stop do:
+					[ :i <Int> |
+						self at: i put: (other at: otheri).
+						otheri := otheri + 1.	]]
+		ifTrue: [ otheri := repStart + (stop - start).
+				stop to: start by: -1 do:
+					[ :i <Int> |
+						self at: i put: (other at: otheri).
+						otheri := otheri - 1.	]]! !
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'accessing' !
+
+
+at: index <Int> put: el <E> ^<E>
+
+	self subclassResponsibility!
+
+atAll: indices <Cltn[Int]> put: val <E>
+
+	indices do:
+		[ :i <Int> |
+			self at: i put: val		].!
+
+atAllPut: val <E>
+
+	1 to: self size do:
+		[ :i <Int> |
+			self at: i put: val		].! !
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+
+
+defaultSort: l <Int> to: r <Int>
+	"This is an untypesafe method that only works for VarSeqCltns of elements that
+		have Magnitude relationships with each other"
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self defaultMedianOf: pl and: pl+s and: pl+s+s.
+											m := self defaultMedianOf: m-s and: m and: m+s.
+											pn := self defaultMedianOf: (pn-s)-s and: pn-s and: pn.	].
+						m := self defaultMedianOf: pl and: m and: pn.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ x <= (ati := self at: i)]
+					whileFalse: [i := i + 1].
+				[(atj := self at: j) <=  x]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self defaultSort: l to: j ].
+	i < r ifTrue: [self defaultSort: i to: r ].!
+
+sort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[compare value: x value: (ati := self at: i)]
+					whileFalse: [i := i + 1].
+				[compare value: (atj := self at: j) value: x]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self sort: l to: j using: compare].
+	i < r ifTrue: [self sort: i to: r using: compare].!
+
+sortUsing: compare <[E,E,^Boolean]>
+	"Sort the elements of the collection using the specified comparison test, which must return true if
+	  its first argument should not appear after its second argument (e.g. <=).   This is handy when you
+	  want to sort an existing collection, rather than create a new SortedCollection, or if you need to
+	  perform a number of changes without sorting, and then resort explicitly.  Note that this does NOT
+	  cause the receiver to stay sorted after later changes, unlike a SortedCollection."
+
+	self sort: 1 to: self size using: compare! !
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'private' !
+
+
+defaultMedianOf: a <Int> and: b <Int> and: c <Int> ^<Int>
+
+	"This is an untypesafe method that only works for VarSeqCltns of elements that
+		have Magnitude relationships with each other.  It is used by the default sorting
+		method."
+
+	| atA <E> atB <E> atC <E> |
+	atA := self at: a.
+	atB := self at: b.
+	atC := self at: c.
+	^ atB <= atA
+		ifFalse: [ atC <= atB
+							ifFalse:[ b ]
+							ifTrue: [	 atC <= atA
+												ifFalse: [ c ]
+												ifTrue: [ a ] 	] ]
+		ifTrue: [ atB <= atC
+							ifFalse:[ b ]
+							ifTrue: [	 atA <= atC
+												ifFalse: [ c ]
+												ifTrue: [ a ] 	] ]
+!
+
+medianOf: a <Int> and: b <Int> and: c <Int> using: compare <[E,E,^Boolean]> ^<Int>
+
+	| atA <E> atB <E> atC <E> |
+	atA := self at: a.
+	atB := self at: b.
+	atC := self at: c.
+	^(compare value: atB value: atA)
+		ifFalse: [	(compare value: atC value: atB)
+							ifFalse:[ b ]
+							ifTrue: [	(compare value: atC value: atA)
+												ifFalse: [ c ]
+												ifTrue: [ a ] 	] ]
+		ifTrue: [	(compare value: atB value: atC)
+							ifFalse:[ b ]
+							ifTrue: [	(compare value: atA value: atC)
+												ifFalse: [ c ]
+												ifTrue: [ a ] 	] ]
+!
+
+swap: i <Int> with: j <Int>
+	| t <E> |
+	t := self at: i.
+	self at: i put: (self at: j).
+	self at: j put: t.!
+
+swap: i1 <Int> with: i2 <Int> count: n <Int>
+
+	| c <Int> |
+	c := 0.
+	[ c < n ]
+		whileTrue: 
+			[	self swap: i1 + c with: i2 + c.
+				c := c + 1.		]! !
+

@@ -1,0 +1,191 @@
+/* Copyright 1994, 1995 LongView Technologies L.L.C. $Revision: 1.5 $ */
+/* Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+	  disclaimer in the documentation and/or other materials provided with the distribution.
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+	  from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+
+
+*/
+
+# include "incls/_vframeKlass.cpp.incl"
+
+# define TEST								      \
+    ResourceMark rm;							      \
+    vframeOop vfo = vframeOop(obj);					      \
+    if (!vfo->is_live()) return prim_error(NOACTIVATIONERROR);		      \
+    /* must check for dead vfos if current process */			      \
+    if (vfo->process() == currentProcess)				      \
+      currentProcess->handleVFrameOops(NULL, true);
+
+# define SLOTS_PRIM(name)						      \
+    oop vframeKlass::name(oop obj,  symbolOop nam) {			      \
+    TEST;								      \
+    return vfo->method()->name(nam);					      \
+  }									      \
+    
+oop vframeKlass::mirror_names(oop obj) {
+  TEST;
+  return vfo->method()->mirror_names();
+}
+
+SLOTS_PRIM(mirror_is_parent_at)
+SLOTS_PRIM(mirror_is_argument_at)
+SLOTS_PRIM(mirror_is_assignable_at)
+
+void vframeKlass::kill(oop vfp)    { vframeOop(vfp)->kill_vframe(); }
+bool vframeKlass::is_live(oop vfp) { return vframeOop(vfp)->is_live_vframe(); }
+
+bool vframeKlass::verify(oop obj) { return vframeOop(obj)->verify(); }
+
+oop vframeKlass::mirror_codes(oop obj) {
+  return vframeOop(obj)->method()->mirror_codes(); }
+oop vframeKlass::mirror_literals(oop obj) {
+  return vframeOop(obj)->method()->mirror_literals(); }
+oop vframeKlass::mirror_source(oop obj) {
+  return vframeOop(obj)->method()->mirror_source(); }
+oop vframeKlass::mirror_file(oop obj) {
+  return vframeOop(obj)->method()->mirror_file(); }
+oop vframeKlass::mirror_line(oop obj) {
+  return vframeOop(obj)->method()->mirror_line(); }
+
+oop vframeKlass::mirror_contents_at(oop obj, symbolOop name) {
+  TEST;
+  slotDesc* sd = vfo->method()->find_nonVM_slot(name);
+  if (sd == NULL) return prim_error(SLOTNAMEERROR);
+  if (sd->is_assignment_slot())
+    return Memory->assignmentMirrorObj;
+  vframe* vf = vfo->as_vframe();
+  oop contents = vf->get_slot(sd);
+  return contents->as_mirror();
+}
+
+# define VFRAME_PRIM(name, what)					      \
+  oop vframeKlass::name(oop obj) {					      \
+    TEST;								      \
+    vframe* vf = vfo->as_vframe();					      \
+    return what;							      \
+  }									      \
+    
+VFRAME_PRIM(mirror_bci, as_smiOop(vf->bci()))
+VFRAME_PRIM(mirror_method_holder, vf->real_method_holder()->as_mirror())
+
+oop vframeKlass::mirror_receiver(oop obj) {
+  TEST;
+  return vfo->as_vframe()->receiver()->as_mirror();
+}
+
+oop vframeKlass::mirror_parent(oop obj) {
+  TEST;
+  vframe* parent = vfo->as_vframe()->parent();
+  if (!parent) return prim_error(NOPARENTERROR);
+  assert(vfo->process() == vmProcess || !parent->is_first_self_vframe(),
+	 "doIt of a process cannot have blocks!");
+  vframeOop nvfo = new_vframeOop(vfo->process(), parent);
+  return nvfo->as_mirror();
+}
+
+oop vframeKlass::mirror_sender(oop obj) {
+  TEST;
+  vframe* vf = vfo->as_vframe();
+  vframe* sender = vf->sender();
+  if (! sender ||
+      vfo->process() != vmProcess && sender->is_first_self_vframe())
+    return prim_error(NOSENDERERROR);
+  
+  vframeOop nvfo = new_senderVFrameOop(vfo->process(), vfo, sender);
+
+  return nvfo->as_mirror();
+}
+
+oop vframeKlass::mirror_expr_stack(oop obj) {
+  TEST;
+  smi len;
+  oop* vec;
+  vfo->as_vframe()->get_expr_stack(vec, len);
+  objArrayOop objVec= Memory->objArrayObj->cloneSize(len);
+  for (smi i = 0; i < len; i++) objVec->obj_at_put(i, vec[i]);    
+  return objVec;
+}
+
+oop vframeKlass::mirror_selector(oop obj) {
+  TEST;
+  return vfo->as_vframe()->selector();
+}
+
+oop vframeKlass::clone(oop obj, bool mustAllocate, oop genObj) {
+  Unused(genObj);
+  vframeOop theClone= vframeOop(obj)->basic_clone(mustAllocate);
+  if (oop(theClone) != failedAllocationOop && theClone->is_live()) {
+    // link clone into list after the original
+    vframeOop(obj)->set_next(theClone);
+  }
+  return theClone;
+}
+
+oop vframeKlass::cloneSize(oop obj, int length, bool mustAllocate, oop filler) {
+  return slotsKlass::cloneSize(obj, length, mustAllocate, filler); }
+
+int vframeKlass::empty_object_size() {
+  return sizeof(vframeOopDesc) / oopSize; 
+}
+
+void vframeKlass::print(oop obj) {
+  ResourceMark rm;
+  lprintf("vframe ");
+  if (WizardMode && !obj->is_Klass()) {
+    vframeOop vfo = vframeOop(obj);
+    if (vfo->is_live()) {
+      vframe* vf = vfo->as_vframe();
+      char* sel = vf->selector() ?
+	symbolOop(vf->selector())->copy_null_terminated() : "...";
+      lprintf("(%s / %#lx %#lx) ", sel, vfo->fr(), vfo->locals());
+    } else {
+      lprintf("(DEAD)");
+    }
+  }
+  slotsKlass::print(obj);
+}
+
+void vframeKlass::print_oop(oop obj) {
+  bool live = vframeOop(obj)->is_live();
+  lprintf("<a%s activation object", live ? "n" : " dead");
+  if (WizardMode && live) {
+    ResourceMark rm;
+    vframe* vf = vframeOop(obj)->as_vframe();
+    lprintf(" <%#lx @ %#lx # %ld>", vf->fr, vf->code,
+	   long(vf->descOffset()->value()));
+    
+    methodKlass *mm = (methodKlass*) vf->method()->Klass();
+    symbolOop file = mm->file();
+    if (file->length() > 0) {
+      lprintf(" (");
+      lprintf(":%ld): ", mm->line()->value());
+    } else {
+      lprintf(" ");
+    }
+  } else if (PrintOopAddress) {
+    lprintf(" (%#lx) ", obj);
+  }
+  lprintf(">");
+}
+
+// enumerating
+bool vframeKlass::is_enumerable(oop obj,  oop* matching_cell) {
+  return  matching_cell >=     vframeOop(obj)->oops(empty_object_size())
+    ||   *matching_cell ==     vframeOop(obj)->method()
+    ||   *matching_cell == oop(vframeOop(obj)->process());
+};

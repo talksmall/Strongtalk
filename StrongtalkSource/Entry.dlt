@@ -1,0 +1,51 @@
+Delta define: #Entry as: (
+Generic forAll: '(E covar) ' body: ((Class subclassOf: 'SequenceableCollection[E] mixin |> Link' instanceVariables: 'value <E>'))) !
+
+(Delta mirrorFor: #Entry) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Entry) group: 'base'!
+
+(Delta mirrorFor: #Entry)
+comment: 
+'An Entry is a kind of Link that holds a single element of type E.
+
+For convenience, it supports the entire SeqCltn[E] protocol.
+
+Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Entry) methodsFor: 'accessing' !
+
+
+at: i <Index> ^<E>
+
+	^(self linkAt: i) value!
+
+do: fun <[E]>
+
+	self linksDo:
+		[ :link <Instance> |
+			fun value: (link value)	].!
+
+isEmpty ^<Boolean>
+
+	^false!
+
+size ^<Int>
+
+	"%kludge: we implement this because sequenceable collection canceled the
+		implementation coming from Link"
+
+	^self length!
+
+value ^<E>
+
+	^value!
+
+value: v <E>
+
+	value := v! !
+

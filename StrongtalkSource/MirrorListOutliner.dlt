@@ -1,0 +1,117 @@
+Delta define: #MirrorListOutliner as: (
+Generic forAll: 'M <Mirror> ' body: ((Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'list <OrdCltn[M]>
+	') abstract)) !
+
+(Delta mirrorFor: #MirrorListOutliner) revision: '$Revision: 1.11 $'!
+
+(Delta mirrorFor: #MirrorListOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #MirrorListOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MirrorListOutliner) classSide methodsFor: 'instance creation' !
+
+
+forWorld ^ <Instance>
+
+	^self new initializeForWorld! !
+
+! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'private-initialization' !
+
+
+initializeForWorld
+
+	self list: self computeWorldList.
+	Smalltalk addDependent: self.! !
+
+! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'accessing' !
+
+
+entryName ^ <Str>
+
+	self subclassResponsibility!
+
+list ^ <OrdCltn[M]>
+
+	^list!
+
+list: l <OrdCltn[M]>
+
+	list := l! !
+
+! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'private' !
+
+
+buildBody ^<Visual>
+
+	| col <Column[Visual]> label <Visual> pmh <PopUpMenuHandler> |
+	col := Column[Visual] new.
+	list do: [ :m <M> |
+		label := self	 buildLabel: m name 
+							painter: self labelPainter 
+							action: [ (DefWithMsgOutliner[M] on: m) launch ].
+		pmh := PopUpMenuHandler for: label.
+		pmh menuBlock: [ self menuBarFor: m ].
+		col add: pmh ].
+	col optimizeIncrementalLayout: false.
+	^col!
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: self windowTitle painter: self sectionPainter) asVisual
+!
+
+computeWorldList ^ <OrdCltn[M]>
+
+	self subclassResponsibility!
+
+initialOpenState ^ <Boolean>
+
+	^true!
+
+labelPainter ^<Painter>
+
+	self subclassResponsibility!
+
+showBodyOnlyForTop ^ <Boolean>
+
+	^true!
+
+update
+
+	"This should be refined to add/remove relevant entries
+		rather than recomputing the entire list."
+	self list: self computeWorldList.
+	self updateBody.
+	! !
+
+! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+
+	Smalltalk removeDependent: self.
+	super closeRequest: toClose.!
+
+typecheckAllDefs
+
+self typecheckAction: [
+											self list do:[: m <M> |
+											 					m typecheckDefinition.
+																].
+											]
+		title: 'Typechecking definitions of all ', self windowTitle.
+! !
+
+! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'menus' !
+
+
+menuBarFor: m <M>
+
+	^Menu new
+		add: (MenuAction new
+						name: '&Remove ', self entryName;
+						action: [ self removeDefinition: m ])! !
+

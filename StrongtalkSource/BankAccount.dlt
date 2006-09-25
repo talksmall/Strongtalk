@@ -1,0 +1,25 @@
+Delta define: #BankAccount as: (
+(Class subclassOf: 'Object' instanceVariables: 'balance <Integer>')) !
+
+(Delta mirrorFor: #BankAccount) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BankAccount) group: 'tutorial'!
+
+(Delta mirrorFor: #BankAccount)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BankAccount) methodsFor: 'debit/credit' !
+
+
+credit: amount <Integer> ^ <BankAccount>
+amount >= 0
+	ifTrue:[balance := balance + amount]
+	ifFalse:["error handling"].!
+
+debit: amount <Integer> ^ <BankAccount>
+amount <= 0
+	ifTrue:[balance := balance - amount]
+	ifFalse:["error handling"].! !
+

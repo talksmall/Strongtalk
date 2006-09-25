@@ -1,0 +1,124 @@
+Delta define: #HTMLProduction as: (
+(Class subclassOf: 'Object' instanceVariables: 'name <Str>
+isElement <Boolean>
+	"If this is true, then parsing this production
+		produces an element node with the specified
+		name.  Otherwise, the production is expanded"
+isSingleton <Boolean>
+	"if this is an element, then if it is a singleton, there is no
+		end tag, just a start tag"
+parts <Set[Str]>
+	"The names of productions that can be contained by this one"')) !
+
+(Delta mirrorFor: #HTMLProduction) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HTMLProduction) group: 'HTML'!
+
+(Delta mirrorFor: #HTMLProduction)
+comment: 
+'An HTML Grammar production.
+
+Tags: %HTML %UI
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #HTMLProduction) classSide methodsFor: 'instance creation' !
+
+
+named: nm <Str> elementHolds: ps <Cltn[Str]>  ^<Instance>
+
+	^self new
+		initNamed: nm
+		isElement: true
+		isSingleton: false
+		parts: ps!
+
+named: nm <Str> holds: ps <Cltn[Str]>  ^<Instance>
+
+	^self new
+		initNamed: nm
+		isElement: false
+		isSingleton: false
+		parts: ps!
+
+singletonNamed: nm <Str>  ^<Instance>
+
+	^self new
+		initNamed: nm
+		isElement: true
+		isSingleton: true
+		parts: nil! !
+
+! (Delta mirrorFor: #HTMLProduction) methodsFor: 'accessing' !
+
+
+isElement ^<Boolean>
+
+	^isElement!
+
+isSingleton ^<Boolean>
+
+	^isSingleton!
+
+name ^<Str>
+
+	^name! !
+
+! (Delta mirrorFor: #HTMLProduction) methodsFor: 'initialization-private' !
+
+
+initNamed: nm <Str>
+isElement: isEl <Boolean>
+isSingleton: isSingle <Boolean>
+parts: ps <Cltn[Str]>
+
+	name := nm asUppercase.
+	isElement := isEl.
+	isSingleton := isSingle.
+	isSingleton
+		ifFalse: [	parts := Set[Str] new: ps size.
+							ps do:
+								[ :p <Str> |
+									parts include: p asUppercase.	 ].
+						]! !
+
+! (Delta mirrorFor: #HTMLProduction) methodsFor: 'testing' !
+
+
+canHold: prodName <Str>
+in: grammar <KeyedSet[Str,HTMLProduction]>
+^<Boolean>
+
+	self parts isNil
+		ifTrue: [ ^false ].
+	self parts do:
+		[ :partProdName <Str> |
+			 ((grammar at: partProdName) matches: prodName in: grammar)
+			 	ifTrue: [ ^true ]
+		].
+	^false!
+
+matches: prodName <Str>
+in: grammar <KeyedSet[Str,HTMLProduction]>
+^<Boolean>
+
+	self name = prodName
+		ifTrue: [ ^true ].
+	self isElement
+		ifTrue: [ ^false ].
+	self parts do:
+		[ :partProdName <Str> |
+			 ((grammar at: partProdName) matches: prodName in: grammar)
+			 	ifTrue: [ ^true ]
+		].
+	^false! !
+
+! (Delta mirrorFor: #HTMLProduction) methodsFor: 'private' !
+
+
+parts ^<Set[Str]>
+
+	^parts! !
+

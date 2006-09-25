@@ -1,0 +1,83 @@
+Delta define: #InfiniteRegion as: (
+(Class subclassOf: 'Region' instanceVariables: '') classVariables: 'TheInstance <InfiniteRegion>') !
+
+(Delta mirrorFor: #InfiniteRegion) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #InfiniteRegion) group: 'ui'!
+
+(Delta mirrorFor: #InfiniteRegion)
+comment: 
+'InfiniteRegions are used to optimize pruning operations against the clipping region once 
+we are entirely within the clipping region.  This must be done with care, since if such a region
+is used to test against things outside the clipping region, it will return spurious true results.
+
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #InfiniteRegion) classSide methodsFor: 'creation' !
+
+
+the ^<InfiniteRegion>
+
+	^TheInstance! !
+
+! (Delta mirrorFor: #InfiniteRegion) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	TheInstance := InfiniteRegion new.! !
+
+! (Delta mirrorFor: #InfiniteRegion) methodsFor: 'testing' !
+
+
+intersects: other <Region> ^<Boolean>
+
+	^true!
+
+intersectsRect: other <Region> ^<Boolean>
+
+	^true!
+
+mightIntersect: other <Region> ^<Boolean>
+
+	^true!
+
+relativeTo: p <Point> mightIntersect: r <Region>  ^<Boolean>
+
+	^true!
+
+surelyContains: other <Region> ^<Boolean>
+
+	^true!
+
+translatedBy: p <Point> mightIntersect: r <Region>  ^<Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #InfiniteRegion) methodsFor: 'operations' !
+
+
+relativeTo: p <Point> ^<Region>
+
+	^self!
+
+translatedBy: p <Point> ^<Region>
+
+	^self! !
+
+! (Delta mirrorFor: #InfiniteRegion) methodsFor: 'accessing' !
+
+
+enclosedRect ^<Rect>
+
+	self halt.	"This should really never get here; almost all callers should be optimized"
+	^Rectangle infinite!
+
+enclosingRect ^<Rect>
+
+	self halt.	"This should really never get here; almost all callers should be optimized"
+	^Rectangle infinite! !
+

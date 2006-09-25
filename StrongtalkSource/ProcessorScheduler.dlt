@@ -1,0 +1,423 @@
+Delta define: #ProcessorScheduler as: (
+(Class subclassOf: 'Process' instanceVariables: 'processes <Extensible[Process]>
+	"Contains all processes controlled by the scheduler"
+tryingToRun <OrdCltn[Process]>
+	"Contains processes or groups holding processes that we should keep trying
+	    to give a slice to; these include processes blocked on an async dll call"
+next <Int>
+	"Next index in tryingToRun"
+nextDelayedTime <Float>
+	"The time to signal the next delayed semaphore,, in microseconds"
+delayed <SortedCollection[Tuple[Float,Semaphore]]>
+	"Contains a list of semaphores that should be signaled at a specific time"
+stopHandler <[Process]>
+	"Whenever a process is stopped this block will be evaluated in a new process
+		with the process as its arg."
+quiescent <Boolean>
+	"If true, then no process has had anything to do for quiescenceDelay time"
+toBeStoppedInEvaluator <OrdCltn[Process]>
+	"Contains processes that we should transfer to the command line evaluator.
+		This is a temporary solution until we discard the command line evaluator."
+')) !
+
+(Delta mirrorFor: #ProcessorScheduler) revision: '$Revision: 1.9 $'!
+
+(Delta mirrorFor: #ProcessorScheduler) group: 'base'!
+
+(Delta mirrorFor: #ProcessorScheduler)
+comment: 
+'Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'restricted- to processes' !
+
+
+isRunning: p <Process> ^<Boolean>
+
+	^self uninterruptablyDo:
+		[ self activeProcess = p or: [ self tryingToRun includes: p ] ]!
+
+register: p <Process>
+	"This is called outside the scheduler to register a new process"
+
+	self uninterruptablyDo:
+		[ self processes add: p ]!
+
+resume: p <Process>
+
+	self assert: [ p ~~ IdleProcess theIdleProcess ].
+	self assert: [ p suspended ].
+	self uninterruptablyDo:
+		[ self tryingToRun addLast: p. ]!
+
+stopInEvaluator: p <Process>
+
+	self uninterruptablyDo:
+		[ self toBeStoppedInEvaluator add: p ]!
+
+suspend: p <Process>
+	"make sure s isn't on the list of runnables.  This does not stop the active
+		process if it is p"
+
+	self uninterruptablyDo:
+		[	| index <Int> |
+			index := self tryingToRun indexOf: p ifAbsent: [ ^self ].
+			self tryingToRun removeAt: index.
+			index <= self next
+				ifTrue: [ self next: (self next - 1 max: 1). ].
+		]!
+
+terminating: p <Process>
+
+	p running
+		ifFalse: [	p suspended
+								ifTrue: [ p resume ]
+								ifFalse: [ "self error: 'Process must be running or suspended to be terminated' " ].
+							self uninterruptablyDo:
+								[	self removeFromDelayedIfNeeded: p	].
+
+							"self unimplemented."
+							"%todo: do cleanup here:
+								- if waiting for delay, remove from delayed queue (and
+										fiddle if was next)
+								- if was waiting for semaphore, remove from semaphore list
+								"
+						]!
+
+uninterruptablyDo: blk <[^X def]> ^<X>
+	"Don't allow any preemption during the execution of blk.
+		If the current process suspends itself during blk,
+		then the critical region is terminated at that point.
+		These can be nested."
+
+	^blk value!
+
+unregister: p <Process>
+
+	self uninterruptablyDo:
+		[ self processes remove: p ]! !
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'private' !
+
+
+checkDelayed
+
+	[ self nextDelayedTime notNil and: [Time microsecondFloatClockValue >= self nextDelayedTime] ]
+		whileTrue:
+			[	self delayed removeFirst at2 signal.
+				self delayed isEmpty
+					ifFalse: [	self nextDelayedTime: self delayed first at1 ]
+					ifTrue: [  self noNextDelayedTime ].
+			]!
+
+delayed ^<SortedCollection[Tuple[Float,Semaphore]]>
+
+	^delayed!
+
+executeAnIdleAction
+
+	| status <Symbol> |
+	status := self transferTo: IdleProcess theIdleProcess.
+	(self isRunningStatus: status)
+		ifFalse: [ self handleStopFor: IdleProcess theIdleProcess ].
+	!
+
+handleStopFor: p <Process>
+
+	| h <[Process]> |
+	h := self stopHandler.
+	h isNil
+		ifTrue: [ self handleStopOnCommandLine: p ]
+		ifFalse: [  [ h value: p ] fork. ]!
+
+handleStopOnCommandLine: p <Process>
+
+	[	Platform errorStream show: ('Process state: ', p status asString); cr.
+		p traceStack.
+		{{primitiveBreakpoint}}.
+		p terminate.
+	] fork!
+
+hasIdleActions ^<Boolean>
+
+	^IdleProcess theIdleProcess hasIdleActions!
+
+isRunningStatus: s <Symbol>  ^<Boolean>
+
+	^s == #Yielded
+		or: [ s == #Running
+		or: [ s == #InAsyncDLL
+		or: [ s == #Preempted
+		or: [ s == #Initialized ]	]]]!
+
+next ^<Int>
+
+	^next!
+
+next: n <Int>
+
+	next := n!
+
+nextDelayedTime ^<Float>
+
+	^nextDelayedTime!
+
+nextDelayedTime: t <Float>
+
+	nextDelayedTime := t!
+
+noNextDelayedTime
+
+	nextDelayedTime := nil!
+
+processUnusualStatus: s <Symbol>
+
+	| p <Process> |
+	self assert: [ s ~~ #Killed ].	"This shouldn't happen"
+	
+	"Remove process with unusual status from running queue. The stop handler has to put it back in if desired."
+	p := self tryingToRun removeAt: self next.
+	self next: self next - 1.
+	
+	"Check for normal stop status"
+	(s == #Completed or: [ s == #Aborted ])
+		ifTrue: [	self unregister: p.
+						^self ].
+						
+	"We have to invoke the stop handler, first check if the process can be resumed"
+	s == #Stopped
+		ifFalse: [ self unregister: p ].
+
+	"Make sure that process error is set"
+	p processError isNil
+		ifTrue: [	self setProcessErrorFor: p ].
+		
+	self handleStopFor: p
+!
+
+processes ^<Extensible[Process]>
+
+	^processes!
+
+quiescent: f <Boolean>
+
+	quiescent := f!
+
+removeFromDelayedIfNeeded: p <Process>
+
+	1 to: self delayed size do:
+		[ :i <Int> |
+			(self delayed at: i) at2 = p
+				ifTrue: [	self delayed removeAt: i.
+								^self ].
+		]!
+
+runNext ^<Boolean>
+	"run next runnable process, idle afterwards until there is something to do,, and
+			then return a boolean indicating if we should continue running"
+	| idle <Boolean> |
+	
+	"First handle any processes that should be stopped on the command line for debugging."
+	[ self toBeStoppedInEvaluator isEmpty ] whileFalse:
+		[	| p <Process> status <Symbol> |
+			p := self toBeStoppedInEvaluator removeFirst.
+			status := self transferToEvaluator: p.
+			(self isRunningStatus: status)
+				ifTrue: [		self uninterruptablyDo: [ self tryingToRun include: p ] ]
+				ifFalse: [	self unregister: p ]
+			 ].
+
+	self assert: [ next = 1 ].
+	idle := true.
+	self tryingToRun isEmpty
+		ifFalse: [	[	| status <Symbol> |
+								status := self transferTo: (self tryingToRun at: self next).
+								(self isRunningStatus: status)
+									ifFalse: [ self processUnusualStatus: status ]
+									ifTrue: [ status = #InAsyncDLL
+													ifFalse: [ idle := false ]
+												 ].
+								self checkDelayed.
+								self next: next + 1.
+								self next <= self tryingToRun size
+							] whileTrue.
+							self next: 1.
+						]
+		ifTrue: [ self delayed isEmpty
+						ifTrue: [	self processes isEmpty
+											ifTrue: [ ^false ]
+											ifFalse: [ self error: 'Probable deadlock detected;',
+																	' there are suspended processes that',
+																	' can never resume' ]
+									]
+					].
+	idle
+		ifTrue: [	(self quiescent and: [ self hasIdleActions ])
+							ifTrue: [ self executeAnIdleAction ]
+							ifFalse: [ self waitForAsyncDLLReturnOrTimeout ].
+						self checkDelayed. ]
+		ifFalse: [ self quiescent: false ].
+	^true!
+
+setProcessErrorFor: p <Process>
+	"Set the process error for p (derived from the status)"
+	
+	| status <Symbol> error <ProcessError> |
+	status := p status.
+	status = #BooleanError 
+		ifTrue: [ error := ProcessBooleanError new ].
+	status = #LookupError 
+		ifTrue: [	error := ProcessLookupError new ].
+	status = #PrimitiveLookupError 
+		ifTrue: [	error := ProcessPrimitiveLookupError new ].
+	status = #DLLLookupError 
+		ifTrue: [	error := ProcessDLLLookupError new ].
+	status = #NLRError 
+		ifTrue: [	error := ProcessNLRError new ].
+	status = #StackOverflow 
+		ifTrue: [	error := ProcessStackOverflowError new ].
+
+	self assert: [ error notNil ].
+	self assert: [ p processError isNil ].
+	p processError: error
+!
+
+toBeStoppedInEvaluator ^<OrdCltn[Process]>
+
+	^toBeStoppedInEvaluator!
+
+transferTo: p <Process> ^<Symbol>
+
+	^{{primitiveProcessTransferTo: p ifFail: [ :err <Symbol> | self error: err ]}}!
+
+transferToEvaluator: p <Process> ^<Symbol>
+
+	^{{primitiveProcessStartEvaluator: p ifFail: [ :err <Symbol> | self error: err ]}}!
+
+tryingToRun ^<OrdCltn[Process]>
+
+	^tryingToRun!
+
+waitForAsyncDLLReturnOrTimeout
+
+	| timeoutInterval <Float> waitingForQueiscence <Boolean> timedOut <Boolean> |
+	
+	waitingForQueiscence := true.
+	timeoutInterval := self quiescenceDelay.
+	self delayed isEmpty
+		ifFalse: [	| delayInterval <Float> |
+							delayInterval := self delayed first at1 - Time microsecondFloatClockValue.
+							delayInterval <= timeoutInterval
+								ifTrue: [	timeoutInterval := delayInterval.
+												waitingForQueiscence := false.  ]
+					   ]
+		ifTrue: [	self quiescent
+							ifTrue: [ timeoutInterval:= 10000.0.	  "just a large interval so wakeups are very infrequent."
+											waitingForQueiscence := false.	].
+					 ].
+
+	timedOut := self waitForAsyncDLLReturnOrTimeout: timeoutInterval.
+	(timedOut and: [ waitingForQueiscence ])
+		ifTrue: [	self quiescent: true ]!
+
+waitForAsyncDLLReturnOrTimeout: timeoutSeconds <Float> ^<Boolean>
+	"waits until an async dll call returns, or times out if timeoutSeconds elapses.
+	 true is returned if it times out, false otherwise"
+
+	| millis <Integer> |
+	millis := (timeoutSeconds * 1000.0) asInteger.
+	^{{self primitiveProcessSchedulerWait: millis ifFail: [ :err <Symbol> | self error: err] }}! !
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'control' !
+
+
+signal: s <Semaphore> atTime: millisecondClockValue <Int>
+
+	| micro <Float> |
+	micro := millisecondClockValue asFloat / 1000.0.
+	self uninterruptablyDo:
+		[	self delayed add: micro ,, s.
+			self nextDelayedTime: micro ].
+!
+
+stopWithError: e <ProcessError> ^<BottomType>
+
+	self activeProcess processError: e.
+	{{primitiveProcessStop}}.
+!
+
+terminateActive
+
+	self activeProcess terminate!
+
+yield
+
+	self activeProcess yield! !
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'restricted' !
+
+
+run
+	"The central loop of the scheduler.  This only returns when the program is done
+		and the VM should exit"
+
+	[ self runNext ] whileTrue!
+
+start
+	"This is the message sent by the VM when it starts up, thus initiating execution
+		of  Smalltalk code"
+
+	self initialize.
+	SystemInitializer run.
+	self run.
+	VM quit.! !
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'accessing' !
+
+
+activePriority ^<Int>
+
+	^self activeProcess priority!
+
+activeProcess ^<Process>
+
+	^{{primitiveProcessActiveProcess}}!
+
+quiescent ^<Boolean>
+quiescent isNil ifTrue: [ quiescent := false ].  "%remove"
+	^quiescent!
+
+stopHandler ^<[Process]>
+
+	^stopHandler!
+
+stopHandler: h <[Process]>
+
+	stopHandler := h! !
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'private-initialization' !
+
+
+initialize
+	"sent by #start"
+	
+	processes := Set[Process] new.
+	tryingToRun := OrderedCollection[Process] new.
+	delayed := SortedCollection[Tuple[Int,Semaphore]]
+						sortBlock: [ :a1 <Tuple[Int,Semaphore]> :a2 <Tuple[Int,Semaphore]> |
+												a1 at1 <= a2 at1	].
+	self next: 1.
+	self quiescent: false.
+	toBeStoppedInEvaluator := OrderedCollection[Process] new.! !
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'constants' !
+
+
+quiescenceDelay ^<Float>
+	"# of seconds before the system thinks it is quiescent, and will do idle actions"
+	
+	^0.1! !
+

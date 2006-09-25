@@ -1,0 +1,206 @@
+/* Copyright 1994, 1995 LongView Technologies L.L.C. $Revision: 1.4 $ */
+/* Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+	  disclaimer in the documentation and/or other materials provided with the distribution.
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+	  from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+
+
+*/
+
+# include "incls/_vframeOop.cpp.incl"
+
+// vframeOops (vfos for short) contain a pointer to the corresponding stack
+// frame.  Unfortunately, we can't just store the frame* pointer bacause
+// it is not constant (on the Sparc, the frame* is really the sp of the frame
+// below our frame).
+// Thus we store the frame* of our activation (SPARC: sp) which is
+// constant EXCEPT for the bottommost frame: if we switch to an uncommon
+// branch, the frame size may change (and also the descOffset).
+// Process::handleVFrameOops checks for this situation and adjusts the
+// values accordingly.
+
+frame* vframeOopDesc::fr() {
+  return localsInBottomHalfFrame ? (frame*)locals() : locals()->full_frame();
+}
+
+vframe* vframeOopDesc::as_vframe() {
+  assert(is_live(), "not live");
+  return new vframe(fr(), descOffset());
+}
+
+void vframeOopDesc::kill_vframe() {
+  if (traceV) lprintf("*** killing vframeOop %#lx\n", this);
+  LOG_EVENT2("killing vframe %#lx (locals = %#lx)", this, locals());
+  set_locals(NULL); 
+}
+
+bool vframeOopDesc::is_below(frame* fr) {
+  return locals() < fr->stack_locals();
+}
+
+bool vframeOopDesc::is_equal(frame* fr) {
+  return locals() == fr->stack_locals();
+}
+
+bool vframeOopDesc::is_above(frame* fr) {
+  return locals() > fr->stack_locals();
+}
+
+bool vframeOopDesc::is_below(vframe* vf) {
+  if (is_below(vf->fr)) return true;
+  if (is_above(vf->fr)) return false;
+  return descOffset() > vf->descOffset();
+}
+
+bool vframeOopDesc::is_equal(vframe* vf){
+  return is_equal(vf->fr) && descOffset() == vf->descOffset();
+}
+
+bool vframeOopDesc::is_above(vframe* vf){
+  if (is_above(vf->fr)) return true;
+  if (is_below(vf->fr)) return false;
+  return descOffset() < vf->descOffset();
+}
+  
+
+vframeOop new_senderVFrameOop(Process* p, vframeOop from, vframe* vf) {
+  vframeOop vfo;
+  // vframeOops are canonical, so check first for existing vframeOop
+
+  if (from->next() && *from->next()->as_vframe() == vf) { 
+      return from->next();
+  }
+
+  MethodKind k = vf->method()->kind();
+  switch (k) {
+   case OuterMethodType:
+    vfo = Memory->outerActivationObj->basic_clone(); break;
+   case BlockMethodType:
+    vfo = Memory->blockActivationObj->basic_clone(); break;
+   default:
+    fatal("unexpected kind");
+  }
+  vfo->set_process(p);
+  vfo->set_locals(vf->fr->stack_locals());
+  vfo->set_method(vf->method());
+  vfo->set_descOffset(vf->descOffset());
+    
+  // Insert the new vframeOop after from
+  vfo->insertAfter(from);
+    
+  if (p == currentProcess) {
+    // make sure the current stack is updated
+    p->handleVFrameOops(p->last_self_frame(true), true);
+  }
+  return vfo;
+}
+
+vframeOop new_vframeOop(Process* p, vframe* vf) {
+  vframeOop vfo;
+  // vframeOops are canonical, so check first for existing vframeOop
+  vfo = p->findVFrameOop(vf);
+  if (vfo) {
+    if (traceV) lprintf("*** suppressing duplicate of vframeOop %#lx\n", vfo);
+    return vfo;
+  }
+
+  MethodKind k = vf->method()->kind();
+  switch (k) {
+   case OuterMethodType:
+    vfo = Memory->outerActivationObj->basic_clone(); break;
+   case BlockMethodType:
+    vfo = Memory->blockActivationObj->basic_clone(); break;
+   default:
+    fatal("unexpected kind");
+  }
+  vfo->set_process(p);
+  vfo->set_locals(vf->fr->stack_locals());
+  vfo->set_method(vf->method());
+  vfo->set_descOffset(vf->descOffset());
+  vfo = p->insertVFrameOop(vfo);
+  if (p == currentProcess) {
+    // make sure the current stack is updated
+    p->handleVFrameOops(p->last_self_frame(true), true);
+  }
+  return vfo;
+}
+
+static int createdVFrameProtos = 0;
+
+vframeOop create_vframeOop(oop method) {
+  if (++createdVFrameProtos > 3)
+    fatal("should create only three vframe prototypes");
+  int vtbl;
+  switch (method->kind()) {
+   case OuterMethodType:
+    { ovframeKlass m; vtbl = m.vtbl_value(); break; }
+   case BlockMethodType:
+    { bvframeKlass m; vtbl = m.vtbl_value(); break; }
+   default: fatal("unexpected kind");
+  }
+  assert(sizeof(vframeKlass) == sizeof(bvframeKlass) &&
+	 sizeof(vframeKlass) == sizeof(ovframeKlass), "should be the same");
+  vframeKlass* m = (vframeKlass*)create_map(sizeof(vframeKlass), 0, vtbl);
+  vframeOop p = vframeOop(m->fill_in_slots(NULL, 0));
+  p->set_next(NULL);
+  p->set_method(method);
+  p->set_locals(NULL);
+  p->set_process(NULL);
+  p->set_descOffset(0);
+  return p;
+}
+
+bool vframeOopDesc::equal(vframeOop v) {
+  bool eq = method() == v->method() && locals() == v->locals() &&
+    descOffset() == v->descOffset();
+  assert(!eq || process() == v->process(), "should be the same");
+  return eq;
+}
+
+bool vframeOopDesc::verify() {
+  bool flag = memOopDesc::verify();
+  if (flag && is_live()) {
+    if (next() != NULL && !next()->is_vframe()) {
+      error("vframeOop %#lx: next isn't a vframeOop", this);
+      flag = false;
+    }
+    if (!method()->has_code()) {
+      error("vframeOop %#lx: method doesn't have code", this);
+      flag = false;
+    }
+    if (!oop(locals())->is_smi()) {
+      error("vframeOop %#lx: locals ptr isn't a smi", this);
+      flag = false;
+    }
+    frame* f = fr();
+    if (!oop(f)->is_smi()) {
+      error("vframeOop %#lx: frame ptr isn't a smi", this);
+      flag = false;
+    }
+    if (!descOffset()->is_smi()) {
+      error("vframeOop %#lx: desc isn't a smi", this);
+      flag = false;
+    }
+    nmethod* nm = f->code();
+    ScopeDesc* d = nm->scopes->at(descOffset());
+    if (!nm->scopes->includes(d)) {
+      error("vframeOop %#lx: desc isn't a valid scope offset", this);
+      flag = false;
+    }
+  }
+  return flag;
+}

@@ -1,0 +1,187 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Strongtalk System</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h2>More on the History of the Strongtalk System</h2>
+
+<p>There were really two different threads to the prehistory of
+the Strongtalk system, starting with two separate research
+efforts on different sides of the country.</p>
+
+<p><strong>On the West Coast</strong>, the Self group at Sun
+Microsystems Labs, headed by David Ungar and Randall Smith, spent
+years working on some really radical virtual machine technology,
+originally with the goal of getting their prototype-based object
+language, Self, to perform well. They had a very advanced VM
+architecture, with excellent garbage collection, but the real
+challenge was in the compilation technology, because Self, like
+Smalltalk, was a pure object language, meaning that all the basic
+data-types in the system were real objects, unlike C++, Java, or
+C#. That, combined with the fact that Self (also like Smalltalk)
+is a dynamically-typed language, imposes a significant cost when
+manipulating really fundamental things like booleans and
+integers, because when the compiler sees a+b, or (flag ifTrue:
+[...]), it can't assume that they are integers or booleans,
+because they might be something else, each and every time they
+get executed, and you have to handle those other cases somehow.
+Also, both Self and Smalltalk depend on Blocks (function objects
+with closures) for all control structures, which also imposes a
+lot of overhead.</p>
+
+<p>Making the problem even worse for Self was the fact that they
+didn't have any direct variable access- ALL variable access had
+to go through accessor methods (the apparent variable access
+syntax was just sugar for accessor messages). So they put a
+tremendous amount of effort into better compilation technology.</p>
+
+<p>The real breakthrough on the VM side came with Urs Hoelzle's
+type-feedback compiler, which for the first time allowed the vast
+majority of message sends in general purpose code to be inlined.
+Once things are inlined (often many levels deep), the compiler
+can do a much better job of optimizing the code, and this is
+necessary to produce big performance gains. This requires a lot
+of really exotic technology, like optimistic inlining with the
+ability to deoptimize and back out on-the-fly if something
+happens that violates the optimistic inlining assumptions.</p>
+
+<p>The Self system was a real research tour-de-force, but Self
+has quite a few fundamental differences from Smalltalk, and the
+system was not designed for commercial or production use, since
+it was not very stable and used an enormous amount of memory. But
+it showed for the first time that pure, dynamically-typed
+languages like Self and Smalltalk in principle could be gotten
+much closer to the performance of C.</p>
+
+<p><font color="#000000"><strong>On the East Coast,</strong> I
+(D.G.) was frustrated with the fact that there were still a lot
+of obstacles to using Smalltalk in most kinds of production
+applications. ParcPlace and Digitalk had made a lot of progress,
+especially with Deutsch/Schiffman dynamic translation technology,
+which sped up Smalltalk by a factor of 1.6 or so at the time. But
+it was still way too slow for any kind of compute intensive
+application (which I was doing), and I felt there were several
+other obstacles to widespread use as well. One of the biggest
+among these in my mind was the lack of any kind of type system,
+which although it makes the language extremely flexible, also
+means that organizing and understanding large-scale software
+systems is a lot harder. Another was poor support for native user
+interfaces, in the interest of portability. Although this was a
+nice idea for people who were ideologically dedicated to
+portability, in practice at the time (and to a large extent even
+now) people needed to write UIs that weren't out of place on
+Windows machines (emulated widgets just don't cut it).</font></p>
+
+<p>Several people had tried to build type systems for Smalltalk
+(Borning&amp;Ingalls, Palsberg&amp;Schwartzbach, Graver&amp;Johnson), but it
+was clearly an enormously difficult task, because of the vastly
+more flexible nature of the way Smalltalk is used compared to any
+existing statically-typed language, not to mention the
+unprecedented problem of having to retrofit a type system onto
+existing untyped code. In addition to the fact that none of the
+few existing type-system efforts worked on anything other than
+tiny bodies of code, it was obvious that none of the previous
+efforts were even close to being the right kind of technology for
+the real world.</p>
+
+<p>However, I was convinced that it was possible to do something
+about it, and so I hired Gilad Bracha, who knew a lot about this
+stuff, as well as about mixins and things, and we set about
+building a type system for Smalltalk that would actually work.
+The first generation of the type system, which we wrote about in
+the '93 OOPSLA proceedings, worked but was pretty ungainly
+because it was grafted on top of the ParcPlace libraries. This
+makes things a lot harder, because to really do a typed Smalltalk
+right, you need to structure your basic libraries differently so
+you can typecheck the inheritance relationships. The existing
+Smalltalk libraries are full of inheritance relationships that
+just aren't subtype compatible (e.g. Dictionary and Set), and so
+we had to use a declared hierarchy that differed from actual
+underlying hierarchy.</p>
+
+<p>At the same time, I was exploring various paths to speeding up
+Smalltalk (since the type system was not used for optimization),
+but without the kind of exotic optimistic-inlining technology the
+Self group used, the obstacle seemed insurmountable. The best I
+could figure out how to do without it was to use one simpler
+technique the Self group used, customization (copying methods
+down through inheritance so that self sends can be inlined), but
+I computed that for the ParcPlace library the best that would do
+would be to inline about 25% of sends, statically.</p>
+
+<p>I suspect other people trying to make Smalltalk faster were
+running into basically the same problem, and we all thought the
+Self system had the kind of technology that would eventually
+solve the problem, but it looked so advanced and complicated that
+it looked at least 10 years away from commercialization. I think
+that incredible apparent difficulty was what stopped everyone
+else from adopting the Self technology. It was just too daunting.</p>
+
+<p><strong>The two technologies came together</strong> when I
+started talking to Urs Hoelzle, who had finished the
+second-generation Self compiler (and his Stanford thesis), and
+was looking for something interesting to do. After reading his
+thesis on type-feedback, I realized that the type-feedback
+technology was actually not as conceptually difficult as most
+people had thought: people had read all the Self papers and been
+impressed but terrified of it. No one else seemed to pick up on
+the fact that the type-feedback technology was actually nicely
+suited for a good, production-quality compiler, although a lot of
+changes and adaptations were needed compared to the way it was
+used in Self.</p>
+
+<p>So this was a perfect opportunity- with Urs' technology (as
+well as Lars Bak, who had done a tremendous amount of work on the
+Self VM and knew its architecture inside and out), we had a type
+system and a compilation technology, which together were
+perfectly suited for a great production Smalltalk system, since
+they were independent of each other. This independence was
+critical, since the system would need to accept untyped as well
+as typed code, so that people could use the type system as much
+or as little as they wanted to, without impacting performance.</p>
+
+<p>So then we found some other really talented people, and put
+together a great team (in alphabetical order):</p>
+
+<ul>
+    <li><strong>Lars Bak</strong> was the VM wizard.</li>
+    <li><strong>Gilad Bracha</strong> wrote the typechecker, the
+        reflective interface support, and mixins at the Smalltalk
+        level.</li>
+    <li><strong>Steffen Grarup</strong> wrote the programming
+        environment, as well as the source code manager and other
+        things.</li>
+    <li><strong>Robert Griesemer</strong> wrote the interpreter,
+        the interpreter generator, most of the compiler, and
+        other VM stuff. (He also wrote an even better compiler
+        than the one running in this version, but it wasn't quite
+        finished enough for us to use for this release- it would
+        have been considerably faster).</li>
+    <li>I<strong> </strong>(David Griswold) wrote the typed
+        &quot;Blue Book&quot; libraries, and the glyph-based
+        user-interface framework, the widgets and the HTML
+        browser, and also managed the group.</li>
+    <li><strong>Urs Hoelzle</strong> of course worked on the
+        compiler and the tricky inlining infrastructure that it
+        used, and other VM stuff.</li>
+    <li>Later, <strong>Srdjan Mitrovic</strong> joined and did
+        most of the adaptation of the technology to Java.</li>
+</ul>
+
+<p>As mentioned in the introduction, work started on the system
+in the fall of 1994, and by 1996 the system was working nicely,
+but then the Java phenomenon happened and we eventually had to
+switch to Java before ever releasing it. The only public display
+of the technology was in late 1996, when we had a booth at OOPSLA
+and got quite a bit of attention. A few people got to evaluate it
+privately, and got terrific benchmark results (one well-known guy
+even got a speedup of 12 on some real Smalltalk code), but after
+that it disappeared from view, as we focused on Java.</p>
+</body>
+</html>

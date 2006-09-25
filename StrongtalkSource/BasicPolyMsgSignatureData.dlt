@@ -1,0 +1,29 @@
+Delta define: #BasicPolyMsgSignatureData as: (
+(Class subclassOf: 'BasicTypeData' instanceVariables: 'formals body ')) !
+
+(Delta mirrorFor: #BasicPolyMsgSignatureData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicPolyMsgSignatureData) group: 'ast'!
+
+(Delta mirrorFor: #BasicPolyMsgSignatureData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicPolyMsgSignatureData) methodsFor: 'Unclassified' !
+
+
+body ^ <MsgSignature>
+    ^body!
+
+formalDeclaredBounds  ^ <OrdCltn[ObjectType]>
+
+^self formals virtualCollect:[: f <ObjectType>  | f declaredBound].!
+
+formals ^ <OrdCltn[TypeVar]>
+    ^formals!
+
+formals: fs <OrdCltn[TypeVar] >body: b <MsgSignature > ^ <Self>
+    formals := fs.
+body := b.! !
+

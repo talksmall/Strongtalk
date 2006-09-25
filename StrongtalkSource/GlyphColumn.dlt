@@ -1,0 +1,138 @@
+Delta define: #GlyphColumn as: (
+(Class subclassOf: 'GlyphRowOrColumn' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlyphColumn) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #GlyphColumn) group: 'ui'!
+
+(Delta mirrorFor: #GlyphColumn)
+comment: 
+'Organizes glyphs in a column
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 
+'!
+
+! (Delta mirrorFor: #GlyphColumn) methodsFor: 'accessing' !
+
+
+at: childId <Int> ifAbsent: blk <[^X def]> ^<VisualGlyph | X>
+
+	| g <Glyph> gl <ReusedVisualGlyph> |
+	g := self glyphs at: childId ifAbsent: [ ^blk value ].
+	cachedVG == nil
+		ifTrue: [	cachedVG := ReusedVisualGlyph for: g.
+						cachedVG cramParent: self.
+						cachedVG xPosition: 0.	].
+	
+	^cachedVG
+		cramGlyph: g
+		id: childId
+		yPosition: (self positions at: childId)! !
+
+! (Delta mirrorFor: #GlyphColumn) methodsFor: 'private' !
+
+
+cramMajorPosition: oldPos <Int>  into: child <ReusedVisualGlyph>
+
+	child yPosition: oldPos.!
+
+layout: incremental <Boolean> ^<Boolean>
+
+	"We extend the inherited version to do a pre-pass to optimize the
+	  case when lines are only changing in place and their major preferences
+	  haven't changed"
+
+	| gl <Glyph> highMinor <Int> lowMinor <Int> pos <Int> lowAllocMinor <Int> highAllocMinor <Int> m <Medium> |
+
+	incremental
+		ifFalse: [ ^super layout: incremental ].
+
+	lowMinor := self minorLowOf: self natural enclosingRect.
+	highMinor := self minorHighOf: self natural enclosingRect.
+	lowAllocMinor := self minorLowOf: self allocation enclosedRect.
+	highAllocMinor := self minorHighOf: self allocation enclosedRect.
+	m := self medium.
+
+	1 to: self glyphs size do:
+		[ :i <Int> |
+			gl := self glyphAt: i.
+
+			pos := self positions at: i.
+			(gl layoutStatus = Visual invalid or: [ pos isNil ])
+				ifTrue: [ ^super layout: incremental ].
+
+			gl layoutStatus = Visual needsRelayout
+				ifTrue: [	"Then there must be old prefs recorded"
+								| oldNat <Rect> newNat <Rect> child <Visual> lowmaj <Int> highmaj <Int> |
+								oldNat := ((self session oldPrefsFor: gl) at: 2) enclosingRect.
+								newNat := (gl naturalIn: m at: (self pointWithMinor: 0 major: pos)) enclosingRect.
+
+								lowmaj := self majorLowOf: newNat.
+								highmaj := self majorHighOf: newNat.
+								((self majorLowOf: oldNat) ~= lowmaj
+									or: [	(self majorHighOf: oldNat) ~= highmaj
+									or: [	(self minorHighOf: oldNat) > highMinor
+									or: [	(self minorHighOf: newNat) > highMinor
+									or: [	(self minorLowOf: newNat) < lowMinor
+									or: [	(self minorLowOf: oldNat) < lowMinor ]		]]]]
+								)	ifTrue: [	"revert to the inherited version"
+													^super layout: incremental	].
+
+								"The old AND new natural minor are smaller than ours, and the major hasn't changed,
+								  so we can just relayout in place, since it can't affect our preferences"
+
+								child := self at: i.
+								child isSurelyRigid
+									ifTrue: [ child allocation: newNat at: (self pointWithMinor: 0 major: pos). ]
+									ifFalse: [	child allocation:
+															(self rectWithLowMajor: lowmaj
+																lowMinor: lowAllocMinor
+																highMajor: highmaj
+																highMinor: highAllocMinor)
+														at: (self pointWithMinor: 0 major: pos).	].
+								"Now invalidate it"
+								"self invalidate: (self rectWithLowMajor: pos + lowmaj
+																lowMinor: lowAllocMinor
+																highMajor: pos + highmaj
+																highMinor: highAllocMinor)."			].].
+	^true!
+
+majorHighOf: r <Rect> ^<Dist>
+
+	^r bottom!
+
+majorLowOf: r <Rect> ^<Dist>
+
+	^r top!
+
+majorOf: p <Point> ^<Dist>
+
+	^p y!
+
+majorTotalOf: r <Rect> ^<Dist>
+
+	^r height!
+
+minorHighOf: r <Rect> ^<Dist>
+
+	^r right!
+
+minorLowOf: r <Rect> ^<Dist>
+
+	^r left!
+
+pointWithMinor: minor <Dist> major: major <Dist>  ^<Point>
+
+	^minor @ major!
+
+rectWithLowMajor: lowMajor <Dist>
+lowMinor: lowMinor <Dist>
+highMajor: highMajor <Dist>
+highMinor: highMinor <Dist>
+^<Rect>
+
+	^lowMinor @ lowMajor corner: highMinor @ highMajor! !
+

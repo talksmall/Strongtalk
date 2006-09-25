@@ -1,0 +1,497 @@
+Delta define: #DeltaRewriter as: (
+(Class subclassOf: 'DeltaASTTool' instanceVariables: 'scope result ')) !
+
+(Delta mirrorFor: #DeltaRewriter) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaRewriter) group: 'ast'!
+
+(Delta mirrorFor: #DeltaRewriter)
+comment: 
+'The rewriter recursively traverses the AST and optimizes
+    particular nodes by relacing them with other (more optimal)
+    nodes.
+
+    Instance variables:
+
+    result      the result after rewriting the current node. If the node
+                      has not changed, result simply holds the current node.
+
+    scope      the current scope. Scope is adjusted whenever a
+                      new codeBody is entered.
+    
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaRewriter) methodsFor: 'Unclassified' !
+
+
+andOrNode: node
+    self assert: [node isAndOrNode].
+    result := node!
+
+assignmentNode: node
+    | var expr |
+    self assert: [ node isAssignmentNode ].
+	var := self rewrite: node var.
+	var isFloatValue
+		ifTrue: [ result := DeltaFloatAssignment new to: var assign: (self rewriteAsFloatValue: node expr) ]
+		ifFalse: [ result := DeltaAssignment new to: var assign: (self rewriteAsOop: node expr) ]!
+
+at: node error: msg
+	"Simple soultion for now - fix this at some point"
+	Transcript show: 'error: ', msg ; cr.
+	self halt!
+
+blockNode: node
+    | prevScope body |
+    self assert: [ node isBlockNode ].
+    result := DeltaBlock new body: (self rewrite: node body)!
+
+cascadedSendNode: node
+	| prevSend msg |
+	self assert: [node isCascadedSendNode].
+	prevSend := self rewrite: node prevSend.
+	msg := self rewrite: node msg.
+	prevSend isSelfSendNode ifTrue: [
+		"do not rewrite: keep normal send instead"
+		result := DeltaCascadedSend new to: node prevSend cascade: msg.
+		^ self
+	].
+	prevSend isSuperSendNode ifTrue: [
+		Transcript show: 'cascaded super sends not implemented yet' ; cr.
+		self halt.
+		^ self
+	].
+	result := DeltaCascadedSend new to: prevSend cascade: msg!
+
+codeBodyNode: node <CodeBody>
+    | prevScope statements |
+    self assert: [node isCodeBodyNode].
+    prevScope := scope.
+    scope := node scope.
+    statements := OrderedCollection new.
+    node statements do: [ :stat | statements add: (self rewrite: stat)].
+    result :=
+        DeltaCodeBody new
+            parameters: node parameters
+            temporaries: node temporaries
+            statements: statements
+            scope: node scope.
+    scope := prevScope!
+
+dllCallNode: node
+    self assert: [node isDLLCallNode].
+    result :=
+        DeltaDLLCall new
+            to: node dll
+            send: (self rewrite: node msg)
+            called: node function
+            return: node proxy
+			async: node async!
+
+genericApplicationExpressionNode: node
+    self assert: [node isGenericApplicationExpressionNode].
+    result := self rewrite: node target!
+
+globalVarNode: node
+    self assert: [node isGlobalVarNode].
+    result := node!
+
+guaranteedNode: node
+    self assert: [node isGuaranteedNode].
+    result := self rewrite: node expr!
+
+if: cond with: block1 and: block2 do: action
+	cond value ifFalse: [ ^ false ].
+	(self isRemovableBlock: block1 withArgs: 0) ifFalse: [ ^ self ].
+	(self isRemovableBlock: block2 withArgs: 0) ifFalse: [ ^ self ].
+	"inline the block and do action"
+	block1 body scope inline.
+	block2 body scope inline.
+	action value!
+
+if: cond with: block nofArgs: nofArgs do: action
+	cond value ifFalse: [ ^ false ].
+	(self isRemovableBlock: block withArgs: nofArgs) ifFalse: [ ^ self ].
+	"inline the block and do action"
+	block body scope inline.
+	action value!
+
+ifNode: node
+	self assert: [ node isIfNode ].
+	result := node!
+
+inlinedBlockNode: node
+	self assert: [ node isInlinedBlockNode ].
+	result := node!
+
+isRemovableBlock: block withArgs: nofArgs
+	"
+	Private.
+	Answers true if block can be removed (inlined)
+	within another block, answers false otherwise.
+	"
+	| s |
+	block isBlockNode					ifFalse: [ ^ false ].
+	s := block body scope.
+	s isInlineable							ifFalse: [ ^ false ].
+	s nofParameters = nofArgs		ifFalse: [ ^ false ].
+	^ true!
+
+komment
+    "
+    The rewriter recursively traverses the AST and optimizes
+    particular nodes by relacing them with other (more optimal)
+    nodes.
+
+    Instance variables:
+
+    result      the result after rewriting the current node. If the node
+                      has not changed, result simply holds the current node.
+
+    scope      the current scope. Scope is adjusted whenever a
+                      new codeBody is entered.
+    "!
+
+literalNode: node
+    self assert: [ node isLiteralNode ].
+    result := node!
+
+loopNode: node
+    self assert: [node isLoopNode].
+    result := node!
+
+messageNode: node
+    | args |
+    self assert: [node isMessageNode].
+    args := OrderedCollection new.
+    node arguments do: [ :arg | args add: (self rewriteAsOop: arg)].
+    result := DeltaMessage new send: node selector with: args!
+
+methodNode: node
+	self assert: [ node isMethodNode ].
+	result :=
+		DeltaMethod new
+			selector: node selector
+			type: node type
+			visibility: node visibility
+			body: (self rewriteSpecialBodies: node body)!
+
+normalSendNode: node
+	| recv msg sel arg1 arg2 arg3 |
+	self assert: [ node isNormalSendNode ].
+	recv := self rewrite: node recv.
+
+	recv isFloatValue ifTrue: [
+		result := self rewrite: node asFloatOperationOn: recv.
+		result notNil ifTrue: [ ^ self ].
+		"no FloatValue operation found"
+		AutoFloatConversion
+			ifTrue: [ recv := DeltaFloatUnaryOpToOop new f: #asFloat x: recv ]
+			ifFalse: [ self at: node error: 'not a supported FloatValue operation' ]
+	].
+
+	"Prepare arguments for normal message sends"
+	msg := self rewriteAsOop: node msg.
+	sel := msg selector.
+	msg nofArgs >= 1 ifTrue: [ arg1 := msg args at: 1 ].
+	msg nofArgs >= 2 ifTrue: [ arg2 := msg args at: 2 ].
+	msg nofArgs >= 3 ifTrue: [ arg3 := msg args at: 3 ].
+
+	"Self & Super sends"
+	(sel ~= #== and: [ sel ~= #~~ ]) ifTrue: [
+		(recv isRefNode and: [ recv decl isReceiverNode ])	ifTrue: [ result := DeltaSelfSend new send: msg.						^ self ]
+	].
+	(recv isRefNode and: [ recv decl isSuperVarNode ])		ifTrue: [ result := DeltaSuperSend new send: msg.					^ self ].
+
+	"Hardwired asFloatValue message"
+	sel = #asFloatValue ifTrue: [
+		result :=
+			EnableFloatValues
+				ifTrue: [ DeltaFloatify new obj: recv ]
+				ifFalse: [ recv "simply ignore conversion" ].
+		^ self
+	].
+
+	"Hardwired ifTrue: / ifFalse: messages"
+	self if: [ sel = #ifTrue:				] with: arg1 nofArgs: 0	do: [ result := DeltaIf new if: recv is: true then: arg1.						^ self ].
+	self if: [ sel = #ifFalse:			] with: arg1 nofArgs: 0	do: [ result := DeltaIf new if: recv is: false then: arg1.					^ self ].
+	self if: [ sel = #ifTrue:ifFalse:	] with: arg1 and: arg2	do: [ result := DeltaIf new if: recv is: true then: arg1 else: arg2.	^ self ].
+	self if: [ sel = #ifFalse:ifTrue:	] with: arg1 and: arg2	do: [ result := DeltaIf new if: recv is: false then: arg1 else: arg2.	^ self ].
+
+	"Hardwired and: / or: messages"
+	self if: [ sel = #and:					] with: arg1 nofArgs: 0	do: [ result := DeltaAndOr new if: recv and: arg1.							^ self ].
+	self if: [ sel = #or:					] with: arg1 nofArgs: 0	do: [ result := DeltaAndOr new if: recv or: arg1.								^ self ].
+
+	"Hardwired whileTrue: / whileFalse: messages"
+	self if: [ sel = #whileTrue			] with: recv nofArgs: 0	do: [ result := DeltaLoop new while: true do: recv.							^ self ].
+	self if: [ sel = #whileFalse		] with: recv nofArgs: 0	do: [ result := DeltaLoop new while: false do: recv.						^ self ].
+	self if: [ sel = #whileTrue:		] with: recv and: arg1	do: [ result := DeltaLoop new while: recv is: true do: arg1.			^ self ].
+	self if: [ sel = #whileFalse:		] with: recv and: arg1	do: [ result := DeltaLoop new while: recv is: false do: arg1.			^ self ].
+
+	"Hardwired repeat: / timesRepeat: / to:do: / to:by:do: messages"
+	self if: [ sel = #repeat				] with: recv nofArgs: 0	do: [ result := DeltaLoop new repeat: recv.										^ self ].
+	self if: [ sel = #timesRepeat:	] with: arg1 nofArgs: 0	do: [ result := DeltaLoop new do: recv timesRepeat: arg1.			^ self ].
+	self if: [ sel = #to:do:				] with: arg2 nofArgs: 1	do: [ result := DeltaLoop new from: recv to: arg1 do: arg2.			^ self ].
+	self if: [ sel = #to:by:do:			] with: arg3 nofArgs: 1 do: [
+		arg2 isIntNode ifTrue: [
+			"inline only if step is a constant"
+			result := DeltaLoop new from: recv to: arg1 by: arg2 do: arg3.
+			^ self
+		]
+	].
+
+	"Hardwired value message"
+"
+	self if: [ sel = #value				] with: recv nofArgs: 0 do: [ result := DeltaInlinedBlock new block: recv.							^ self ].
+"
+
+	"No rewriting"
+	result := DeltaNormalSend new to: recv send: msg!
+
+parameters: pars matchArguments: args
+	| i |
+	i := pars size.
+	
+	"Proceed if no. of parameter matches no. of arguments"
+	pars size = args size ifFalse: [ ^ false ].
+
+	"check individual arguments, starting with last one"
+	i := pars size.
+	[ i > 0 ] whileTrue: [
+		(args at: i) isRefNode ifFalse: [ ^ false ].
+		(pars at: i) == (args at: i) decl ifFalse: [ ^ false ].
+		i := i - 1
+	].
+
+	"parameters & arguments match 1-to-1, in same order"
+	^ true!
+
+predictPrimitiveNode: node
+	self assert: [ node isPredictPrimitiveNode ].
+	result := node!
+
+predictSpecialPrimitiveNode: node
+	self assert: [ node isPredictSpecialPrimitiveNode ].
+	result := node!
+
+primitiveCallNode: node
+    self assert: [node isPrimitiveCallNode].
+    result := node!
+
+primitiveNode: node
+	| recv msg sel args failureBlock failureCode tail |
+	self assert: [ node isPrimitiveNode ].
+	recv := self rewriteAsOop: node recv.
+	msg := self rewrite: node msg.
+	sel := msg selector.
+	args := msg args.
+
+	failureBlock := nil.
+	(sel size >= #ifFail: size) ifTrue: [
+		tail := sel copyFrom: (sel size - #ifFail: size + 1) to: sel size.
+		(tail =  'ifFail:' or:[tail = 'IfFail:']) ifTrue: [
+			(failureBlock := args removeLast) isBlockNode ifFalse: [
+				self error: 'primitive send: last argument must be a block'
+			].
+			failureBlock body parameters size = 1 ifFalse: [
+				self error: 'primitive send: failure block must take exactly one argument'
+			]
+		]
+	].
+
+	failureBlock isNil ifFalse: [
+		failureBlock scope isInlineable
+			ifTrue: [failureBlock scope inline]
+			ifFalse: [
+				"
+				Generate a failureCode of the form:
+				failureBlock value: tos
+				"
+				self error: 'primitive send: failure block is not inlineable - not implemented'
+				"
+				Transcript show: 'primitive send: failure block is not inlineable - not implemented' ; cr
+				"
+			]
+	].
+
+	result := DeltaPrimitiveCall new call: sel recv: recv with: args ifFail: failureBlock!
+
+refNode: node
+    self assert: [ node isRefNode ].
+	result :=
+		node decl isFloatValue
+			ifTrue: [ DeltaFloatRef new decl: node decl ]
+			ifFalse: [ node ]!
+
+returnInstVarNode: node
+	self assert: [ node isReturnInstVarNode ].
+	result := node!
+
+returnStatNode: node
+    self assert: [node isReturnStatNode].
+    result := DeltaReturnStat new return: (self rewriteAsOop: node expr)!
+
+rewrite: node
+	"
+	Applies self to the node and answers result.
+	apply must conform to general AST tools and
+	therefore can't return a value itself. The value
+	is returned in result.
+	"
+	node isNil
+		ifTrue: [ ^ nil ]
+		ifFalse: [ node apply: self. ^ result ]!
+
+rewrite: node asFloatOperationOn: recv
+	| msg sel arg1 |
+	"Prepare arguments for float operations"
+	self assert: [ recv isFloatValue ].
+	msg := node msg.
+	sel := msg selector.
+	msg nofArgs = 1 ifTrue: [ arg1 := self rewriteAsFloatValue: (msg args at: 1) ].
+
+	"Hardwired unary FloatValue operations"
+	msg nofArgs = 0 ifTrue: [
+		"Operations that return a float"
+		#(abs negated squared sqrt sin cos tan exp ln) do: [ :op |
+			sel = op ifTrue: [
+				scope usesFloatValues.
+				^ DeltaFloatUnaryOp new f: op x: recv
+			]
+		].
+		"Operations that return an oop"
+		#(asFloat) do: [ :op |
+			sel = op ifTrue: [
+				scope usesFloatValues.
+				^ DeltaFloatUnaryOpToOop new f: op x: recv
+			]
+		].
+		"unary operation not found"
+		^ nil
+	].
+
+	"Hardwired binary FloatValue operations"
+	msg nofArgs = 1 ifTrue: [
+		"Operations that return a float"
+		#(+ - * / \\) do: [ :op |
+			sel = op ifTrue: [
+				scope usesFloatValues.
+				^ DeltaFloatBinaryOp new x: recv f: op y: arg1
+			]
+		].
+		"Operations that return an oop"
+		#(= ~= < <= > >=) do: [ :op |
+			sel = op ifTrue: [
+				scope usesFloatValues.
+				^ DeltaFloatBinaryOpToOop new x: recv f: op y: arg1
+			]
+		].
+		"binary operation not found"
+		^ nil
+	].
+	"operation not found"
+	^ nil!
+
+rewriteAsFloatValue: node
+	| n |
+	self assert: [ EnableFloatValues ].
+	self assert: [ node notNil ].
+	n := self rewrite: node.
+	n isFloatValue ifFalse: [
+		(n isLiteralNode and: [ n isFloatNode ])
+			ifTrue: [
+				"float literals are always converted automatically - no run-time overhead involved"
+				n := DeltaFloatLiteral new value: n value
+			]
+			ifFalse: [
+				AutoFloatConversion
+					ifTrue: [ n := DeltaFloatify new obj: n ]
+					ifFalse: [ self at: node error: 'expression type must be FloatValue' ]
+			]
+	].
+	^ n!
+
+rewriteAsOop: node
+	| n |
+	n := self rewrite: node.
+	(n notNil and: [ n isFloatValue ]) ifTrue: [
+		self assert: [ EnableFloatValues ].
+		AutoFloatConversion
+			ifTrue: [ n := DeltaFloatUnaryOpToOop new f: #asFloat x: n ]
+			ifFalse: [ self at: node error: 'expression type cannot be a FloatValue' ]
+	].
+	^ n!
+
+rewriteSpecialBodies: b
+	"
+	Detects access and primitive method
+	bodies and rewrites them accordingly.
+	"
+	| body stats stat decl expr |
+	body := self rewrite: b.
+	stats := body statements.
+	stats size = 1 ifTrue: [
+		stat := stats at: 1.
+		stat isReturnStatNode ifTrue: [
+			expr := stat expr.
+			expr isRefNode ifTrue: [
+				decl := expr decl.
+				decl isInstVarNode ifTrue: [
+					body parameters isEmpty ifFalse: [ ^ body ].
+					stats := OrderedCollection new.
+					stats add: (DeltaReturnInstVar new var: decl).
+					^ DeltaCodeBody new
+						parameters: body parameters
+						temporaries: body temporaries
+						statements: stats
+						scope: body scope
+				]
+			].
+			expr isPrimitiveCallNode ifTrue: [
+				(expr receiver notNil and: [ expr receiver decl isReceiverNode ]) ifTrue: [
+					"primitive takes self as first argument"
+					(self parameters: body parameters matchArguments: expr arguments) ifTrue: [
+						expr failureCode notNil ifTrue: [
+							"
+							primitive takes exactly the method arguments - add hint
+							whether primitive is actually predicted depends on code generator
+							"
+							stats addFirst: (DeltaPredictSpecialPrimitive new primitive: expr selector).
+							^ DeltaCodeBody new
+								parameters: body parameters
+								temporaries: body temporaries
+								statements: stats
+								scope: body scope
+						]
+					]
+				]
+
+"				This is old code - not correct anymore because primitives with self argument
+				are not handled the right way - keep it around anyway for later - gri 5/2/96.
+				
+				(self parameters: body parameters matchArguments: expr arguments) ifTrue: [
+					expr failureCode isNil ifTrue: [
+						stats addFirst: (DeltaPredictPrimitive new primitive: expr selector).
+						^ DeltaCodeBody new
+							parameters: body parameters
+							temporaries: body temporaries
+							statements: stats
+							scope: body scope
+					]
+				]
+"
+			]
+		]
+	].
+
+	^ body!
+
+selfSendNode: node
+    self assert: [node isSelfSendNode].
+    result := node!
+
+superSendNode: node
+    self assert: [node isSuperSendNode].
+    result := node! !
+

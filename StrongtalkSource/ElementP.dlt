@@ -1,0 +1,27 @@
+Delta define: #ElementP as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementP) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ElementP) group: 'HTML'!
+
+(Delta mirrorFor: #ElementP)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementP) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	(builder atParagraphStart and: [builder previousLineHadNothingSubstantial])
+		ifTrue: [ super buildFor: builder ]
+		ifFalse: [	builder verticalWhitespace.
+						self aligningFor: builder
+							do: [	self for: builder withColorsFromAttributesDo:
+											[	super buildFor: builder.
+												builder breakLine. ].
+									].	]
+! !
+

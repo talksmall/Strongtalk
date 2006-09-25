@@ -1,0 +1,206 @@
+Delta define: #DefOutliner as: (
+Generic forAll: 'M <Mirror> ' body: ((Class subclassOf: 'MirrorOutliner[M]' instanceVariables: 'definitionOutliner <DefinitionOutliner[M]>
+	'))) !
+
+(Delta mirrorFor: #DefOutliner) revision: '$Revision: 1.8 $'!
+
+(Delta mirrorFor: #DefOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #DefOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DefOutliner) classSide methodsFor: 'instance creation' !
+
+
+on: mirror <AbstractClassMirror | MixinDeclMirror | ProtocolMirror | TypeAliasMirror> ^ <Instance>
+
+	"This is not object-oriented at all, but it keeps all UI code out of the mirrors."
+
+	^ClassOutliner for: (ClassMirror coerce: mirror else: [
+		^InvocationOutliner for: (InvocationMirror coerce: mirror else: [
+			^ProtocolOutliner for: (ProtocolMirror coerce: mirror else: [
+            	^TypeAliasOutliner for: (TypeAliasMirror coerce: mirror else:[
+            		^GlobalVariableOutliner for:(GlobalVariableMirror coerce: mirror else:[
+						| class <Class> m <MixinDeclMirror> |
+						m := MixinDeclMirror coerce: mirror else: [ self shouldNotHappen ].
+						class := m masterInvocation.
+						class isNil
+							ifTrue: [	^MixinOutliner for: mirror ]
+							ifFalse: [	^ClassOutliner for: (ClassMirror on: class) ] 
+					] ) 
+				] ) 
+			] ) 
+		] ) 
+	] )
+!
+
+onLocator: loc <DeltaLocator> ^ <Instance>
+
+^(self on: loc mirror) openDefinition
+!
+
+onTypeError: te <TypeError>
+
+^(self on: te loc mirror) openOnTypeError:  te
+! !
+
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'accessing' !
+
+
+definitionOutliner ^ <DefinitionOutliner[M]>
+	
+	^definitionOutliner!
+
+definitionOutliner: t <DefinitionOutliner[M]>
+
+	definitionOutliner := t!
+
+openDefinition
+
+	self body.
+	self definitionOutliner open: true.!
+
+openOnTypeError: te <TypeError>
+
+self openDefinition!
+
+outlinerForLocator: loc <DeltaLocator> ^ <CommonProgEnvOutliner>
+
+	^self definitionOutliner!
+
+windowTitle ^ <Str>
+
+	^self definitionTitle, ' ', self mirror nameWithTypeArgs
+! !
+
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'private' !
+
+
+buildBody ^<Visual>
+
+	| col <Column[Visual]> |
+	self removeAllChildren.
+	col := Column[Visual] new.
+	self definitionOutliner: (self definitionOutlinerClass for: self mirror).
+	col add: (Glue 	natural: (0@0 corner: 180@0)		"Hack. Make sure that the window is wide enough so the menu doesn't wrap"
+							min: (0@0 corner: 0@0)							"Remove this later when menus work right"
+							max: (0@0 corner: UI huge@0)).
+	col add: (self addChild: self definitionOutliner) imbeddedVisual.
+	col add: (self addChild: (CommentOutliner for: self mirror)) imbeddedVisual.
+	self innerBuildBody: col.
+	col optimizeIncrementalLayout: false.
+	^col
+!
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: self definitionTitle, ' ', self mirror nameWithTypeArgs painter: self entryPainter) asVisual.!
+
+definitionOutlinerClass ^ <DefinitionOutliner[M] class>
+
+	self subclassResponsibility!
+
+definitionTitle ^ <Str>
+
+	self subclassResponsibility
+!
+
+entryPainter ^ <Painter>
+
+	self subclassResponsibility
+!
+
+initialOpenState ^ <Boolean>
+
+	^true!
+
+innerBuildBody: col <Column[Visual]>
+!
+
+showBodyOnlyForTop ^ <Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+					name: '&File out...';
+					action: [ self fileOutDefinition ] );
+		add: (MenuAction new
+					name: '&Remove';
+					action: [ self removeDefinition: self mirror ] )!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self viewMenu;
+		add: self typecheckingMenu!
+
+popUpMenu ^<Menu>
+
+	^Menu new
+		addAll: self fileMenu removeAll;
+		addSeparator;
+		add: self viewMenu! !
+
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+
+	Smalltalk removeDependent: self.
+	super closeRequest: toClose.!
+
+fileOutDefinition
+ 
+	self visual
+		userPickSaveFileWithAction: [ :file< FilePath> | self fileOutDefinitionTo: file ]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'Delta files (*.dlt)' ,, '*.dlt' with: 'All files (*.*)' ,, '*.*')
+		defaultFile: (FilePath for: self mirror name, '.dlt')
+		defaultDir: nil
+		title: 'File out ', self definitionTitle, ' ', self mirror name
+!
+
+fileOutDefinitionTo: file <FilePath>
+
+	| out <CharOutputStream> |
+	out := CharacterInputOutputConverter on: file writeStream.
+	[ (DefinitionWriter for: self mirror) fileOutOn: out ] ensure: [ out close ].
+	
+! !
+
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'private-initialization' !
+
+
+initializeForMirror: m <M>
+
+	super initializeForMirror: m.
+	Smalltalk addDependent: self.! !
+
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		(aspect = #removeGlobal and: [ self mirror reflectee isNil or: [ self mirror reflectee = value at2 ]])
+			ifTrue: [	self requestCloseIfTopWindow ].
+	
+		"We check if the reflectee isNil since the mirror could be shared. The mirror receiving #removeDefinitionIfFail:
+			will have the reflectee set to nil afterwards."
+	
+		aspect = #typeArguments
+			ifTrue: [	self visual topWindow name: self windowTitle ].
+	]! !
+

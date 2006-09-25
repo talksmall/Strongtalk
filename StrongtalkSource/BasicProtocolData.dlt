@@ -1,0 +1,97 @@
+Delta define: #BasicProtocolData as: (
+(Class subclassOf: 'BasicTypeData' instanceVariables: 'primaryInterface secondaryInterface branded selfTV selfClassTV relevantTypeVars ')) !
+
+(Delta mirrorFor: #BasicProtocolData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicProtocolData) group: 'ast'!
+
+(Delta mirrorFor: #BasicProtocolData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicProtocolData) methodsFor: 'Unclassified' !
+
+
+addRelevantTypeVar: tv <TypeVar>
+
+self relevantTypeVars add: tv.!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self primaryInterface attributes "%?%"!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self secondaryInterface attributes!
+
+branded ^ <Boolean>
+    ^branded!
+
+clearCaches
+
+relevantTypeVars := nil!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^t !
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self primaryInterface attributes "%?%"!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self secondaryInterface attributes!
+
+messages  ^ <Dict[Symbol,Type]>
+
+^self primaryInterface messages!
+
+primaryInterface ^ <Interface>
+    ^primaryInterface!
+
+primaryInterface: pi <Interface >secondaryInterface: si <Interface >branded: b <Boolean > ^ <Self>
+    primaryInterface := pi.
+secondaryInterface := si.
+branded := b.
+"selfTV := ?
+selfClassTV := ?"!
+
+primaryInterface: pi <Interface >secondaryInterface: si <Interface >branded: b <Boolean >typeOfInstances: t <Protocol > ^ <Self>
+    primaryInterface := pi.
+secondaryInterface := si.
+branded := b.
+selfTV :=  DeltaTypeVar new name: #Self bound: t.
+selfClassTV := DeltaTypeVar new name: #Self bound: t typeOfClass.!
+
+rawPrimaryInterface ^ <Interface>
+    ^self primaryInterface!
+
+rawSecondaryInterface ^ <Interface>
+    ^self secondaryInterface!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+relevantTypeVars isNil
+  ifTrue:[
+               relevantTypeVars := Set[TypeVar] new.
+               relevantTypeVars add: self selfTV;
+                                         add: self selfClassTV.
+               ].
+^relevantTypeVars.
+!
+
+secondaryInterface ^ <Interface>
+    ^secondaryInterface!
+
+selfClassTV ^ <TypeVar>
+    ^selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self selfClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self selfTV!
+
+selfTV ^ <TypeVar>
+    ^selfTV! !
+

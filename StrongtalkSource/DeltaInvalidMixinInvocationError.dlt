@@ -1,0 +1,36 @@
+Delta define: #DeltaInvalidMixinInvocationError as: (
+(Class subclassOf: 'DeltaBasicTypeError' instanceVariables: 'actualName declaredName mixinName ')) !
+
+(Delta mirrorFor: #DeltaInvalidMixinInvocationError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaInvalidMixinInvocationError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInvalidMixinInvocationError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInvalidMixinInvocationError) methodsFor: 'Unclassified' !
+
+
+actualName
+	^actualName!
+
+actualName: aSymbol
+	actualName := aSymbol!
+
+declaredName
+	^declaredName!
+
+declaredName: aSymbol
+	declaredName := aSymbol!
+
+errorMessage
+	^'Invalid mixin invocation: actual class type ', self actualName, ' is not mixin-compatible with declared bound ', self declaredName, ' of mixin ', self mixinName!
+
+mixinName
+	^mixinName!
+
+mixinName: aSymbol
+	mixinName := aSymbol! !
+

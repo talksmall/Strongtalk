@@ -1,0 +1,333 @@
+Delta define: #Rectangle as: (
+(Class subclassOf: 'Region' instanceVariables: '') classVariables: 'InfiniteRect <Rect> NullRect <Rect>'; abstract) !
+
+(Delta mirrorFor: #Rectangle) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Rectangle) group: 'ui'!
+
+(Delta mirrorFor: #Rectangle)
+comment: 
+'An abstract rectangle provides all the instance functionality of a rectangle, but does not implement
+the state variables accessors (and initialization) for corner and origin.
+
+Tags: %User %UI %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #Rectangle) classSide methodsFor: 'instance creation' !
+
+
+corner: p1 <Point> corner: p2 <Point> ^<Rect>
+	"Create the rectangle defined by two of its diagonal corners.  The correct origin
+	  and corner will be computed for you (i.e. this works for any two points)."
+
+	| minX <Number> maxX <Number> minY <Number> maxY <Number> tmp <Number> |
+	minX := p1 x.
+	maxX := p2 x.
+	minY := p1 y.
+	maxY := p2 y.
+	minX > maxX
+		ifTrue: [ tmp := minX.  minX := maxX. maxX := tmp ].
+	minY > maxY
+		ifTrue: [ tmp := minY.  minY := maxY. maxY := tmp ].
+
+	^self left: minX right: maxX top: minY bottom: maxY!
+
+infinite ^<Rect>
+
+	^InfiniteRect!
+
+left: l <Number> right: r <Number> top: t <Number> bottom: b <Number>  ^<Rect>
+	"Create a rectangle given the location of the sides.  Left must be <= right, and
+	 top must be <= bottom"
+
+	^self origin: l @ t corner:  r @ b!
+
+null ^<Rect>
+
+	^NullRect!
+
+origin: o <Point> corner: c <Point> ^<Rect>
+	"Create a rectangle with the specified origin and corner.  origin must be <= corner.
+	  If you cannot guarantee that, use #corner:corner:"
+
+	^RectangleWithOriginAndCorner new origin: o corner: c!
+
+origin: o <Point> extent: c <Point> ^<Rect>
+	"Create a rectangle with the specified origin and corner.  origin must be <= corner.
+	  If you cannot guarantee that, use #corner:corner:"
+
+	^self origin: o corner: c + o! !
+
+! (Delta mirrorFor: #Rectangle) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	InfiniteRect := Rectangle
+		left: UI huge negated
+		right: UI huge
+		top: UI huge negated
+		bottom: UI huge.
+	NullRect := 0@0 corner: 0@0.
+
+! !
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'accessing' !
+
+
+bottom ^<Number>
+
+	^self corner y!
+
+bottomCenter ^<Point>
+
+	^self xCenter @ self bottom!
+
+bottomLeft ^<Point>
+
+	^self left @ self bottom!
+
+bottomRight ^<Point>
+
+	^self right @ self bottom!
+
+center ^<Point>
+
+	^self xCenter @ self yCenter!
+
+corner ^<Point>
+
+	self subclassResponsibility!
+
+extent ^<Point>
+
+	^self width @ self height!
+
+height ^<Int>
+
+	^self bottom - self top!
+
+left ^<Number>
+
+	^self origin x!
+
+leftCenter ^<Point>
+
+	^self left @ self yCenter!
+
+origin ^<Point>
+
+	self subclassResponsibility!
+
+right ^<Number>
+
+	^self corner x!
+
+top ^<Number>
+
+	^self origin y!
+
+topCenter ^<Point>
+
+	^self xCenter @ self top!
+
+topLeft ^<Point>
+
+	^self origin!
+
+topRight ^<Point>
+
+	^self right @ self top!
+
+width ^<Int>
+
+	^self right - self left!
+
+xCenter ^<Number>
+
+	^(self left + self right) // 2!
+
+yCenter ^<Number>
+
+	^(self top + self bottom) // 2! !
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'operations' !
+
+
+enclosedRect ^<Rect>
+
+	^self!
+
+enclosingRect ^<Rect>
+
+	^self!
+
+expandBy: delta <Number | Point | Rect> ^<Rect>
+
+	^delta expandRect: self!
+
+insetBy: delta <Number | Point | Rect> ^<Rect>
+
+	^delta insetRect: self!
+
+intersect: other <Rect> ^<Rect>
+
+	| t <Number> b <Number> l <Number> r <Number> |
+	t := self top max: other top.
+	l := self left max: other left.
+	r := self right min: other right.
+	b := self bottom min: other bottom.
+	^Rectangle
+		left: l
+		right: (r max: l)
+		top: t
+		bottom: (b max: t)!
+
+merge: other <Rectangle> ^<Rect>
+
+	^(self origin min: other origin)
+		corner: (self corner max: other corner)!
+
+relativeTo: p <Point> ^<Rect>
+
+	^Rectangle
+		left: self left - p x
+		right: self right - p x
+		top: self top - p y
+		bottom: self bottom - p y!
+
+translatedBy: p <Point> ^<Rect>
+
+
+	^Rectangle
+		left: self left + p x
+		right: self right + p x
+		top: self top + p y
+		bottom: self bottom + p y! !
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'region testing' !
+
+
+translatedBy: p <Point> mightIntersect: r <Region>  ^<Boolean>
+
+	^r relativeTo: p mightIntersectRect: self! !
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'compatibility' !
+
+
+translateBy: p <Point> ^<Instance>
+	"A synonym for #translatedBy: for bluebook compatiblity"
+
+	^self translatedBy: p! !
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'testing' !
+
+
+contains: other <Rect> ^<Boolean>
+
+	^self origin <= other origin and: [ self corner >= other corner ]!
+
+containsPoint: p <Point> ^<Boolean>
+	"Return true if the pixel at (i.e. unit rectangle whose origin is) p intersects the receiver."
+
+	^p >= self origin and: [ p < self corner ]!
+
+intersects: other <Rect> ^<Boolean>
+
+	^self origin < other corner and: [ other origin < self corner ]!
+
+relativeTo: orig <Point> containsPoint: p <Point> ^<Boolean>
+	"Return true if the pixel at (i.e. unit rectangle whose origin is) p (which is relative to orig) intersects the receiver.
+	  This is just a faster way to express (self containsPoint: p - orig)."
+
+	| offx <Number> offy <Number> px <Number> py <Number> |
+	offx := orig x.
+	offy := orig y.
+	px := p x.
+	py := p y.
+	^px - offx >= self origin x
+		and: [ px - offx < self corner x
+		and: [ py - offy >= self origin y
+		and: [ py - offy < self corner y ]  ]]
+!
+
+relativeTo: p <Point> mightIntersect: r <Region>  ^<Boolean>
+
+	^r translatedBy: p mightIntersect: self!
+
+relativeTo: p <Point> surelyContains: r <Region>  ^<Boolean>
+
+	^r translatedBy: p surelyContainedByRect: self!
+
+xSameAs: other <Rect> ^<Boolean>
+	"convenience function to see if the x components of the receiver are the same as other's"
+
+	^self left = other left  and: [ self right = other right ]!
+
+ySameAs: other <Rect> ^<Boolean>
+	"convenience function to see if the y components of the receiver are the same as other's"
+
+	^self top = other top  and: [ self bottom = other bottom ]! !
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'comparing' !
+
+
+= other <Object>  ^<Boolean>
+
+	"%todo: use coerce here when is fast"
+	^(Reflection classOf: other) == (Reflection classOf: self)
+		and: [	| otherRect <Rect> |
+					otherRect := guaranteed <Rectangle> other.
+					otherRect origin = self origin and: [ otherRect corner = self corner ]	]!
+
+hash ^<Int>
+
+	^self origin hash bitXor: self corner hash! !
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'restricted-double dispatching' !
+
+
+expandRect: r <Rect> ^<Rect>
+
+	^Rectangle
+		left: r left - self left
+		right: r right + self right
+		top: r top - self top
+		bottom: r bottom + self bottom!
+
+insetRect: r <Rect> ^<Rect>
+
+	^Rectangle
+		left: r left + self left
+		right: r right - self right
+		top: r top + self top
+		bottom: r bottom - self bottom!
+
+relativeTo: p <Point> mightIntersectRect: other <Rect> ^<Boolean>
+	"A faster form of ((self relativeTo: p) mightIntersect: other)"
+
+	| orig <Point> corn <Point> oorig <Point> ocorn <Point> x <Number> y <Number> |
+	orig := self origin.
+	corn := self corner.
+	oorig := other origin.
+	ocorn := other corner.
+	x := p x.
+	y := p y.
+	^orig x - x < ocorn x and: [ orig y - y < ocorn y
+		and: [ oorig x < (corn x - x) and: [ oorig y < (corn y - y) ]]  ]!
+
+translatedBy: p <Point> surelyContainedByRect: other <Rect> ^<Boolean>
+
+	| orig <Point> corn <Point> oorig <Point> ocorn <Point> x <Number> y <Number> |
+	orig := self origin.
+	corn := self corner.
+	oorig := other origin.
+	ocorn := other corner.
+	x := p x.
+	y := p y.
+	^oorig x <= (orig x + x) and: [ oorig y <= (orig y + y)
+		and: [ ocorn x >= (corn x + x) and: [ ocorn y >= (corn y + y) ]]]! !
+

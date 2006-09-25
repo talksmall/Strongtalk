@@ -1,0 +1,75 @@
+Delta define: #Profiler as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Profiler) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Profiler) group: 'base'!
+
+(Delta mirrorFor: #Profiler)
+comment: 
+'The profiler can be used to control the VM''s facilities for profiling
+Smalltalk code.
+
+Tags:  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Profiler) classSide methodsFor: 'control' !
+
+
+do: blk <[]>
+	"gather profile information while running blk, and then print the gathered statistics"
+
+	self gatherDuring: blk.
+	self printStats.
+	self resetStats.
+!
+
+gatherDuring: blk <[]>
+	"Gather statistics during the evaluation of blk.  This can be done many
+		times to accumulate statistics; then a call to printStats will
+		print a report and clear the database"
+
+	| old <Boolean> |
+	old := self start.
+	blk value.
+	self profiling: old!
+
+printStats
+	"Print statistics gathered during previous calls to gatherDuring:."
+
+	{{primitiveFlatProfilerPrint}}.
+!
+
+profiling ^<Boolean>
+
+	^{{primitiveFlatProfilerProcess}} notNil!
+
+profiling: f <Boolean> ^<Boolean>
+
+	| old <Boolean> |
+	old := self profiling.
+	f ~~ old
+		ifTrue: [	f
+							ifTrue: [ {{primitiveFlatProfilerEngage: Processor activeProcess ifFail: [ :err | self error: err]}}. ]
+							ifFalse: [ {{primitiveFlatProfilerDisengage}}. ]		].
+	^old!
+
+resetStats
+	"Clear the profiling database"
+
+	{{primitiveFlatProfilerReset}}.
+!
+
+start ^<Boolean>
+	"Start gathering statistics. The old profiling state is returned"
+
+	^self profiling: true!
+
+stop
+	"Stop gathering statistics.  Use printStats to print the results."
+
+	^self profiling: false! !
+

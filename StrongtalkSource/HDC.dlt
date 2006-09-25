@@ -1,0 +1,731 @@
+Delta define: #HDC as: (
+(Class subclassOf: 'Rectangle delta |> (Region delta |> Win32Handle)' instanceVariables: 'xOffset <Int>
+		yOffset <Int>
+			"Current x & y origin in native window coordinates"
+		logicalPainter <Painter>
+			"The conceptual current painter"
+		physicalPainter <Painter>
+			"The last logical painter that was actually used to draw anything"
+		window <Window>
+			"Window for medium, or nil if not appropriate"
+		painterVersion <Int>
+			"The version # of the physical painter as of the last time that we used it"
+
+		"The current win32 state"
+		win32Pen <HPEN>
+		win32Brush <HBRUSH>
+		win32Font <ExternalProxy>
+		win32TextColor <Int>
+
+		toRelease <Block[HDC]>
+		clippingRectBeforeTranslation <Rect>
+			"This is the clipping rect, before translation relative to the clipOrigin.  If nil, there is an effectively
+			  infinite clipping region."
+
+		textBuffer <ExternalProxy>
+		textSize <Int>
+			"number of characters currently in the buffer.  This is NOT the allocated size
+		     of the buffer, which is #textBufferSize"
+		textX <Dist> textY <Dist>		"The starting location of the string"
+		nextX <Dist>	"The x position that the next char will have to be at to be accumulated"
+		scratchRECT <RECT>
+		bitmapDC <HDC>
+			"A bare memory device context created lazily when bitmaps are rendered
+			  since we need a source device context to blt the bitmap"
+		oldBitmap <HBITMAP>
+			"Used to hold the return value of the last #drawIntoBitmap: call, so the bitmap can be restored"
+		subwindowsToDisplay <Extensible[Win32Control]>
+			"The set of Win32Controls that were encountered while painting."
+		') protocols: 'Canvas') !
+
+(Delta mirrorFor: #HDC) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #HDC) group: 'base'!
+
+(Delta mirrorFor: #HDC)
+comment: 
+'Handle for a Device Context.
+
+Note: the creator must set the toRelease block, since device contexts are
+released in different ways depending on how they are created.
+
+Note: all primitive drawing operations other than character display must send (self flushText) before
+drawing.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+'!
+
+! (Delta mirrorFor: #HDC) classSide methodsFor: 'win32-utility' !
+
+
+bufferingFor: directCan <Canvas> buffer: buf <HBITMAP>  ^<HDC>
+
+	^(self newLike: directCan)
+		drawIntoBitmap: buf!
+
+newLike: master <Canvas> ^<HDC>
+
+	| can <HDC> |
+	can := {{<gdi HDC CreateCompatibleDC>
+						handle: master win32Handle}}.
+	can isNull
+		ifTrue: [ Win32 handleError ].
+	can
+		initialize;
+		toRelease: [ :dc <HDC> | dc deleteDC ].
+
+	^can! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'state modification' !
+
+
+atOffset: p <Point> do: drawing <[^Object]>
+
+	| oldOffset <Point> |
+	oldOffset := self offset.
+	self offset: oldOffset + p.
+	drawing value.
+	self offset: oldOffset.!
+
+clipping: clip <Rect> do: drawing <[^Object]>
+
+	| oldClip <Painter> transclip <Rect> |
+	oldClip := clippingRectBeforeTranslation.
+	transclip := clip translatedBy: self offset.
+	self clippingRectBeforeTranslation:
+		(oldClip isNil
+			ifTrue: [ transclip ]
+			ifFalse: [ oldClip intersect: transclip ]).
+	drawing value.
+	self clippingRectBeforeTranslation: oldClip.
+!
+
+doWithCopy: blk <[Canvas]>
+	"Evaluate the specified block with a copy of the receiver.  The receiver is guaranteed to
+	  be in the same (external) state afterwards as before.  RESTRICTION: the receiver MAY NOT BE USED or
+	  modified while the block is being evaluated."
+
+	"%todo: add unwind protection to this"
+	| id <ExternalData> copy <HDC> |
+	self flushText.
+	id := {{<gdi ExternalProxy SaveDC> hdc: self}}.
+	copy := self shallowCopy.
+	blk value: copy.
+	copy flushText.
+	{{<gdi ExternalProxy RestoreDC> hdc: self id: id}} asBoolean
+		ifFalse: [ self error: 'Error restoring device context' ].!
+
+withPainter: p <Painter> do: drawing <[]>
+
+	| oldPainter <Painter> |
+	oldPainter := self painter.
+	self painter: p.
+	drawing value.
+	self painter: oldPainter.! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'accessing' !
+
+
+clippingRect ^<Rect>
+	"%todo: figure out if there is some way to portably clip against more complex regions than
+	 rectangles"
+
+	^clippingRectBeforeTranslation == nil
+		ifTrue: [ Rectangle infinite ]
+		ifFalse: [ clippingRectBeforeTranslation relativeTo: self offset ]!
+
+corner ^<Point>
+
+	^self clippingRect corner!
+
+deviceContext ^<HDC>
+
+	^self!
+
+hasSubwindowsToDisplay ^<Boolean>
+
+	^subwindowsToDisplay notNil!
+
+offset ^<Point>
+
+	^xOffset @ yOffset!
+
+origin ^<Point>
+
+	^self clippingRect origin!
+
+painter ^<Painter>
+
+	^logicalPainter!
+
+painter: p <Painter>
+
+	logicalPainter := p!
+
+pruningRegion ^<Region>
+
+	^self!
+
+subwindowsToDisplay ^<Extensible[Win32Control]>
+
+	subwindowsToDisplay isNil
+		ifTrue: [ subwindowsToDisplay := OrderedCollection[Win32Control] new. ].
+	^subwindowsToDisplay!
+
+takeSubwindowsToDisplay ^<Extensible[Win32Control]>
+
+	| s <Extensible[Win32Control]> |
+	s := subwindowsToDisplay.
+	subwindowsToDisplay := nil.
+	^s!
+
+toRelease ^<Block[HDC]>
+
+	^toRelease!
+
+window ^<Window>
+
+	^window!
+
+xOffset ^<Int>
+
+	^xOffset!
+
+xOffset: o <Int>
+
+	xOffset := o!
+
+yOffset ^<Int>
+
+	^yOffset!
+
+yOffset: o <Int>
+
+	yOffset := o! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'displaying' !
+
+
+bitBlt: otherCanvas <Canvas>
+extent: ext <Point>
+op: rasterOp <ExternalData>
+
+	"BitBlt a rectangular set of bits from the rectangular region of otherCanvas bounded by
+		the current offset in otherCanvas and the specified extent.  The bits are modified
+		according to the rasterOp code and written to the receiver at its current offset"
+
+	self flushText.
+	{{<gdi ExternalProxy BitBlt>
+		dest: self
+		xDest: self xOffset
+		yDest: self yOffset
+		width: ext x
+		height: ext y
+		src: otherCanvas win32Handle
+		xSrc: otherCanvas xOffset
+		ySrc: otherCanvas yOffset
+		rop: rasterOp
+	 }} asBoolean
+		ifFalse: [ Win32 handleError ].!
+
+display: vis <Visual>
+	"This temporarily translates the canvas relative to the position of vis and then
+	  displays it, with display pruning optimiziations."
+
+	vis displayOn: self!
+
+displayCharacter: c <Character> allocation: r <Rect>
+
+	| curx <Int> |
+	curx := self xOffset.
+	self checkPainter; checkFont; checkTextColor.
+	textSize == 0
+		ifTrue: [	textX := curx.
+						textY := self yOffset.	]
+		ifFalse: [	"We can only join the last character and this one if we are at 
+							  just the right location"
+						(nextX == curx and: [ textY == self yOffset and: [ textSize < self textBufferSize ]])
+							ifFalse: [	self flushText.
+											^self displayCharacter: c allocation: r.	"^^^^^^^^^" ]	].
+	textBuffer byteAt: textSize put: c asciiValue.
+	textSize := textSize + 1.
+	nextX := curx + r width.!
+
+displayCharacter: c <Character> allocation: r <Rect> painter: p <Painter>
+
+	self withPainter: p
+		do: [ self displayCharacter: c allocation: r ]!
+
+displayFilledRectangle: r <Rect>
+
+	{{<user ExternalProxy FillRect>
+		hdc: self
+		rect: (self scratchRECT 
+						left: (r left + self xOffset) asInteger;
+						right: (r right + self xOffset) asInteger;
+						top: (r top + self yOffset) asInteger;
+						bottom: (r bottom + self yOffset) asInteger	)
+		brush: self painter win32Brush
+	}} asBoolean
+		ifFalse: [ Win32 handleError ]!
+
+displayLineFrom: start <Point> to: end <Point>
+	"%bug: this doesn't currently draw the end pixel"
+
+	| ofx <Int> ofy <Int> |
+	self checkPainter; checkPen; flushText.
+
+	ofx := self xOffset.
+	ofy := self yOffset.
+	{{<gdi ExternalProxy MoveToEx>
+		hdc: self
+		x: start x + ofx
+		y: start y + ofy
+		old: Win32 NULL
+	 }}.
+
+	{{<gdi ExternalProxy LineTo>
+		hdc: self
+		x: end x + ofx
+		y: end y + ofy
+	 }}.
+!
+
+displayRectangle: r <Rect>
+	"Draw an unfilled rectangle"
+
+	| offx <Number> offy <Number> |
+
+	self	checkPainter;
+			checkPen;
+			flushText.
+	offx := self xOffset.
+	offy := self yOffset.
+
+	self win32Brush: self nullBrush.		"Don't fill interior"
+
+	{{<gdi ExternalProxy Rectangle>
+			hdc: self
+			xLeft: (r left + offx) asInteger
+			yTop: (r top + offy) asInteger
+			xRight: (r right + offx) asInteger
+			yBottom: (r bottom + offy) asInteger
+		}} asBoolean
+				ifFalse: [ Win32 handleError ].
+
+	win32Brush := nil.		"Force brush to be reset next time needed"	!
+
+displayString: s <Str> allocation: r <Rect>
+	"display a string.  If the string is bigger than the text buffer size, then it is truncated."
+
+	| curx <Int> remaining <Int> last <Int> bufsize <Int> |
+	curx := self xOffset.
+	self checkPainter; checkFont; checkTextColor.
+	bufsize := self textBufferSize.
+	textSize == 0
+		ifTrue: [	textX := curx.
+						textY := self yOffset.	]
+		ifFalse: [	"We can only join the last character and this one if we are at 
+							  just the right location"
+						(nextX == curx and: [ textY == self yOffset and: [ textSize < bufsize ]])
+							ifFalse: [	self flushText.
+											^self displayString: s allocation: r.	"^^^^^^^^^" ]	].
+	(bufsize - textSize) < s size
+		ifTrue: [	self flushText.
+						last := bufsize. ]
+		ifFalse: [	last := s size ].
+	1 to: last do: 
+		[ :i <Int> |
+			textBuffer byteAt: textSize put: (s at: i) asciiValue.
+			textSize := textSize + 1.	].
+	nextX := curx + r width.!
+
+invertRectangle: r <Rect>
+
+	self atOffset: r origin
+		do: [	self bitBlt: self extent: r extent op: UI ropInvertDestination ]
+!
+
+pixelAtX: x <Int> y: y <Int> putPaletteIndex: i <Int>
+
+	self pixelAtX: x y: y putWin32Color: (16r01000000 bitXor: i)! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'region ops' !
+
+
+intersects: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super intersects: other ]
+		ifFalse: [ true ]!
+
+intersectsRect: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super intersectsRect: other ]
+		ifFalse: [ true ]!
+
+mightIntersect: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super mightIntersect: other ]
+		ifFalse: [ true ]!
+
+relativeTo: p <Point> mightIntersect: r <Region>  ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super relativeTo: p mightIntersect: r ]
+		ifFalse: [ true ]!
+
+surelyContainedBy: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super surelyContainedBy: other ]
+		ifFalse: [ false ]!
+
+surelyContains: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super surelyContains: other ]
+		ifFalse: [ true ]!
+
+translatedBy: p <Point> mightIntersect: r <Region>  ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super relativeTo: p mightIntersect: r ]
+		ifFalse: [ true ]! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'testing' !
+
+
+isPruning ^<Boolean>
+
+	^clippingRectBeforeTranslation notNil! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'control' !
+
+
+flush
+	"Flush completely, all the way down to the OS"
+
+	self shallowFlush.
+	{{<gdi ExternalProxy GdiFlush> doit}}!
+
+release
+
+	self flushText.
+	textBuffer free.
+	scratchRECT isNil
+		ifFalse: [ scratchRECT free ].
+	bitmapDC isNil
+		ifFalse: [ bitmapDC release ].
+	self toRelease value: self.
+!
+
+shallowFlush
+	"Flush anything buffered in Smalltalk, but don't flush at the OS level"
+
+	self flushText.! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'restricted-win32' !
+
+
+backgroundOpaque
+
+	{{<gdi ExternalProxy SetBkMode>
+		hdc: self mode: Win32 OPAQUE}}.!
+
+backgroundTransparent
+
+	{{<gdi ExternalProxy SetBkMode>
+		hdc: self mode: Win32 TRANSPARENT}}.!
+
+deleteDC
+
+	{{<gdi ExternalProxy DeleteDC> dc: self}}!
+
+displayRawFilledRectangle: r <Rect>
+
+	| offx <Number> offy <Number> |
+
+	self	checkPainter;
+			checkBrush;
+			flushText.
+	offx := self xOffset.
+	offy := self yOffset.
+
+	self win32Pen: self nullPen.		"Don't draw edge"
+
+	"%note: Windows both fills rectangles, and draws their edges with the same routine.  The standard way
+      to fill only is to use a null pen.  But there seems to be a windows bug such that a rectangle with a null
+	  pen doesn't draw the
+	  right&bottom edges.  This is NOT the standard off-by-one error!!  Also, if the painter's lineWidth is > 1,
+	  the pen will draw half of the edge outside the rectangle.  To solve this, we use a null pen when
+	  drawing rectangles, & add one to the bottom & right coords.  The alternative is to do checkPen
+	  above, and then inset by half the pen width.  But then drawing rects might be really slow if the painter
+	  has a pen width > 1.  The drawback of the current fix is that the pen gets temporarily set to the null rect
+	  EVERY time a rectangle is drawn, regardless of the previous pen.  With more state, this could be avoided."
+
+	{{<gdi ExternalProxy Rectangle>
+			hdc: self
+			xLeft: (r left + offx) asInteger
+			yTop: (r top + offy) asInteger
+			xRight: (r right + offx + 1) asInteger
+			yBottom: (r bottom + offy + 1) asInteger
+		}} asBoolean
+				ifFalse: [ Win32 handleError ].
+
+	win32Pen := nil.		"Force pen to be reset next time needed"	!
+
+displayRawWin32Image: i <HBITMAP> rasterOp: op <Int>
+
+	self bitmapDC drawIntoBitmap: i.
+	self	bitBlt: self bitmapDC
+			extent: i extent
+			op: op.
+	self bitmapDC restoreBitmap!
+
+drawIntoBitmap: b <HBITMAP>
+
+	oldBitmap := {{<gdi HBITMAP SelectObject>
+							hdc: self
+							bitmap: b }}.
+	oldBitmap isNull
+		ifTrue: [ Win32 handleError ]!
+
+mungeFont: f <ExternalData>
+	"A kludge used by fonts to set the font quickly in a temporary HDC
+	  before requesting font metrics. (There is no public interface to do this, normally)"
+
+	self win32Font: f!
+
+offset: p <Point>
+
+	xOffset := p x.
+	yOffset := p y.!
+
+pixelAtX: x <Int> y: y <Int> putWin32Color: c <Int>
+
+	{{<gdi ExternalProxy SetPixelV>
+		hdc: self
+		x: x asInteger
+		y: y asInteger
+		color: c
+	}} asBoolean
+		ifFalse: [ Win32 handleError ]!
+
+releaseDCFor: hwnd <HWND>
+
+	{{<user ExternalProxy ReleaseDC> hwnd: hwnd dc: self}}!
+
+restoreBitmap
+
+	self drawIntoBitmap: oldBitmap!
+
+win32Palette: p <Win32Handle> ^<Win32Handle>
+
+	| oldpal <Win32Handle> |
+	oldpal := Palette select: p into: self background: false.
+	oldpal isNull
+		ifTrue: [ Win32 handleError ].
+	^oldpal! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'initialization' !
+
+
+initClippingRectBeforeTranslation: r <Rect>
+
+	clippingRectBeforeTranslation := r!
+
+initialize
+
+	self initializeAt: 0@0!
+
+initializeAt: initialOffset <Point>
+
+	textBuffer := ExternalProxy new malloc: self textBufferSize.
+	textSize := 0.
+	self xOffset: initialOffset x.
+	self yOffset: initialOffset y.
+
+	"Don't draw the spaces between dashes in dashed lines"
+	self backgroundTransparent.
+
+	"Use the text baseline as the origin for drawing"
+	self textAlignBaseline.
+
+	self painter: Painter default.!
+
+toRelease: r <Block[HDC]>
+
+	toRelease := r.
+!
+
+window: w <Window>
+
+	window := w! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'private' !
+
+
+bitmapDC ^<HDC>
+
+	bitmapDC isNil
+		ifTrue: [	bitmapDC := {{<gdi HDC CreateCompatibleDC>
+															handle: self }}.
+						bitmapDC isNull
+								ifTrue: [	bitmapDC := nil.
+												Win32 handleError.		].
+						bitmapDC
+							initialize;
+							toRelease: [ :dc <HDC> | dc deleteDC ].		].
+	^bitmapDC!
+
+canvasDebugging ^<Boolean>
+
+	^false!
+
+checkBrush
+
+	win32Brush isNil
+		ifTrue: [ self win32Brush: (self physicalPainter win32Brush) ].!
+
+checkFont
+
+	win32Font isNil
+		ifTrue: [ self win32Font: (self physicalPainter win32Font) ].!
+
+checkPainter
+	"Make sure the physical painter matches the logical one before a concrete drawing operation.
+	 This check must be done before other checks like checkPen, etc."
+
+	| phys <Painter> |
+	phys := self physicalPainter.
+	(self painter == phys and: [ phys version = self painterVersion ])
+		ifFalse: [	self physicalPainter: self painter ]!
+
+checkPen
+
+	win32Pen isNil
+		ifTrue: [ self win32Pen: (self physicalPainter win32Pen) ].!
+
+checkTextColor
+
+	win32TextColor isNil
+		ifTrue: [ self win32TextColor: (self physicalPainter win32TextColor) ].!
+
+clippingRectBeforeTranslation: r <Rect>
+
+	clippingRectBeforeTranslation := r.
+	
+	"Must set the clipping region"
+	self unimplemented.!
+
+flushText
+
+	textSize = 0
+		ifTrue: [ ^self ].
+
+	{{<gdi ExternalProxy TextOutA>
+			hdc: self
+			xStart: textX asInteger
+			yStart: textY asInteger
+			buffer: textBuffer
+			count: textSize}}.
+	textSize := 0.!
+
+nullBrush ^<HBRUSH>
+
+	^{{<gdi HBRUSH GetStockObject> object: Win32 NULL_BRUSH}}!
+
+nullPen ^<HPEN>
+
+	^{{<gdi HPEN GetStockObject> object: Win32 NULL_PEN}}!
+
+painterVersion ^<Int>
+
+	^painterVersion!
+
+painterVersion: i <Int>
+
+	painterVersion := i!
+
+physicalPainter ^<Painter>
+
+	^physicalPainter!
+
+physicalPainter: p <Painter>
+
+	self flushText.		"draw any accumulated text before switching painters"
+	physicalPainter := p.
+	painterVersion := p version.
+
+	"We compare the cached values, which might be nil, rather than the logical ones (i.e. p win32Pen),
+	 	 to avoid building things  we might not use"
+	p cachedWin32Pen == win32Pen
+		ifFalse: [ win32Pen := nil ].
+	p cachedWin32Brush == win32Brush
+		ifFalse: [ win32Brush := nil ].
+	p cachedWin32Font == win32Font
+		ifFalse: [ win32Font := nil ].
+	p cachedWin32TextColor == win32TextColor
+		ifFalse: [ win32TextColor := nil ].!
+
+scratchRECT ^<RECT>
+
+	scratchRECT == nil
+		ifTrue: [ scratchRECT := RECT new allocate ].
+	^scratchRECT!
+
+textAlignBaseline
+
+	({{<gdi ExternalProxy SetTextAlign>
+		hdc: self
+		mode: Win32 TA_BASELINE}} @= Win32 GDI_ERROR
+	 ) ifTrue: [ self print. Win32 handleError ]!
+
+textBuffer ^<ExternalProxy>
+
+	^textBuffer!
+
+textBufferSize ^<Int>
+
+	^1000!
+
+textSize ^<Int>
+
+	^textSize!
+
+win32Brush: wb <HBRUSH>
+
+	self canvasDebugging
+		ifTrue: [ Platform errorStream show: 'BRUSH: ';  print: wb; cr. ].
+	win32Brush := wb.
+	{{<gdi ExternalProxy SelectObject>
+		hdc: self brush: wb}} isNull ifTrue: [ Win32 handleError ]!
+
+win32Font: wf <ExternalData>
+
+	self canvasDebugging
+		ifTrue: [ Platform errorStream show: 'FONT: ';  print: wf; cr. ].
+	win32Font := wf.
+	{{<gdi ExternalProxy SelectObject>
+		hdc: self font: wf}} isNull ifTrue: [ Win32 handleError ]!
+
+win32Pen: wp <HPEN>
+
+	self canvasDebugging
+		ifTrue: [ Platform errorStream show: 'PEN: ';  print: wp; cr. ].
+	win32Pen := wp.
+	{{<gdi ExternalProxy SelectObject>
+		hdc: self pen: wp}} isNull ifTrue: [ Win32 handleError ]!
+
+win32TextColor: color <Int>
+
+	self canvasDebugging
+		ifTrue: [ Platform errorStream show: 'TEXTCOLOR: ';  print: color; cr. ].
+	win32TextColor := color.
+	{{<gdi ExternalProxy SetTextColor>
+		hdc: self color: color}}! !
+

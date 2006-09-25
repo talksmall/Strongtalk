@@ -1,0 +1,28 @@
+Delta define: #CommonProgEnvOutliner as: (
+(Class subclassOf: 'OutlinerApp mixin |> ProgrammingEnvironment' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #CommonProgEnvOutliner) revision: '$Revision: 1.19 $'!
+
+(Delta mirrorFor: #CommonProgEnvOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #CommonProgEnvOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CommonProgEnvOutliner) methodsFor: 'toolbar' !
+
+
+buildFindButtons
+
+	self toolBar
+		addButtonWithImageFrom: 'resources/open.bmp'
+				action: [ :b <Button> |	self findDefinition ];
+		yourself!
+
+buildToolBar
+
+	self buildFindButtons.
+	self toolBar addSpace.
+	super buildToolBar.! !
+

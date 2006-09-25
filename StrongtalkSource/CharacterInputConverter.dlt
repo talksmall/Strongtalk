@@ -1,0 +1,119 @@
+Delta define: #CharacterInputConverter as: (
+Generic forAll: 'STRM <InputStream[Int]> ' body: ((Class subclassOf: 'CharacterInput |> BasicInputStream[Character]' instanceVariables: 'binaryStream <STRM>'))) !
+
+(Delta mirrorFor: #CharacterInputConverter) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #CharacterInputConverter) group: 'base'!
+
+(Delta mirrorFor: #CharacterInputConverter)
+comment: 
+'Instances are used to create a CharInputStream that wraps a byte input stream
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #CharacterInputConverter) classSide methodsFor: 'instance creation' !
+
+
+on: binaryStrm <STRM> ^<Instance>
+
+	^self new initBinaryStream: binaryStrm! !
+
+! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+
+	^self binaryStream atEnd!
+
+actualNext ^<Character>
+    | c <Character> |
+	c := Character value: self binaryStream next.
+	(Platform usesCrLfConvention and: [ c = Character cr ])
+        ifTrue: [ self binaryStream atEnd
+						ifFalse: [ self binaryStream peek = Character lf asciiValue
+											ifTrue: [  self binaryStream next ]	]].
+	^c
+!
+
+binaryStream ^<STRM>
+
+	^binaryStream!
+
+binaryStream: b <STRM>
+
+	binaryStream := b! !
+
+! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'initialization' !
+
+
+initBinaryStream: binaryStrm <STRM>
+
+	self binaryStream: binaryStrm! !
+
+! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'control' !
+
+
+close
+
+	self binaryStream close.! !
+
+! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'accessing' !
+
+
+upTo: del <Object> ^<Str>
+
+	| bytes <SeqCltn[Int]> s <String> lfs <Int> j <Int> delimiter <Character> |
+
+	(self havePeeked and: [ self peek == del ])
+		ifTrue: [ ^super upTo: del ].
+
+	delimiter := Character coerce: del.
+	bytes := self binaryStream upTo: delimiter asciiValue.
+
+	Platform usesCrLfConvention
+		ifTrue: [	delimiter == Character cr
+							ifTrue: [	"If cr was the delim, got to check for reading the lf, since
+											it was at the lower level"
+											(self binaryStream atEnd not and: [ self binaryStream peek == 10 ])
+												ifTrue: [ self binaryStream next ].
+										].
+					]
+		ifFalse: [	"self havePeeked
+							ifFalse: [	s := String new: bytes size.
+											1 to: bytes size do:
+												[ :ind <Int> |
+													s at: ind putUnicode: (bytes at: ind)	].
+										 ]
+							ifTrue:	[	s := String new: bytes size + 1.
+											1 to: bytes size do:
+												[ :ind <Int> |
+													s at: ind + 1 putUnicode: (bytes at: ind)	].
+											s at: 1 put: self next.
+										 ]
+						^s"
+					].
+
+	"Count the line feeds"
+	lfs := 0.
+	1 to: bytes size do:
+		[ :ind <Int> |
+			(bytes at: ind) == 10
+				ifTrue: [ lfs := lfs + 1 ]
+		].
+	self havePeeked
+		ifFalse: [	s := String new: bytes size - lfs.
+						j := 1.	  ]
+		ifTrue: [	s := String new: (bytes size - lfs) + 1.
+						j := 2.	  ].
+	bytes do:
+		[ :b <Int> |
+			b == 10
+				ifFalse: [	s at: j putUnicode: b.
+								j := j + 1.	 ]
+		].
+	self havePeeked
+		ifTrue: [ s at: 1 put: self next ].
+	^s! !
+

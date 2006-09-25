@@ -1,0 +1,38 @@
+Delta define: #DefinitionOutliner as: (
+Generic forAll: 'M <Mirror> ' body: ((Class subclassOf: 'MirrorOutliner[M]' instanceVariables: '') abstract)) !
+
+(Delta mirrorFor: #DefinitionOutliner) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DefinitionOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #DefinitionOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DefinitionOutliner) methodsFor: 'private' !
+
+
+buildBody ^ <Visual>
+
+	| col <Column[Visual]> header <StringGlyph> |
+	col := Column[Visual] new.
+	self removeAllChildren.
+	self insertSuperDefinition: col.
+	self insertGenericDefinition: col.
+	self insertRemainingDefinition: col.
+	self insertSourceCodeManagementDefinition: col.
+	col optimizeIncrementalLayout: false.
+	^col!
+
+insertGenericDefinition: col <Column[Visual]>!
+
+insertRemainingDefinition: col <Column[Visual]>!
+
+insertSourceCodeManagementDefinition: col <Column[Visual]>
+
+	col add: (self addChild: (SourceCodeManagementOutliner for: self mirror)) imbeddedVisual
+	!
+
+insertSuperDefinition: col <Column[Visual]>! !
+

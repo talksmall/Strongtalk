@@ -1,0 +1,67 @@
+Delta define: #Queens2Benchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: 'freeMajs freeRows freeMins qrows') classVariables: 'Queencount ') !
+
+(Delta mirrorFor: #Queens2Benchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Queens2Benchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #Queens2Benchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Queens2Benchmark) classSide methodsFor: 'constants' !
+
+
+initialize Queencount := 50 "Queens2Benchmark initialize"! !
+
+! (Delta mirrorFor: #Queens2Benchmark) methodsFor: 'run' !
+
+
+run
+	Queencount timesRepeat: [self initialize doQueens]
+	"Queens2Benchmark new run"! !
+
+! (Delta mirrorFor: #Queens2Benchmark) methodsFor: 'private' !
+
+
+doQueens
+	(self try: 1) 
+		ifFalse: [self error: 'Error in queens']!
+
+initialize
+	freeMajs := (Array new: 15) atAllPut: true.
+	freeRows := (Array new: 8) atAllPut: true.
+	freeMins := (Array new: 15) atAllPut: true.
+	qrows := Array new: 8.!
+
+try: col
+	1 to: 8 do: [ :row |
+		((freeRows at: row) and: [(freeMajs at: col + row - 1) and: [freeMins at: col - row + 7]]) ifTrue: [
+			qrows at: col put: row.
+			freeRows at: row put: false.
+			freeMajs at: col + row - 1 put: false.
+			freeMins at: col - row + 7 put: false.
+			8 = col ifTrue: [ ^true ].
+			(self try: col + 1 ) ifTrue: [^true].
+			freeRows at: row put: true.
+			freeMajs at: col + row - 1 put: true.
+			freeMins at: col - row + 7 put: true] ].
+	^false! !
+
+! (Delta mirrorFor: #Queens2Benchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^56!
+
+factor
+	^33!
+
+name
+	^#Queens2!
+
+parcplaceTime
+	^80! !
+

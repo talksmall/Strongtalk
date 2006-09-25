@@ -1,0 +1,61 @@
+Delta define: #ModifiedVisual as: (
+Generic forAll: 'V <Visual> ' body: ((Class subclassOf: 'VisualWrapper' instanceVariables: 'coreVisual <V>
+		'))) !
+
+(Delta mirrorFor: #ModifiedVisual) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ModifiedVisual) group: 'ui'!
+
+(Delta mirrorFor: #ModifiedVisual)
+comment: 
+'ModifiedVisuals are a kind of wrapper used to manage a potentially dynamically changing set
+of inner wrappers around a core object of type V, while maintaining the identity identity of the outer wrapper.
+
+Usage Notes:
+	- to remove an inner wrapper w, use:
+		mv removeWrapper: w
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
+'!
+
+! (Delta mirrorFor: #ModifiedVisual) classSide methodsFor: 'instance creation' !
+
+
+for: v <Visual> ^<Instance>
+
+	^self error: 'You must use the #forCore: or #for:withCore: instead of #for: to create ModifiedVisuals'!
+
+for: v <Visual> withCore: core <V> ^<Instance>
+
+	^(super for: v) coreVisual: core!
+
+forCore: v <V> ^<Instance>
+
+	^self for: v withCore: v! !
+
+! (Delta mirrorFor: #ModifiedVisual) methodsFor: 'accessing' !
+
+
+coreVisual ^<V>
+
+	^coreVisual!
+
+coreVisual: v <V>
+
+	coreVisual := v! !
+
+! (Delta mirrorFor: #ModifiedVisual) methodsFor: 'wrapper management' !
+
+
+removeWrapper: w <VisualWrapper>
+	"Remove an inner wrapper from the core part"
+
+	self part == w
+		ifFalse: [	self part withoutWrapper: w ]
+		ifTrue: [	| p <Visual> |
+						p := self removePart.
+						self part: (p withoutWrapper: w).	]! !
+

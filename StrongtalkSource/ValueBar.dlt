@@ -1,0 +1,89 @@
+Delta define: #ValueBar as: (
+(Class subclassOf: 'Visual' instanceVariables: 'painter <Painter>
+value <Float>')) !
+
+(Delta mirrorFor: #ValueBar) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ValueBar) group: 'ui'!
+
+(Delta mirrorFor: #ValueBar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ValueBar) methodsFor: 'preferences' !
+
+
+max ^<Region>
+
+	^Point origin extent: (UI huge @ self defaultHeight negated)!
+
+natural ^<Region>
+
+	^Point origin extent: (self defaultWidth @ self defaultHeight negated)! !
+
+! (Delta mirrorFor: #ValueBar) methodsFor: 'private' !
+
+
+defaultHeight ^<Int>
+
+	^8!
+
+defaultWidth ^<Int>
+
+	^50! !
+
+! (Delta mirrorFor: #ValueBar) methodsFor: 'displaying' !
+
+
+localDisplayOn: canvas <Canvas>
+
+	canvas withPainter: self painter
+		do: [	| width <Int> barwidth <Int> |
+					width := self allocation enclosedRect width.
+					barwidth := (value * width) asInteger.
+					canvas displayFilledRectangle:
+						(Point origin extent: 
+								barwidth @ (self defaultHeight negated)).
+				]! !
+
+! (Delta mirrorFor: #ValueBar) methodsFor: 'accessing' !
+
+
+painter ^<Painter>
+
+	^painter!
+
+painter: p <Painter>
+
+	painter := p!
+
+value ^<Float>
+
+	^value!
+
+value: v <Float>
+
+	self assert: [ v between: 0.0 and: 1.0 ].
+	value := v.
+	self invalidate! !
+
+! (Delta mirrorFor: #ValueBar) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self painter: (Painter new paint: Paint blue).
+	self value: 0.0.! !
+
+! (Delta mirrorFor: #ValueBar) methodsFor: 'utility' !
+
+
+remoteValue: v <Float>
+	"sets the value when the sender is in a process other than
+		the session process"
+	self value = v ifFalse: [ 
+		self session inProcessDo: [ self value: v ]
+	]! !
+

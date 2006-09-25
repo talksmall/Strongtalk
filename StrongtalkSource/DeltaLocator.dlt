@@ -1,0 +1,153 @@
+Delta define: #DeltaLocator as: (
+Generic forAll: '(M covar) <Mirror> ' body: ((Class subclassOf: 'Object' instanceVariables: 'definition <BasicLocator>
+astIndex <Integer>') abstract)) !
+
+(Delta mirrorFor: #DeltaLocator) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #DeltaLocator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaLocator) classSide methodsFor: 'instance creation' !
+
+
+ofDefinition: d <BasicLocator> ^ <Instance>
+
+^self new definition: d! !
+
+! (Delta mirrorFor: #DeltaLocator) methodsFor: 'accessing' !
+
+
+actualName ^ <Str>
+	^self name!
+
+ast ^ <ASTNode>
+
+self subclassResponsibility!
+
+astIndex ^ <Integer>
+
+^astIndex!
+
+astIndex: i <Integer>
+
+astIndex := i!
+
+astNode ^ <DeltaASTNode>
+    ^self parseTree nodeAtIndex: self astIndex!
+
+basicLocator
+
+self deltaHack.
+^self!
+
+definition ^ <BasicLocator>
+	^definition!
+
+definition: d <BasicLocator>
+	definition := d!
+
+definitionName ^ <String>
+	^self definition name!
+
+indexFor: node  <DeltaASTNode> ^ <Integer>
+
+^DeltaASTLocationTool indexForNode: node startingFrom: self  ast.
+
+!
+
+isMethodLocator ^ <Boolean>
+
+^false!
+
+locatorFor: node  <DeltaASTNode> 
+
+self astIndex: ( 1 max: (DeltaASTLocationTool indexForNode: node startingFrom: self  ast)).
+
+!
+
+methodLocatorClass ^ <MethodLocator class>
+
+^MethodLocator!
+
+mirror  ^ <M>
+	^self definition mirror
+!
+
+name ^ <Str>
+	^self definitionName!
+
+parseTree ^ <ParseTree[ASTNode]>
+
+self subclassResponsibility!
+
+printOn: aStream <CharOutputStream>
+	super printOn: aStream.
+	aStream nextPut: $(.
+	aStream nextPutAll: self name.
+	aStream nextPut: $).!
+
+source ^ <Str>
+	self deltaHack.
+    ^self mirror definitionString!
+
+sourceHighlight ^ <Tuple[Int,Int]>
+
+    ^self parseTree positionForIndex: self astIndex.!
+
+typeInfo  ^ <DeltaType>
+	^Type for: self mirror reflectee! !
+
+! (Delta mirrorFor: #DeltaLocator) methodsFor: 'locator matching' !
+
+
+matchesClassVarLocator: l  <ClassVarLocator> ^ <Boolean>
+
+^false!
+
+matchesDefinitionLocator: l <Locator> ^ <Boolean>
+	"Private"
+	^self definition matches: l definition ignoreSide: true!
+
+matchesGlobalVariableLocator: l <GlobalVariableLocator> ^ <Boolean>
+
+^false!
+
+matchesInstVarLocator: l  <InstVarLocator> ^ <Boolean>
+
+^false!
+
+matchesLocator: l <Locator> ^ <Boolean>
+	^l matchesDefinitionLocator: self!
+
+matchesMethodLocator: l <MethodLocator> ^ <Boolean>
+
+	^false!
+
+matchesMethodNodeLocator: l <MethodLocator> ^ <Boolean>
+
+	^false!
+
+matchesSuperclassLocator: l  <SuperclassClauseLocator> ^ <Boolean>
+
+^false!
+
+matchesSuperprotocolLocator: l  <SuperprotocolLocator> ^ <Boolean>
+
+^false!
+
+matchesSupportedProtocolLocator: l  <SupportedProtocolLocator> ^ <Boolean>
+
+^false!
+
+matchesTypeAliasLocator: l <TypeAliasLocator> ^ <Boolean>
+
+^false!
+
+matchesTypeArgLocator: l  <TypeArgumentLocator> ^ <Boolean>
+
+^false! !
+

@@ -1,0 +1,100 @@
+Delta define: #DeltaBasicProtocolLocator as: (
+(Class subclassOf: 'DeltaBasicEntryLocator' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaBasicProtocolLocator) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaBasicProtocolLocator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBasicProtocolLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBasicProtocolLocator) methodsFor: 'Unclassified' !
+
+
+indexFor: node  <DeltaASTNode> ^ <Integer>
+
+| astIndex <Integer> myType <DeltaProtocol> |
+
+" test the index for all parts of my definition"
+
+astIndex := (SuperprotocolLocator ofDefinition: self) indexFor: node.
+astIndex ~= 0 ifTrue:[^astIndex].
+
+"
+For possible future use:
+
+astIndex := (SupportedProtocolLocator ofDefinition: self) indexFor: node.
+astIndex ~= 0 ifTrue:[^astIndex]."
+
+myType := Type forProtocol: (self mirror reflectee).
+
+myType isGeneric ifFalse:[^0].
+
+myType asGeneric formals 
+	do:	[: tf <TypeFormal> | 
+			astIndex := (TypeArgumentLocator 	onTypeArgument: tf name
+																					ofDefinition: self) indexFor: node.
+			astIndex ~= 0 ifTrue:[^astIndex].
+			].
+
+^0.
+!
+
+locationOfMethod: sel <Symbol> ifAbsent: blk <[^X def]>  ^ <BasicEntryLocator | X>
+	(self mirror messages includesKey: sel)
+		ifTrue: [^self]
+		ifFalse: [
+			^(self typeInfo == (Type forClass: (Delta at: #Object)) typeOfInstances)
+				ifTrue: blk
+				ifFalse: [self typeInfo superprotocol basicLocator locationOfMethod: sel ifAbsent: blk]]!
+
+locatorFor: node  <DeltaASTNode> ^ <Locator[Mirror]>
+
+| astIndex <Integer> myType <DeltaProtocol> loc <Locator[Mirror]>  |
+
+" test the index for all parts of my definition"
+
+astIndex := (loc := SuperprotocolLocator ofDefinition: self) indexFor: node.
+astIndex ~= 0 ifTrue:[^loc astIndex: astIndex].
+
+"
+For possible future use:
+astIndex := (loc := SupportedProtocolLocator ofDefinition: self) indexFor: node.
+astIndex ~= 0 ifTrue:[^loc astIndex: astIndex]."
+
+myType := Type forProtocol: (self mirror reflectee).
+
+myType isGeneric ifFalse:[^self].
+
+myType asGeneric formals 
+	do:	[: tf <TypeFormal> | 
+			astIndex := (loc := TypeArgumentLocator 	onTypeArgument: tf name
+																					ofDefinition: self) indexFor: node.
+			astIndex ~= 0 ifTrue:[^loc astIndex: astIndex].
+			].
+
+
+
+!
+
+methodAt: sel <Symbol> ifAbsent: blk <[^X def]>  ^ <Method | X>
+	^self mirror messages at: sel ifAbsent: blk
+!
+
+methodLocatorClass ^ <MethodNodeLocator class>
+
+^MessageDeclLocator!
+
+mirror   ^ <ProtocolMirror>
+	| m <ProtocolMirror> |
+	m := Mirror on: (Delta at: self id).
+	^self isMetaSide
+		ifTrue: [m classSide]
+		ifFalse: [m]!
+
+nodeLocatorClass ^ <MethodNodeLocator class>
+
+^MessageDeclLocator! !
+

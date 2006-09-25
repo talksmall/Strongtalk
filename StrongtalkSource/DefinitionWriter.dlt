@@ -1,0 +1,190 @@
+Delta define: #DefinitionWriter as: (
+(Class subclassOf: 'DefinitionFiler' instanceVariables: '')) !
+
+(Delta mirrorFor: #DefinitionWriter) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DefinitionWriter) group: 'reflection'!
+
+(Delta mirrorFor: #DefinitionWriter)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DefinitionWriter) classSide methodsFor: 'Unclassified' !
+
+
+for: m <Mirror>  ^ <Instance>
+	^m definitionWriterClass new mirror: m! !
+
+! (Delta mirrorFor: #DefinitionWriter) methodsFor: 'Unclassified' !
+
+
+categoryName: cat  <Str> ^ <Str>
+
+	"Private"
+	^(cat isNil ifTrue: ['Unclassified'] ifFalse: [cat]) asString printString
+!
+
+fileOutBodyOn: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	pos := stream position.
+	self mirror sourceInfo categories do: [ :cat <Str> | 
+		self fileOutCategory: cat on: stream ].
+	^pos!
+
+fileOutCategory: cat <Str> on: stream <WriteStream> ^ <Int>
+
+	| selectors <Cltn[Symbol]> pos <Int> |
+	pos := stream position.
+	(selectors := self mirror selectorsFor: cat) isEmpty ifFalse: [
+		self fileOutCategoryHeader: cat on: stream.
+		selectors asSortedCollection do: [ :sel <Symbol> | 
+			stream cr; cr.
+			self fileOutSelectorSource: (self mirror sourceForSelector: sel) on: stream].
+		stream nextPutAll: ' !!'; cr; cr ].
+	^pos
+!
+
+fileOutCategoryHeader: cat <Symbol> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	pos := stream position.
+	stream
+		nextPutAll: '!! ';
+		nextPutAll: self mirrorName;
+		nextPutAll: ' methodsFor: ';
+		nextPutAll: (self categoryName: cat);
+		nextPutAll: ' !!';
+		cr.
+	^pos
+!
+
+fileOutComment: s <Str> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self assert: [self mirror isMeta not].
+	stream
+		nextPutAll: self mirrorName; cr;
+		nextPutAll: 'comment: '; cr.
+	pos := stream position.
+	stream
+		deltaNextChunkPut: s asString printString; 
+		cr; cr.
+	^pos
+!
+
+fileOutDefinition: s <Str> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self assert: [self mirror isMeta not].
+	stream
+		nextPutAll: 'Delta define: #';		"We print the hash explicitly to preserve Delta/Digitalk compatability"
+		nextPutAll: self mirror name;
+		nextPutAll: ' as: ('; cr.
+	pos := stream position.
+	stream	
+		nextPutAll: s;
+		nextPutAll: ') !!'; 
+		cr; cr.
+	^pos
+!
+
+fileOutDefinitionRemovalOn: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self assert: [self mirror isMeta not].
+	pos := stream position.
+	stream
+		nextPutAll: self mirrorName;
+		nextPutAll: ' removeDefinitionIfFail: [] !!'; 
+		cr; cr.
+	^pos
+!
+
+fileOutGroup: s <Str> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self assert: [self mirror isMeta not].
+	pos := stream position.
+	stream
+		nextPutAll: self mirrorName;
+		nextPutAll: ' group: '.
+	stream
+		deltaNextChunkPut: s asString printString; 
+		cr; cr.
+	^pos
+!
+
+fileOutOn: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self assert: [ self mirror isMeta not ].
+	pos := stream position.
+	self fileOutDefinition: self mirror definitionString on: stream.
+	self fileOutRevision: self mirror revision on: stream.
+	self fileOutGroup: self mirror group on: stream.
+	self fileOutComment: self mirror comment on: stream.
+	(self class for: self mirror classSide) fileOutBodyOn: stream.
+	self fileOutBodyOn: stream.
+	^pos
+!
+
+fileOutRevision: s <Str> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self assert: [self mirror isMeta not].
+	pos := stream position.
+	stream
+		nextPutAll: self mirrorName;
+		nextPutAll: ' revision: '.
+	stream
+		deltaNextChunkPut: s asString printString; 
+		cr; cr.
+	^pos
+!
+
+fileOutSelectorRemoval: sel <Symbol> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	pos := stream position.
+	stream
+		nextPutAll: self mirrorName;
+		nextPutAll: ' removeMethod: #';
+		nextPutAll: sel;
+		nextPutAll: ' ifAbsent: [] !!';
+		cr; cr.
+	^pos
+!
+
+fileOutSelectorSource: s <Str> category: cat <Str> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self fileOutCategoryHeader: cat on: stream.
+	pos := self fileOutSelectorSource: s on: stream.
+	stream nextPutAll: ' !!'; cr.
+	^pos
+!
+
+fileOutSelectorSource: s <Str> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	pos := stream position.
+	stream deltaNextChunkPut: s.
+	^pos
+!
+
+mirrorName  ^ <String>
+
+	| name  <String> stream <WriteStream> |
+	name := self mirror name readStream upTo: $ .		"Strip meta extension"
+	stream := (String new: 16) writeStream.
+	stream
+		nextPutAll: '(Delta mirrorFor: #';
+		nextPutAll: name;
+		nextPut: $).
+	self mirror isMeta
+		ifTrue: [stream nextPutAll: ' classSide'].
+	^stream contents
+! !
+

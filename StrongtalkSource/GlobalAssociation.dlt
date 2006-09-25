@@ -1,0 +1,58 @@
+Delta define: #GlobalAssociation as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlobalAssociation) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #GlobalAssociation) group: 'base'!
+
+(Delta mirrorFor: #GlobalAssociation)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $
+'!
+
+! (Delta mirrorFor: #GlobalAssociation) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^73! !
+
+! (Delta mirrorFor: #GlobalAssociation) methodsFor: 'misc' !
+
+
+isConstant ^ <Boolean>
+	^{{self primitiveGlobalAssociationIsConstant}}
+
+!
+
+key ^ <Symbol>
+	^{{self primitiveGlobalAssociationKey}}!
+
+makeConstant
+	{{self primitiveGlobalAssociationSetConstant: true}}
+!
+
+value
+	^{{self primitiveGlobalAssociationValue}}!
+
+value: v
+	{{self primitiveGlobalAssociationSetValue: v}}! !
+
+! (Delta mirrorFor: #GlobalAssociation) methodsFor: 'file out' !
+
+
+fileOutHeaderOn: d <Dumper>
+	| group |
+	super fileOutHeaderOn: d.
+	self key		fileOutOn: d.
+	self isConstant ifTrue: [
+		self value	fileOutOn: d.
+		true 			fileOutOn: d.
+	] ifFalse: [
+		nil				fileOutOn: d.
+		false			fileOutOn: d
+	]!
+
+fileOutSignature ^<Integer>
+    ^105! !
+

@@ -1,0 +1,45 @@
+Delta define: #DeltaInterfaceMerge as: (
+(Class subclassOf: 'DeltaInterface' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaInterfaceMerge) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaInterfaceMerge) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInterfaceMerge)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInterfaceMerge) methodsFor: 'Unclassified' !
+
+
+associationsDo: b <[Assoc[Symbol,Type],^Object] > ^ <Self>
+	self type1 associationsDo: b.
+	self type2 associationsDo: b.!
+
+at: k <Symbol > ^ <Type>
+    ^self type1 at: k ifAbsent:[self type2 at: k]!
+
+at: k <Symbol >ifAbsent: b <[^Type] > ^ <Type>
+    ^self type1 at: k ifAbsent:[self type2 at: k ifAbsent: b]!
+
+attributes ^ <Dict[Symbol,Type]>
+    ^self type1 attributes merge: self type2 attributes!
+
+do: b <[Type,^Object] > ^ <Self>
+	self type1 do: b.
+	self type2 do: b.!
+
+includesIndex: i <Symbol > ^ <Boolean>
+    ^(self type1 includesIndex: i) or: [self type2 includesIndex: i]!
+
+type1 ^ <Interface>
+    ^self filteree type1 substitute: self substitution!
+
+type1: t1 <Interface >type2: t2 <Interface > ^ <Self>
+    self filter: (BasicMergeData new type1: t1 type2: t2)  "will not type!!"
+      using: DeltaSubstitution new initialize!
+
+type2 ^ <Interface>
+    ^self filteree type2 substitute: self substitution! !
+

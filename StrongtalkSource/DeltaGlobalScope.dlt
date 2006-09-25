@@ -1,0 +1,104 @@
+Delta define: #DeltaGlobalScope as: (
+(Class subclassOf: 'DeltaScope' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaGlobalScope) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #DeltaGlobalScope) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGlobalScope)
+comment: 
+'The global scope is implemented by this class. Any declared global variable or 
+magical type will be stored locally. Any definition (class, 
+mixin, protocol or  type alias) or any undeclared global variable will have an entry
+in the system dictionary. Therefore, if a local entry cannot be found, we will search
+the system dictionary. If we find an entry there, we cannot just return it. The look up
+in the global scope must return either a variable declaration or a type. Consequently,
+a synthetic variable declaration is generated in these cases. This variable declaration
+is an instance of DeltaTopLevelDeclVar.
+    
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGlobalScope) methodsFor: 'Unclassified' !
+
+
+at: key <Symbol> ifAbsent: blk <[^DoesNotMatter]> ^ <GlobalVar | Type>
+	"Lookup key locally. If we cannot find it, try the system dictionary" 
+
+ 	"Optimization note: This is written using [nil] blocks to avoid passing 
+		non-clean blocks dynamically down the scope structure."
+
+	| value <T> |
+	(value := self bindings at: key ifAbsent: [ nil ]) notNil
+		ifTrue: [ ^value ].
+   ^self lookupInSystemDictionary: key ifAbsent: blk
+!
+
+declare: name type: type
+
+self at: name asSymbol put:( DeltaGlobalVar new name: name asSymbol type: (DeltaParser new parseTypeExpr: type within: DeltaGlobals) body).!
+
+declare: name type: type ifFail: fb <[Str, Integer, ^DoesNotMatter]>
+"This really belongs in GlobalVariableMirror"
+self at: name asSymbol put:( DeltaGlobalVar new name: name asSymbol 
+																								type: (DeltaParser new parseOptionalTypeExpr: type within: DeltaGlobals ifError: fb) body).!
+
+declareGlobal: name type: type
+
+^self declare: name type: type!
+
+globalVariablesDo: blk <[DeltaGlobalVar]>
+
+self updateGlobalsFromSmalltalk.
+self bindings do: [: b <GlobalVarNode | Generic> | b isGlobalVarNode  ifTrue:[ blk value: b]].!
+
+initialize: scope <DeltaScope>
+
+super initialize: scope.
+self at: #DoesNotMatter
+		put: DeltaBottomType new;
+		at: #Nil
+		put: DeltaNilType new.!
+
+isGlobalScope
+    ^ true!
+
+lookupInSystemDictionary: key <Symbol> ifAbsent: blk <[^DoesNotMatter]> ^ <TopLevelDeclVar>
+"
+If there is no entry in the system dictionary, key is
+absent and we execute the ifAbsent: block.
+If there is an entry, we return a synthetic variable
+declaration for it.
+"
+| deltaElement varConstructor |
+
+deltaElement := Delta assocAt: key ifAbsent: [^blk value].
+(Reflection isGlobalVariable: deltaElement) 
+	ifTrue:[
+				self updateGlobalAssoc: deltaElement.
+				^self bindings at: key.
+				].
+^DeltaTopLevelDeclVar new name: key
+                                          
+  !
+
+updateGlobalAssoc: ga <GlobalAssociation>
+
+| gm <GlobalVariableMirror> gt <ObjectType> |
+
+	(self bindings includesKey: ga key)
+							ifFalse:	[
+											gm := GlobalVariableMirror on: ga.
+											gt := gm declaredTypeString isEmpty 
+														ifTrue:[DeltaNoTypeSpecifiedError new]
+														ifFalse:[(DeltaParser new parseTypeExpr: gm declaredTypeString within: DeltaGlobals) body].
+											self at: ga key put: (DeltaGlobalVar new name: ga key type: gt ).
+											].!
+
+updateGlobalsFromSmalltalk
+
+| gm <GlobalVariableMirror> gt <ObjectType> |
+
+Smalltalk globalVariablesDo: [: a <GlobalAssociation> | self updateGlobalAssoc: a].
+! !
+

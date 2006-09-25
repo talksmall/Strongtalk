@@ -1,0 +1,835 @@
+Delta define: #SourceHandler as: (
+(Class subclassOf: 'NotifyingObject mixin |> Object' instanceVariables: 'mirror dualHandler indexFile indexDict isNewIndex ') classVariables: 'ActiveHandlers ChangeLog <CharWriteStream> RawChangeLog <ExternalReadWriteStream> SourceDirectory InitialChangeLogSize <Int>') !
+
+(Delta mirrorFor: #SourceHandler) revision: '$Revision: 1.9 $'!
+
+(Delta mirrorFor: #SourceHandler) group: 'reflection'!
+
+(Delta mirrorFor: #SourceHandler)
+comment: 
+'This class manages the source code database. 
+Subclasses are specialized for specific source constructs.
+An instance of such a subclass manages the source code for a particular definition. For example,
+a MixinSourceHandler handles source code for a partiular mixin.
+
+The database usually resides in the subdirectory ''source'' of the strongtalk directory. If you wish to have
+it elsewhere, set the environment variable StrongtalkSourceDir.
+
+The database contains an identification file, strongtalksource.id. This file consists of two "chunks"
+in file in format. The first chunk is a path, that specifies what binary the source database is
+associated with. The second chunk is the size of the file strongtalkchange.log, which contains the
+entire source code history of the system from last creation.
+
+The source DB also includes files for every class and metaclass in the system. If the class is named X, then its
+instance side is represented in the file X in the source directory, and its class side is represented in the file X.class.
+
+Whenever a change is made to the
+source code, several things happen:
+
+0. The binary representation IN MEMORY is modified to match the changed source.
+1. If this is a new definition X, then a file X.new is created in the source directory.
+2. Otherwise, if this is the first change to this definition  in the current session, then:
+a. The original source file for the definition X being modified is backed up as X.bak.
+b.  The original source code, in file in format, is appended to the restore log, strongtalkrestore.log.
+3. The source file for X is modified accordingly.
+4. The change is appended to the change log, strongtalkchange.log.
+
+When the system is saved, the binary on disk is rewritten to reflect the memory image of the program.
+All the .bak files are removed, and all the .new files have their .new suffix removed, making the new source 
+permanent. In addition, a save comment is written to the change log, and the restore log is deleted. 
+Finally, the id file is regenerated: it will now contain the path
+of the binary that was used in this session, and the size of the change log just after the save.
+
+Using this information, the system can detect if the change log size is greater than the size listed in the id file. This 
+indicates unsaved source changes. The system then generates a warning that the source DB is inconsistent with 
+the binary. The user is then asked to resync the two. This is accomplished by :
+
+a. Rolling back the change log to the index
+indicated by the id file.  
+b. For all files X.bak, remove the file X and then rename X.bak to X.
+c. Remove all .new files.
+
+Any lost changes can be filed in from the restore log.
+
+Other than the logs and id file, the source DB consists of files representing the code in individual classes and
+metaclasses. These rely heavily on indices into the change log, and are known as index files. Every instance
+of a source handler has its own index file. The index files are represented in file in format, using chunks.
+
+For every construct, the appropriate source handler defines a series of attributes. The index file then encodes
+these attributes. Some attributes are listed directly in the index file, while others point at an index in the change
+log. As a rule, if an attribute needs to be available quickly, it is encoded directly into the index file. For example,
+category names and type signatures are needed by browsers that have to display this information, even if
+no method bodies are being viewed. Type information is also needed by the type checker. Therefore, this
+data is directly available in the index file. On the other hand, method bodies are only needed when a browser
+opens a view on a method. In that case, we can afford to look it up in the change log, so the index file contains
+only a number, which is a character offser into the change log where the method body can be found.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SourceHandler) classSide methodsFor: 'Unclassified' !
+
+
+activeHandlers ^ <IdentityDictionary>
+
+	"Contains all currently active source handlers. These are canonicalized.
+	The implementation should be changed to use a weak dictionary so that unused
+	source handlers can be garbage collected."
+
+	ActiveHandlers isNil
+		ifTrue: [	ActiveHandlers := IdentityDictionary[Object, SourceHandler] new ].
+	^ActiveHandlers
+!
+
+addSectionToChangeLog: blk <[WriteStream,^Int]> ^ <Int>
+
+	| pos <Int> |
+	self changeLog
+		setToEnd;
+		cr;
+		nextPut: $";
+		nextPutAll: Date dateAndTimeNow printString;
+		nextPut: $";
+		nextPut: $!!;        
+		cr; cr.
+	pos := blk value: self changeLog.
+	self changeLog flush.
+	^pos
+!
+
+changeLog ^ <CharWriteStream>
+
+	ChangeLog isNil ifTrue: [
+		RawChangeLog := self changeLogFile readWriteStream.
+		InitialChangeLogSize isNil
+			ifTrue: [ InitialChangeLogSize := RawChangeLog size ].
+		ChangeLog := BootStrapping
+							ifTrue: [		CharacterInputOutputConverter on: RawChangeLog ]
+							ifFalse: [ 	self changeLogFile writeStream ] ].
+	^ChangeLog
+!
+
+changeLogFile ^ <FilePath>
+
+	^BootStrapping
+		ifTrue: [ 	self sourceDirectory, (FilePath for: self changeLogFileName) ]
+		ifFalse: [ 	File open: self changeLogFileName in: self sourceDirectory ]!
+
+changeLogFileName ^ <Str>
+
+    ^'strongtalkchange.log'!
+
+checkSystemConsistency ^<Tuple[Boolean,Boolean]>
+	"Check  source database consistency, and move any orphaned code to the
+	  restore log, but otherwise do not restore the db to a consistent state.  A pair of booleans
+	  is returned. The first indicates whether a restore is needed, and the second
+	  indicates whether there was orphaned code (and thus that a the restore option
+	  message should be printed."
+
+	| 	shouldRestore <Boolean>
+		hadOrphanedCode <Boolean>
+		oldID <Str> 
+		newID <Str> 
+		oldLogSize <Int> 
+		idStream <CharInputStream>
+		restoreStream <CharInputStream> |
+
+	self identificationFile exists ifTrue: [
+		BootStrapping
+			ifTrue: [	idStream := self identificationFile charInputStream.
+							newID := Platform getArguments first ]
+			ifFalse: [	idStream := self identificationFile readStream.
+							newID := SessionModel current commandLine first ].
+		[	
+			oldID := idStream nextChunk.
+			oldLogSize := Integer readFrom: idStream.
+		] ensure: [
+			idStream close
+		].
+		"		newID = oldID
+			ifFalse: [	self printImageChangeWarningFrom: oldID to: newID ]"
+			"The intent is that when the system is run, it checks to see if the current binary is the same 
+			as the one listed in the source identification file and issues a warning if this is not the case. 
+			This provides a crude consistency check.  However, it may issue false warnings,if the entire 
+			strongtalk directory is moved to a new location. It even gets  confused if the system is run from the 
+			command line or from the windows GUI, because the pathnames are not literally identical."
+
+			"12/6/01: commented out code above; otherwise everyone downloading the system will get
+			an annoying message they will not readily understand. If you've downloaded this
+			code, feel free to uncomment this part."
+			 ].
+
+	shouldRestore := false.
+	hadOrphanedCode := false.
+	
+	BootStrapping
+		ifTrue: [
+			(self sourceDirectory, (FilePattern for: '*.new')) pathsDo: [ :file <FilePath> |
+				shouldRestore := true ].
+			(self sourceDirectory, (FilePattern for: '*.bak')) pathsDo: [ :file <FilePath> |
+				shouldRestore := true ] ]
+		ifFalse: [
+			self sourceDirectory fileNamesDo: [ :filename <Str> |
+				('*.bak' match: filename) 
+					ifTrue: [ shouldRestore := true ].
+				('*.new' match: filename) 
+					ifTrue: [ shouldRestore := true ] ] ].
+
+	shouldRestore
+		ifTrue: [	 oldLogSize notNil 
+							ifTrue: [	self changeLog setToEnd.
+											(oldLogSize > 0 and: [ oldLogSize < self changeLog position ]) 
+												ifTrue: [	self changeLog position: oldLogSize.
+																restoreStream := BootStrapping
+																	ifTrue: [ 	self restoreFile charOutputStream ]
+																	ifFalse: [	self restoreFile writeStream ].
+																[
+																	[ self changeLog atEnd ]
+																		whileFalse: [	restoreStream nextPut: self changeLog next ]
+																] ensure: [
+																	restoreStream close
+																].
+																hadOrphanedCode := true. ] ] ].
+	^shouldRestore,, hadOrphanedCode!
+
+checkSystemConsistencyAndPrintMessagesIfNeeded
+
+	| status <Tuple[Boolean,Boolean]> |
+	status := self checkSystemConsistency.
+	status at1
+		ifTrue: [ self printRestoreWarning ].
+	status at2
+		ifTrue: [ self printRestoreOption ].!
+
+currentChangeLogSize ^<Int>
+
+	^self rawChangeLog size!
+
+currentUnsavedChanges ^<CharInputStream>
+	"Return a stream over the unsaved changes that have been made, in fileout format.  This is
+	 a snapshot as of when this method is called and won't reflect future changes"
+
+	| strm <CharInputStream> logPos <Int> |
+	self changeLog flush.
+	logPos := self changeLog position.  "remember starting position"
+
+	self changeLog position: self initialChangeLogSize.
+	strm := self changeLog contentsRemaining readStream.
+	
+	"restore change log position"
+	self changeLog position: logPos.
+	^strm!
+
+dualHandlerFor: h <Instance> ^ <Instance> 
+
+	^h isMeta
+		ifTrue: [ self for: h instanceSide ]
+		ifFalse: [ self for: h classSide ]
+!
+
+errorStreams ^ <Cltn[CharOutputStream]>
+
+	^BootStrapping
+		ifTrue: [	Array[CharOutputStream] with: Transcript with: Platform errorStream ]
+		ifFalse: [	Array[CharOutputStream] with: Transcript ]
+!
+
+flush
+
+	ChangeLog notNil
+		ifTrue: [	ChangeLog close.
+						ChangeLog := nil ].
+	SourceDirectory := nil.
+	self activeHandlers do: 
+		[ :h <SourceHandler> | h flush ].
+
+!
+
+for: m <Mirror> ^ <Instance> 
+
+	| newHandler <Instance> |
+	^self activeHandlers at: m reflectee ifAbsent: [ 
+		newHandler := self new mirror: m.
+		self activeHandlers at: m reflectee put: newHandler.
+		newHandler ].
+!
+
+identificationFile ^ <FilePath>
+
+	^BootStrapping
+		ifTrue: [ 	self sourceDirectory, (FilePath for: self identificationFileName) ]
+		ifFalse: [ 	self sourceDirectory fileNamed: self identificationFileName ]!
+
+identificationFileName ^ <Str>
+
+	^'strongtalksource.id'!
+
+initialChangeLogSize ^<Int>
+
+	^InitialChangeLogSize!
+
+printImageChangeWarningFrom: old <Str> to: new <Str>
+
+	self errorStreams do: [ :stream <CharOutputStream> |
+		stream
+			cr;
+			show: 'WARNING !!!!!! WARNING !!!!!! WARNING !!!!!!'; cr; cr;
+			show: 'The source database was last used from '; cr;
+			show: '  ', old; cr;
+			show: 'and is now being used from '; cr;
+			show: '  ', new; cr ]!
+
+printRestoreOption
+
+	self errorStreams do: [ :stream <CharOutputStream> |
+		stream
+			cr;
+			show: 'Changes made since the last save can be found by executing'; cr;
+			tab; showDoIt: '"Edit Restore File"                (CodeEditor on: (FilePath for: ''', 
+										self restoreFile name,
+										''')) launch'; show: '.'; cr.
+			 ]!
+
+printRestoreWarning
+
+	self errorStreams do: [ :stream <CharOutputStream> |
+		stream
+			cr;
+			show: 'WARNING !!!!!! WARNING !!!!!! WARNING !!!!!!'; cr; cr;
+			show: 'The source database is in an inconsistent state. This can'; cr;
+			show: 'be caused by exiting without saving changes. Please execute '; cr;
+			tab; showDoIt: 'SourceHandler restoreBackup'; cr;
+			show: 'to restore the source database to the state when it was'; cr;
+			show: 'last saved.'; cr ]
+!
+
+rawChangeLog ^ <ExternalReadWriteStream>
+
+	RawChangeLog isNil
+		ifTrue: [	self changeLog ].
+	^RawChangeLog!
+
+restoreBackup
+
+	| newName <Str> newFile <FilePath> |
+	self flush.
+	BootStrapping
+		ifFalse: [
+			self sourceDirectory fileNamesDo: [ :filename <Str> |
+				('*.new' match: filename) 
+					ifTrue: [ (self sourceDirectory fileNamed: filename) remove ] ].
+			self sourceDirectory fileNamesDo: [ :filename <Str> |
+				('*.bak' match: filename)
+					ifTrue: [ 	newName := filename copyFrom: 1 to: filename size - 4.
+									newFile := self sourceDirectory fileNamed: newName.
+									newFile exists
+										ifTrue: [	newFile remove ].
+									(self sourceDirectory fileNamed: filename)  renameAs: newName ] ] ]
+		ifTrue: [
+			(self sourceDirectory, (FilePattern for: '*.new')) pathsDo: [ :file <FilePath> |
+				file delete ].
+			(self sourceDirectory, (FilePattern for: '*.bak')) pathsDo: [ :file <FilePath> |
+				newName := file name copyFrom: 1 to: file name size - 4.
+				newFile := FilePath for: newName.
+				newFile exists
+					ifTrue: [	newFile delete ].
+				file moveAs: newFile ].
+			Transcript show: 'Source Database backup restored.';cr.	 ].		
+
+!
+
+restoreFile ^ <FilePath>
+
+	^BootStrapping
+		ifTrue: [ 	self sourceDirectory, (FilePath for: self restoreFileName) ]
+		ifFalse: [ 	self sourceDirectory fileNamed: self restoreFileName ]!
+
+restoreFileName ^ <Str>
+
+	^'strongtalkrestore.log'!
+
+saveLogFile ^ <FilePath>
+
+	^self sourceDirectory, (FilePath for: 'strongtalkSave.log')!
+
+sourceDirectory ^ <FilePath>
+
+	| path <FilePath> len <Int> |
+	SourceDirectory isNil ifTrue: [
+		BootStrapping
+			ifTrue: [ 
+				path := FilePath for: 
+								(Platform 
+									environmentVariableAt: self sourceDirectoryEnvVar 
+									ifAbsent: [ 'source' ]).		
+									"Use 'source'  in current directory as default"
+				path exists ifFalse: [
+					path createDirectoryIfFail: [ :err <Symbol> | Win32 handleError ] ] ]
+			ifFalse: [ 
+				path := String new: 1024.
+				len := KernelLibrary getEnvironmentVariable: self sourceDirectoryEnvVar buffer: path length: path size.
+				(len = 0 or: [ len > 1024])
+					ifTrue: [ self error: 'Environment variable ', self sourceDirectoryEnvVar,' undefined' ].
+				path := Directory fromPath: (path copyFrom: 1 to: len).
+				path exists ifFalse: [
+					path create ] ].
+		SourceDirectory := path ].
+	^SourceDirectory
+!
+
+sourceDirectoryEnvVar ^ <Str>
+
+	^'StrongtalkSourceDir'!
+
+systemBeingSaved
+
+	| identification <Str> idStream <CharOutputStream> logSize <Int> newName <Str> newFile <FilePath> |
+	self flush.
+	BootStrapping
+		ifTrue: [	
+			"Rename .new files and remove .bak files"
+			(self sourceDirectory, (FilePattern for: '*.new')) pathsDo: [ :file <FilePath> |
+				newName := file name copyFrom: 1 to: file name size - 4.
+				newFile := FilePath for: newName.
+				newFile exists
+					ifTrue: [	self shouldNotHappen ].
+				file moveAs: newFile ].
+			(self sourceDirectory, (FilePattern for: '*.bak')) pathsDo: [ :file <FilePath> |
+				file delete ] ]
+		ifFalse: [	
+			self sourceDirectory fileNamesDo: [ :filename <Str> |
+				('*.new' match: filename) 
+					ifTrue: [	newName := filename copyFrom: 1 to: filename size - 4.
+									newFile := self sourceDirectory fileNamed: newName.
+									newFile exists
+										ifTrue: [	self shouldNotHappen ].
+									(self sourceDirectory fileNamed: filename)  renameAs: newName ] ].
+			self sourceDirectory fileNamesDo: [ :filename <Str> |
+				('*.bak' match: filename)
+					ifTrue: [ (self sourceDirectory fileNamed: filename) remove ] ] ].
+
+	"Stamp change log"
+	self addSectionToChangeLog: [ :log <WriteStream> |
+		log nextPutAll: '"System saved" !!' ].
+	logSize := self changeLog position.
+
+	"Write new identification file"
+	BootStrapping
+		ifTrue: [
+			identification := Platform getArguments first.
+			idStream := self identificationFile charOutputStream ]
+		ifFalse: [
+			identification := SessionModel current commandLine first.
+			idStream := self identificationFile writeStream ].
+	[ 	idStream 
+			deltaNextChunkPut: identification; cr; 
+			deltaNextChunkPut: logSize printString; cr
+	] ensure: [
+		idStream close
+	].
+
+	self flush.
+	
+	self updateSaveLogFile
+!
+
+systemIsConsistent ^<Boolean>
+
+	| 	oldID <Str> 
+		newID <Str> 
+		oldLogSize <Int> 
+		idStream <CharInputStream>
+		restoreStream <CharInputStream> |
+
+	self identificationFile exists ifTrue: [
+		BootStrapping
+			ifTrue: [	idStream := self identificationFile charInputStream.
+							newID := Platform getArguments first ]
+			ifFalse: [	idStream := self identificationFile readStream.
+							newID := SessionModel current commandLine first ].
+		[	
+			oldID := idStream nextChunk.
+			oldLogSize := Integer readFrom: idStream.
+		] ensure: [
+			idStream close
+		].
+		"		newID = oldID
+			ifFalse: [	self printImageChangeWarningFrom: oldID to: newID ]"
+			"The intent is that when the system is run, it checks to see if the current binary is the same 
+			as the one listed in the source identification file and issues a warning if this is not the case. 
+			This provides a crude consistency check.  However, it may issue false warnings,if the entire 
+			strongtalk directory is moved to a new location. It even gets  confused if the system is run from the 
+			command line or from the windows GUI, because the pathnames are not literally identical."
+
+			"12/6/01: commented out code above; otherwise everyone downloading the system will get
+			an annoying message they will not readily understand. If you've downloaded this
+			code, feel free to uncomment this part."
+			 ].
+
+	BootStrapping
+		ifTrue: [
+			(self sourceDirectory, (FilePattern for: '*.new')) pathsDo: [ :file <FilePath> |
+				^false ].
+			(self sourceDirectory, (FilePattern for: '*.bak')) pathsDo: [ :file <FilePath> |
+				^false ] ]
+		ifFalse: [
+			self sourceDirectory fileNamesDo: [ :filename <Str> |
+				('*.bak' match: filename) 
+					ifTrue: [ ^false ].
+				('*.new' match: filename) 
+					ifTrue: [ ^false ] ] ].
+	^true!
+
+test
+
+	MixinSourceHandler test.!
+
+unsavedChangesHaveBeenMade ^<Boolean>
+
+	"make sure the change log etc. has been initialized"
+	self changeLog.
+	
+	^self initialChangeLogSize ~= self currentChangeLogSize!
+
+updateSaveLogFile
+	"Update the save log, if there is one.  This is done during a system save ONLY.  
+		%bootstrapping: WARNING: there must not be a save file during the interval between when
+		this save file change handling code is filed in, and when the system is restarted after 
+		saving it "
+	self saveLogFile exists
+		ifTrue: [	| ss <ExternalReadWriteStream> logSize <Int> |
+					"copy everything written to the change log in this session to the save log"
+					
+					ss := self saveLogFile readWriteStream.
+					ss setToEnd.
+					self changeLog flush.
+					logSize := self changeLog position.  "remember starting position"
+				
+					self changeLog position: self initialChangeLogSize.
+					[ self rawChangeLog atEnd ]
+						whileFalse: 
+								[	| byte <Int> |
+									ss put: self rawChangeLog next.
+									InitialChangeLogSize := InitialChangeLogSize + 1.  ].
+					ss close.
+					
+					"restore the change log position."
+					self changeLog position: logSize.	].! !
+
+! (Delta mirrorFor: #SourceHandler) methodsFor: 'Unclassified' !
+
+
+addSectionToChangeLog: blk <[WriteStream,^Int]> ^ <Int>
+
+	^self class addSectionToChangeLog: blk!
+
+attributeAt: k <Str> ^ <OrdCltn[Str]>
+
+	^self indexDict at: k ifAbsent: [ ^OrderedCollection with: String new ]!
+
+attributeAt: k <Str> put: e <OrdCltn[Str]>
+
+	| removeAttribute <Boolean> |
+	removeAttribute := BootStrapping
+		ifTrue: [ (e isEmpty or: [ e size = 1 and: [ (e at: 1) = '' ] ] ) ]
+		ifFalse: [ (e isEmpty or: [ e size = 1 and: [ (e at: 1) trimBlanks = '' ] ] ) ].
+	removeAttribute
+		ifTrue: [
+			self indexDict removeKey: k ifAbsent: [] ]
+		ifFalse: [
+			self indexDict at: k put: e ].
+	self isPersistent ifTrue: [ self storeIndexFile ].!
+
+backupExtension ^ <Str>
+
+	^'.bak'!
+
+booleanAttributeAt: k <Str> ^ <Boolean>
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: k.
+	list size ~= 1 ifTrue: [ self shouldNotHappen ].
+	^list first = 'true'
+!
+
+booleanAttributeAt: k <Str> put: b <Boolean>
+
+	self attributeAt: k put: (OrderedCollection with: b printString).
+!
+
+changeLog ^ <FilePath>
+
+	^self class changeLog!
+
+convertFromFilename: src <Str> ^ <Str>
+
+	"Convert a file name into a Smalltalk toplevel definition by mapping the following:
+
+		$A maps from '_a'       (uppercase letters)
+		$_ maps from $_$_	"
+
+	| rs <ReadStream> ws <WriteStream> c <Character> |
+	rs := src readStream.
+	ws := String new writeStream.
+	[ rs atEnd ] whileFalse: [
+		(c := rs next) = $_
+			ifTrue: [
+				rs peek = $_
+					ifTrue: [
+						rs next.
+						ws nextPut: $_ ]
+					ifFalse: [
+						c := rs next.
+						ws nextPut: c asUppercase ] ]
+			ifFalse: [
+				ws nextPut: c ] ].
+	^ws contents
+!
+
+convertToFilename: src <Str> ^ <Str>
+
+	"Convert a Smalltalk toplevel definition name into a valid file name by mapping the following:
+
+		$A maps to '_a'       (uppercase letters)
+		$_ maps to $_$_	"
+
+	| ws <WriteStream> |
+	ws := (String new: src size * 2) writeStream.
+	src do: [ :c <Character> | 
+		c = $_
+			ifTrue: [
+				ws nextPut: $_.
+				ws nextPut: $_ ]
+			ifFalse: [
+				c isUppercase ifTrue: [ ws nextPut: $_ ].
+				ws nextPut: c asLowercase ] ].
+	^ws contents
+!
+
+dualHandler ^ <Self>
+
+	self hasDualHandler
+		ifFalse: 	[ ^nil ].
+	dualHandler isNil ifTrue: [ 
+		self dualHandler: (self class dualHandlerFor: self mirror).
+		self dualHandler dualHandler: self ].
+	^dualHandler!
+
+dualHandler: h ^ <Self>
+
+	dualHandler := h!
+
+flush
+
+	"Flush cached information. No store operation is needed since this is currently done eagerly."
+
+	self indexDict: nil.
+	self indexFile: nil.
+	self isNewIndex: nil.
+	(dualHandler notNil and: [self mirror notNil and: [self isMeta not]]) 
+		ifTrue: [ self dualHandler flush ].!
+
+handlerId ^ <Str>
+
+	self subclassResponsibility!
+
+hasDualHandler ^ <Boolean>
+
+	^true!
+
+indexDict ^ <Dictionary[Symbol,Cltn[Str]]>
+
+	indexDict isNil ifTrue: [ 
+		self indexDict: Dictionary[Symbol,Cltn[String]] new.
+		self isPersistent ifTrue: [
+			self parseIndexFile ] ].
+	^indexDict!
+
+indexDict: i <Dictionary[Symbol,Cltn[Str]]>
+
+	indexDict := i!
+
+indexFile ^ <FilePath>
+
+	| name <Str> |
+	indexFile isNil ifTrue: [
+		indexFile := BootStrapping
+							ifTrue: [ 	self sourceDirectory, (FilePath for: self indexFileName) ]
+							ifFalse: [ 	self sourceDirectory fileNamed: self indexFileName ].
+		self isNewIndex: indexFile exists not.
+		self isNewIndex
+			ifTrue: [
+				indexFile := BootStrapping
+									ifTrue: [ 	self sourceDirectory, (FilePath for: self indexFileName, self newExtension) ]
+									ifFalse: [ 	self sourceDirectory fileNamed: self indexFileName, self newExtension ] ] ].
+	^indexFile
+!
+
+indexFile: fp <FilePath>
+
+	indexFile := fp!
+
+indexFileName ^ <Str>
+
+	| s <Str> |
+	s := self convertToFilename: (self mirror name readStream upTo: $ ).	"Strip meta extension"
+	^self isMeta
+		ifTrue: [ s, self metaExtension ]
+		ifFalse: [ s ]
+!
+
+isMeta ^ <Boolean>
+
+	^self mirror isMeta!
+
+isNewIndex ^ <Boolean>
+
+	isNewIndex isNil
+		ifTrue: [	self indexFile ].		"Sets flag depending on whether index existed or not"
+	^isNewIndex
+!
+
+isNewIndex: b <Boolean>
+
+	isNewIndex := b!
+
+isPersistent ^ <Boolean>
+
+	^self mirror name notNil!
+
+makeBackupIndex
+
+	| backupIndexFile <FilePath> |
+	self isNewIndex ifFalse: [ 
+		BootStrapping
+		ifTrue: [ 	
+			backupIndexFile  :=self sourceDirectory, (FilePath for: self indexFileName, self backupExtension).
+			backupIndexFile exists 
+				ifFalse: [ self indexFile copyAs: backupIndexFile ] ]
+		ifFalse: [ 	
+			(self sourceDirectory fileNamed: self indexFileName, self backupExtension) exists
+				ifFalse: [ self indexFile copyTo: self sourceDirectory as: self indexFileName, self backupExtension ] ] ]
+!
+
+metaExtension ^ <Str>
+
+	^'.class'!
+
+mirror ^ <Mirror>
+
+	^mirror!
+
+mirror: m <Mirror>
+
+	mirror := m!
+
+newExtension ^ <Str>
+
+	^'.new'!
+
+parseIndexFile
+
+	| file <FilePath> rs <ReadStream> attr <Symbol> s <Str> value <OrdCltn[Str]> id <Str> |
+
+	(file := self indexFile) exists ifTrue: [ 
+		BootStrapping
+			ifTrue: [ rs :=file charInputStream ]
+			ifFalse: [ rs :=file readStream ].
+		[
+			rs atEnd ifFalse: [
+				BootStrapping
+					ifTrue: [ id := rs upTo: Character cr ]
+					ifFalse: [ id := rs nextLine trimBlanks ].
+				id = self handlerId
+					ifFalse: [ self error: 'Source database inconsistency: Attemping to have a ', self handlerId, ' hold source for a ', id ] ].
+			[ rs atEnd ] whileFalse: [
+				s := rs nextChunk.
+				BootStrapping ifFalse: [ s := s trimBlanks ].
+				self assert: [ s size > 0].
+				attr := s asSymbol.
+				value := OrderedCollection [Str] new.
+				[ (s := rs nextChunk) isEmpty ] whileFalse: [ 
+					value add: s ].
+				self indexDict at: attr put: value ].
+		] ensure: [
+			rs close 
+		]
+	]!
+
+printOn: aStream  <Stream> 
+	aStream 
+		nextPutAll: self class name;
+		nextPutAll: ' on ';
+		nextPutAll: self mirror name!
+
+removeAttributeAt: k <Str> ifAbsent: blk <[]> ^ <Cltn[Str]>
+
+	self indexDict removeKey: k ifAbsent: blk.
+	self storeIndexFile.!
+
+removeIndex
+
+	self flush.
+	self removeIndexFile.
+	(self hasDualHandler and: [self isMeta not]) 
+		ifTrue: [	self dualHandler removeIndexFile ].
+	
+	(self hasDualHandler and: [self isMeta]) 
+		ifTrue: [ self dualHandler logRemoveDefinition ]
+		ifFalse: [ self logRemoveDefinition ].
+
+	"Done, nil out remaining entries"
+	(self hasDualHandler and: [self isMeta not]) 
+		ifTrue: [	self dualHandler mirror: nil.
+						self dualHandler dualHandler: nil ].
+	self mirror: nil.
+	self dualHandler: nil
+!
+
+removeIndexFile
+
+	self makeBackupIndex.
+	BootStrapping
+		ifTrue: [ self indexFile deleteIfFail: [ :err <Symbol> | Win32 handleError ] ]
+		ifFalse: [ self indexFile exists ifTrue: [ self indexFile close; remove ] ]!
+
+setName: n <Str>
+
+	self storeIndexFile.
+	(self hasDualHandler and: [ dualHandler notNil ])
+		ifTrue: [	self dualHandler storeIndexFile ].
+!
+
+sourceDirectory ^ <FilePath>
+
+	^self class sourceDirectory
+!
+
+storeIndexFile
+
+	| ws <CharOutputStream> |
+	self makeBackupIndex.
+	BootStrapping
+		ifTrue: [ ws := self indexFile charOutputStream ]
+		ifFalse: [  ws := self indexFile writeStream ].
+	[
+		ws nextPutAll: self handlerId; cr.
+		self indexDict associationsDo: [ :a <Association[Symbol, Cltn[Str]]> |
+	 		ws deltaNextChunkPut: a key.
+			a value do: [ :e <Str> | 
+				ws cr; deltaNextChunkPut: e ].
+			ws nextPut: $ ; nextPut: $!!; cr ].
+		BootStrapping ifFalse: [ ws truncate ]
+	] ensure: [
+		ws close
+	]
+!
+
+uniqueAttributeAt: k <Str> ^ <Str>
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: k.
+	list size ~= 1 ifTrue: [ self shouldNotHappen ].
+	^list first
+! !
+

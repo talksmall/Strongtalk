@@ -1,0 +1,148 @@
+Delta define: #DeltaUnaryGenApp as: (
+(Class subclassOf: 'DeltaUnaryClassExpr' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaUnaryGenApp) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaUnaryGenApp) group: 'ast'!
+
+(Delta mirrorFor: #DeltaUnaryGenApp)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaUnaryGenApp) methodsFor: 'Unclassified' !
+
+
+actualForFormalSubstitution ^ <Substitution>
+    ^self dual actualForFormalSubstitution!
+
+actuals ^ <OrdCltn[ObjectType]>
+    ^self dual actuals!
+
+apply: tool <DeltaASTTool>
+
+tool unaryGenAppNode: self!
+
+asMixinSide   ^ <MixinSide>
+
+^self dual asMixinSide dual!
+
+asSide ^ <Side>
+    ^self target asGeneric body asSide dual!
+
+atomicTypes ^ <IdentitySet[ObjectType]>
+    ^self involvesTypeVariables
+    ifFalse:[self withCanonicalRepDo:
+                  [:s <Protocol>  | s atomicTypes]]
+    ifTrue:[IdentitySet[ObjectType]  new add: self; yourself]!
+
+declaredSubGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self dual declaredSubGenAppOf: p dual assuming: trail!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^p declaredSuperprotocolOfGeneric: self.!
+
+declaredSubprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^(self declaredSubGenAppOf: p assuming: DeltaGlobalTrail)
+   or:[self withCanonicalRepDo:[:s <Protocol>  |
+                                                s declaredSubprotocolOf: p.
+                                                ].
+       ].!
+
+declaredSubprotocolOfNonGeneric: p <DeltaProtocol > ^ <Boolean>
+    ^self withCanonicalRepDo:[:s <Protocol>  | s declaredSubprotocolOf: p]!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^p declaredSubprotocolOfGeneric: self!
+
+functions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide functions virtualCollect:[:f <Method | Message>  | f  substitute: self actualForFormalSubstitution].!
+
+generic ^ <GenericDecl>
+    ^self dual generic!
+
+heirScope ^ <DeltaScope>
+    ^self asSide heirScope substitute: self actualForFormalSubstitution!
+
+implementedPrivateProtocol ^ <Protocol>
+    ^self asSide implementedPrivateProtocol forcedSubstitute: self actualForFormalSubstitution!
+
+isMetaSide ^ <Boolean>
+    ^self asSide isMetaSide!
+
+localScope ^ <DeltaScope>
+    ^self asSide localScope substitute: self actualForFormalSubstitution!
+
+messages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide messages virtualCollect:[:f <Message>  | f  substitute: self actualForFormalSubstitution].!
+
+methods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide methods virtualCollect:[:f <Method>  | f  substitute: self actualForFormalSubstitution].!
+
+privateFunctions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateFunctions virtualCollect:[:f <Method | Message>  | f  substitute: self actualForFormalSubstitution].!
+
+privateMessages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateMessages virtualCollect:[:f <Message>  | f  substitute: self actualForFormalSubstitution].!
+
+privateMethods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateMethods virtualCollect:[:f <Method>  | f  substitute: self actualForFormalSubstitution].!
+
+privateProtocol ^ <Protocol>
+    ^self asSide privateProtocol forcedSubstitute: self actualForFormalSubstitution!
+
+publicFunctions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicFunctions virtualCollect:[:f <Method | Message>  | f  substitute: self actualForFormalSubstitution].!
+
+publicMessages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicMessages virtualCollect:[:f <Message>  | f  substitute: self actualForFormalSubstitution].!
+
+publicMethods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicMethods virtualCollect:[:f <Method>  | f  substitute: self actualForFormalSubstitution].!
+
+subGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+
+    (self declaredSubGenAppOf: p assuming: trail) ifTrue:[^true].
+^self withCanonicalRepDo:[:s  | p superprotocolOf: s assuming: trail].
+"^self subprotocolOf: p assuming: trail."!
+
+subprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self involvesTypeVariables ifFalse:[self withCanonicalRepDo:[:s <Protocol>  | s subprotocolOf: p assuming: trail]]
+                                       ifTrue:[self declaredSubprotocolOf: p]!
+
+subtype ^ <Boolean>
+    ^self asSide subtype!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t superGenAppOf: self assuming: trail.!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^p subGenAppOf: self assuming: trail!
+
+superprotocol ^ <Protocol>
+    | sp <Protocol>   |
+
+sp := self dual superprotocol.
+^sp isNil ifFalse:[sp classProtocol]
+              ifTrue:[nil].!
+
+superprotocolOf: t <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self involvesTypeVariables ifFalse:[self withCanonicalRepDo:[:s <Protocol>  | s superprotocolOf: t assuming: trail.]]
+                                       ifTrue:[t declaredSubprotocolOf: self].!
+
+supportedProtocol ^ <Protocol>
+    ^self asSide supportedProtocol substitute: self actualForFormalSubstitution!
+
+target ^ <TypeId>
+    ^self dual target!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+    ^self asSide unimplementedMessages!
+
+varDecls ^ <Dict[Symbol,ObjectType]>
+    ^self asSide varDecls virtualCollect:[:v <VarDecl>  | v type substitute: self actualForFormalSubstitution].!
+
+withCanonicalRepDo: blk <[Protocol,^T] > ^ <T>
+    ^self dual withCanonicalRepDo: [:s <Protocol>  | blk value: s classProtocol].! !
+

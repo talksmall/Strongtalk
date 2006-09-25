@@ -1,0 +1,45 @@
+Delta define: #PatternPaint as: (
+(Class subclassOf: 'Paint' instanceVariables: '')) !
+
+(Delta mirrorFor: #PatternPaint) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #PatternPaint) group: 'ui'!
+
+(Delta mirrorFor: #PatternPaint)
+comment: 
+'Pattern paint uses a bitmap to tile the area being drawn.  These should not be used in
+user code explicitly- the creation protocol in Paint uses the appropriate subclass.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #PatternPaint) methodsFor: 'restricted-win32 accessing' !
+
+
+sharedWin32PenWithWidth: width <Int>
+style: style <Symbol>
+joinStyle: jstyle <Symbol>
+endStyle: estyle <Symbol>
+^<HPEN>
+
+	^GeometricHPEN sharedWithPaint: self width: width style: style joinStyle: jstyle endStyle: estyle! !
+
+! (Delta mirrorFor: #PatternPaint) methodsFor: 'utilities' !
+
+
+contrastingWith: background <Paint>  ^<Paint>
+
+	"Can't adjust pattern paints"
+	^self! !
+
+! (Delta mirrorFor: #PatternPaint) methodsFor: 'restricted-double dispatching' !
+
+
+contrastingFromSolidPaint: s <SolidPaint> ^<Paint>
+
+	"Can't adjust unless both paints are solid"
+	^s! !
+

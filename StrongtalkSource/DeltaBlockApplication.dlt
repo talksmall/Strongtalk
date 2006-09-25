@@ -1,0 +1,57 @@
+Delta define: #DeltaBlockApplication as: (
+(Class subclassOf: 'DeltaGenericApplicationExpression' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaBlockApplication) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaBlockApplication) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBlockApplication)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBlockApplication) classSide methodsFor: 'Unclassified' !
+
+
+blokName: n <Int > ^ <Symbol>
+    ^(n printString, '_argFun') asSymbol.!
+
+blokType: n <Int > ^ <DeltaGeneric>
+    ^Delta at: (self blokName: n)
+           ifAbsent:[self createBlokType: n].!
+
+createBlokType: n <Int > ^ <DeltaGeneric[Protocol]>
+    |
+body <Protocol> 
+formals <VarOrdCltn[TypeFormal]> 
+f <TypeFormal> 
+tv <TypeVar> 
+bound <TypeId> 
+newGen <Generic[Protocol]>
+|
+
+formals := OrderedCollection[TypeFormal]  new.
+1 to: n do:[:i <Int>  |
+                 bound := DeltaTypeId new setId: #Object; scope: DeltaGlobals.
+                 tv := DeltaTypeVar new name: ('A', n printString) asSymbol bound: bound.
+                 f := DeltaTypeFormal new variance: #contravariant typeVar: tv.
+                 formals addLast: f
+                 ].
+bound := DeltaTypeId new setId: #Object; scope: DeltaGlobals.
+tv := DeltaTypeVar new name: #R bound: bound.
+ f := DeltaTypeFormal new variance: #covariant typeVar: tv.
+formals addLast: f.
+
+body := DeltaProtocolUpdate new.
+newGen := DeltaGeneric[Protocol]  new body: body formals: formals.
+
+Type addMagicType: newGen.
+^Delta at: (self blokName: n) put: newGen
+! !
+
+! (Delta mirrorFor: #DeltaBlockApplication) methodsFor: 'Unclassified' !
+
+
+target ^ <DeltaVar>
+    ^self class blokType: self actuals size.! !
+

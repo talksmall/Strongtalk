@@ -1,0 +1,465 @@
+Delta define: #ClassVMMirror as: (
+(Class subclassOf: 'OopsVMMirror' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #ClassVMMirror) revision: '$Revision: 1.12 $'!
+
+(Delta mirrorFor: #ClassVMMirror) group: 'reflection'!
+
+(Delta mirrorFor: #ClassVMMirror)
+comment: 
+'Low level mirror on a class.
+
+Note that class variables are physically present on both the instance and the class side, 
+since the array with associations is shared in the VM.
+
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ClassVMMirror) classSide methodsFor: 'instance creation' !
+
+
+createInvocationOf: mixin <MixinVMMirror> 
+named: n <Symbol> 
+superclass: sc <ClassVMMirror>
+ifFail: fb <[Str]> ^ <Instance> 
+
+"This method can be invoked by the Delta environment to create a new class named n in the VM.
+
+We create a named invocation of mixin by calling a primitive
+"
+| c <Class>  mirror <Instance> format <Symbol> |
+
+
+"Create a class corresponding to mixin, and set its name"
+
+format := self formatForInvocationOf: mixin superclass: sc ifFail: fb.
+c := {{primitiveCreateInvocationOf: mixin reflectee named: n isPrimaryInvocation: true superclass: sc reflectee format: format ifFail: [:e <CompressedSymbol> | fb value:e]}}.
+c name: n ifFail: fb.
+c class instanceClass: c.		"This could be done by the primitive as well?"
+^self on: c.
+!
+
+createInvocationOf: mixin <MixinVMMirror> 
+superclass: sc <ClassVMMirror>
+ifFail: fb <[Str]> ^ <Instance> 
+
+"This method can be invoked by the Delta environment to create a new anonymous invocation in the VM.
+
+We create the invocation of mixin by calling a primitive
+"
+| c <Class> mirror <Instance> format<Symbol > |
+
+"Create a class corresponding to mixin, and set its name"
+
+format := self formatForInvocationOf: mixin superclass: sc ifFail: fb.
+c := {{primitiveCreateInvocationOf: mixin reflectee superclass: sc reflectee format: format ifFail: [:e <CompressedSymbol> | fb value: e]}}.
+c name: (mixin name, '|>', sc name) asSymbol ifFail: fb.
+c class instanceClass: c.	"This could be done by the primitive as well?"
+^self on: c.
+!
+
+formatForInvocationOf: mixin <MixinVMMIrror> superclass: sc <ClassVMMirror> ifFail: fb <[Str]> ^ <Symbol>
+"Private"
+"This method checks whether mixin can legally be invoked upon sc.
+If it can, it also determines what kind of class the invocation will be (indexed, byte indexed
+etc.) and returns an appropriate symbol encoding that information"
+
+mixin canBeInvoked ifFalse:[^fb value: mixin name, ' cannot be invoked'].
+sc canBeSubclassed ifFalse:[^fb value: sc name, ' cannot be subclassed'].
+(self mixin: mixin layoutIsCompatibleWithSuperclass: sc) ifFalse:[^fb value: 'Layout of ', mixin name, ' is not compatible with ', sc name ].
+mixin hasSpecialLayout ifTrue:[^mixin format].
+sc hasSpecialLayout ifTrue:[^sc format].
+^#Oops
+
+
+!
+
+on: class<Class> ^ <ClassVMMirror> 
+	"For compatability"
+	^self new reflectee: class! !
+
+! (Delta mirrorFor: #ClassVMMirror) classSide methodsFor: 'utility' !
+
+
+mixin: mixin <MixinVMMirror> layoutIsCompatibleWithSuperclass: sc <ClassVMMIrror> ^ <Boolean>
+"Private"
+"Check that mixin's layout (indexed, byte indexed etc.) is compatible with that of sc"
+
+self deltaHack. "Things may be a bit more involved, but legal code should be ok"
+mixin hasSpecialLayout ifFalse:[^true].
+sc hasSpecialLayout ifFalse:[^true].
+mixin format == sc format ifTrue:[^true].
+^false!
+
+sort: cs <Collection[Class]> ^ <OrdCltn[Class]>
+
+"Classes can be sorted by their depth in the class hierarchy. This
+is a linear ordering which respects the topological ordering of the hierarchy
+(a subclass always has a larger depth than its superclasses). "
+
+^ ((cs collect: [: c <Class> | ClassVMMirror on: c])
+		asSortedCollection: [:cm1 <ClassVMMirror>  
+                                                                          :cm2 <ClassVMMirror> |
+                                                                          cm1 depth <= cm2 depth.
+                                                                         ]) collect:[:c <ClassVMMirror> | c reflectee].
+
+! !
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+
+
+anonymousSuperclasses  ^<Cltn[Class]> 
+    "Answers the immediate anonymous superclasses of this class"
+
+    | set <Set[Class]> sc <Self> |
+	set := Set[Class] new.
+	sc := self superclass.
+	[ sc notNil ] whileTrue: [	
+		sc isMixinInvocation
+			ifTrue: [
+				set add: sc reflectee.
+				sc := sc superclass ]
+			ifFalse: [
+				^set ] ].
+	^set!
+
+cachedSubclasses ^ <OrdCltn[Class]>
+
+^self cachedSubclassesOf: self reflectee!
+
+cachedSubclassesOf: c <Class> ^ <OrdCltn[Class]>
+
+| cs <OrdCltn[Class]>  |
+
+cs := OrderedCollection[Class] new.
+cs add: c.
+(self immediateSubclassesOf: c)
+	do:[: sc <Class> | cs addAll: (self cachedSubclassesOf: sc)].
+^cs!
+
+canBeSubclassed  ^<Boolean> 
+		
+^{{primitiveBehaviorCanBeSubclassed: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}
+ !
+
+canHaveInstanceVariables  ^<Boolean> 
+		
+^{{primitiveBehaviorCanHaveInstanceVariables: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}
+!
+
+classSide  ^<ClassVMMirror> 
+	
+^ClassVMMirror on: self reflectee class!
+
+computeSortedSubclasses  ^<OrdCltn[Class]> 
+
+	"Answers all subclasses of self sorted topologically. Anonymous mixin invocations are included."
+
+
+	| set <IdentitySet[Class]> ref <Class> sc <Class> result <OrderedCollection[Class]> oc <OrderedCollection[Class]> |
+
+	set := IdentitySet[Class] new.
+	result := OrderedCollection[Class] new.
+	ref := self reflectee.
+	set add: ref.
+	result add: ref.
+	Smalltalk classesDo: [ :e <Class> |
+		(set includes: e) ifFalse: [
+			oc := OrderedCollection[Class] new.
+			oc add: e.
+			sc := Reflection superclassOf: e.
+			[ nil ~= sc ] whileTrue: [	
+				(set includes: sc) ifTrue: [
+					oc reverseDo:[: k <Class> | set add: k. result add: k].  
+					sc := nil
+				] ifFalse: [
+					oc add: sc.
+					sc := Reflection superclassOf: sc
+				]
+			]
+		]
+	].
+    ^result!
+
+computeSubclasses  ^<Cltn[Class]> 
+    "Answers a set of all (direct and indirect) subclasses, including itself and anonymous mixin invocations"
+
+	^self computeSortedSubclasses
+!
+
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self reflectee = Object 
+   ifTrue:[0]
+   ifFalse:[self superclass depth + 1]
+               
+
+!
+
+directSubclasses  ^<Cltn[Class]> 
+
+	"Answers a set of all direct subclasses of self, including anonymous mixin invocations"
+
+	| set <IdentitySet[Class]> ref <Class> c <Class> sc <Class> |
+
+	set := IdentitySet[Class] new.
+	ref := self reflectee.
+	Smalltalk classesDo: [ :e <Class> |
+                              	c := e.	
+							sc := c superclassIfAbsent: [nil].
+							[ sc notNil ] 
+								whileTrue: [	sc == ref 
+														ifTrue: [	set add: c. 
+																		sc := nil ]
+														ifFalse: [ 	(self class on: sc) isMixinInvocation 
+																			ifTrue: [ 	c := sc. 
+																							sc := c superclassIfAbsent: [nil] ]
+																			ifFalse: [	sc := nil ] ] ] ].
+
+     ^set
+!
+
+directSubclassesSkipAnonymous  ^<Cltn[Class]> 
+
+	"Answers a set of all direct subclasses of self. Anonymous mixin invocations are skipped in the hierarchy."
+
+	| set <IdentitySet[Class]> ref <Class> sc <Class> |
+
+	set := IdentitySet[Class] new.
+	ref := self reflectee.
+	Smalltalk classesDo: [ :e <Class> |
+		                   	sc := e superclassIfAbsent: [nil].
+							[ sc notNil ] 
+								whileTrue: [	sc == ref 
+														ifTrue: [	set add: e. 
+																		sc := nil ]
+														ifFalse: [ 	(self class on: sc) isMixinInvocation 
+																			ifTrue: [ 	sc := sc superclassIfAbsent: [nil] ]
+																			ifFalse: [	sc := nil ]]]].
+
+     ^set
+
+!
+
+format ^ <Symbol>
+
+^{{primitiveBehaviorFormat: self reflectee
+      ifFail: [:e <CompressedSymbol> | self error: e]}}  
+ 
+!
+
+hasIndexedByteInstVars  ^<Boolean> 
+	
+^self mixin hasIndexedByteInstVars
+ 	or:[self superclass isNil ifTrue: [false] ifFalse:[self superclass hasIndexedByteInstVars]].
+ !
+
+hasIndexedDoubleByteInstVars  ^<Boolean> 
+
+^self mixin hasIndexedDoubleByteInstVars
+ 	or:[self superclass isNil ifTrue: [false] ifFalse:[self superclass hasIndexedDoubleByteInstVars]].
+!
+
+hasIndexedInstVars  ^<Boolean> 
+
+^self mixin hasIndexedInstVars
+ 	or:[self superclass isNil ifTrue: [false] ifFalse:[self superclass hasIndexedInstVars]].
+   !
+
+hasIndexedWeakInstVars  ^<Boolean> 
+
+^self mixin hasIndexedWeakInstVars
+ 	or:[self superclass isNil ifTrue: [false] ifFalse:[self superclass hasIndexedWeakInstVars]].
+ !
+
+hasSpecialLayout  ^<Boolean> 
+
+^(self canBeSubclassed and:[self canHaveInstanceVariables]) not.!
+
+headerSize  ^<Integer> 
+
+^{{primitiveBehaviorHeaderSizeOf: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}
+ !
+
+immediateSubclasses ^ <Cltn[Class]>
+
+^self immediateSubclassesOf: self reflectee!
+
+immediateSubclassesOf: c <Class> ^ <Cltn[Class]>
+
+^ClassMirror subclassHierarchy at: c
+																ifAbsent:[OrderedCollection[Class] new]!
+
+instanceSide  ^<ClassVMMirror> 
+
+	^self class on: self reflectee instanceClass.
+!
+
+instanceSize  ^<Integer> 
+
+^self headerSize + self numberOfInstanceVariables!
+
+isMeta ^ <Boolean>
+
+^self mixin isMeta!
+
+isMixinInvocation  ^ <Boolean>
+
+	^self mixin masterInvocation ~~ self reflectee
+!
+
+mixin  ^<MixinVMMirror> 
+	
+
+^MixinVMMirror on:  {{primitiveBehaviorMixinOf: self reflectee ifFail: [:e <CompressedSymbol> | self primitiveFailed: e]}}
+!
+
+name  ^ <Symbol> 
+
+^self nameIfAbsent:[self error: 'Internal flaw: name should be defined at this point'].!
+
+nameIfAbsent: blk <[^Symbol]> ^ <Symbol> 
+	| name <Symbol> |
+	(name := self reflectee name) isNil
+		ifTrue: [^blk value]
+		ifFalse: [^name]
+!
+
+numberOfClassVariables ^ <SmallInteger>
+
+self superclass isNil ifTrue:[^self numberOfLocalClassVariables].
+^self superclass numberOfClassVariables + self numberOfLocalClassVariables!
+
+numberOfInstanceVariables ^ <SmallInteger>
+
+self superclass isNil ifTrue:[^self numberOfLocalInstanceVariables].
+^self superclass numberOfInstanceVariables + self numberOfLocalInstanceVariables!
+
+numberOfLocalClassVariables  ^ <SmallInteger>
+
+^self mixin numberOfClassVariables.
+ 
+!
+
+numberOfLocalInstanceVariables ^ <SmallInteger>
+
+^self mixin numberOfInstanceVariables.!
+
+sortedSubclasses  ^<OrdCltn[Class]> 
+
+	"Answers all subclasses of self sorted topologically. Anonymous mixin invocations are included."
+
+	^self cachedSubclasses!
+
+sortedSubclassesSkipAnonymous  ^<OrdCltn[Class]> 
+
+	"Answers all subclasses of self sorted topologically. Anonymous mixin invocations are skipped."
+
+	| set <IdentitySet[Class]> ref <Class> c <Class> sc <Class> result <OrderedCollection[Class]> oc <OrderedCollection[Class]> |
+
+	set := IdentitySet[Class] new.
+	result := OrderedCollection[Class] new.
+	ref := self reflectee.
+	set add: ref.
+	result add: ref.
+	Smalltalk classesDo: [ :e <Class> |
+			(set includes: e) ifFalse: [
+								c := e.	
+                   	                    oc := OrderedCollection[Class] new.
+								oc add: c.
+								sc := c superclassIfAbsent: [nil].
+								[ sc notNil ] 
+									whileTrue: [	
+                                                       (set includes: sc)
+												ifTrue: [	oc reverseDo:[: k <Class> | 
+																	(self class on: k) isMixinInvocation
+																		ifFalse: 	[ set add: k. result add: k] ].
+																sc := nil ]
+												ifFalse: [ 	oc add: sc.
+																sc := sc superclassIfAbsent:[nil]]  ]] ].
+
+     ^result
+
+!
+
+subclasses  ^<Cltn[Class]> 
+    "Answers a set of all (direct and indirect) subclasses, including itself and anonymous mixin invocations"
+
+	^self sortedSubclasses
+!
+
+subclassesSkipAnonymous  ^<Cltn[Class]> 
+    "Answers a set of all (direct and indirect) subclasses, including itself. 
+	Anonymous mixin invocations are skipped in the hierarchy."
+
+	^self sortedSubclassesSkipAnonymous
+!
+
+superclass  ^<ClassVMMirror> 
+	
+^ClassVMMirror on: (self reflectee superclassIfAbsent:[^nil]).
+! !
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'iteration' !
+
+
+classVarNamesDo: blk <[Symbol]>
+		
+self superclass isNil ifFalse:[self superclass classVarNamesDo: blk].
+self localClassVarNamesDo: blk.
+!
+
+instVarNamesDo: blk <[Symbol]>
+
+self superclass isNil ifFalse:[self superclass instVarNamesDo: blk].
+self localInstVarNamesDo: blk.!
+
+iterateClassVariables: iterator <ObjectIterator>
+
+	| cvs <Array[GlobalAssociation]> |
+	self isMeta
+		ifFalse: [	cvs := self reflectee fileOutClassVars.
+							cvs isEmpty
+								ifFalse: [	iterator beginClassVariables.
+													cvs do: [ :a <GlobalAssociation> |
+														iterator name: a key oop: a value ].
+													iterator endClassVariables ]
+						]!
+
+localClassVarNamesDo: blk <[Symbol]>
+
+self mixin classVarNamesDo: blk
+ !
+
+localInstVarNamesDo: blk <[Symbol]>
+		
+self mixin instVarNamesDo: blk
+
+	! !
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'printing' !
+
+
+printOn: aStream  <Stream> 
+	aStream 
+		nextPutAll: self class name;
+		nextPutAll: ' on ';
+		nextPutAll: (self nameIfAbsent: 'an unnamed class').
+!
+
+safePrintString ^ <Str>
+
+	^self name
+
+! !
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'structure' !
+
+
+beginHeader
+
+! !
+

@@ -1,0 +1,28 @@
+Delta define: #IdleTask as: (
+(Class subclassOf: 'TaskControlBlock' instanceVariables: '')) !
+
+(Delta mirrorFor: #IdleTask) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #IdleTask) group: 'benchmark'!
+
+(Delta mirrorFor: #IdleTask)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #IdleTask) methodsFor: 'scheduling' !
+
+
+doTask: work data: data
+            data count: data count - 1.
+            ^0 = data count
+                ifTrue: [TheBench holdSelf]
+                ifFalse:
+                    [0 = (data control bitAnd: 1)
+                        ifTrue:
+                            [data control: data control // 2.
+                            TheBench release: DeviceA]
+                        ifFalse:
+                            [data control: (data control // 2 bitXor: 53256).
+                            TheBench release: DeviceB]]! !
+

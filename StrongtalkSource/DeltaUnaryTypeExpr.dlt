@@ -1,0 +1,178 @@
+Delta define: #DeltaUnaryTypeExpr as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaUnaryTypeExpr) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaUnaryTypeExpr) group: 'ast'!
+
+(Delta mirrorFor: #DeltaUnaryTypeExpr)
+comment: 
+'This represents a syntactic construct of the form
+
+Foo op, where op is class or instance or protocol
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaUnaryTypeExpr) methodsFor: 'Unclassified' !
+
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^self selectee allSelfClassTVs!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^self selectee allSelfTVs!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self target antimonotonicIn: tv!
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool unaryTypeExprNode: self!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self selectee bareAttributes!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self selectee bareSecondaryAttributes!
+
+basicLocator
+	^self target basicLocator isMetaSide: true
+!
+
+branded ^ <Boolean>
+    ^self target branded!
+
+canonicalRep ^ <Protocol>
+
+^self selectee canonicalRep!
+
+classProtocol ^ <Protocol>
+    ^self selectee classProtocol!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^self selectee compositeSubstitute: t!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^self selectee declaredSubprotocolOf: p!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^self selectee declaredSuperMixinInvocationOf: m!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^self selectee declaredSuperprotocolOfGeneric: p!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^self selectee declaredSupertypes!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a formatted name, which here is just the formatted
+		name of the target wilt the selector appended"
+
+	| s <CharOutputStream> |
+	s := String new writeStream.
+	s nextPutAll: (self target formattedName: pt).
+	s nextPut: $ .
+	s nextPutAll: self selector.
+	^s contents!
+
+involvesTypeVariables ^ <Boolean>
+    ^self target involvesTypeVariables "self selectee ?"!
+
+isMonotonic ^ <Boolean>
+    ^self target isMonotonic!
+
+komment
+
+"This represents a syntactic construct of the form
+
+Foo op, where op is class or instance or protocol"!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self selectee localBareAttributes!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self selectee localBareSecondaryAttributes!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self target monotonicIn: tv!
+
+name ^ <Symbol>
+    self deltaHack.
+    self selector = #def ifTrue:[^self target name].
+    ^(self target name, ' ', self selector) asSymbol!
+
+rawPrimaryInterface ^ <Interface>
+    ^self selectee rawPrimaryInterface!
+
+rawSecondaryInterface ^ <Interface>
+    ^self selectee rawSecondaryInterface!
+
+rawSelectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+
+    ^self selectee rawSelectMsg: selector ifAbsent: block!
+
+scope: s <Scope > ^ <Self>
+    self target scope: s!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+
+    ^self selectee selectMsg: selector ifAbsent: block!
+
+selectee ^ <Protocol>
+
+self selector = #protocol ifTrue:[^self target].
+self selector = #instance ifTrue:[^self target].
+self selector = #class ifTrue:[^self target typeOfClass].
+self selector = #def ifTrue: [^self target].
+^DeltaInvalidTypeOperatorError new operator: self selector
+!
+
+selector ^ <NameType>
+    ^self filteree selector!
+
+selfClassTV ^ <TypeVar>
+    ^self selectee selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self selectee selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self selectee selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self selectee selfTV!
+
+substitute: s <Substitution > ^ <Self>
+s isEmpty ifTrue:[^self].
+    ^(self target substitute: s) = self target ifTrue:[self]
+                                                              ifFalse:[self class new filter: self using: s.].!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self selectee subtypeOf: t assuming: trail.!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self selectee superGenAppOf: p assuming: trail!
+
+superprotocolOf: t <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self selectee superprotocolOf: t assuming: trail!
+
+supertypeOfTypeVar: t <TypeVar >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self selectee supertypeOfTypeVar: t assuming: trail!
+
+target ^ <TypeFactor>
+    ^self filteree target substitute: self substitution!
+
+target: aTypeTerm <TypeTerm >selector: sel <NameType > ^ <Self>
+    substitution := DeltaSubstitution new.
+filteree := BasicUnaryTypeExprData new target: aTypeTerm selector: sel.!
+
+wellFormed ^ <Boolean>
+    | selector <Symbol>  selectorOk <Boolean>  |
+
+selector := self selector.
+selectorOk := selector = #class or:[selector = #protocol or:[selector = #instance or:[selector = #def and:[self target isTypeVar]]]].
+selectorOk ifFalse:[self reportError: (DeltaInvalidTypeOperatorError new operator: selector)].
+^self target wellFormed and: [selectorOk].! !
+

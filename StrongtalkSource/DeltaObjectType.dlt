@@ -1,0 +1,79 @@
+Delta define: #DeltaObjectType as: (
+(Class subclassOf: 'DeltaType' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #DeltaObjectType) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaObjectType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaObjectType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaObjectType) methodsFor: 'Unclassified' !
+
+
+allDeclaredSupertypes ^ <Cltn[ObjectType]>
+
+| s <Set[ObjectType]> c <Cltn[ObjectType]>  |
+
+c := self declaredSupertypes.
+s := Set[ObjectType] new.
+s add: self.
+c do:	[: sp <ObjectType> | 
+			sp allDeclaredSupertypes do:[: csp <ObjectType> | s add: csp].
+			].
+^s
+!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    self subclassResponsibility!
+
+asObjectType ^ <ObjectType>
+    ^self!
+
+atomicTypes ^ <IdentitySet[ObjectType]>
+    ^IdentitySet[ObjectType]  new add: self; yourself!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+self subclassResponsibility!
+
+involvesTypeVariables ^ <Boolean>
+    ^false!
+
+isObjectType ^ <Boolean>
+    ^true!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    self subclassResponsibility!
+
+selectMsg: selector <Symbol > ^ <DeltaMsgSignature>
+    ^self selectMsg: selector ifAbsent: [DeltaSelectorUndefinedError new selector: selector].!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <DeltaMsgSignature>
+    self subclassResponsibility!
+
+substitute: s
+    ^s isEmpty ifTrue:[self]
+                  ifFalse:[self class new filter: self using: s].!
+
+subtypeOf: t <ObjectType> assuming: trail <Trail> ^ <Boolean>
+
+self subclassResponsibility!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    self subclassResponsibility!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    self subclassResponsibility!
+
+supertypeOfMsgSignature: m assuming: trail
+    ^false!
+
+supertypeOfUnion: u <UnionType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^u subtypeOfObjectType: self assuming: trail!
+
+typeOfClass ^ <ObjectType>
+    self subclassResponsibility! !
+

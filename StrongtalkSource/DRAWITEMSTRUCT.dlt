@@ -1,0 +1,74 @@
+Delta define: #DRAWITEMSTRUCT as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #DRAWITEMSTRUCT) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DRAWITEMSTRUCT) group: 'base'!
+
+(Delta mirrorFor: #DRAWITEMSTRUCT)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
+
+! (Delta mirrorFor: #DRAWITEMSTRUCT) methodsFor: 'offsets' !
+
+
+CtlIDOffset ^<Int>
+
+	^4!
+
+CtlTypeOffset ^<Int>
+
+	^0!
+
+hDCOffset ^<Int>
+
+	^24!
+
+itemActionOffset ^<Int>
+
+	^12!
+
+itemIDOffset ^<Int>
+
+	^8!
+
+itemStateOffset ^<Int>
+
+	^16!
+
+rcItemOffset ^<Int>
+
+	^28! !
+
+! (Delta mirrorFor: #DRAWITEMSTRUCT) methodsFor: 'accessing' !
+
+
+CtlID ^<ExternalProxy>
+
+	^self proxyAt: self CtlIDOffset!
+
+CtlType ^<ExternalData>
+
+	^self proxyAt: self CtlTypeOffset!
+
+hDC ^<HDC>
+
+	^(self proxyAt: self hDCOffset result: HDC new) initializeAt: self rcItem origin!
+
+itemAction ^<ExternalData>
+
+	^self proxyAt: self itemActionOffset!
+
+itemID ^<Int>
+
+	^self smallIntegerAt: self itemIDOffset!
+
+itemState ^<ExternalData>
+
+	^self proxyAt: self itemStateOffset!
+
+rcItem ^<RECT>
+
+	^self subProxyAt: self rcItemOffset result: RECT new! !
+

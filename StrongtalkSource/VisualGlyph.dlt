@@ -1,0 +1,219 @@
+Delta define: #VisualGlyph as: (
+(Class subclassOf: 'Visual' instanceVariables: 'glyph <Glyph>')) !
+
+(Delta mirrorFor: #VisualGlyph) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #VisualGlyph) group: 'ui'!
+
+(Delta mirrorFor: #VisualGlyph)
+comment: 
+'A VisualGlyph is a visual that displays a glyph, which is a potentially
+shareable graphical object.
+
+Note that this is a wrapper for the glyph, not its parent: the parent is the same as
+the VisualGlyph''s parent, since the glyph can''t count on the identity of its VisualGlyph
+remaining constant between messages to the glyph.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #VisualGlyph) classSide methodsFor: 'instance creation' !
+
+
+for: g <Glyph>  ^<Instance>
+
+	^self new initGlyph: g! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'geometry-local' !
+
+
+allocation ^<Region>
+
+	^self glyph allocationFor: self!
+
+allocationFromParent ^<Region>
+	"This accesses the allocation inst var, and is sent by the glyph
+		to get the allocation to respond to the allocationFor: message;
+		%todo: this is roundabout and should probably be restructured, but there
+		is proabably a good reason for it; something to do with speed
+		for reused visual glyphs etc?"
+	^allocation!
+
+max ^<Region>
+
+	^self glyph maxIn: self medium!
+
+min ^<Region>
+
+	^self glyph minIn: self medium!
+
+natural ^<Region>
+
+	^self glyph naturalIn: self medium! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'accessing' !
+
+
+glyph ^<Glyph>
+
+	^glyph!
+
+id: i <Int>
+	
+	super id: i.
+	self glyph id: i.!
+
+isNonLocal ^<Boolean>
+
+	^self glyph isNonLocal!
+
+noParent
+
+	"We completely override the inherited version because we avoid doing a detaching
+		because when we forward the noParent message to the glyph that will happen."
+	self glyph noParentFor: self.
+	parent := nil.
+!
+
+parent: p <VisualParent> id: childId <Int>
+
+	super parent: p id: childId.
+	self glyph parent: p id: childId.! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'initialization' !
+
+
+initGlyph: g <Glyph>
+
+	"The glyph is told of its parent when the parent of the receiver is set, since that is
+	  the parent, not the VisualGlyph."
+	glyph := g.! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'notification' !
+
+
+detaching
+
+	super detaching.
+	self glyph detaching.! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'control' !
+
+
+release
+
+	super release.
+	self glyph release.! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	self glyph localDisplayOn: can for: self! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'region operations' !
+
+
+enclosedRect ^<Rect>
+
+	^self glyph enclosedRectFor: self!
+
+enclosingRect ^<Rect>
+
+	^self glyph enclosingRectFor: self! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'private-testing' !
+
+
+isRectangularAndOpaque ^<Boolean>
+
+	^self glyph isRectangularAndOpaque! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'geometry-nonlocal' !
+
+
+adjustPositionTo: newPosition <Point>
+
+	"We have to change this to pass it down to the glyph, since it is in our parent's
+		coordinate system"
+	self setPosition: newPosition.
+	self glyph adjustPositionTo: newPosition!
+
+nativePositionChanged
+
+	"pass this down to the glyph"
+	self glyph nativePositionChanged! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self glyph character: c focus: focus event: ev for: self!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self glyph keyDown: key focus: focus event: ev for: self!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self glyph keyUp: key focus: focus event: ev for: self!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	^self glyph mouseEvent: type at: loc event: ev for: self! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'input focus' !
+
+
+focusCandidatesDo: blk <[Visual]>
+	"Iterate over the visuals that are willing to accept the input focus."
+
+	self glyph focusCandidatesDo: blk! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'private' !
+
+
+layout
+
+	"MUST access the inst var directly below, since the method gets it from the
+		glyph, which is circular"
+	self glyph allocation: allocation at: self position for: self.
+	self layoutComplete.!
+
+propagateSession
+
+	self glyph session: self session! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'printing' !
+
+
+printStateOn: strm <CharOutputStream>
+
+	self glyph printOn: strm! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'testing' !
+
+
+isSurelyRigid ^<Boolean>
+
+	^self glyph isSurelyRigid! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream> indent: level <Int>
+
+	self glyph dumpOn: strm indent: level! !
+
+! (Delta mirrorFor: #VisualGlyph) methodsFor: 'core sampler' !
+
+
+drillAt: loc <Point> for: sampler <CoreSampler>
+	| child <Visual> |
+
+	super drillAt: loc for: sampler.
+	self glyph drillAt: loc for: sampler.! !
+

@@ -1,0 +1,55 @@
+Delta define: #ClassVarLocator as: (
+(Class subclassOf: 'VarLocator' instanceVariables: '')) !
+
+(Delta mirrorFor: #ClassVarLocator) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ClassVarLocator) group: 'ast'!
+
+(Delta mirrorFor: #ClassVarLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ClassVarLocator) methodsFor: 'accessing' !
+
+
+ast ^ <VarDecl>
+
+self mirror classVariablesDo:	[:c <VarDecl> |
+																c name = self varName
+																	ifTrue:[^c]
+															].
+^self error: 'Missing class variable ', self varName, 
+														' in ', self mirror name.
+!
+
+name ^ <Str>
+
+^self definitionName, ' class variables'!
+
+parseTree  ^ <ParseTree[VarDecl]>
+
+| cvTrees <OrdCltn[ParseTree[VarDecl]]> |
+
+cvTrees := DeltaParser new parseClassVarList: self source 
+														within: (DeltaScope new initialize: nil) 
+														ifError: [:s <Str> :i <Int> | self error: s].
+^cvTrees detect: [:pt <ParseTree[VarDecl]> | pt body name = self varName]
+					ifNone:[self error: 'Missing class variable ', self varName, 
+														' in ', self mirror name].
+	!
+
+source ^ <Str>
+
+^self mirror classVariableString! !
+
+! (Delta mirrorFor: #ClassVarLocator) methodsFor: 'locator matching' !
+
+
+matchesClassVarLocator: l  <ClassVarLocator> ^ <Boolean>
+
+^(self matchesDefinitionLocator: l)!
+
+matchesLocator: l <DeltaLocator> ^ <Boolean>
+	^l matchesClassVarLocator: self! !
+

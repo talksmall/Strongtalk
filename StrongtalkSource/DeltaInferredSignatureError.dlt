@@ -1,0 +1,29 @@
+Delta define: #DeltaInferredSignatureError as: (
+(Class subclassOf: 'DeltaSingleLocTypeError' instanceVariables: 'signature ')) !
+
+(Delta mirrorFor: #DeltaInferredSignatureError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaInferredSignatureError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInferredSignatureError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInferredSignatureError) methodsFor: 'Unclassified' !
+
+
+inferenceErrors  ^ <Collection[InferenceError]>
+
+"This method is safe, but won't typecheck"
+
+^self signature domain select:[:t | t isError and:[t  isInferenceError]].!
+
+signature  ^ <MsgSignature>
+
+^signature!
+
+signature: sig  <MsgSignature>
+
+signature := sig.! !
+

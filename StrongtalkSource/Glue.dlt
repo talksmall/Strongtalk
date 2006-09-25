@@ -1,0 +1,120 @@
+Delta define: #Glue as: (
+(Class subclassOf: 'Visual' instanceVariables: 'natural <Region>	
+min <Region>
+max <Region>
+		') classVariables: 'HugeXMax <Rect> HugeYMax <Rect>') !
+
+(Delta mirrorFor: #Glue) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Glue) group: 'ui'!
+
+(Delta mirrorFor: #Glue)
+comment: 
+'Glue is a kind of visual that is invisible and has an arbitrary set of geometry preferences.
+It is usually used for spacing filling purposes.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #Glue) classSide methodsFor: 'instance creation' !
+
+
+natural: nat <Rect> min: mn <Rect> max: mx <Rect> ^<Instance>
+
+	^self new natural: nat min: mn max: mx!
+
+xNatural: xNat <Dist> min: xMin <Dist> max: xMax <Dist> ^<Instance>
+
+	^self	natural: (xNat negated@0 corner: 0@0)
+			min: (xMin negated@0 corner: 0@0)
+			max: (xMax negated@0 corner: 0@0)!
+
+xRigid: xSize <Dist> ^<Instance>
+
+	| pref <Rect> |
+	pref := xSize negated@0 corner: 0@0.
+	^self natural: pref min: pref max: pref!
+
+xRigid: xSize <Dist> yRigid: ySize <Dist> ^<Instance>
+
+	| pref <Rect> |
+	pref := xSize negated@ySize negated corner: 0@0.
+	^self natural: pref min: pref max: pref!
+
+xStretchy ^<Instance>
+
+	^self
+		natural: Rectangle null
+		min: Rectangle null
+		max: self hugeXMax!
+
+yNatural: yNat <Dist> min: yMin <Dist> max: yMax <Dist> ^<Instance>
+
+	^self	natural: (0@yNat negated corner: 0@0)
+			min: (0@yMin negated corner: 0@0)
+			max: (0@yMax negated corner: 0@0)!
+
+yRigid: ySize <Dist> ^<Instance>
+
+	| pref <Rect> |
+	pref := 0@ySize negated corner: 0@0.
+	^self natural: pref min: pref max: pref!
+
+yStretchy ^<Instance>
+
+	^self
+		natural: Rectangle null
+		min: Rectangle null
+		max: self hugeYMax! !
+
+! (Delta mirrorFor: #Glue) classSide methodsFor: 'constants' !
+
+
+hugeXMax ^<Rect>
+
+	HugeXMax isNil
+		ifTrue: [ HugeXMax := UI huge negated @0 corner: 0 @ 0	].
+	^HugeXMax!
+
+hugeYMax ^<Rect>
+
+	HugeYMax isNil
+		ifTrue: [ HugeYMax := 0@UI huge negated corner: 0@0	].
+	^HugeYMax! !
+
+! (Delta mirrorFor: #Glue) methodsFor: 'initialization' !
+
+
+natural: nat <Rect> min: mn <Rect> max: mx <Rect>
+
+	natural := nat.
+	min := mn.
+	max := mx.! !
+
+! (Delta mirrorFor: #Glue) methodsFor: 'accessing' !
+
+
+max ^<Region>
+
+	^max!
+
+min ^<Region>
+
+	^min!
+
+natural ^<Region>
+
+	^natural! !
+
+! (Delta mirrorFor: #Glue) methodsFor: 'displaying' !
+
+
+displayOn: can <Canvas>
+!
+
+localDisplayOn: can <Canvas>
+! !
+

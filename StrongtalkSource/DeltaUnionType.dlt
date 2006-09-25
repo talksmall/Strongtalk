@@ -1,0 +1,194 @@
+Delta define: #DeltaUnionType as: (
+(Class subclassOf: 'DeltaObjectType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaUnionType) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaUnionType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaUnionType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaUnionType) methodsFor: 'Unclassified' !
+
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^(self type1 antimonotonicIn: tv) and:[self type2 antimonotonicIn: tv]!
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool unionTypeNode: self.!
+
+atomicTypes ^ <IdentitySet[ObjectType]>
+    | 
+    a1 <IdentitySet[ObjectType]>
+    a2 <IdentitySet[ObjectType]>
+    eliminatedSet <IdentitySet[ObjectType]>
+    |
+
+a1 := self type1 atomicTypes.
+a2 := self type2 atomicTypes.
+a1 do:[:at <ObjectType>  | 
+				eliminatedSet := self collectSubtypesOf: at from: a2 assuming: DeltaGlobalTrail.
+				eliminatedSet do: [:et <ObjectType> | a2 remove: et].
+].
+a2 do:[:at <ObjectType>  | 
+				eliminatedSet := self collectSubtypesOf: at from: a1 assuming: DeltaGlobalTrail.
+				eliminatedSet do: [:et <ObjectType> | a1 remove: et].
+].
+a1 addAll: a2.
+^a1
+!
+
+canonicalRep ^ <UnionType>
+
+"access cache of all unions, looking using canonicalReps of atomicTypes
+with subsets eliminated, and return appropriate union from there."
+| key <GenericKey> |
+
+key := DeltaGenericKey new from: self atomicTypes asOrderedCollection.
+key cltn size = 1 ifTrue:[^key cltn first].
+^DeltaUnionCache at: key ifAbsent: [self]!
+
+collectSubtypesOf: aType <ObjectType>
+from: setOfTypes <IdentitySet[ObjectType]>
+assuming: trail <DeltaTrail> ^ <IdentitySet[ObjectType]>
+"Private"
+
+| subtypeSet <IdentitySet[ObjectType]> |
+
+		subtypeSet := IdentitySet[ObjectType] new.
+        setOfTypes 
+                do: [:s  <ObjectType> |  s == aType
+                                    ifFalse:[(s subtypeOf: aType assuming: trail) 
+                                                         ifTrue:[subtypeSet add: s]
+                                                  ]
+                       ].
+         ^subtypeSet
+ 
+
+
+
+
+
+
+!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+| c <OrdCltn[ObjectType]> |
+
+c := OrderedCollection[ObjectType] new.
+
+^c!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a formatted name, which in this case is the two branches
+		formatted and combined with a '|'"
+
+
+	| s <CharOutputStream> |
+	s := String new writeStream.
+	s nextPutAll: (self type1 formattedName: pt).
+	s nextPut: $|.
+	s nextPutAll: (self type2 formattedName: pt).
+	^s contents!
+
+involvesTypeVariables ^ <Boolean>
+    ^self type1 involvesTypeVariables or:[self type2 involvesTypeVariables]!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^(self type1 monotonicIn: tv) and:[self type2 monotonicIn: tv]!
+
+name ^ <Symbol>
+    ^(self type1 name, '|', self type2 name) asSymbol!
+
+retainOnlySupersetsOf: aType <ObjectType>
+from: setOfTypes <IdentitySet[ObjectType]>
+using: eliminatedSet <IdentitySet[ObjectType]> ^ <IdentitySet[ObjectType]>
+"Private"
+
+        setOfTypes 
+                do: [:s  <ObjectType> |  s == aType
+                                    ifFalse:[(aType subtypeOf: s assuming: DeltaGlobalTrail) 
+                                                         ifTrue:[ 
+                                                                      eliminatedSet add: aType.
+                                                                      ^self
+                                                                      ]
+                                                  ]
+                       ]
+ 
+
+
+
+
+
+
+!
+
+scope: s <Scope>
+
+self type1 scope: s.
+self type2 scope: s.!
+
+selectMsg: selector <Symbol > ^ <DeltaMsgSignature>
+
+^self selectMsg: selector
+           ifAbsent:[DeltaUnionTypeSelectorError new selector: selector].!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <DeltaMsgSignature>
+    | t1 <DeltaMsgSignature>  t2 <DeltaMsgSignature>  |
+    t1 := self type1 selectMsg: selector ifAbsent: block.
+    t2 := self type2 selectMsg: selector ifAbsent: block.
+    (t1 subtypeOf: t2 assuming: DeltaGlobalTrail)
+        ifTrue: [^t2].
+    (t2 subtypeOf: t1 assuming: DeltaGlobalTrail)
+        ifTrue: [^t1].
+    ^DeltaUnionTypeSelectorError new selector: selector!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t supertypeOfUnion: self assuming: trail!
+
+subtypeOfObjectType: u <ObjectType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self type: self unionSubtypeOf: u assuming: trail.!
+
+subtypeOfUnion: u assuming: trail
+    ^self atomicTypes inject: true into:
+    [:sb "<Boolean>" :sa "<ObjectType>" |
+    sb and:[u atomicTypes inject: false into:
+                  [:ub "<Boolean>" :ua "<ObjectType>" | ub or:[sa subtypeOf: ua assuming: DeltaGlobalTrail]]]]!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self supertypeOfObjectType: p assuming: trail!
+
+superprotocolOf: p <Protocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self supertypeOfObjectType: p assuming: trail!
+
+supertypeOfObjectType: u <ObjectType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^ self type: u unionSubtypeOf: self assuming: trail.!
+
+supertypeOfTypeVar: t <TypeVar >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self supertypeOfObjectType: t assuming: trail!
+
+type1 ^ <TypeExpr>
+    ^self filteree type1 substitute: self substitution!
+
+type1: t1 <TypeExpr >type2: t2 <TypeExpr > ^ <Self>
+    substitution := DeltaSubstitution new.
+filteree := BasicUnionData new type1: t1 type2: t2.!
+
+type2 ^ <TypeExpr>
+    ^self filteree type2 substitute: self substitution!
+
+type: t <ObjectType >unionSubtypeOf: u <ObjectType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t atomicTypes inject: true into:
+    [:sb <Boolean>  :sa <ObjectType>  |
+    sb and:[u atomicTypes inject: false into:
+                  [:ub <Boolean>  :ua <ObjectType>  | ub or:[sa subtypeOf: ua assuming: DeltaGlobalTrail]]]]!
+
+typeOfClass ^ <UnionType>
+    ^DeltaUnionType new type1: self type1 typeOfClass type2: self type2 typeOfClass!
+
+wellFormed ^ <Boolean>
+    ^self type1 wellFormed and:[self type2 wellFormed].! !
+

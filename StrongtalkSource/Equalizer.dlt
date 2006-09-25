@@ -1,0 +1,227 @@
+Delta define: #Equalizer as: (
+(Class subclassOf: 'UI' instanceVariables: 'modifiers <Extensible[EqualizerWrapper]>
+xEqualize <Boolean>
+yEqualize <Boolean>
+rigid <Boolean>
+		"If this is true, then the min and max are forced to be the same as the natural"
+natural <Rect>
+min <Rect>
+max <Rect>
+	')) !
+
+(Delta mirrorFor: #Equalizer) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Equalizer) group: 'ui'!
+
+(Delta mirrorFor: #Equalizer)
+comment: 
+'An Equalizer is used to force a set of visuals to have the same preferences
+in one or both dimensions.  To use, an equalizer is created, and then used to
+generate wrappers for the set of visuals, which take care of the rest.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #Equalizer) classSide methodsFor: 'instance creation' !
+
+
+forX ^<Instance>
+	"Create a new instance that equalizes x preferences"
+
+	^self new yEqualize: false!
+
+forY ^<Instance>
+	"Create a new instance that equalizes y preferences"
+
+	^self new xEqualize: false!
+
+new ^<Instance>
+	"Create a new instance that, by default, equalizes both x and y"
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #Equalizer) methodsFor: 'private' !
+
+
+computePreferences
+
+	natural := max := min := Point origin extent: Point origin.
+	self modifiers do:
+		[ :m <EqualizerWrapper> |
+			self rigid
+				ifFalse: [	max := max merge: m part max enclosingRect.
+								min := min merge: m part min enclosingRect.	].
+			natural := natural merge: m part natural enclosingRect.	].
+
+	self rigid
+		ifTrue: [ min := max := natural ]
+		ifFalse: [	| t <Rect> |
+						"Make sure max >= natural >= min"
+						t := max.
+						max := max merge: min.
+						min := t intersect: min.
+						natural := (natural intersect: max) merge: min.	].!
+
+ensurePrefsUpToDate
+
+	self prefsUpToDate
+		ifFalse: [ self computePreferences ]!
+
+flushPrefs
+
+	natural := nil.
+	min := nil.
+	max := nil.
+!
+
+modifiers ^<Extensible[EqualizerWrapper]>
+
+	^modifiers!
+
+prefsUpToDate ^<Boolean>
+
+	^natural notNil!
+
+setPrefsFor: pm <PreferenceModifier>
+
+	self xEqualize
+		ifTrue: [ self yEqualize
+						ifTrue: [ pm natural: self natural min: self min max: self max ]
+						ifFalse: [ self setXPrefsFor: pm ]
+					]
+		ifFalse: [ self yEqualize
+						ifTrue: [ self setYPrefsFor: pm ]
+						ifFalse: [ pm natural: pm part natural min: pm part min max: pm part max ]
+					]!
+
+setXPrefsFor: pm <PreferenceModifier>
+
+	| pnat <Rect> pmin <Rect> pmax <Rect> |
+
+	pnat := pm part natural enclosingRect.
+	pnat := self natural left @ pnat top
+					corner: self natural right @ pnat bottom.
+
+	pmin := pm part min enclosingRect.
+	pmin := self min left @ pmin top
+					corner: self min right @ pmin bottom.
+
+	pmax := pm part max enclosingRect.
+	pmax := self max left @ pmax top
+					corner: self max right @ pmax bottom.
+
+	pm natural: pnat min: pmin max: pmax!
+
+setYPrefsFor: pm <PreferenceModifier>
+
+	| pnat <Rect> pmin <Rect> pmax <Rect> |
+
+	pnat := pm part natural enclosingRect.
+	pnat := pnat left @ self natural top
+					corner: pnat right @ self natural bottom.
+
+	pmin := pm part min enclosingRect.
+	pmin := pmin left @ self min top
+					corner: pmin right @ self min bottom.
+
+	pmax := pm part max enclosingRect.
+	pmax := pmax left @ self max top
+					corner: pmax right @ self max bottom.
+
+	pm natural: pnat min: pmin max: pmax! !
+
+! (Delta mirrorFor: #Equalizer) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	modifiers := IdentitySet[PreferenceModifier] new.
+	self xEqualize: true; yEqualize: true.
+	self rigid: false.! !
+
+! (Delta mirrorFor: #Equalizer) methodsFor: 'accessing' !
+
+
+rigid ^<Boolean>
+
+	^rigid!
+
+rigid: f <Boolean>
+
+	rigid := f.
+	self changing!
+
+xEqualize ^<Boolean>
+
+	^xEqualize!
+
+xEqualize: f <Boolean>
+
+	xEqualize := f.
+	self changing!
+
+yEqualize ^<Boolean>
+
+	^yEqualize!
+
+yEqualize: f <Boolean>
+
+	yEqualize := f.
+	self changing! !
+
+! (Delta mirrorFor: #Equalizer) methodsFor: 'wrapping' !
+
+
+for: v <Visual> ^<EqualizerWrapper>
+	"Add v to the set of visuals being equalized.  A wrapper around v is
+		returned that should be used in place of v in the visual containment heirarchy"
+
+	| pm <EqualizerWrapper> |
+	pm := (EqualizerWrapper for: v)
+				equalizer: self;
+				prefsBlock:
+					[ :me <PreferenceModifier> |
+						self setPrefsFor: me  ].
+	self modifiers include: pm.
+	^pm!
+
+remove: w <EqualizerWrapper>
+	"remove the visual held by w (which is a wrapper returned by a previous call to #for:)
+		from the set of visuals managed by "
+
+	self modifiers remove: w.
+	w equalizer: nil.! !
+
+! (Delta mirrorFor: #Equalizer) methodsFor: 'control' !
+
+
+changing
+
+	self prefsUpToDate
+		ifTrue: [ 	self flushPrefs.
+						self modifiers
+							do: [ :m <EqualizerWrapper> |
+									m equalizerChanging	]
+					]! !
+
+! (Delta mirrorFor: #Equalizer) methodsFor: 'preferences' !
+
+
+max ^<Rect>
+
+	self ensurePrefsUpToDate.
+	^max!
+
+min ^<Rect>
+
+	self ensurePrefsUpToDate.
+	^min!
+
+natural ^<Rect>
+
+	self ensurePrefsUpToDate.
+	^natural! !
+

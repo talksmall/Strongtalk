@@ -1,0 +1,377 @@
+Delta define: #Font as: (
+(Class subclassOf: 'InstanceCritical |> AbstractFont' instanceVariables: 'win32Font <Win32Handle>
+
+medium <Medium>
+			"Medium for which the metrics are valid"
+metrics <TEXTMETRIC>
+
+currentMap <CanonicalCharGlyphs>
+allMaps <KeyedSet[Paint,CanonicalCharGlyphs]>
+') classVariables: 'OpenFonts <VarDict[Font, Font]>
+DefaultFont <Font>
+	') !
+
+(Delta mirrorFor: #Font) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #Font) group: 'ui'!
+
+(Delta mirrorFor: #Font)
+comment: 
+'Specifies a desired text font for graphical use.  Different devices may map this to
+varying physical fonts.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $
+'!
+
+! (Delta mirrorFor: #Font) classSide methodsFor: 'accessing' !
+
+
+openFonts ^<VarDict[Font,Font]>
+
+	OpenFonts isNil
+		ifTrue: [ OpenFonts := Dictionary[Font,Font] new ].
+	^OpenFonts! !
+
+! (Delta mirrorFor: #Font) classSide methodsFor: 'instance creation' !
+
+
+default ^<Font>
+
+	DefaultFont isNil
+		ifTrue: [ DefaultFont := self forSpec:
+						(FontSpec new
+							typeface: 'Lucida Sans';
+							points: 10;
+							boldness: 0.0
+							) ].
+	^DefaultFont!
+
+forSpec: spec <FontSpec> ^<Font>
+	"Return a canonicalized font that matches the spec."
+
+	^self openFonts at: spec
+		ifAbsent: [	| inst <Instance> |
+							inst := (super new initFamily: spec family
+								points: spec points
+								mediumPoints: spec mediumPoints
+								boldness: spec boldness
+								italic: spec italic
+								underline: spec underline
+								typeface: spec typeface).
+							
+							self openFonts at: spec put: inst.
+							inst
+							 ]!
+
+new ^<Instance>
+
+	self error: 'You should not create Font instances directly.  Use #forSpec: instead.'! !
+
+! (Delta mirrorFor: #Font) methodsFor: 'private' !
+
+
+allMaps ^<KeyedSet[Paint,CanonicalCharGlyphs]>
+
+	allMaps == nil
+		ifTrue: [ allMaps := KeyedSet[Paint,CanonicalCharGlyphs] newKeyedBy:
+												[ :ccg <CanonicalCharGlyphs> |
+													 ccg paint ].
+					 ].
+	^allMaps!
+
+buildWin32Font
+
+	| logfont <LOGFONT> |
+	logfont := self newLOGFONT.
+
+	self buildWin32FontFrom: logfont.
+	logfont free.!
+
+buildWin32FontFrom: logfont <LOGFONT>
+
+	win32Font := {{<gdi Win32Handle CreateFontIndirectA> logFont: logfont}}.
+	win32Font isNull
+		ifTrue: [ Win32 handleError ].
+!
+
+checkMedium: m <Medium>
+
+	(medium notNil and: [ m ~= medium ])
+		ifTrue: [	self flush ].
+	medium := m!
+
+currentMap ^<CanonicalCharGlyphs>
+
+	^currentMap!
+
+currentMap: cm <CanonicalCharGlyphs>
+
+	currentMap := cm!
+
+flush
+
+	medium := nil.
+	win32Font := nil.		"We need to do this in case we need to switch fonts between the
+										screen and printer"
+	metrics notNil
+		ifTrue: [	metrics free.
+						metrics := nil.	].!
+
+heightForPoints: p <Int> ^<Int>
+
+	^self medium adjustPoints: p!
+
+medium ^<Medium>
+
+	^medium!
+
+uncachedMapFor: p <Paint> ^<CanonicalCharGlyphs>
+
+	^self critical:
+		  [	self allMaps at: p
+				ifAbsent: [		| painter <Painter> |
+										painter :=Painter new font: self; paint: p; freeze.
+										allMaps include: (CanonicalCharGlyphs forPainter: painter)		]
+		  ]! !
+
+! (Delta mirrorFor: #Font) methodsFor: 'restricted-win32' !
+
+
+cachedWin32Font ^<ExternalProxy | Nil>
+
+	^win32Font!
+
+charGlyphFor: c <Character> paint: paint <Paint>  ^<CharacterGlyph>
+	"Return the Glyph for the specified character of this font that will render
+	  using the paint p."
+
+	| curmap <CanonicalCharGlyphs> gl <CharacterGlyph> code <Int> |
+	
+	"We must cache the curmap in a local variable so that we can avoid a critical
+			region"
+	curmap := self currentMap.
+	
+	(curmap == nil or: [ curmap paint ~~ paint and: [ curmap paint ~= paint ]])
+		ifTrue: [	curmap := self uncachedMapFor: paint.
+						self currentMap: curmap.	].
+
+	code := c unicodeValue.
+	code > curmap size
+		ifTrue: [	curmap := curmap copyWithSize: c unicodeValue.
+						self currentMap: curmap.
+						self critical:
+							[	self allMaps include: curmap. ].
+					].
+
+	gl := curmap at: c unicodeValue.
+	gl == nil
+		ifTrue: [	gl := CharacterGlyph buildFor: c painter: curmap painter.
+						curmap at: c unicodeValue put: gl.	 ].
+	^gl
+!
+
+metricsIn: m <Medium> ^<TEXTMETRIC>
+	"Return the cached metrics structure.  The caller must not free this"
+
+	self checkMedium: m.
+
+	metrics isNil
+		ifTrue: [	| can <Canvas> |
+						can := m newCanvas.
+						can mungeFont: self win32Font.
+						metrics := TEXTMETRIC new allocate.
+						{{<gdi TEXTMETRIC GetTextMetricsA>
+												for: can deviceContext into: metrics}}.
+						can release	].
+	^metrics!
+
+newLOGFONT ^<LOGFONT>
+	"Allocate a LOGFONT structure for the font.  The caller must free it when done"
+
+	| logfont <LOGFONT> |
+	logfont := LOGFONT new allocateZeroed.
+
+	self hasFamily
+		ifTrue: [ logfont lfPitchAndFamily: (self familyCodeFor: self family) ].
+	self hasPoints
+		ifTrue: [ logfont lfHeight: self mediumPoints negated ].
+	self hasBoldness
+		ifTrue: [ logfont lfWeight: (self boldness * 1000.0) asInteger ].
+	self hasItalic
+		ifTrue: [ logfont lfItalic: self italic asExternalData ].
+	self hasUnderline
+		ifTrue: [ logfont lfUnderline: self underline asExternalData ].
+	self hasTypeface
+		ifTrue: [ logfont lfFaceName: self typeface ].
+
+	^logfont!
+
+win32Font ^<ExternalProxy>
+	"Returns the HFONT"
+
+	win32Font isNil
+		ifTrue: [ self buildWin32Font ].
+	^win32Font!
+
+win32Handle ^<Win32Handle>
+
+	^self win32Font! !
+
+! (Delta mirrorFor: #Font) methodsFor: 'initialization' !
+
+
+initFamily: fam <Symbol>
+points: p <Int>
+mediumPoints: mp <Int>
+boldness: b <Float>
+italic: i <Boolean>
+underline: u <Boolean>
+typeface: tf <Str>
+
+	family := fam.
+	points := p.
+	mediumPoints := mp.
+	boldness := b.
+	italic := i.
+	underline := u.
+	typeface := tf.! !
+
+! (Delta mirrorFor: #Font) methodsFor: 'accessing' !
+
+
+medium: m <Medium>
+
+	self checkMedium: m!
+
+mediumPoints ^<Int>
+
+	^self mediumPointsFor: self medium!
+
+naturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
+
+	|	ascent <Dist>
+		met <TEXTMETRIC>
+		width1 <Int> width2 <Int>
+		can <Canvas>
+		buf <ABCFLOAT>
+		s <ExternalProxy>
+		|
+	met := self metricsIn: m.
+
+	can := m newCanvas.
+	can withPainter: painter
+		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
+				buf := ExternalProxy new malloc: Platform wordSize * 2.
+				s := ExternalProxy new malloc: 2.
+				s byteAt: 0 put: c asciiValue.
+				s byteAt: 1 put: c asciiValue.
+				"We call this twice with one and then two characters, so that
+					we can compute the actual advance for the character from
+					the difference (%todo: find a better way to do this that
+					works on Win95)."
+				{{<gdi ExternalProxy GetTextExtentPoint32A>
+						dc: can deviceContext
+						str: s
+						len: 1
+						buffer: buf
+				 }} asBoolean
+					ifFalse: [ Win32 handleError ].
+				width1 := buf smallIntegerAt: 0.
+				
+				{{<gdi ExternalProxy GetTextExtentPoint32A>
+						dc: can deviceContext
+						str: s
+						len: 2
+						buffer: buf
+				 }} asBoolean
+					ifFalse: [ Win32 handleError ].
+				width2 := buf smallIntegerAt: 0.	].
+	buf free.
+	s free.
+	can release.
+
+	^Rectangle
+		left: 0
+		right: width2 - width1
+		top: (met tmAscent "+ met tmExternalLeading") negated
+		bottom: met tmDescent.
+!
+
+newSpec ^<FontSpec>
+
+	"note that the mediumPoints instvar is accessed directly below to avoid trying
+		to compute it, which would fail if the medium isn't set"
+	^FontSpec new
+		family: self family;
+		points: self points;
+		"mediumPoints: mediumPoints;"
+		boldness: self boldness;
+		italic: self italic;
+		underline: self underline;
+		typeface: self typeface!
+
+newnaturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
+
+	| ascent <Dist> met <TEXTMETRIC> width <Int> can <Canvas> buf <ABCFLOAT> |
+	met := self metricsIn: m.
+
+	can := m newCanvas.
+	can withPainter: painter
+		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
+				buf := ExternalProxy new malloc: 4.
+				{{<gdi ExternalProxy GetCharWidthFloatA>
+						dc: can deviceContext
+						first: c unicodeValue
+						last: c unicodeValue
+						buffer: buf
+				 }} asBoolean
+					ifFalse: [ Win32 handleError ].	].
+	width := (buf singlePrecisionFloatAt: 0) asInteger.
+	buf free.
+	can release.
+
+	^Rectangle
+		left: 0
+		right: width
+		top: (met tmAscent "+ met tmExternalLeading") negated
+		bottom: met tmDescent!
+
+oldnaturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
+
+	| ascent <Dist> met <TEXTMETRIC> width <Int> can <Canvas> buf <ABCFLOAT> |
+	met := self metricsIn: m.
+
+	can := m newCanvas.
+	can withPainter: painter
+		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
+				buf := ExternalProxy new malloc: 4.
+				{{<gdi ExternalProxy GetCharWidth32A>
+						dc: can deviceContext
+						first: c unicodeValue
+						last: c unicodeValue
+						buffer: buf
+				 }} asBoolean
+					ifFalse: [ Win32 handleError ].	].
+	width := buf smallIntegerAt: 0.
+	buf free.
+	can release.
+
+	^Rectangle
+		left: 0
+		right: width
+		top: (met tmAscent "+ met tmExternalLeading") negated
+		bottom: met tmDescent! !
+
+! (Delta mirrorFor: #Font) methodsFor: 'control' !
+
+
+trulyRelease
+	"Not called release since the cache is in control of this (users shouldn't call it)"
+
+	self flush.
+	win32Font notNil
+		ifTrue: [ win32Font win32DeleteObject. ].! !
+

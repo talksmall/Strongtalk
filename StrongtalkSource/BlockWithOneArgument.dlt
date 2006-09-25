@@ -1,0 +1,19 @@
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+(Delta mirrorFor: #BlockWithOneArgument) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BlockWithOneArgument) group: 'base'!
+
+(Delta mirrorFor: #BlockWithOneArgument)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+! (Delta mirrorFor: #BlockWithOneArgument) methodsFor: 'evaluating' !
+
+
+value: arg1 <A1>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1}}! !
+

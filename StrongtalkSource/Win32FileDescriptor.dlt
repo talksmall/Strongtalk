@@ -1,0 +1,161 @@
+Delta define: #Win32FileDescriptor as: (
+(Class subclassOf: 'FileDescriptor' instanceVariables: 'ioCount <ExternalProxy>
+			"Used to hold the count of bytes read/written, & other temporary results, for speed"
+		')) !
+
+(Delta mirrorFor: #Win32FileDescriptor) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Win32FileDescriptor) group: 'base'!
+
+(Delta mirrorFor: #Win32FileDescriptor)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'private' !
+
+
+initializeIOCount
+    ioCount := ExternalProxy new.
+    ioCount malloc: 4.!
+
+ioCount ^<ExternalProxy>
+
+	^ioCount!
+
+postCopy
+    super postCopy.
+    self initializeIOCount.!
+
+printLastError
+	| result |
+	"Dump the error message for the last windows call"
+	"%temporary"
+	result := {{<kernel ExternalProxy GetLastError>geterror}}.
+	Platform errorStream show: 'Last error from windows: ', result asSmallInteger printString; cr!
+
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    {{<kernel ExternalProxy SetFilePointer>
+        handle: self handle
+        distanceLow: p
+        distanceHigh: 0
+        moveMethod: 0 }}    "FILE_BEGIN"! !
+
+! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'i/o' !
+
+
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    self knowAtEnd
+        ifTrue: [        count := 0 ]
+        ifFalse: [
+                    result := {{<kernel ExternalProxy ReadFile>
+                        handle: self handle
+                        buffer: self buffer
+                        count: self bufferSize
+                        numberRead: self ioCount
+                        overlapped: 0    }}.
+                    result isNull
+                        ifTrue: [ 
+						self printLastError.
+						errf value: #IOError.
+                                ^0    ].
+                    count := self ioCount smallIntegerAt: 0.    ].
+    self setPosition: self position + count.
+    ^count!
+
+write: nBytes <Int> at: pos <Int> ifFail: errf <[ExternalError]>
+    | result <ExternalProxy> count <Int> |
+    self position ~= pos
+        ifTrue: [ self position: pos ].
+    result := {{<kernel ExternalProxy WriteFile>
+        handle: self handle
+        buffer: self buffer
+        count: nBytes
+        numberWritten: self ioCount
+        overlapped: 0 }}.
+    result isNull
+        ifTrue: [ errf value: #IOError.
+                ^0    ].
+    count := self ioCount smallIntegerAt: 0.
+    self setPosition: self position + count.! !
+
+! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'accessing' !
+
+
+getBufferSize ^<Int>
+
+	"Use the sector size"
+	^self sectorSize * 8!
+
+sectorSize ^<Int>
+    "Use the sector size"
+    | junk <ExternalProxy> bytesPerSector <ExternalProxy> status <ExternalProxy> result <Int> |
+    junk := ExternalProxy new malloc: Platform wordSize.
+    bytesPerSector := ExternalProxy new malloc: Platform wordSize.
+    status := {{<kernel ExternalProxy GetDiskFreeSpaceA>
+            rootPath: 0
+            sectorsPerCluster: junk
+            bytesPerSector: bytesPerSector
+            freeClusters: junk
+            clusters: junk    }}.
+    status isNull
+        ifTrue: [ self error: 'Cannot get disk sector size' ]
+        ifFalse: [ result := bytesPerSector smallIntegerAt: 0 ].
+    junk free.
+    bytesPerSector free.
+    ^result!
+
+size ^<Int>
+    | result <ExternalProxy> |
+    result := {{<kernel ExternalProxy GetFileSize>
+                handle: self handle
+                sizeHigh: self ioCount    }}.
+    self ioCount isAllOnes
+        ifTrue: [ "must check for possible error status"
+                | status <ExternalProxy> |
+                "status := {<kernel ExternalProxy GetLastError>}."
+                status isNull    "NO_ERROR"
+                    ifFalse: [ self error: 'Can''t get file size' ].    ].
+    ^(ioCount smallIntegerAt: 0) = 0
+        ifFalse: [    "%todo: construct a large integer from the high&low words"
+                    self unimplemented    ]
+        ifTrue: [ result asSmallInteger ]! !
+
+! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'control' !
+
+
+flushIfFail: errf <[ExternalError]>
+
+	| result <ExternalProxy> |
+	"%todo: uncomment"
+	"result := {<kernel ExternalProxy FlushFileBuffers async>
+		handle: self handle }."
+	result isNull
+		ifTrue: [ errf value: 'I/O Error flushing file information' ].!
+
+openIfFail: err <[ExternalError]>
+    super openIfFail: err.
+    self ioCount malloc: Platform wordSize.!
+
+severExternalConnections
+    | result <ExternalProxy> |
+    
+    super severExternalConnections.
+    self ioCount free.
+    result := {{<kernel ExternalProxy CloseHandle>
+        handle: self handle }}.
+    result isNull
+        ifTrue: [ self error: 'Error closing file handle' ].! !
+
+! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'initialization' !
+
+
+mode: m <Symbol>
+    super mode: m.
+    self initializeIOCount.! !
+

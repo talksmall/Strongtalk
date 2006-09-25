@@ -1,0 +1,96 @@
+Delta define: #InstanceVariableOutliner as: (
+(Class subclassOf: 'DefinitionItemOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #InstanceVariableOutliner) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #InstanceVariableOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #InstanceVariableOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #InstanceVariableOutliner) methodsFor: 'private' !
+
+
+aspectForUpdate ^ <Symbol>
+
+	^#instanceVariables
+!
+
+header ^ <Str>
+
+	^'Instance variables'!
+
+modelAsCharGlyphs ^ <CharGlyphs>
+
+	| tool <ASTtoRichTextTool[CharGlyph]> pts <Cltn[ParseTree]> |
+	self useRichTextForSources
+		ifTrue: [
+			pts := DeltaParser new
+							parseInstVarList: self mirror instanceVariableString 
+							within: (DeltaScope within: nil)
+							ifError: [ :msg <Str> :pos <Int> | self shouldNotHappen ].
+			^pts isEmpty
+				ifTrue: [ 		OrderedCollection[CharGlyphs] new ]
+				ifFalse: [ 	self richTextForParseTrees: pts ] ]
+		ifFalse: [
+			^self standardTextForString: self mirror instanceVariableString painter: self codePainter ]
+
+!
+
+storeAndOnSuccess: blk <[]>
+
+	"The right way to do this is to have a #instanceVariables:ifFail: in ClassMirror and MixinDeclMirror
+		that will parse and	update accordingly.
+		
+		In the meantime, we parse an extra time here to check for errors and call #instanceVariables: afterwards.
+		This should be changed shortly."
+		
+	| ivs <Str> eval <Str> constructor <Mirror> |
+	self deltaHack.
+	ivs := self charGlyphModelAsString: self codeView.
+	DeltaParser new 
+		parseInstVarList: ivs
+		within: (DeltaScope within: nil)
+		ifError: [ :msg <Str> :pos <Int> | ^self showParseError: msg at: pos in: self codeView ].
+	self mirror instanceVariables: ivs.
+	blk value.
+! !
+
+! (Delta mirrorFor: #InstanceVariableOutliner) methodsFor: 'typechecking' !
+
+
+typecheck
+
+self typecheckAction:[self mirror typecheckInstVars]
+		title: 'Typechecking ', self mirror name, ' instance variables'.! !
+
+! (Delta mirrorFor: #InstanceVariableOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <ClassVarLocator>
+
+^InstVarLocator ofDefinition: self mirror basicLocator! !
+
+! (Delta mirrorFor: #InstanceVariableOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'References...';
+					action: [ self referencesToInstVar ])
+! !
+
+! (Delta mirrorFor: #InstanceVariableOutliner) methodsFor: 'control' !
+
+
+referencesToInstVar
+! !
+

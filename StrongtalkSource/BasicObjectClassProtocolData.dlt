@@ -1,0 +1,36 @@
+Delta define: #BasicObjectClassProtocolData as: (
+(Class subclassOf: 'BasicProtocolUpdateData' instanceVariables: '')) !
+
+(Delta mirrorFor: #BasicObjectClassProtocolData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicObjectClassProtocolData) group: 'ast'!
+
+(Delta mirrorFor: #BasicObjectClassProtocolData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicObjectClassProtocolData) methodsFor: 'Unclassified' !
+
+
+bareAttributes  ^ <Dict[Symbol,MsgSignature]>
+
+^self delta bareAttributes 
+                        override: 
+ (self superprotocol bareAttributes virtualCollect:[:a  <MsgSignature> | a substitute: self crossoverSubstitution])!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^t!
+
+crossoverSubstitution  ^ <Substitution>
+
+
+^(Type forClass: (Delta at: #Object)) dual crossoverSubstitution.
+!
+
+localBareAttributes  ^ <Dict[Symbol,MsgSignature]>
+
+^self delta localBareAttributes 
+ ! !
+

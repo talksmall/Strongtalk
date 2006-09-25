@@ -1,0 +1,22 @@
+Delta define: #MethodVMMirror as: (
+(Class subclassOf: 'OopsVMMirror' instanceVariables: '')) !
+
+(Delta mirrorFor: #MethodVMMirror) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #MethodVMMirror) group: 'reflection'!
+
+(Delta mirrorFor: #MethodVMMirror)
+comment: 
+'Low level mirror on a method.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MethodVMMirror) methodsFor: 'iteration' !
+
+
+innerIterateHeader: iterator <ObjectIterator>
+
+	super innerIterateHeader: iterator.
+	iterator name: 'selector' oop: self reflectee selector.
+! !
+

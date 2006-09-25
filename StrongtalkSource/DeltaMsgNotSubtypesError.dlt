@@ -1,0 +1,44 @@
+Delta define: #DeltaMsgNotSubtypesError as: (
+(Class subclassOf: 'DeltaDoubleLocTypeError' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaMsgNotSubtypesError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaMsgNotSubtypesError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMsgNotSubtypesError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMsgNotSubtypesError) methodsFor: 'Unclassified' !
+
+
+errorMessage  ^ <String>
+    ^self subtypeLoc name, ' is not a subtype of ', self supertypeLoc name!
+
+isExplainable
+	^true!
+
+setLocationFor: node <ASTNode> using: eh <TypeErrorHandler>
+
+	| tempLoc <Locator> tempDeltaMethod <DeltaMethod> |
+	tempLoc := eh subtypeLocFor: node.
+	(tempDeltaMethod :=  tempLoc deltaMethodIfAbsent: [nil]) isNil
+		ifTrue: [ self subtypeLoc: tempLoc ]
+		ifFalse: [ self subtypeLoc: (eh subtypeLocFor: tempLoc deltaMethod type) ].
+	tempLoc := eh supertypeLocFor: node.
+	(tempDeltaMethod :=  tempLoc deltaMethodIfAbsent: [nil]) isNil
+		ifTrue: [ self supertypeLoc: tempLoc ]
+		ifFalse: [ self supertypeLoc: (eh supertypeLocFor: tempLoc deltaMethod type) ].
+!
+
+subtypeExpr ^ <DeltaType>
+    ^self subtypeLoc typeInfo!
+
+supertypeExpr ^ <DeltaType>
+    ^self supertypeLoc typeInfo!
+
+updateExplainerInterface: explainer <DeltaTypeExplainer > ^ <Self>
+
+    explainer setBothTypeFields.! !
+

@@ -1,0 +1,96 @@
+Delta define: #ClassVariableOutliner as: (
+(Class subclassOf: 'DefinitionItemOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #ClassVariableOutliner) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #ClassVariableOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #ClassVariableOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'private' !
+
+
+aspectForUpdate ^ <Symbol>
+
+	^#classVariables
+!
+
+header ^ <Str>
+
+	^'Class variables'!
+
+modelAsCharGlyphs ^ <CharGlyphs>
+
+	| tool <ASTtoRichTextTool[CharGlyph]> pts <Cltn[ParseTree]> |
+	self useRichTextForSources
+		ifTrue: [
+			pts := DeltaParser new
+							parseClassVarList: self mirror classVariableString 
+							within: (DeltaScope within: nil)
+							ifError: [ :msg <Str> :pos <Int> | self shouldNotHappen ].
+			^pts isEmpty
+				ifTrue: [ 		OrderedCollection[CharGlyphs] new ]
+				ifFalse: [ 	self richTextForParseTrees: pts ] ]
+		ifFalse: [
+			^self standardTextForString: self mirror classVariableString painter: self codePainter ]
+
+!
+
+storeAndOnSuccess: blk <[]>
+
+	"The right way to do this is to have a #classVariables:ifFail: in ClassMirror and MixinDeclMirror
+		that will parse and	update accordingly.
+		
+		In the meantime, we parse an extra time here to check for errors and call #classVariables: afterwards.
+		This should be changed shortly."
+		
+	| cvs <Str> eval <Str> constructor <Mirror> |
+	self deltaHack.
+	cvs := self charGlyphModelAsString: self codeView.
+	DeltaParser new 
+		parseClassVarList: cvs
+		within: (DeltaScope within: nil)
+		ifError: [ :msg <Str> :pos <Int> | ^self showParseError: msg at: pos in: self codeView ].
+	self mirror classVariables: cvs.
+	blk value.
+! !
+
+! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'typechecking' !
+
+
+typecheck
+
+self typecheckAction:[self mirror typecheckClassVars]
+		title: 'Typechecking ', self mirror name, ' class variables'.! !
+
+! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <ClassVarLocator>
+
+^ClassVarLocator ofDefinition: self mirror basicLocator! !
+
+! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'References...';
+					action: [ self referencesToClassVar ])
+! !
+
+! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'control' !
+
+
+referencesToClassVar
+! !
+

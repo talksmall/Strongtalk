@@ -1,0 +1,49 @@
+Delta define: #DeltaObjectProtocol as: (
+(Class subclassOf: 'DeltaRawProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaObjectProtocol) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaObjectProtocol) group: 'ast'!
+
+(Delta mirrorFor: #DeltaObjectProtocol)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaObjectProtocol) classSide methodsFor: 'Unclassified' !
+
+
+new ^ <Self>
+    ^super new! !
+
+! (Delta mirrorFor: #DeltaObjectProtocol) methodsFor: 'Unclassified' !
+
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^(Delta at: #Class) typeInfo allSelfTVs add: self selfClassTV; yourself!
+
+basicLocator
+	^self filteree basicLocator!
+
+branded ^ <Boolean>
+    ^true!
+
+canonicalRep ^ <Protocol>
+    ^self!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^true!
+
+isMonotonic ^ <Boolean>
+"An experiment to gauge the impact of the structural monotonicity check"
+self deltaHack.
+^true.!
+
+name ^ <Symbol>
+    ^ #Object!
+
+wellFormed ^<Boolean>
+
+^true! !
+

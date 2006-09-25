@@ -1,0 +1,133 @@
+Delta define: #DeltaDependencyManager as: (
+(Class subclassOf: 'Object' instanceVariables: 'fromDict toDict ')) !
+
+(Delta mirrorFor: #DeltaDependencyManager) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaDependencyManager) group: 'ast'!
+
+(Delta mirrorFor: #DeltaDependencyManager)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaDependencyManager) classSide methodsFor: 'Unclassified' !
+
+
+new
+	^super new initialize! !
+
+! (Delta mirrorFor: #DeltaDependencyManager) methodsFor: 'Unclassified' !
+
+
+addDependencyFrom: fromSymbol to: toSymbol
+	"Add a dependency, i.e. fromSymbol depending on/referencing toSymbol
+	  at a given place"
+	self addDependencyFrom: fromSymbol to: toSymbol occurences: 1
+!
+
+addDependencyFrom: fromSymbol to: toSymbol occurences: anInteger
+	"Add a dependency, i.e. fromSymbol depending on/referencing toSymbol 
+	  a given number of places"	
+	self updateDictionary: self fromDict key: fromSymbol value: toSymbol count: anInteger.
+	self updateDictionary: self toDict key: toSymbol value: fromSymbol count: anInteger!
+
+dependenciesOf: aSymbol
+	"Return definitions which aSymbol depends on/references.
+	  This is transitive but will never include aSymbol itself"
+	^self transitiveDictionary: self fromDict key: aSymbol includeSelf: false!
+
+dependentsOf: aSymbol
+	"Return definitions which depends on/references aSymbol.
+	  This is transitive but will never include aSymbol itself"
+	^self transitiveDictionary: self toDict key: aSymbol includeSelf: false!
+
+fromDict
+	"Private"
+	^fromDict
+!
+
+fromDict: aDict
+	"Private"
+	fromDict := aDict
+!
+
+immediateDependenciesOf: aSymbol
+	"Return definitions which aSymbol depends on/references. This is not transitive."
+	^self immediateDictionary: self fromDict key: aSymbol!
+
+immediateDependentsOf: aSymbol
+	"Return definitions which depends on/references aSymbol. This is not transitive."
+	^self immediateDictionary: self toDict key: aSymbol!
+
+immediateDictionary: aDict key: aSymbol
+	"Private"
+	^(aDict at: aSymbol ifAbsent: [^Set new]) keys.
+!
+
+initialize
+	"Private"
+	super initialize.
+	self fromDict: IdentityDictionary new.
+	self toDict: IdentityDictionary new.!
+
+removeDependencyFrom: fromSymbol to: toSymbol
+	"Remove a dependency, i.e. fromSymbol no longer depending on/referencing toSymbol
+	  at a given place"
+	self removeDependencyFrom: fromSymbol to: toSymbol occurences: 1!
+
+removeDependencyFrom: fromSymbol to: toSymbol occurences: anInteger
+	"Remove a dependency, i.e. fromSymbol no longer depending on/referencing toSymbol 
+	  a given number of places"	
+	self updateDictionary: self fromDict key: fromSymbol value: toSymbol count: anInteger negated.
+	self updateDictionary: self toDict key: toSymbol value: fromSymbol count: anInteger negated
+!
+
+toDict
+	"Private"
+	^toDict
+!
+
+toDict: aDict
+	"Private"
+	toDict := aDict
+!
+
+transitiveDependenciesOf: aSymbol
+	"Return definitions which aSymbol depends on/references.
+	  This is a transitive closure and can include aSymbol itself"
+	^self transitiveDictionary: self fromDict key: aSymbol includeSelf: true!
+
+transitiveDependentsOf: aSymbol
+	"Return definitions which depends on/references aSymbol.
+	  This is a transitive closure and can include aSymbol itself"
+	^self transitiveDictionary: self toDict key: aSymbol includeSelf: true!
+
+transitiveDictionary: aDict key: aSymbol includeSelf: aBoolean
+	"Private"
+	| alreadyProcessed notProcessed nextSymbol |
+	alreadyProcessed := Set new.
+	notProcessed := OrderedCollection new.
+	(self immediateDictionary: aDict key: aSymbol) do: [ :e | notProcessed addLast: e ].
+	[notProcessed isEmpty not] whileTrue: [
+		nextSymbol := notProcessed removeLast.
+		(alreadyProcessed includes: nextSymbol) ifFalse: [
+			(aBoolean or:  [nextSymbol ~=aSymbol]) ifTrue: [
+				(self immediateDictionary: aDict key: nextSymbol) do: [ :e | notProcessed addLast: e ].
+				alreadyProcessed add: nextSymbol]]].
+	^alreadyProcessed!
+
+updateDictionary: aDict key: keySymbol value: valueSymbol count: anInteger
+	"Private"
+	| entry value newValue |
+	entry := aDict at: keySymbol ifAbsentPut: [IdentityDictionary new].
+	value := entry at: valueSymbol ifAbsentPut: [0].
+	newValue := value + anInteger.
+	newValue > 0
+		ifTrue: [
+			entry at: valueSymbol put: newValue]
+		ifFalse: [
+			entry removeKey: valueSymbol. 
+			entry isEmpty ifTrue: [aDict removeKey: keySymbol].
+			newValue < 0 ifTrue: [Transcript show: 'Inconsistency in dependency module'; cr]]
+! !
+

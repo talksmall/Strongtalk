@@ -1,0 +1,75 @@
+Delta define: #BasicOverrideData as: (
+(Class subclassOf: 'DeltaOverrideData' instanceVariables: 'selfTV selfClassTV relevantTypeVars ')) !
+
+(Delta mirrorFor: #BasicOverrideData) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BasicOverrideData) group: 'ast'!
+
+(Delta mirrorFor: #BasicOverrideData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicOverrideData) methodsFor: 'Unclassified' !
+
+
+addRelevantTypeVar: tv <TypeVar>
+
+self relevantTypeVars add: tv.!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^(self type1 compositeSubstitute: (self type2 compositeSubstitute: t))
+           substitute: self myLocalSubstitution!
+
+myLocalSubstitution ^ <Substitution>
+" This method returns a substitution that replaces t1's and t2's
+type variables with my own. It is used to modify the signatures
+inherited from t1 and t2 so that all self reference uses
+my type variables. That is equivalent to invoking the t1's and t2's
+generator with the formal parameters of my generator during
+inheritance.
+"  
+    | theta <Substitution>  t1 <Protocol>   t2 <Protocol>  |
+
+theta := DeltaSubstitution new initialize.
+
+t1 := self type1.
+theta at: t1 selfTV put: self selfTV.
+theta at: t1 selfClassTV put: self selfClassTV.
+
+t2 := self type2.
+theta at: t2 selfTV put: self selfTV.
+theta at: t2 selfClassTV put: self selfClassTV.
+
+^theta!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+relevantTypeVars isNil
+  ifTrue:[
+               relevantTypeVars := Set[TypeVar] new.
+               relevantTypeVars add: self selfTV;
+                                         add: self selfClassTV.                         
+               ].
+^relevantTypeVars.!
+
+selfClassTV ^ <TypeVar>
+    ^selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self selfClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self selfTV!
+
+selfTV ^ <TypeVar>
+    ^selfTV!
+
+type1: t1 <DeltaProtocol >type2: t2 <DeltaProtocol >typeOfInstances: t <DeltaProtocol > ^ <Self>
+    self type1: t1 type2: t2.
+selfTV :=  DeltaTypeVar new name: #Self bound: t.
+selfClassTV := DeltaTypeVar new name: #Self bound: t typeOfClass.! !
+

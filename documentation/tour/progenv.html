@@ -1,0 +1,89 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Programming Environment</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="differences2.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="progenv2.html"><strong>Next ==&gt;</strong></a></h3>
+<h2>The Programming Environment</h2>
+
+<p align="left">To start with, if you plan on doing much browsing
+around, you might want to read the page on <a
+href="../keyboard.html">Keyboard Usage</a> (then press
+&quot;Back&quot; to return to this page). </p>
+
+<h3 align="left">The Launcher</h3>
+
+<p align="left">The launcher provides Transcript functionality,
+as in other Smalltalks. It is the first window opened, and
+usually ends up right behind the Start Page browser. The launcher
+toolbar provides quick access to some common functions:</p>
+
+<ul>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/smallHome.bmp'))
+				action: [ :b  |	Launcher launchers anElement 
+												browseStartPage ]	
+			"> :  Open a browser on the Start Page. </li>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/open.bmp'))
+				action: [ :b  |	  | l |
+								l := Launcher launchers anElement.
+								l inSessionProcessDo: [ l findDefinition ]	]	
+			"> :  Find and open any top level construct by name (wildcards allowed). </li>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/implementors.bmp'))
+				action: [ :b  |	  | l |
+								l := Launcher launchers anElement.
+								l inSessionProcessDo: [ l findImplementors ] ]	 
+			"> :  Find implementors of a message (wildcards allowed). Sorry about the lousy icon.</li>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/senders.bmp'))
+				action: [ :b  |	  | l |
+								l := Launcher launchers anElement.
+								l inSessionProcessDo: [ l findSenders ]	]
+			"> :  Find senders of a message (wildcards allowed). Another lousy icon. </li>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/userHierarchy.bmp'))
+				action: [ :b  |	Launcher launchers anElement 
+												openUserClassHierarchyOutliner ]	
+			"> :  Open a filtered hierarchy browser showing only the classes that users typically need. </li>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/hierarchy.bmp'))
+				action: [ :b  |	Launcher launchers anElement 
+												openClassHierarchyOutliner ]	
+			"> :  Open a hierarchy browser on the entire class hierarchy </li>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/blankSheet.bmp'))
+				action: [ :b  |	Workspace new launch ]	
+			"> :  Open a workspace. </li>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/texteditor.bmp'))
+				action: [ :b  |	CodeEditor new launch ]	
+			"> :  Open a text editor. </li>
+    <li><smappl visual=" Button
+				withImage: (Image fromFile: (FilePath for: 'resources/documentation.bmp'))
+				action: [ :b  |	HTMLView forDoc launch ]	
+			"> :  Browse the documentation. </li>
+</ul>
+
+<h3 align="right">
+<smappl visual="
+	'This is a dummy smappl to force comment loading in background so the next page',
+	'comes up fast the first time. First time is slow because it has to read in the',
+	'class comment for every class in the system.'.
+	[ (ClassHierarchyOutliner for: (ClassMirror on: Object)) 
+    								filterOnCommentsContaining: 'unlikely string'
+    ] fork.
+    Glue xRigid: 0
+">
+<a href="progenv2.html"><strong>Programming
+Environment, cont. ==&gt;</strong></a></h3>
+</body>
+</html>

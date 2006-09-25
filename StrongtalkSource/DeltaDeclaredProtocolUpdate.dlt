@@ -1,0 +1,48 @@
+Delta define: #DeltaDeclaredProtocolUpdate as: (
+(Class subclassOf: 'DeltaProtocolUpdate' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaDeclaredProtocolUpdate) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaDeclaredProtocolUpdate) group: 'ast'!
+
+(Delta mirrorFor: #DeltaDeclaredProtocolUpdate)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaDeclaredProtocolUpdate) methodsFor: 'Unclassified' !
+
+
+generifyWithFormals: formals
+
+	| genericTypeInfo |
+
+	genericTypeInfo := DeltaGenericProtocolUpdate new 
+		name: '' 
+		body: self  
+		formals: formals;
+		genericScope: (DeltaScope new initialize: DeltaGlobals);
+		adjustBoundToTrivialApplication.
+	formals do: [:f <TypeFormal>  | genericTypeInfo genericScope at: f typeVar name put: f typeVar].
+	self scope superScope: genericTypeInfo genericScope.
+     Type atProtocol: self protocolValue put: genericTypeInfo.
+	!
+
+protocolValue ^ <Protocol>
+
+^self filteree protocolValue!
+
+value: v <Protocol >superprotocol: sp <Protocol >delta: d <ProtocolData >branded: b <Boolean >subtype: subT <Boolean > ^ <Self>
+    self filter: (BasicDeclaredProtocolUpdateData new value: v  superprotocol: sp  delta: d  branded: b subtype: subT typeOfInstances: self ) using: DeltaSubstitution new initialize.! !
+
+! (Delta mirrorFor: #DeltaDeclaredProtocolUpdate) methodsFor: 'typechecking' !
+
+
+typecheckSuperprotocol
+
+self  setupTypeAssumptions.
+self errorHandler pushDefinition: (SuperprotocolLocator ofDefinition: self basicLocator).
+self superprotocol wellFormed.
+self errorHandler popDefinition.
+ self retractTypeAssumptions.! !
+

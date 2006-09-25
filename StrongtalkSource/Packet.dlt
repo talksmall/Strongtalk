@@ -1,0 +1,69 @@
+Delta define: #Packet as: (
+(Class subclassOf: 'RBObject' instanceVariables: 'link identity kind datum data')) !
+
+(Delta mirrorFor: #Packet) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Packet) group: 'benchmark'!
+
+(Delta mirrorFor: #Packet)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Packet) classSide methodsFor: 'instance creation' !
+
+
+create: link identity: identity kind: kind
+    ^super new
+        link: link
+        identity: identity
+        kind: kind
+! !
+
+! (Delta mirrorFor: #Packet) methodsFor: 'initialize' !
+
+
+link: aLink identity: anIdentity kind: aKind
+    link := aLink.
+    identity := anIdentity.
+    kind := aKind.
+    datum := 1.
+    data := Array new: 4 withAll: 0
+! !
+
+! (Delta mirrorFor: #Packet) methodsFor: 'accessing' !
+
+
+data
+    ^data
+!
+
+datum
+    ^datum
+!
+
+datum:  someData
+    datum := someData
+!
+
+identity
+    ^identity
+!
+
+identity: anIdentity
+    identity := anIdentity
+!
+
+kind
+    ^kind
+!
+
+link
+    ^link
+!
+
+link: aWorkQueue
+    link := aWorkQueue
+! !
+

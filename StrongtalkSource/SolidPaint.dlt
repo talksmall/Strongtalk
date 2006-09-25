@@ -1,0 +1,152 @@
+Delta define: #SolidPaint as: (
+(Class subclassOf: 'Paint' instanceVariables: 'win32Color <Int>
+		')) !
+
+(Delta mirrorFor: #SolidPaint) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SolidPaint) group: 'ui'!
+
+(Delta mirrorFor: #SolidPaint)
+comment: 
+'Solid paint is paint consisting of a single color.  It may be rendered using
+dithering, halftoning, or approximation to fit medium.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #SolidPaint) classSide methodsFor: 'restricted-instance creation' !
+
+
+forWin32Color: c <Int> ^<Instance>
+
+	^self new initWin32Color: c! !
+
+! (Delta mirrorFor: #SolidPaint) classSide methodsFor: 'instance-creation' !
+
+
+forPaletteIndex: i <Int>  ^<Instance>
+	"Create a color that refers to the i'th color in the current color palette"
+
+	^self new initWin32Color: (16r01000000 bitXor: i)!
+
+red: r <Int> green: g <Int> blue: b <Int>  ^<Instance>
+	"r,g, & b all must be in the range 0-255"
+
+	^self new initRed: r green: g blue: b ditherable: false! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'comparing' !
+
+
+= other <Object>  ^<Boolean>
+
+	"%opt: this implementation assumes that the paints being equal is the
+	 	common case.  Use isPaint or make coerce fast otherwise"
+	^self == other or: [ (SolidPaint coerce: other else: [ ^false ])
+										win32Color = self win32Color ]
+!
+
+hash ^<Int>
+
+	^self win32Color! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'initialization' !
+
+
+initRed: r <Int> green: g <Int> blue: b ditherable: ditherable <Boolean>
+
+	win32Color := r bitOr:  ((g bitShift: 8) bitOr: (b bitShift: 16)).
+
+	ditherable
+		ifFalse: [	"make the value palette-relative (what the PALETTERGB macro does in C)"
+						win32Color := win32Color bitOr: 16r2000000.	]!
+
+initWin32Color: c <Int>
+
+	win32Color := c! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'restricted-win32 accessing' !
+
+
+buildWin32Brush ^<HBRUSH>
+
+	^{{<gdi HBRUSH CreateSolidBrush> color: self win32Color}}!
+
+sharedWin32Brush ^<HBRUSH>
+
+
+	^HBRUSH sharedWithPaint: self!
+
+sharedWin32PenWithWidth: width <Int>
+style: style <Symbol>
+joinStyle: jstyle <Symbol>
+endStyle: estyle <Symbol>
+^<HPEN>
+
+	^width = 1
+		ifTrue: [ HPEN sharedWithPaint: self style: style ]
+		ifFalse: [ GeometricHPEN sharedWithPaint: self width: width style: style joinStyle: jstyle endStyle: estyle ]!
+
+win32Color ^<Int>
+	
+
+	^win32Color! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'utilities' !
+
+
+contrastingWith: background <Paint>  ^<Paint>
+
+	^background contrastingFromSolidPaint: self! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'restricted-double dispatching' !
+
+
+contrastingFromSolidPaint: fore <SolidPaint> ^<Paint>
+
+	"The current algorithm uses a simple definition of contrast: the difference
+		in the sum r+g+b for the two colors.  If the contrast is not > maxContrast/2, then
+		either black or white is returned, whichever has more contrast from the
+		background color.  Otherwise, the foreground color remains the same."
+
+	| backSum <Int> midpoint <Int> |
+	midpoint := (3*256)//2.
+	backSum := self red + self green + self blue.
+	^((fore red + fore green + fore blue) - backSum) abs > midpoint
+		ifTrue: [ fore ]
+		ifFalse: [ backSum < midpoint
+							ifTrue: [ Paint white ]
+							ifFalse: [ Paint black ]	]! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'accessing' !
+
+
+blue ^<Int>
+	"blue value in range 0-255"
+
+	^(self win32Color bitShift: -16) bitAnd: 16rFF!
+
+green ^<Int>
+	"green value in range 0-255"
+
+	^(self win32Color bitShift: -8) bitAnd: 16rFF!
+
+red ^<Int>
+	"Red value in range 0-255"
+
+	^self win32Color bitAnd: 16rFF! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	super printOn: strm.
+	strm putAll: '(rgb:';
+			print: self red; put: Character space;
+			print: self green; put: Character space;
+			print: self blue; put: Character space;
+			put: $).! !
+

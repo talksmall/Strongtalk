@@ -1,0 +1,210 @@
+Delta define: #DeltaPolyMsgSignature as: (
+(Class subclassOf: 'DeltaType' instanceVariables: '') protocols: 'MsgSignature') !
+
+(Delta mirrorFor: #DeltaPolyMsgSignature) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #DeltaPolyMsgSignature) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPolyMsgSignature)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPolyMsgSignature) methodsFor: 'Unclassified' !
+
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    self formals do:
+   [ :f <TypeVar>  |
+   ((f declaredBound monotonicIn: tv)
+       and: [f declaredBound antimonotonicIn: tv]) "This line due to restrictive subtyping rule"
+      ifFalse:[^false].
+   ].
+
+^self body antimonotonicIn: tv.!
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool polyMsgSignatureNode: self!
+
+body ^ <MsgSignature>
+    ^self filteree body substitute: self substitution!
+
+domain ^ <OrdCltn[ObjectType]>
+    ^self body domain!
+
+formalDeclaredBounds  ^ <OrdCltn[ObjectType]>
+
+^self filteree formalDeclaredBounds virtualCollect:[: f <ObjectType>  | f substitute: self substitution].!
+
+formals ^ <OrdCltn[TypeVar]>
+    ^self filteree formals virtualCollect:[: f <TypeVar>  | f substitute: self substitution].!
+
+formals: fs <OrdCltn[TypeVar] >body: b <MsgSignature > ^ <Self>
+
+| initialScope <Scope> formalScope  <Scope> |
+
+    self filter: (BasicPolyMsgSignatureData new formals: fs body: b)
+      using: DeltaSubstitution new initialize.
+
+
+!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a colon separated list of formatted domain names and the formatted range name.
+		The range is only included if it was explicitly specified.
+		
+		The resulting string is prefixed with a tag character:
+		
+			$0 if the signature is non-polymorphic
+			$2 if the signature is polymorphic
+			$4 if the signature is polymorphic and has an actual 'where' inference clause present."
+
+	| s <CharOutputStream> tool <InferenceClausePresentTool> bodyName <Str> |
+	s := String new writeStream.
+	tool := InferenceClausePresentTool new.
+	self apply: tool.
+	s nextPut: (tool hasInferenceClausePresent ifTrue: [ $4 ] ifFalse: [ $2 ]).
+	bodyName := self body formattedName: pt.
+	2 to: bodyName size do: [ :i <Int> |	"Skip leading tag digit from body signature"
+		s nextPut: (bodyName at: i) ].
+	^s contents!
+
+inferTypeFrom: args <OrdCltn[Expression] > ^ <DeltaMsgSignature>
+| 
+it <ObjectType>  
+actualSig <InferenceSignature>  
+inferredSubstitution <Substitution>  
+|
+
+actualSig := DeltaInferenceSignature new.
+actualSig receiverType: args removeFirst type.
+actualSig domain: (args collect:[:a <Expression>  | a type]).
+inferredSubstitution := DeltaSubstitution new initialize.
+self formals do:[:f <InferredTypeVar>  |
+                        it :=  f inferFrom: actualSig.
+                        inferredSubstitution at: f put: it.
+                        ].
+self validateInferredSubstitution: inferredSubstitution.
+^self body substitute: inferredSubstitution!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    self formals do:
+   [ :f <TypeVar>  |
+   ((f bound antimonotonicIn: tv)  		"This line due to restrictive subtyping rule"
+       and: [f bound monotonicIn: tv])
+      ifFalse:[^false].
+   ].
+
+^self body monotonicIn: tv.!
+
+name  ^ <Symbol>
+
+self deltaHack.
+^self body name!
+
+range ^ <ObjectType>
+    ^self body range!
+
+retractTypeAssumptions ^ <Self>
+    self formals do:[:f <TypeVar>  |
+                        f retractBoundFromTrail: DeltaGlobalTrail.
+                        f dual retractBoundFromTrail: DeltaGlobalTrail.
+                        ].!
+
+setupTypeAssumptions ^ <Self>
+    self formals do:[:f <TypeFormal>  |
+                        f declareBoundToTrail: DeltaGlobalTrail.
+                        f dual declareBoundToTrail: DeltaGlobalTrail.
+                        ].!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t supertypeOfPolyMsgSignature: self assuming: trail!
+
+subtypeOfPolyMsgSignature: m <PolyMsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    | sub <Substitution>  shouldRetract <Boolean>  result <Boolean>  |
+
+"
+It is unclear whether we really should setup type assumptions for polymorphic message
+signatures. Currently we do, and we have to check the trail to see if the type vars
+are already declared.
+"
+
+self deltaHack.
+self formals size = m formals size ifFalse:[^false].
+sub := DeltaSubstitution new initialize.
+self formals with: m formals do:
+  [: sf <TypeVar>  :mf <TypeVar>  |
+  (sf declaredBound equals: mf declaredBound assuming: trail) ifFalse:[^false].
+  sub at: sf put: mf.
+  ].
+shouldRetract := false.
+(m formals size > 0) ifTrue: [
+	(m formals first hasBoundDeclaredToTrail: trail) ifFalse: [
+		m setupTypeAssumptions.
+		shouldRetract := true 
+	]
+].
+result := (self body substitute: sub) subtypeOf: m body assuming: trail.
+shouldRetract ifTrue: [	m retractTypeAssumptions ].
+^result!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^false!
+
+supertypeOfPolyMsgSignature: m <PolyMsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^m subtypeOfPolyMsgSignature: self assuming: trail!
+
+supertypeOfUnion: u <UnionType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^false!
+
+validateInferredSubstitution: inferredSubstitution <Substitution>
+
+" Here we must compare the bound of each formal type argument
+(appropriately substituted) to the actual type argument.
+The bound for each formal is determined by taking the declared bound of the formal, 
+and substituting all relevant type variables. This can be further subdivided into two
+phases. The first phase applies the substitutions that have been applied to the
+polymorphic signature itself to the declared  bound. These substitutions are collected
+into compoundSubstitution.
+
+The second phase reflects the fact that the bounds on some type variables may 
+themselves be other type formals, which have been replaced by actual types.
+
+Once the appropriate bound for the formal has been determined, we can actually
+do the test to see if the actual argument is valid.
+"
+| 
+theta <Substitution>   
+nextTheta <Substitution>  
+formal <ObjectType>
+inferredType <ObjectType>
+|
+
+
+theta := DeltaSubstitution new initialize.
+self formals with: self formalDeclaredBounds do:
+        [:f  <InferredTypeVar>  :fd <ObjectType> |  
+              formal  := fd substitute: theta.
+              inferredType := inferredSubstitution at: f.
+              f subtype
+                   ifTrue:[
+                                 (inferredType subtypeOf:  formal assuming: DeltaGlobalTrail) 
+                                      ifFalse:[self reportError: (DeltaInferredTypeArgNotSubtypeError new actualName: inferredType name; formalName: formal name)]
+                                 ]
+                    ifFalse:[
+                                   (inferredType inheritedProtocolOf: formal assuming: DeltaGlobalTrail) 
+                                        ifFalse:[self reportError: (DeltaInferredTypeArgNotInheritedTypeError new actualName: inferredType name; formalName: formal name)].
+                                  ].
+                nextTheta := DeltaSubstitution new initialize.
+                theta keysAndValuesDo:[:k <TypeVar> :v <ObjectType> | nextTheta at: k put: v].
+                nextTheta at: f put: (inferredSubstitution at: f).
+                theta := nextTheta.            
+             ].!
+
+wellFormed ^ <Boolean>
+    | formalsWellFormed <Boolean>  |
+
+formalsWellFormed := true.
+self formals do:[:f <TypeVar>  | f wellFormed ifFalse:[formalsWellFormed := false]].
+^self body wellFormed and:[formalsWellFormed].! !
+

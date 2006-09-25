@@ -1,0 +1,180 @@
+Delta define: #Array as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedInstanceVariables[E] |> VarSequenceableCollection[E]' instanceVariables: ''))) !
+
+(Delta mirrorFor: #Array) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #Array) group: 'base'!
+
+(Delta mirrorFor: #Array)
+comment: 
+'Arrays are fixed length, mutable sequenceable collections.
+
+%todo: stop using variable creation message and use the indexed ivar mixin
+
+Subclass responsibilities:
+    %responsibility copyWithSize:
+        Subclasses with instance variables must extend (or implement, if they haven''t) copyWithSize: to copy
+        the instance variable values as needed to the copy, since copyWithSize: doesn''t normally use the
+        normal copy mechanism that uses #shallowCopy to transfer all instance variable values.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Array) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^self new: 0!
+
+new: size <Int> ^<Instance>
+
+	^self primitiveNew: size!
+
+new: size <Int> withAll: el <E> ^<Instance>
+
+	^(self new: size) atAllPut: el!
+
+with: val1 <E> ^<Instance>
+
+	^(self new: 1)
+		at: 1 put: val1;
+		yourself!
+
+with: val1 <E> with: val2 <E> ^<Instance>
+
+	^(self new: 2)
+		at: 1 put: val1;
+		at: 2 put: val2;
+		yourself!
+
+with: val1 <E> with: val2 <E> with: val3 <E> ^<Instance>
+
+	^(self new: 3)
+		at: 1 put: val1;
+		at: 2 put: val2;
+		at: 3 put: val3;
+		yourself!
+
+with: val1 <E> with: val2 <E> with: val3 <E> with: val4 <E> ^<Instance>
+
+	^(self new: 4)
+		at: 1 put: val1;
+		at: 2 put: val2;
+		at: 3 put: val3;
+		at: 4 put: val4;
+		yourself!
+
+withAll: cltn <SeqCltn[E]> ^<Instance>
+
+	| inst <Instance> |
+	inst := self new: cltn size.
+	inst replaceFrom: 1 to: cltn size with: cltn.
+	^inst! !
+
+! (Delta mirrorFor: #Array) classSide methodsFor: 'testing' !
+
+
+performanceTest ^<Object>
+
+	| d <Array[Int]> x <Int> |
+	d := Array[Int] new: 2.
+	d at: 2 put: 1.
+	100000 timesRepeat:
+		[	x := d at: 2.
+			x := d at: 2.
+			x := d at: 2.
+			x := d at: 2.
+			x := d at: 2.
+			x := d at: 2.
+			x := d at: 2.
+			x := d at: 2.
+			x := d at: 2.
+			x := d at: 2.
+		].
+	^x! !
+
+! (Delta mirrorFor: #Array) methodsFor: 'accessing' !
+
+
+at: index <Int> ^<E>
+
+	^self primitiveAt: index!
+
+at: index <Int> ifAbsent: fail <[^X def]> ^<E|X>
+
+	^self primitiveAt: index ifAbsent: fail!
+
+at: index <Int> ifNil: f <[^X def]> ^<E|X>
+
+	| val <E> |
+	val := self at: index.
+	^val isNil
+		ifFalse: [ val ]
+		ifTrue: [ f value ]!
+
+at: index <Int> put: el <E> ^<E>
+
+	^self primitiveAt: index put: el!
+
+atAllPut: val <E>
+
+	{{self primitiveIndexedObjectAtAllPut: val}}!
+
+putNilAt: index <Int>
+
+	self primitiveAt: index put: (guaranteed <E> nil)!
+
+size ^<Int>
+
+	^self primitiveSize! !
+
+! (Delta mirrorFor: #Array) methodsFor: 'copying' !
+
+
+copyWithSize: s <Int> ^<Array[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	^{{self primitiveIndexedObjectCopyFrom: 1 startingAt: 1 size: s ifFail: [ :err <Symbol> |
+		self error: err
+	]}}!
+
+with: el <E> ^<Array[E]>
+
+	| new <Array[E]> totsize <Int> next <Int> |
+	totsize := self size + 1.
+	new := self copyWithSize: totsize.
+	new at: totsize put: el.
+	^new!
+
+withAll: els <Cltn[E]> ^<Array[E]>
+
+	| new <Array[E]> totsize <Int> next <Int> |
+	totsize := self size + els size.
+	new := self copyWithSize: totsize.
+	next := self size + 1.
+	els do:
+		[ :el <E> |
+			new at: next put: el.
+			next := next + 1.	].
+	^new! !
+
+! (Delta mirrorFor: #Array) methodsFor: 'converting' !
+
+
+asArray ^<Array[EX]>
+			{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is safe because of the inference clause"
+	^guaranteed <Array[EX]> self! !
+
+! (Delta mirrorFor: #Array) methodsFor: 'file out' !
+
+
+fileOutBodyOn: d <Dumper>
+    self size fileOutOn: d.
+    self do: [ :o <Object> | o fileOutOn: d ]! !
+

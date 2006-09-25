@@ -1,0 +1,671 @@
+Delta define: #Object as: (
+(Class delta)) !
+
+(Delta mirrorFor: #Object) revision: '$Revision: 1.18 $'!
+
+(Delta mirrorFor: #Object) group: 'base'!
+
+(Delta mirrorFor: #Object)
+comment: 
+'This is the class implementing behavior common to all objects.
+
+Subclass responsibilities:
+    %responsibility copying
+        Any class with instance variables whose values should not be shared between copies of an instance should
+        override #postCopy to copy them as necessary, as well as sending "super postCopy".   Classes whose instances
+        are immutable and can be shared can override #copy to return self.
+    %responsibility hash
+        If you override the #= method, you must override the #hash method if necessary
+            to ensure that all objects that are = have hash values that are = too.  For example,
+        if you override #= in class YourPoint to test that both x and y are the same, you
+        must override #hash to do something like: (^self x hash bitXor: self y hash), so
+        that the hash value depends upon the hash values of all the values you are
+        comparing.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'private' !
+
+
+primitiveNew ^<Instance>
+	"%todo: Call this basicNew if in commonbase"
+
+	"This method produces an uninitialized instance of this class. It should not be overridden"
+
+	"This is the point at which Strongtalk starts to know about the type relationship between
+	 classes & instances"
+
+	^guaranteed <Instance> (super primitiveNew)! !
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'reflection' !
+
+
+coerce: o <Object> ^<Instance>
+
+	^self coerce: o else: [ self error: 'Coercion failed with no failure code' ]!
+
+coerce: o <Object> do: blk <[Instance]>
+
+	blk value: (self coerce: o else: [ ^self ])!
+
+coerce: o <Object> do: blk <[Instance,^Y def]> else: fail <[^X def]>   ^<Y|X>
+
+	"%remove when typecase correctly implemented."
+	^blk value: (self coerce: o else: [ ^fail value ])!
+
+coerce: o <Object> else: fail <[^X def]>   ^<Instance|X>
+
+	"%remove when typecase correctly implemented."
+	^(o isKindOf: self)
+		ifTrue: [ guaranteed <Instance> o ]
+		ifFalse: [ fail value ]!
+
+isSupportedBy: o <Object> ^<Boolean>
+
+	self coerce: o else: [ ^false ].
+	^true! !
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
+	^{{self primitiveNewIfFail: [ :err <Symbol> | "can't happen" ]}}
+"
+	^guaranteed <Instance> (super new)
+"! !
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'utility' !
+
+
+yourself ^<Self>
+	"A handy message for syntactic convenience.  Useful in a message cascade when
+	 you want the receiver of the previous message, but it doesn't return self, e.g.
+		(Dictionary new) at: 1 put: 2; yourself
+	 returns the new dictionary, rather than 2"
+
+	^self! !
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^67! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'accessing' !
+
+
+hash ^<Int>
+	"Return a hash value that is the same as that returned by any
+	 object which is = to the receiver.  This usually means that you 
+	 must override this method too if you override ="
+
+	^self identityHash!
+
+identityHash ^<Integer>
+	"Return a hash value based on the receiver's identity"
+
+	^{{ self primitiveHash }}! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+
+
+= other <Object> ^<Boolean>
+	"test whether this object and other are equivalent (as close to the same
+	 as possible without necessarily being ==).  
+	
+	 By default this is the same as ==.  Subclasses that redefine this must ensure
+	 that: 1) the method works with ANY object passed in as an argument
+	 (you CANNOT assume that the other object is of any particular type/class)
+	 2) if two objects are =, their #hash values are = too
+	 "
+
+	^self == other!
+
+isNil ^<Boolean>
+	"test whether the receiver is nil.  This method should not be overridden by application programmers."
+
+	^false!
+
+isPoint ^<Boolean>
+	"%todo: remove when coercion is fast.  Don't write code that depends on this!!"
+
+	^false!
+
+notNil ^<Boolean>
+	"test whether the receiver is not nil.  This method should not be overridden by users."
+
+	^true!
+
+~= other <Object> ^<Boolean>
+	"not ="
+
+	^(self = other)
+		ifTrue: [ false ]
+		ifFalse: [ true ]! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private' !
+
+
+articleFor: s <Str> ^<Str>
+
+	^(s at: 1) isVowel
+			ifTrue: [ 'an' ]
+			ifFalse: [ 'a' ]!
+
+assert: predicate <[^Boolean]>
+	"Assert that the predicate is true.   If it is false, the program is considered to have failed.  It is STRONGLY encouraged that you
+	 sprinkle assertions liberally through your code, to doublecheck that your designs are correct.  When you are running in a
+  	 high performance production environment, and wish to gain every bit of performance at the expense of some extra program
+	 validity checks, you can change inProduction to return true, so that none of the assertions are checked.
+	 Because of this, you should not put code with side effects in assert blocks, since they will not be executed
+	 in production environments.  See BooleanBlock>>verify for an alternative that always tests."
+
+	self inProduction
+		ifFalse: [ predicate verify ]!
+
+halt
+
+	Processor stopWithError: ProcessHaltError new.
+!
+
+postCopy
+	"This is sent to an object that is the result of a shallowCopy to allow it to copy any subobjects
+	  that should not be shared.  Subclasses should override this if they have such subobjects."
+!
+
+shallowCopy ^<Instance>
+	"Create a bitwise copy of the current object.  This is not public because the new object shares the
+	 values of all of the receiver's instance variables, which may violate the design of the receiver's class.
+	 The postCopy message fixes such undesired sharing, after the fact"
+
+	^guaranteed <Instance>
+		{{self primitiveShallowCopyIfFail: [ :err <Symbol> | self error: err ]}}!
+
+shallowCopyTenured ^<Instance>
+	"As shallowCopy, but forces the copy to be in old space"
+
+	^guaranteed <Instance>
+		{{self primitiveCopyTenuredIfFail: [ :err <Symbol> | self error: err ]}} ! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'performing' !
+
+
+perform: selector <"Symbol"BottomType> ^<Object>
+	"Send the message selector to the receiver with no arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type. 
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+     are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}!
+
+perform: selector <Symbol>
+with: arg1 <BottomType>
+^<Object>
+
+	"Send the message selector to the receiver with 1 arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type.
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+         are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			with: arg1
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}
+!
+
+perform: selector <Symbol>
+with: arg1 <BottomType>
+with: arg2 <BottomType>
+^<Object>
+
+	"Send the message selector to the receiver with 2 arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type.
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+         are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			with: arg1
+			with: arg2
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}
+!
+
+perform: selector <Symbol>
+with: arg1 <BottomType>
+with: arg2 <BottomType>
+with: arg3 <BottomType>
+^<Object>
+
+	"Send the message selector to the receiver with 3 arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type.
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+         are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			with: arg1
+			with: arg2
+			with: arg3
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}
+!
+
+perform: selector <Symbol>
+withArguments: args <SeqCltn[Object]>
+^<Object>
+
+	"Send the message selector to the receiver with 4 arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type.
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+         are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			arguments: args
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}
+! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
+
+
+== other <Object> ^<Boolean>
+	"test whether the receiver is identical to (completely interchangeable with) other"
+
+	^{{self primitiveEqual: other}}!
+
+class ^<Object class>
+	"Return the effective class of this object.  This is reflective, and thus indiscriminate
+	  use is considered bad style.
+
+	  Unlike in some other Smalltalk implementations, it
+	  is ok to override this method to return something other than the real class of the
+	  receiver, in situations where one class is trying to completely emulate another.
+
+	  If you are writing Strongtalk code that needs to send a class message that you have
+	  written to the receiver's class, you should use the #actualClass message, which is
+	  private.
+
+	  Truly reflective tools such as inspectors, etc. that need to get at the actual class
+	  of an object o should use the message (Reflection classOf: o).  The idea behind this
+	  scheme is that an object should be able (as much as feasible) to hide its
+	  implementation behind its message interface (including its actual class) from
+	  user code.  This allows, for example, forwarding objects (or proxies, etc), to act
+	  as if they have the same class as the object they are forwarding to, without breaking
+	  any system invariant, or breaking debugging and inspecting tools.  At the moment,
+	  the only exception to this rule is that the #== message may not be overridden, for
+	  performance reasons."
+
+	^{{self primitiveClass}}!
+
+isKindOf: beh <Behavior> ^<Boolean>
+	| current <Behavior> |
+
+	current := Reflection classOf: self.
+
+	"%remove %hack: until coerce is fast, we put a simple cache
+		here to speed this up when it is relatively monomorphic.
+	    This is NOT safe when preemption is on"
+	(current == CurrentClassCacheForIsKindOf
+			and: [ beh == BehCacheForIsKindOf ])
+		ifTrue: [   ^ResultCacheForIsKindOf ].
+
+	CurrentClassCacheForIsKindOf := current.
+	BehCacheForIsKindOf := beh.
+
+	[ current = beh ]
+		whileFalse: [ current := current superclassIfAbsent: [ ^ResultCacheForIsKindOf := false ] ].
+	^ResultCacheForIsKindOf := true!
+
+isMemberOf: behavior <Behavior> ^<Boolean>
+
+	^self actualClass = behavior!
+
+respondsTo: selector <Symbol> ^<Boolean>
+
+	self unimplemented!
+
+species ^<Object class>
+
+	^self actualClass!
+
+~~ other <Object> ^<Boolean>
+	"test whether the receiver is not identical to (not completely interchangeable with) other"
+
+	^(self == other) 
+		ifTrue: [ false ] "for speed"
+		ifFalse: [ true ]! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'utility' !
+
+
+,, other <Y def> ^<VarTuple[X,Y]>
+			{where X is receiverType}
+	"Return a 2 element tuple containing the receiver as its first element, and other as its second."
+
+	| safeself <X> |
+	"this guarantee is safe because of the inference clause"
+	safeself := guaranteed <X> self.
+"%todo: use real tuple class"
+	^guaranteed <VarTuple[X,Y]> (Association[X,Y] key: safeself value: other)!
+
+-> other <Y def> ^<VarAssoc[X,Y]>
+	{where X is receiverType}
+
+	| safeself <X> |
+	"this guarantee is safe because of the inference clause"
+	safeself := guaranteed <X> self.
+
+	^Association[X,Y] key: safeself value: other!
+
+test: i <Int> is: predicate <[^Boolean]>
+
+	predicate value ifFalse: [
+		Platform errorStream show: 'Test '; print: i; show: ' failed'; cr.
+		self error: 'Test failed'.	]!
+
+yourself ^<Self>
+
+	"This message is used for syntactic convenience to get at the original receiver
+	  in a cascade, so as to avoid creating a temporary variable.  Example:
+		OrderedCollection[E] class method
+			with: <E> ^<Instance>
+
+		  		^(self new: 1) addLast: val; yourself
+
+	 In this example, yourself is needed to return the new ordered collection, because
+	 the #addLast: message returns val, not the ordered collection."! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-reflective' !
+
+
+actualClass ^<Self class>
+
+	^{{self primitiveClass}}!
+
+become: otherObject <BottomType>
+	"Replace all references to the receiver anywhere in this image with references to otherObject, instead.
+
+	This is a very dangerous message that should only be used if you really know what you are doing. Note that ALL
+	references are changed, including 'self' in any currently active method contexts for the receiver,
+	which means that instance variables could be accessed incorrectly, etc.  Note that this also means that the receiver
+	becomes COMPLETELY inaccessible.
+	 Also, this is not typesafe, and the type of the argument has been chosen to force typed code to insert an 
+	 explicit guarantee, to avoid 'accidental' type-safety holes.  "
+
+	self unimplemented! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'printing' !
+
+
+print
+
+	self printOn: Platform errorStream.
+	Platform errorStream cr.!
+
+printOn: strm <CharOutputStream>
+
+	| nm <Str> |
+	nm := self class name.
+	strm	nextPutAll: (self articleFor: nm);
+			nextPut: Character space;
+			nextPutAll: nm.!
+
+printString ^<Str>
+	"Return a string that holds a readable but terse representation of the receiver"
+
+	| strm <CharWriteStream> |
+	strm := CharacterReadWriteStream on: (String new: 8).
+	self printOn: strm.
+	^strm contentsWritten!
+
+vmPrint
+     "%remove"
+	{{self primitivePrint}}! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+
+
+doesNotUnderstand: m <Message> ^<BottomType>
+
+	Processor stopWithError: (ProcessDoesNotUnderstandError new message: m)
+!
+
+error: msg <Str> ^<BottomType>
+
+	Processor stopWithError: (ProcessExplicitError new msg: msg)!
+
+shouldNotHappen ^<BottomType>
+
+	self error: 'This shouldn''t happen'.!
+
+shouldNotImplement ^<BottomType>
+
+	self error: 'A message that cannot be supported by this class has been sent to an instance'.!
+
+subclassResponsibility ^<BottomType>
+
+	"Note: In the Strongtalk language, a method whose body consists of only 
+	 'self subclassResponsibility' is considered a declaration, which subclasses
+	  must implement for concrete subclasses"
+
+	self error: 'A message that should be implemented but is not has been sent to this object'.!
+
+unimplemented ^<BottomType>
+
+	self error: 'A hook for unimplemented code has been encountered'! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'fake brands' !
+
+
+Number ^<Boolean>
+	^false!
+
+Str ^<Boolean>
+	^false! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+	"Create and return a copy of the receiver.  Objects that are immutable and cannot be copied may return
+	 themselves.  Objects contained by this object that are externally accessible objects and  are 	 considered
+	 'separate' from  the receiver (such as the elements of a collection) are not copied.
+
+	Subclasses must override postCopy if they contain private information that should not be shared
+	after a copy."
+
+	^self shallowCopy postCopy! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'dependencies' !
+
+
+addDependent: o <Object>
+
+	"Objects that aren't models don't need to store dependents, since they don't do notification.  To
+	  add support for BlueBook-style dependency notification to a class, mix-in or inherit from 
+	  NotifyingObject."!
+
+removeDependent: o <Object>
+
+	"Objects that aren't models don't need to store dependents, since they don't do notification"!
+
+update: aspect <Object> 
+!
+
+update: aspect <Object> with: value <Object>
+
+	self update: aspect
+! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	"This initialize method does NOT have to be called by subclasses.  It is here
+		as a stub so that mixins can have an initialize method that sends super initialize so
+		that they work when invoked in the presence superclass initialize methods.
+		** Note that this method is NOT called by Object>>new; subclasses must provide a
+		#new method to invoke it if needed."
+
+	"do nothing"! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'file out' !
+
+
+fileOutBodyOn: d <Dumper>
+	| start <Integer> end <Integer> |
+	"File out instance variables"
+	start	:= self fileOutHeaderSize.
+	end		:=	(Reflection classOf: self)	 fileOutNonIndexableSize.
+	start + 1 to: end do: [:index <Integer> |
+		(self fileOutInstVarAt: index) fileOutOn: d
+	]!
+
+fileOutHeaderOn: d <Dumper>
+	d	putByte: 		self fileOutSignature.
+	d	putInteger:	self fileOutSize.
+	(Reflection classOf: self)		fileOutOn: d!
+
+fileOutHeaderSize ^<Integer>
+	^(Reflection classOf: self) fileOutInstanceHeaderSize!
+
+fileOutInstVarAt: index <Integer> ^<Object>
+	^{{self primitiveInstVarAt: index ifFail: [:err <Symbol> | self error: err]}}!
+
+fileOutSignature ^<Integer>
+    ^99!
+
+fileOutSize ^<Integer>
+	^{{self primitiveOopSize}}! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+
+
+deltaHack
+
+	"Called by methods that should be revisited after bootstrap"!
+
+isAssociationOop ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: GlobalAssociation.!
+
+isBehavior ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Behavior.!
+
+isBoolean ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Boolean.!
+
+isCharacter ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Character.!
+
+isCollection ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Collection[Object].!
+
+isError ^ <Boolean>
+	self deltaHack.
+	^false !
+
+isInteger ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Integer.!
+
+isMethodOop ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Method.!
+
+isOop ^ <Boolean>
+	self deltaHack.
+	^true!
+
+isSmallInteger ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: SmallInteger!
+
+isString ^ <Boolean>
+	self deltaHack.
+	^(self isKindOf: String) or:[self isSymbol].!
+
+isSymbol ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Symbol.!
+
+isSymbolOop ^ <Boolean>
+	self deltaHack.
+	^self isSymbol!
+
+printValue
+	self deltaHack.
+	{{self primitivePrintValue}}! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-system testing' !
+
+
+inProduction ^<Boolean>
+
+	"Indicates whether the system should emphasis speed over extra design validity checks.
+     You can change this to return true for production applications.
+     For example, when this is true, assertions (see #assert) are not checked."
+
+	^true! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private- file out' !
+
+
+fileOutOn: d <Dumper>
+
+	"%bug: this method should NOT be called fileOutOn:,
+		since this is NOT Smalltalk fileOut, but image save
+		code.  This conflicts with the real fileOutOn:, which
+		is implemented in DefinitionWriter"
+		
+	d at: self ifPresent: [ :id <Integer> |
+		d putByte: 51.
+		d putInteger: id.
+	] ifAbsentPut: [ :id <Integer> |
+		self fileOutHeaderOn: d.
+		self fileOutBodyOn: d.
+	]! !
+

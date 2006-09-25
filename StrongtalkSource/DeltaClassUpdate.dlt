@@ -1,0 +1,129 @@
+Delta define: #DeltaClassUpdate as: (
+(Class subclassOf: 'DeltaDecl' instanceVariables: 'abstract subtype monotonic branded instanceSide ')) !
+
+(Delta mirrorFor: #DeltaClassUpdate) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaClassUpdate) group: 'ast'!
+
+(Delta mirrorFor: #DeltaClassUpdate)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaClassUpdate) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^abstract!
+
+abstract: a <Boolean > ^ <Self>
+    abstract := a.!
+
+abstract: a <Boolean >branded: b <Boolean >subtype: s <Boolean >monotonic: m <Boolean >protocols: p <Protocol >classProtocols: cp <Protocol > ^ <Self>
+    | cSide <SideUpdate>  |
+
+abstract := a.
+branded := b.
+subtype := s.
+monotonic := m.
+self instanceSide: DeltaSideUpdate new supportedProtocol: p.
+cSide := DeltaSideUpdate new supportedProtocol: cp; classDecl: self.!
+
+addBrand ^ <Self>!
+
+branded ^ <Boolean>
+    ^branded!
+
+branded: b <Boolean > ^ <Self>
+    branded := b.!
+
+checkAbstractness: side <Side > ^ <Self>
+    self abstract
+  ifFalse:[
+              side messages isEmpty ifFalse:[self error: 'Class ', side name, ' is declared concrete but does not implement ', (side messages keys inject: '' into: [:s <Str>  :k <Symbol>  | s, k])
+             ]].!
+
+checkAgainstSuper: side <Side > ^ <Self>
+    (self subtype ifTrue:[side isSubtypeOfSuper]
+                    ifFalse:[side isInheritedTypeOfSuper])
+  ifFalse:[
+             self error: side name, ' is not ' ,
+                             (self subtype ifTrue:['a subtype'] ifFalse:['an inherited type']),
+                             ' of ' , side superclass name.
+             ].!
+
+checkMonotonicity: side <Side > ^ <Self>
+    self monotonic ifTrue:[side isMonotonic].!
+
+checkProtocolSupport: side <Side > ^ <Self>
+    (side isSubtypeOfSupported)
+   ifFalse:[self error: 'Protocol ', side supportedProtocol name, ' not supported by ', side name].!
+
+checkSide: side <Side > ^ <Self>
+    
+self checkMonotonicity: side.
+self checkProtocolSupport: side.
+self checkAgainstSuper: side.
+self checkAbstractness: side.!
+
+classSide ^ <Side>
+    ^Type forDefinition: self instanceSide mirror classSide reflectee!
+
+extensionsAreSubtypes ^ <Boolean>
+    ^self monotonic!
+
+extensionsAreSubtypes: e <Boolean > ^ <Self>
+    self monotonic: e!
+
+initialize
+
+self abstract: false; 
+       branded: true; 
+       subtype: true; 
+       monotonic: true!
+
+instanceSide ^ <Side>
+    ^instanceSide!
+
+instanceSide: i <Side > ^ <Self>
+    i classDecl: self.
+instanceSide := i.!
+
+monotonic ^ <Boolean>
+    ^ monotonic!
+
+monotonic: m <Boolean > ^ <Self>
+    monotonic := m!
+
+name ^ <Self>
+    ^self instanceSide name!
+
+selfClassTV ^ <TypeVar>
+    ^self classSide selfTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self classSide selfPublicTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self instanceSide selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self instanceSide selfTV!
+
+substitute: s <Substitution > ^ <Self>
+    ^self instanceSide substitute: s!
+
+subtype ^ <Boolean>
+    ^subtype!
+
+subtype: s <Boolean > ^ <Self>
+    subtype := s.!
+
+type ^ <ClassType>
+    ^DeltaClassType new on: self!
+
+typecheck ^ <Self>
+    
+self checkSide: self instanceSide.
+self checkSide: self classSide.! !
+

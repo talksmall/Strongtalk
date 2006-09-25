@@ -1,0 +1,128 @@
+Delta define: #DeltaPrimitiveParser as: (
+(Class subclassOf: 'DeltaParser' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaPrimitiveParser) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaPrimitiveParser) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPrimitiveParser)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPrimitiveParser) methodsFor: 'Unclassified' !
+
+
+attribute
+    "Private.
+    $ Attribute = Identifier '=' Literal.
+    "
+    self get: #identifier.
+    (self binarySel and: [scanner tokenVal = #=])
+        ifTrue: [self nextToken]
+        ifFalse: [self error: '= expected'].
+    self literal: true.!
+
+attributeOn: prim
+	"Private.
+	$ Attribute = Identifier '=' Literal.
+	"
+	| name value |
+	name := self get: #identifier.
+	self getEquals.
+	value := self literal: true.
+	name = #doc ifTrue: [
+		^prim addDocLine: value value printString
+	].
+	prim attributeAt: name put: value.!
+
+getEquals
+   (self binarySel and: [scanner tokenVal = #=])
+       ifTrue: [self nextToken]
+       ifFalse: [self error: '= expected']!
+
+msgPatternOn: prim
+    "
+    Private.
+    $ MsgPattern = keyword Variable {keyword Variable}) ['^' SimpleType].
+    "
+    | sel name type |
+    self
+        ifUnary: [sel := scanner tokenVal. self nextToken]
+        ifBinary: [self error: 'no binary']
+        ifKeyword: [
+            sel := ''.
+            [token = #keyword] whileTrue: [
+                sel := sel, scanner tokenVal asString.
+                self nextToken.
+                name := self get: #identifier.
+                type   := self simpleType.
+                prim argumentAdd: name type: type
+            ]
+        ]
+        else: [self error: 'MsgPattern expected'].
+    prim selector: sel.
+    ((token = #arrow) and: [scanner deepCopy token = #less]) ifTrue: [ "accept ^ only if followed by a type."
+        self nextToken.
+        prim returnType: self simpleType
+    ].
+    ^ sel!
+
+parse: aString
+    self
+        open: (DeltaScanner new open: aString ifError: nil)
+        ifError: nil.
+    ^ self primitiveMethod!
+
+parsePrimitiveDecl: aString within: aScope
+    | errorBlock |
+    errorBlock := [ :msg "<Str>" :pos "<Int>" | Transcript show: msg; cr. self halt].
+    self open: (DeltaScanner new open: aString ifError: errorBlock) within: aScope ifError: errorBlock.
+    self openNonCodeScope.
+    ^ self primitiveMethod!
+
+primitiveMethod
+    "
+    Private.
+    $ PrimitiveMethod = Type MsgPattern Qualifier '(' {attribute} ')'.
+    "
+    | sel meth type prim params |
+    prim := DeltaPrim new.
+    prim receiver: self type.
+    params :=  OrderedCollection new.
+    prim msgPattern:  (self msgPattern: params).
+    prim params: params.
+    self getEquals.
+    prim qualifier: self qualifier.
+    self check: #lbrace.
+    [token = #identifier] whileTrue: [
+        self attributeOn: prim
+    ].
+    self check: #rbrace.
+    self check: #eos.
+    ^prim!
+
+qualifier
+    "Private.
+    $ Qualifier = 'INTERNAL' | 'EXTERNAL'.
+    "
+    | val |
+    token = #identifier
+        ifTrue: [
+            val := scanner tokenVal.
+            self nextToken.
+            val = #Internal ifTrue: [^ val].
+            val = #External ifTrue: [^ val].
+            self error: 'unknown qualifier'
+        ]
+        ifFalse: [self error: 'identifier expected']!
+
+simpleType
+    | lit |
+    self check: #less.
+    token = #identifier ifFalse: [ self error: 'Identifier expected'].
+    lit := scanner tokenVal.
+    self nextToken.
+    self check: #greater.
+    ^lit! !
+

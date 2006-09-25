@@ -1,0 +1,205 @@
+Delta define: #RationalNumber as: (
+(Class subclassOf: 'Number' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #RationalNumber) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #RationalNumber) group: 'base'!
+
+(Delta mirrorFor: #RationalNumber)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $
+'!
+
+! (Delta mirrorFor: #RationalNumber) classSide methodsFor: 'instance creation' !
+
+
+numerator: n <Int> denominator: d <Int> ^<RationalNumber>
+
+	| gcd <Int> num <Int> denom <Int> |
+	d < 0
+		ifFalse: [ d == 0
+					ifTrue: [ self error: 'division by 0' ]
+					ifFalse: [ num := n. denom := d ]	]
+		ifTrue: [ num := n negated. denom := d negated ].
+	gcd := num gcd: denom.
+	num := num // gcd.
+	^gcd == denom
+		ifTrue: [ num ]
+		ifFalse: [	Fraction
+							numerator: num
+							denominator: denom // gcd ]! !
+
+! (Delta mirrorFor: #RationalNumber) methodsFor: 'accessing' !
+
+
+denominator ^<Int>
+	self subclassResponsibility!
+
+numerator ^<Int>
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #RationalNumber) methodsFor: 'converting' !
+
+
+asFloat ^<Float>
+
+	^self numerator asFloat / self denominator asFloat! !
+
+! (Delta mirrorFor: #RationalNumber) methodsFor: 'comparison' !
+
+
+< a <Number> ^<Boolean>
+
+	^a lessFromRationalNumber: self!
+
+= a <Object> ^<Boolean>
+
+	^self == a or:
+		[ (Number coerce: a else: [ ^false ]) equalFromRationalNumber: self ]
+! !
+
+! (Delta mirrorFor: #RationalNumber) methodsFor: 'operations' !
+
+
+* a <Number> ^<X>
+			{where X <Number> is returnType of #multiplyFromRationalNumber: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a multiplyFromRationalNumber: self)!
+
++ a <Number> ^<X>
+			{where X <Number> is returnType of #addFromRationalNumber: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a addFromRationalNumber: self)!
+
+- a <Number> ^<X>
+			{where X <Number> is returnType of #subtractFromRationalNumber: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a subtractFromRationalNumber: self)!
+
+/ a <Number> ^<X>
+			{where X <Number> is returnType of #divideFromRationalNumber: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a divideFromRationalNumber: self)!
+
+\\ a <Number> ^<X>
+			{where X <Number> is returnType of #moduloFromRationalNumber: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a moduloFromRationalNumber: self)!
+
+truncated ^<Int>
+
+	^self negative
+		ifTrue: [ (self numerator negated // self denominator) negated ]
+		ifFalse: [ self numerator // self denominator ]! !
+
+! (Delta mirrorFor: #RationalNumber) methodsFor: 'restricted-double dispatching' !
+
+
+addFromInteger: o <Integer> ^<RationalNumber>
+	"%generated code- do not modify"
+	^self addFromRationalNumber: o!
+
+addFromRationalNumber: o <RationalNumber> ^<RationalNumber>
+
+	^self denominator == o denominator
+		ifTrue: [ RationalNumber
+						numerator: self numerator + o numerator
+						denominator: self denominator ]
+		ifFalse: [ RationalNumber
+						numerator: (self numerator * o denominator) + (o numerator * self denominator)
+						denominator: self denominator * o denominator	]!
+
+addFromSmallInteger: o <SmallInteger> ^<RationalNumber>
+	"%generated code- do not modify"
+	^self addFromRationalNumber: o!
+
+divideFromInteger: o <Integer> ^<RationalNumber>
+	"%generated code- do not modify"
+	^self divideFromRationalNumber: o!
+
+divideFromRationalNumber: o <RationalNumber> ^<RationalNumber>
+	^RationalNumber
+		numerator: o numerator * self denominator
+		denominator: o denominator * self numerator!
+
+divideFromSmallInteger: o <SmallInteger> ^<RationalNumber>
+	"%generated code- do not modify"
+	^self divideFromRationalNumber: o!
+
+equalFromInteger: o <Integer> ^<Boolean>
+	"%generated code- do not modify"
+	^self equalFromRationalNumber: o!
+
+equalFromRationalNumber: o <RationalNumber> ^<Boolean>
+	^self numerator = o numerator and: [ self denominator = o denominator ]!
+
+equalFromSmallInteger: o <SmallInteger> ^<Boolean>
+	"%generated code- do not modify"
+	^self equalFromRationalNumber: o!
+
+lessFromInteger: o <Integer> ^<Boolean>
+	"%generated code- do not modify"
+	^self lessFromRationalNumber: o!
+
+lessFromRationalNumber: o <RationalNumber> ^<Boolean>
+
+	^ (o numerator * self denominator) < (self numerator * o denominator)!
+
+lessFromSmallInteger: o <SmallInteger> ^<Boolean>
+	"%generated code- do not modify"
+	^self lessFromRationalNumber: o!
+
+moduloFromInteger: o <Integer> ^<Number>
+	"%generated code- do not modify"
+	^o \\ self!
+
+moduloFromRationalNumber: o <RationalNumber> ^<RationalNumber>
+	^o - ((o // self) * self)!
+
+moduloFromSmallInteger: o <SmallInteger> ^<RationalNumber>
+	"%generated code- do not modify"
+	^o \\ self!
+
+multiplyFromInteger: o <Integer> ^<RationalNumber>
+	"%generated code- do not modify"
+	^self multiplyFromRationalNumber: o!
+
+multiplyFromRationalNumber: o <RationalNumber> ^<RationalNumber>
+	^RationalNumber
+		numerator: (self numerator * o numerator) 
+		denominator: self denominator * o denominator!
+
+multiplyFromSmallInteger: o <SmallInteger> ^<RationalNumber>
+	"%generated code- do not modify"
+	^self multiplyFromRationalNumber: o!
+
+subtractFromInteger: o <Integer> ^<RationalNumber>
+	"%generated code- do not modify"
+	^self subtractFromRationalNumber: o!
+
+subtractFromRationalNumber: o <RationalNumber> ^<RationalNumber>
+
+	^self denominator = o denominator
+		ifTrue: [ RationalNumber
+						numerator: o numerator - self numerator
+						denominator: self denominator ]
+		ifFalse: [ RationalNumber
+						numerator: (o numerator * self denominator) - (self numerator * o denominator) 
+						denominator: self denominator * o denominator	]!
+
+subtractFromSmallInteger: o <SmallInteger> ^<RationalNumber>
+	"%generated code- do not modify"
+	^self subtractFromRationalNumber: o! !
+
+! (Delta mirrorFor: #RationalNumber) methodsFor: 'constants' !
+
+
+unit ^<Int>
+
+	^1!
+
+zero ^<RationalNumber>
+
+	^0! !
+

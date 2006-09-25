@@ -1,0 +1,156 @@
+Delta define: #StandardWindow as: (
+(Class subclassOf: 'ClassCritical |> Window' instanceVariables: 'name <Str>
+win32Icon <ExternalProxy>
+win32Cursor <ExternalProxy>
+		') classVariables: 'StandardWindowClassName <CString>
+		') !
+
+(Delta mirrorFor: #StandardWindow) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #StandardWindow) group: 'ui'!
+
+(Delta mirrorFor: #StandardWindow)
+comment: 
+'A standard window is a relatively long-lived window that has a title bar
+and lets the user resize, position, and close it via the window manager.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #StandardWindow) classSide methodsFor: 'restricted-instance creation' !
+
+
+named: nm <Str>
+session: sess <Session>
+for: vis <Visual>
+^<Instance>
+
+	^super new initSession: sess visual: vis name: nm
+! !
+
+! (Delta mirrorFor: #StandardWindow) methodsFor: 'initialization' !
+
+
+initSession: sess <Session>
+visual: vis <Visual>
+name: nm <Str>
+
+	super initSession: sess visual: vis.
+	name := nm.
+
+	self win32Icon: self defaultWin32Icon.
+	self win32Cursor: self defaultWin32Cursor.! !
+
+! (Delta mirrorFor: #StandardWindow) methodsFor: 'private' !
+
+
+buildWin32Handle
+
+	| title <CString> ext <Point> menuHandle <ExternalProxy> |
+	ext := self fitToMedium: self natural extent.
+	title := CString for: self name.
+
+	menuHandle := self hasMenu
+		ifTrue: [ self menu win32Handle ]
+		ifFalse: [ Win32 NULL ].
+	win32Handle := {{<user ExternalProxy CreateWindowExA>
+		extendedStyle: 0
+		className: self winClassName
+		caption: title
+		style: self win32Style
+		xpos: self desiredXPos
+		ypos: self desiredYPos
+		xsize: ext x	"extent is already integral"
+		ysize: ext y
+		parent: self parentHandle
+        menu: menuHandle
+		program: self hInstance
+		params: Win32 NULL }}.!
+
+defaultWin32Cursor ^<ExternalProxy>
+
+	^self actualClass defaultWin32Cursor!
+
+defaultWin32Icon ^<ExternalProxy>
+
+	^self actualClass defaultWin32Icon!
+
+registerWindowClass
+
+	|	wcls <WNDCLASS>
+		back <ExternalProxy>
+		proc <APICallBack> |
+	wcls := WNDCLASS new allocateZeroed.
+
+	"This is the default background brush to use, unless the visual later implicitly defines its own"
+	back := {{<gdi ExternalProxy GetStockObject> arg: Win32 WHITE_BRUSH}}.
+
+	proc := self wndProc.
+
+	wcls style: (("(						Win32 CS_HREDRAW
+						externalBitOr: Win32 CS_VREDRAW)
+						externalBitOr:" Win32 CS_DBLCLKS)
+						externalBitOr: Win32 CS_OWNDC);
+			lpfnWndProc: proc;
+			cbClsExtra: 0; 
+			cbWndExtra: 0;
+			hInstance: self hInstance;
+			hIcon: self win32Icon;
+			hCursor: self win32Cursor;
+			hbrBackground: "back" Win32 NULL;
+			lpszMenuName: Win32 NULL;
+			lpszClassName: self winClassName.
+
+	{{<user ExternalProxy RegisterClassA> class: wcls}} asBoolean
+		ifFalse: [ self error: 'Cannot register window class' ].
+
+	wcls free.!
+
+win32Cursor ^<ExternalProxy>
+
+	^win32Cursor!
+
+win32Cursor: c <ExternalProxy>
+
+	win32Cursor := c!
+
+win32Icon ^<ExternalProxy>
+
+	^win32Icon!
+
+win32Icon: i <ExternalProxy>
+
+	win32Icon := i!
+
+win32Style ^<ExternalData>
+
+	^((super win32Style
+		externalBitOr: Win32 WS_OVERLAPPEDWINDOW)
+		externalBitOr: Win32 WS_CLIPCHILDREN)
+		externalBitOr: Win32 WS_CLIPSIBLINGS!
+
+winClassName ^<CString>
+
+	StandardWindow critical:
+		[ StandardWindowClassName isNil
+			ifTrue: [	StandardWindowClassName := CString for: 'StrongtalkStandard'.
+							"And then register the window class at the same time.  This MUST be done
+						 	 after StandardWindowClassName is set"
+							self registerWindowClass. ].  ].
+	^StandardWindowClassName! !
+
+! (Delta mirrorFor: #StandardWindow) methodsFor: 'accessing' !
+
+
+name ^<Str>
+
+	^name!
+
+name: nm <Str>
+
+	name := nm.
+	self setName: nm! !
+

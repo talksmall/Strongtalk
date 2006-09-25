@@ -1,0 +1,45 @@
+Delta define: #DeltaGenericArgsNotSubtypesError as: (
+(Class subclassOf: 'DeltaBasicTypeError' instanceVariables: 'actualName formalName argument ')) !
+
+(Delta mirrorFor: #DeltaGenericArgsNotSubtypesError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaGenericArgsNotSubtypesError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericArgsNotSubtypesError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericArgsNotSubtypesError) methodsFor: 'Unclassified' !
+
+
+actualName
+	^actualName!
+
+actualName: aSymbol
+	actualName := aSymbol!
+
+argument
+	^argument!
+
+argument: aSymbol
+	argument := aSymbol!
+
+errorMessage
+	^'Argument ', self argument printString, ' (', self actualName, ') is not a subtype of declared bound ', self formalName!
+
+formalName
+	^formalName!
+
+formalName: aSymbol
+	formalName := aSymbol!
+
+isExplainable
+	^true!
+
+subtypeExpr ^ <DeltaType>
+	^ self loc astNode actuals at: self argument!
+
+supertypeExpr ^ <DeltaType>
+	^(self loc astNode generic formals at: self argument) typeVar declaredBound! !
+

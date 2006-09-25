@@ -1,0 +1,306 @@
+Delta define: #MessageDeclarationOutliner as: (
+(Class subclassOf: 'CodeApp |> MirrorOutliner[Mirror]' instanceVariables: 'selector <Symbol>
+category <Str>
+cachedParseTree <ParseTree>
+
+')) !
+
+(Delta mirrorFor: #MessageDeclarationOutliner) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #MessageDeclarationOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #MessageDeclarationOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) classSide methodsFor: 'instance creation' !
+
+
+for: mirror <Mirror> selector: sel <Symbol> category: cat <Str> ^ <Instance>
+
+	^(self for: mirror) selector: sel; category: cat!
+
+newFor: mirror <Mirror> category: cat <Str> ^ <Instance>
+
+	^(self for: mirror) category: cat.
+! !
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'accessing' !
+
+
+category ^ <Str>
+
+	^category!
+
+defaultSelector ^ <Symbol>
+
+	^'a new message' asSymbol!
+
+defaultSource ^ <Str>
+
+	| ws <WriteStream> |
+	ws := (String new: 70) writeStream.
+	ws nextPutAll: 'messagePattern'; cr.
+	ws nextPutAll: '"comment"'; cr.
+	^ws contents.
+!
+
+hasSelector ^ <Boolean>
+
+	^selector notNil!
+
+locator ^ <MetssageDeclLocator>
+
+^MessageDeclLocator new	definition: self mirror basicLocator
+											selector: self selector!
+
+openWithFocus ^ <Visual>
+
+self open: true.
+^self visual firstFocusCandidateIfAbsent: [nil] 	"Focus visual"!
+
+selector ^ <Symbol>
+
+	^self hasSelector
+		ifTrue: [ 	selector ]
+		ifFalse: [	self defaultSelector ]! !
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'private' !
+
+
+buildClosedHeader ^ <Visual>
+
+	^(self hasSelector and: [ self showRichTextSignatures ])
+		ifTrue: [		Row[Visual] holding: (self mirror sourceInfo
+								typeFormattedSelector: self selector
+								selectorBuilder: [ :s <Str> | (StringGlyph for: s painter: self selectorPainter) asVisual ]
+								typeBuilder: [ :s <Str> | (StringGlyph for: s painter: self typeSignaturePainter) asVisual ]
+								inferenceBuilder: [ :s <Str> | (StringGlyph for: s painter: self inferenceClausePainter) asVisual ] ) ]
+		ifFalse: [	(StringGlyph for: self selector painter: self selectorPainter) asVisual ]
+!
+
+cachedParseTree ^ <ParseTree>
+
+	^cachedParseTree !
+
+cachedParseTree: pt <ParseTree>
+
+	cachedParseTree  isNil
+		ifFalse: [	DeltaMethod 
+								coerce: cachedParseTree  body 
+								do: [ :m <DeltaMethod> | m clearBody ] ].		"Clear the body part of the old ast. "
+																											"This will go away once the type information no longer stores DeltaMethods."
+	cachedParseTree := pt!
+
+category: cat <Str>
+
+	category := cat!
+
+codeViewClass ^ <CodeView class>
+
+^TypedCodeView!
+
+initialOpenState ^ <Boolean>
+
+	^self hasSelector not!
+
+launchImplementorsOf: sel <Symbol>
+
+	| implementors <SeqCltn[Tuple[Mirror, Symbol]]> |
+	(implementors := Smalltalk implementorsOf: sel) isEmpty
+		ifTrue: [		self visual
+								promptOk: 'No implementors of ''', sel, ''''
+								title: 'Information'
+								type: #info
+								action: [] ]
+		ifFalse: [	self 
+								launchSelectorListWithPainter: Painter default 
+								title: 'Implementors of ''', sel, '''' 
+								contents: implementors ]
+
+!
+
+launchSendersOf: sel <Symbol>
+
+	| senders <SeqCltn[Tuple[Mirror, Symbol]]> |
+	(senders := Smalltalk sendersOf: sel) isEmpty
+		ifTrue: [		self visual
+								promptOk: 'No senders of ''', sel, ''''
+								title: 'Information'
+								type: #info
+								action: [] ]
+		ifFalse: [	self 
+								launchSelectorListWithPainter: Painter default 
+								title: 'Senders of ''', sel, '''' 
+								contents: senders ]
+!
+
+openOnTypeError: te <TypeError> 
+
+self body.
+self open: true.
+self errors: (OrderedCollection[TypeError] new add: te; yourself).
+
+!
+
+outlinerForLocator: loc <DeltaLocator> ^ <MessageDeclarationOutliner>
+
+self assert: [loc selector = self selector and:[self mirror reflectee = loc mirror reflectee]].
+self body.
+!
+
+selector: s <Symbol>
+
+	selector := s!
+
+setCodeView
+
+	self codeView: ((self buildCodeViewGetModel: [ self sourceAsCharGlyphs ]
+									setModelOnSuccess: [ :blk <[]> | self storeAndOnSuccess: blk ])
+									codeManager: self).!
+
+source ^ <Str>
+
+	^self hasSelector
+		ifTrue: [	self mirror sourceForSelector: self selector]
+		ifFalse: [	self defaultSource ]!
+
+sourceAsCharGlyphs ^ <CharGlyphs>
+
+	| tool <ASTtoRichTextTool[CharGlyph]> pt <ParseTree> gls <CharGlyphs> |
+	(self useRichTextForSources and: [ self hasSelector ])
+		ifTrue: [
+			"Print method source using rich text. Reuse the parse tree from the method accept if possible."
+			(pt := self cachedParseTree) isNil
+				ifTrue: [	pt := self mirror parseMethod: self source ifFail: [ self shouldNotHappen ] ].
+			gls := self richTextForParseTree: pt.
+			self cachedParseTree: nil		"Cached parse tree not needed anymore".
+			^gls ]
+		ifFalse: [
+			"We show the default source for an empty method. This may not be parseable, so rich text is not used."
+			^self standardTextForString:self source painter: self codePainter ]
+!
+
+storeAndOnSuccess: blk <[]>
+
+	| src <Str> visibility <Symbol> pt <ParseTree> newSelector <Symbol> currentSelection <Tuple[Int,Int]> |
+	src := self charGlyphModelAsString: self codeView.
+	currentSelection := self codeView sourceSelection.
+	visibility := ('*private*' match: self category) ifTrue: [ #private ] ifFalse: [ #public ].
+	pt := self mirror addMethod: src visibility: visibility category: self category ifFail: 
+				[ :msg <Str> :pos <Int> | ^self showParseError: msg at: pos in: self codeView ].
+
+	self cachedParseTree: pt.					"Cache the parse tree temporarily so we can use it for printing rich text"
+	newSelector := pt body selector.		"Selector of new ast"
+	
+	self selector = newSelector 
+	    ifTrue:	[	self errors: nil.  
+	    					self errorView: nil ]
+		ifFalse: [	self selector: newSelector.								"The user changed the selector while editing an existing method"
+							self updateHeaders.
+							self session inProcessDo: [ 
+								"self becomeFocusIfFail: []"
+								self makeVisible ] ].										"Do this after the category has been updated"
+
+	self session inProcessDo: [	
+		self codeView sourceSelection: currentSelection ].		"Restore selection"
+ 	blk value.
+! !
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'Move to category ...';
+					active: [ self hasSelector ];
+					action: [ self move ]);
+		add: (MenuAction new
+					name: 'Remove';
+					action: [ self remove ]);
+		add: (MenuAction new
+					name: 'Senders';
+					active: [ self hasSelector ];
+					action: [ self senders ]);
+		add: (MenuAction new
+					name: 'Implementors';
+					active: [ self hasSelector ];
+					action: [ self implementors ]);
+		add: (MenuAction new
+					name: 'Typecheck';
+					active: [ self hasSelector ];
+					action: [ self typecheck ])
+
+		! !
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #selector 
+			ifTrue: [	self hasSelector
+								ifTrue: [	value = self selector 
+													ifTrue: [	self updateHeaders.
+																	self codeView notNil
+																		ifTrue: [	self codeView model: self sourceAsCharGlyphs ] 
+																  ] 
+											  ]
+						 ]
+	]
+! !
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'control' !
+
+
+implementors
+
+	self launchImplementorsOf: self selector!
+
+move
+
+	self assert: [ self hasSelector ].
+	self 
+		launchSingleLineTextDialogWithPainter: self classPainter 
+		title: 'Move method ', self selector
+		caption: 'New category' 
+		default: (CategoryOutliner coerce: self parent) lastCategoryMove
+		action: [ :s <Str> | 
+			(CategoryOutliner coerce: self parent) lastCategoryMove: s.
+			self mirror sourceInfo category: s forSelector: self selector ]
+!
+
+remove
+
+	self hasSelector
+		ifTrue: [	self mirror removeMethod: self selector ifAbsent: [ self halt ]]
+		ifFalse: [	(CategoryOutliner coerce: self parent) removeMethodOutliner: self ifAbsent: [self halt] ]
+!
+
+senders
+
+	self launchSendersOf: self selector!
+
+typecheck
+
+self typecheckAction: [self mirror typecheckSelector: self selector]
+		title: 'Typechecking ', self mirror name, '>>', self selector.! !
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'selection' !
+
+
+becomeFocusAndSelectAll
+
+	self assert: [ self session notNil ].
+	self codeView selectAll.
+	self codeView becomeFocusIfFail: []
+	! !
+

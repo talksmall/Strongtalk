@@ -1,0 +1,239 @@
+Delta define: #VisualWrapper as: (
+(Class subclassOf: 'CompositeVisual[Visual]' instanceVariables: 'part <Visual> ')) !
+
+(Delta mirrorFor: #VisualWrapper) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #VisualWrapper) group: 'ui'!
+
+(Delta mirrorFor: #VisualWrapper)
+comment: 
+'VisualWrappers are composite visuals that hold a single child.
+By default, the child is given the same allocation as the wrapper.
+If subclasses change this relationship, they should override the
+#childIsSameSize message to return false.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
+
+! (Delta mirrorFor: #VisualWrapper) classSide methodsFor: 'instance creation' !
+
+
+for: v <Visual> ^<Instance>
+
+	^self new part: v! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'accessing' !
+
+
+backgroundPainter ^<Painter>
+
+	"By default, we use the child's backround painter"
+	^self part backgroundPainter!
+
+gridFor: p <Point> ^<Rect>
+
+	^self childIsSameSize
+		ifTrue: [ self part gridFor: p ]
+		ifFalse: [	| partpos <Point> |
+						partpos := self part position.
+						(self part gridFor: p - partpos) translatedBy: partpos	]!
+
+hasPart ^<Boolean>
+
+	^part notNil!
+
+part ^<Visual>
+
+	^part!
+
+part: p <Visual>
+
+	part == p
+		ifTrue: [ ^self ].
+	part notNil
+		ifTrue: [	self changing.
+						part noParent ].
+	part := p.
+	p parent: self id: 1.!
+
+partAt: childId <Int> ^<Visual>
+
+	self assert: [ childId = 0 ].
+	^self part!
+
+removePart ^<Visual>
+	"Detach and return the part"
+	
+	| p <Visual> |
+	self layoutStatus = Visual valid
+		ifTrue: [ self changing ].
+	p := self part.
+	p noParent.
+	part := nil.
+	^p! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'iterating-private' !
+
+
+doFromBack: f <[Visual]>
+
+	f value: self part!
+
+doFromFront: f <[Visual]>
+
+	f value: self part! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'geometry-local' !
+
+
+max ^<Region>
+
+	^self childIsSameSize
+		ifTrue: [ self part max ]
+		ifFalse: [ self shouldNotHappen ]!
+
+min ^<Region>
+
+	^self childIsSameSize
+		ifTrue: [ self part min ]
+		ifFalse: [ self shouldNotHappen ]!
+
+natural ^<Region>
+
+	^self childIsSameSize
+		ifTrue: [ self part natural ]
+		ifFalse: [ self shouldNotHappen ]! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'private' !
+
+
+childIsSameSize ^<Boolean>
+
+	^true!
+
+directChildContaining: v <Visual>  ^<Visual>
+
+	"We only have one child, so we don't have to search"
+	^self part!
+
+layout
+
+	self layoutPart.
+	super layout.!
+
+layoutPart
+
+	self childIsSameSize 
+		ifTrue: [ self part allocation: self allocation at: Point origin ]
+		ifFalse: [ self shouldNotHappen ]
+!
+
+skipCheckLayout ^<Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'wrapping' !
+
+
+withoutWrapper: w <VisualWrapper> ^<Visual>
+
+	^w == self
+		ifTrue: [	| p <Visual> |
+						p := self part noParent.
+						part := nil.
+						p	 ]
+		ifFalse: [	self part: (self part withoutWrapper: w).
+						self ]
+! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'control' !
+
+
+changing
+
+	"We optimize this to avoid a relayout pass for wrappers, which will always pass it
+		up to the parent anyway"
+
+	self skipCheckLayout
+		ifTrue: [	self prefsStatus = Visual invalid
+							ifTrue: [ ^self ].
+						self session debugIncrementalLayout
+							ifTrue: [ Platform errorStream show: 'skipping ', self class name; cr. ].
+						self layoutStatus: Visual needsRelayout.
+						self hasParent
+							ifTrue: [ self parent changing ].	]
+		ifFalse: [ super changing ]!
+
+relayoutAndInvalidate
+
+	"We override this to avoid complete invalidation if possible
+		by passing it along to the child, in case it can do a better job."
+
+	"We can skip telling the child its allocation if it had one before, because
+		relayout for wrappers doesn't change the child size"
+	self part layoutStatus = Visual invalid
+		ifTrue: [ super relayoutAndInvalidate ]
+		ifFalse: [	self childIsSameSize
+							ifTrue: [	self layoutStatus: Visual valid.
+											self part relayoutAndInvalidate.	]
+							ifFalse: [	| oldalloc <Region> |
+											oldalloc := self part allocation.
+											self part relayoutAndInvalidate.
+											self layoutStatus: Visual valid.
+											oldalloc = self part allocation
+												ifFalse: [ self invalidate ]	]	]! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'testing' !
+
+
+isSurelyRigid ^<Boolean>
+
+	^self part isSurelyRigid! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'iterating' !
+
+
+near: r <Region> doFromBack: f <[Visual]>
+
+	f value: self part!
+
+near: r <Region> doFromFront: f <[Visual]>
+
+	f value: self part! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'hit testing' !
+
+
+childIntersecting: loc <Point> ifAbsent: blk <[^X def]> ^<Visual | X>
+
+	^self childIsSameSize
+		ifTrue: [ self part ]
+		ifFalse: [ super childIntersecting: loc ifAbsent: blk ]! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'translation' !
+
+
+translate: p <Point> fromChild: child <Visual> ^<Point>
+
+	^self childIsSameSize
+		ifTrue: [  p ]
+		ifFalse: [ super translate: p fromChild: child ]!
+
+translate: p <Point> toChild: child <Visual> ^<Point>
+
+	^self childIsSameSize
+		ifTrue: [  p ]
+		ifFalse: [ super translate: p toChild: child ]!
+
+translateRect: r <Rect> fromChild: child <Visual> ^<Rect>
+
+	^self childIsSameSize
+		ifTrue: [  r ]
+		ifFalse: [ super translateRect: r fromChild: child ]!
+
+translateRect: r <Rect> toChild: child <Visual> ^<Rect>
+
+	^self childIsSameSize
+		ifTrue: [  r ]
+		ifFalse: [ super translateRect: r toChild: child ]! !
+

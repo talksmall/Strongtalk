@@ -1,0 +1,60 @@
+Delta define: #VirtualDictSelector as: (
+Generic forAll: '(K covar) , (V covar) ' body: ((Class subclassOf: 'VirtualSelector[V]' instanceVariables: ''))) !
+
+(Delta mirrorFor: #VirtualDictSelector) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #VirtualDictSelector) group: 'misc'!
+
+(Delta mirrorFor: #VirtualDictSelector)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VirtualDictSelector) methodsFor: 'Unclassified' !
+
+
+associationsDo: blk <[T,^Object] > ^ <Self>
+	| val |
+	cltn associationsDo: [ :a | (filter value: (val := a value)) ifTrue: [blk value: (Association key: a key value: val)] ]!
+
+at: key <K > ^ <V>
+    ^self at: key ifAbsent:[self error: 'Element ', key printString, ' not found'].!
+
+at: key <K >ifAbsent: blk <[^V] > ^ <V>
+    | e <V>  |
+
+e := cltn at: key ifAbsent:[^blk value].
+
+^(self filter value: e) ifTrue:[e]
+                                 ifFalse:[blk value].!
+
+includesIndex: index <Object>
+
+^self includesKey: index.!
+
+includesKey: key <Object>
+
+^(self cltn includesKey: key) and: [self filter value: (self cltn at: key)].!
+
+keys ^ <Set[K]>
+    ^cltn keys select:[:k <Key> | self filter value: (cltn at: k) ]!
+
+merge: d <Dict[K,V] > ^ <Dict[K,V]>
+    ^DictionaryMerge[K,V]  new dict1: self dict2: d!
+
+override: d <Dict[K,V] > ^ <Dict[K,V]>
+    ^DictionaryOverride[K,V]  new dict1: self dict2: d!
+
+values ^ <Set[V]>
+    ^cltn values virtualSelect: self filter! !
+
+! (Delta mirrorFor: #VirtualDictSelector) methodsFor: 'virtual operations' !
+
+
+virtualCollect: blk <[E, ^X def]> ^<VirtualCollector[X]>
+
+	^ VirtualDictCollector on: self map: blk!
+
+virtualSelectorClass ^ <Self>
+    ^VirtualDictSelector! !
+

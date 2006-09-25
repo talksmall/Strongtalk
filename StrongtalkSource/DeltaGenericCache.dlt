@@ -1,0 +1,45 @@
+Delta define: #DeltaGenericCache as: (
+(Class subclassOf: 'Object' instanceVariables: 'dimension dict ')) !
+
+(Delta mirrorFor: #DeltaGenericCache) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaGenericCache) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericCache)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericCache) methodsFor: 'Unclassified' !
+
+
+at: key <GenericKey> ifAbsent: blk  <[^ObjectType]> ^ <ObjectType>
+
+key cltn size = self dimension ifFalse:[self error: 'Internal problem - generic cache access'].
+^self dict at: key ifAbsent: [self dict at: key put: blk value].
+
+!
+
+dict ^ <Dictionary>
+
+^dict!
+
+dict: d <Dictionary>
+
+dict := d!
+
+dimension ^ <Int>
+
+^dimension!
+
+dimension: d <Int>
+
+dimension := d.
+!
+
+setDimension: d <Int>
+
+self dimension: d.
+self dict: Dictionary[GenericKey, ObjectType] new.
+! !
+

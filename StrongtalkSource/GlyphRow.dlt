@@ -1,0 +1,91 @@
+Delta define: #GlyphRow as: (
+(Class subclassOf: 'GlyphRowOrColumn' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlyphRow) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #GlyphRow) group: 'ui'!
+
+(Delta mirrorFor: #GlyphRow)
+comment: 
+'Organizes glyphs in a row.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 
+'!
+
+! (Delta mirrorFor: #GlyphRow) methodsFor: 'accessing' !
+
+
+at: childId <Int> ifAbsent: blk <[^X def]> ^<VisualGlyph | X>
+
+	| g <Glyph> gl <ReusedVisualGlyph> |
+	g := self glyphs at: childId ifAbsent: [ ^blk value ].
+	cachedVG == nil
+		ifTrue: [	cachedVG := ReusedVisualGlyph for: g.
+						cachedVG cramParent: self.
+						cachedVG yPosition: 0.	].
+	
+	^cachedVG
+		cramGlyph: g
+		id: childId
+		xPosition: (self positions at: childId)! !
+
+! (Delta mirrorFor: #GlyphRow) methodsFor: 'private' !
+
+
+cramMajorPosition: oldPos <Int>  into: child <ReusedVisualGlyph>
+
+	child xPosition: oldPos.!
+
+majorHighOf: r <Rect> ^<Dist>
+
+	^r right!
+
+majorLowOf: r <Rect> ^<Dist>
+
+	^r left!
+
+majorOf: p <Point> ^<Dist>
+
+	^p x!
+
+majorTotalOf: r <Rect> ^<Dist>
+
+	^r width!
+
+minorHighOf: r <Rect> ^<Dist>
+
+	^r bottom!
+
+minorLowOf: r <Rect> ^<Dist>
+
+	^r top!
+
+pointWithMinor: minor <Dist> major: major <Dist>  ^<Point>
+
+	^major @ minor!
+
+rectWithLowMajor: lowMajor <Dist>
+lowMinor: lowMinor <Dist>
+highMajor: highMajor <Dist>
+highMinor: highMinor <Dist>
+^<Rect>
+
+	^lowMajor @ lowMinor corner: highMajor @ highMinor! !
+
+! (Delta mirrorFor: #GlyphRow) methodsFor: 'iteration' !
+
+
+near: r <Region> doFromBack: f <[Visual]>
+
+	"We modify the inherited method slightly to draw an extra element before the clipping region
+		to fix kerning display bugs when characters are in the row"
+
+	self indicesBounding: r enclosingRect do:
+		[ :start <Int> :stop <Int> |
+			(start - 1 max: 1) to: stop do:
+				[ :i <Int> |
+					f value: (self at: i)	]	]! !
+

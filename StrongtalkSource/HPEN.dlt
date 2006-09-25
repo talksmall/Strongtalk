@@ -1,0 +1,138 @@
+Delta define: #HPEN as: (
+(Class subclassOf: 'Win32Handle' instanceVariables: 'paint <Paint>
+lineStyle <Symbol>	 "One of #solid, #dash, #dot, #dashdot, #dashdotdot, or #smalldot"
+		') classVariables: 'CosmeticPens <VarDict[HPEN,HPEN]>
+			"The canonical cosmetic pens"
+		') !
+
+(Delta mirrorFor: #HPEN) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HPEN) group: 'base'!
+
+(Delta mirrorFor: #HPEN)
+comment: 
+'Handle for a Win32 pen
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #HPEN) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	CosmeticPens := Dictionary[HPEN,HPEN] new.! !
+
+! (Delta mirrorFor: #HPEN) classSide methodsFor: 'instance creation' !
+
+
+sharedWithPaint: p <Paint> style: s <Symbol>  ^<HPEN>
+
+	| inst <HPEN> |
+	inst := HPEN new initPaint: p style: s.
+	^self cosmeticPens at: inst
+		ifAbsent: [	inst := inst buildCanonicalHPEN.
+							self cosmeticPens at: inst put: inst.
+							inst ]!
+
+unsharedWithPaint: p <Paint> style: s <Symbol>  ^<HPEN>
+
+	| inst <HPEN> |
+	inst := HPEN new initPaint: p style: s.
+	inst := inst buildCanonicalHPEN.
+	^inst! !
+
+! (Delta mirrorFor: #HPEN) classSide methodsFor: 'private' !
+
+
+cosmeticPens ^<VarDict[HPEN,HPEN]>
+
+	^CosmeticPens! !
+
+! (Delta mirrorFor: #HPEN) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [	other class == self class			"%todo: Use coerce here when it is fast"
+					and: [	self equalsInstance: other ]]!
+
+hash ^<Int>
+
+	^self paint hash bitXor: self lineStyle hash! !
+
+! (Delta mirrorFor: #HPEN) methodsFor: 'accessing' !
+
+
+lineStyle ^<Symbol>
+
+	^lineStyle!
+
+lineWidth ^<Int>
+
+	^1!
+
+paint ^<Paint>
+
+	^paint! !
+
+! (Delta mirrorFor: #HPEN) methodsFor: 'initialization' !
+
+
+buildCanonicalHPEN ^<HPEN>
+
+	^self lineStyle == #smalldot
+		ifFalse: [ self buildRegularCanonicalHPEN ]
+		ifTrue: [ self buildSpecialCanonicalHPEN ]!
+
+buildRegularCanonicalHPEN ^<HPEN>
+
+	| pen <HPEN> |
+	pen := {{<gdi HPEN CreatePen> 
+					style: self win32StyleCode
+					width: self lineWidth
+					color: self paint win32Color }}.
+	pen initPaint: self paint style: self lineStyle.
+	^pen!
+
+initPaint: p <Paint> style: s <Symbol>
+
+	paint := p.
+	lineStyle := s.! !
+
+! (Delta mirrorFor: #HPEN) methodsFor: 'private' !
+
+
+equalsInstance:  other <Object> ^<Boolean>
+	"compare to another instance guaranteed by the caller to be of the same class as self"
+
+	| otherPen <HPEN> |
+	otherPen := guaranteed <HPEN> other.
+	^self paint = otherPen paint
+		and: [ self lineStyle = otherPen lineStyle ]!
+
+win32StyleCode ^<ExternalData>
+
+	self lineStyle = #solid
+		ifTrue: [ ^Win32 PS_SOLID ].
+	self lineStyle = #dash
+		ifTrue: [ ^Win32 PS_DASH ].
+	self lineStyle = #dot
+		ifTrue: [ ^Win32 PS_DOT ].
+	self lineStyle = #dashDot
+		ifTrue: [ ^Win32 PS_DASHDOT ].
+	self lineStyle = #dashDotDot
+		ifTrue: [ ^Win32 PS_DASHDOTDOT ].
+
+	self shouldNotHappen.! !
+
+! (Delta mirrorFor: #HPEN) methodsFor: 'control' !
+
+
+release
+
+	"This is right only for objects we created, which currently we always do"
+	self win32DeleteObject! !
+

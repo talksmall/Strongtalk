@@ -1,0 +1,57 @@
+Delta define: #DeltaVar as: (
+(Class subclassOf: 'DeltaFilter' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaVar) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaVar) group: 'ast'!
+
+(Delta mirrorFor: #DeltaVar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaVar) classSide methodsFor: 'Unclassified' !
+
+
+declare: aName of: type inScope: scope ifThere: blk
+
+self subclassResponsibility! !
+
+! (Delta mirrorFor: #DeltaVar) methodsFor: 'Unclassified' !
+
+
+declaredType ^ <ObjectType>
+    ^self filteree declaredType.!
+
+isCompleteTerm
+	^true!
+
+isVarNode ^ <Boolean>
+    ^ true!
+
+name ^ <Symbol>
+    ^ self filteree name!
+
+name: aName <Str >type: aType <Type > ^ <Self>
+    self filter: (BasicVarDeclData new name: aName type: aType)
+           using: DeltaSubstitution new initialize.!
+
+scope: s
+
+self type scope: s!
+
+substitute: s <Substitution > ^ <Self>
+
+self deltaHack.
+self type isNil ifTrue:[^self].
+self type  == (self type substitute: s) ifTrue:[^self].
+
+^s isEmpty ifTrue:[self]
+                  ifFalse:[self class new filter: self using: s].!
+
+type ^ <ObjectType>
+    | t <Type>  |
+
+    t := self filteree type.
+   ^ t isNil ifFalse:[ t substitute: self substitution].! !
+

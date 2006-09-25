@@ -1,0 +1,813 @@
+// Copyright 1994 - 1996, LongView Technologies L.L.C. $Revision: 1.138 $
+// Copyright (c) 2006, Sun Microsystems, Inc.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without 
+// modification, are permitted provided that the following conditions are met:
+//
+// * Redistributions of source code must retain the above copyright notice, 
+//   this list of conditions and the following disclaimer.
+// * Redistributions in binary form must reproduce the above copyright notice, 
+//   this list of conditions and the following  disclaimer in the documentation
+//   and/or other materials provided with the distribution.
+// * Neither the name of Sun Microsystems nor the names of its contributors 
+//   may be used to endorse or promote products derived from this software 
+//   without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+// POSSIBILITY OF SUCH DAMAGE
+basicBlock.cpp			basicBlock.hpp
+basicBlock.cpp			bitVector.hpp
+basicBlock.cpp			growableArray.hpp
+basicBlock.cpp			debug.hpp
+basicBlock.cpp			node.hpp
+basicBlock.cpp			process.hpp
+basicBlock.cpp			regAlloc.hpp
+basicBlock.cpp			registerMask.hpp
+basicBlock.cpp			scope.hpp
+
+basicBlock.hpp			growableArray.hpp
+basicBlock.hpp			debug.hpp
+basicBlock.hpp			defUse.hpp
+basicBlock.hpp			slist.hpp
+basicBlock.hpp			types.hpp
+basicBlock.hpp			x86_mapping.hpp
+
+
+bits.hpp			asserts.hpp
+bits.hpp			config.hpp
+
+
+bitVector.cpp			bitVector.hpp
+
+bitVector.hpp			allocation.hpp
+bitVector.hpp			x86_mapping.hpp
+bitVector.hpp			process.hpp
+bitVector.hpp			top.hpp
+
+codeGenerator.cpp		block_prims.hpp
+codeGenerator.cpp		codeGenerator.hpp
+codeGenerator.cpp		disassembler.hpp
+codeGenerator.cpp		compiledIC.hpp
+codeGenerator.cpp		loopOpt.hpp
+codeGenerator.cpp		nmethod.hpp
+codeGenerator.cpp		node.hpp
+codeGenerator.cpp		oop.hpp
+codeGenerator.cpp		oop.inline.hpp
+codeGenerator.cpp		pregMapping.hpp
+codeGenerator.cpp		process.hpp
+codeGenerator.cpp		proxyOop.hpp
+codeGenerator.cpp		recompiler.hpp
+codeGenerator.cpp		regAlloc.hpp
+codeGenerator.cpp		scopeDescRecorder.hpp
+codeGenerator.cpp		stubRoutines.hpp
+codeGenerator.cpp		x86_mapping.hpp
+codeGenerator.cpp		vmOperations.hpp
+codeGenerator.cpp		zone.hpp
+codeGenerator.cpp		uncommonBranch.hpp
+
+codeGenerator.hpp		assembler.hpp
+codeGenerator.hpp		basicBlock.hpp
+codeGenerator.hpp		node.hpp
+codeGenerator.hpp		pregMapping.hpp
+
+
+codeTable.cpp			codeTable.hpp
+codeTable.cpp			universe.hpp
+codeTable.cpp			nmethod.hpp
+
+codeTable.hpp			types.hpp
+codeTable.hpp			allocation.hpp
+
+compiledIC.cpp			codeIterator.hpp
+compiledIC.cpp			evaluator.hpp
+compiledIC.cpp			growableArray.hpp
+compiledIC.cpp			compiledIC.hpp
+compiledIC.cpp			compiler.hpp
+compiledIC.cpp			delta.hpp
+compiledIC.cpp			interpreter.hpp
+compiledIC.cpp			lookupCache.hpp
+compiledIC.cpp			methodOop.hpp
+compiledIC.cpp			oop.inline.hpp
+compiledIC.cpp			pcDesc.hpp
+compiledIC.cpp			compiledPIC.hpp
+compiledIC.cpp			prim.hpp
+compiledIC.cpp			recompile.hpp
+compiledIC.cpp			registerMask.hpp
+compiledIC.cpp			scopeDesc.hpp
+compiledIC.cpp			stubRoutines.hpp
+compiledIC.cpp			symbolOop.hpp
+compiledIC.cpp			universe.hpp
+compiledIC.cpp			vmOperations.hpp
+compiledIC.cpp			zone.hpp
+compiledIC.cpp			zoneHeap.hpp
+
+compiledIC.hpp			nativeInstruction.hpp
+compiledIC.hpp			growableArray.hpp
+compiledIC.hpp  		runtime.hpp
+
+
+compiledPIC.cpp     		allocation.hpp
+compiledPIC.cpp			disassembler.hpp
+compiledPIC.cpp     		growableArray.hpp
+compiledPIC.cpp			klassOop.hpp
+compiledPIC.cpp     		compiledPIC.hpp
+compiledPIC.cpp     		nmethod.hpp
+compiledPIC.cpp			stubRoutines.hpp
+compiledPIC.cpp     		zone.hpp
+compiledPIC.cpp     		zoneHeap.hpp
+
+compiledPIC.hpp     		codeBuffer.hpp
+compiledPIC.hpp			ic_iterator.hpp
+compiledPIC.hpp     		ncode.hpp
+compiledPIC.hpp     		relocInfo.hpp
+compiledPIC.hpp     		zoneHeap.hpp
+
+compiler.cpp			basicBlock.hpp
+compiler.cpp			codeBuffer.hpp
+compiler.cpp			codeGenerator.hpp
+compiler.cpp			compiler.hpp
+compiler.cpp			compUtils.hpp
+compiler.cpp			disassembler.hpp
+compiler.cpp			inliningdb.hpp
+compiler.cpp			interpreter.hpp
+compiler.cpp			node.hpp
+compiler.cpp			nodeBuilder.hpp
+compiler.cpp			objArrayOop.hpp
+compiler.cpp			oldCodeGenerator.hpp
+compiler.cpp			oop.inline.hpp
+compiler.cpp			oopFactory.hpp
+compiler.cpp			preg.hpp
+compiler.cpp			recompile.hpp
+compiler.cpp			recompiler.hpp
+compiler.cpp			regAlloc.hpp
+compiler.cpp			registerMask.hpp
+compiler.cpp			rscope.hpp
+compiler.cpp			scope.hpp
+compiler.cpp			scopeDescRecorder.hpp
+compiler.cpp			spaceSize.hpp
+compiler.cpp			timer.hpp
+compiler.cpp			vmSymbols.hpp
+
+compiler.hpp			codeBuffer.hpp
+compiler.hpp			compUtils.hpp
+compiler.hpp			growableArray.hpp
+compiler.hpp			inliner.hpp
+compiler.hpp			lookupCache.hpp
+compiler.hpp			slist.hpp
+compiler.hpp			jumpTable.hpp
+
+
+compileTimeClosure.cpp		compileTimeClosure.hpp
+compileTimeClosure.cpp  	zone.hpp
+compileTimeClosure.cpp  	compiler.hpp
+compileTimeClosure.cpp  	scope.hpp
+compileTimeClosure.cpp  	scopeDescRecorder.hpp
+compileTimeClosure.cpp  	oop.inline.hpp
+
+compileTimeClosure.hpp		allocation.hpp
+compileTimeClosure.hpp		methodOop.hpp
+compileTimeClosure.hpp		jumpTable.hpp
+
+compUtils.cpp			compiler.hpp
+compUtils.cpp			compUtils.hpp
+compUtils.cpp			node.hpp
+compUtils.cpp			ostream.hpp
+
+compUtils.hpp			growableArray.hpp
+compUtils.hpp			types.hpp
+
+
+costModel.hpp			allocation.hpp
+costModel.hpp			bytecodes.hpp
+costModel.hpp			methodOop.hpp
+costModel.cpp			costModel.hpp
+
+
+defUse.cpp			basicBlock.hpp
+defUse.cpp			debug.hpp
+defUse.cpp			defUse.hpp
+defUse.cpp			markOop.hpp
+defUse.cpp			node.hpp
+defUse.cpp			scope.hpp
+
+defUse.hpp			allocation.hpp
+defUse.hpp			growableArray.hpp
+defUse.hpp			slist.hpp
+defUse.hpp			top.hpp
+defUse.hpp			types.hpp
+
+
+disassembler.hpp		allocation.hpp
+
+disassembler.cpp		disassembler.hpp
+disassembler.cpp		compiledIC.hpp
+disassembler.cpp		nmethod.hpp
+disassembler.cpp		prettyPrinter.hpp
+disassembler.cpp		methodPrinter.hpp
+disassembler.cpp		pcDesc.hpp
+disassembler.cpp		pcDesc.hpp
+disassembler.cpp		tempDecoder.hpp
+
+
+expr.cpp			blockOop.inline.hpp
+expr.cpp			nameDesc.hpp
+expr.cpp			node.hpp
+expr.cpp			preg.hpp
+expr.cpp			scopeDescRecorder.hpp
+expr.cpp			compiler.hpp
+expr.cpp			expr.hpp
+expr.cpp			scope.hpp
+expr.cpp			oop.inline.hpp
+
+expr.hpp			allocation.hpp
+expr.hpp			blockKlass.hpp
+expr.hpp			growableArray.hpp
+expr.hpp			klassOop.hpp
+expr.hpp			process.hpp
+
+
+inline.cpp			blockKlass.hpp
+inline.cpp			methodKlass.hpp
+inline.cpp			compUtils.hpp
+inline.cpp			node.hpp
+inline.cpp			oop.hpp
+inline.cpp			preg.hpp
+inline.cpp			prim.hpp
+inline.cpp			recompile.hpp
+inline.cpp			registerMask.hpp
+inline.cpp			rscope.hpp
+inline.cpp			compiler.hpp
+inline.cpp			expr.hpp
+inline.cpp			scope.hpp
+inline.cpp			spaceSize.hpp
+inline.cpp			symbolOop.hpp
+
+
+inliner.cpp			blockKlass.hpp
+inliner.cpp			inliner.hpp
+inliner.cpp			methodKlass.hpp
+inliner.cpp			node.hpp
+inliner.cpp			oop.inline.hpp
+inliner.cpp			preg.hpp
+inliner.cpp			prim.hpp
+inliner.cpp			recompile.hpp
+inliner.cpp			rscope.hpp
+inliner.cpp			rframe.hpp
+inliner.cpp			compiler.hpp
+inliner.cpp			expr.hpp
+inliner.cpp			scope.hpp
+inliner.cpp			symbolOop.hpp
+inliner.cpp			vmSymbols.hpp
+inliner.cpp			scopeDescRecorder.hpp
+
+inliner.hpp			allocation.hpp
+inliner.hpp			nodeBuilder.hpp
+inliner.hpp			types.hpp
+
+
+inliningdb.hpp			top.hpp
+
+inliningdb.cpp			inliningdb.hpp
+inliningdb.cpp			rscope.hpp
+inliningdb.cpp			timer.hpp
+
+
+iCache.cpp			iCache.hpp
+
+iCache.hpp			top.hpp
+
+
+jumpTable.hpp			allocation.hpp
+jumpTable.hpp			oop.hpp
+
+jumpTable.cpp			jumpTable.hpp
+jumpTable.cpp			universe.hpp
+jumpTable.cpp			zone.hpp
+jumpTable.cpp			nmethod.hpp
+jumpTable.cpp			blockOop.hpp
+jumpTable.cpp			vmOperations.hpp
+jumpTable.cpp			disassembler.hpp
+jumpTable.cpp			blockOop.inline.hpp
+jumpTable.cpp			stubRoutines.hpp
+
+
+location.hpp			allocation.hpp
+location.hpp			growableArray.hpp
+
+location.cpp			x86_mapping.hpp
+location.cpp			location.hpp
+
+
+locations.hpp			allocation.hpp
+locations.hpp			codeBuffer.hpp
+locations.hpp			assembler.hpp
+locations.cpp			locations.hpp
+
+loopOpt.cpp			interpretedIC.hpp
+loopOpt.cpp			loopOpt.hpp
+loopOpt.cpp			node.hpp
+loopOpt.cpp			scope.hpp
+
+loopOpt.hpp			types.hpp
+
+intervalInfo.cpp		intervalInfo.hpp
+intervalInfo.cpp		methodIterator.hpp
+intervalInfo.cpp		node.hpp
+intervalInfo.cpp		scope.hpp
+
+intervalInfo.hpp		types.hpp
+
+mapConformance.hpp		types.hpp
+
+mapConformance.cpp		mapConformance.hpp
+
+nameDesc.cpp			codeBuffer.hpp
+nameDesc.cpp			blockOop.inline.hpp
+nameDesc.cpp			nameDesc.hpp
+nameDesc.cpp			stackChunk.hpp
+nameDesc.cpp			vframe.hpp
+
+nameDesc.hpp			allocation.hpp
+nameDesc.hpp			location.hpp
+nameDesc.hpp			x86_mapping.hpp
+nameDesc.hpp			oop.hpp
+nameDesc.hpp			oopsHierarchy.hpp
+nameDesc.hpp			top.hpp
+
+
+ncode.cpp			allocation.hpp
+ncode.cpp			codeTable.hpp
+ncode.cpp			ncode.hpp
+ncode.cpp			nmethod.hpp
+ncode.cpp			compiledPIC.hpp
+ncode.cpp			relocInfo.hpp
+ncode.cpp			universe.hpp
+ncode.cpp			zone.hpp
+
+ncode.hpp			generation.hpp
+ncode.hpp			universe.hpp
+
+
+nmethod.cpp			allocation.hpp
+nmethod.cpp			codeGenerator.hpp
+nmethod.cpp			codeTable.hpp
+nmethod.cpp			compiler.hpp
+nmethod.cpp			compUtils.hpp
+nmethod.cpp			debug.hpp
+nmethod.cpp			disassembler.hpp
+nmethod.cpp			frame.hpp
+nmethod.cpp			compiledIC.hpp
+nmethod.cpp			iCache.hpp
+nmethod.cpp			inliningdb.hpp
+nmethod.cpp			lookupCache.hpp
+nmethod.cpp			methodKlass.hpp
+nmethod.cpp			nativeInstruction.hpp
+nmethod.cpp			nmethod.hpp
+nmethod.cpp			pcDesc.hpp
+nmethod.cpp			compiledPIC.hpp
+nmethod.cpp			recompile.hpp
+nmethod.cpp			rscope.hpp
+nmethod.cpp			relocInfo.hpp
+nmethod.cpp			scopeDescRecorder.hpp
+nmethod.cpp			stubRoutines.hpp
+nmethod.cpp			zone.hpp
+nmethod.cpp			oop.inline.hpp
+
+nmethod.hpp			ncode.hpp
+nmethod.hpp			key.hpp
+nmethod.hpp			nmethodScopes.hpp
+nmethod.hpp			zone.hpp
+
+
+nmethodScopes.cpp		allocation.hpp
+nmethodScopes.cpp		compiledPIC.hpp
+nmethodScopes.cpp		methodKlass.hpp
+nmethodScopes.cpp		codeTable.hpp
+nmethodScopes.cpp		debug.hpp
+nmethodScopes.cpp		frame.hpp
+nmethodScopes.cpp		lookupCache.hpp
+nmethodScopes.cpp		iCache.hpp
+nmethodScopes.cpp		nmethod.hpp
+nmethodScopes.cpp 		nmethodScopes.hpp
+nmethodScopes.cpp		allocation.hpp
+nmethodScopes.cpp		recompile.hpp
+nmethodScopes.cpp		scopeDesc.hpp
+nmethodScopes.cpp		scopeDescRecorder.hpp
+nmethodScopes.cpp		compiledIC.hpp
+nmethodScopes.cpp		zone.hpp
+nmethodScopes.cpp		oop.inline.hpp
+
+nmethodScopes.hpp		ncode.hpp
+nmethodScopes.hpp		key.hpp
+nmethodScopes.hpp		scopeDesc.hpp
+nmethodScopes.hpp		zone.hpp
+
+
+node.cpp			basicBlock.hpp
+node.cpp 			behavior_prims.hpp
+node.cpp			byteArrayOop.hpp
+node.cpp			codeBuffer.hpp
+node.cpp			compiler.hpp
+node.cpp			expr.hpp
+node.cpp			key.hpp
+node.cpp			loopOpt.hpp
+node.cpp			markOop.hpp
+node.cpp			nameDesc.hpp
+node.cpp			node.hpp
+node.cpp			node.inline.hpp
+node.cpp			objArrayOop.hpp
+node.cpp			oop.inline.hpp
+node.cpp			preg.hpp
+node.cpp			pregMapping.hpp
+node.cpp			prim.hpp
+node.cpp			processOop.hpp
+node.cpp			registerMask.hpp
+node.cpp			recompile.hpp
+node.cpp			rscope.hpp
+node.cpp			scope.hpp
+node.cpp			smi_prims.hpp
+node.cpp			split.hpp
+node.cpp			symbolOop.hpp
+node.cpp			vmSymbols.hpp
+
+node.hpp			basicBlock.hpp
+node.hpp			growableArray.hpp
+node.hpp			debug.hpp
+node.hpp			defUse.hpp
+node.hpp			compiledIC.hpp
+node.hpp			klass.hpp
+node.hpp			nameDesc.hpp
+node.hpp			opcode.hpp
+node.hpp			preg.hpp
+node.hpp			slist.hpp
+node.hpp			scope.hpp
+
+
+nodeBuilder.cpp 		associationOop.hpp
+nodeBuilder.cpp			dll.hpp
+nodeBuilder.cpp 		doubleOop.hpp
+nodeBuilder.cpp 		expr.hpp
+nodeBuilder.cpp 		inliner.hpp
+nodeBuilder.cpp			loopOpt.hpp
+nodeBuilder.cpp			nodeBuilder.hpp
+nodeBuilder.cpp 		node.hpp
+nodeBuilder.cpp 		oop.inline.hpp
+nodeBuilder.cpp 		preg.hpp
+nodeBuilder.cpp			prim.hpp
+nodeBuilder.cpp			primInliner.hpp
+nodeBuilder.cpp			proxyOop.hpp
+nodeBuilder.cpp 		scope.hpp
+nodeBuilder.cpp 		scopeDescRecorder.hpp
+
+nodeBuilder.hpp			growableArray.hpp
+nodeBuilder.hpp			methodIterator.hpp
+nodeBuilder.hpp			methodOop.hpp
+nodeBuilder.hpp 		opcode.hpp
+nodeBuilder.hpp 		prim.hpp
+
+
+oldCodeGenerator.cpp		block_prims.hpp
+oldCodeGenerator.cpp		compiledIC.hpp
+oldCodeGenerator.cpp		doubleOop.hpp
+oldCodeGenerator.cpp		interpreter.hpp
+oldCodeGenerator.cpp		loopOpt.hpp
+oldCodeGenerator.cpp		nmethod.hpp
+oldCodeGenerator.cpp		node.hpp
+oldCodeGenerator.cpp		oldCodeGenerator.hpp
+oldCodeGenerator.cpp		oop.hpp
+oldCodeGenerator.cpp		oop.inline.hpp
+oldCodeGenerator.cpp		process.hpp
+oldCodeGenerator.cpp		proxyOop.hpp
+oldCodeGenerator.cpp		recompile.hpp
+oldCodeGenerator.cpp		recompiler.hpp
+oldCodeGenerator.cpp		regAlloc.hpp
+oldCodeGenerator.cpp		scopeDescRecorder.hpp
+oldCodeGenerator.cpp		stubRoutines.hpp
+oldCodeGenerator.cpp		uncommonBranch.hpp
+oldCodeGenerator.cpp		vmOperations.hpp
+oldCodeGenerator.cpp		x86_mapping.hpp
+oldCodeGenerator.cpp		zone.hpp
+
+oldCodeGenerator.hpp		basicBlock.hpp
+oldCodeGenerator.hpp		node.hpp
+
+
+opcode.cpp			error.hpp
+opcode.cpp			opcode.hpp
+
+opcode.hpp			types.hpp
+
+
+pcDesc.cpp			pcDesc.hpp
+pcDesc.cpp			nmethod.hpp
+
+pcDesc.hpp			nmethod.hpp
+
+
+preg.cpp			basicBlock.hpp
+preg.cpp			blockOop.inline.hpp
+preg.cpp			defUse.hpp
+preg.cpp			x86_mapping.hpp
+preg.cpp			nameDesc.hpp
+preg.cpp			node.hpp
+preg.cpp			objArrayOop.hpp
+preg.cpp			oop.inline.hpp
+preg.cpp			preg.hpp
+preg.cpp			process.hpp
+preg.cpp			regAlloc.hpp
+preg.cpp			scopeDescRecorder.hpp
+preg.cpp			scope.hpp
+preg.cpp			split.hpp
+
+preg.hpp			allocation.hpp
+preg.hpp			compileTimeClosure.hpp
+preg.hpp			defUse.hpp
+preg.hpp			growableArray.hpp
+preg.hpp			scopeDesc.hpp
+preg.hpp			scopeDescRecorder.hpp
+preg.hpp			slist.hpp
+preg.hpp			types.hpp
+preg.hpp			x86_mapping.hpp
+
+
+pregMapping.cpp			debug.hpp
+pregMapping.cpp			disassembler.hpp
+pregMapping.cpp			mapConformance.hpp
+pregMapping.cpp			pregMapping.hpp
+pregMapping.cpp			preg.hpp
+pregMapping.cpp			process.hpp
+
+pregMapping.hpp			allocation.hpp
+pregMapping.hpp			assembler.hpp
+pregMapping.hpp			codeBuffer.hpp
+pregMapping.hpp			locations.hpp
+pregMapping.hpp			node.hpp
+pregMapping.hpp			scopeDescRecorder.hpp
+
+
+primInliner.cpp			behavior_prims.hpp
+primInliner.cpp			byteArrayKlass.hpp
+primInliner.cpp			doubleOop.hpp
+primInliner.cpp			inliner.hpp
+primInliner.cpp			node.hpp
+primInliner.cpp			objArrayKlass.hpp
+primInliner.cpp			oop.hpp
+primInliner.cpp			oopFactory.hpp
+primInliner.cpp			preg.hpp
+primInliner.cpp			prim.hpp
+primInliner.cpp			primInliner.hpp
+primInliner.cpp			rscope.hpp
+primInliner.cpp			universe.hpp
+primInliner.cpp			vmSymbols.hpp
+
+primInliner.hpp			expr.hpp
+primInliner.hpp			nodeBuilder.hpp
+
+
+recompile.cpp			compiler.hpp
+recompile.cpp			delta.hpp
+recompile.cpp			eventLog.hpp
+recompile.cpp			ic_iterator.hpp
+recompile.cpp			inliningdb.hpp
+recompile.cpp			interpreter.hpp
+recompile.cpp			methodOop.hpp
+recompile.cpp			nmethod.hpp
+recompile.cpp			oop.inline.hpp
+recompile.cpp			recompile.hpp
+recompile.cpp			recompiler.hpp
+recompile.cpp			rframe.hpp
+recompile.cpp			sweeper.hpp
+recompile.cpp			timer.hpp
+recompile.cpp			vmOperations.hpp
+recompile.cpp			vframe.hpp
+
+recompile.hpp			allocation.hpp
+recompile.hpp			growableArray.hpp
+recompile.hpp			vmOperations.hpp
+
+recompiler.cpp			codeIterator.hpp
+recompiler.cpp			compiler.hpp
+recompiler.cpp			frame.hpp
+recompiler.cpp			inliner.hpp
+recompiler.cpp			interpreter.hpp
+recompiler.cpp			recompile.hpp
+recompiler.cpp			recompiler.hpp
+recompiler.cpp			rframe.hpp
+recompiler.cpp			vframe.hpp
+
+recompiler.hpp			allocation.hpp
+
+
+regAlloc.cpp			basicBlock.hpp
+regAlloc.cpp			debug.hpp
+regAlloc.cpp			node.hpp
+regAlloc.cpp			preg.hpp
+regAlloc.cpp			regAlloc.hpp
+regAlloc.cpp			registerMask.hpp
+regAlloc.cpp			compiler.hpp
+regAlloc.cpp			scope.hpp
+
+regAlloc.hpp			allocation.hpp
+regAlloc.hpp			growableArray.hpp
+regAlloc.hpp			types.hpp
+
+
+registerMask.cpp		registerMask.hpp
+
+registerMask.hpp		allocation.hpp
+registerMask.hpp		bitVector.hpp
+registerMask.hpp		top.hpp
+
+
+relocInfo.cpp			ncode.hpp
+relocInfo.cpp			nmethod.hpp
+relocInfo.cpp			nmethodScopes.hpp
+relocInfo.cpp			compiledPIC.hpp
+relocInfo.cpp			relocInfo.hpp
+relocInfo.cpp   		prim.hpp
+relocInfo.cpp			stubRoutines.hpp
+relocInfo.cpp   		uncommonBranch.hpp
+
+relocInfo.hpp   		allocation.hpp
+relocInfo.hpp			bits.hpp
+relocInfo.hpp   		compiledIC.hpp
+relocInfo.hpp			iCache.hpp
+relocInfo.hpp			util.hpp
+
+
+rframe.cpp			codeIterator.hpp
+rframe.cpp			compiledPIC.hpp
+rframe.cpp			frame.hpp
+rframe.cpp			interpreter.hpp
+rframe.cpp			methodIterator.hpp
+rframe.cpp			nmethod.hpp
+rframe.cpp			oop.inline.hpp
+rframe.cpp			recompile.hpp
+rframe.cpp			rframe.hpp
+rframe.cpp			vframe.hpp
+
+rframe.hpp			allocation.hpp
+rframe.hpp			frame.hpp
+
+
+rscope.cpp			codeIterator.hpp
+rscope.cpp			compiledPIC.hpp
+rscope.cpp			expr.hpp
+rscope.cpp			inliner.hpp
+rscope.cpp			lookupCache.hpp
+rscope.cpp			methodKlass.hpp
+rscope.cpp      		oop.inline.hpp
+rscope.cpp			recompile.hpp
+rscope.cpp			relocInfo.hpp
+rscope.cpp			rscope.hpp
+rscope.cpp			scope.hpp
+rscope.cpp			uncommonBranch.hpp
+rscope.cpp			vmSymbols.hpp
+
+rscope.hpp			allocation.hpp
+rscope.hpp			growableArray.hpp
+rscope.hpp			pcDesc.hpp
+rscope.hpp			scopeDesc.hpp
+
+
+scopeDesc.cpp			codeBuffer.hpp
+scopeDesc.cpp			blockOop.inline.hpp
+scopeDesc.cpp			methodKlass.hpp
+scopeDesc.cpp			lookupCache.hpp
+scopeDesc.cpp			nmethod.hpp
+scopeDesc.cpp			scopeDesc.hpp
+scopeDesc.cpp			scopeDescRecorder.hpp
+scopeDesc.cpp			expr.hpp
+scopeDesc.cpp			symbolOop.hpp
+scopeDesc.cpp			vmSymbols.hpp
+scopeDesc.cpp 			oop.inline.hpp
+scopeDesc.cpp 			memOop.inline.hpp
+
+
+scopeDesc.hpp			key.hpp
+scopeDesc.hpp			nameDesc.hpp
+scopeDesc.hpp			methodOop.hpp
+
+
+scopeDescRecorder.cpp		nmethodScopes.hpp
+scopeDescRecorder.cpp		pcDesc.hpp
+scopeDescRecorder.cpp		scopeDescRecorder.hpp
+scopeDescRecorder.cpp		scope.hpp
+scopeDescRecorder.cpp		oop.inline.hpp
+
+scopeDescRecorder.hpp		blockOop.inline.hpp
+scopeDescRecorder.hpp		key.hpp
+scopeDescRecorder.hpp		scopeDesc.hpp
+
+
+scope.cpp			basicBlock.hpp
+scope.cpp			blockKlass.hpp
+scope.cpp			growableArray.hpp
+scope.cpp			loopOpt.hpp
+scope.cpp			methodKlass.hpp
+scope.cpp			node.hpp
+scope.cpp			oop.hpp
+scope.cpp			preg.hpp
+scope.cpp			prim.hpp
+scope.cpp			recompile.hpp
+scope.cpp			regAlloc.hpp
+scope.cpp			registerMask.hpp
+scope.cpp			rscope.hpp
+scope.cpp			scopeDescRecorder.hpp
+scope.cpp			compiler.hpp
+scope.cpp			expr.hpp
+scope.cpp			scope.hpp
+scope.cpp			symbolOop.hpp
+
+scope.hpp			growableArray.hpp
+scope.hpp			expr.hpp
+scope.hpp			growableArray.hpp
+scope.hpp			nodeBuilder.hpp
+scope.hpp			preg.hpp
+scope.hpp			registerMask.hpp
+scope.hpp			compiler.hpp
+scope.hpp			slist.hpp
+scope.hpp			types.hpp
+scope.hpp			vframe.hpp
+
+
+split.cpp			node.hpp
+split.cpp			compiler.hpp
+split.cpp			expr.hpp
+split.cpp			scope.hpp
+split.cpp			split.hpp
+
+split.hpp			top.hpp
+
+
+slist.hpp			allocation.hpp
+slist.hpp			types.hpp
+
+slist.cpp			slist.hpp
+
+
+uncommonBranch.cpp		allocation.hpp
+uncommonBranch.cpp		compiler.hpp
+uncommonBranch.cpp		recompile.hpp
+uncommonBranch.cpp		recompiler.hpp
+uncommonBranch.cpp		runtime.hpp
+uncommonBranch.cpp		stackChunk.hpp
+uncommonBranch.cpp		stubRoutines.hpp
+uncommonBranch.cpp		uncommonBranch.hpp
+uncommonBranch.cpp		vframe.hpp
+
+uncommonBranch.hpp		abort.hpp
+uncommonBranch.hpp		frame.hpp
+
+
+x86_mapping.hpp			allocation.hpp
+x86_mapping.hpp			location.hpp
+x86_mapping.hpp			assembler.hpp
+
+x86_mapping.cpp			blockOop.hpp
+x86_mapping.cpp			compiler.hpp
+x86_mapping.cpp			preg.hpp
+x86_mapping.cpp			scope.hpp
+x86_mapping.cpp			x86_mapping.hpp
+
+
+zone.cpp			abort.hpp
+zone.cpp			compiledPIC.hpp
+zone.cpp			codeTable.hpp
+zone.cpp			debug.hpp
+zone.cpp        		delta.hpp
+zone.cpp			frame.hpp
+zone.cpp			iCache.hpp
+zone.cpp			nmethod.hpp
+zone.cpp			allocation.hpp
+zone.cpp			spaceSize.hpp
+zone.cpp			timer.hpp
+zone.cpp			util.hpp
+zone.cpp			zone.hpp
+zone.cpp			zoneHeap.hpp
+zone.cpp        		methodOop.hpp
+
+zone.hpp			jumpTable.hpp
+zone.hpp        		scopeDesc.hpp
+zone.hpp        		codeTable.hpp
+zone.hpp			zoneHeap.hpp
+
+
+zoneHeap.cpp			allocation.hpp
+zoneHeap.cpp			nmethod.hpp
+zoneHeap.cpp			os.hpp
+zoneHeap.cpp			zoneHeap.hpp
+
+zoneHeap.hpp			allocation.hpp
+zoneHeap.hpp			top.hpp
+zoneHeap.hpp			types.hpp

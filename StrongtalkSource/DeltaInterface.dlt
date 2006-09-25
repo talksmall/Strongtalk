@@ -1,0 +1,126 @@
+Delta define: #DeltaInterface as: (
+(Class subclassOf: 'DeltaObjectType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaInterface) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaInterface) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInterface)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInterface) methodsFor: 'Unclassified' !
+
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+	| result |
+	self attributes associationsDo: [ :a <Assoc[Symbol, ObjectType]> |
+		self errorHandler pushSelector: a key.
+		result := a value antimonotonicIn: tv.	
+		self errorHandler popSelector.
+		result ifFalse: [^false]
+	].
+	^true
+!
+
+at: k <Symbol > ^ <Type>
+    ^self attributes at: k!
+
+at: k <Symbol >ifAbsent: b <[^Type] > ^ <Type>
+    ^self attributes at: k ifAbsent: b!
+
+at: k <Symbol >put: t <Type > ^ <Type>
+    ^self filteree at: k put: t!
+
+attributes ^ <Dict[Symbol,Type]>
+
+"self substitution isEmpty ifTrue:[^self filteree attributes]."
+    ^self filteree attributes virtualCollect:
+    [:a <Attribute>  | a substitute: self substitution]!
+
+attributes: a <Dict[Symbol,Type] > ^ <Self>
+    self filter: (BasicInterfaceData new attributes: a) using: DeltaSubstitution new initialize.!
+
+initialize ^ <Self>
+    self filter: (BasicInterfaceData new initialize) using: DeltaSubstitution new initialize.!
+
+merge: i <Interface > ^ <Interface>
+    ^DeltaInterfaceMerge new  type1: self type2: i
+!
+
+messages  ^ <Dict[Symbol,Type]>
+
+^self filteree messages!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+	| result |
+	self attributes associationsDo: [ :a <Assoc[Symbol, ObjectType]> |
+		self errorHandler pushSelector: a key.
+		result := a value monotonicIn: tv.	
+		self errorHandler popSelector.
+		result ifFalse: [^false]
+	].
+	^true
+!
+
+name ^ <Symbol>
+
+| s  <Str> |
+
+   " ^#anInterface"
+s := ''.
+self attributes keys asOrderedCollection do:[ :a <Assoc[Symbol,MsgSignature]> |
+                                        s:= s,  a , ' ', (self at: a) name, ' '.
+                                         ].
+^s asSymbol.!
+
+override: i <Interface > ^ <Interface>
+    ^DeltaInterfaceOverride new base: i delta: self
+!
+
+removeKey: k <Symbol >ifAbsent: b <[^Type] > ^ <Type>
+    ^self filteree removeKey: k ifAbsent: b!
+
+selectMsg: selector <Symbol > ^ <DeltaMsgSignature>
+    ^self attributes at: selector ifAbsent: [DeltaSelectorUndefinedError new selector: selector].!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <DeltaMsgSignature>
+    ^self attributes at: selector ifAbsent: block.!
+
+subInterfaceOf: i <Interface >assuming: trail <DeltaTrail > ^ <Boolean>
+"
+    i attributes associationsDo:
+     [ :a  <Assoc[Symbol, ObjectType]> |
+     ((self at: a key ifAbsent:[self testFailedBecause: self name, ' does not support ', a key toEscape:[^false]]) subtypeOf: a value assuming: trail)
+         ifFalse:[self testFailedBecause: self name, '>', a key, ' is not a subtypeOf ', i name, '>', a key toEscape:[^false]]
+     ].
+^true
+"
+|  myType <ObjectType> result <Boolean> subtype <Boolean> |	
+result := true.
+i attributes associationsDo:
+     [ :a <Assoc[Symbol, ObjectType]> |
+	self errorHandler pushSelector: a key.
+	myType := self at: a key ifAbsent: [].
+	myType isNil 
+		ifTrue: [
+			result := false.
+			self testFailedBecause: DeltaMsgNotSupportedError new toEscape:[self errorHandler popSelector. ^false]]
+		ifFalse: [
+			self errorHandler pushSubtypeCheckDepth.
+			subtype := myType subtypeOf: a value assuming: trail.
+			self errorHandler popSubtypeCheckDepth.
+			subtype ifFalse: [
+				result := false.
+				self testFailedBecause: DeltaMsgNotSubtypesError new toEscape:[self errorHandler popSelector. ^false]]].
+	self errorHandler popSelector ].
+^result
+!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t superInterfaceOf: self assuming: trail!
+
+superInterfaceOf: i <Interface >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^i subInterfaceOf: self assuming: trail! !
+

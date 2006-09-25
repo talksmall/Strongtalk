@@ -1,0 +1,38 @@
+Delta define: #DeltaUntypedClassScope as: (
+(Class subclassOf: 'DeltaUntypedScope' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaUntypedClassScope) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaUntypedClassScope) group: 'ast'!
+
+(Delta mirrorFor: #DeltaUntypedClassScope)
+comment: 
+'Computed untyped class scope.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaUntypedClassScope) classSide methodsFor: 'instance creation' !
+
+
+for: mirror <AbstractClassMirror> ^ <Instance>
+
+	^self new initializeFor: mirror
+! !
+
+! (Delta mirrorFor: #DeltaUntypedClassScope) methodsFor: 'private -  initialization' !
+
+
+initializeFor: m <AbstractClassMirror>
+
+	| cvm <ClassVMMirror> b <IdentityDictionary[Symbol,Object]> |
+
+	cvm := ClassVMMirror on: m reflectee.
+	b := IdentityDictionary[Symbol,Object] new.
+	b at: #self put: (DeltaReceiver new name: #self type: nil).
+	b at: #super put: (DeltaSuperVar new name: #super type: nil).
+	cvm instVarNamesDo: [ :n <Symbol> | b at: n put: (DeltaInstVar new name: n type: nil) ].
+	cvm classVarNamesDo: [ :n <Symbol> | b at: n put: (DeltaClassVar new name: n type: nil) ].
+	self superScope: DeltaGlobals.
+	self bindings: b.
+! !
+

@@ -1,0 +1,38 @@
+Delta define: #DeltaCascadedSend as: (
+(Class subclassOf: 'DeltaSend' instanceVariables: 'prevSend ')) !
+
+(Delta mirrorFor: #DeltaCascadedSend) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaCascadedSend) group: 'ast'!
+
+(Delta mirrorFor: #DeltaCascadedSend)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaCascadedSend) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool cascadedSendNode: self!
+
+isCascadedSendNode ^ <Boolean>
+    ^ true!
+
+prevSend ^ <DeltaSend>
+    ^prevSend!
+
+recv ^ <Expression>
+    ^ prevSend recv!
+
+to: aSend <DeltaSend >cascade: aMessage <DeltaMessage > ^ <Self>
+    self assert: [aSend isSendNode].
+    self assert: [aMessage isMessageNode].
+    prevSend := aSend.
+    msg := aMessage!
+
+type ^ <ObjectType>
+	self prevSend type.
+	^super type
+! !
+

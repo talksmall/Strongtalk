@@ -1,0 +1,350 @@
+Delta define: #Menu as: (
+(Class subclassOf: 'MenuItem' instanceVariables: 'win32Handle <ExternalProxy>
+items <OrdCltn[MenuItem]>
+name <Str>
+win32Size <Int>
+			"The number of menu items we have told windows about"
+window <Window>
+			"If this is a top level menu, then this is the window that it is for."
+submenus <VarDict[Str,Menu]>')) !
+
+(Delta mirrorFor: #Menu) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #Menu) group: 'base'!
+
+(Delta mirrorFor: #Menu)
+comment: 
+'Tags:  %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Menu) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #Menu) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	items := OrderedCollection[MenuItem] new.
+	win32Size := 0.
+	submenus := Dictionary[Str,Menu] new.! !
+
+! (Delta mirrorFor: #Menu) methodsFor: 'accessing' !
+
+
+add: item <MenuItem>
+
+	"only add a separator if we are not at the beginning, or if the last
+		item is not a separator"
+	((item isKindOf: MenuSeparator)
+			and: [ self items isEmpty or: [ self items last isKindOf: MenuSeparator] ])
+		ifTrue: [ ^self ].
+
+	self mutableItems add: item.
+	item parent: self.
+	self rebuildIfNeeded.!
+
+addAll: items <Cltn[MenuItem]>
+
+	items do: [ :item <MenuItem> |
+						self add: item  ]!
+
+addSeparator
+
+	self add: MenuSeparator new.!
+
+hasWindow ^<Window>
+
+	^window notNil!
+
+items ^<SeqCltn[MenuItem]>
+
+	^self mutableItems!
+
+merge: other <Menu>
+	"recursively merge the items from other into the receiver.
+	  This merges submenus with the same name, but
+	  never merges menu items.  Any new items will
+	  be put at the bottom of the menu,.  This mutates the receiver, and
+	  consumes (or parents) the other menu."
+
+	
+	other removeAll do:
+		[ :item <MenuItem> |
+				item mergeInto: self ].!
+
+name ^<Str>
+
+	^name!
+
+name: nm <Str>
+
+	name := nm.
+	self isBuilt
+		ifTrue: [	"We rebuild the parent since it is the parent that shows the name"
+						self parent rebuild.		]!
+
+noParent
+
+	self parent unregisterSubmenu: self.
+	super noParent.
+!
+
+parent: p <Menu>
+
+	super parent: p.
+	self parent registerSubmenu: self!
+
+prependItems: cltn <Cltn[MenuItems]>
+
+	| oldItems <SeqCltn[MenuItem]> |
+	oldItems := self removeAll.
+	self	addAll: cltn;
+			addAll: oldItems.	!
+
+removeAll ^<SeqCltn[MenuItem]>
+	"remove all the items.  A collection of the items is returned."
+
+	| oldItems <SeqCltn[MenuItem]> |
+	oldItems := self items.
+	self items size to: 1 by: -1
+		do: [ :index <Int> |
+					self isBuilt
+						ifTrue: [ self win32RemoveAt: index - 1. ].
+					(self items at: index) noParent; release.
+			  ].
+	items := OrderedCollection[MenuItem] new.
+	self rebuildIfNeeded.
+	^oldItems!
+
+removeAt: index <Int>
+	"remove the item at the specified index."
+
+	| item <MenuItem> |
+	item := self mutableItems removeAt: index.
+	self isBuilt
+		ifTrue: [ self win32RemoveAt: index ].
+	item noParent; release.
+	self rebuildIfNeeded.!
+
+submenuNamed: nm <Str> ifAbsent: blk <[^X def]>  ^<Menu | X>
+
+	^self submenus at: nm ifAbsent: blk!
+
+window ^<Window>
+
+	^window!
+
+window: w <Window>
+
+	window := w! !
+
+! (Delta mirrorFor: #Menu) methodsFor: 'private' !
+
+
+addAllItems
+
+	self items keysAndValuesDo:
+		[ :index <Int> :item <MenuItem> |
+			item buildFor: self at: index	].!
+
+build
+
+	self isPopUp
+		ifFalse: [	win32Handle := {{<user ExternalProxy CreateMenu> call}} ]
+		ifTrue: [	win32Handle := {{<user ExternalProxy CreatePopupMenu> call}} ].
+	win32Handle isNull
+		ifTrue: [ Win32 handleError ].
+	self addAllItems.!
+
+destroy
+
+	self isBuilt
+		ifTrue: [ {{<user ExternalProxy DestroyMenu>
+							handle: self win32Handle
+					  }} asBoolean
+						ifFalse: [ Win32 handleError ].	].
+	win32Handle := nil.!
+
+draw
+
+	self isPopUp
+		ifFalse: [ {{<user ExternalProxy DrawMenuBar>
+								handle: self window win32Handle
+						}} asBoolean
+							ifFalse: [ Win32 handleError ]		]!
+
+isPopUp ^<Boolean>
+
+	^window isNil!
+
+mutableItems ^<OrdCltn[MenuItem]>
+
+	^items!
+
+postCopy
+
+	| oldItems <OrdCltn[MenuItem]> |
+	super postCopy.
+	win32Handle := nil.
+	win32Size := nil.
+	window := nil.
+	
+	oldItems := self items.
+	items := OrderedCollection[MenuItem] new: oldItems size.
+	oldItems do:
+		[ :item <MenuItem> |
+			self add: item copy ].!
+
+rebuild
+
+	self isBuilt
+		ifTrue: [	self	win32RemoveAll;
+								addAllItems;
+								draw.		].!
+
+submenus ^<VarDict[Str,Menu]>
+
+	^submenus!
+
+updateItems
+
+	self items keysAndValuesDo:
+		[ :index <Int> :item <MenuItem> |
+			item updateFor: self at: index	].!
+
+win32RemoveAll
+
+	self items do:
+		[ :item <MenuItem> |
+			item release ].
+	win32Size - 1 to: 0 by: -1 do:
+		[ :i <Int> |
+			self win32RemoveAt: i ].!
+
+win32RemoveAt: i <Int>
+
+	{{<user ExternalProxy RemoveMenu>
+		hmenu: self win32Handle
+		index: i
+		flags: Win32 MF_BYPOSITION
+    }} asBoolean
+		ifFalse: [ Win32 handleError ].
+	win32Size := win32Size - 1.! !
+
+! (Delta mirrorFor: #Menu) methodsFor: 'control' !
+
+
+buildFor: menu <Menu> at: index <Int>
+
+	| content <CString> flags <ExternalData>  |
+			
+	content := CString for: self name.
+	flags := Win32 MF_POPUP externalBitOr: Win32 MF_STRING.
+
+	self parent appendWithFlags: flags item: self win32Handle content: content.
+
+	content free.!
+
+newbuildFor: menu <Menu> at: index <Int>
+"%todo: use when everyone is win32"
+	| info <MENUITEMINFO> cname <CString> |
+	info := MENUITEMINFO new allocate.
+	info fMask:
+		((						Win32 MIIM_SUBMENU
+			externalBitOr:	Win32 MIIM_ID)
+			externalBitOr:	Win32 MIIM_TYPE).
+	cname := CString for: self name.
+	info	fType: Win32 MFT_STRING;
+			wID: self id;
+			hSubMenu: self win32Handle;
+			dwTypeData: cname;
+			cch: self name size.
+
+	self parent insertWithInfo: info at: index.
+
+	cname free.
+	info free.!
+
+release
+
+	self items do:
+		[ :item <MenuItem> |
+			item release ].
+	self destroy.
+	window := nil.
+	win32Size := 0.
+	super release.! !
+
+! (Delta mirrorFor: #Menu) methodsFor: 'testing-restricted' !
+
+
+isBuilt ^<Boolean>
+
+	^win32Handle notNil! !
+
+! (Delta mirrorFor: #Menu) methodsFor: 'restricted-win32' !
+
+
+appendWithFlags: flags <ExternalData> item: item <ExternalData> content: content <ExternalData>
+
+	{{<user ExternalProxy AppendMenuA>
+		menu: self win32Handle
+		flags: flags
+		item: item
+		content: content
+	 }} asBoolean
+		ifFalse: [ Win32 handleError ].
+
+	win32Size := win32Size + 1.!
+
+insertWithInfo: info <MENUITEMINFO> at: index <Int>
+
+	{{<user ExternalProxy InsertMenuItemA>
+		menu: self win32Handle
+		index: index
+		byPosition: true asExternalData
+		info: info
+	 }} asBoolean
+		ifFalse: [ Win32 handleError ].
+
+	win32Size := win32Size + 1.!
+
+mergeInto: menu <Menu>
+
+	| matchingSub <Menu> |
+	matchingSub := menu submenuNamed: self name
+			ifAbsent: [	menu add: self.
+								^self ].
+	matchingSub merge: self.!
+
+registerSubmenu: sm <Menu>
+
+	self submenus at: sm name put: sm!
+
+unregisterSubmenu: sm <Menu>
+
+	self submenus removeAt: sm name!
+
+updateMenuWithHandle: handle <ExternalData>
+
+	self win32Handle @= handle
+		ifTrue: [ self updateItems ]
+		ifFalse: [ self items do:
+							[ :item <MenuItem> |
+								item updateMenuWithHandle: handle. ]		].!
+
+win32Handle ^<ExternalProxy>
+
+	win32Handle isNil
+		ifTrue: [ self build ].
+	^win32Handle! !
+

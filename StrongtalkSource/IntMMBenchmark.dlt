@@ -1,0 +1,87 @@
+Delta define: #IntMMBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: 'ma mb mr') classVariables: 'IRowsize ') !
+
+(Delta mirrorFor: #IntMMBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #IntMMBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #IntMMBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #IntMMBenchmark) classSide methodsFor: 'constants' !
+
+
+initialize IRowsize := 40 "IntMMBenchmark initialize"! !
+
+! (Delta mirrorFor: #IntMMBenchmark) methodsFor: 'run' !
+
+
+run
+	self initialize.
+	mr := self mmMatrix.
+	ma := self initmatrix.
+	mb := self initmatrix.
+	self initrand.
+	1 to: IRowsize do: [:i | 1 to: IRowsize do: [:j | (mr at: i)
+				at: j put: (self
+					innerproductOf: ma
+					and: mb
+					row: i
+					column: j)]]! !
+
+! (Delta mirrorFor: #IntMMBenchmark) methodsFor: 'private' !
+
+
+initmatrix 
+	| m temp |
+	m := self mmMatrix.
+	1 to: IRowsize do: [:i | 1 to: IRowsize do: 
+			[:j | 
+			temp := self newValue.
+			(m at: i)
+				at: j put: temp - (temp // 120 * 120) - 60]].
+	^m!
+
+innerproductOf: a and: b row: row column: column 
+	| result |
+	result := 0.
+	1 to: IRowsize do: [:i | result := ((a at: row)
+						at: i) * ((b at: i) at: column) + result].
+	^result!
+
+makeMatrix: n by: m 
+	| r |
+	r := Array new: n.
+	1 to: r size do: [:i | r at: i put: (Array new: m)].
+	^r!
+
+makePuzzleMatrix: n by: m 
+	| r |
+	r := PuzzleArray new: n.
+	0 to: r size - 1 do: [:i | r at: i put: (PuzzleArray new: m)].
+	^r!
+
+mmMatrix
+	^self makeMatrix: IRowsize + 1 by: IRowsize + 1!
+
+newValue
+	^self rand! !
+
+! (Delta mirrorFor: #IntMMBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^119!
+
+factor
+	^14!
+
+name
+	^#IntMM!
+
+parcplaceTime
+	^159! !
+

@@ -1,0 +1,230 @@
+Delta define: #ClassOrMixinDefinitionOutliner as: (
+Generic forAll: 'M <Mirror> ' body: ((Class subclassOf: 'GenericDefinitionOutliner[M]' instanceVariables: 'superclassTypeView <TextView[Str]>	
+instVarOutliner <InstanceVariableOutliner>
+addingInstVars <Boolean> 
+classVarOutliner <ClassVariableOutliner>
+addingClassVars <Boolean> 
+supportedProtocolOutliner <SupportedProtocolOutliner>
+addingSupportedProtocol <Boolean> 
+') abstract)) !
+
+(Delta mirrorFor: #ClassOrMixinDefinitionOutliner) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #ClassOrMixinDefinitionOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #ClassOrMixinDefinitionOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ClassOrMixinDefinitionOutliner) methodsFor: 'private' !
+
+
+addingClassVars ^ <Boolean>
+
+	^addingClassVars!
+
+addingClassVars: b <Boolean>
+
+	addingClassVars := b!
+
+addingInstVars ^ <Boolean>
+
+	^addingInstVars!
+
+addingInstVars: b <Boolean>
+
+	addingInstVars := b!
+
+addingSupportedProtocol ^ <Boolean>
+
+	^addingSupportedProtocol!
+
+addingSupportedProtocol: b <Boolean>
+
+	addingSupportedProtocol := b!
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: self mirror shortDescription painter: self sectionPainter) asVisual.
+
+!
+
+classVarOutliner ^ <ClassVariableOutliner>
+
+	^classVarOutliner!
+
+classVarOutliner: o <ClassVariableOutliner>
+
+	classVarOutliner := o!
+
+insertRemainingDefinition: col <Column[Visual]>
+
+ 	(self mirror instanceVariableString isEmpty not or: [ self addingInstVars ])
+		ifTrue: [		self instVarOutliner: (InstanceVariableOutliner for: self mirror).
+							col add: (self addChild: self instVarOutliner) imbeddedVisual ]
+		ifFalse: [	self instVarOutliner: nil ].
+	
+	(self mirror classVariableString isEmpty not or: [ self addingClassVars ])
+		ifTrue: [		self classVarOutliner: (ClassVariableOutliner for: self mirror).
+							col add: (self addChild: self classVarOutliner) imbeddedVisual ]
+		ifFalse: [	self classVarOutliner: nil ].
+
+	(self mirror supportedProtocolString isEmpty not or: [ self addingSupportedProtocol ])
+		ifTrue: [		self supportedProtocolOutliner: (SupportedProtocolOutliner for: self mirror).
+							col add: (self addChild: self supportedProtocolOutliner) imbeddedVisual ]
+		ifFalse: [	self supportedProtocolOutliner: nil ]
+!
+
+instVarOutliner ^ <InstanceVariableOutliner>
+
+	^instVarOutliner!
+
+instVarOutliner: o <InstanceVariableOutliner>
+
+	instVarOutliner := o!
+
+supportedProtocolOutliner ^ <SupportedProtocolOutliner>
+
+	^supportedProtocolOutliner!
+
+supportedProtocolOutliner: o <SupportedProtocolOutliner>
+
+	supportedProtocolOutliner := o! !
+
+! (Delta mirrorFor: #ClassOrMixinDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	super update: aspect with: value.
+	self inSessionProcessDo: [
+								
+		aspect = #instanceVariables
+			ifTrue: [	self mirror instanceVariableString isEmpty = self instVarOutliner isNil
+								ifFalse: [	self updateBody ] ].
+
+		aspect = #classVariables
+			ifTrue: [	self mirror classVariableString isEmpty = self classVarOutliner isNil
+								ifFalse: [	self updateBody ] ].
+													
+		aspect = #supportedProtocol
+			ifTrue: [	self mirror supportedProtocolString isEmpty = self supportedProtocolOutliner isNil
+								ifFalse: [	self updateBody ] ].
+
+		aspect = #abstract
+			ifTrue: [	self updateHeaders ].
+	]
+! !
+
+! (Delta mirrorFor: #ClassOrMixinDefinitionOutliner) methodsFor: 'private-initialize' !
+
+
+initialize
+
+	super initialize.
+	self addingInstVars: false.
+	self addingClassVars: false.
+	self addingSupportedProtocol: false.! !
+
+! (Delta mirrorFor: #ClassOrMixinDefinitionOutliner) methodsFor: 'menus' !
+
+
+smalltalkMenuBar ^ <Menu>
+
+	^super smalltalkMenuBar
+		add: (MenuAction new
+					name: 'Add instance variables';
+					active: [ self mirror instanceVariableString isEmpty and: [self instVarOutliner isNil]];
+					action: [ self addInstanceVariables ]);
+		add: (MenuAction new
+					name: 'Add class variables';
+					active: [ self mirror classVariableString isEmpty and: [self classVarOutliner isNil]];
+					action: [ self addClassVariables ]);
+		add: (MenuAction new
+					name: 'Add class instance variables';
+					action: [ self addClassInstanceVariables ]);
+		add: (MenuAction new
+					name: 'Add pool dictionaries';
+					action: [ self addPoolDictionaries ])
+!
+
+strongtalkMenuBar ^ <Menu>
+
+	| isAbstract <Boolean> |
+	isAbstract := self mirror isAbstract.
+	^super strongtalkMenuBar
+		add: (MenuAction new
+					name: 'Add supported protocol';
+					active: [ self mirror supportedProtocolString isEmpty and: [self supportedProtocolOutliner isNil]];
+					action: [ self addSupportedProtocol ]);
+		add: (MenuAction new
+					name: (isAbstract ifTrue: [ 'Make concrete' ] ifFalse: [ 'Make abstract' ]);
+					action: [ self makeAbstract: isAbstract not ])! !
+
+! (Delta mirrorFor: #ClassOrMixinDefinitionOutliner) methodsFor: 'control' !
+
+
+addClassInstanceVariables
+
+	self visual 
+		promptOk: 'Support for class instance variables not present'
+		title: 'Information'
+		type: #info
+		action: []
+!
+
+addClassVariables
+
+	self open: true.
+	self addingClassVars: true.
+	[ self updateBody ] ensure: [ self addingClassVars: false ].
+	self classVarOutliner notNil
+		ifTrue: [ self inSessionProcessDo: [ 
+							self classVarOutliner becomeFocusIfFail: [] ] ]!
+
+addInstanceVariables
+
+	self open: true.
+	self addingInstVars: true.
+	[ self updateBody ] ensure: [ self addingInstVars: false ].
+	self instVarOutliner notNil
+		ifTrue: [ self inSessionProcessDo: [ 
+							self instVarOutliner becomeFocusIfFail: [] ] ]!
+
+addPoolDictionaries
+
+	self visual 
+		promptOk: 'Support for pool dictionaries not present'
+		title: 'Information'
+		type: #info
+		action: []
+!
+
+addSupportedProtocol
+
+	self open: true.
+	self addingSupportedProtocol: true.
+	[ self updateBody ] ensure: [ self addingSupportedProtocol: false ].
+	self supportedProtocolOutliner notNil
+		ifTrue: [ self inSessionProcessDo: [ 
+							self supportedProtocolOutliner becomeFocusIfFail: [] ] ]!
+
+makeAbstract: b <Boolean>
+
+	self mirror abstract: b! !
+
+! (Delta mirrorFor: #ClassOrMixinDefinitionOutliner) methodsFor: 'accessing' !
+
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+^InstVarLocator 	coerce: loc
+	do:[: l <InstVarLocator> | self instVarOutliner] else:[
+ClassVarLocator coerce: loc
+	do:[: l <ClassVarLocator> | self classVarOutliner] else:[
+SupportedProtocolLocator coerce: loc
+	do:[: l <SupportedProtocolLocator> | self supportedProtocolOutliner] else:[
+super outlinerForLocator: loc]]].
+! !
+

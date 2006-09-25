@@ -1,0 +1,43 @@
+Delta define: #CustomInputStream as: (
+Generic forAll: '(E covar) ' body: ((Class subclassOf: 'BasicInputStream[E]' instanceVariables: 'nextBlock <[^E]>
+atEndBlock <[^Boolean]>
+		'))) !
+
+(Delta mirrorFor: #CustomInputStream) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #CustomInputStream) group: 'base'!
+
+(Delta mirrorFor: #CustomInputStream)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+! (Delta mirrorFor: #CustomInputStream) methodsFor: 'accessing' !
+
+
+atEndBlock ^<[^Boolean]>
+
+	^atEndBlock!
+
+atEndBlock: blk <[^Boolean]>
+
+	atEndBlock := blk!
+
+nextBlock ^<[^E]>
+	^nextBlock!
+
+nextBlock: blk <[^E]>
+
+	nextBlock := blk! !
+
+! (Delta mirrorFor: #CustomInputStream) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+
+	^self atEndBlock value!
+
+actualNext ^<E>
+
+	^self nextBlock value! !
+

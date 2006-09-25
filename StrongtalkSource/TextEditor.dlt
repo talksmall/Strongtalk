@@ -1,0 +1,254 @@
+Delta define: #TextEditor as: (
+(Class subclassOf: 'Application' instanceVariables: 'path <FilePath>
+	"Is nil if no path chosen yet"
+textView <TextView[CharGlyphs]>
+')) !
+
+(Delta mirrorFor: #TextEditor) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #TextEditor) group: 'ui'!
+
+(Delta mirrorFor: #TextEditor)
+comment: 
+'General text editor.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $
+'!
+
+! (Delta mirrorFor: #TextEditor) classSide methodsFor: 'instance creation' !
+
+
+on: path <FilePath>  ^<Instance>
+
+	^self new path: path! !
+
+! (Delta mirrorFor: #TextEditor) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	^(self textView bareVisualTop: top)
+		withBorder: (Border standard3DWithColor: Paint gray
+										  raised: false)!
+
+defaultDesiredColumns ^<Int>
+
+	^80!
+
+defaultDesiredRows ^<Int>
+
+	^25!
+
+doCancel
+
+	self textView hasBeenChanged
+		ifTrue: [ self hasPath
+						ifTrue: [ self doOpen ]
+						ifFalse: [	self textView model: OrderedCollection[CharacterGlyph] new  ].
+				   ]
+!
+
+doOpen
+
+	| strm <CharInputStream> p <Painter> |
+	strm := self path charInputStream.
+	p := self textView painter.
+	[	self textView model: (strm contentsRemaining collect: [ :c <Character> | p charGlyphFor: c ])]
+		ensure: [ strm close ].!
+
+doStoreAndOnSuccess: blk <[]>
+
+	| strm <CharOutputStream> |
+	strm := self path charOutputStream.
+	[ self textView model do: [ :cg <CharacterGlyph> | strm put: cg character ] ]
+		ensure: [ strm close ].
+	blk value!
+
+promptDiscardChangesOnSuccess: blk <[]>
+
+	self visual
+		promptYesNo: 'Discard changes?'
+		title: self windowTitle
+		type: #exclamation
+		default: 2
+		action: [ :yes <Boolean> |
+						yes ifTrue: [ blk value ]
+					]!
+
+promptOpen
+
+	self visual
+		userPickOpenFileWithAction:
+			[ :f <FilePath> :writeable <Boolean> |
+				self path: f 	]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'All Files' ,, '*.*' with: 'Text Files' ,, '*.txt' )
+		defaultFile: path
+		defaultDir: nil
+		title: 'Open File'
+		allowReadOnly: true
+		mustExist: true!
+
+reloadTextView
+
+	"We do this even if no edits because the file might have changed"
+	self hasPath
+		ifTrue: [ self doOpen ]
+		ifFalse: [	self textView model: OrderedCollection[CharacterGlyph] new  ]!
+
+saveAsAndOnSuccess: blk <[]>
+
+	self visual
+		userPickSaveFileWithAction:
+			[ :f <FilePath> |
+				self setPath: f.
+				self textView acceptAndOnSuccess: blk.	]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'All Files' ,, '*.*' with: 'Text Files' ,, '*.txt' )
+		defaultFile: self path
+		defaultDir: nil
+		title: 'Save File'!
+
+setPath: p <FilePath>
+
+	path := p.
+	self hasVisual
+		ifTrue: [	self visual topWindow name: self windowTitle ]!
+
+storeAndOnSuccess: blk <[]>
+
+	self hasPath
+		ifTrue: [ self doStoreAndOnSuccess: blk ]
+		ifFalse: [ self saveAsAndOnSuccess: blk ]!
+
+textView ^<TextView[CharGlyphs]>
+
+	^textView!
+
+textViewClass ^ <TextView[CharGlyphs] class>
+
+	^TextView[CharGlyphs] ! !
+
+! (Delta mirrorFor: #TextEditor) methodsFor: 'accessing' !
+
+
+hasPath ^<Boolean>
+
+	^path notNil!
+
+path ^<FilePath>
+
+	^path!
+
+path: p <FilePath>
+
+	self setPath: p.
+	self doOpen.!
+
+windowTitle ^ <Str>
+
+	^self hasPath
+		ifTrue:	[	'Text Editor on: ', self path name ]
+		ifFalse: [	'Text Editor' ]! !
+
+! (Delta mirrorFor: #TextEditor) methodsFor: 'control' !
+
+
+cancel
+
+	self textView cancel!
+
+closeRequest: toClose <[]>
+	"Request that the user decide whether to save and close, close, or cancel close.
+		toClose is evaluated if the user decides to close.  The save is done first
+		if the user requests it."
+
+	self textView closeRequest: toClose!
+
+open
+
+	self textView hasBeenChanged
+		ifFalse: [ self promptOpen ]
+		ifTrue: [ self promptDiscardChangesOnSuccess: [ self promptOpen ] ]!
+
+save
+
+	self textView accept!
+
+saveAs
+
+	self saveAsAndOnSuccess: []! !
+
+! (Delta mirrorFor: #TextEditor) methodsFor: 'menus' !
+
+
+fileMenu ^<Menu>
+
+	^Menu new name: '&File';
+			add: (MenuAction new
+					name: '&Open...';
+					action: [ self open ]);
+			add: (MenuAction new
+					name: '&Save';
+					active: [ self hasPath ];
+					action: [ self save ] );
+			add: (MenuAction new
+					name: 'Save &As...';
+					action: [ self saveAs ]);
+			add: (MenuAction new
+					name: '&Restore Original';
+					action: [ self cancel ]);
+			addSeparator;
+			add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self]);
+			addSeparator;
+			add: (MenuAction new
+					name: 'E&xit';
+					action: [ self visual topWindow requestClose ])
+!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+hasPopUpMenuForTop ^<Boolean>
+	
+	^true!
+
+menuBar ^<Menu>
+
+	^self textView menuBar
+		prependItems: (Array[Menu] with: self fileMenu)!
+
+popUpMenu ^<Menu>
+
+	^Menu new
+		addAll: self textView editMenu removeAll;
+		addSeparator;
+		add: self fileMenu;
+		add: self textView propertiesMenu
+! !
+
+! (Delta mirrorFor: #TextEditor) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	textView := self textViewClass forText.
+	textView scrollable: true.
+	textView doneBlock:
+		[ :save <Boolean> :onSuccess <[]> |
+			save
+				ifTrue: [	self storeAndOnSuccess: onSuccess ]
+				ifFalse: [	self reloadTextView.
+								onSuccess value  ]
+		].
+	textView infiniteUndo.
+	textView model: OrderedCollection[CharacterGlyph] new.
+	textView desiredRows: self defaultDesiredRows;
+		desiredColumns: self defaultDesiredColumns.
+! !
+

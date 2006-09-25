@@ -1,0 +1,64 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Virtual Machine</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="progenv6.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="virtualmachine2.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">The Virtual Machine</h2>
+
+<p align="left">Perhaps the most striking difference between the
+Strongtalk system and other Smalltalk systems is performance. The
+Strongtalk system is not only far faster than any other Smalltalk
+system (and it is hardly tuned at all), but it is faster in ways
+that can significantly improve the way that Smalltalk programmers
+write code. This is because it dramatically reduces (and often
+completely eliminates) the cost of most message sends and blocks.
+This allows programmers to write even the most performance
+critical code in as finely-factored a way as they please. For
+example, accessor messages for instance variables, and custom
+control structures (using blocks), can be used universally.</p>
+
+<p align="left">This may sound too good to be true, but it really
+works. The Strongtalk virtual machine accomplishes this feat
+using several different technologies:</p>
+
+<ul>
+    <li><p align="left">A fast interpreter combined with a unique
+        dynamically-adaptive inlining compiler that produces
+        native code. The compiler uses <em>type feedback</em>, an
+        approach developed by Urs Hoelzle for his Stanford
+        doctoral thesis as part of research done in the Self
+        group at Sun Microsystems, Inc.</p>
+    </li>
+    <li><p align="left">A very fast generational garbage
+        collector</p>
+    </li>
+    <li><p align="left">Direct pointers for objects, eliminating
+        object table indirections</p>
+    </li>
+</ul>
+
+<p align="left">The inlining compiler can inline and optimize
+away over 90% of dynamically occuring message sends and block
+closures. Since most programs spend almost all their time in a
+small fraction of their code, the compiler is able to keep the
+space and time cost of optimization reasonable by only optimizing
+performance-critical code.</p>
+
+<p align="left">On the next page we will show a micro-benchmark
+that demonstrates the dramatic effect of this technology. For
+those who are interested, you can read a two-page overview on <a
+href="optimization.html">how the adaptive compilation process
+works</a> before proceeding to the next page.</p>
+
+<h3 align="right"><a href="virtualmachine2.html"><strong>The
+Virtual Machine, cont. ==&gt;</strong></a></h3>
+</body>
+</html>

@@ -1,0 +1,72 @@
+Delta define: #DeltaToIBMDefinitionWriter as: (
+(Class subclassOf: 'DefinitionWriter' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaToIBMDefinitionWriter) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaToIBMDefinitionWriter) group: 'reflection'!
+
+(Delta mirrorFor: #DeltaToIBMDefinitionWriter)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaToIBMDefinitionWriter) methodsFor: 'Unclassified' !
+
+
+fileOutCategoryHeader: cat <Symbol> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	pos := stream position.
+	stream
+		nextPutAll: '!! ';
+		nextPutAll: self mirror name;
+		nextPutAll: ' methods';
+		nextPutAll: ' !!';
+		cr.
+	^pos
+!
+
+fileOutComment: s <Str> on: stream <WriteStream> ^ <Int>
+!
+
+fileOutDefinition: s <Str> on: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self assert: [self mirror isMeta not].
+	stream
+		nextPutAll: self mirror superclassTypeString;
+		nextPutAll: ' subclass: #';
+		nextPutAll: self mirror name;
+		nextPutAll: ' instanceVariableNames: ';
+		nextPutAll: self mirror instanceVariableString asString printString;
+		nextPutAll: ' classVariableNames: ';
+		nextPutAll: self mirror classVariableString asString printString;
+		nextPutAll: ' poolDictionaries: ''''';
+		nextPutAll: ' !!';
+		cr.
+		
+	pos := stream position.
+	^pos
+
+!
+
+fileOutGroup: s <Str> on: stream <WriteStream> ^ <Int>
+!
+
+fileOutOn: stream <WriteStream> ^ <Int>
+
+	| pos <Int> |
+	self assert: [ self mirror isMeta not ].
+	pos := stream position.
+	self fileOutDefinition: self mirror definitionString on: stream.
+	self fileOutRevision: self mirror revision on: stream.
+	self fileOutGroup: self mirror group on: stream.
+	self fileOutComment: self mirror comment on: stream.
+	(self class new mirror: self mirror classSide) fileOutBodyOn: stream.
+	self fileOutBodyOn: stream.
+	^pos
+!
+
+fileOutRevision: s <Str> on: stream <WriteStream> ^ <Int>
+! !
+

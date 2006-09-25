@@ -1,0 +1,35 @@
+Delta define: #DeltaProtocolMsgSignature as: (
+(Class subclassOf: 'DeltaMsgSignature' instanceVariables: 'selector ')) !
+
+(Delta mirrorFor: #DeltaProtocolMsgSignature) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaProtocolMsgSignature) group: 'ast'!
+
+(Delta mirrorFor: #DeltaProtocolMsgSignature)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaProtocolMsgSignature) methodsFor: 'Unclassified' !
+
+
+selector
+	selector isNil
+		ifTrue: [^self filteree selector]
+		ifFalse: [^selector]!
+
+selector: aSymbol
+	selector := aSymbol!
+
+type  ^ <Self>
+
+	self deltaHack.	"Remove this later"
+	^self!
+
+visibility
+	^#public
+!
+
+visibility: aSymbol
+! !
+

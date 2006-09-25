@@ -1,0 +1,128 @@
+Delta define: #Paint as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'Black <SolidPaint>
+White <SolidPaint>
+Gray <SolidPaint>
+Red <SolidPaint>
+Green <SolidPaint>
+Blue <SolidPaint>
+
+BackgroundGray <SolidPaint>
+BlueGreen <SolidPaint>
+Yellow <SolidPaint>') !
+
+(Delta mirrorFor: #Paint) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Paint) group: 'ui'!
+
+(Delta mirrorFor: #Paint)
+comment: 
+'Represents the colored and possibly patterned paint used for drawing.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #Paint) classSide methodsFor: 'instance creation' !
+
+
+red: r <Int> green: g <Int> blue: b <Int>  ^<Paint>
+	"r,g, & b all must be in the range 0-255"
+
+	^SolidPaint red: r green: g blue: b! !
+
+! (Delta mirrorFor: #Paint) classSide methodsFor: 'constants' !
+
+
+backgroundGray ^<SolidPaint>
+	"A nice light gray appropriate for a background color"
+
+	^BackgroundGray!
+
+black ^<SolidPaint>
+
+	^Black!
+
+blue ^<SolidPaint>
+
+	^Blue!
+
+blueGreen ^<SolidPaint>
+
+	^BlueGreen!
+
+default ^<Paint>
+
+	^self black!
+
+gray ^<SolidPaint>
+
+	^Gray!
+
+green ^<SolidPaint>
+
+	^Green!
+
+red ^<SolidPaint>
+
+	^Red!
+
+white ^<SolidPaint>
+
+	^White!
+
+yellow ^<SolidPaint>
+
+	^Yellow! !
+
+! (Delta mirrorFor: #Paint) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	White := self red: 255 green: 255 blue: 255.
+	Black := self red: 0 green: 0 blue: 0.
+	Gray := self red: 128 green: 128 blue: 128.
+	Red := self red: 255 green: 0 blue: 0.
+	Green := self red: 0 green: 255 blue: 0.
+	Blue := self red: 0 green: 0 blue: 255.
+
+	BackgroundGray := self red: 192 green: 192 blue: 192.
+	BlueGreen := self red: 0 green: 128 blue: 128.
+	Yellow := self red: 255 green: 255 blue: 0.! !
+
+! (Delta mirrorFor: #Paint) methodsFor: 'restricted-win32 accessing' !
+
+
+buildWin32Brush ^<HBRUSH>
+
+	self subclassResponsibility!
+
+sharedWin32Brush ^<HBRUSH>
+
+	self subclassResponsibility!
+
+sharedWin32PenWithWidth: w <Int>
+style: style <Symbol>
+joinStyle: jstyle <Symbol>
+endStyle: estyle <Symbol>
+^<HPEN>
+
+	self subclassResponsibility!
+
+win32Color ^<Int>
+	"Returns a win32 RGB color value appropriate for drawing text, etc.  If this paint is not solid, a
+	  single solid color must nevertheless be chosen and returned."
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Paint) methodsFor: 'utilities' !
+
+
+contrastingWith: background <Paint>  ^<Paint>
+	"return an adjusted paint based on the receiver that has high contrast
+		against background"
+
+	self subclassResponsibility! !
+

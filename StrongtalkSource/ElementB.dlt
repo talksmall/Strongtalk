@@ -1,0 +1,25 @@
+Delta define: #ElementB as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementB) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ElementB) group: 'HTML'!
+
+(Delta mirrorFor: #ElementB)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementB) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	| p <Painter> |
+	p := builder painter copy.
+	p font: (p font newSpec boldness: 0.8) font.
+	builder withPainter: p
+		do: [ self for: builder withColorsFromAttributesDo:
+					[	super buildFor: builder ]
+				]! !
+

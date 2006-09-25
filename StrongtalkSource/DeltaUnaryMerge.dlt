@@ -1,0 +1,21 @@
+Delta define: #DeltaUnaryMerge as: (
+(Class subclassOf: 'DeltaUnaryClassExpr' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaUnaryMerge) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaUnaryMerge) group: 'ast'!
+
+(Delta mirrorFor: #DeltaUnaryMerge)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaUnaryMerge) methodsFor: 'Unclassified' !
+
+
+declaredSubprotocolOf: p <Protocol > ^ <Boolean>
+    ^p == self
+ or:[(self dual  type1 classProtocol declaredSubprotocolOf: p)
+      or:[self dual type2 classProtocol declaredSubprotocolOf: p].
+      ].! !
+

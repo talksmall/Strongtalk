@@ -1,0 +1,46 @@
+Delta define: #CategoryWithMethodsOutliner as: (
+(Class subclassOf: 'CategoryOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #CategoryWithMethodsOutliner) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #CategoryWithMethodsOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #CategoryWithMethodsOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CategoryWithMethodsOutliner) methodsFor: 'menus' !
+
+
+typeCheckMenu ^<Menu>
+
+	^super typeCheckMenu
+			add: (MenuAction new
+                  name: 'Typecheck interface';
+                  action: [self typecheckInterface])
+! !
+
+! (Delta mirrorFor: #CategoryWithMethodsOutliner) methodsFor: 'control' !
+
+
+typecheckInterface
+
+	self typecheckAction: [
+											self categorySelectors 
+												do:[: sel <Symbol> | self mirror typecheckSelectorInterface: sel].
+											]
+		title: 'Typechecking interface of ', self mirror name, ' category: ',self category.
+! !
+
+! (Delta mirrorFor: #CategoryWithMethodsOutliner) methodsFor: 'private' !
+
+
+entryName ^ <Str>
+
+	^'method'!
+
+messageDeclarationOutlinerClass ^ <MessageDeclarationOutliner class>
+
+	^MethodOutliner! !
+

@@ -1,0 +1,121 @@
+Delta define: #DeltaOverrideScope as: (
+(Class subclassOf: 'DeltaScope' instanceVariables: 'delta base ')) !
+
+(Delta mirrorFor: #DeltaOverrideScope) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaOverrideScope) group: 'ast'!
+
+(Delta mirrorFor: #DeltaOverrideScope)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaOverrideScope) methodsFor: 'Unclassified' !
+
+
+at: key <NameType> ^ <T>
+
+	^self at: key ifAbsent: [self error: 'Key ', key, ' not found!!']
+!
+
+at: key <NameType> ifAbsent: blk <[^Object]> ^ <T>
+
+	"Optimization note: This is written using [nil] blocks to avoid passing 
+		non-clean blocks dynamically down the scope structure."
+	
+	| value <T> |
+	(value := self delta at: key ifAbsent: [ nil ]) notNil
+		ifTrue: [ ^value ].
+	(value := self base at: key ifAbsent: [ nil ]) notNil
+    	ifTrue: [	^value ].
+	^blk value
+!
+
+at: key <NameType >put: value <T > ^ <T>
+    ^self delta at:key put:value.!
+
+at: aKey put: aValue ifThere: aBlock
+
+^self delta at: aKey put: aValue ifThere: aBlock!
+
+base ^ <NamespaceGenerator[T]>
+    ^base!
+
+base: aValue <NamespaceGenerator[T] > ^ <NamespaceGenerator[T]>
+    ^base := aValue!
+
+classVarDecls ^ <Dict[Symbol,VarDecl]>
+
+^self delta classVarDecls
+!
+
+copy ^ <Self>
+    ^self class new setBase: self base copy delta: self delta copy.!
+
+delta ^ <NamespaceGenerator[T]>
+    ^delta!
+
+delta: aValue <NamespaceGenerator[T] > ^ <NamespaceGenerator[T]>
+    ^delta := aValue!
+
+includesIndex: key <NameType > ^ <Boolean>
+    ^(self delta includesIndex:key) or:[self base includesIndex:key].!
+
+includesIndexLocally: key <NameType > ^ <Boolean>
+    ^self delta includesIndexLocally:key.!
+
+includesKey: key <NameType > ^ <Boolean>
+    ^(self delta includesIndex:key) or:[self base includesIndex:key].!
+
+includesKeyLocally: key <NameType > ^ <Boolean>
+    ^self delta includesIndexLocally:key.!
+
+initialize: scope
+    "Private."
+self deltaHack. 
+"just here to keep bindings nil. Later, we should factor things so override
+scopes don't have a bindings field"
+    self superScope: scope.
+!
+
+instVarDecls ^ <Dict[Symbol,VarDecl]>
+
+^self delta instVarDecls
+!
+
+isOverrideScope
+	^ true!
+
+override: c <NamespaceGenerator[T] > ^ <NamespaceGenerator[T]>
+    ^DeltaOverrideScope[T]  new setBase:self delta:c.!
+
+remove: key <NameType > ^ <Self>
+    (self delta includesIndex:key) ifTrue:[self delta removeKey: key].
+  " (base includesIndex:key) ifTrue:[base removeIndex:key]."
+" Semantic question - should we remove from base as well"!
+
+removeKey: key <NameType > ^ <Self>
+    ^self remove:key.!
+
+setBase: b <NamespaceGenerator[T] >delta: d <NamespaceGenerator[T] > ^ <Self>
+   self base: b.
+   self delta: d.!
+
+substitute: s
+
+^self class new setBase: (self base substitute: s)
+                               delta: (self delta substitute: s)!
+
+superScope
+
+^self base!
+
+superScope: s <Scope>
+
+self base: s!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+
+^self delta varDecls
+! !
+

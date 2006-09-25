@@ -1,0 +1,364 @@
+Delta define: #Mirror as: (
+(Class subclassOf: 'Object' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #Mirror) revision: '$Revision: 1.10 $'!
+
+(Delta mirrorFor: #Mirror) group: 'reflection'!
+
+(Delta mirrorFor: #Mirror)
+comment: 
+'Mirrors are used in the Strongtalk system as the reflective interface
+used to examine objects.  This replaces the way reflection is
+done in other Smalltalks, which use a battery of reflective messages
+supported by Object and Behavior.  
+
+The reason for this difference is a philisophical one that has an
+important benefit.  The philisophical reason is encapsulation: an object''s
+interface should be as independent as possible of its implementation.
+The benefit is that good encapsulation allows you to create alternative
+implementations that behave identically.
+
+But standard Smalltalk violates this principle, because all the reflective
+message go through an objects interface (#class, etc),  which means
+they are really a hole in the object''s encapsulation.  Mirrors are a way
+around this problem.  The idea is that you shouldn''t talk to an object
+directly to examine it reflectively, which would violate its interface
+encapsulation.  Instead, you ask the system to create a ''mirror'' on that
+object, which you can use to ''reflect'' on it (pun).  So if you want to
+examine an object o reflectively, you say (Mirror on: o), and the mirror
+supports all the reflective operations instead of the object.
+
+This also has the benefit of cleaning up an object''s interface, since it
+doesn''t have to support all the reflective messages that the system
+(inspectors, etc) uses to manipulate.   This also makes the type system
+protocols for objects simpler.
+
+Some of the most common reflective messages in standard Smalltalk-80
+(such as #class, #isKindOf:, etc)
+are still supported in Strongtalk, but because the system code doesn''t
+use them, you are free to reimplement them, so that an object can pretend
+to have a different class, for example, without breaking any system code.
+
+Note: the concept (and name) of Mirrors comes from the Self system.
+
+Tags:  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Mirror) classSide methodsFor: 'Unclassified' !
+
+
+classFor: e < Class | Protocol | Mixin | TypeAlias | GlobalAssociation> ^ <Mirror class>
+
+	"This is not at all object-oriented. However, it maintains the complete separation of
+		Mirrors and is quite simple "
+
+(Metaclass == e class class or: [Metaclass == e class]) ifTrue:[^AbstractClassMirror classFor: e].
+(Protocol  == e class  or:[ MetaProtocol == e class]) ifTrue:[^ProtocolMirror].
+TypeAlias == e class ifTrue:[^TypeAliasMirror].
+GlobalAssociation == e class ifTrue:[^GlobalVariableMirror].
+^MixinMirror classFor: e
+!
+
+classReferenceTo: n <Symbol> ^ <DeltaClassId>
+
+^DeltaClassId new setId: n; scope: DeltaGlobals!
+
+metaclassReferenceTo: n <Symbol>
+
+^(self classReferenceTo: n) dualClassType!
+
+on: element <Class|Mixin|Protocol|TypeAlias|GlobalAssociation> ^ <Instance>
+
+^(self classFor: element) on: element! !
+
+! (Delta mirrorFor: #Mirror) methodsFor: 'Unclassified' !
+
+
+comment  ^ <Str> 
+
+^self sourceInfo comment!
+
+comment: c  <Str> 
+
+self sourceInfo comment: c
+!
+
+convert: c   <Mirror> ifFail: fb <[Str]>
+" The purpose of this method is to convert the definition represented by
+the mirror C into myself, if possible. If not, the failure block fb should be
+called"
+self subclassResponsibility!
+
+convert: m <Mirror> toGeneric: g   <GenericMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert ', self name, ' into a generic'.!
+
+convertToClass: c   <ClassMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert ', self name, 'into a class'.!
+
+convertToGeneric: g <GenericMirror> ifFail: fb <[Str]>
+
+g body convert: self toGeneric: g ifFail: fb.
+
+
+
+!
+
+convertToGenericClass: g <GenericMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert ', self name, ' into a generic class'
+
+
+
+
+!
+
+convertToGenericMixin: g <GenericMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert ', self name, ' into a generic mirror'
+!
+
+convertToGenericProtocol: g <GenericMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert ', self name, ' into a generic protocol'
+
+
+
+
+!
+
+convertToGlobalVariable: g <GlobalVariableMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert ', self name, ' into a global variable'.!
+
+convertToMixin: m <MixinDeclMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert', self name, ' into a mixin'.!
+
+convertToProtocol: p <ProtocolMirror> ifFail: fb <[Str]>
+
+Delta at: self name put: p reflectee
+
+
+
+
+!
+
+definitionString   ^ <Str>
+
+
+self sourceInfo isGeneric ifTrue:[^(GenericMirror new body: self) definitionString].
+^self basicDefinitionString.!
+
+definitionWriterClass ^ <DefinitionWriter class>
+
+^DefinitionWriter!
+
+fileName  ^<Str>
+	^self name, self fileNameExtension!
+
+fileNameExtension  ^<Str>
+	^'.dlt'!
+
+group ^ <Str>
+
+	"File-out group for definition"
+	^self sourceInfo group
+!
+
+group: s <Str>
+
+	"File-out group for definition"
+	self sourceInfo group: s
+!
+
+hasTypeInfoLoaded ^ <Boolean>
+
+^Type hasTypeInfoFor: self reflectee!
+
+isGeneric ^ <Boolean>
+    ^ self sourceInfo isGeneric!
+
+isGeneric: b  <Boolean>
+    self sourceInfo isGeneric: b!
+
+isMeta ^ <Boolean>
+
+self subclassResponsibility!
+
+mayNeedToUnwind
+
+"Used to mark where we may have to use unwind:protect:
+to preserve system integrity"!
+
+name  ^ <Symbol> 
+
+^self reflectee name!
+
+name: n <Symbol> ifFail: fb <[Str]>
+"i"
+"This method can be invoked by the Delta environment to create a  class
+named n based upon the source code information in this object.
+Handling differs depending on whether an entity named n already exists or not.
+"
+| exists <Boolean> |
+
+exists := (Delta includesKey: n) and:[(Delta at: n) isError not].
+
+exists ifTrue:[self nameExisting: n ifFail: fb]
+             ifFalse:[self nameNew: n ifFail: fb].
+
+(Mirror on: (Delta at: n))  sourceInfo logDefinition.
+!
+
+nestInGenericWithTypeArguments: tas  <Str>
+
+self subclassResponsibility!
+
+nonAtomic
+
+self deltaHack.!
+
+placeHolder
+
+^DeltaPlaceHolderError new name: self name!
+
+placeHolderFor: name <Symbol>
+
+^DeltaPlaceHolderError new name: name!
+
+printOn: aStream  <Stream> 
+	aStream 
+		nextPutAll: self class name;
+		nextPutAll: ' on ';
+		nextPutAll: self name.
+!
+
+reflectee  ^ <T>
+
+self subclassResponsibility!
+
+removeDefinitionIfFail: blk <[]>
+
+	"Remove entry from system dictionary and source database"
+
+	self isMeta
+		ifTrue: [	^blk value: 'Cannot remove on meta side'  ].
+	self sourceInfo removeIndex.
+	Smalltalk removeKey: self name.
+	self reflectee: nil.
+	^nil
+!
+
+rename: oldId <Symbol> to: newId <Symbol>
+"All mirrors must provide a method that renames oldId to newId throughout
+their source code"
+self subclassResponsibility!
+
+rename: oldId <Symbol> to: newId <Symbol> in: s <Str> ^ <Str>
+"
+Callers can rely on the identity of the returned string to know whether a change has taken place;
+if no change was made, the incoming parameter 's' is returned.
+"
+| renamed <Str>  changed <Boolean> |
+
+changed := false.
+renamed := TokenStreamEditor  transform: s
+		using:[: sym <Symbol> :v <Object> :str <Str> | 
+					sym  = #identifier  
+						ifTrue:[v = oldId 
+												ifTrue:[
+															changed := true.
+															newId]
+												 ifFalse:[str]
+									] ifFalse:[str]]
+		ifFail:[:s <Str>  :i <Int> | self error: s].
+^changed ifTrue:[renamed] ifFalse:[s].!
+
+renameGroup: grp <Dict[Symbol,Symbol]> 
+" grp maps old name to new names.
+All mirrors must provide a method that uses the mapping
+defined by grp to rename throughout their source code"
+self subclassResponsibility!
+
+renameGroup: grp <Dict[Symbol,Symbol]> in: s <Str> ^ <Str>
+"
+Callers can rely on the identity of the returned string to know whether a change has taken place;
+if no change was made, the incoming parameter 's' is returned.
+Right now we determine this by comparing s against the renamed string. Shortly, we will
+change this so we remember if we ever made a change."
+| renamed <Str>  changed <Boolean> |
+
+changed := false.
+renamed := TokenStreamEditor  transform: s
+		using:[: sym <Symbol> :v <Object> :str <Str> | 
+					sym  = #identifier 
+						ifTrue:[
+										(grp includesKey: v) ifTrue:[changed := true].
+										grp at:  v ifAbsent:[str]
+									] 
+						ifFalse:[str]
+					]
+		ifFail:[:s <Str>  :i <Int> | self error: s].
+^changed ifTrue:[renamed] ifFalse:[s].!
+
+renameTo: newId <Symbol>
+
+Smalltalk definitionsReflectiveDo:[ :d <Mirror> | d rename: self name to: newId].!
+
+revision ^ <Str>
+
+	"Revision for file-out"
+	^self sourceInfo revision
+!
+
+revision: s <Str>
+
+	"Revision for file-out"
+	self sourceInfo revision: s
+!
+
+sourceInfo ^ <CommonSourceHandler>
+
+self subclassResponsibility!
+
+typecheck
+
+self subclassResponsibility! !
+
+! (Delta mirrorFor: #Mirror) methodsFor: 'accessing' !
+
+
+nameWithTypeArgs ^ <Str>
+
+	"Returns the name with generic type argument names appended, e.g. Set[E]"
+	
+	| stream <CharReadWriteStream> tas <OrdCltn[TypeFormal]> |
+	stream := (String new: self name size) writeStream.
+	stream nextPutAll: self name.
+
+	self isGeneric ifTrue: [	
+		tas := self hasTypeInfoLoaded
+			ifTrue: [		self typeInfo asGeneric formals ]
+			ifFalse: [	 (DeltaParser new 
+										parseTypeArgs: self typeArgumentString 
+										within: DeltaGlobals 
+										ifError: [ :msg <Str> :pos <Int> | self shouldNotHappen ]) 
+									collect: [ :pt <ParseTree[TypeFormal]> | pt body ] ].
+									
+		stream nextPut: $[.
+		1 to: tas size - 1 do: [ :index <Int> |
+			stream 
+				nextPutAll: (tas at: index) name;
+				nextPut: $, ].
+		stream nextPutAll: (tas at: tas size) name.
+		stream nextPut: $].
+	].
+
+	^stream
+	! !
+

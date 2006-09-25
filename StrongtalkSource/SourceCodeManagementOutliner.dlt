@@ -1,0 +1,28 @@
+Delta define: #SourceCodeManagementOutliner as: (
+(Class subclassOf: 'MirrorOutliner[Mirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #SourceCodeManagementOutliner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #SourceCodeManagementOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #SourceCodeManagementOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SourceCodeManagementOutliner) methodsFor: 'private' !
+
+
+buildBody ^ <Visual>
+
+	| col <Column[Visual]> header <StringGlyph> |
+	col := Column[Visual] new.
+	self removeAllChildren.
+	col add: (self addChild: (GroupOutliner for: self mirror)) imbeddedVisual.
+	col add: (self addChild: (RevisionOutliner for: self mirror)) imbeddedVisual.
+	^col!
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: 'Source code management' painter: self definitionSectionPainter) asVisual.! !
+

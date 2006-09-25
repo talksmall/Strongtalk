@@ -1,0 +1,56 @@
+Delta define: #ProtocolDefinitionOutliner as: (
+(Class subclassOf: 'GenericDefinitionOutliner[ProtocolMirror]' instanceVariables: 'superProtocolOutliner <SuperProtocolOutliner>	')) !
+
+(Delta mirrorFor: #ProtocolDefinitionOutliner) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #ProtocolDefinitionOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #ProtocolDefinitionOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProtocolDefinitionOutliner) methodsFor: 'private' !
+
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: self mirror shortDescription painter: self sectionPainter) asVisual.
+
+!
+
+insertSuperDefinition: col <Column[Visual]>
+
+	self superProtocolOutliner: (SuperprotocolOutliner for: self mirror).
+	col add: (self addChild: self superProtocolOutliner) imbeddedVisual .
+!
+
+superProtocolOutliner ^ <SuperProtocolOutliner>
+
+	^superProtocolOutliner!
+
+superProtocolOutliner: o <SuperProtocolOutliner>
+
+	superProtocolOutliner := o! !
+
+! (Delta mirrorFor: #ProtocolDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	super update: aspect with: value.
+	self inSessionProcessDo: [
+		aspect = #superProtocol
+			ifTrue: [	self updateHeaders ].
+	]
+! !
+
+! (Delta mirrorFor: #ProtocolDefinitionOutliner) methodsFor: 'accessing' !
+
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+^SuperprotocolLocator	coerce: loc
+	do:[:l <SuperprotocolLocator> | self superProtocolOutliner] 
+	else:[super outlinerForLocator: loc].! !
+

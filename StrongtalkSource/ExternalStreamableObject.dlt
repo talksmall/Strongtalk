@@ -1,0 +1,75 @@
+Delta define: #ExternalStreamableObject as: (
+(Class subclassOf: 'ExternalObject' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #ExternalStreamableObject) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #ExternalStreamableObject) group: 'base'!
+
+(Delta mirrorFor: #ExternalStreamableObject)
+comment: 
+'This is the abstract superclass for external objects that can be streamed over, such as files.
+
+%todo: we need to revamp the streaming messages so that subclasses implement ifFail: versions
+uniformly for better error handling"
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license. 
+'!
+
+! (Delta mirrorFor: #ExternalStreamableObject) methodsFor: 'restricted-opening' !
+
+
+open: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalDescriptor | X>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #ExternalStreamableObject) methodsFor: 'character streaming' !
+
+
+charInputStream ^<CharInputStream>
+	"Opens a character input stream"
+
+	^CharacterInputConverter[InputStream[Int]] on: self inputStream!
+
+charInputStreamDo: blk <[CharInputStream, ^X def]> ^<X>
+	"Evaluates blk with a char input stream.  This will ensure that the stream is closed, no matter
+		how blk is exited"
+
+	| strm <CharInputStream> result <X> |
+	strm := self charInputStream.
+	[ result := blk value: strm ] ensure: [ strm close ].
+	^result!
+
+charInputStreamDo: blk <[CharInputStream, ^X def]>
+ifFail: fail <[^Y def]>
+^<X | Y>
+
+	self subclassResponsibility!
+
+charOutputStream ^<CharOutputStream>
+	"Opens a character output stream"
+
+	^CharacterOutputConverter on: self outputStream!
+
+charOutputStreamDo: blk <[CharOutputStream, ^X def]> ^<X>
+	"Evaluates blk with a char output stream.  This will ensure that the 
+		stream is closed, no matter how blk is exited"
+
+	| strm <CharOutputStream> result <X> |
+	strm := self charOutputStream.
+	[ result := blk value: strm ] ensure: [ strm close ].
+	^result! !
+
+! (Delta mirrorFor: #ExternalStreamableObject) methodsFor: 'byte streaming' !
+
+
+inputStream ^<ExternalInputStream>
+	"Opens a byte input stream"
+
+	self subclassResponsibility!
+
+outputStream ^<ExternalOutputStream>
+	"Opens a byte output stream"
+
+	self subclassResponsibility! !
+

@@ -1,0 +1,175 @@
+Delta define: #LazyMethod as: (
+(Class subclassOf: 'DeltaASTNode' instanceVariables: 'mySelector <Symbol> mixin <Mixin>  data <DeltaMethod>')) !
+
+(Delta mirrorFor: #LazyMethod) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #LazyMethod) group: 'ast'!
+
+(Delta mirrorFor: #LazyMethod)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #LazyMethod) methodsFor: 'DeltaMethod emulation' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	^self replacement apply: aTool!
+
+body
+	^self replacement body!
+
+body: b
+	^self replacement body: b!
+
+category: c
+	
+	^self replacement category: c!
+
+clearBody
+
+self replacement clearBody!
+
+isCompleteTerm
+	^self replacement isCompleteTerm!
+
+isMethodNode ^ <Boolean>
+    ^ self replacement isMethodNode!
+
+name
+
+^self replacement name!
+
+noteSuccessfulTypecheck
+
+^self replacement noteSuccessfulTypecheck!
+
+parameters
+	^ self replacement parameters!
+
+representsMessage ^ <Boolean>
+
+^self replacement representsMessage!
+
+retractTypeAssumptions ^ <Self>
+    ^self replacement retractTypeAssumptions!
+
+scope ^ <DeltaScope>
+    ^self  replacement scope!
+
+selector ^ <Symbol>
+    ^self   mySelector!
+
+selector: s  <Symbol>
+    ^self  replacement selector: s!
+
+selector: sel <Symbol> type: t <Type> visibility: v <Symbol >
+
+    ^self replacement selector: sel type: t visibility: v!
+
+selector: sel <Symbol> type: t <MsgSignature> visibility: v <Symbol> body: b <DeltaCodeBody>
+
+    ^self replacement selector: sel type: t visibility: v body: b
+   !
+
+setupTypeAssumptions ^ <Self>
+    ^self replacement setupTypeAssumptions!
+
+substitute: s <Substitution > ^ <Self>
+    ^self replacement substitute: s!
+
+temporaries ^ <OrdCltn[VarDecl]>
+    ^ self replacement temporaries!
+
+timeSaved  ^ <Time>
+
+^self replacement timeSaved!
+
+timeSaved: ts  <Time> ^ <Time>
+
+^self replacement imeSaved: ts.!
+
+timeTypechecked  ^ <Time>
+
+^self replacement timeTypechecked!
+
+timeTypechecked: tt  <Time> ^ <Time>
+
+^self replacement timeTypechecked: tt.!
+
+type
+    ^self replacement type!
+
+type: t
+    ^self replacement type: t!
+
+typeForNode: n <ASTNode>  ^ <ObjectType>
+
+^self replacement typeForNode: n!
+
+typeNameForNode: n <ASTNode>  ^ <String>
+
+^self replacement typeNameForNode: n!
+
+typecheck ^ <Self>
+
+^self replacement typecheck
+!
+
+typecheckInterface ^ <Self>
+
+^self replacement typecheckInterface
+!
+
+typecheckedSuccessfully ^ <Boolean>
+
+^self replacement typecheckedSuccessfully
+!
+
+visibility ^ <Symbol>
+    ^self replacement visibility!
+
+visibility: v  <Symbol> ^ <Symbol>
+    ^self replacement visibility: v! !
+
+! (Delta mirrorFor: #LazyMethod) methodsFor: 'access' !
+
+
+data ^ <DeltaMethod>
+
+^data!
+
+data: d  <DeltaMethod>
+
+data := d!
+
+mixin ^ <Mixin> 
+
+^mixin !
+
+mixin: m <Mixin> 
+
+mixin := m!
+
+mySelector ^ <Symbol> 
+
+^mySelector!
+
+mySelector: m <Symbol> 
+
+mySelector := m! !
+
+! (Delta mirrorFor: #LazyMethod) methodsFor: 'laziness' !
+
+
+load
+
+self data: ((MixinDeclMirror on: self mixin) loadSelector: self mySelector).
+!
+
+replacement ^ <DeltaMethod>
+
+ self data isNil
+    	ifTrue:[self load].
+ ^self data! !
+

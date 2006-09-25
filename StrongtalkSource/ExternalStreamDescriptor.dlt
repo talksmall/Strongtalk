@@ -1,0 +1,95 @@
+Delta define: #ExternalStreamDescriptor as: (
+Generic forAll: 'EOBJ <ExternalStreamableObject subtypes> ' body: ((Class subclassOf: 'ExternalDescriptor' instanceVariables: 'mode <Symbol>
+buffer <ExternalProxy>
+bufferSize <Int>
+		') abstract)) !
+
+(Delta mirrorFor: #ExternalStreamDescriptor) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #ExternalStreamDescriptor) group: 'base'!
+
+(Delta mirrorFor: #ExternalStreamDescriptor)
+comment: 
+'The abstract superclass for external descriptors that are streams, such as open file descriptors.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #ExternalStreamDescriptor) classSide methodsFor: 'instance creation' !
+
+
+for: obj <EOBJ> mode: m <Symbol>  ^<Instance>
+	"Create a new instance, but don't open yet"
+
+	^self new externalObject: obj; mode: m! !
+
+! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'initialization' !
+
+
+mode: m <Symbol>
+
+	mode := m.
+	buffer := ExternalProxy new.! !
+
+! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'i/o' !
+
+
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    "read as many bytes as possible into the buffer (up to its size), and return the number
+     of bytes that were actually read.  The semantics at end of file are to return 0 with no error."
+    self subclassResponsibility!
+
+write: nBytes <Int> at: pos <Int> ifFail: errf <[ExternalError]>
+    "write nBytes from the buffer"
+    self subclassResponsibility! !
+
+! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'control' !
+
+
+flushIfFail: err <[ExternalError]>
+
+	self subclassResponsibility!
+
+openIfFail: err <[ExternalError]>
+
+	self handle: (self externalObject openInternalFor: self mode
+		ifFail: [ :e <Symbol> |
+			^err value: e 	]).
+	self bufferSize: self getBufferSize.
+	self buffer malloc: self bufferSize.! !
+
+! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'accessing' !
+
+
+buffer ^<ExternalProxy>
+
+	^buffer!
+
+bufferSize ^<Int>
+
+	^bufferSize!
+
+getBufferSize ^<Int>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'private' !
+
+
+bufferSize: s <Int>
+	bufferSize := s!
+
+mode ^<Symbol>
+
+	^mode!
+
+postCopy
+
+	buffer := ExternalProxy new.
+	super postCopy.!
+
+severExternalConnections
+
+	self buffer free.! !
+

@@ -1,0 +1,88 @@
+Delta define: #ApplicationInterceptor as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'application <Application>')) !
+
+(Delta mirrorFor: #ApplicationInterceptor) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ApplicationInterceptor) group: 'ui'!
+
+(Delta mirrorFor: #ApplicationInterceptor)
+comment: 
+'Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #ApplicationInterceptor) classSide methodsFor: 'instance creation' !
+
+
+for: visual <Visual> application: appl <Application> ^<Instance>
+
+	^(super for: visual) application: appl! !
+
+! (Delta mirrorFor: #ApplicationInterceptor) methodsFor: 'accessing' !
+
+
+application ^<Application>
+	^application!
+
+application: appl <Application>
+	application := appl!
+
+session: s <Session>
+
+	super session: s.
+	self application session: s! !
+
+! (Delta mirrorFor: #ApplicationInterceptor) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self application character: c  focus: focus  event: ev interceptor: self
+!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self application keyDown: key focus: focus event: ev interceptor: self
+!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self application keyUp: key focus: focus event: ev interceptor: self
+!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	^self application mouseEvent: type at: loc event: ev interceptor: self! !
+
+! (Delta mirrorFor: #ApplicationInterceptor) methodsFor: 'default event handling' !
+
+
+defaultCharacter: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^super character: c  focus: focus  event: ev
+!
+
+defaultKeyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^super keyDown: key focus: focus event: ev
+!
+
+defaultKeyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^super keyUp: key focus: focus event: ev
+!
+
+defaultMouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	^super mouseEvent: type at: loc event: ev! !
+
+! (Delta mirrorFor: #ApplicationInterceptor) methodsFor: 'geometry-local' !
+
+
+allocation: a <Region> at: pos <Point>
+
+	super allocation: a at: pos.
+	self application visualAllocated.! !
+

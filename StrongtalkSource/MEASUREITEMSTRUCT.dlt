@@ -1,0 +1,66 @@
+Delta define: #MEASUREITEMSTRUCT as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #MEASUREITEMSTRUCT) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #MEASUREITEMSTRUCT) group: 'base'!
+
+(Delta mirrorFor: #MEASUREITEMSTRUCT)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MEASUREITEMSTRUCT) methodsFor: 'accessing' !
+
+
+CtlID ^<ExternalProxy>
+
+	^self proxyAt: self CtlIDOffset!
+
+CtlType ^<ExternalData>
+
+	^self proxyAt: self CtlTypeOffset!
+
+itemHeight ^<Int>
+
+	^self smallIntegerAt: self itemHeightOffset!
+
+itemHeight: v <Int>
+
+	^self smallIntegerAt: self itemHeightOffset put: v!
+
+itemID ^<SmallInteger>
+
+	^self smallIntegerAt: self itemIDOffset!
+
+itemWidth ^<Int>
+
+	^self smallIntegerAt: self itemWidthOffset!
+
+itemWidth: v <Int>
+
+	^self smallIntegerAt: self itemWidthOffset put: v! !
+
+! (Delta mirrorFor: #MEASUREITEMSTRUCT) methodsFor: 'offsets' !
+
+
+CtlIDOffset ^<Int>
+
+	^4!
+
+CtlTypeOffset ^<Int>
+
+	^0!
+
+itemHeightOffset ^<Int>
+
+	^16!
+
+itemIDOffset ^<Int>
+
+	^8!
+
+itemWidthOffset ^<Int>
+
+	^12! !
+

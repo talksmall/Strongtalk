@@ -1,0 +1,81 @@
+Delta define: #PopUpMenuHandler as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'menuBlock <[^Menu]>
+button <Symbol>
+		')) !
+
+(Delta mirrorFor: #PopUpMenuHandler) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #PopUpMenuHandler) group: 'ui'!
+
+(Delta mirrorFor: #PopUpMenuHandler)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+! (Delta mirrorFor: #PopUpMenuHandler) methodsFor: 'accessing' !
+
+
+button ^<Symbol>
+
+	^button!
+
+button: b <Symbol>
+
+	button := b!
+
+menu ^<Menu>
+
+	^self menuBlock value!
+
+menuBlock ^<[^Menu]>
+
+	^menuBlock!
+
+menuBlock: blk <[^Menu]>
+
+	menuBlock := blk! !
+
+! (Delta mirrorFor: #PopUpMenuHandler) methodsFor: 'VisualParent' !
+
+
+popUpMenuIfAbsent: f <[^X def]> ^<Menu | X>
+
+	^self menu! !
+
+! (Delta mirrorFor: #PopUpMenuHandler) methodsFor: 'event handling' !
+
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	(super mouseEvent: type at: loc event: ev)
+		ifTrue: [ ^true ].
+	^type = self buttonUpType
+			onTrue: [	| m <Menu> t <Timer> |
+							m := self menu.
+							self displayPopUpMenu: m at: loc forButton: self button.
+							t := self session atIntervals: 1.0 do:
+										[	m release.
+											t release. ].
+						 ]! !
+
+! (Delta mirrorFor: #PopUpMenuHandler) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self button: #secondary.! !
+
+! (Delta mirrorFor: #PopUpMenuHandler) methodsFor: 'private' !
+
+
+buttonUpType ^<Symbol>
+
+	self button == #secondary
+		ifTrue: [ ^#secondaryButtonUp ].
+	self button == #middle
+		ifTrue: [ ^#middleButtonUp ].
+	self button == #primary
+		ifTrue: [ ^#primaryButtonUp ].
+	self shouldNotHappen! !
+

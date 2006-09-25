@@ -1,0 +1,47 @@
+Delta define: #DeltaGenericKey as: (
+(Class subclassOf: 'Object' instanceVariables: 'cltn ')) !
+
+(Delta mirrorFor: #DeltaGenericKey) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaGenericKey) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericKey)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericKey) methodsFor: 'Unclassified' !
+
+
+= k <GenericKey> ^ <Boolean>
+
+   k cltn size  = self cltn size ifFalse:[^false].
+   self cltn  with: k cltn do:[:t1 <ObjectType>  :t2 <ObjectType> |
+                  t1 == t2 ifFalse:[^false.].
+                  ].
+   ^true.!
+
+cltn  ^ <OrdCltn[ObjectType]>
+
+^cltn!
+
+cltn: c <OrdCltn[ObjectType]>
+
+cltn := c!
+
+from: c <OrdCltn[ObjectType]>
+
+self cltn: (c  collect:[: a <ObjectType> | a canonicalRep]).!
+
+hash  ^ <Integer>
+""	
+   |
+   hashValue  < Integer >
+   |
+
+   hashValue := 0 .
+   self cltn do:[:t  < ObjectType > |
+           hashValue := hashValue bitXor:t hash.
+           ].
+   ^hashValue.! !
+

@@ -1,0 +1,63 @@
+Delta define: #MixinDerivationMirror as: (
+(Class subclassOf: 'MixinMirror' instanceVariables: 'klass selector sourceInfo ')) !
+
+(Delta mirrorFor: #MixinDerivationMirror) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #MixinDerivationMirror) group: 'reflection'!
+
+(Delta mirrorFor: #MixinDerivationMirror)
+comment: 
+'This node  represents a mirror on a mixin derivation.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MixinDerivationMirror) classSide methodsFor: 'Unclassified' !
+
+
+on: mixin <Mixin> ^ <Instance> 
+
+"To be determined. We must have a way of using mixin as the key to find the source
+level definition"
+
+^self new! !
+
+! (Delta mirrorFor: #MixinDerivationMirror) methodsFor: 'Unclassified' !
+
+
+category: cat!
+
+klass
+
+^klass!
+
+klass: k
+
+klass := k.!
+
+klass: k selector: s
+
+self klass: k.
+self selector: s.!
+
+rename: oldId <Symbol> to: newId <Symbol>
+
+"rename in the class expression I'm derived from"!
+
+selector
+
+^selector!
+
+selector: s
+
+selector := s!
+
+sourceInfo ^<MixinDerivationSourceHandler>
+
+self deltaHack. "Not yet supported by the source database"
+	"sourceInfo isNil 
+		ifTrue: [ sourceInfo := MixinDerivationSourceHandler for: self ]."
+	^sourceInfo!
+
+|> c <ClassMirror > ^ <ClassMirror>
+    "Appropriate primitive manipulation on klass"! !
+

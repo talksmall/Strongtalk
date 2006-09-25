@@ -1,0 +1,141 @@
+Delta define: #DeltaScope as: (
+(Class subclassOf: 'Object' instanceVariables: 'superScope <DeltaScope>
+	"The scope that contains this scope"
+bindings <IdentityDictionary[Symbol,Object]>
+	"Local definitions"')) !
+
+(Delta mirrorFor: #DeltaScope) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaScope) group: 'ast'!
+
+(Delta mirrorFor: #DeltaScope)
+comment: 
+'General scope.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaScope) classSide methodsFor: 'Unclassified' !
+
+
+within: scope
+    "Creates and initializes a new (sub)scope within scope."
+    ^ self new initialize: scope! !
+
+! (Delta mirrorFor: #DeltaScope) methodsFor: 'Unclassified' !
+
+
+at: key
+	"Answers the value associated with aKey in this or one the super scopes or fails if aKey is absent"
+	^self at: key ifAbsent: [self error: 'Key ', key, ' not found!!']!
+
+at: key ifAbsent: blk
+    "Answers the value associated with aKey in this or one of the superScopes or the value of aBlock if aKey is absent."
+
+	"Optimization note: This is written using [nil] blocks to avoid passing 
+		non-clean blocks dynamically down the scope structure."
+
+	| value <T> |
+	(value := self bindings at: key ifAbsent: [ nil ]) notNil
+		ifTrue: [ ^value ].
+	self superScope isNil
+		ifTrue: [ ^blk value ].
+	(value := self superScope at: key ifAbsent: [ nil ]) notNil
+		ifTrue: [ ^value ].
+	^blk value
+!
+
+at: aKey put: aValue
+
+^self bindings at: aKey put: aValue!
+
+at: aKey put: aValue ifThere: aBlock
+    "Associates aValue with aKey and answers aValue if aKey
+    was absent. Otherwise answers the value of aBlock."
+    | wasAbsent |
+    self assert: [aKey isSymbol].
+    wasAbsent := false.
+    bindings at: aKey ifAbsent: [bindings at: aKey put: aValue. wasAbsent := true].
+    ^ wasAbsent
+        ifTrue: [aValue]
+        ifFalse: [aBlock value]!
+
+bindings ^ <VarDict[Symbol, ASTNode]>
+    ^ bindings!
+
+bindings: b
+    bindings := b.!
+
+classVarDecls ^ <Dict[Symbol,VarDecl]>
+
+^self bindings select: [:e <DeltaAST> |
+                                                   e isClassVarNode.
+                                                   ].!
+
+clear
+
+self bindings keys do:[:k | self bindings removeKey: k].!
+
+includesIndex: key
+    ^ self bindings includesIndex: key!
+
+includesIndexLocally: key <NameType > ^ <Boolean>
+
+^self bindings includesKey: key.!
+
+initialize: scope
+    "Private."
+    self superScope: scope.
+    self bindings: IdentityDictionary new!
+
+instVarDecls ^ <Dict[Symbol,VarDecl]>
+
+^self bindings select: [:e <DeltaAST> |
+                                                   e isInstVarNode.
+                                                   ].!
+
+isCodeScope
+    ^ false!
+
+isGlobalScope
+    ^ false!
+
+isOverrideScope
+	^ false!
+
+isPolyArgScope
+
+^false!
+
+removeKey: key
+
+self bindings removeKey: key!
+
+removeKey: key ifAbsent: blk
+
+self bindings removeKey: key ifAbsent: blk!
+
+substitute: s
+"THIS IS A HACK!!
+We create a filtered scope by duplicating ourselves, with bindings being
+a filtered version of our bindings. We only care about filtering varDecls at
+the moment, so we just substitute those.
+"
+self deltaHack.
+^self class new initialize: self superScope;
+                         bindings: (
+                                         self bindings virtualCollect:[: b | b isVarNode ifTrue:[b substitute: s] ifFalse:[b]])!
+
+superScope
+    "Answers the scope enclosing this scope."
+    ^ superScope!
+
+superScope: scope
+    "Set the surrounding scope."
+    superScope := scope!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+
+^self bindings select: [:e <DeltaAST> |
+                                                   e isVarNode.
+                                                   ].! !
+

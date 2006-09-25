@@ -1,0 +1,42 @@
+Delta define: #YMouseConstraint as: (
+(Class subclassOf: 'UnaryConstraint' instanceVariables: 'yOffset')) !
+
+(Delta mirrorFor: #YMouseConstraint) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #YMouseConstraint) group: 'benchmark'!
+
+(Delta mirrorFor: #YMouseConstraint)
+comment: 
+'I am a unary input constraint that constrains a variable to the current y-coordinate of the mouse. 
+I contain an offset to normalize the coordinate system to one convenient for the target variable.
+
+Instance variables:
+	yOffset		constant y-offset <Number>
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #YMouseConstraint) classSide methodsFor: 'instance creation' !
+
+
+var: aVariable offset: yOffset strength: strengthSymbol
+	"Install a YMouse constraint on the given variable with the given offset constant to be added to the raw mouse position."
+
+	^(self new) var: aVariable offset: yOffset strength: strengthSymbol! !
+
+! (Delta mirrorFor: #YMouseConstraint) methodsFor: 'queries' !
+
+
+isInput
+	"I depend on the state of the mouse."
+
+	^true! !
+
+! (Delta mirrorFor: #YMouseConstraint) methodsFor: 'initialize-release' !
+
+
+var: aVariable offset: aNumber strength: strengthSymbol
+	"Install myself with the given variable, y-offset, and strength."
+
+	yOffset := aNumber.
+	self var: aVariable strength: strengthSymbol.! !
+

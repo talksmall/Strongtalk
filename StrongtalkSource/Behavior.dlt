@@ -1,0 +1,179 @@
+Delta define: #Behavior as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Behavior) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #Behavior) group: 'base'!
+
+(Delta mirrorFor: #Behavior)
+comment: 
+'Describes how an object behaves.
+
+Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Behavior) classSide methodsFor: 'testing' !
+
+
+test
+
+	[ Object name = 'Object' ] verify.
+	[ Object class name = 'Object class' ] verify.! !
+
+! (Delta mirrorFor: #Behavior) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^67 "Read in as VMmemOopKlass"! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'private' !
+
+
+call: f <[Symbol,Object]> for: o <Object>
+
+	| ga <GlobalAssociation> |
+	ga := (GlobalAssociation coerce: o else: [ ^self ]).
+	f value: ga key value: ga value.!
+
+primitiveNew ^<Object>
+
+	^{{self primitiveNewIfFail: [ :err <Symbol> | "can't happen" ]}}! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'instance creation' !
+
+
+new ^<Objectx>
+
+	^self primitiveNew! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'accessing' !
+
+
+nameIfAbsent: blk <[^X def]> ^<Symbol | X>
+
+	^blk value!
+
+superclassIfAbsent: fail <[^X def]> ^<Behavior | X>
+
+	| result <Behavior> |
+	result := {{self primitiveSuperclass}}.
+	^result isNil
+		ifFalse: [ result ]
+		ifTrue: [ fail value ]! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'temporary' !
+
+
+smalltalkKeysAndValuesDo: f <[Symbol,Object]>
+
+	| n <Int> |
+	n := {{primitiveSmalltalkSize}}.
+	1 to: n do:
+		[ :i <Int> |
+			| ga <GlobalAssociation> |
+			ga := {{primitiveSmalltalkAt: i ifFail: [ :err <Symbol> | self error: err ]}}.
+			self call: f for: ga	]! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	| nm <Str> |
+	nm := self nameIfAbsent: [ 
+			strm nextPutAll: '(An anonymous ', self class name, ')'.
+			^self ].
+	strm nextPutAll: nm! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'reflective' !
+
+
+canUnderstand: aSymbol <Symbol> ^ <Boolean>
+ 	{{self primitiveMethodFor: aSymbol ifFail: [:err <CompressedSymbol> | ^false]}}.
+	^true! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'file out' !
+
+
+fileOutClassVars ^<Array[GlobalAssociation]>
+	^{{primitiveBehavior: self classVariablesIfFail: [:err <CompressedSymbol> | self error: err]}}!
+
+fileOutHeaderOn: d <Dumper>
+	d	putByte: 		self fileOutSignature.
+	d	putInteger:	self fileOutSize.
+
+	"Part one"
+	self fileOutNonIndexableSize	fileOutOn: d.
+	0												fileOutOn: d.
+
+	"part two"
+	self class	fileOutOn: d.
+
+	"Part three"
+	self fileOutClassVars		fileOutOn: d.
+    d emptyMethodArray		fileOutOn: d.
+	self fileOutSuper				fileOutOn: d.
+	self fileOutMixin				fileOutOn: d
+!
+
+fileOutInstanceHeaderSize ^<Integer>
+	^{{primitiveBehaviorHeaderSizeOf: self ifFail: [:err <CompressedSymbol> | self error: err]}}
+!
+
+fileOutMixin ^<Mixin>
+	^{{primitiveBehaviorMixinOf: self ifFail: [:err <Symbol> | self error: err]}}!
+
+fileOutNonIndexableSize ^<Integer>
+	^{{primitiveBehaviorNonIndexableSizeOf: self ifFail: [ :err <CompressedSymbol> | self error: err]}}
+!
+
+fileOutSuper ^<Object>
+	^{{self primitiveSuperclass}}! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'bootstrap-temporary' !
+
+
+isMixinInvocation ^ <Boolean>
+	self deltaHack.
+	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+	^(AbstractClassMirror on: self) isMixinInvocation
+!
+
+klass
+	self deltaHack.
+	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+	^self class
+!
+
+mixin ^ <Mixin>
+	self deltaHack.
+	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+	^(ClassVMMirror on: self) mixin reflectee
+!
+
+superclass ^<Behavior>
+	self deltaHack.
+	"Why was the following line put in?  Need supeclass to work for lots
+		of Smalltalk code - D.G."
+	"Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called']."
+	
+	^self superclassIfAbsent: [self error: 'No superclass'].
+
+!
+
+typeInfo
+	self deltaHack.
+	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+	^Type forClass: self
+!
+
+typeInfo: t
+	self deltaHack.
+	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+	Type atClass: self put: t.
+	t klass: self.
+! !
+

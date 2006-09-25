@@ -1,0 +1,251 @@
+Delta define: #MixinSourceHandler as: (
+(Class subclassOf: 'DefWithMsgSourceHandler' instanceVariables: '')) !
+
+(Delta mirrorFor: #MixinSourceHandler) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #MixinSourceHandler) group: 'reflection'!
+
+(Delta mirrorFor: #MixinSourceHandler)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MixinSourceHandler) classSide methodsFor: 'Unclassified' !
+
+
+test
+
+	| h <Self> dh <Self> m <ClassMirror> s <Str> cat <Str> src <Str> cs <Cltn[Str]> cats <Cltn[Str]> tags <Cltn[Str]> |
+
+	Transcript show: 'Testing ClassSourceHandler ... '.
+
+	BootStrapping
+		ifTrue: [ m := ClassMirror on: Object ]
+		ifFalse: [ m := ClassMirror on: (Delta at: #Object) ].
+	h := self for: m.
+	dh := h dualHandler.
+
+
+	s := 'This is a comment'.
+	h comment: s.
+	h flush.
+	self assert: [ h comment = s ].
+	self assert: [ dh comment = s ].
+
+	s := 'Magnitude[Number] mixin |> Object'.
+	h superclassTypeString: s.
+	h flush.
+	self assert: [ h superclassTypeString = s ].
+	self assert: [ dh superclassTypeString = s ].
+
+
+	cs := OrderedCollection with: 'accessing' with: 'private'.
+	h categories: cs.
+	h flush.
+	self assert: [ h categories = cs ].
+	cats := cs.
+
+	s := 'initialization'.
+	h category: s forSelector: #foo.
+	h flush.
+	self assert: [ (h categoryForSelector: #foo) = s ].
+	cat := s.
+	
+	cs := OrderedCollection with: 'Written by Joe' with: 'Cool'.
+	h  tags: cs forSelector: #foo.
+	h flush.
+	self assert: [ (h tagsForSelector: #foo) = cs ].
+	tags := cs.
+
+	s := 'foo ^ <Int> "bla bla" ^42'.
+	h source: s forSelector: #foo.
+	h flush.
+	self assert: [ (h sourceForSelector: #foo) = s ].
+	src := s.
+	
+
+	cs := OrderedCollection with: 'instance creation' with: 'private'.
+	dh categories: cs.
+	h flush.
+	self assert: [ dh categories = cs ].
+	self assert: [ h categories = cats ].
+
+	s := 'misc'.
+	dh category: s forSelector: #foo.
+	h flush.
+	self assert: [ (dh categoryForSelector: #foo) = s ].
+	self assert: [ (h categoryForSelector: #foo) = cat ].
+	
+	cs := OrderedCollection with: 'Written by Bob' with: 'Ugly'.
+	dh tags: cs forSelector: #foo.
+	h flush.
+	self assert: [ (dh tagsForSelector: #foo) = cs ].
+	self assert: [ (h tagsForSelector: #foo) = tags ].
+
+	s := 'foo ^ <Float> "hoho" ^3.14'.
+	dh source: s forSelector: #foo.
+	h flush.
+	self assert: [ (dh sourceForSelector: #foo) = s ].
+	self assert: [ (h sourceForSelector: #foo) = src ].
+	h removeIndex.
+
+	Transcript show: 'done'; cr.! !
+
+! (Delta mirrorFor: #MixinSourceHandler) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler abstract ].
+	^self booleanAttributeAt: '#abstract' 
+!
+
+abstract: b ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler abstract: b ].
+	self booleanAttributeAt: '#abstract' put: b.
+
+	self logDefinition.
+	self changed: #abstract.!
+
+abstractString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler abstractString ].
+	^self uniqueAttributeAt: '#abstract' 
+!
+
+branded ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler branded ].
+	^self booleanAttributeAt: '#branded' 
+!
+
+branded: b ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler branded: b ].
+	self booleanAttributeAt: '#branded' put: b.
+	
+	self logDefinition.
+	self changed: #branded.
+!
+
+brandedString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler brandedString ].
+	^self uniqueAttributeAt: '#branded' 
+!
+
+classVariableString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler classVariableString ].
+	^(self attributeAt: '#classVariableString') first
+!
+
+classVariableString: s <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler classVariableString: s ].
+	self attributeAt: '#classVariableString' put: (OrderedCollection with: s).
+
+	self logDefinition.
+	self changed: #classVariables!
+
+extensionsAreSubtypes ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler extensionsAreSubtypes ].
+	^self booleanAttributeAt: '#extensionsAreSubtypes' 
+!
+
+extensionsAreSubtypes: b ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler extensionsAreSubtypes: b ].
+	self booleanAttributeAt: '#extensionsAreSubtypes' put: b.
+
+	self logDefinition.
+	self changed: #extensionsAreSubtypes!
+
+extensionsAreSubtypesString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler extensionsAreSubtypesString ].
+	^self uniqueAttributeAt: '#extensionsAreSubtypes' 
+!
+
+handlerId ^ <Str>
+
+	^self mirror masterInvocation isNil
+		ifTrue: [ 'Mixin' ]
+		ifFalse: [ 'Class' ]
+!
+
+instanceVariableString ^ <Str>
+
+	^(self attributeAt: '#instanceVariableString') first
+!
+
+instanceVariableString: s <Str>
+
+	self attributeAt: '#instanceVariableString' put: (OrderedCollection[Str] with: s).
+
+	self logDefinition.
+	self changed: #instanceVariables!
+
+subtype ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler subtype ].
+	^self booleanAttributeAt: '#subtype' 
+!
+
+subtype: b ^ <Boolean>
+
+	self isMeta ifTrue: [ ^self dualHandler subtype: b ].
+	self booleanAttributeAt: '#subtype' put: b.
+
+	self logDefinition.
+	self changed: #subtype!
+
+subtypeString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler subtypeString ].
+	^self uniqueAttributeAt: '#subtype' 
+!
+
+superclassTypeString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler superclassTypeString ].
+	^(self attributeAt: '#superclassTypeString') first
+!
+
+superclassTypeString: s <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler superclassTypeString: s ].
+	self attributeAt: '#superclassTypeString' put: (OrderedCollection with: s).
+	
+	self logDefinition.
+	self changed: #superclassType
+!
+
+supportedProtocolString ^ <Str>
+
+	^(self attributeAt: '#supportedProtocolString') first
+!
+
+supportedProtocolString: s <Str>
+
+	self attributeAt: '#supportedProtocolString' put: (OrderedCollection with: s).
+
+	self logDefinition.
+	self changed: #supportedProtocol!
+
+typeArgumentString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler typeArgumentString ].
+	^(self attributeAt: '#typeArgumentString' ) first
+!
+
+typeArgumentString: s <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler typeArgumentString: s ].
+	self attributeAt: '#typeArgumentString' put: (OrderedCollection with: s).
+
+	self logDefinition.
+	self changed: #typeArguments! !
+

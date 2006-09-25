@@ -1,0 +1,198 @@
+Delta define: #HTMLVisual as: (
+(Class subclassOf: 'Viewport' instanceVariables: 'naturalExtent <Point>
+column <GlyphColumn>
+app <HTMLView>
+isBuilt <Boolean>
+visualRegistry <VarDict[HTMLElement,Visual]>
+	"A map of the imbedded visuals with state, which
+	 	will be reused if possible if the same page is
+	 	layed out multiple times"') classVariables: 'DefaultWidth <Number>
+LayoutsSinceGC <Int> "%hack - so we can GC every
+	now and then"') !
+
+(Delta mirrorFor: #HTMLVisual) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #HTMLVisual) group: 'HTML'!
+
+(Delta mirrorFor: #HTMLVisual)
+comment: 
+'Tags: %HTML %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #HTMLVisual) classSide methodsFor: 'instance creation' !
+
+
+for: app <HTMLView> ^<Instance>
+
+	^self new initFor: app! !
+
+! (Delta mirrorFor: #HTMLVisual) classSide methodsFor: 'accessing' !
+
+
+defaultWidth ^<Number>
+
+	DefaultWidth isNil
+		ifTrue: [ DefaultWidth := 750 ].
+	^DefaultWidth!
+
+defaultWidth: n <Number>
+
+	DefaultWidth := n! !
+
+! (Delta mirrorFor: #HTMLVisual) methodsFor: 'accessing' !
+
+
+allocation: a <Region> at: pos <Point>
+
+	HTMLVisual defaultWidth: a enclosingRect extent x.
+	super allocation: a at: pos.
+	
+	self gcHack!
+
+html ^<HTMLNode>
+
+	^self app html!
+
+html: html <HTMLNode>
+
+	"We don't store this, since we can get it from the
+		app as needed, but this can cause rebuilding"
+	self visualRegistry: IdentityDictionary[HTMLElement,Visual] new.
+	self isBuilt
+		ifTrue: [	self changing.
+						self session updateLayoutsIfNeeded.
+						self yScrollState scrollPosition: 0.		].!
+
+max ^<Rect>
+
+	^0@0 corner: UI huge @ UI huge!
+
+min ^<Rect>
+
+	^0@0 corner: 20 @ 10!
+
+natural ^<Rect>
+
+	^0@0 extent: self naturalExtent!
+
+naturalExtent ^<Point> 
+
+	^naturalExtent!
+
+naturalExtent: p <Point> 
+
+	naturalExtent := p!
+
+part: p <Visual>
+	"We override this as in VisualWithNativeWindow, but without calling
+		changing.  Otherwise,we get in an infinite incremental layout loop,
+		since laying out the receiver causes setting of the part."
+
+	part == p
+		ifTrue: [ ^self ].
+	part notNil
+		ifTrue: [ part noParent ].
+	part := p.
+	p parent: self id: 1.!
+
+visualRegistry  ^<VarDict[HTMLElement,Visual]>
+
+	^visualRegistry! !
+
+! (Delta mirrorFor: #HTMLVisual) methodsFor: 'initialization-private' !
+
+
+initFor: hv <HTMLView>
+
+	"self optimizeScrolling: false."
+	app := hv.
+	self naturalExtent: (HTMLVisual defaultWidth) @ 500.
+	"We need the column just because there needs to be a child
+		for things like background painter access"
+	self column: (GlyphColumn holding: OrderedCollection[Glyph] new)
+			backdrop: Painter new.
+	self isBuilt: false.! !
+
+! (Delta mirrorFor: #HTMLVisual) methodsFor: 'private' !
+
+
+app ^<HTMLView>
+
+	^app!
+
+buildPage 
+	"generate the glyphs for the html page.  This is only called after the
+		receiver has an allocation"
+
+	| rows <OrdCltn[GlyphRow]> b <HTMLBuilder> |
+	rows := OrderedCollection[GlyphRow] new.
+	b := HTMLBuilder
+			for: self app
+			rows: rows
+			pageWidth: self allocation enclosedRect width 
+											- Scroller verticalScrollBarDefaultWidth
+			topWindow: self topWindow
+			visualRegistry: self visualRegistry
+			scaleFactor: self scaleFactor.
+	b build: self html.
+	self column: (GlyphColumn withAll: rows) backdrop: b backdrop.
+	
+	self isBuilt: true.!
+
+column ^<GlyphColumn>
+
+	^column!
+
+column: c <GlyphColumn> backdrop: b <Painter>
+
+	column := c.
+	self client: ((HTMLFrame for: c) backdrop: b; htmlView: self app)!
+
+gcHack
+	"%hack: HTML relayout rebuilds tons of stuff, and the
+	  GC doesn't run automatically right now, so GC every
+	  now and then so we don't run out of virtual mem. We do it
+	 in a background process so that happens after the page displays,
+	 so the user shouldn't notice it."
+
+
+	LayoutsSinceGC isNil
+		ifTrue: [ LayoutsSinceGC := 1 ]
+		ifFalse: [ LayoutsSinceGC := LayoutsSinceGC + 1 ].
+	LayoutsSinceGC >= 100
+		ifTrue: [		[	(Delay forMilliseconds: 250) wait.
+							VM collectGarbage
+						] fork.
+						LayoutsSinceGC := 0 ].!
+
+isBuilt: b <Boolean>
+
+	isBuilt := b!
+
+layoutsSinceGC: n <Int>
+
+	LayoutsSinceGC := n!
+
+partNatural ^<Rect>
+
+	self buildPage.
+	^self column natural enclosingRect!
+
+scaleFactor ^<Float>
+
+	^self app scaleFactor!
+
+visualRegistry: r <VarDict[HTMLElement,Visual]>
+
+	visualRegistry := r! !
+
+! (Delta mirrorFor: #HTMLVisual) methodsFor: 'testing' !
+
+
+isBuilt ^<Boolean>
+
+	^isBuilt! !
+

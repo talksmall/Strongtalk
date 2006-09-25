@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE></TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0Gold (WinNT; U) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1>Extending Smalltalk with Mixins</H1>
+
+<H4>Gilad Bracha and David Griswold</H4>
+
+<H2>Introduction</H2>
+
+<P>This document describes the extension of Smalltalk with mixins. The
+motivation for this proposal is the desire for increased code sharing.
+Smalltalk has a clean and simple single inheritance semantics. However,
+this can sometimes result in undesirable code replication. Mixin based
+inheritance [<A HREF="#brachaCook90">BrachaCook90</A>, <A HREF="#Bracha92a">Bracha92</A>]
+does not introduce the complications associated with multiple inheritance
+. It preserves the simple semantics of Smalltalk subclassing and message
+lookup, while allowing a large degree of code sharing. It is therefore
+desirable to try and incorporate mixins into Smalltalk. </P>
+
+<H2>Specifics of the Extension</H2>
+
+<H3>What is a Mixin</H3>
+
+<P>A mixin specifies a set of modifications (overrides and/or extensions)
+to be applied to a superclass parameter. A mixin differs from an ordinary
+subclass definition in that it abstracts over the identity of its superclass.
+Mixins may be viewed as functions that take superclasses and produce subclasses.
+Consider the following pseudo-code : </P>
+
+<PRE>Point subclass ColorPoint </PRE>
+
+<PRE>  instance variables: red green blue </PRE>
+
+<PRE>  methods: </PRE>
+
+<PRE>   red: r green: g blue: b </PRE>
+
+<PRE>   hue: h saturation: s value: v </PRE>
+
+<PRE>   red </PRE>
+
+<PRE>   green </PRE>
+
+<PRE>   blue </PRE>
+
+<PRE>   hue </PRE>
+
+<PRE>   saturation </PRE>
+
+<PRE>   value </PRE>
+
+<P>The code in <TT>ColorPoint</TT> has little to do with points. It applies
+to a variety of colored graphical entities. Replicating the color specific
+code in a variety of places is undesirable. An easy and natural way to
+achieve this to incorporate the code into a mixin: </P>
+
+<PRE>Mixin Color(G) { </PRE>
+
+<PRE>  G subclass { </PRE>
+
+<PRE>    instance variables: red green blue </PRE>
+
+<PRE>    methods: </PRE>
+
+<PRE>       red: r green: g blue: b </PRE>
+
+<PRE>       hue: h saturation: s value: v </PRE>
+
+<PRE>       red </PRE>
+
+<PRE>       green </PRE>
+
+<PRE>       blue </PRE>
+
+<PRE>       hue </PRE>
+
+<PRE>       saturation </PRE>
+
+<PRE>       value </PRE>
+
+<PRE>  }</PRE>
+
+<PRE>}</PRE>
+
+<P>The mixin <TT>Color</TT> abstracts over an unspecified superclass <TT>G</TT>.
+<TT>Color </TT>can then be used at different points in the subclass hierarchy,
+by <I>invoking </I>it on different actual superclasses, much as one invokes
+a function at multiple points in a computation. This is accomplished using
+<TT>|&gt;</TT>, the mixin invocation operator : </P>
+
+<PRE>ColorPoint = Color |&gt; Point </PRE>
+
+<PRE>ColorCircle = Color |&gt; Circle </PRE>
+
+<P>The <TT>|&gt;</TT> operator takes a mixin <TT>M</TT> and a class <TT>S</TT>,
+and produces a new class that modifies its superclass <TT>S</TT> with the
+code defined in <TT>M</TT>. The mixin can be applied to various superclasses
+to derive different classes. However, the source code of the mixin is shared
+among all these mixin applications, promoting modularity. The analogy between
+mixins and functions is useful in understanding the properties of mixins.
+Here are some key points: </P>
+
+<UL>
+<LI>One must distinguish between mixins and classes, just as one distinguishes
+between functions and the values they produce. A mixin is not a class;
+it must be invoked on an actual superclass parameter to produce a class.
+</LI>
+
+<LI>Mixins do not affect the semantics of subclass construction or method
+lookup. This is analogous to the fact that placing an operation like <TT>+
+</TT>within a function's body does not change the semantics of <TT>+</TT>.
+</LI>
+
+<LI>A mixin may not be applicable to all classes, much as a function is
+not necessarily well defined for all inputs. A function may place specific
+requirements on its actual parameters. Likewise, a mixin may place various
+requirements on the superclass. For example, a mixin may contain calls
+to <TT>super</TT> methods. These must be defined for any actual superclass.
+Similarly, if a mixin defines an instance variable, it must not be defined
+in the actual superclass. </LI>
+
+<LI>A mixin can be composed with another mixin, to produce a composite
+mixin, in a manner completely analogous to function composition. We write
+<TT>M1*M2</TT> to denote the composition of mixin<TT> M_1</TT> with mixin
+<TT>M_2</TT>. By definition, <TT>(M_1*M_2) |&gt; S = M_1 |&gt; (M_2 |&gt;
+S)</TT>.</LI>
+</UL>
+
+<P>See [<A HREF="#brachaCook90">BrachaCook90</A>, <A HREF="#Bracha92a">Bracha92</A>}
+for a more extensive discussion of mixins.</P>
+
+<H3>Identity Issues </H3>
+
+<P>In Smalltalk, every class is itself a first class object with its own
+identity, and potentially with its own class and instance variables. It
+follows that every mixin invocation produces a distinct class, with a distinct
+identity, as its result. This is essential to prevent syntactically identical
+invocations (possibly in different libraries) accidentally sharing state
+with unforseen consequences. </P>
+
+<H3>Extracting Mixins from Classes </H3>
+
+<P>It is often desirable to treat an existing class as a mixin. <TT>S mixin</TT>
+returns a mixin that contributes the definitions given locally by the class
+<TT>S</TT>. Consider the case of a class in a library of graphical widgets:
+</P>
+
+<PRE>Widget subclass AgregateWidget{...} </PRE>
+
+<P>Such a class groups widgets together. It is useful to think of this
+class a collection of widgets. However, one cannot usually inherit functionality
+from <TT>Collection</TT> since graphical widgets belong to a separate hierarchy.
+By revising the definition to </P>
+
+<PRE>Collection mixin |&gt; Widget subclass AgregateWidget{...} </PRE>
+
+<P>one can reuse all of the functionality in the <TT>Collection</TT> class.</P>
+
+<H3>Interaction with Existing Language Features</H3>
+
+<P>Mixins do not change the semantics of subclassing or of message lookup
+in Smalltalk. As a result, mixins do not influence the behavior of existing
+Smalltalk programs. The extension is therefore fully upward-compatible.
+Furthermore, mixins can easily be eliminated from a program by automatically
+creating a class for each mixin invocation, and duplicating the mixin's
+code in it. </P>
+
+<H3>Implementation Issues</H3>
+
+<P>In principle, mixins are easily implemented using Smalltalk's reflective
+capabilities. One can simply enclose a class constructor within a method
+that takes a superclass and a name as arguments. The method must also reflectively
+add the required methods to the new class. Of course, this solution is
+too awkward to be useful in practice. A usable implementation must provide
+programming environment support for creating and incrementally modifying
+mixins. Whenever a change is made to the mixin, it must be propagated to
+all invocations, and checked for validity. More ambitious implementations
+may seek to share code among a mixin's invocations. </P>
+
+<H3>Implementation status and Experience</H3>
+
+<P>A working implementation of mixins in Smalltalk has been constructed.
+Mixins have been used in the construction of real applications, and the
+code sharing benefits have been significant. In particular, the ability
+to extract mixins from existing classes has proven very valuable. Further
+experience is necessary, however, to to determine how extensively one should
+use mixins, and to establish a methodology of working with mixins.</P>
+
+<H3>Conclusion </H3>
+
+<P>Mixin based inheritance can easily be added to Smalltalk without changing
+the existing semantics of Smalltalk subclassing and method lookup. Preliminary
+experience with a working implementation indicates that the extension fullfills
+its goal of increasing code sharing, without the complications inherent
+in multiple inheritance.</P>
+
+<H3>References</H3>
+
+<P><A NAME="brachaCook90"></A>[BrachaCook90] Gilad Bracha and William Cook.
+<A HREF="oopsla90.ps">Mixin-based inheritance (postscript, 165K)</A>. In
+Proc. of the Joint ACM Conf. on Object-Oriented Programming, Systems, Languages
+and Applications and the European Conference on Object-Oriented Programming,
+October 1990 . </P>
+
+<P><A NAME="Bracha92a"></A>[Bracha92] Gilad Bracha, <A HREF="ftp://ftp.cs.utah.edu/techreports/1992/UUCS-92-007.ps.Z">The
+Programming Language Jigsaw: Mixins, Modularity and Multiple Inheritance
+(compressed postscript, 246K)..</A>, Ph.D. dissertation, Dept. of Computer
+Science, University of Utah 1992.</P>
+
+</BODY>
+</HTML>

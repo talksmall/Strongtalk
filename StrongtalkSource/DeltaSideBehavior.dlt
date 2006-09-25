@@ -1,0 +1,757 @@
+Delta define: #DeltaSideBehavior as: (
+(Class subclassOf: 'DeltaDecl' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #DeltaSideBehavior) revision: '$Revision: 1.8 $'!
+
+(Delta mirrorFor: #DeltaSideBehavior) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSideBehavior)
+comment: 
+'I represent one "side" of a class or mixin definition - either the instance or class side.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'Unclassified' !
+
+
+addMethod: ast <DeltaMethod>
+
+ast representsMessage
+  ifFalse:[
+                self messages removeKey: ast selector ifAbsent:[].
+                self methods at: ast selector put: ast.
+                ]
+  ifTrue:[
+               self methods removeKey: ast selector ifAbsent:[].
+               self messages at: ast selector put: ast.
+               ]. "Wrong - must convert to message"!
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^self typeOfInstances allSelfClassTVs!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^self typeOfInstances allSelfTVs!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self typeOfInstances antimonotonicIn: tv!
+
+brandMethodSource ^ <Str>
+    ^self brandName, ' ^ <Boolean> ^ true'!
+
+canonicalRep ^ <Protocol>
+    ^self typeOfInstances canonicalRep!
+
+clearCaches
+
+"do nothing - nothing cached here"!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^self typeOfInstances declaredSupertypes!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self typeOfInstances monotonicIn: tv! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'typechecking' !
+
+
+typecheck ^ <Self>
+    
+"Typecheck entire side (declaration and all methods/messages)"
+
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self innerTypecheck.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckClassVarDecls
+
+self testClassVarDecls
+!
+
+typecheckDeclaration  ^ <Self>
+    
+"Typecheck definition of side (no methods/messages are checked)"
+
+self fixupScopes.
+self setupTypeAssumptions.
+self errorHandler pushDefinition: self.
+self innerTypecheckDeclaration.
+self errorHandler popDefinition.
+self retractTypeAssumptions.!
+
+typecheckInstVarDecls
+
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self testInstVarDecls.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckInterface  ^ <Self>
+    
+"Typecheck declaration and signatures of all methods/messages (no method bodies are checked)"
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self innerTypecheckInterface.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckMethod: m <DeltaMethod > ^ <Self>
+
+"Typecheck signature and body of method"
+
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self errorHandler pushSelector: m selector.
+self wellTypedAttribute: m.
+self errorHandler popSelector.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckMethodInterface: m <DeltaMethod > ^ <Self>
+
+"Typecheck signature of method"
+
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self errorHandler pushSelector: m selector.
+self wellTypedAttributeInterface: m.
+self errorHandler popSelector.
+self retractTypeAssumptions.
+self errorHandler popDefinition.! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'private typechecking' !
+
+
+checkForUnsupportedMessages
+
+"do nothing"!
+
+innerTypecheck
+
+self innerTypecheckDeclaration.
+self checkForUnsupportedMessages.
+self functions do:[:f <DeltaMethod | DeltaMessage>  | 
+	self errorHandler pushSelector: f selector.
+	self wellTypedAttribute: f.
+	self errorHandler popSelector ].!
+
+innerTypecheckDeclaration
+
+| uims <Dict[Symbol, Message]> |
+
+self testVarDecls.
+self abstract
+  ifFalse:[
+                 uims := self unimplementedMessages.
+                 uims isEmpty 
+                   ifFalse: [
+                                   self errorHandler pushDefinition: (SuperclassClauseLocator ofDefinition: self).
+                   					uims  do:
+                                       [ :k <Symbol>  | 
+                                       self reportError: 
+                                         (DeltaUnimplementedSubclassResponsibilityError new className: self name; msgName: k).
+                                       ].
+                                      self errorHandler popDefinition
+                                   ].
+                 ].
+!
+
+innerTypecheckInterface
+
+self innerTypecheckDeclaration.
+self checkForUnsupportedMessages.
+self functions do:[:f <Method | Message>  | 
+	self errorHandler pushSelector: f selector.
+	self wellTypedAttributeInterface: f.
+	self errorHandler popSelector ].!
+
+retractTypeAssumptions ^ <Self>
+
+self selfPublicTV retractBoundFromTrail: DeltaGlobalTrail.
+self selfPublicTV dual retractBoundFromTrail: DeltaGlobalTrail.
+self selfTV retractBoundFromTrail: DeltaGlobalTrail.
+self selfTV dual retractBoundFromTrail: DeltaGlobalTrail.
+!
+
+setupTypeAssumptions ^ <Self>
+    | selfType <TypeVar>  selfDualType <TypeVar>  |
+
+selfType :=self selfTV.
+selfDualType := self selfDualTV.
+self selfPublicTV declareBoundToTrail: DeltaGlobalTrail.
+self selfPublicTV dual declareBoundToTrail: DeltaGlobalTrail.
+self selfTV declareBoundToTrail: DeltaGlobalTrail.
+self selfTV dual declareBoundToTrail: DeltaGlobalTrail.
+!
+
+testClassVarDecls
+
+self classVarDecls 
+				do:	[:vd <VarDecl> | 
+							self errorHandler pushDefinition: (ClassVarLocator 	onVariable: vd name 
+																																	ofDefinition: self basicLocator).
+							vd type wellFormed.
+							self errorHandler popDefinition.
+						].
+!
+
+testInstVarDecls
+
+self instVarDecls 
+				do:	[:vd <VarDecl> | 
+							self errorHandler pushDefinition: (InstVarLocator 	onVariable: vd name 
+																															ofDefinition: self basicLocator).
+							vd type wellFormed.
+							self errorHandler popDefinition.
+						].
+
+!
+
+testMonotonicity: m <Attribute > ^ <Self>
+	self declaredMonotonic ifTrue:[
+		(m type monotonicIn: self selfPublicTV) ifFalse:[
+			self reportError: (DeltaTypeNotMonotonicError new id: m name; typeVarName: self selfPublicTV name)].	
+		(m type monotonicIn: self selfPublicClassTV) ifFalse:[
+			self reportError: (DeltaTypeNotMonotonicError new id: m name; typeVarName: self selfPublicClassTV name)].
+				(m type monotonicIn: self selfTV) ifFalse:[
+			self reportError: (DeltaTypeNotMonotonicError new id: m name; typeVarName: self selfTV name)].	
+		(m type monotonicIn: self selfClassTV) ifFalse:[
+			self reportError: (DeltaTypeNotMonotonicError new id: m name; typeVarName: self selfClassTV name)].	
+			]
+!
+
+testVarDecls
+
+self testInstVarDecls.
+self testClassVarDecls.
+
+!
+
+wellFormed ^ <Boolean>
+
+	self deltaHack.  "Should DeltaDecls respond to wellFormed?"
+    ^true
+!
+
+wellTypedAttribute: m <DeltaMethod | DeltaMessage > ^ <Boolean>
+	self  testMonotonicity: m.
+	"typecheck method itself"
+	m typecheck.!
+
+wellTypedAttributeInterface: m <DeltaMethod | DeltaMethodDecl > ^ <Boolean>
+
+	self  testMonotonicity: m.
+	"typecheck method signature itself"
+	m typecheckInterface.! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'subtyping' !
+
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^self typeOfInstances declaredSubprotocolOf: p!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^true!
+
+equals: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances equals: t assuming: trail!
+
+inheritedProtocolOf: t <Protocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances inheritedProtocolOf: t assuming: trail!
+
+mixinCompatibleWith: st <SideType > ^ <Boolean>
+
+^self type mixinCompatibleWith: st!
+
+structuralInheritedProtocolOf: p <Protocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances structuralInheritedProtocolOf: p assuming: trail!
+
+structuralSubProtocolOf: p <Protocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances structuralSubProtocolOf: p assuming: trail!
+
+subprotocolOf: p <Protocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances subprotocolOf: p assuming: trail!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances subtypeOf: t assuming: trail!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances superGenAppOf: p assuming: trail!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances superprotocolOf: p assuming: trail!
+
+supertypeOfMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^false!
+
+supertypeOfPolyMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^false!
+
+supertypeOfTypeVar: t <TypeVar >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances supertypeOfTypeVar: t assuming: trail!
+
+supertypeOfUnion: u <UnionType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self typeOfInstances supertypeOfUnion: u assuming: trail! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'accessing' !
+
+
+abstract ^ <Boolean>
+    ^self classDecl abstract!
+
+abstract: a <Boolean > ^ <Self>
+
+self classDecl abstract: a!
+
+atomicTypes ^ <IdentitySet[ObjectType]>
+    ^self typeOfInstances atomicTypes!
+
+attributes ^ <Dict[Symbol,MsgSignature]>
+    ^self publicFunctions virtualCollect:[: f <Method | Message>  | f type]!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+
+    ^self attributes
+!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self dual attributes!
+
+brandName ^ <Symbol>
+    ^self name!
+
+branded ^ <Boolean>
+    ^self classDecl branded!
+
+branded: b <Boolean>
+    self classDecl branded: b!
+
+classDecl
+
+self subclassResponsibility!
+
+classInterface ^ <Interface>
+    ^self typeOfInstances classInterface!
+
+classVarDecls ^ <Dict[Symbol,VarDecl]>
+    ^self localScope classVarDecls!
+
+dual ^ <Protocol>
+    ^self isMetaSide ifTrue:[self classDecl instanceSide]
+                           ifFalse:[self classDecl classSide].!
+
+extensionsAreSubtypes
+
+^self classDecl extensionsAreSubtypes!
+
+extensionsAreSubtypes: e
+
+self classDecl extensionsAreSubtypes: e!
+
+firstClassRepType  ^ <ObjectType>
+
+^self typeOfClass
+!
+
+functions ^ <Dict[Symbol,DeltaMethod|DeltaMessage]>
+    ^self methods merge: self messages!
+
+heirScope ^ <Scope>
+    self subclassResponsibility!
+
+implementedPrivateProtocol ^ <Protocol>
+    | pi <Interface>  si <Interface>   ip <ProtocolUpdate> |
+
+pi := DeltaInterface new attributes: (self privateOrPublicMethods virtualCollect:[:f <Method>  | f type]).
+si := DeltaInterface new attributes: (self dual privateOrPublicMethods virtualCollect:[:f <Method>  | f type]).
+
+ip := DeltaRawProtocol new
+     primaryInterface: pi
+     secondaryInterface: si
+     branded: self branded.
+self relevantTypeVars do:[: rtv <TypeVar> | ip addRelevantTypeVar: rtv].
+^ip.!
+
+instVarDecls ^ <Dict[Symbol,VarDecl]>
+    ^self localScope instVarDecls!
+
+instanceInterface ^ <Interface>
+    ^self typeOfInstances instanceInterface!
+
+involvesTypeVariables ^ <Boolean>
+    ^false!
+
+isMeta ^ <Boolean>
+    ^ self mirror isMeta!
+
+klass
+
+self subclassResponsibility
+!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self attributes
+!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self dual localBareAttributes!
+
+localScope ^ <Scope>
+    self subclassResponsibility!
+
+messages ^ <Dict[Symbol,Message]>
+
+self subclassResponsibility!
+
+methods ^ <Dict[Symbol,Method]>
+    self subclassResponsibility
+!
+
+mirror ^ <Mirror>
+
+^Mirror on: self klass!
+
+monotonic ^ <Boolean>
+    ^self classDecl monotonic!
+
+name ^ <Symbol>
+    ^self klass name!
+
+primaryInterface ^ <Interface>
+    ^DeltaInterface new filter: self using: DeltaSubstitution new initialize!
+
+privateFunctions ^ <Dict[Symbol,Method|Message]>
+    ^self functions virtualSelect:[:f <Method | Message>  | f visibility = #private]!
+
+privateMessages ^ <Dict[Symbol,Message]>
+    ^self messages virtualSelect:[:f <Message>  | f visibility = #private]!
+
+privateMethods ^ <Dict[Symbol,Method]>
+    ^self methods virtualSelect:[:m <Method>  | m visibility = #private].!
+
+privateOrPublicFunctions ^ <Dict[Symbol,Method|Message]>
+    ^self functions virtualSelect:[:f <Method | Message>  | (f visibility = #private) or: [f visibility = #public]]!
+
+privateOrPublicMethods ^ <Dict[Symbol,Method]>
+    ^self methods virtualSelect:[:m <Method>  | m visibility = #private or:[m visibility = #public]].!
+
+privateProtocol ^ <Protocol>
+    | pi <Interface>  si <Interface>   p <ProtocolUpdate> |
+
+pi := DeltaInterface new attributes: (self privateOrPublicFunctions virtualCollect:[:f <Method | Message>  | f type]).
+si := DeltaInterface new attributes: (self dual privateOrPublicFunctions virtualCollect:[:f <Method | Message>  | f type]).
+
+p := DeltaRawProtocol new
+     primaryInterface: pi
+     secondaryInterface: si
+     branded: self branded.
+
+self relevantTypeVars do:[: rtv <TypeVar> | p addRelevantTypeVar: rtv].
+^p.!
+
+publicFunctions ^ <Dict[Symbol,Method|Message]>
+    ^self functions virtualSelect:[:f <Method | Message>  | f visibility = #public]!
+
+publicMessages ^ <Dict[Symbol,Method]>
+    ^self messages virtualSelect:[:f <Message>  | f visibility = #public]!
+
+publicMethods ^ <Dict[Symbol,Method]>
+    ^self methods virtualSelect:[:m <Method>  | m visibility = #public].!
+
+rawClassInterface ^ <Interface>
+    ^self typeOfInstances rawClassInterface!
+
+rawInstanceInterface ^ <Interface>
+    ^self typeOfInstances rawInstanceInterface!
+
+rawPrimaryInterface ^ <Interface>
+    ^self primaryInterface!
+
+rawSecondaryInterface ^ <Interface>
+    ^self secondaryInterface!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+set := Set[TypeVar] new.
+set add: self selfTV;
+       add: self selfClassTV;
+       add: self selfPublicTV;
+       add: self selfPublicClassTV.
+^set.!
+
+scope ^ <Scope>
+    ^self mirror scope!
+
+secondaryInterface ^ <Interface>
+    ^(Type forMixin: self mirror classMixin) primaryInterface!
+
+selfClassTV  ^ <TypeVar>
+
+    ^self isMetaSide ifFalse:[self classDecl selfClassTV]
+                           ifTrue:[self classDecl selfTV]!
+
+selfDualTV ^ <TypeVar>
+    ^self isMetaSide ifFalse:[self classDecl selfClassTV]
+                           ifTrue:[self classDecl selfTV]!
+
+selfPublicClassTV  ^ <TypeVar>
+
+    ^self isMetaSide ifFalse:[self classDecl selfPublicClassTV]
+                           ifTrue:[self classDecl selfPublicTV]!
+
+subtype ^ <Boolean>
+    ^self classDecl subtype!
+
+subtype: s <Boolean>
+    self classDecl subtype: s!
+
+type ^ <SideType>
+    ^DeltaSideType new on: self.!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+^self messages keys!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+    ^self localScope varDecls select:[: vd <VarDecl> | (vd name ~= #super) and:[vd name ~= #self]].! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'substitutions' !
+
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+^t substitute: self privateToPublicSubstitution
+!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+
+^t
+!
+
+instanceTypeSubstitution
+
+"returns a substitution that replaces Self with SelfPublic.
+This is used when deriving the public protocol of the side, in 
+order to hide the private type variables.
+"
+
+    | theta <Substitution>  |
+
+theta := DeltaSubstitution new initialize.
+theta at: self selfTV put: self selfPublicTV.
+theta at: self selfClassTV put: self selfPublicClassTV.
+
+^theta!
+
+privateToPublicSubstitution ^<Substitution> 
+
+^self instanceTypeSubstitution!
+
+substitute: s <Substitution > ^ <Self>
+    ^self typeOfInstances substitute: s!
+
+substitutionForSelf: stv forSelfClass: sctv forSelfPublic: sptv forSelfPublicClass: spctv
+
+" Returns a substitution that  replaces Self, SelfPublic and their duals with
+stv, sptv  and sctv, spctv respectively. This is a service method used for
+various purposes."
+
+    | theta <Substitution>  |
+
+theta := DeltaSubstitution new initialize.
+theta at:  self selfTV put: stv.
+theta at: self selfClassTV put: sctv.
+theta at:  self selfPublicTV put: sptv.
+theta at: self selfPublicClassTV put: spctv.
+^theta! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'converting' !
+
+
+asMixinSide ^ <MixinSide>
+
+self error: 'Internal flaw: accessing non-mixin side as mixin side'!
+
+asObjectType ^ <Side>
+    ^self asProtocol!
+
+asProtocol ^ <Side>
+    ^self typeOfInstances!
+
+asSide ^ <Side>
+    ^self!
+
+asType ^ <Side>
+    ^self! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'querying' !
+
+
+isMetaSide ^ <Boolean>
+"This method should be eliminated. It seems redundant"
+self deltaHack.
+    ^self isMeta!
+
+isMonotonic ^ <Boolean>
+    ^self typeOfInstances isMonotonic!
+
+isObjectType ^ <Boolean>
+    ^true!
+
+isProtocol ^ <Boolean>
+    ^true!
+
+isType ^ <Boolean>
+    ^true! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'selection' !
+
+
+rawSelectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <MsgSignature>
+   
+ ^self typeOfInstances rawSelectMsg: selector ifAbsent: block!
+
+selectMsg: selector <Symbol > ^ <MsgSignature>
+    ^self selectMsg: selector ifAbsent: [DeltaSelectorUndefinedError new selector: selector].!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]>  ^ <MsgSignature>
+   
+ ^self typeOfInstances selectMsg: selector ifAbsent: block! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'initialization' !
+
+
+fixupScopes  ^ <Self>
+
+"This should be removed at some point after bootstrap. The missing scope entries 
+  should be set correctly by the mirrors when the scope is created, but this it awkward 
+  at the moment."
+
+self deltaHack.
+self scope at: ('private protocol') asSymbol  put: self privateProtocol.
+self dual scope at: ('private protocol') asSymbol  put: self dual privateProtocol
+!
+
+initialize ^ <Self>
+   self messages: IdentityDictionary[Symbol, Message]  new.
+   self methods: IdentityDictionary[Symbol, Method]  new.
+  self setupScope.
+"Here we assert: PublicSelf <# C 
+where C is the public protocol of this side"
+   self selfPublicTV:(DeltaTypeVar new name: #PublicSelf bound: self; subtype: false).
+   self  selfTV: (DeltaTypeVar new name: #Self bound: self typeOfSelf).!
+
+initializeWithin: lexicalScope <Scope>  ^ <Self>
+   self messages: IdentityDictionary[Symbol, Message]  new.
+   self methods: IdentityDictionary[Symbol, Method]  new.
+  self setupScopeWithin: lexicalScope.
+"Here we assert: PublicSelf <# C 
+where C is the public protocol of this side"
+   self selfPublicTV:(DeltaTypeVar new name: #PublicSelf bound: self; subtype: false).
+   self  selfTV: (DeltaTypeVar new name: #Self bound: self typeOfSelf).!
+
+setupScope
+"Set up the scope for a mixin. "
+    | classLocalScope  <Scope>  lexicalScope  <Scope>  |
+
+
+self setupScopeWithin: DeltaGlobals.
+
+
+!
+
+setupScopeWithin: lexicalScope <Scope>
+"Set up the scope for a mixin. "
+    | classLocalScope  <Scope>  |
+
+
+" We create an override scope that will have the mixin's local definitions in its
+delta, and any superclassType scope as its base. At this point, we do not
+know anything about the superclassType, so we allocate a dummy scope
+for it as well."
+    classLocalScope := DeltaOverrideScope new setBase: (DeltaScope new initialize: nil) delta: (DeltaScope new initialize: nil).
+"The next step is to allocate an override scope that will combine classLocalScope
+   and lexicalScope. This the complete mixin scope"
+    self scope: (DeltaOverrideScope new setBase: lexicalScope delta: classLocalScope).
+"Finally, insert entries for self and super into the scope"
+
+    self scope at: #self
+                          put: (DeltaReceiver new name: #self
+                                                                           type:  (DeltaTypeId new setId: #Self; scope: self localScope)).
+    self scope at: #super
+                          put: (DeltaSuperVar new name: #super type: nil).
+
+! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'types' !
+
+
+typeForNode: n <ASTNode> inMethod: m <Method > ^ <ObjectType>
+
+"Type for specific AST node"
+
+| otype <ObjectType> |
+
+self fixupScopes.
+self setupTypeAssumptions.
+self errorHandler pushDefinition: self.
+self errorHandler pushSelector: m selector.
+otype := m typeForNode: n.
+self errorHandler popSelector.
+self errorHandler popDefinition.
+self retractTypeAssumptions.
+^otype!
+
+typeNameForNode: n <ASTNode> inMethod: m <Method > ^ <String>
+
+"Typename for specific AST node"
+
+| typename <String> |
+
+self fixupScopes.
+self setupTypeAssumptions.
+self errorHandler pushDefinition: self.
+self errorHandler pushSelector: m selector.
+typename := m typeNameForNode: n.
+self errorHandler popSelector.
+self errorHandler popDefinition.
+self retractTypeAssumptions.
+^typename!
+
+typeOfClass ^ <ObjectType>
+    ^self typeOfInstances typeOfClass!
+
+typeOfInstances ^ <ObjectType>
+"This method returns the public protocol of the side.  For the class side,
+we delegate responsibility to the dual."
+
+self subclassResponsibility!
+
+typeOfSelf  ^ <DeltaProtocol>
+"This method is called to set the bound on the type Self.
+ The effect of calling this version  is the
+assertion:
+ Self <= G[Self], where this sides' private protocol has the form
+rec T. G[T]
+"
+^DeltaEncapsulatedProtocol new
+    body:  (DeltaTypeId new setId: ('private protocol') asSymbol; scope: self localScope)
+    bound: (DeltaTypeId new setId: #PublicSelf; scope: self localScope)! !
+
+! (Delta mirrorFor: #DeltaSideBehavior) methodsFor: 'private typing' !
+
+
+declaredMonotonic  ^<Boolean>
+
+^self classDecl monotonic! !
+

@@ -1,0 +1,138 @@
+Delta define: #DeltaClassId as: (
+(Class subclassOf: 'DeltaTypeId' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaClassId) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaClassId) group: 'ast'!
+
+(Delta mirrorFor: #DeltaClassId)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaClassId) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^self asSide abstract!
+
+asMixinSide   ^ <MixinSide>
+
+^self ref asMixinSide!
+
+classObj ^ <Class>
+
+"Return the class I denote, if indeed it is a class"
+| m <Object> |
+
+m := Delta at: self name ifAbsent:[self error: 'Class ', id, ' undefined!!'].
+m isBehavior ifFalse:[self error: self name, ' is not a class!!'].
+^m!
+
+classProtocol ^ <Protocol>
+    ^DeltaUnaryClassTypeExpr new target: self selector: #class!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+^self asSide compositeSubstitutePrivate: t!
+
+dualClassType ^ <ClassType>
+    ^DeltaUnaryClassTypeExpr new target: self selector: #class.!
+
+functions ^ <Dict[Symbol,Method|Message]>
+    ^self asSide functions!
+
+heirScope ^ <Scope>
+    ^self asSide heirScope!
+
+implementedPrivateProtocol ^ <Protocol>
+    ^self asSide implementedPrivateProtocol!
+
+invocationCache ^ <Dict[ObjectType, ObjectType]>
+
+^self asMixinSide invocationCache!
+
+localScope ^ <Scope>
+    ^self asSide localScope!
+
+messages ^ <Dict[Symbol,Message]>
+    ^self asSide messages!
+
+methods ^ <Dict[Symbol,Method]>
+    ^self asSide methods!
+
+mixinObj ^ <Mixin>
+
+"Return the mixin I denote, if indeed it is a mixin"
+| m <Object> |
+
+m := Delta at: self name ifAbsent:[self error: 'Mixin ', self id, ' undefined!!'].
+(m isKindOf: Mixin) ifFalse:[self error: self name, ' is not a mixin!!'].
+^m!
+
+mixinSubstitute: t <Interface> ^ <Interface>
+
+^t!
+
+monotonic ^ <Boolean>
+    ^self asSide monotonic!
+
+privateFunctions ^ <Dict[Symbol,Method|Message]>
+    ^self asSide privateFunctions!
+
+privateMessages ^ <Dict[Symbol,Message]>
+    ^self asSide privateMessages!
+
+privateMethods ^ <Dict[Symbol,Method]>
+    ^self asSide privateMethods!
+
+privateProtocol ^ <Protocol>
+    ^self asSide privateProtocol!
+
+protocolForInvocation: i <MixinInvocationNode> ^ <Protocol>
+
+| key <Protocol> |
+
+key :=  i superclassType asProtocol canonicalRep.
+^self invocationCache 
+            at: key
+            ifAbsent:[self invocationCache at: key put: i computeTypeOfInstances]!
+
+publicFunctions ^ <Dict[Symbol,Method|Message]>
+    ^self asSide publicFunctions!
+
+publicMessages ^ <Dict[Symbol,Message]>
+    ^self asSide publicMessages!
+
+publicMethods ^ <Dict[Symbol,Method]>
+    ^self asSide publicMethods!
+
+selfClassTV ^ <TypeVar>
+    ^self asSide selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self asSide selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self asSide selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self asSide selfTV!
+
+subtype ^ <Boolean>
+    ^self asSide subtype!
+
+supportedProtocol ^ <Protocol>
+    ^self asSide supportedProtocol!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+    ^self asSide unimplementedMessages!
+
+untypedName  ^ <Symbol>
+
+^self name!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+    ^self asSide varDecls! !
+

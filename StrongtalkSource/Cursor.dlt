@@ -1,0 +1,76 @@
+Delta define: #Cursor as: (
+(Class subclassOf: 'Object' instanceVariables: 'win32Handle <Win32Handle>
+	') classVariables: 'WaitCursor <Cursor>
+TextCursor <Cursor>
+ArrowCursor <Cursor>
+		') !
+
+(Delta mirrorFor: #Cursor) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Cursor) group: 'ui'!
+
+(Delta mirrorFor: #Cursor)
+comment: 
+'Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #Cursor) classSide methodsFor: 'instance creation' !
+
+
+arrow ^<Cursor>
+
+	ArrowCursor isNil
+		ifTrue: [	| hand <Win32Handle> |
+						hand := {{<user Win32Handle LoadCursorA>
+										hinst: Win32 NULL
+										name: Win32 IDC_ARROW
+									}}.
+						hand isNull
+							ifTrue: [ Win32 handleError ].
+						ArrowCursor := self forHandle: hand.	].
+	^ArrowCursor!
+
+forHandle: h <Win32Handle> ^<Instance>
+
+	^self new win32Handle: h!
+
+text ^<Cursor>
+
+	TextCursor isNil
+		ifTrue: [	| hand <Win32Handle> |
+						hand := {{<user Win32Handle LoadCursorA>
+										hinst: Win32 NULL
+										name: Win32 IDC_IBEAM
+									}}.
+						hand isNull
+							ifTrue: [ Win32 handleError ].
+						TextCursor := self forHandle: hand.	].
+	^TextCursor!
+
+wait ^<Cursor>
+
+	WaitCursor isNil
+		ifTrue: [	| hand <Win32Handle> |
+						hand := {{<user Win32Handle LoadCursorA>
+										hinst: Win32 NULL
+										name: Win32 IDC_WAIT
+									}}.
+						hand isNull
+							ifTrue: [ Win32 handleError ].
+						WaitCursor := self forHandle: hand.	].
+	^WaitCursor! !
+
+! (Delta mirrorFor: #Cursor) methodsFor: 'accessing' !
+
+
+win32Handle ^<Win32Handle>
+
+	^win32Handle!
+
+win32Handle: h <Win32Handle>
+
+	win32Handle := h! !
+

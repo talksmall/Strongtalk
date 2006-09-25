@@ -1,0 +1,197 @@
+Delta define: #AbstractClassMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee <Class>') classVariables: 'SubclassHierarchy <Dict[Class, Cltn[Class]]>'; abstract) !
+
+(Delta mirrorFor: #AbstractClassMirror) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #AbstractClassMirror) group: 'reflection'!
+
+(Delta mirrorFor: #AbstractClassMirror)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #AbstractClassMirror) classSide methodsFor: 'Unclassified' !
+
+
+classFor: e <Class> ^ <AbstractClassMirror class>
+"Private"
+"This is not at all object-oriented. However, it maintains the complete separation of
+Mirrors  and is quite simple "
+
+^(ClassVMMirror on: e) isMixinInvocation
+	ifTrue: [InvocationMirror]
+	ifFalse: [ClassMirror]
+ 
+!
+
+on: class<Class> ^ <Instance> 
+
+ ^(self classFor: class) on: class! !
+
+! (Delta mirrorFor: #AbstractClassMirror) classSide methodsFor: 'Subclass hierarchy' !
+
+
+computeSubclassHierarchy ^ <Dict[Class, Cltn[Class]]>
+| 
+h <IdentityDictionary[Class, Cltn[Class]]> 
+cs <Cltn[Class]>
+|
+
+cs := (ClassVMMirror on: Object) computeSubclasses. 
+h := IdentityDictionary[Class, Cltn[Class]] new: cs size.
+cs do:[: c <Class> | h at: c put: (OrderedCollection[Class] new: 3)].
+cs do:[: c <Class> | | sc <Class> |
+			sc := c superclassIfAbsent:[nil].
+			sc notNil ifTrue:[(h at: sc) add: c].
+			].
+^h!
+
+flushSubclassHierarchyCache
+
+SubclassHierarchy := nil!
+
+subclassHierarchy ^ <Dict[Class, Cltn[Class]]>
+
+SubclassHierarchy isNil
+	ifTrue:[SubclassHierarchy := self computeSubclassHierarchy].
+^SubclassHierarchy! !
+
+! (Delta mirrorFor: #AbstractClassMirror) methodsFor: 'Unclassified' !
+
+
+adjustBounds
+"Private"
+
+self typeInfo  asGeneric adjustBoundToTrivialApplication.		"Update name of target in trivial application"
+self  classSide typeInfo asGeneric adjustBoundToTrivialApplication.
+!
+
+anonymousSuperclasses  ^<Cltn[InvocationMirror]> 
+    "Answers the immediate anonymous superclasses of this class"
+
+	^(ClassVMMirror on: self reflectee) anonymousSuperclasses collect: [ :m <Class> | InvocationMirror on: m ].!
+
+classSide ^ <ClassMirror>
+
+^self actualClass on: self reflectee class
+ !
+
+directSubclasses  ^<OrdCltn[AbstractClassMirror]> 
+
+^(ClassVMMirror on: self reflectee) directSubclasses collect:[ :c <Class> | AbstractClassMirror on: c ].!
+
+directSubclassesSkipAnonymous  ^<OrdCltn[AbstractClassMirror]> 
+
+^(ClassVMMirror on: self reflectee) directSubclassesSkipAnonymous collect:[ :c <Class> | AbstractClassMirror on: c ].!
+
+fileName  ^<String>
+	self deltaHack.
+	^self name = #POINT
+		ifTrue: [	'Win32POINT', self fileNameExtension ]
+		ifFalse: [	super fileName ]!
+
+immediateHeirs  ^<OrdCltn[ClassMirror]> 
+	"Return a collection of immediate heirs, which for now is simply all subclasses.
+	  This method gives inaccurate results since inheriting merges and supported protocols are not considered"
+self deltaHack.
+	^self subclasses!
+
+instanceSide ^ <ClassMirror>
+
+^self actualClass on: self reflectee instanceClass!
+
+isMeta ^ <Boolean> 
+
+^self mixin isMeta!
+
+isMixinInvocation  ^ <Boolean>
+
+self subclassResponsibility!
+
+mixin ^ <MixinMirror>
+
+self subclassResponsibility!
+
+referenceToSelf ^ <DeltaClassId | DeltaMixinInvocationNode>
+
+self subclassResponsibility!
+
+reflectee  ^ <Class>
+
+^reflectee!
+
+reflectee: r <Class>
+
+self assert:[Metaclass == r class or: [Metaclass == r class class]].
+reflectee := r!
+
+sortedSubclassesSkipAnonymous  ^<OrdCltn[AbstractClassMirror]> 
+
+^(ClassVMMirror on: self reflectee) sortedSubclassesSkipAnonymous collect: [ :c  <Class> | AbstractClassMirror on: c ].!
+
+subclasses  ^<OrdCltn[AbstractClassMirror]> 
+
+^(ClassVMMirror on: self reflectee) subclasses collect: [ :c  <Class> | AbstractClassMirror on: c ].!
+
+subclassesSkipAnonymous  ^<OrdCltn[AbstractClassMirror]> 
+
+^(ClassVMMirror on: self reflectee) subclassesSkipAnonymous collect: [ :c  <Class> | AbstractClassMirror on: c ].!
+
+superclass ^ <ClassMirror>
+
+	| sct |
+	self reflectee isNil 
+		ifTrue: [	sct :=  self mixin superclassType.
+						^sct isNil
+							ifTrue: [nil]
+							ifFalse: [AbstractClassMirror on: sct classObj]].
+
+	^AbstractClassMirror on: (self reflectee superclassIfAbsent:[^nil])
+	!
+
+superclassTypeString ^ <Str>
+
+	^self mixin superclassTypeString
+!
+
+typeInfo ^ <InvocationSide>
+"Private"
+
+^(Type forClass: self reflectee)!
+
+verifyNoCyclesIn: cs <VarOrdCltn[Symbol]> ifFail: fb <[Symbol, ^DoesNotMatter]>
+"Private"
+"
+This code assumes the atomic addition of one class at a time.
+"
+
+(cs includes: self name)
+   ifTrue:[fb value: #SuperClassCycle]
+   ifFalse:[
+                  cs add: self name.
+                  self superclass isNil ifFalse:[self superclass verifyNoCyclesIn: cs ifFail: fb].
+                  ].
+  
+! !
+
+! (Delta mirrorFor: #AbstractClassMirror) methodsFor: 'accessing' !
+
+
+shortDescription ^ <Str>
+
+	"Returns a short desciption of this class"
+	
+	| header <String> |
+	header := ''.
+	self isGeneric
+		ifTrue: [ 		header := header, 'generic ' ].
+	self isSubtype
+		ifFalse: [ 	header := header, 'non-subtype ' ].
+	self isAbstract
+		ifTrue: [		header := header, 'abstract ' ].
+	self superclass isNil
+		ifTrue: [ 		header := header, 'class with no superclass' ]
+		ifFalse: [	header := header, 'subclass of ', self superclassTypeString ].
+	^header at: 1 put: (header at: 1) asUppercase; yourself
+	! !
+

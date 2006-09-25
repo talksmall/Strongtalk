@@ -1,0 +1,122 @@
+Delta define: #TowersBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: 'stack cellspace freelist movesdone') classVariables: 'Maxcells Stackrange ') !
+
+(Delta mirrorFor: #TowersBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #TowersBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #TowersBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TowersBenchmark) classSide methodsFor: 'constants' !
+
+
+initialize Maxcells := 18. Stackrange := 3 "TowersBenchmark initialize"! !
+
+! (Delta mirrorFor: #TowersBenchmark) methodsFor: 'run' !
+
+
+run
+	cellspace := Array new: Maxcells.
+	1 to: cellspace size do: [:i | cellspace at: i put: TowersBenchmarkElement new].
+	stack := Array new: Stackrange. 
+	1 to: Maxcells do: [:i | (cellspace at: i)
+			next: i - 1].
+	freelist := Maxcells.
+	self init: 1 to: 14.
+	self makenull: 2.
+	self makenull: 3.
+	movesdone := 0.
+	self
+		towerI: 1
+		j: 2
+		k: 14.
+	movesdone = 16383 ifFalse: [self error: ' Error in towers.']! !
+
+! (Delta mirrorFor: #TowersBenchmark) methodsFor: 'private' !
+
+
+error: msg
+	super error: 'Error in towers: ', msg!
+
+getelement
+	| temp |
+	freelist > 0
+		ifTrue: 
+			[temp := freelist.
+			freelist := (cellspace at: freelist) next]
+		ifFalse: [self error: 'out of space'].
+	^temp!
+
+init: s to: n 
+	self makenull: s.
+	n
+		to: 1
+		by: -1
+		do: [:discctr | self push: discctr onto: s]!
+
+makenull: s
+	stack at: s put: 0!
+
+moveFrom: s1 to: s2 
+	self push: (self pop: s1)
+		onto: s2.
+	movesdone := movesdone + 1!
+
+pop: s 
+	| temp1 temp |
+	(stack at: s)
+		> 0 ifFalse: [^self error: 'nothing to pop'].
+	temp1 := (cellspace at: (stack at: s)) discsize.
+	temp := (cellspace at: (stack at: s)) next.
+	(cellspace at: (stack at: s))
+		next: freelist.
+	freelist := stack at: s.
+	stack at: s put: temp.
+	^temp1!
+
+push: i onto: s 
+	| localel |
+	(stack at: s)
+		> 0 ifTrue: [(cellspace at: (stack at: s)) discsize <= i ifTrue: [^self error: 'disc size error']].
+	localel := self getelement.
+	(cellspace at: localel)
+		next: (stack at: s).
+	stack at: s put: localel.
+	(cellspace at: localel)
+		discsize: i!
+
+towerI: i j: j k: k 
+	| other |
+	k = 1
+		ifTrue: [self moveFrom: i to: j]
+		ifFalse: 
+			[other := 6 - i - j.
+			self
+				towerI: i
+				j: other
+				k: k - 1.
+			self moveFrom: i to: j.
+			self
+				towerI: other
+				j: j
+				k: k - 1]! !
+
+! (Delta mirrorFor: #TowersBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^148!
+
+factor
+	^11!
+
+name
+	^#Towers!
+
+parcplaceTime
+	^199! !
+

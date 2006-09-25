@@ -1,0 +1,186 @@
+Delta define: #String as: (
+(Class subclassOf: 'VarSequenceableCollection[Character] mixin |> UncompressedReadString' instanceVariables: '') protocols: 'VarStr') !
+
+(Delta mirrorFor: #String) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #String) group: 'base'!
+
+(Delta mirrorFor: #String)
+comment: 
+'Writable Strings.
+
+%note: Adjacent byte pairs of indexed byte inst vars hold the unicode value of each character.
+At the moment, the high byte of the pair holds the high byte of the character code.
+
+%todo: implement all the basic ops faster (<, at:, size, =, etc).  It would be nice to have a primitive
+		that returned a sigma value (-1,0,1) based on the comparison; <,
+        equality, & more etc would all be definable using it.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #String) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^self new: 0!
+
+new: size <Int> ^<Instance>
+
+	^self primitiveNew: size!
+
+with: val1 <Character> ^<Instance>
+
+	^(self new: 1)
+		at: 1 put: val1;
+		yourself!
+
+with: val1 <Character> with: val2 <Character> ^<Instance>
+
+	^(self new: 2)
+		at: 1 put: val1;
+		at: 2 put: val2;
+		yourself!
+
+with: val1 <Character> with: val2 <Character> with: val3 <Character> ^<Instance>
+
+	^(self new: 3)
+		at: 1 put: val1;
+		at: 2 put: val2;
+		at: 3 put: val3;
+		yourself!
+
+with: val1 <Character> with: val2 <Character> with: val3 <Character> with: val4 <Character> ^<Instance>
+
+	^(self new: 4)
+		at: 1 put: val1;
+		at: 2 put: val2;
+		at: 3 put: val3;
+		at: 4 put: val4;
+		yourself!
+
+withAll: cltn <SeqCltn[Character]> ^<Instance>
+
+	| inst <Instance> |
+	inst := self new: cltn size.
+	inst replaceFrom: 1 to: cltn size with: cltn.
+	^inst! !
+
+! (Delta mirrorFor: #String) classSide methodsFor: 'testing' !
+
+
+test
+	"String test"
+
+	| strm <CharReadWriteStream> |
+
+	self testCollectionProtocol.
+
+	"SeqCltn tests"
+	self test: 1 is: [ 'hi ','there' = 'hi there' ].
+	self test: 2 is: [ ('hi ' concatenate: 'there') = 'hi there' ].
+	self test: 3 is: [ 'hi there bob' collection: 'there' matchesElementsAt: 4 ].
+	self test: 4 is: [ ('hi there' findFirst: [ :c <Character> | c = $t ]) = 4 ].
+	self test: 5 is: [ ('hi there' findLast: [ :c <Character> | c = $e ]) = 8 ].
+	self test: 6 is: [ ('hi there' indexOf: $t) = 4 ].
+	self test: 7 is: [ ('hi there bob' indexOfSubCollection: 'there' startingAt: 1) = 4 ].
+	self test: 8 is: [ | c <SeqCltn[Int]> |
+				c := 'hi there hindy' indicesOfSubCollection: 'hi'.
+				c size = 2 and: [ (c at: 1) = 1 and: [ (c at: 2) = 10 ]]		].
+	self test: 9 is: [ ('hi there' findLast: [ :c <Character> | c = $e ]) = 8 ].
+	self test: 10 is: [ ('hi there' indexOf: $t) = 4 ].
+	strm := (String new) writeStream.
+	'hello there dude' reverseDo:
+		[ :c <Character> |
+			strm nextPut: c ].
+	strm contentsWritten with: 'hello there dude' reverse do:
+		[ :c1 <Character> :c2 <Character> |
+			self test: 11 is: [ c1 = c2 ].	].
+	self test: 12 is: [ ('hello there' copyFrom: 7 to: 9) = 'the' ].
+	self test: 13 is: [ ('hell, if I say hello, I mean hello, or go to hell'
+						copyReplaceAll: 'hell' with: '(bleep)')
+					= '(bleep), if I say (bleep)o, I mean (bleep)o, or go to (bleep)'	].
+	self test: 14 is: [ ('hello there' copyReplaceFrom: 7 to: 9 with: 'he') = 'hello here' ].
+	self test: 15 is: [ ('hell' copyWith: $o) hasSameElementsAndOrderAs: 'hello' ].
+	self test: 16 is: [ ('furthermore' copyWithout: $r) = 'futhemoe' ].
+	self test: 17 is: [ ('hello there' copyReplaceFrom: 7 to: 9 with: 'you the') = 'hello you there' ].
+	self test: 18 is: [ ('hello there' copyWithSize: 5) = 'hello' ].
+	self test: 19 is: [ 'llll' hasSameElementsAs: 'llll' ].
+	self test: 20 is: [ 'hello' asOrderedCollection = 'hello' asOrderedCollection ].
+	self test: 21 is: [ 'hello' asOrderedCollection ~= 'helio' asOrderedCollection ].
+	self test: 22 is: [ '' hash = 1 ].
+	self test: 23 is: [ 'b' hash ~= 0 ].
+	self test: 24 is: [ 'ab' hash ~= 'bb' hash ].
+	self test: 25 is: [ 'helloDude' hash ~= 'hello' hash ].
+	self test: 26 is: [ 'helloDude' hash ~= 'hello,Dude' hash ].
+	self test: 27 is: [ 'helloDude' hash ~= 'jelloDude' hash ].
+	self test: 28 is: [ 'helloDude' hash ~= 'hell,Dude' hash ].
+	self test: 29 is: [ 'helloDude' hash ~= 'helloDudes' hash ].
+	self test: 30 is: [ 'helloDude' hash = #helloDude hash ].!
+
+testCollectionProtocol
+
+	"String testCollectionProtocol"
+
+	"This is the standard place where most of the Collection messages are tested."
+
+		[ 'hello' includes: $o ] verify.
+		[ ('hell' includes: $o) not ] verify.
+		[ 'hello' hasSameElementsAs: 'olehl' ] verify.
+		[ ('hello' hasSameElementsAs: 'oleh') not ] verify.
+		[ ('hello' hasSameElementsAndOrderAs: #($h $e $l $o $l ) ) not ] verify.
+		[ 'hello' hasSameElementsAndOrderAs: #($h $e $l $l $o ) ] verify.
+		[ '' isEmpty ] verify.
+		[ 'a' isEmpty not ] verify.
+		[ 'hello' includes: ('hello' anElement) ] verify.
+		[ #(1 2 3) hash = #(1 2 3) hash ] verify.
+		[ ('hello' occurrencesOf: $l) = 2 ] verify.
+		[ (String withAll: ( 'HAL' collect: [ :c <Character> | Character value: (c asciiValue + 1) ] )) = 'IBM' ] verify.
+		[ ('hello' detect: [ :c <Character> | c = $e ] ifNone: [ $z ]) = $e ] verify.
+		[ ('hello' detect: [ :c <Character> | c = $p ] ifNone: [ $z ]) = $z ] verify.
+		[ ('1234' inject: 1 into: [ :tot <Int> :el <Character> |  tot + el digitValue ]) = 11 ] verify.
+		[ ('Hello Dudes' select: [ :e <Character> | e isUppercase ]) hasSameElementsAndOrderAs: 'HD' ] verify.
+		[ ('Hello Dudes' reject: [ :e <Character> | e isLowercase ]) hasSameElementsAndOrderAs: 'H D' ] verify.! !
+
+! (Delta mirrorFor: #String) methodsFor: 'accessing' !
+
+
+at: index <Int> put: c <Character> ^<Character>
+
+	self primitiveAt: index put: c unicodeValue.
+	^c!
+
+at: index <Int> putUnicode: unicode <Int> ^<Int>
+
+	self primitiveAt: index put: unicode.
+	^unicode! !
+
+! (Delta mirrorFor: #String) methodsFor: 'streaming' !
+
+
+readWriteStream ^<CharReadWriteStream>
+
+	^CharacterReadWriteStream on: self!
+
+writeStream ^<CharReadWriteStream>
+
+	^self readWriteStream! !
+
+! (Delta mirrorFor: #String) methodsFor: 'hashing' !
+
+
+hash ^<Int>
+
+	^{{self primitiveIndexedDoubleByteHash}}! !
+
+! (Delta mirrorFor: #String) methodsFor: 'converting' !
+
+
+asString ^<String>
+
+	^self! !
+

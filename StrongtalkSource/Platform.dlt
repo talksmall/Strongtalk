@@ -1,0 +1,237 @@
+Delta define: #Platform as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'ErrorStream <CharOutputStream>') !
+
+(Delta mirrorFor: #Platform) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #Platform) group: 'base'!
+
+(Delta mirrorFor: #Platform)
+comment: 
+'The class side holds platform dependent constants and utilities.  Is also used
+to get command line args, and other things like that.
+
+Keywords: %machdep  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+'!
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'platform classes' !
+
+
+pathClass ^<FilePath class>
+
+	^Win32FilePath!
+
+patternClass ^<FilePattern class>
+
+	^Win32FilePattern! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'testing' !
+
+
+usesCrLfConvention ^<Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'constants' !
+
+
+multipleMatchWildcardCharacter ^<Character>
+
+	^$*!
+
+singleMatchWildcardCharacter ^<Character>
+
+	^$?!
+
+wordSize ^<Int>
+	^4! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'command line' !
+
+
+getArguments ^<OrdCltn[Str]>
+
+	| line <Str> args <VarOrdCltn[Str]> strm <CharInputStream> |
+	line := self getCommandLine.
+	args := OrderedCollection[Str] new.
+	strm := line readStream.
+
+	[	"skip whitespace"
+		[ strm atEnd not and: [ strm peekFor: Character space] ] whileTrue.
+		strm atEnd ] whileFalse: [
+			args addLast: (self parseArgFrom: strm).		].
+	^args!
+
+getCommandLine
+	| p size result |
+	p := {{<kernel ExternalProxy GetCommandLineA>getCommandLine}}.
+	size := 0.
+	[(p byteAt: size) == 0] whileFalse: [ size := size + 1 ].
+	result := String new: size.
+	1 to: size do: [:index |
+       result at: index put: (Character value: (p byteAt: index - 1))
+	].
+	^result! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'Dynamic Linked Libraries' !
+
+
+DLLInitialize
+	DLLDict := Dictionary new.
+	{{primitiveDLLSetupLookup: self selector: #DLLLookup:in: ifFail: [:err | self error: err]}}!
+
+DLLLibrary: name
+	^DLLDict at: name ifAbsent: [
+		DLLDict at: name put: (self DLLLoad: name)
+	]!
+
+DLLLoad: name
+	| r n |
+	r := ExternalProxy new.
+	n := (self DLLMapName: name) asSymbol.
+	^{{primitiveDLLLoad: n result: r ifFail: [ :err | self error: err]}}!
+
+DLLLookup: name <Str> in: library <Str>
+	"Convert library into proxy"
+	| p r |
+	p := self DLLLibrary: library.
+	r := ExternalProxy new.
+	{{primitiveDLLLookup: name asSymbol in: p result: r ifFail: [:err | self error: err]}}.
+	^r!
+
+DLLMapName: name <Str> ^<Str>
+	name = 'user'		ifTrue: [^'USER32.DLL'].
+	name = 'gdi'			ifTrue: [^'GDI32.DLL'].
+	name = 'kernel'		ifTrue: [^'KERNEL32.DLL'].
+	name = 'comdlg'		ifTrue: [^'COMDLG32.DLL'].
+	self error: 'Mapping ', name, ' not found'! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	self DLLInitialize! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'os streams' !
+
+
+errorStream ^<CharOutputStream>
+
+	ErrorStream isNil
+		ifTrue: [	ErrorStream := TempTranscript new ].
+	^ErrorStream! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'environment' !
+
+
+environmentVariableAt: key <Str> ifAbsent: blk <[^X def]> ^ <Str | X>
+
+	| cKey <CString> cValue <CString> size <Int> cSize <ExternalProxy> result <Str> done <Boolean> found <Boolean> |
+	size := 1024.
+	cKey := CString for: key.
+	done := false.
+	[ done ] whileFalse: [
+		cValue := CString for: (String new: size).
+		cSize := {{<kernel ExternalProxy GetEnvironmentVariableA> key: cKey buffer: cValue bufSize: size}}.
+		cSize asSmallInteger > size
+			ifTrue: [	cValue free.													"Buffer size too small for value of variable"
+							size := cSize asSmallInteger ]
+			ifFalse: [	done := true.													"Buffer size ok, check if variable was found"
+							(found := cSize asSmallInteger ~= 0)
+								ifTrue: [ result := cValue asString ] ] ].
+	cKey free. 
+	cValue free.
+	^found
+		ifTrue: [ result ]
+		ifFalse: blk ! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'private-clipboard access' !
+
+
+closeClipboard
+
+	{{<user ExternalProxy CloseClipboard> call}}!
+
+emptyClipboard
+
+	{{<user ExternalProxy EmptyClipboard> call}} asBoolean
+		ifFalse: [ Win32 handleError ].
+!
+
+openClipboard
+
+	{{<user ExternalProxy OpenClipboard> hnd: Win32 NULL}} asBoolean
+		ifFalse: [ Win32 handleError ].
+! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'clipboard access' !
+
+
+clipboardText: str <Str>
+
+	self openClipboard.
+	[	| glob <HGLOBAL> strm <ReadWriteStream[Character]> xstr <Str> |
+		self emptyClipboard.
+
+		"transform string into a form with lfs inserted"
+		strm := (String new: str size) readWriteStream.
+		str do:
+			[ :c <Character> |
+				strm put: c.
+				c = Character cr
+					ifTrue: [ strm put: Character lf ].
+			].
+		xstr := String withAll: strm contentsWritten.
+
+		glob := HGLOBAL new
+						allocate: xstr size + 1
+						attributes: (Win32 GMEM_MOVEABLE
+											externalBitOr: Win32 GMEM_DDESHARE).
+		glob withPointer: CString new
+				do: [ :cs <CString> |
+							cs value: xstr	 ].
+
+		{{<user ExternalProxy SetClipboardData>
+				format: Win32 CF_TEXT
+				data: glob
+		}} isNull
+			ifTrue: [ Win32 handleError ].
+	] ensure:
+		[ self closeClipboard ]!
+
+clipboardTextIfAbsent: blk <[^X def]> ^<Str | X>
+
+	self openClipboard.
+	[	| glob <HGLOBAL> strm <CharWriteStream> |
+
+		{{<user ExternalProxy IsClipboardFormatAvailable> format: Win32 CF_TEXT}} asBoolean
+			ifFalse: [ ^blk value ].
+		glob := {{<user HGLOBAL GetClipboardData> format: Win32 CF_TEXT}}.
+		glob isNull
+			ifTrue: [ Win32 handleError ].
+		strm := (String new: 100) writeStream.
+		glob withPointer: CString new
+				do: [ :cs <CString> |
+							cs asString do:
+								[ :c <Character> |
+									c = Character lf
+										ifFalse: [ strm put: c ]
+								].
+							^strm contentsWritten
+					  ].
+	] ensure:
+		[ self closeClipboard ]! !
+
+! (Delta mirrorFor: #Platform) classSide methodsFor: 'private' !
+
+
+parseArgFrom: strm <CharInputStream>  ^<Str>
+
+	^strm peek = $"
+		ifTrue: [		strm next.
+						strm upTo: $"	]
+		ifFalse: [	strm upTo: Character space ]! !
+

@@ -1,0 +1,37 @@
+Delta define: #DeltaClassType as: (
+(Class subclassOf: 'DeltaType' instanceVariables: 'klass ')) !
+
+(Delta mirrorFor: #DeltaClassType) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaClassType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaClassType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaClassType) methodsFor: 'Unclassified' !
+
+
+classSide ^ <SideType>
+    ^self klass classSide type!
+
+instanceSide ^ <SideType>
+    ^self klass instanceSide type!
+
+klass ^ <DeltaClass>
+    ^klass!
+
+mixinCompatibleWith: ct <ClassType > ^ <Boolean>
+    (self classSide mixinCompatibleWith: ct classSide) ifFalse:[^false].
+(self instanceSide mixinCompatibleWith: ct instanceSide) ifFalse:[^false].
+" For the time being, pools are not implemented, so this code remains commented out:
+
+ct poolScope inject: true into:
+  [ :b <Boolean> :v <VarDecl> |
+    b and:[(self poolScope at: v name ifAbsent:[^false]) subtypeOf: v type assuming: DeltaTrail]
+  ]."!
+
+on: c <Class > ^ <Self>
+    klass := c.! !
+

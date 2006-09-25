@@ -1,0 +1,151 @@
+Delta define: #PressHandler as: (
+(Class subclassOf: 'EnterLeaveHandler' instanceVariables: 'button <Symbol>
+onPress <[]>
+onAction <[]>
+onCancel <[]>
+pressing <Boolean>
+		')) !
+
+(Delta mirrorFor: #PressHandler) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #PressHandler) group: 'ui'!
+
+(Delta mirrorFor: #PressHandler)
+comment: 
+'Manages the kind of event handling that buttons do, namely, keeping
+track of when they are pressed, and doing something when they are
+released over the button.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #PressHandler) classSide methodsFor: 'instance creation' !
+
+
+forButton: but <Symbol>
+onPress: p <[^Object]>
+onAction: r <[^Object]>
+onCancel: c <[^Object]>
+ ^<Instance>
+	"Where but is #primary, #secondary, or #middle"
+
+	^(super new)
+		onPress: p;
+		onAction: r;
+		onCancel: c;
+		button: but! !
+
+! (Delta mirrorFor: #PressHandler) methodsFor: 'initialization' !
+
+
+button: b <Symbol>
+
+	button := b!
+
+initialize
+
+	super initialize.
+	pressing := false.
+	self button: #primary.
+	onPress := onCancel := onAction := [ ].!
+
+onAction: b <[^Object]>
+
+	onAction := b!
+
+onCancel: b <[^Object]>
+
+	onCancel := b!
+
+onPress: b <[^Object]>
+
+	onPress := b! !
+
+! (Delta mirrorFor: #PressHandler) methodsFor: 'private' !
+
+
+action
+
+	pressing := false.
+
+	"We do this to fake out the superclass so it
+		relenquishes the grab, in case the
+		action detaches the receiver"
+	self recordLeave.
+
+	MenuAction timeActions
+		ifTrue: [ Transcript print: [ onAction value ] time; cr. ]
+		ifFalse: [ onAction value ]
+!
+
+cancel
+
+	pressing := false.
+	onCancel value.!
+
+enterWith: ev <UIEvent>
+
+	super enterWith: ev.
+
+	"the following statement causes buttons to be pressed when moved into
+		with the button down; this is non-standard and is turned off for now"
+	"(ev mouseButtonPressed: button)
+		ifTrue: [ self press ]"!
+
+press
+
+	pressing := true.
+	onPress value.!
+
+recordLeave
+
+	super recordLeave.
+	pressing
+		ifTrue: [ self cancel ]! !
+
+! (Delta mirrorFor: #PressHandler) methodsFor: 'event handling' !
+
+
+mouseEvent: type <Symbol>
+at: loc <Point>
+event: ev <UIEvent>
+^<Boolean>
+
+	| result <Boolean> |
+
+	result := super mouseEvent: type at: loc event: ev.
+	(self inside and: [ ev isGrabbed not ])
+		ifTrue: [	((type == #primaryButtonDown
+									or: [ type == #primaryButtonDoubleClick ])
+								and: [ button == #primary ])
+							ifTrue: [  self press. 	^true ].
+						((type == #secondaryButtonDown
+									or: [ type == #secondaryButtonDoubleClick ])
+								and: [ button == #secondary ])
+							ifTrue: [ self press.	^true ].
+						((type == #middleButtonDown
+									or: [ type == #middleButtonDoubleClick ])
+								and: [ button == #middle ])
+							ifTrue: [ self press.	^true ].
+
+						self pressing
+							ifTrue: [	(type = #primaryButtonUp and: [ button = #primary ])
+												ifTrue: [ self action. ^true ].
+											(type = #secondaryButtonUp and: [ button = #secondary ])
+												ifTrue: [ self action. ^true ].
+											(type = #middleButtonUp and: [ button = #middle ])
+												ifTrue: [ self action. ^true ].
+										].
+						].
+	^result! !
+
+! (Delta mirrorFor: #PressHandler) methodsFor: 'accessing' !
+
+
+pressing ^<Boolean>
+
+	^pressing! !
+

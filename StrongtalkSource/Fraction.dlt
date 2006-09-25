@@ -1,0 +1,95 @@
+Delta define: #Fraction as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: 'numerator <Int>
+denominator <Int>
+		') abstract) !
+
+(Delta mirrorFor: #Fraction) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #Fraction) group: 'base'!
+
+(Delta mirrorFor: #Fraction)
+comment: 
+'Fractions are exact non-integer rational numbers.
+
+%invariant: A fraction should always be in reduced form.  The denominator should never be 1 (it should reduce to an integer
+    instead).
+%invariant: the denominator should never be negative.  This invariant should hold even if we do a non-simplifying implementation.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.6 $
+'!
+
+! (Delta mirrorFor: #Fraction) classSide methodsFor: 'restricted to RationalNumber' !
+
+
+numerator: n <Int> denominator: d <Int> ^<RationalNumber>
+	"This message should never be sent by code other than system code in the
+	 RationalNumber class, because n and d MUST already be in simplest form"
+
+	^self primitiveNew numerator: n denominator: d! !
+
+! (Delta mirrorFor: #Fraction) methodsFor: 'initialization' !
+
+
+numerator: n <Int> denominator: d <Int>
+	"%assume: n/d is already simplified"
+
+	numerator := n.
+	denominator := d.! !
+
+! (Delta mirrorFor: #Fraction) methodsFor: 'accessing' !
+
+
+denominator ^<Integer>
+	^denominator!
+
+hash ^<Int>
+
+	^self numerator hash bitXor: self denominator hash!
+
+numerator ^<Integer>
+	^numerator! !
+
+! (Delta mirrorFor: #Fraction) methodsFor: 'iteration' !
+
+
+to: stop <RationalNumber> by: step <RationalNumber> do: f <[RationalNumber]> ^<Object>
+
+	| v <RationalNumber> |
+	v := self.
+	step < 0
+		ifFalse: [ [ v <= stop ]
+					whileTrue: [	f value: v.
+								v := v + step  ]]
+		ifTrue: [ [ v >= stop ]
+					whileTrue: [ f value: v.
+								v := v + step  ]].
+	^nil!
+
+to: stop <RationalNumber> do: f <[RationalNumber]> ^<Object>
+
+	| v <RationalNumber> |
+	v := self.
+	[ v <= stop ]
+		whileTrue: [	f value: v.
+					v := v + 1  ].
+	^nil! !
+
+! (Delta mirrorFor: #Fraction) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm print: self numerator; nextPut: $/; print: self denominator! !
+
+! (Delta mirrorFor: #Fraction) methodsFor: 'converting' !
+
+
+asInteger ^<Integer>
+
+	| dsigned <Int> |
+	dsigned := self negative ifTrue: [ self denominator negated ] ifFalse: [ self denominator ].
+	^(self numerator + self numerator + dsigned) quo: (self denominator + self denominator)! !
+

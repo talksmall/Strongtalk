@@ -1,0 +1,153 @@
+Delta define: #Win32FilePattern as: (
+(Class subclassOf: 'FilePattern' instanceVariables: '')) !
+
+(Delta mirrorFor: #Win32FilePattern) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Win32FilePattern) group: 'base'!
+
+(Delta mirrorFor: #Win32FilePattern)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Win32FilePattern) classSide methodsFor: 'instance creation' !
+
+
+for: pat <Str>  ^<FilePattern>
+
+	self assert: [ self validPattern: pat ].
+	^self new pattern: pat! !
+
+! (Delta mirrorFor: #Win32FilePattern) classSide methodsFor: 'testing' !
+
+
+validPattern: pat <Str> ^<Boolean>
+
+	"Make sure this is a valid syntactic pattern (should be valid even if no *s)"
+	self unimplemented! !
+
+! (Delta mirrorFor: #Win32FilePattern) classSide methodsFor: 'restricted' !
+
+
+patternHasWildcards: pat <Str> ^<Boolean>
+
+	^(pat includes: Platform multipleMatchWildcardCharacter)
+		or: [ pat includes: Platform singleMatchWildcardCharacter ]! !
+
+! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'private' !
+
+
+firstWildElementOf: els <SeqCltn[FilePattern]> ifFail: fail <[^X def]> ^<Int | X>
+
+	1 to: els size do:
+		[ :i <Int> |
+			(els at: i) isPath
+				ifFalse: [ ^i ]
+		].
+	^fail value!
+
+patternExtending: pat <FilePattern> ^<Str>
+
+	^pat pattern last = $\
+		ifTrue: [ pat pattern, self pattern ]
+		ifFalse: [ pat pattern,'\', self pattern ]!
+
+terminalPathsDo: blk <[FilePath]>
+
+	"assumes that the last element of the receiver is the only one that contains wildcards"
+	| data <WIN32_FIND_DATA> hnd <Win32Handle> allpat <CString> pat <Str> els <SeqCltn[FilePattern]> prefix <Str> |
+	data := WIN32_FIND_DATA new allocate.
+	els := self elements.
+	"%todo %opt - should check to see if the pattern is suitable for the windows call directly, so that the 
+		elements are prefiltered.  Rule would be: use pattern directly if * appears only just before a dot or at the
+		end, and contains no other wildcards"
+	els size = 1
+		ifTrue: [	allpat := CString for: '*.*'.
+						prefix := ''. ]
+		ifFalse: [	allpat := CString for: self containingDirectory pattern, '\*.*'.
+							prefix := (FilePattern forAll: (els copyFrom: 1 to: els size - 1)) pattern,'\'.	 ].
+	pat := els last pattern.
+	[	hnd := {{<kernel Win32Handle FindFirstFileA>
+						pattern: allpat
+						data: data
+					}}.
+		hnd @= Win32 INVALID_HANDLE_VALUE
+			ifTrue: [ Win32 getLastError @= Win32 ERROR_NO_MORE_FILES
+							ifFalse: [ Win32 handleError ]
+							ifTrue: [ ^self ]
+						]
+			ifFalse: [	[	| next <Str> |
+								next := data cFileName asString.
+								((pat platformMatch: next) and: [ next ~= '.' and: [ next ~= '..' ]])
+									ifTrue: [ blk value: (FilePath for: prefix,next) ].
+								[	{{<kernel Win32Handle FindNextFileA>
+										hnd: hnd
+										data: data
+									}} asBoolean
+										ifFalse: [ Win32 getLastError @= Win32 ERROR_NO_MORE_FILES
+															ifFalse: [ Win32 handleError ]
+															ifTrue: [ ^self ]
+													 ]
+										ifTrue: [	next := data cFileName asString.
+														((pat platformMatch: next) and: [ next ~= '.' and: [ next ~= '..' ]])
+															ifTrue: [ blk value: (FilePath for: prefix,next) ].
+													]
+								] repeat.
+						    ] ensure:
+								[	{{<kernel Win32Handle FindClose> hnd: hnd}} asBoolean
+										ifFalse: [ Win32 handleError ].
+								]
+						]										
+	] ensure:
+		[	data free.
+			allpat free.		]! !
+
+! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'testing' !
+
+
+isAbsolute ^<Boolean>
+
+	^self pattern includes: $:! !
+
+! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'iterating' !
+
+
+elementsDo: blk <[FilePattern]>
+
+	| s <CharacterReadStream> |
+
+	s := self pattern readStream.
+	[ s atEnd ]
+		whileFalse:
+			[	| next <Str> |
+				next := s upTo: $\.
+				(next includes: $:)
+					ifTrue: [ next := next,'\' ].
+				blk value: (FilePattern for: next)	].!
+
+pathsDo: blk <[FilePath]>
+
+	| els <SeqCltn[FilePattern]> i <Int> |
+	els := self elements.
+	i := self firstWildElementOf: els
+				ifFail: [ ^self shouldNotHappen ].
+	i = els size
+		ifTrue: [ self terminalPathsDo: blk ]
+		ifFalse: [	| rest <FilePattern> |
+						i + 1 = els size
+							ifTrue: [ rest := els last ]
+							ifFalse: [ rest := FilePattern forAll: (els copyFrom: i + 1 to: els size) ].
+						(FilePattern forAll: (els copyFrom: 1 to: i))
+							pathsDo:
+								[ :fp <FilePath> |
+									fp isDirectory
+										ifTrue: [ (fp, rest) pathsDo: blk ]		]
+					 ]! !
+
+! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'accessing' !
+
+
+extensions ^<FilePattern>
+
+	^self , (FilePattern for: '*')! !
+

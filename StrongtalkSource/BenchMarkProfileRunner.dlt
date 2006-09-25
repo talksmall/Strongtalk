@@ -1,0 +1,35 @@
+Delta define: #BenchMarkProfileRunner as: (
+(Class subclassOf: 'BenchmarkRunner' instanceVariables: '')) !
+
+(Delta mirrorFor: #BenchMarkProfileRunner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BenchMarkProfileRunner) group: 'benchmark'!
+
+(Delta mirrorFor: #BenchMarkProfileRunner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BenchMarkProfileRunner) methodsFor: 'evaluating' !
+
+
+evaluate: bm
+	Transcript cr.
+	Profiler do: bm!
+
+evaluate: bm inner: inner
+	Profiler do: [ inner timesRepeat: [ bm value ] ]!
+
+measure: bm
+	Profiler do: [ bm run ]! !
+
+! (Delta mirrorFor: #BenchMarkProfileRunner) methodsFor: 'printing' !
+
+
+showIteration: iter
+		Transcript
+				cr
+			;	show: 'Iteration =  '
+			;	show: iter printString
+			;	cr.! !
+

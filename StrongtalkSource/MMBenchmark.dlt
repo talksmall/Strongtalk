@@ -1,0 +1,49 @@
+Delta define: #MMBenchmark as: (
+(Class subclassOf: 'IntMMBenchmark' instanceVariables: '') classVariables: 'Rowsize ') !
+
+(Delta mirrorFor: #MMBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #MMBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #MMBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MMBenchmark) classSide methodsFor: 'constants' !
+
+
+initialize Rowsize := 40 "MMBenchmark initialize"! !
+
+! (Delta mirrorFor: #MMBenchmark) methodsFor: 'private' !
+
+
+initmatrix 
+	| m temp |
+	m := self mmMatrix.
+	1 to: Rowsize do: [:i | 1 to: Rowsize do: 
+			[:j | 
+			temp := self newValue.
+			(m at: i)
+				at: j put: temp - (temp / 120 * 120) - 60]].
+	^m!
+
+newValue
+	^super newValue asFloat! !
+
+! (Delta mirrorFor: #MMBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^438!
+
+factor
+	^5!
+
+name
+	^#MM!
+
+parcplaceTime
+	^747! !
+

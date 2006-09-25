@@ -1,0 +1,113 @@
+Delta define: #GenericMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'body ')) !
+
+(Delta mirrorFor: #GenericMirror) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #GenericMirror) group: 'reflection'!
+
+(Delta mirrorFor: #GenericMirror)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GenericMirror) classSide methodsFor: 'Unclassified' !
+
+
+typeArgs: a <Str> body: b  <Mirror>
+    ^self new initializeTypeArgs: a body: b! !
+
+! (Delta mirrorFor: #GenericMirror) methodsFor: 'Unclassified' !
+
+
+adjustBounds
+"Private"
+
+self body adjustBounds.
+!
+
+body  ^ <Mirror>
+
+^body!
+
+body: b   <Mirror>
+
+body := b!
+
+convertToGeneric: g <GenericMirror> ifFail: fb <[Str]>
+
+
+self deltaHack.
+
+g body class == self body class
+  ifTrue:[
+               g body convert: self body ifFail: fb.
+               self convertTypeTo: g.
+                ]
+  ifFalse:[fb value: 'Conversion failed - generics have incompatible bodies'].
+
+
+
+
+!
+
+convertTypeTo: g <GenericMirror>
+
+| gt <Generic>  formals <OrdCltn[TypeFormal]> |
+
+
+gt := Type forDefinition: self body reflectee.
+"patch up formals in scope and in gt"
+formals :=  (DeltaParser new parseTypeArgs: g typeArgumentString within: DeltaGlobals) collect: [ :pt | pt body].
+gt generifyWithFormals: formals.
+
+
+!
+
+createTypeStructure
+
+self error: 'Should be disabled in this version!!'.
+!
+
+definitionString  ^ <Str>
+
+^'Generic forAll: ', self typeArgumentString asString printString, ' body: (', self body basicDefinitionString, ')'!
+
+fileName  ^<Str>
+	^self body fileName!
+
+initializeTypeArgs: tas  <Str> body: b  <Mirror>
+
+b nestInGenericWithTypeArguments: tas.
+self body: b.!
+
+nameExisting: n <Symbol> ifFail: fb <[Str]>
+
+| b <Mirror> |
+
+b :=  Mirror on: (Delta at: n).
+b convertToGeneric: self ifFail: fb.
+"self body convert: b ifFail: fb."
+b :=  Mirror on: (Delta at: n).
+"b nestInGenericWithTypeArguments:  self  typeArgumentString."
+self body: b.
+"self adjustBounds."
+
+!
+
+nameNew: n <Symbol> ifFail: fb <[Str]>
+
+self body name: n ifFail: fb.
+self adjustBounds.!
+
+reflectee  ^ <T>
+
+^self body reflectee!
+
+sourceInfo
+
+	^self body sourceInfo!
+
+typeArgumentString ^ <Str>
+
+^self body typeArgumentString! !
+

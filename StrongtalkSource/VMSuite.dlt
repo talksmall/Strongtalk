@@ -1,0 +1,344 @@
+Delta define: #VMSuite as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #VMSuite) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #VMSuite) group: 'benchmark'!
+
+(Delta mirrorFor: #VMSuite)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VMSuite) classSide methodsFor: 'access' !
+
+
+run
+	^self new run!
+
+runCompiled
+	^self new runCompiled!
+
+runInterpreted
+	^self new runInterpreted!
+
+runRecompiling
+	^self new runRecompiling!
+
+runVanilla
+	^self new runVanilla! !
+
+! (Delta mirrorFor: #VMSuite) methodsFor: 'access' !
+
+
+run
+	self showBanner: 'VM Test Suite'.
+	self configurationsDo: [
+		self runSuite
+	]!
+
+runCompiled
+	self showBanner: 'VM Test Suite'.
+	self setCompiledOnly.
+	self printAndEvaluate: 'compiled' do: [ self runSuite ]!
+
+runInterpreted
+	self showBanner: 'VM Test Suite'.
+	self setInterpretedOnly.
+	self printAndEvaluate: 'interpreted' do: [ self runSuite ]!
+
+runRecompiling
+	self showBanner: 'VM Test Suite'.
+	self setRecompilation.
+	self printAndEvaluate: 'recompiling' do: [ self runSuite ]!
+
+runVanilla
+	self showBanner: 'VM Test Suite'.
+	self printAndEvaluate: 'vanilla' do: [ self runSuite ]! !
+
+! (Delta mirrorFor: #VMSuite) methodsFor: 'private' !
+
+
+configurationsDo: blk <[]>
+	self saveExcursion: [
+		"self clearSystem."
+		self setRecompilation.
+		self printAndEvaluate: 'recompilation enabled' do: blk.
+
+		self clearSystem.
+		self setInterpretedOnly.
+		self printAndEvaluate: 'interpreted code only' do: blk.
+	]
+
+!
+
+iterations
+	^4!
+
+printAndEvaluate: title <String> do: blk <[]>
+	self showBanner: 'Configuration: ',  title.
+	blk value.
+	self verify.!
+
+runBenchmarks
+	| runner <BenchmarkRunner> repeat <Integer> |
+	runner := BenchmarkRunner new.
+	runner	runRichardsBenchmarks: 		self iterations.
+	runner	runSmopstoneBenchmarks:	self iterations.
+	runner	runSlopstoneBenchmarks:		self iterations.
+	runner	runStanfordBenchmarks:		self iterations.
+	runner runDeltaBlue:							self iterations.!
+
+runSuite
+	self runBenchmarks.
+	self runTestcode.!
+
+runTestcode
+	self iterations timesRepeat: [ 
+		self testDeadCode.
+		self testBasicClasses.
+	]!
+
+saveExcursion: blk <[]>
+	"preserve the flags manipulated when changing to diffrent configurations"
+	
+	|	savedCompiledCodeOnly				<Boolean>
+		savedUseRecompilation					<Boolean>
+		savedDeferUncommonBranches	<Boolean>
+	|
+	
+	"store the flags"
+	savedCompiledCodeOnly				:= VM booleanAt: #CompiledCodeOnly.
+	savedUseRecompilation					:= VM booleanAt: #UseRecompilation.
+	savedDeferUncommonBranches	:= VM booleanAt: #DeferUncommonBranches.
+	
+	"execute the block"
+	blk value.
+	
+	"restore the flags"
+	VM booleanAt: #CompiledCodeOnly				put: savedCompiledCodeOnly.
+	VM booleanAt: #UseRecompilation			    	put: savedUseRecompilation.
+	VM booleanAt: #DeferUncommonBranches	put: savedDeferUncommonBranches.
+	!
+
+showBanner: title
+	Transcript cr.
+	Transcript show: '*************** ', title, ' ***************'; cr.
+	Transcript cr.!
+
+verify
+	{{primitiveVerify}}! !
+
+! (Delta mirrorFor: #VMSuite) methodsFor: 'configurations' !
+
+
+clearSystem
+ 	Transcript show: 'Clear system'; cr.
+
+	"Clear invocation counters"
+	{{primitiveClearInvocationCounters}}.
+
+	"Clear inline caches"
+	{{primitiveClearInlineCaches}}.
+
+	"Clear lookup cache"
+	{{primitiveClearLookupCache}}.
+
+	"Cleanup heap"
+	{{self primitiveGarbageCollect}}.
+!
+
+setCompiledOnly
+	VM booleanAt: #CompiledCodeOnly				put: true.
+	VM booleanAt: #UseRecompilation			    	put: false.
+	VM booleanAt: #DeferUncommonBranches	put: false.!
+
+setInterpretedOnly
+	VM booleanAt: #CompiledCodeOnly	put: false.
+	VM booleanAt: #UseRecompilation		put: false.
+!
+
+setRecompilation
+	VM booleanAt: #CompiledCodeOnly	put: false.
+	VM booleanAt: #UseRecompilation		put: true.! !
+
+! (Delta mirrorFor: #VMSuite) methodsFor: 'test code' !
+
+
+dead1
+
+  true ifTrue: [ ^ 1].
+  self some dead code!
+
+dead10
+
+ ( [^ 1] value ) or: [  self some dead code. ]!
+
+dead11
+ | i j |
+ i := 1.
+ j := i * 3.
+
+ ((i + 1 = j ) or: [  ^ 1]) ifTrue: [self some dead code. ]!
+
+dead12
+  "dead code across inlining boundaries"
+
+   self inlineDead: [ ^ 1 ].
+   self this is dead code.!
+
+dead2
+
+  false ifFalse: [ ^ 1].
+  self some dead code!
+
+dead3
+
+  [ ^ 1] value ifFalse: [ self foo ].
+  self some dead code!
+
+dead4
+
+  ^ 1.
+  self some dead code.
+  [ self foo] whileTrue: [ self thisCodeIsDead ]!
+
+dead5
+
+ [ ^ 1] whileTrue.
+  self some dead code!
+
+dead6
+
+ [ true] whileTrue: [ ^ 1 ].
+  self some dead code!
+
+dead7
+
+ [ true] whileTrue: [ ^ 1. self dead ].
+  self some dead code!
+
+dead8
+ | i |
+ i := 3.
+
+ [i * 2 = 6 ] whileTrue: [ ^ 1. i := i + 1. self dead ].
+  self some dead code!
+
+dead9
+
+( [ ^ 1 ] value ) and: [  self some dead code. ]!
+
+inlineDead: blk
+  blk value!
+
+test: class title: title
+	Transcript show: 'Testing '; show: title; cr.
+	class test!
+
+testBasicClasses
+	Transcript
+			cr
+		;	show: 'Test Basic Classes'
+		;	cr.
+	self test: String title: 'String'.
+	self test: Number title: 'Number'.
+	self test: SortedCollection title: 'SortedCollection'.
+	self test: SeqCltnReadStream title: 'SeqCltnReadStream'.
+	self test: SeqCltnReadWriteStream title: 'SeqCltnReadWriteStream'.
+	self test: Bag title: 'Bag'.
+	self test: KeyedSet title: 'KeyedSet'.
+	self test: Set title: 'Set'.
+	self test: SortedCollection title: 'SortedCollection'.
+	self test: OrderedCollection title: 'OrderedCollection'.
+	self test: Character title: 'Character'.
+	self test: ExternalReadWriteStream title: 'ExternalReadWriteStream'.!
+
+testDeadCode
+   "test compiler's dead code elimination handling"
+	Transcript
+			cr
+		;	show: 'Test Dead Code'
+		;	cr.
+
+    self testDeadCode1.
+    self testDeadCode2.!
+
+testDeadCode1
+    "use perform to prevent tests from being inlined"
+    self perform: #dead1.
+    self perform: #dead2.
+    self perform: #dead3.
+    self perform: #dead4.
+    self perform: #dead5.
+    self perform: #dead6.
+    self perform: #dead7.
+    self perform: #dead8.
+    self perform: #dead9.
+    self perform: #dead10.
+    self perform: #dead11.
+    self perform: #dead12.!
+
+testDeadCode2
+    " with inlining"
+    self  dead1.
+    self  dead2.
+    self  dead3.
+    self  dead4.
+    self  dead5.
+    self  dead6.
+    self  dead7.
+    self  dead8.
+    self  dead9.
+    self  dead10.
+    self  dead11.
+    self  dead12.
+! !
+
+! (Delta mirrorFor: #VMSuite) methodsFor: 'block tests' !
+
+
+blockTest1
+	| blk1 <[]> blk2 <[]>  i <Integer> b <Boolean> |
+	blk1 := [ i := i - 1 ].
+	blk2 := [ i := i - 2 ].	
+	1000 timesRepeat: [ 
+		i := 1000.
+		b:= true.
+		[ i > 0 ] whileTrue: [
+			b 
+				ifTrue: blk1 
+				ifFalse: blk2.
+			b := b not
+		]
+	]
+!
+
+blockTest2
+	|  i <Integer> b <Boolean> blk <[]> |
+	100 timesRepeat: [ 
+		i := 1000.
+		b:= true.
+		[ i > 0 ] whileTrue: [
+			blk := b 
+				ifTrue: [ [ i := i - 1 ] ] 
+				ifFalse: [ [ i := i - 2 ] ].
+			blk value.
+			b := b not
+		]
+	]!
+
+blockTest3
+	|  i <Integer> b <Boolean> blk <[]> |
+	100 timesRepeat: [ 
+		i := 1000.
+		b:= true.
+		[ i > 0 ] whileTrue: [
+			b 
+				ifTrue: [  blk := [ i := i - 1 ] ] 
+				ifFalse: [ blk := [ i := i - 2 ] ].
+			blk value.
+			b := b not
+		]
+	]! !
+

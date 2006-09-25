@@ -1,0 +1,75 @@
+Delta define: #IndexedInstanceVariables as: (
+Generic forAll: '(T covar) ' body: (Mixin superclassType: 'Object' body: ((Class subclassOf: 'Object' instanceVariables: '')))) !
+
+(Delta mirrorFor: #IndexedInstanceVariables) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #IndexedInstanceVariables) group: 'base'!
+
+(Delta mirrorFor: #IndexedInstanceVariables)
+comment: 
+'This mixin adds the capability of having indexed instance variables of type T.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+'!
+
+! (Delta mirrorFor: #IndexedInstanceVariables) classSide methodsFor: 'private' !
+
+
+primitiveNew: size <Int> ^<Instance>
+
+	^{{self primitiveIndexedObjectNew: size
+		ifFail: [ :err <Symbol> |  self error: err ]}}! !
+
+! (Delta mirrorFor: #IndexedInstanceVariables) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^70! !
+
+! (Delta mirrorFor: #IndexedInstanceVariables) methodsFor: 'private' !
+
+
+primitiveAt: index <Int> ^<T>
+
+	^{{self primitiveIndexedObjectAt: index
+		ifFail: [ :err <Symbol> |  self error: err ]}}!
+
+primitiveAt: index <Int> ifAbsent: fail <[^X def]>  ^<T | X>
+
+	^{{self primitiveIndexedObjectAt: index
+		ifFail: [ :err <Symbol> |
+						err == #OutOfBounds
+							ifTrue: [ fail value ]
+							ifFalse: [ self error: err ]	]}}!
+
+primitiveAt: index <Int> ifNil: fail <[^X def]> ^<T|X>
+
+	| val <T> |
+	val := {{self primitiveIndexedObjectAt: index
+				ifFail: [ :err <Symbol> |  self error: err ]}}.
+	^val isNil
+		ifFalse: [ val ]
+		ifTrue: [ fail value ]!
+
+primitiveAt: index <Int> put: val <T> ^<T>
+
+	^{{self primitiveIndexedObjectAt: index put: val ifFail: [ :err <Symbol> | self error: err ]}}!
+
+primitiveSize ^<Int>
+
+	^{{self primitiveIndexedObjectSize}}! !
+
+! (Delta mirrorFor: #IndexedInstanceVariables) methodsFor: 'file out' !
+
+
+fileOutBodyOn: d <Dumper>
+    super fileOutBodyOn: d.
+    self primitiveSize fileOutOn: d.
+    1 to: self primitiveSize do:
+    	[ :i <Int> |
+    		(self primitiveAt: i) fileOutOn: d ]!
+
+fileOutSignature ^<Integer>
+    ^102! !
+

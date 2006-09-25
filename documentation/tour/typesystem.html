@@ -1,0 +1,117 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Type System</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="virtualmachine4.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="mixins.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">The Type System</h2>
+
+<p align="left">It is not possible in this tour to go into any
+depth on the type system proper. However, this is a good place
+to point out some of the unique aspects to how the type system
+implementation is used in practice, especially in the presence of un-typesafe code.
+This is particularly
+interesting because we believe this is the first time that a
+fully developed, strong, static type system has been integrated
+with an existing dynamically-typed language
+in a completely optional, incremental fashion.</p>
+
+<h3 align="left">Integrating a Type System with Smalltalk</h3>
+
+<p align="left">Type systems are both a form of verifiable
+annotation, and a structuring tool. Like other structuring tools,
+a type system provides benefits, such as clarity and
+verifiability, at the cost of some degree of flexibility. A well
+designed type-system should provide benefits that are clearly
+worth putting up with the restrictions. Most strongly typed
+languages have the luxury of starting with a clean slate, with
+the ability to enforce use of a type system, and to design the
+standard libraries to work within the type system framework. </p>
+
+<p align="left">A type system for Smalltalk does not have these
+luxuries, since there already exist lots of untyped Smalltalk
+code, a fairly standard set of class library interfaces, and a
+programming tradition that embraces a highly unstructured,
+flexible programming style. This daunting set of obstacles has in
+the past stopped all efforts to design a type system for
+Smalltalk at a point far short of the goal of a usable,
+strongly-typed system. On the other hand, the traditional
+Smalltalk emphasis on education and exploration by reading code
+could be significantly aided by a type system, since typed
+programs are <em>much</em> easier to browse, understand, and
+test.</p>
+
+<p align="left">We believe the Strongtalk <em>type system</em>,
+as currently implemented in the Strongtalk <em>system,</em>
+accomplishes the goal of adding a powerful, flexible type system
+to Smalltalk in a way that complements and does not impede the
+Smalltalk &quot;style&quot; of programming. One reason for this
+was a careful type-system design which includes things such as
+very flexible generic types and classes, as well as innovative
+developments such as <em>algorithmic inference clauses</em> that
+were necessary to preserve the flavor of Smalltalk programming.
+But just as important are some properties of the way the type
+system implementation is integrated into the system. The type
+checker is:</p>
+
+<ul>
+    <li><p align="left"><strong>Optional:</strong> Type
+        annotations are <em>never</em> required. The typechecker
+        complains about missing annotations, but you don't have
+        to run the typechecker. The type system is also
+        completely independent of the virtual machine, so that
+        types or the lack of them has no impact on performance.</p>
+    </li>
+    <li><p align="left"><strong>Incremental:</strong>
+        Typechecking is fully incremental, and can be done
+        on-the-fly on a method-by-method basis, or on individual
+        method categories, classes, or groups of classes.</p>
+    </li>
+    <li><p align="left"><strong>Local:</strong><em> </em>Because
+        the type system does not rely on encapsulation-violating
+        techniques like data-flow analysis, and because it gives
+        priority to declarations (which are an indicator of
+        programmer intent) over structural typing, type errors
+        tend to stay localized. This means that missing,
+        incorrect, or conflicting annotations cause errors only
+        in the code that directly interacts with those
+        declarations. For example, if a method body has type
+        errors, or if a message signature conflicts with an
+        inherited version of that signature, the errors are seen
+        only by someone typechecking that method or class. Users
+        of the code do not see the errors and can continue to use
+        the typechecker effectively.</p>
+    </li>
+</ul>
+
+<p align="left">Together the type system design and the above
+implementaton properties produce an environment where typed,
+partially typed, and untyped code can coexist quite naturally. </p>
+
+<p align="left">We experienced this effect thoroughly during
+development of the Strongtalk system, since the pressures of
+rapid development and bootstrapping, combined with the premature cessation
+of development, led to a system with a
+considerable variation in the degree of type-safety among the
+various subsystems. While ideally the whole system should be
+typesafe (and the core classes and applications have been heavily
+typechecked), we found that the typechecker was remarkably useful
+even when invoked on individual methods imbedded in untypesafe
+classes, as long as the particular things that the method used
+had reasonable type annotations.</p>
+
+<p align="left">For those who find this topic interesting and who intend to do any poking
+around the libraries, it will help to read
+a very short, <a href="typesystemintro.html">two-page
+introduction to the type system</a>.</p>
+
+<h3 align="right"><a href="mixins.html"><strong>Mixins ==&gt;</strong></a></h3>
+</body>
+</html>

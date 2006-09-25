@@ -1,0 +1,57 @@
+Delta define: #DeltaPlaceHolderError as: (
+(Class subclassOf: 'DeltaBasicTypeError' instanceVariables: 'association ')) !
+
+(Delta mirrorFor: #DeltaPlaceHolderError) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaPlaceHolderError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPlaceHolderError)
+comment: 
+'This class should eventually be removed
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPlaceHolderError) methodsFor: 'Unclassified' !
+
+
+association ^ <GlobalAssociation>
+
+^association!
+
+association: a <GlobalAssociation>
+
+association := a
+"BootStrapping ifFalse:[
+Association key: a key symbol value: a value.
+] ifTrue:[a]."
+!
+
+convertToClass: c   <ClassMirror> ifFail: fb <[Str]>
+
+c nameNew: self name ifFail: fb
+
+!
+
+convertToGlobalVariable: g <GlobalVariableMirror> ifFail: fb <[Str]>
+g nameNew: self name ifFail: fb!
+
+convertToMixin: m <MixinDeclMirror> ifFail: fb <[Str]>
+
+m nameNew: self name ifFail: fb!
+
+errorMessage
+	self deltaHack.
+	^ self name, ' is not yet defined'!
+
+komment
+	"This class should eventually be removed"!
+
+name  ^ <Symbol> 
+
+^self association key.!
+
+name: n  <Symbol> 
+
+self association: (Association key: n value: nil)
+! !
+

@@ -1,0 +1,70 @@
+Delta define: #IndexedByteInstanceVariables as: (
+Mixin superclassType: 'Object' body: ((Class subclassOf: 'Object' instanceVariables: ''))) !
+
+(Delta mirrorFor: #IndexedByteInstanceVariables) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #IndexedByteInstanceVariables) group: 'base'!
+
+(Delta mirrorFor: #IndexedByteInstanceVariables)
+comment: 
+'This mixin adds the capability of having indexed byte instance variables, which are accessed as integers.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #IndexedByteInstanceVariables) classSide methodsFor: 'private' !
+
+
+primitiveNew: size <Int> ^<Instance>
+
+	^{{self primitiveIndexedByteNew: size
+		ifFail: [ :err <Symbol> |  self error: err ]}}! !
+
+! (Delta mirrorFor: #IndexedByteInstanceVariables) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^68! !
+
+! (Delta mirrorFor: #IndexedByteInstanceVariables) methodsFor: 'private' !
+
+
+indexedBytesDo: blk <[Int]>
+
+	1 to: self primitiveSize do:
+		[ :i <Int> |
+			blk value: (self primitiveAt: i)	].!
+
+primitiveAt: index <Int> ^<Int>
+
+	^{{self primitiveIndexedByteAt: index
+		ifFail: [ :err <Symbol> |  self error: err ]}}!
+
+primitiveAt: index <Int> ifAbsent: fail <[^X def]>  ^<Int | X>
+
+	^{{self primitiveIndexedByteAt: index
+		ifFail: [ :err <Symbol> |
+						err == #OutOfBounds
+							ifTrue: [ fail value ]
+							ifFalse: [ self error: err ]	]}}!
+
+primitiveAt: index <Int> put: byte <Int> ^<Int>
+
+	^{{self primitiveIndexedByteAt: index put: byte ifFail: [ :err <Symbol> | self error: err ]}}!
+
+primitiveSize ^<Int>
+
+	^{{self primitiveIndexedByteSize}}! !
+
+! (Delta mirrorFor: #IndexedByteInstanceVariables) methodsFor: 'file out' !
+
+
+fileOutBodyOn: d <Dumper>
+    super fileOutBodyOn: d.
+    self primitiveSize fileOutOn: d.
+    self indexedBytesDo: [ :b <Int> | d putByte: b ]!
+
+fileOutSignature ^<Integer>
+    ^100! !
+

@@ -1,0 +1,42 @@
+Delta define: #ElementPRE as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementPRE) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ElementPRE) group: 'HTML'!
+
+(Delta mirrorFor: #ElementPRE)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementPRE) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	| p <Painter> |
+	builder verticalWhitespace.
+	p := builder painter copy.
+	"We use a slightly smaller font because fixed fonts
+		take lots of space"
+	p font: (p font newSpec
+							typeface: 'Lucida Console';
+							points: 10) font.
+	builder withPainter: p
+		do: [ 	self do:
+						[ :node <HTMLNode> |
+							HTMLText coerce: node
+								do: [ :textNode <HTMLText> |
+												textNode text
+													do: [ :c <Character> |
+																c == Character cr
+																	ifTrue: [ builder forceBreakLine ]
+																	ifFalse: [ builder addCharWithoutBreaking: c ]
+														   ]
+										]
+								else: [ node buildFor: builder		]
+						]
+				 ].
+	builder verticalWhitespace.! !
+

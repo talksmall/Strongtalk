@@ -1,0 +1,38 @@
+Delta define: #DeltaReturnError as: (
+(Class subclassOf: 'DeltaStatementError' instanceVariables: 'declaredName actualName ')) !
+
+(Delta mirrorFor: #DeltaReturnError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaReturnError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaReturnError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaReturnError) methodsFor: 'Unclassified' !
+
+
+actualName
+	^actualName!
+
+actualName: aSymbol
+	actualName := aSymbol!
+
+declaredName
+	^declaredName!
+
+declaredName: aSymbol
+	declaredName := aSymbol!
+
+errorMessage
+	^'Type of returned expression ', self actualName, ' is not a subtype of declared return type ', self declaredName
+!
+
+subtypeExpr ^<DeltaType>
+	^self loc astNode expr type
+!
+
+supertypeExpr ^<DeltaType>
+	^self loc astNode scope at: #returnVal! !
+

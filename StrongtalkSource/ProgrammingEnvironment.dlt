@@ -1,0 +1,859 @@
+Delta define: #ProgrammingEnvironment as: (
+(Class subclassOf: 'Application' instanceVariables: '') classVariables: 'RichTextTool <ASTtoRichTextTool[CharGlyph]>
+AppliedMixinPainter <Painter>
+CategoryPainter <Painter>
+ClassPainter <Painter>
+CodePainter <Painter>
+CodeBCIPainter <Painter>
+CommentPainter <Painter>
+DefinitionSectionPainter <Painter>
+GlobalVariablePainter <Painter>
+InferenceClausePainter <Painter>
+InvocationPainter <Painter>
+MixinPainter <Painter>
+ParseErrorbackDrop <Painter>
+ParseErrorPainter <Painter>
+ProtocolPainter <Painter>
+SectionPainter <Painter>
+SelectorPainter <Painter>
+SubSectionPainter <Painter>
+InspectorSectionPainter <Painter>
+InspectorFieldPainter <Painter>
+InspectorSafeFieldPainter <Painter>
+TypeAliasPainter <Painter>
+TypeExpressionPainter <Painter> 
+TypeSignaturePainter <Painter>
+ShowItbackDrop <Painter>
+ShowItPainter <Painter>
+'; abstract) !
+
+(Delta mirrorFor: #ProgrammingEnvironment) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #ProgrammingEnvironment) group: 'ui'!
+
+(Delta mirrorFor: #ProgrammingEnvironment)
+comment: 
+'Common behavior for programming environment applications.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProgrammingEnvironment) classSide methodsFor: 'caching' !
+
+
+flushPainters
+
+	AppliedMixinPainter := nil.
+	CategoryPainter := nil.
+	ClassPainter := nil.
+	CodePainter := nil.
+	CodeBCIPainter := nil.
+	CommentPainter := nil.
+	DefinitionSectionPainter := nil.
+	GlobalVariablePainter := nil.
+	InferenceClausePainter := nil.
+	InvocationPainter := nil.
+	MixinPainter := nil.
+	ParseErrorbackDrop := nil.
+	ParseErrorPainter := nil.
+	ProtocolPainter := nil.
+	SectionPainter := nil.
+	SelectorPainter := nil.
+	SubSectionPainter := nil.
+	InspectorSectionPainter := nil.
+	InspectorFieldPainter := nil.
+	InspectorSafeFieldPainter := nil.
+	TypeAliasPainter := nil.
+	TypeExpressionPainter := nil.
+	TypeSignaturePainter := nil.
+	ShowItbackDrop := nil.
+	ShowItPainter := nil.!
+
+flushRichTextTool
+
+	RichTextTool := nil
+! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'accessing' !
+
+
+hasWinBackdrop ^<Boolean>
+
+	^true!
+
+maxTopHeight ^ <Int>
+
+	^self session medium extent y * 2 // 3!
+
+maxTopWidth ^ <Int>
+
+	^self session medium extent x * 2 // 3!
+
+minTopHeight ^ <Int>
+
+	^self session medium extent y // 8!
+
+minTopWidth ^ <Int>
+
+	^self session medium extent x // 8!
+
+winBackdrop ^<Painter>
+
+	^Painter new paint: Paint backgroundGray! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private-painters' !
+
+
+appliedMixinPainter ^<Painter>
+
+	"Painter for mixin titles in a class hierarchy browser"
+
+	AppliedMixinPainter isNil
+		ifTrue: [ 	AppliedMixinPainter := Painter new 
+							font: (Font forSpec: self largeItalicFontSpec) ].
+	^AppliedMixinPainter!
+
+categoryPainter ^<Painter>
+
+	"Painter for category titles"
+
+	CategoryPainter isNil
+		ifTrue: [ 	CategoryPainter := Painter new 
+							font: (Font forSpec: self smallItalicFontSpec) ].
+	^CategoryPainter!
+
+classPainter ^<Painter>
+
+	"Painter for class titles"
+
+	ClassPainter isNil
+		ifTrue: [	ClassPainter := Painter new 
+							font: (Font forSpec: self largeFontSpec) ].
+	^ClassPainter!
+
+codeBCIPainter ^<Painter>
+
+	"Painter for current byte code index in method source code"
+
+	CodeBCIPainter isNil
+		ifTrue: [	CodeBCIPainter := Painter new 
+							font: (Font forSpec: self smallFontSpec);
+							paint: Paint red ].
+	^CodeBCIPainter!
+
+codePainter ^<Painter>
+
+	"Painter for regular method/message source code"
+
+	CodePainter isNil
+		ifTrue: [	CodePainter := Painter new 
+							font: (Font forSpec: self smallFontSpec) ].
+	^CodePainter!
+
+commentPainter ^<Painter>
+
+	"Painter for comments in source code"
+
+	CommentPainter isNil
+		ifTrue: [	CommentPainter := Painter new 
+							font: (Font forSpec: self smallFontSpec);
+							paint: (Paint red: 0 green: 128 blue: 0) ].
+	^CommentPainter
+!
+
+definitionSectionPainter ^<Painter>
+
+	"Painter for definition  sections, such as instance variables "
+
+	DefinitionSectionPainter isNil
+		ifTrue: [	DefinitionSectionPainter := Painter new 
+								font: (Font forSpec: self smallItalicFontSpec) ].
+	^DefinitionSectionPainter!
+
+globalVariablePainter ^<Painter>
+
+	"Painter for global variable titles"
+
+	GlobalVariablePainter isNil
+		ifTrue: [	GlobalVariablePainter := Painter new 
+							font: (Font forSpec: self largeFontSpec) ].
+	^GlobalVariablePainter!
+
+inferenceClausePainter ^<Painter>
+
+	"Painter for inference clauses in source code"
+
+	InferenceClausePainter isNil 
+		ifTrue: [	InferenceClausePainter := Painter new 
+							font: (Font forSpec: self smallFontSpec);
+							paint: (Paint red: 128 green: 0 blue: 255) ].
+	^InferenceClausePainter!
+
+inspectorFieldPainter ^<Painter>
+
+	"Painter for fields in inspector"
+
+	InspectorFieldPainter isNil
+		ifTrue: [	InspectorFieldPainter := Painter new 
+							font: (Font forSpec: self smallFontSpec) ].
+	^InspectorFieldPainter!
+
+inspectorSafeFieldPainter ^<Painter>
+
+	"Painter for safe fields in inspector"
+
+	InspectorSafeFieldPainter isNil
+		ifTrue: [	InspectorSafeFieldPainter := Painter new 
+							font: (Font forSpec: self smallFontSpec);
+							paint: Paint  red].
+	^InspectorSafeFieldPainter!
+
+inspectorSectionPainter ^<Painter>
+
+	"Painter for sections in inspector"
+
+	InspectorSectionPainter isNil
+		ifTrue: [	InspectorSectionPainter := Painter new 
+							font: (Font forSpec: self smallBoldFontSpec) ].
+	^InspectorSectionPainter!
+
+invocationPainter ^<Painter>
+
+	"Painter for titles for anonymous invocations"
+
+	InvocationPainter isNil
+		ifTrue: [	InvocationPainter := Painter new 
+							font: (Font forSpec: self largeFontSpec) ].
+	^InvocationPainter!
+
+mixinPainter ^<Painter>
+
+	"Painter for mixin titles"
+
+	MixinPainter isNil 
+		ifTrue: [	MixinPainter := Painter new 
+							font: (Font forSpec: self largeFontSpec) ].
+	^MixinPainter!
+
+parseErrorBackdrop ^<Painter>
+
+	"Background paint for parse errors in source code"
+			
+	ParseErrorbackDrop isNil
+		ifTrue: [	ParseErrorbackDrop := Painter new paint: Paint blue ].
+	^ParseErrorbackDrop!
+
+parseErrorPainter ^<Painter>
+
+	"Painter for parse errors in source code"
+			
+	ParseErrorPainter isNil
+		ifTrue: [	ParseErrorPainter := Painter new 
+							font: (Font forSpec: self smallFontSpec);
+							paint: Paint white ].
+	^ParseErrorPainter!
+
+protocolPainter ^<Painter>
+
+	"Painter for protocol titles"
+
+	ProtocolPainter isNil
+		ifTrue: [	ProtocolPainter := Painter new 
+							font: (Font forSpec: self largeFontSpec) ].
+	^ProtocolPainter!
+
+sectionPainter ^<Painter>
+
+	"Painter for major sections, such as 'instance side' "
+
+	SectionPainter isNil
+		ifTrue: [	SectionPainter := Painter new 
+							font: (Font forSpec: self largeItalicBoldFontSpec) ].
+	^SectionPainter!
+
+selectorPainter ^<Painter>
+
+	"Painter for method/message selectors"
+
+	SelectorPainter isNil
+		ifTrue: [	SelectorPainter := Painter new 
+							font: (Font forSpec: self smallBoldFontSpec) ].
+	^SelectorPainter!
+
+showItBackdrop ^<Painter>
+
+	"Background paint for showIt results in source code"
+			
+	ShowItbackDrop isNil
+		ifTrue: [	ShowItbackDrop := Painter new paint: (Paint red: 0 green: 128 blue: 0) ].
+	^ShowItbackDrop
+!
+
+showItPainter ^<Painter>
+
+	"Painter for showIt results in source code"
+			
+	ShowItPainter isNil
+		ifTrue: [	ShowItPainter := Painter new 
+							font: (Font forSpec: self smallFontSpec);
+							paint: Paint white ].
+	^ShowItPainter
+!
+
+subSectionPainter ^<Painter>
+
+	"Painter for minor sections, such as 'comment' "
+
+	SubSectionPainter isNil
+		ifTrue: [	SubSectionPainter := Painter new 
+							font: (Font forSpec: self smallItalicFontSpec) ].
+	^SubSectionPainter!
+
+typeAliasPainter ^<Painter>
+
+	"Painter for type alias titles"
+
+	TypeAliasPainter isNil
+		ifTrue: [	TypeAliasPainter := Painter new 
+							font: (Font forSpec: self largeFontSpec) ].
+	^TypeAliasPainter!
+
+typeExpressionPainter ^<Painter>
+
+	"Painter for type expressions in source code"
+
+	TypeExpressionPainter isNil
+		ifTrue: [	TypeExpressionPainter := Painter new 
+							font: (Font forSpec: self smallFontSpec);
+							paint: Paint blue ].
+	^TypeExpressionPainter!
+
+typeSignaturePainter ^<Painter>
+
+	"Painter for type signatures in interfaces"
+			
+	TypeSignaturePainter isNil
+		ifTrue: [	TypeSignaturePainter := Painter new 
+							font: (Font forSpec: self smallFontSpec) ].
+	^TypeSignaturePainter
+! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private-utility' !
+
+
+buildBasicCodeViewGetModel: gm <[^CharGlyphs]> setModelOnSuccess: sm <[[]]> ^ <CodeView>
+
+	| tv <CodeView> oldBorder <Border> frame <Frame> |
+	tv := self codeViewClass forText.
+	tv infiniteUndo.
+	tv model: gm value.
+	tv doneBlock:
+		[ 	:save <Boolean> :onSuccess <[]> |
+			save
+				ifTrue: 	[	sm value: onSuccess ]
+				ifFalse: [	tv model: gm value.
+									onSuccess value  ].
+			oldBorder notNil
+				ifTrue: [	frame border: oldBorder.
+								oldBorder := nil ].
+		].
+	tv changeBlock:
+		[	oldBorder isNil 
+				ifTrue: [	frame := Frame coerce: tv visual parent else: [ nil ].
+								frame notNil
+									ifTrue: [	oldBorder := frame border.
+													frame border: self defaultChangedEditorBorder ] ] ].
+	^tv!
+
+buildBasicTextViewWithPainter: p <Painter> getModel: gm <[^Str]> setModelOnSuccess: sm <[[]]> ^ <TextView[Str]>
+
+	| tv <TextView[Str]> oldBorder <Border> frame <Frame> |
+	tv := TextView[Str] forString.
+	tv painter: p.
+	tv infiniteUndo.
+	tv model: gm value.
+	tv doneBlock:
+		[ 	:save <Boolean> :onSuccess <[]> |
+			save
+				ifTrue: 	[	sm value: onSuccess ]
+				ifFalse: [	tv model: gm value.
+									onSuccess value  ].
+			oldBorder notNil
+				ifTrue: [	frame border: oldBorder.
+								oldBorder := nil ].
+		].
+	tv changeBlock:
+		[	oldBorder isNil 
+				ifTrue: [	frame := Frame coerce: tv visual parent else: [ nil ].
+								frame notNil
+									ifTrue: [	oldBorder := frame border.
+													frame border: self defaultChangedEditorBorder ] ] ].
+	^tv!
+
+buildCodeViewGetModel: gm <[^CharGlyphs]> setModelOnSuccess: sm <[[]]> ^ <CodeView>
+
+	| tv <CodeView> lines <Int> |
+	tv := self buildBasicCodeViewGetModel: gm setModelOnSuccess: sm.
+	lines := (tv model select: [ :cg <CharacterGlyph> | cg character = Character cr ]) size + 2.
+	lines := lines min: self maxDesiredRows.
+	tv desiredRows: lines.
+	^tv!
+
+buildSingleLineTextViewWithPainter: p <Painter> getModel: gm <[^Str]> setModelOnSuccess: sm <[[]]> ^ <TextView[Str]>
+
+	| tv <TextView[Str]> |
+	tv := self buildBasicTextViewWithPainter: p getModel: gm setModelOnSuccess: sm.
+	tv isMultiLine: false.
+	tv scrollable: false.
+	^tv!
+
+buildTextViewWithPainter: p <Painter> getModel: gm <[^Str]> setModelOnSuccess: sm <[[]]> ^ <TextView[Str]>
+
+	| tv <TextView[Str]> lines <Int> |
+	tv := self buildBasicTextViewWithPainter: p getModel: gm setModelOnSuccess: sm.
+	lines := (tv model select: [ :c <Character> | c = Character cr ]) size + 2.
+	lines := lines min: self maxDesiredRows.
+	tv desiredRows: lines.
+	^tv!
+
+charGlyphModelAsString: view <TextView[CharGlyphs]> ^ <Str>
+
+	^String withAll: (view model collect: [ :cg <CharGlyph> | cg character ]).
+!
+
+codeViewClass ^ <CodeView class>
+
+^CodeView
+!
+
+defaultChangedEditorBorder ^ <Border>
+
+	^Border whiteInterior3DRaised: true!
+
+defaultEditorBorder ^ <Border>
+
+	^Border standard3DRaised: false!
+
+define: name <Str> constructor: consBlk <[Symbol]>
+
+	| scanner <DeltaScanner> id <Symbol> errorBlk <[Str]> |
+	errorBlk := [ :s <Str> |	 self visual promptOk: s title: 'Error' type: #stop action: [ ^self ]].
+	
+	scanner := DeltaScanner new open: name ifError: [ :m <Str> :p <Int> | errorBlk value: m ].
+	scanner token = #identifier
+		ifFalse: [	errorBlk value: 'Identifier expected' ].
+	id := scanner tokenVal.
+	scanner token = #eos
+		ifFalse: [	errorBlk value: 'Input follows identifier' ].
+	(Smalltalk includesKey: id)
+		ifTrue: [		errorBlk value: 'A global definition with name ''', id, ''' already exists' ].
+	consBlk value: id!
+
+displayTypeError: te <TypeError> title: t <Str>
+
+	(DefWithMsgOutliner onTypeError:  te) launchOpenSide: te loc mirror isMeta selector: te loc selector.
+!
+
+displayTypeErrorBatch: tes <OrdCltn[TypeError]> title: t <Str>
+| ca <CodeApp> outliner <MirrorOutliner[Mirror]> window <Window> |
+
+outliner := DefWithMsgOutliner[Mirror] onLocator:  tes first loc.
+ca := (outliner outlinerForLocator: tes first loc).
+ca  displayLocalErrorBatch: tes title: t.
+window := outliner launch.
+window mostRecentInputFocus: ca codeView lines.!
+
+editorBorderFor: a <Application> ^ <Visual>
+
+	^(a imbeddedVisual 
+			withBorder: self defaultEditorBorder)
+			withBackdrop: (Painter new paint: Paint white)!
+
+launchDefinitionDialogWithPainter: p <Painter> title: t <Str> constructor: consBlk <[Symbol]>
+
+
+	self
+		launchSingleLineTextDialogWithPainter: p 
+		title: t
+		caption: 'Name for new definition'
+		default: ''
+		action: [ :s <Str> |	self define: s constructor: consBlk ]!
+
+launchErrorLocList: bl <OrdCltn[OrdCltn[TypeError]]> title: t <Str>
+" launch a list of erroneous code units. The list will be entitled t, and will
+have an entry for every element of bl. Each element of bl should be a
+collection of type errors located in a single code unit"
+
+self launchListDialogWithPainter: self selectorPainter
+		title: t
+		modal: false
+		contents: (bl collect:[:es <OrdCltn[TypeError]> | es first loc name])
+		multi: false
+		action: [:errorIndices <Cltn[Integer]> | 
+						| index <Integer> |
+						index  := errorIndices anElement.
+						self displayTypeErrorBatch: (bl at: index) title: t.
+						].
+!
+
+launchListDialogWithPainter: p <Painter>
+title: t <Str>
+contents: strs <SeqCltn[Str]>
+multi: b <Boolean>
+action: blk <[Cltn[Int]]>
+
+	self	launchListDialogWithPainter: p 
+			title: t 
+			modal: true
+			contents: strs
+			multi: b 
+			action: blk 
+!
+
+launchListDialogWithPainter: p <Painter>
+title: t <Str>
+modal: modal <Boolean>
+contents: strs <SeqCltn[Str]>
+multi: b <Boolean>
+action: blk <[Cltn[Int]]>
+
+	| listBox <ListBox> editor <TextView[Str]> glue <Visual> dialog <Window> |
+	strs size > 0
+		ifFalse: [ ^self ].
+	listBox := b
+		ifTrue: [	ListBox forMultipleSelections
+						simpleMultiple: false ]
+		ifFalse: [	ListBox forSingleSelection ].
+	listBox
+		stringList: strs;
+		selections: #(1);
+		onDoubleClick: [ :lb <ListBox> | dialog close. blk value: lb selections ].
+	dialog := self visual
+		launchCustomDialog: t
+		for: (listBox withBorder: (Border standard3DWithColor: Paint gray raised: false))
+		showApply: true
+		modal: modal
+		toValidate: [ :continue <[]> | continue value ]
+		action: [ blk value: listBox selections ].
+!
+
+launchReferencesToGlobalName: name <Symbol>
+
+	| refs <SeqCltn[Tuple[Mirror, Symbol]]> |
+	(refs := Smalltalk referencesToGlobalName: name) isEmpty
+		ifTrue: [		self visual
+								promptOk: 'No references to global ''', name, ''''
+								title: 'Information'
+								type: #info
+								action: [] ]
+		ifFalse: [	self 
+								launchSelectorListWithPainter: Painter default 
+								title: 'References to global ''', name,	 '''' 
+								contents: refs ]
+!
+
+launchSelectorListWithPainter: p <Painter> title: t <Str> contents: list <SeqCltn[Tuple[Mirror, Symbol]]>
+
+	"This is a temporary solution until hoisting works"
+
+	| listBox <ListBox> action <[ListBox]> dialog <Window> |
+	list size > 0
+		ifFalse: [ ^self ].
+	list size = 1
+		ifTrue: [	| mirror <Mirror> sel <Symbol> |
+					mirror := (list at: 1) at1.
+					sel := (list at: 1) at2.
+					(DefWithMsgOutliner on: mirror instanceSide) launchOpenSide: mirror isMeta selector: sel.
+					^self ].
+
+	listBox := ListBox forSingleSelection.
+	listBox
+		stringList: (list collect: [ :t <Tuple[Mirror, Symbol]> | t at1 name, '>>', t at2 ]);
+		selections: #(1);
+		onDoubleClick: [ :lb <ListBox> | dialog close. action value: lb ].
+	action := [ 	:lb <ListBox> |
+						| index <Int> mirror <Mirror> sel <Symbol> |
+						index := lb selections anElement.				"We use single selection"
+						mirror := (list at: index) at1.
+						sel := (list at: index) at2.
+						(DefWithMsgOutliner on: mirror instanceSide) launchOpenSide: mirror isMeta selector: sel.
+						].
+	dialog := self visual
+		launchCustomDialog: t
+		for: (listBox withBorder: (Border standard3DWithColor: Paint gray raised: false))
+		showApply: true
+		modal: false
+		toValidate: [ :continue <[]> | continue value ]
+		action: [ action value: listBox ].
+
+!
+
+launchSingleLineTextDialogWithPainter: p <Painter> title: t <Str> caption: c <Str> default: d <Str> action: blk <[Str]>
+
+	| caption <Visual> editor <TextView[Str]> glue <Visual> |
+	caption := (StringGlyph for: c painter: p) asVisual.
+	glue := Glue xRigid: 10.
+	editor := self buildSingleLineTextViewWithPainter: p getModel: [ d ] setModelOnSuccess: [ :blk <[]> | blk value ].
+	editor desiredColumns: (10 max: d size).
+	self visual
+		launchCustomDialog: t
+		for: (Row[Visual] holding: (OrderedCollection[Visual] with: caption with: glue with: (self editorBorderFor: editor)))
+		showApply: false
+		modal: true
+		toValidate: [ :continue <[]> | continue value ]
+		action: [ blk value: editor model ].
+!
+
+launchTypeErrorList: errors <OrderedCollection[TypeError]> title: t <Str>
+" If there are no errors, notify the user. Otherwise clump errors by code location
+and launch a list of erroneous code units"
+| batchedErrors <OrdCltn[OrdCltn[TypeError]]> |
+
+errors isEmpty ifTrue:[ self visual promptOk: ' No type errors found' title: t type: #info action: []].
+batchedErrors  := Type batchErrors: errors.
+self launchErrorLocList: batchedErrors title: t.
+!
+
+maxDesiredRows ^ <Int>
+
+	^10!
+
+showParseError: msg <Str> at: pos <Int> in: tv <TextView[CharGlyphs]>
+
+	| textPos <Point> error <Visual> |
+	error := (StringGlyph for: msg painter: self parseErrorPainter) asVisual withBackdrop: self parseErrorBackdrop.
+	textPos := tv linearSpotAt: pos ifAbsent: [ self shouldNotHappen ].
+	tv replaceModelFrom: textPos to: textPos withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: error)).
+	tv linearSelection: ((pos + 1),,(pos + 1)).
+!
+
+typecheckAction: blk <[]> title: t <Str>
+
+| eh <DeltaTypeErrorHandler> |
+
+eh := Type doChecks: blk.
+self launchTypeErrorList: eh reportedErrors
+ 		title: t.! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - rich text' !
+
+
+richTextForParseTree: pt <ParseTree[ASTNode]>
+
+	^(self richTextTool parseTree: pt) compute!
+
+richTextForParseTrees: pts <Cltn[ParseTree[ASTNode]]>
+
+	^(self richTextTool parseTrees: pts) compute!
+
+richTextTool ^ <ASTtoRichTextTool[CharGlyph]>
+
+	RichTextTool isNil
+		ifTrue: [	RichTextTool := ASTtoRichTextTool[CharGlyph] new
+							codeBuilder: [ :c <Character> | self codePainter charGlyphFor: c ];
+							selectorBuilder: [ :c <Character> | self selectorPainter charGlyphFor: c ];
+							commentBuilder: [ :c <Character> | self commentPainter charGlyphFor: c ];
+							typeexpressionBuilder: [ :c <Character> | self typeExpressionPainter charGlyphFor: c ];
+							inferenceclauseBuilder: [ :c <Character> | self inferenceClausePainter charGlyphFor: c ] ].
+	^RichTextTool!
+
+showRichTextSignatures ^ <Boolean>
+
+	^true!
+
+standardTextForString: s <Str> painter: p <Painter> ^ <CharGlyphs> 
+
+	| gls <CharGlyphs> |
+	gls := OrderedCollection[CharGlyphs] new: s size.
+	s do: [ :c <Character> | gls add: (p charGlyphFor: c) ].
+	^gls
+!
+
+useRichTextForSources ^ <Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - font spec constants' !
+
+
+largeBoldness ^ <Float>
+
+	^0.75!
+
+largePoints ^ <Int>
+
+	^12!
+
+largeTypeface ^ <Str>
+
+	^'Times Roman'!
+
+smallBoldness ^ <Float>
+
+	^0.75!
+
+smallPoints ^ <Int>
+
+	^10		" For Win95 use 11"!
+
+smallTypeface ^ <Str>
+
+	^'Lucida Sans'		" For Win95 use 'Times Roman' "! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^Menu new name: '&Browse';
+		add: (MenuAction new
+					name: '&Open...';
+					action: [ self findDefinition ] );
+		add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self])! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - font specs' !
+
+
+largeBoldFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self largePoints; typeface: self largeTypeface; boldness: self largeBoldness!
+
+largeFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self largePoints; typeface: self largeTypeface!
+
+largeItalicBoldFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self largePoints; typeface: self largeTypeface; italic: true; boldness: self largeBoldness!
+
+largeItalicFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self largePoints; typeface: self largeTypeface; italic: true!
+
+smallBoldFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self smallPoints; typeface: self smallTypeface; boldness: self smallBoldness!
+
+smallFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self smallPoints; typeface: self smallTypeface!
+
+smallItalicBoldFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self smallPoints; typeface: self smallTypeface; italic: true; boldness: self smallBoldness!
+
+smallItalicFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self smallPoints; typeface: self smallTypeface; italic: true! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private' !
+
+
+buildVisualTop: forTop <Boolean> ^ <Visual>
+
+	| v <Visual> |
+	v := super buildVisualTop: forTop.
+	forTop ifTrue: [
+		v := (Scroller viewportFor: v) useContinuousGrid.
+		v viewport
+			constrainX: false;
+			minScrollExtentBlock:
+				[ :v <Viewport> |
+					self maxTopWidth @ self maxTopHeight	].
+		v := v withBorder: (Border standard3DWithColor: Paint gray raised: false).
+		].
+	^v!
+
+requestCloseIfTopWindow
+
+	self visual parent = self visual topWindow
+		ifTrue: [	self visual topWindow requestClose ]! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'control' !
+
+
+addSubclassTo: m <AbstractClassMirror>
+
+	self
+		launchDefinitionDialogWithPainter: self classPainter
+		title: 'Add new subclass of ', m name
+		constructor: [ :name <Symbol> |
+			Smalltalk define: name as:  (Class subclassOf: m name asString instanceVariables: '').
+			self launchDefinitionsMatching: name ]!
+
+findDefinition
+	
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'Open definition'
+		caption: 'Matching expression' 
+		default: '*'
+		action: [ :s <Str> | self launchDefinitionsMatching: s ]
+!
+
+launchDefinitionsMatching: s <Str>
+
+	| definitions <AddableSequenceableCollection[Symbol]> mirror <Mirror> |
+	definitions := OrderedCollection[Symbol] new.
+	Smalltalk keysDo: [ :key <Symbol> | 
+		(s platformMatch: key)
+			ifTrue: [	definitions add: key ]
+	].
+	definitions isEmpty
+		ifTrue: [	| pattern <Str> |
+					pattern := s, Platform multipleMatchWildcardCharacter asString.
+					Smalltalk keysDo: [ :key <Symbol> | 
+						(pattern platformMatch: key)
+							ifTrue: [	definitions add: key ]
+					]
+	].
+	definitions := definitions asSortedCollection: [ :a <Symbol> :b <Symbol> | a <= b ].
+	definitions isEmpty
+		ifTrue: [		(Workspace coerce: Transcript) visual
+								promptOk: 'No definitions matching ''', s, ''''
+								title: 'Information'
+								type: #info
+								action: [] ].
+	definitions size = 1
+		ifTrue: [	mirror := Smalltalk mirrorFor: (definitions at: 1) ifAbsent: [ ^self ].
+						(DefOutliner on: mirror) launch ]
+		ifFalse: [	self 
+								launchListDialogWithPainter: Painter default
+								title: 'Definitions matching ', s
+								modal: false
+								contents: definitions
+								multi: true
+								action: [ :indices <Cltn[Int]> |
+												indices do:
+													[ :index <Int> |
+														mirror := Smalltalk mirrorFor: (definitions at: index)
+																			ifAbsent: [ ^self ].
+														(DefOutliner on: mirror) launch 	]	].
+							]!
+
+removeDefinition: m <Mirror>
+
+	self visual
+		promptOkCancel: 'Remove ', m name asString printString, ' from system'
+		title: 'Please confirm'
+		type: #question
+		default: 2
+		action: [ :b <Boolean> | 
+			b ifTrue: [ 	self session noInputFocus.	"To get around library input focus bug"
+								m removeDefinitionIfFail: [ self unimplemented ] ] ].	"Fix this shortly"! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'restricted-utility' !
+
+
+buildLabel: title <Str> painter: p <Painter> action: blk <[]> ^ <ToggleButton>
+
+	| label <Visual> button <ToggleButton> |
+	label := (StringGlyph for: title painter: p) asVisual.
+	button := ToggleButton withTrueLook: label falseLook: label.
+	button unpressedBorder: (Border withRigidInset: 2).  
+	button modelSink: [ :b <Boolean> | blk value ].
+	button look: button look.							"Temporary hack to force #updatePart call, fixes ToggleButton error"
+	^button
+! !
+

@@ -1,0 +1,40 @@
+Delta define: #EqualizerWrapper as: (
+(Class subclassOf: 'PreferenceModifier' instanceVariables: 'equalizer <Equalizer>
+')) !
+
+(Delta mirrorFor: #EqualizerWrapper) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #EqualizerWrapper) group: 'ui'!
+
+(Delta mirrorFor: #EqualizerWrapper)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
+
+! (Delta mirrorFor: #EqualizerWrapper) methodsFor: 'control' !
+
+
+changing
+
+	"We don't send it to super since the equalizer will send back equalizerChanging which
+		then does that."
+	self equalizer changing.! !
+
+! (Delta mirrorFor: #EqualizerWrapper) methodsFor: 'restricted-to equalizer' !
+
+
+equalizer: e <Equalizer>
+
+	equalizer := e!
+
+equalizerChanging
+
+	super changing! !
+
+! (Delta mirrorFor: #EqualizerWrapper) methodsFor: 'private' !
+
+
+equalizer ^<Equalizer>
+
+	^equalizer! !
+

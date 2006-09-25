@@ -1,0 +1,39 @@
+Delta define: #StayConstraint as: (
+(Class subclassOf: 'UnaryConstraint' instanceVariables: '')) !
+
+(Delta mirrorFor: #StayConstraint) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #StayConstraint) group: 'benchmark'!
+
+(Delta mirrorFor: #StayConstraint)
+comment: 
+'I mark variables that should, with some level of preference, stay the same.
+I have one method with zero inputs and one output, which does nothing.
+Planners may exploit the fact that, if I am satisfied, my output will not change during plan execution
+This is called "stay optimization."''
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #StayConstraint) classSide methodsFor: 'instance creation' !
+
+
+var: aVariable strength: strengthSymbol
+	"Install a stay constraint with the given strength on the given variable."
+
+	^(self new) var: aVariable strength: strengthSymbol! !
+
+! (Delta mirrorFor: #StayConstraint) methodsFor: 'queries' !
+
+
+includeInPlan
+	"Stay constraints have no effect other than to control the planning process."
+
+	^false! !
+
+! (Delta mirrorFor: #StayConstraint) methodsFor: 'execution' !
+
+
+execute
+	"Stay constraints do nothing."! !
+

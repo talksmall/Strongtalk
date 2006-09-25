@@ -1,0 +1,92 @@
+Delta define: #Link as: (
+(Class subclassOf: 'Object' instanceVariables: 'nextLink <Instance>') notSubtype) !
+
+(Delta mirrorFor: #Link) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Link) group: 'base'!
+
+(Delta mirrorFor: #Link)
+comment: 
+'This is the abstract superclass for linked list element classes.  Subclasses provide the protocol and
+implementation for accessing the information to be stored in each link.
+
+Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #Link) classSide methodsFor: 'instance creation' !
+
+
+nextLink: l <Instance>  ^<Instance>
+
+	^(self new) nextLink: l; yourself! !
+
+! (Delta mirrorFor: #Link) methodsFor: 'accessing' !
+
+
+linkAt: i <Int> ^<Instance>
+
+	| c <Int> link <Instance> |
+	c := 1.
+	link := self.
+	[ c < i ]
+		whileTrue: [ c := c + 1.
+							link := link nextLinkIfFail: [ self error: 'Index out-of-range' ].	].
+	^link!
+
+nextLink ^<Instance>
+
+	^nextLink!
+
+nextLink: l <Instance>
+
+	nextLink := l!
+
+nextLinkIfFail: fail <[^X def]>  ^<Instance | X>
+
+	^nextLink isNil
+		ifFalse: [ nextLink ]
+		ifTrue: [ fail value ]!
+
+noNextLink
+
+	nextLink := nil!
+
+size ^<Int>
+
+	| size <Int> link <Link> |
+	size := 1.
+	link := self.
+	[	link := link nextLinkIfFail: [ ^size ].
+		size := size + 1.
+		] repeat.! !
+
+! (Delta mirrorFor: #Link) methodsFor: 'private' !
+
+
+length ^<Int>
+
+	| size <Int> link <Link> |
+	size := 1.
+	link := self.
+	[	link := link nextLinkIfFail: [ ^size ].
+		size := size + 1.
+		] repeat.!
+
+postCopy
+
+	self nextLink: (self nextLink copy)! !
+
+! (Delta mirrorFor: #Link) methodsFor: 'iterating' !
+
+
+linksDo: fun <[Instance]>
+
+	| link <Instance> |
+	link := self.
+	[ fun value: link.
+	  link := link nextLinkIfFail: [ ^self ].
+	] repeat.! !
+

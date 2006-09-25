@@ -1,0 +1,39 @@
+Delta define: #DeltaRef as: (
+(Class subclassOf: 'DeltaExpression' instanceVariables: 'decl ')) !
+
+(Delta mirrorFor: #DeltaRef) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaRef) group: 'ast'!
+
+(Delta mirrorFor: #DeltaRef)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaRef) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool refNode: self!
+
+decl ^ <DeltaVar>
+    ^ decl!
+
+decl: aVar <DeltaVar > ^ <Self>
+    decl := aVar!
+
+isCompleteTerm
+	^self decl	isCompleteTerm!
+
+isRefNode ^ <Boolean>
+    ^ true!
+
+name ^ <Str>
+    ^ decl name!
+
+type ^ <ObjectType>
+
+	self decl isValidTerm ifFalse: [self reportError: (DeltaNotAValidTerm new id: self name)].
+    ^self decl type
+! !
+

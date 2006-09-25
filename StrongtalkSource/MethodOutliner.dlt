@@ -1,0 +1,216 @@
+Delta define: #MethodOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner' instanceVariables: '') classVariables: 'AlwaysInlineGlyph <Glyph>
+NeverInlineGlyph <Glyph>
+AbstractGlyph <Glyph>
+') !
+
+(Delta mirrorFor: #MethodOutliner) revision: '$Revision: 1.19 $'!
+
+(Delta mirrorFor: #MethodOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #MethodOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MethodOutliner) methodsFor: 'accessing' !
+
+
+defaultSelector ^ <Symbol>
+
+	^'a new method' asSymbol!
+
+defaultSource ^ <Str>
+
+	| ws <WriteStream> |
+	ws := (String new: 70) writeStream.
+	ws nextPutAll: 'messagePattern'; cr.
+	ws nextPutAll: '"comment"'; cr.
+	ws nextPutAll: '| temporaries |'; cr.
+	ws nextPutAll: 'statements'; cr.
+	^ws contents.! !
+
+! (Delta mirrorFor: #MethodOutliner) methodsFor: 'private' !
+
+
+abstractGlyph ^ <Glyph>
+
+	AbstractGlyph isNil
+		ifTrue: [ AbstractGlyph :=
+						(Image fromFile: (FilePath for: 'resources\abstract.bmp'))
+							alignLowerLeft. 	].
+	^AbstractGlyph
+!
+
+alwaysInlineGlyph ^ <Glyph>
+
+	AlwaysInlineGlyph isNil
+		ifTrue: [ AlwaysInlineGlyph :=
+						(Image fromFile: (FilePath for: 'resources\alwaysInline.bmp'))
+							alignLowerLeft. 	].
+	^AlwaysInlineGlyph
+!
+
+buildClosedHeader ^ <Visual>
+
+	| selectorVisual <Visual> isAbstract <Boolean> inlineStatus <Symbol> |
+	selectorVisual := super buildClosedHeader.
+	isAbstract := self isAbstract.
+	inlineStatus := self inlineStatus.
+	(isAbstract or: [ inlineStatus ~= #Normal ])
+		ifTrue: [	| list <OrdCltn[Visual]> |
+						list := OrderedCollection[Visual] with: selectorVisual.
+						isAbstract
+							ifTrue: [	list add: (Glue xRigid: 5); add: self abstractGlyph asVisual ].
+						inlineStatus = #Always
+							ifTrue: [	list add: (Glue xRigid: 5); add: self alwaysInlineGlyph asVisual ].
+						inlineStatus = #Never
+							ifTrue: [	list add: (Glue xRigid: 5); add: self neverInlineGlyph asVisual ].
+						^Row[Visual] holding: list ].
+	^selectorVisual
+!
+
+compiledMethod ^ <Method>
+
+	^self hasSelector
+			ifTrue: [		self mirror compiledMethodAt: self selector ifFail: [ self shouldNotHappen ] ]
+			ifFalse: [	nil ]!
+
+inlineStatus ^ <Symbol>
+
+	| method <Method> |
+	^(method := self compiledMethod) isNil
+		ifTrue: [		#Normal ]
+		ifFalse: [	method inlining ]
+!
+
+isAbstract ^ <Boolean>
+
+	| method <Method> |
+	^(method := self compiledMethod) isNil
+		ifTrue: [		false ]
+		ifFalse: [	method isAbstract ]
+!
+
+locator ^ <MethodLocator>
+
+^MethodLocator new	definition: self mirror basicLocator
+											selector: self selector!
+
+neverInlineGlyph ^ <Glyph>
+
+	NeverInlineGlyph isNil
+		ifTrue: [ NeverInlineGlyph :=
+						(Image fromFile: (FilePath for: 'resources\neverInline.bmp'))
+							alignLowerLeft. 	].
+	^NeverInlineGlyph
+! !
+
+! (Delta mirrorFor: #MethodOutliner) methodsFor: 'menus' !
+
+
+inliningMenu^<Menu>
+
+	| inlineStatus <Symbol> |
+	inlineStatus := self inlineStatus.
+	^Menu new
+		name: 'Inlining';
+		add: (MenuAction new
+					name: 'Normal';
+					active: [ self hasSelector ];
+					checked: [ inlineStatus = #Normal ];
+					action: [ self normalInline ]);
+		add: (MenuAction new
+					name: 'Always';
+					active: [ self hasSelector ];
+					checked: [ inlineStatus = #Always ];
+					action: [ self alwaysInline ]);
+		add: (MenuAction new
+					name: 'Never';
+					active: [ self hasSelector ];
+					checked: [ inlineStatus = #Never ];
+					action: [ self neverInline ])!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'Move to category ...';
+					active: [ self hasSelector ];
+					action: [ self move ]);
+		add: (MenuAction new
+					name: 'Remove';
+					action: [ self remove ]);
+		add: (MenuAction new
+					name: 'Senders';
+					active: [ self hasSelector ];
+					action: [ self senders ]);
+		add: (MenuAction new
+					name: 'Implementors';
+					active: [ self hasSelector ];
+					action: [ self implementors ]);
+		add: (MenuAction new
+					name: 'Messages';
+					active: [ self hasSelector ];
+					action: [ self messages ]);
+		add: (MenuAction new
+					name: 'Typecheck';
+					active: [ self hasSelector ];
+					action: [ self typecheck ]);
+		addSeparator;
+		add: (MenuAction new
+					name: 'Print Bytecodes';
+					active: [ self hasSelector ];
+					action: [ self printByteCodes ]);
+		add: self inliningMenu
+! !
+
+! (Delta mirrorFor: #MethodOutliner) methodsFor: 'control' !
+
+
+alwaysInline
+
+	self compiledMethod alwaysInline.
+	self updateHeaders.!
+
+messages
+
+	| messages <OrdCltn[Symbol]> list <OrdCltn[Symbol]> |
+	messages := OrderedCollection[Symbol] new.
+	self compiledMethod referencedSenders do: [ :s <Symbol> |
+		messages include: s ].
+	messages isEmpty
+		ifTrue: [	
+			self visual
+				promptOk: 'No messages in ', self mirror name, '>>', self selector
+				title: 'Information'
+				type: #info
+				action: [].
+			^self ].
+	messages size = 1
+		ifTrue: [		self launchImplementorsOf: messages anElement	]
+		ifFalse: [
+			list := messages asSortedCollection: [ :s1 <Symbol> :s2 <Symbol> | s1 <= s2 ].
+			self 
+				launchListDialogWithPainter: self selectorPainter 
+				title: 'Find implementors of'
+				modal: false
+				contents: list
+				multi: false
+				action: [ :sels <Cltn[Int]> | self launchImplementorsOf: (list at: sels anElement) ] ].		"We use a single selection listbox so we have exactly one element"
+!
+
+neverInline
+
+	self compiledMethod neverInline.
+	self updateHeaders.!
+
+normalInline
+
+	self compiledMethod normalInline.
+	self updateHeaders.!
+
+printByteCodes
+
+	(self mirror compiledMethodAt: self selector ifFail: [ self shouldNotHappen ]) printCodes! !
+

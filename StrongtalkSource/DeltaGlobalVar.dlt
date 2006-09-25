@@ -1,0 +1,37 @@
+Delta define: #DeltaGlobalVar as: (
+(Class subclassOf: 'DeltaVar' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaGlobalVar) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaGlobalVar) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGlobalVar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGlobalVar) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	 aTool globalVarNode: self!
+
+assoc
+    ^ Delta associationAt: self name!
+
+isGlobalVarNode ^ <Boolean>
+    ^ true!
+
+mirroredType  ^ <Type>
+
+| deltaEntry  <Object>  dc <Class> deltaAssoc <GlobalAssociation> |
+
+deltaAssoc := Delta assocAt: self name ifAbsent: [^DeltaNotATypeOrGlobalVarError new id: self name].   
+deltaAssoc isConstant ifFalse:    [^DeltaNotATypeOrGlobalVarError new id: self name].        
+deltaEntry := deltaAssoc value.
+dc := deltaEntry class.
+ dc  = DeltaGeneric ifTrue:[^deltaEntry].
+ (dc class == Metaclass or: [dc == ClassMixin or: [dc == Protocol or:[dc == TypeAlias]]])
+ 		ifFalse:[^DeltaUndefinedTypeError new id: self name].
+^Type forDefinition: deltaEntry.! !
+

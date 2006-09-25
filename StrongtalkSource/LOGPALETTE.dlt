@@ -1,0 +1,62 @@
+Delta define: #LOGPALETTE as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #LOGPALETTE) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #LOGPALETTE) group: 'base'!
+
+(Delta mirrorFor: #LOGPALETTE)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #LOGPALETTE) methodsFor: 'allocating' !
+
+
+allocate
+
+	self error: 'use allocate: instead'!
+
+allocate: n <Int>
+
+	self malloc: (2 * (Platform wordSize // 2)) + (n * PALETTEENTRY structureSize)! !
+
+! (Delta mirrorFor: #LOGPALETTE) methodsFor: 'reflective' !
+
+
+structureSize ^<Int>
+
+	self error: 'this structure is variable size'! !
+
+! (Delta mirrorFor: #LOGPALETTE) methodsFor: 'offsets' !
+
+
+palNumEntriesOffset ^<Int>
+
+	^2!
+
+palPalEntryOffset ^<Int>
+
+	^4!
+
+palVersionOffset ^<Int>
+
+	^0! !
+
+! (Delta mirrorFor: #LOGPALETTE) methodsFor: 'accessing' !
+
+
+palNumEntries: v <Int>
+
+	self doubleByteAt: self palNumEntriesOffset put: v!
+
+palPalEntryAt: i <Int> ^<PALETTEENTRY>
+	"get using zero-based index"
+
+	^self subProxyAt: self palPalEntryOffset + (i*PALETTEENTRY structureSize)
+			result: PALETTEENTRY new!
+
+palVersion: v <Int>
+
+	self doubleByteAt: self palVersionOffset put: v! !
+

@@ -1,0 +1,42 @@
+Delta define: #ProcessExplicitError as: (
+(Class subclassOf: 'ProcessError' instanceVariables: 'msg <Str>
+	"Error string sent to #error:"')) !
+
+(Delta mirrorFor: #ProcessExplicitError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ProcessExplicitError) group: 'base'!
+
+(Delta mirrorFor: #ProcessExplicitError)
+comment: 
+'Process stopped because error: was explicitly called.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProcessExplicitError) classSide methodsFor: 'a new category' !
+
+
+provoke
+	"A piece of test code provoking this particular error"
+	
+	self error: 'Provoked call to error:'
+! !
+
+! (Delta mirrorFor: #ProcessExplicitError) methodsFor: 'accessing' !
+
+
+msg ^ <Str>
+
+	^msg!
+
+msg: m <Str>
+
+	msg := m!
+
+name ^ <Str>
+
+	^'Error: ', msg!
+
+topFramesIgnored ^ <Int>
+
+	^2! !
+

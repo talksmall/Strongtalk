@@ -1,0 +1,32 @@
+Delta define: #WIN32_FIND_DATA as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #WIN32_FIND_DATA) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #WIN32_FIND_DATA) group: 'base'!
+
+(Delta mirrorFor: #WIN32_FIND_DATA)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #WIN32_FIND_DATA) methodsFor: 'accessing' !
+
+
+cFileName ^<CString>
+	"Returns a CString that points in-place to the imbedded null-terminated
+		name string"
+
+	^self subProxyAt: self cFileNameOffset result: CString new!
+
+structureSize ^<Int>
+
+	^(11*Platform wordSize) + (260 "MAXPATH") + 14! !
+
+! (Delta mirrorFor: #WIN32_FIND_DATA) methodsFor: 'offsets' !
+
+
+cFileNameOffset ^<Int>
+
+	^44! !
+

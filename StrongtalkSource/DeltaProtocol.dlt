@@ -1,0 +1,393 @@
+Delta define: #DeltaProtocol as: (
+(Class subclassOf: 'DeltaObjectType' instanceVariables: 'classProtocol ') classVariables: 'SelectorCache'; abstract) !
+
+(Delta mirrorFor: #DeltaProtocol) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaProtocol) group: 'ast'!
+
+(Delta mirrorFor: #DeltaProtocol)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaProtocol) classSide methodsFor: 'private -selector caching' !
+
+
+selectorCache ^ <ProtocolSelectorCache>
+
+^SelectorCache!
+
+setupSelectorCache
+
+SelectorCache := ProtocolSelectorCache new.
+! !
+
+! (Delta mirrorFor: #DeltaProtocol) classSide methodsFor: 'selector caching' !
+
+
+flushSelectorCache
+
+self setupSelectorCache 
+! !
+
+! (Delta mirrorFor: #DeltaProtocol) methodsFor: 'Unclassified' !
+
+
+addRelevantTypeVar: tv <TypeVar>
+
+self filteree addRelevantTypeVar: tv.!
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    self subclassResponsibility!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    self subclassResponsibility!
+
+asProtocol ^ <Protocol>
+    ^self!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    self subclassResponsibility.!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    self subclassResponsibility.!
+
+branded ^ <Boolean>
+    self subclassResponsibility!
+
+classInterface ^ <Interface>
+    ^self rawClassInterface substitute: self myTypeVarSubstitution.!
+
+classProtocol ^ <Protocol>
+    ^classProtocol isNil ifTrue:[classProtocol := DeltaUnaryClassExpr new dual: self]
+                                ifFalse:[classProtocol].!
+
+classProtocol: cp <Protocol > ^ <Self>
+    classProtocol := cp.!
+
+clearCaches
+
+self filteree clearCaches!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+^(self filteree compositeSubstitute: t) substitute: self substitution!
+
+couldBeUndeclaredSubprotocolOf: p <DeltaProtocol >  ^ <Boolean>
+    ^"true  "p branded not!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^OrderedCollection[ObjectType] new.
+!
+
+dual ^ <Protocol>
+    ^self classProtocol!
+
+forcedSubstitute: s
+s isEmpty ifTrue:[^self].
+^self class new filter: self using: s.!
+
+inheritedTypeSubstitutionsVisaVis: p <Protocol > ^ <OrdCltn[Substitution]>
+"
+This method returns a pair of substitutions in an Ordered Collection.
+The substitutions are those needed to compare this protocol to
+another protocol p in order to determine if this protocol is a match
+type of p.
+
+ If self = rec u. G[u] and p = rec v. F[v]
+then  after applying theta1 to self and  applying theta2 to p 
+we can effectively ask if
+
+Forall t <= G[t].  G[t] <= F[t] 
+
+This is the generalized form of F-bounded quantification that
+we are using. 
+This requires that the bound of t be set (after the substitutions were created) 
+to be
+
+self substitute: theta1
+
+Alternatively, we could implement a notion of matching that corresponds
+to the requirement
+
+ self <= F[self]
+
+which would require an empty substitution
+as theta1, and a mapping of p selfTv to self (and similarly for the dual)
+in theta2.
+"
+|
+r <TypeVar> 
+s <TypeVar> 
+theta1 <Substitution> 
+theta2 <Substitution> 
+|
+
+r := DeltaTypeVar new name: #r bound: nil.
+s := DeltaTypeVar new name: #s bound: nil.
+r dual: s.
+s dual: r.
+
+theta1 := self substitutionForSelf: r forSelfClass: s.
+theta2 := p substitutionForSelf: r forSelfClass: s.
+r declaredBound: (self substitute: theta1).
+s declaredBound:(self dual substitute: theta1).
+
+^(OrderedCollection new:2) add: theta1 ; add: theta2; yourself.!
+
+instanceInterface ^ <Interface>
+    ^self rawInstanceInterface substitute: self myTypeVarSubstitution.!
+
+isMeta ^ <Boolean>
+    ^false!
+
+isMonotonic ^ <Boolean>
+    self subclassResponsibility!
+
+isProtocol ^ <Boolean>
+    ^true!
+
+isRelevantSubstitution: s <Substitution> ^ <Boolean>
+" In our system, substitutions are constructed in a structured fashion.
+Consequently, either all the keys of a substitution are relevant, or none are.
+We choose an arbitrary key, check if it is relevant, and return the result.
+"
+| res |
+
+s keys do:[: k <Symbol> | 
+                     ^self relevantTypeVars includes: k.
+                    ].
+!
+
+isSuperMixinInvocationOf: p <ProtocolOfSideUpdate> ^ <Boolean>
+
+^false!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    self subclassResponsibility.!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    self subclassResponsibility.!
+
+myOldTypeVarSubstitution ^ <Substitution>
+    | theta <Substitution>  |
+
+theta := DeltaSubstitution new initialize.
+self allSelfClassTVs do:[: s <TypeVar>  | theta at: s put: self dual.].
+self allSelfTVs do:[: s <TypeVar>  | theta at: s put: self.].
+^theta!
+
+myTypeVarSubstitution ^ <Substitution>
+
+"This method returns a substitution that replaces my type variables
+with my self and my dual. This is the substitution needed to in order
+select msgs from the protocol. 
+
+Mathematically, it has the effect of taking the fixpoint
+of the protocol.
+"
+    | theta <Substitution>  |
+
+theta := DeltaSubstitution new initialize.
+theta at: self selfClassTV put: self dual.
+theta at: self selfTV put: self.
+^theta!
+
+primaryInterface ^ <Interface>
+    ^self rawPrimaryInterface substitute: self myTypeVarSubstitution.!
+
+rawClassInterface ^ <Interface>
+    ^self rawSecondaryInterface!
+
+rawInstanceInterface ^ <Interface>
+    ^self rawPrimaryInterface!
+
+rawPrimaryInterface ^ <Interface>
+    self subclassResponsibility.!
+
+rawSecondaryInterface ^ <Interface>
+    self subclassResponsibility.!
+
+rawSelectMsg: selector <Symbol > ifAbsent: block <[^Object]>  ^ <DeltaMsgSignature>
+
+^self compositeSubstitute: (self bareAttributes at: selector ifAbsent: block)
+!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+set := self filteree relevantTypeVars copy.
+set add: self selfTV;
+       add: self selfClassTV.
+self substitution keys do: [:k <Symbol> | set remove: k ifAbsent:[].].
+self substitution values do:[:v <ObjectType> |
+                                                      v isTypeVar ifTrue:[set add: v].
+                                                       ].
+^set.!
+
+secondaryInterface ^ <Interface>
+    ^self rawSecondaryInterface substitute: self myTypeVarSubstitution.!
+
+selectorsAndSignaturesDo: blk <[Symbol, MsgSignature]>
+
+self bareAttributes keys do:[:k <Symbol> | 
+                                                        blk value: k value: (self selectMsg: k)
+                                                        ].!
+
+selectorsDo: blk <[Symbol]>
+
+self bareAttributes keys do: blk!
+
+selfClassTV ^ <TypeVar>
+    ^self filteree selfPublicClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self filteree selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self filteree selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self filteree selfPublicTV!
+
+signaturesDo: blk <[MsgSignature]>
+
+self bareAttributes keys do:[:k <Symbol> | 
+                                                        blk value: (self selectMsg: k)
+                                                        ].!
+
+substitute: s
+s isEmpty ifTrue:[^self].
+(self isRelevantSubstitution: s) ifFalse:[^self].
+^self class new filter: self using: s.!
+
+substitutionForSelf: stv <TypeVar >forSelfClass: sctv <TypeVar > ^ <Substitution>
+" Returns a substitution that  replaces Self and Self class with
+stv and sctv respectively. This is a service method used for
+various purposes."
+
+    | theta <Substitution>  |
+
+theta := DeltaSubstitution new initialize.
+theta at:  self selfTV put: stv.
+theta at: self selfClassTV put: sctv.
+^theta!
+
+typeOfClass ^ <Protocol>
+    ^self classProtocol!
+
+typecheck ^ <Self>
+
+self setupTypeAssumptions.
+self errorHandler pushDefinition: self.
+self wellFormed.
+self errorHandler popDefinition.
+self retractTypeAssumptions.
+	
+!
+
+typecheckDeclaration ^ <Self>
+
+self typecheck!
+
+typecheckInterface ^ <Self>
+
+	self typecheck
+! !
+
+! (Delta mirrorFor: #DeltaProtocol) methodsFor: 'selection' !
+
+
+selectMsg: selector <Symbol > ifAbsent: block <[^Object]>  ^ <DeltaMsgSignature>
+
+^"self actualClass selectorCache forProtocol: self selector: selector
+											 ifAbsent:[self selectorCache at: selector put:("
+(self compositeSubstitute: (self bareAttributes at: selector ifAbsent: block)) substitute: self myTypeVarSubstitution
+")]"!
+
+selectorCache ^ <VarDict[Symbol, MsgSignature]>
+
+^self actualClass selectorCache for: self! !
+
+! (Delta mirrorFor: #DeltaProtocol) methodsFor: 'subtyping' !
+
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    self subclassResponsibility.!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^m declaredSubMixinInvocationOfNonInvocation:  self!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^p declaredSubprotocolOfNonGeneric: self!
+
+inheritedProtocolOf: p <ProtocolType> assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self structuralInheritedProtocolOf: p assuming: trail.!
+
+structuralInheritedProtocolOf: p <ProtocolType> assuming: trail <DeltaTrail > ^ <Boolean>
+
+| thetas <OrdCltn[Substitution]> |
+
+thetas := self inheritedTypeSubstitutionsVisaVis: p.
+
+^(self substitute: (thetas at: 1)) structuralSubprotocolOf: (p substitute: (thetas at: 2)) assuming: trail.!
+
+structuralSubprotocolOf: p <ProtocolType> assuming: trail <DeltaTrail > ^ <Boolean>
+
+	| result <Boolean> |
+	self errorHandler pushDefinitions: self and: p.
+	result := self subInterfaceOf: p assuming: trail.
+	self errorHandler popDefinitions.
+	^result!
+
+subInterfaceOf: p <ProtocolType> assuming: trail <DeltaTrail > ^ <Boolean>
+
+|  myType <MsgSignature> result <Boolean> subtype <Boolean> |	
+
+result := true.
+p selectorsAndSignaturesDo:
+     [ :s  <Symbol>  :m <MsgSignature> |
+	self errorHandler pushSelector: s.
+	myType := self selectMsg: s.
+	myType isError 
+		ifTrue: [
+			result := false.
+			self testFailedBecause: DeltaMsgNotSupportedError new toEscape:[self errorHandler popSelector. ^false]]
+		ifFalse: [
+			self errorHandler pushSubtypeCheckDepth.
+			subtype := myType subtypeOf: m assuming: trail.
+			self errorHandler popSubtypeCheckDepth.
+			subtype ifFalse: [
+				result := false.
+				self testFailedBecause: DeltaMsgNotSubtypesError new toEscape:[self errorHandler popSelector. ^false]]].
+	self errorHandler popSelector ].
+^result
+!
+
+subprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+
+p == self ifTrue:[^true].
+(trail answer: self isSubtypeOf: p) ifTrue:[^true].
+trail assume: self isSubtypeOf: p.
+self errorHandler pushDefinitions: self and: p.
+(p isMonotonic and:[self declaredSubprotocolOf: p]) ifTrue:[self errorHandler popDefinitions. ^true].
+(self couldBeUndeclaredSubprotocolOf: p)
+   ifTrue:[(self structuralSubprotocolOf: p assuming: trail) ifTrue:[self errorHandler popDefinitions. ^true]]
+   ifFalse: [self testFailedBecause: DeltaBrandedNotDeclaredError new toEscape: []].
+self errorHandler popDefinitions.
+trail forget: self isSubtypeOf: p.
+^false.
+!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t superprotocolOf: self assuming: trail.!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^p subprotocolOf: self assuming: trail!
+
+superprotocolOf: t <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t subprotocolOf: self assuming: trail! !
+

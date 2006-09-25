@@ -1,0 +1,38 @@
+Delta define: #IntMM2Benchmark as: (
+(Class subclassOf: 'IntMMBenchmark' instanceVariables: '')) !
+
+(Delta mirrorFor: #IntMM2Benchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #IntMM2Benchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #IntMM2Benchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #IntMM2Benchmark) methodsFor: 'run' !
+
+
+run
+	| m |
+	self initrand.
+	m := ((IntMM2Matrix new: IRowsize by: IRowsize) init: self) * ((IntMM2Matrix new: IRowsize by: IRowsize) init: self).
+	^m
+	"IntMM2Benchmark new run"! !
+
+! (Delta mirrorFor: #IntMM2Benchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^323!
+
+factor
+	^4!
+
+name
+	^#IntMM2!
+
+parcplaceTime
+	^232! !
+

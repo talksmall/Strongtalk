@@ -1,0 +1,102 @@
+Delta define: #BasicReadWriteStream as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'BasicOutputStream[E] mixin |> BasicReadStream[E]' instanceVariables: 'size <Int>') protocols: 'ReadWriteStream[E]'; abstract)) !
+
+(Delta mirrorFor: #BasicReadWriteStream) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BasicReadWriteStream) group: 'base'!
+
+(Delta mirrorFor: #BasicReadWriteStream)
+comment: 
+'This class provides the standard implementation of the WriteStream and ReadWriteStream protocols.
+
+There is no BasicWriteStream class; this is because virtually all WriteStreams are on data structures with implicit readability (try thinking of a positionable collection that can be written and not read), so ReadStreams and ReadWriteStreams are used instead.
+
+Blue Book compatibility note: you can use ReadWriteStreams as you would in the Blue Book, with
+one exception: the #contents message acts like it would for a WriteStream (i.e. it returns the elements
+written) rather than returning the entire collection.  The messages #collection, #contentsRemaining, and #contentsWritten fulfill these kind of roles without ambiguity in our system, to make ReadWriteStreams
+fully substitutable for both ReadStreams and WriteStreams.
+
+%responsibility nextPut:
+    Subclasses must extend the nextPut: method to do the actual work of writing the element.
+%responsibility size:
+    Optional - Any subclass that wishes to start off with readable elements in the stream must send
+    the message size: to indicate how many there are.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #BasicReadWriteStream) classSide methodsFor: 'instance creation' !
+
+
+on: sc <VarSeqCltn[E]>  ^<ReadWriteStream[E]>
+	"Create a new read write stream on a sequenceable collection, assuming that it contains no readable elements yet"
+
+	^self on: sc numElements: 0!
+
+on: sc <VarSeqCltn[E]> numElements: n <Int> ^<ReadWriteStream[E]>
+	"Create a new read write stream on a sequenceable collection, assuming that it contains n readable elements to start"
+
+	^SeqCltnReadWriteStream on: sc numElements: n! !
+
+! (Delta mirrorFor: #BasicReadWriteStream) classSide methodsFor: 'testing' !
+
+
+test: s <ReadWriteStream[E]> use: els <SeqCltn[E]>
+
+	s nextPut: (els at: 1).
+	s nextPutAll: (els copyFrom: 2 to: els size).
+	s position: 0.
+	self test: s containing: els.
+	s position: 2.
+	self test: 1 is: [ s contentsWritten = (els copyFrom: 1 to: 2) ].
+	self test: 2 is: [ s copy contentsRemaining = (els copyFrom: 3 to: els size) ].
+	BasicInputStream[Character] test: s containing: (els copyFrom: 3 to: els size).! !
+
+! (Delta mirrorFor: #BasicReadWriteStream) methodsFor: 'accessing' !
+
+
+contents  ^<SeqCltn[E]>
+	"Obsolete: this method is included purely for BlueBook compatibility.  If possible, use 
+	 #contentsRemaining and #contentsWritten, which will work when a ReadWriteStream
+	 is substituted for a ReadStream or a WriteStream, unlike this method"
+
+	^self collection!
+
+contentsWritten  ^<SeqCltn[E]>
+
+	| cltn <VarSeqCltn[E]>  origPos <Int> |
+
+	cltn := self newCollectionOfSize: self position.
+	origPos := self position.
+	self position: 0.
+	1 to: origPos do: [ :i <Int> |
+		cltn at: i put: self next.	].
+	self position: origPos.
+	^cltn!
+
+nextPut: el <E> ^<E>
+	"Subclasses must extend this to do the actual writing of the element.  This impl just keeps track of bookkeeping."
+
+	| pos <Int> |
+	self position: (pos := self position + 1).
+	pos > self size
+		ifTrue: [ self size: pos ].
+	^el!
+
+size ^<Int>
+
+	^size! !
+
+! (Delta mirrorFor: #BasicReadWriteStream) methodsFor: 'initialization' !
+
+
+initialize
+	super initialize.
+	self size: 0!
+
+size: n <Int>
+	"Can be sent by subclass to indicate the index of the last element of contents that contains a valid element.  The default is 0"
+
+	size := n! !
+

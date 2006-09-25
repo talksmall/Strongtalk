@@ -1,0 +1,188 @@
+Delta define: #Activation as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Activation) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Activation) group: 'reflection'!
+
+(Delta mirrorFor: #Activation)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Activation) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^82! !
+
+! (Delta mirrorFor: #Activation) classSide methodsFor: 'testing' !
+
+
+test
+	| process <Process> sem <Semaphore> |
+	
+	sem := Semaphore new.
+	
+	[
+		(OrderedCollection new include: 1; yourself) do: [ :e |
+			process := Processor activeProcess.
+			sem signal.
+			Processor activeProcess suspend.
+		]
+	] fork.
+	sem wait.
+	process traceStack.
+	process resume.
+	
+	!
+
+test2
+	| process <Process> sem <Semaphore> |
+	
+	sem := Semaphore new.
+	
+	[
+		(OrderedCollection new include: 1; yourself) do: [ :e |
+			process := Processor activeProcess.
+			sem signal.
+			Processor activeProcess suspend.
+		]
+	] fork.
+	sem wait.
+	(StackTraceInspector on: process) launch. 
+	"process resume."
+	
+	! !
+
+! (Delta mirrorFor: #Activation) methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+	self error: 'should not file out an activation'.
+	^0! !
+
+! (Delta mirrorFor: #Activation) methodsFor: 'printing ' !
+
+
+printOn: stream <CharOutputStream>
+
+	self index printOn: stream.
+	stream tab.
+	self isSmalltalk ifTrue: [
+		self receiver printOn: stream.
+		stream tab.
+		self method selector printOn: stream.
+		stream tab.
+		self byteCodeIndex printOn: stream.
+		stream cr.
+		self vmPrettyPrint printOn: stream.
+	] ifFalse: [
+		'External activation' printOn: stream
+	]
+! !
+
+! (Delta mirrorFor: #Activation) methodsFor: 'accessing' !
+
+
+arguments ^<IndexedInstanceVariables>
+	"Returns the arguments provided to this activation"
+	
+	^{{self primitiveActivationArgumentsIfFail: [ :err <Symbol> | self error: err]}}!
+
+byteCodeIndex ^<Integer>
+	"Returns the current byte code index of this activation"
+
+	^{{self primitiveActivationByteCodeIndexIfFail: [ :err <Symbol> | self error: err]}}!
+
+expressionStack ^<IndexedInstanceVariables>
+	"Returns the expression stack for the activation"
+	
+	^{{self primitiveActivationExpressionStackIfFail: [ :err <Symbol> | self error: err]}}!
+
+index ^<Integer>
+
+	^{{self primitiveActivationIndex}}!
+
+isSmalltalk ^ <Boolean>
+	"Tells whether this is a Smalltalk activation"
+
+	^{{self primitiveActivationIsSmalltalkActivationIfFail: [ :err <Symbol> | self error: err]}}!
+
+method ^<Method>
+	"Returns the method of the activation"
+
+	^{{self primitiveActivationMethodIfFail: [ :err <Symbol> | self error: err]}}!
+
+process ^<Process>
+	"Returns the process owning this activation"
+
+	^{{self primitiveActivationProcess}}!
+
+receiver ^<Object>
+	"Returns the receiver of the activation"
+
+	^{{self primitiveActivationReceiverIfFail: [ :err <Symbol> | self error: err]}}!
+
+temporaries ^<IndexedInstanceVariables>
+	"Returns the temporaries in this activation"
+	
+	^{{self primitiveActivationTemporariesIfFail: [ :err <Symbol> | self error: err]}}!
+
+timeStamp ^<Integer>
+
+	^{{self primitiveActivationTimeStamp}}!
+
+vmPrettyPrint	^<Str>
+	"Returns the pretty printer version of the activation"
+	
+	| ba <ByteArray> |
+	ba := {{self primitiveActivationPrettyPrintIfFail: [ :err <Symbol> | self error: err]}}.
+	^ba isNil
+		ifTrue: [		'' ]
+		ifFalse: [	ba asString ]! !
+
+! (Delta mirrorFor: #Activation) methodsFor: 'error handling' !
+
+
+error: err <Str>
+	Transcript show: 'Error: '; show: err; cr.
+	^nil! !
+
+! (Delta mirrorFor: #Activation) methodsFor: 'testing' !
+
+
+isBlockValueActivation ^ <Boolean>
+	"Returns whether this is one of the ten generated value methods in the block hierarchy"
+	
+	| receiverClass <Behavior> selector <Symbol> |
+	self isSmalltalk
+		ifFalse: [ ^false ].
+	
+	receiverClass := Reflection classOf: self receiver.
+	selector := self method selector.
+	
+	(receiverClass = BlockWithoutArguments 			and: [ selector = #value ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithOneArgument 			and: [ selector = #value: ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithTwoArguments 		and: [ selector = #value:value: ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithThreeArguments 		and: [ selector = #value:value:value: ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithFourArguments 		and: [ selector = #value:value:value:value: ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithFiveArguments 		and: [ selector = #value:value:value:value:value: ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithSixArguments 			and: [ selector = #value:value:value:value:value:value: ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithSevenArguments 	and: [ selector = #value:value:value:value:value:value:value: ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithEightArguments 		and: [ selector = #value:value:value:value:value:value:value:value: ])
+		ifTrue: [ ^true ].	
+	(receiverClass = BlockWithNineArguments 		and: [ selector = #value:value:value:value:value:value:value:value:value: ])
+		ifTrue: [ ^true ].	
+	
+	^false
+! !
+

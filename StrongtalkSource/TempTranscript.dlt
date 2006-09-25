@@ -1,0 +1,75 @@
+Delta define: #TempTranscript as: (
+(Class subclassOf: 'CharacterOutput |> BasicOutputStream[Character]' instanceVariables: '') classVariables: 'PrintExcelFormat') !
+
+(Delta mirrorFor: #TempTranscript) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #TempTranscript) group: 'benchmark'!
+
+(Delta mirrorFor: #TempTranscript)
+comment: 
+'This class has not yet been commented.  The comment should state the purpose of the class, what messages are subclassResponsibility, and the type and purpose of each instance and class variable.  The comment should also explain any unobvious aspects of the implementation.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #TempTranscript) classSide methodsFor: 'instance creation' !
+
+
+new
+	PrintExcelFormat := false.
+	^super new! !
+
+! (Delta mirrorFor: #TempTranscript) methodsFor: 'accessing' !
+
+
+cr
+	"self nextPut: Character cr."
+	self nextPut: Character lf.!
+
+nextPut: c <Character> ^<Character>
+    c unicodeValue printCharacter.
+	c == Character cr
+		ifTrue: [ Character lf unicodeValue printCharacter. ].!
+
+show: s <Cltn[Character]>  ^<Cltn[Object]>
+
+	self nextPutAll: s.
+	^s!
+
+showBenchmarkLine:  title delta: time digitalk: dTime parcplace:  pTime
+	| dFactor pFactor |
+	dFactor := dTime asFloat / time asFloat.
+	pFactor := pTime asFloat / time asFloat.
+
+	Transcript show: title;	tab.
+
+	PrintExcelFormat ifTrue: [ 
+		Transcript
+				show: time printString
+			;	tab
+			;	show: dTime printString
+			;	tab
+			;	show:  pTime printString
+	] ifFalse: [
+		Transcript
+				show: time printString
+			;	show: ' ms, * '
+			;	show: dFactor printString
+			;	show: ' = '
+			;	show: dTime printString
+			;	show: ' ms D, * '
+			;	show: pFactor printString
+			;	show: ' = '
+			;	show: pTime printString
+			;	show: ' ms P.'
+	].
+	Transcript cr.! !
+
+! (Delta mirrorFor: #TempTranscript) methodsFor: 'utility' !
+
+
+showDoIt: s <Str> ^<Str>
+
+	^self show: s! !
+

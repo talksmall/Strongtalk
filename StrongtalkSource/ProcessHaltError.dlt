@@ -1,0 +1,31 @@
+Delta define: #ProcessHaltError as: (
+(Class subclassOf: 'ProcessContinuableError' instanceVariables: '')) !
+
+(Delta mirrorFor: #ProcessHaltError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ProcessHaltError) group: 'base'!
+
+(Delta mirrorFor: #ProcessHaltError)
+comment: 
+'Process stopped due to breakpoint.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProcessHaltError) classSide methodsFor: 'test' !
+
+
+provoke
+
+	self halt! !
+
+! (Delta mirrorFor: #ProcessHaltError) methodsFor: 'accessing' !
+
+
+name ^ <Str>
+
+	^'Halt encountered'!
+
+topFramesIgnored ^ <Int>
+
+	^2! !
+

@@ -1,0 +1,19 @@
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+(Delta mirrorFor: #BlockWithThreeArguments) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BlockWithThreeArguments) group: 'base'!
+
+(Delta mirrorFor: #BlockWithThreeArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+! (Delta mirrorFor: #BlockWithThreeArguments) methodsFor: 'evaluating' !
+
+
+value: arg1 <A1> value: arg2 <A2> value: arg3 <A3>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2 value: arg3}}! !
+

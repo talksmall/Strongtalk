@@ -1,0 +1,46 @@
+Delta define: #DeltaPolyArgScope as: (
+(Class subclassOf: 'DeltaScope' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaPolyArgScope) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaPolyArgScope) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPolyArgScope)
+comment: 
+'The sole purpose of this class is to allow us to distinguish between the
+scopes used for type arguments in a polymorphic function and ordinary
+scopes.
+
+We need to make this distinction because:
+
+1.  One needs to enforce the restriction that the names of the type arguments
+of a polymorphic function are unique. However, type arguments can shadow
+types in scopes surrounding the method. We need to able to determine which
+entries are type arguments and which are not. Since type arguments inhabit
+their own exclusive scopes, we can use these to make the distinction.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPolyArgScope) methodsFor: 'Unclassified' !
+
+
+isPolyArgScope 
+
+^true!
+
+komment
+
+"The sole purpose of this class is to allow us to distinguish between the
+scopes used for type arguments in a polymorphic function and ordinary
+scopes.
+
+We need to make this distinction because:
+
+1.  One needs to enforce the restriction that the names of the type arguments
+of a polymorphic function are unique. However, type arguments can shadow
+types in scopes surrounding the method. We need to able to determine which
+entries are type arguments and which are not. Since type arguments inhabit
+their own exclusive scopes, we can use these to make the distinction.
+"! !
+

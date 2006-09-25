@@ -1,0 +1,898 @@
+Delta define: #ClassHierarchyOutliner as: (
+(Class subclassOf: 'MirrorOutliner[AbstractClassMirror]' instanceVariables: 'subclasses <Cltn[AbstractClassMirror]>
+sorted <Boolean>
+showAnonymousInvocations <Boolean>
+labelButton <ToggleButton>
+lastSearch <Str>
+lastEventTime <Integer>
+lastSearchNumber <Integer>
+matchingClasses <Cltn[Class]>
+	"These are the classes that are are matched by the
+		current filter (not including non-matching superclasses)"
+matchingClassesAndSuperclasses <Cltn[Class]>
+	"This is the union of matchingClasses and their superclass chains"
+filterView <TextView[Str]>
+	"The field that shows what we are filtering on"') classVariables: 'BoldClassPainter <Painter>') !
+
+(Delta mirrorFor: #ClassHierarchyOutliner) revision: '$Revision: 1.13 $'!
+
+(Delta mirrorFor: #ClassHierarchyOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #ClassHierarchyOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) classSide methodsFor: 'utility' !
+
+
+imbeddedVisualForClass: class <Class>  ^<Visual>
+	"utility to create a Visual for a hierarchy outliner on class, suitable for imbedding, with
+	  a border and backdrop."
+
+	^(self  for: (ClassMirror on: class)) asImbeddedVisualOpen: false! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) classSide methodsFor: 'instance creation' !
+
+
+withSuperclassesFor: cm <AbstractClassMirror> ^ <Instance>
+
+	| o <Instance> |
+	o := super for: (ClassMirror on: Object).
+	o restrictToSubhierarchyOf: cm.
+	^o! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'accessing' !
+
+
+andFilter: f <[AbstractClassMirror,^Boolean]>
+	"Add the filter f to the current filter (i.e. the new filter is the oldFilter AND the newFilter)"
+
+	| previousFilter <[AbstractClassMirror,^Boolean]> |
+	previousFilter := self filter.
+	self filter:
+		[ :acm <AbstractClassMirror> |
+			(previousFilter value: acm) and: [ f value: acm ]	]!
+
+filter ^<[AbstractClassMirror,^Boolean]>
+
+	| cls <Cltn[Class]> |
+	cls := self matchingClasses.
+	^[ :acm <AbstractClassMirror> |
+		cls includes: acm reflectee	]!
+
+filter: f <[AbstractClassMirror,^Boolean]>
+
+	| matches <Set[Class]> supermatches <Set[Class]> |
+	matches := Set[Class] new.
+	supermatches := Set[Class] new.
+	self allClasses do:
+		[ :cl <Class> |
+			(f value: (ClassMirror on: cl))
+				ifTrue: [	| up <Class> |
+							matches include: cl.
+							up := cl.
+							[	supermatches include: up.
+								up = Object
+							] whileFalse:
+							  [ up := Class coerce: (up superclassIfAbsent: [ self shouldNotHappen ]) ]		].	].
+	self	matchingClasses: matches
+			matchingClassesAndSuperclasses: supermatches.
+	self refreshLabelButton.!
+
+filterIncludingSupers ^<[AbstractClassMirror,^Boolean]>
+
+	| superclss <Cltn[Class]> |
+	superclss := self matchingClassesAndSuperclasses.
+	^[ :acm <AbstractClassMirror> |
+		superclss includes: acm reflectee ]!
+
+filterView ^<TextView[Str]>
+
+	filterView isNil
+		ifTrue: [ 	self filterView: (TextView[Str] forString
+							model: '';
+							painter: self boldClassPainter	).	].
+
+	^filterView!
+
+matchingClasses ^<Cltn[Class]>
+
+	matchingClasses isNil
+		ifTrue: [ self buildDefaultMatches ].
+	^matchingClasses!
+
+matchingClasses: m <Cltn[Class]>
+matchingClassesAndSuperclasses: mplus<Cltn[Class]>
+
+	matchingClasses := m.
+	matchingClassesAndSuperclasses := mplus.
+	subclasses notNil
+		ifTrue: [ self update ].!
+
+matchingClassesAndSuperclasses ^<Cltn[Class]>
+
+	matchingClassesAndSuperclasses isNil
+		ifTrue: [ self buildDefaultMatches ].
+	^matchingClassesAndSuperclasses!
+
+orFilter: f <[AbstractClassMirror,^Boolean]>
+	"The new filter is the old one OR f "
+
+	| previousFilter <[AbstractClassMirror,^Boolean]> |
+	previousFilter := self filter.
+	self filter:
+		[ :acm <AbstractClassMirror> |
+			(previousFilter value: acm) or: [ f value: acm ]	]!
+
+showAnonymousInvocations ^ <Boolean>
+
+	^showAnonymousInvocations!
+
+showAnonymousInvocations: b <Boolean>
+
+	showAnonymousInvocations = b
+		ifFalse: [	showAnonymousInvocations := b.
+						self update ].!
+
+subclasses ^ <Cltn[AbstractClassMirror]>
+
+	subclasses isNil
+		ifTrue: [ self computeSubclasses ].
+	^subclasses!
+
+windowTitle ^ <Str>
+
+	^self mirror name, ' Hierarchy'! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'private' !
+
+
+allClasses ^<Cltn[Class]>
+
+	| s <Set[Class]> |
+	s := Set[Class] new: 1000.
+	Smalltalk classesDo:
+		[ :cl <Class> |  s include: cl ].
+	^s!
+
+boldClassPainter ^<Painter>
+
+	"Painter for bold class titles"
+	BoldClassPainter isNil
+		ifTrue: [		BoldClassPainter := super classPainter copy
+								 font: ((super classPainter font newSpec) boldness: 0.75) font.	].
+	^BoldClassPainter!
+
+buildBody ^<Visual>
+
+	| col <Column[Visual]> subclasses <Cltn[AbstractClassMirror]> |
+	self removeAllChildren.
+	col := Column[Visual] new.
+	col add: (Glue 	natural: (0@0 corner: 180@0)		"Hack. Make sure that the window is wide enough so the menu doesn't wrap"
+						min: (0@0 corner: 0@0)								"Remove this later when menus work right"
+						max: (0@0 corner: UI huge@0)).
+	self sortSubclasses.
+	self subclasses do: [ :m <AbstractClassMirror> |
+		| subOutliner <ClassHierarchyOutliner> |
+		subOutliner := ClassHierarchyOutliner for: m.
+		subOutliner
+			matchingClasses: self matchingClasses
+			matchingClassesAndSuperclasses: self matchingClassesAndSuperclasses.
+		col add: (self addChild: subOutliner) imbeddedVisual.
+		  ].
+	col optimizeIncrementalLayout: false.
+	^col
+!
+
+buildClosedHeader ^ <Visual>
+
+	| list <OrdCltn[Visual]> label <Str> |
+	list := OrderedCollection[Visual] new.
+	self labelButton: 
+		(self	buildLabel: self mirror name 
+				painter: self classPainter 
+				action: [ (DefWithMsgOutliner[AbstractClassMirror] on: self mirror) launch ]).
+	list add: self labelButton.
+	self mirror anonymousSuperclasses do: [ :c <InvocationMirror> |
+		c mixin masterInvocation isNil
+			ifTrue: [ 	label := c mixin name ]
+			ifFalse: [ 	label := c mixin name, ' mixin' ].
+			list add: (self	 buildLabel: label
+							painter: self appliedMixinPainter 
+							action: [ (DefWithMsgOutliner[AbstractClassMirror] on: c mixin) launch ])].
+	^Row[Visual] withAll: list
+!
+
+buildDefaultMatches
+	"If no one set the sets, we use the set of all classes"
+
+	matchingClassesAndSuperclasses := matchingClasses := self allClasses.!
+
+buildVisualTop: forTop <Boolean> ^ <Visual>
+	| v <Visual> e <EventHandler> |
+	v := super buildVisualTop: forTop.
+	forTop ifTrue: [
+		v := ApplicationInterceptor for: v application: self 
+	].
+	^v!
+
+class: cl <Class> isClassKindOf: othercl <Class> ^<Boolean>
+
+	| up <Class> |
+	up := cl.
+	[	up = othercl
+			ifTrue: [ ^true ].
+		up = Object
+	] whileFalse:
+		  [ up := Class coerce: (up superclassIfAbsent: [ self shouldNotHappen ]) ].
+	^false!
+
+class: s <Class> isOrIsSubclassOfOneOf: matches <Cltn[Class]> ^<Boolean>
+	"returns true if s or one of its superclasses other than Object is in currentMatches"
+
+	| c <Behavior> |
+	c := s.
+	[  (matches includes: c)
+			ifTrue: [ ^true ].
+		c := c superclassIfAbsent: [ ^false ].
+		c = Object ifTrue: [ ^false ].
+	] repeat!
+
+classMatchesFilter ^<Boolean>
+
+	^(self hasFilter and: [ self matchingClasses includes: self mirror reflectee])!
+
+classPainter ^<Painter>
+
+	^self classMatchesFilter
+			ifTrue: [ self boldClassPainter ]
+			ifFalse: [ super classPainter ]!
+
+computeSubclasses 
+
+	| subs <Cltn[AbstractClassMirror]> |
+	self showAnonymousInvocations
+		ifTrue: [	 subs := self mirror directSubclasses ]
+		ifFalse: [ subs := self mirror directSubclassesSkipAnonymous ].
+	"filter them"
+	self subclasses: (subs select: self filterIncludingSupers)
+!
+
+expandAndSetFocusForClass: m <AbstractClassMirror>
+
+	| path <OrdCltn[AbstractClassMirror]> c <AbstractClassMirror> sc <AbstractClassMirror> |
+	c := m.
+	path := OrderedCollection[AbstractClassMirror] new.
+	[ c notNil and: [ c reflectee ~~ self mirror reflectee ]] 
+		whileTrue: [	
+			c isMixinInvocation ifFalse: [
+				path addFirst: c ].
+			c := c superclass ].
+	self assert: [ c notNil ].					"We should always hit ourselves on the way up"
+	path addFirst: self mirror.
+	self expandAndSetFocusForPath: path startingAt: 1
+!
+
+fileOutDefinitionTo: out <CharOutputStream>
+
+	(DefinitionWriter for: self mirror) fileOutOn: out
+	!
+
+filterView: fv <TextView[Str]>
+
+	filterView := fv!
+
+findSubclassMatching: pattern <Str>
+
+	| list <SeqCltn[AbstractClassMirror]> subclasses <SeqCltn[AbstractClassMirror]> |
+	
+	self mirror reflectee == Object					"Optimize the common case"
+		ifTrue: [		subclasses := OrderedCollection[AbstractClassMirror] new: Smalltalk size.
+							Smalltalk classesDo: [ :c <Class> | subclasses add: (Mirror on: c) ] ]
+		ifFalse: [	subclasses := self mirror subclassesSkipAnonymous ].
+
+	"Filter the subclasses"
+	subclasses := subclasses select: self filter.
+
+	"Search for classes matching pattern"
+	list := OrderedCollection[AbstractClassMirror] new.
+	subclasses do: [ :c <AbstractClassMirror> |
+		(pattern platformMatch: c reflectee name)
+			ifTrue: [	list add: c ] ].
+
+	"If none found append * to pattern and try again"
+	list isEmpty
+		ifTrue: [	| newPattern <Str> |
+						newPattern := pattern, (String with: Platform multipleMatchWildcardCharacter).
+						subclasses do: [ :c <AbstractClassMirror> |
+							(newPattern platformMatch: c reflectee name) 
+								ifTrue: [	list add: c ] ] ].
+
+	"If still none found give up"
+	list isEmpty
+		ifTrue: [	^self findSubclass: true ].
+
+	"If single element found select it"
+	list size = 1
+		ifTrue: [	^self expandAndSetFocusForClass: (list at: 1) ].
+
+	"Otherwise query user for selection"
+	list := list asSortedCollection: 
+		[ :c1<AbstractClassMirror> :c2 <AbstractClassMirror> | c1 reflectee name <= c2 reflectee name ].
+	self 
+		launchListDialogWithPainter: self classPainter 
+		title: 'Select subclass of ', self mirror name
+		contents: (list collect: [ :e <AbstractClassMirror> | e reflectee name ])
+		multi: false
+		action: [ :sels <Cltn[Int]> |
+						"We use a single selection listbox so we have exactly one element"
+						self expandAndSetFocusForClass:
+								(list at: sels anElement) ].	
+ 
+!
+
+hasFilter ^<Boolean>
+
+	^self matchingClasses ~= self matchingClassesAndSuperclasses!
+
+initialOpenState ^ <Boolean>
+
+	^(self hasFilter and: [ self classMatchesFilter not]) or: [ self hasParent not ]!
+
+initialPacifiedState ^ <Boolean>
+
+	^self subclasses isEmpty!
+
+labelButton ^ <ToggleButton>
+
+	^labelButton!
+
+labelButton: l <ToggleButton>
+
+	labelButton := l!
+
+lastSearch ^ <Str>
+
+	^lastSearch!
+
+lastSearch: s <Str>
+
+	lastSearch := s!
+
+mirrorIsOrHasSubclass: cl <Class> ^<Boolean>
+
+	| up <Class> |
+	up := cl.
+	[	self mirror reflectee = up
+			ifTrue: [ ^true ].
+		up = Object
+	] whileFalse:
+			[ up := Class coerce: (up superclassIfAbsent: [ self shouldNotHappen ]) ].
+	^false!
+
+refreshLabelButton
+
+	| s <Visual> |
+	self labelButton isNil
+		ifTrue: [ ^self ].
+	s := (StringGlyph for: self mirror name painter: self classPainter) asVisual.
+	self labelButton trueLook: s falseLook: s.!
+
+sortSubclasses
+
+	self sorted ifFalse: [
+		self subclasses: (self subclasses asSortedCollection: 
+			[ :m1<AbstractClassMirror> :m2 <AbstractClassMirror> | m1 name <= m2 name ]).
+		self sorted: true ]
+!
+
+sorted ^ <Boolean>
+
+	^sorted!
+
+sorted: b <Boolean>
+
+	sorted := b!
+
+subclasses: s <Cltn[AbstractClassMirror]>
+
+	subclasses := s.
+	self sorted: false.! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'updating' !
+
+
+update
+
+	self computeSubclasses.
+	self updateBody.
+	self subclasses size = 0
+		ifTrue: [		self pacified: true ]
+		ifFalse: [	self pacified: false.]! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	| m <Menu> |
+	m := super fileMenu
+		add: (MenuAction new
+					name: '&Find subclass...';
+					action: [ self findSubclass: false ] );
+		add: (MenuAction new
+					name: '&Add subclass...';
+					action: [ self addSubclassTo: self mirror ] );
+		add: (MenuAction new
+					name: '&Remove';
+					action: [ self removeDefinition: self mirror ] );
+		add: (MenuAction new
+					name: 'File out classes ...';
+					action: [ self fileOutMatchingClasses ] );
+		add: (MenuAction new
+					name: 'R&eferences to class';
+					action: [ self launchReferencesToGlobalName: self mirror name ] );
+		addSeparator.
+
+	self parent notNil
+			ifTrue: [ m 	add: (MenuAction new
+										name: 'Show only this sub-hierarchy';
+										action: [ self restrictToSubhierarchy ] ).	].
+	m addSeparator.
+	self mirror reflectee = Object
+		ifFalse: [ m add: (MenuAction new
+									name: '&Spawn hierarchy in context';
+									action: [ self launchHierarchyInContext ] ).	].
+	m
+		add: (MenuAction new
+					name: '&Spawn hierarchy';
+					action: [ self spawnHierarchy ] );
+		addSeparator;
+		add: (MenuAction new
+					name: 'Show &anonymous superclasses';
+					checked: [ self showAnonymousInvocations ];
+					action: [ self toggleShowAnonymousInvocations ] ).
+	^m!
+
+filterMenu ^ <Menu>
+
+^Menu new name: 'Filtering';
+    add: (MenuAction new
+                  name: 'User classes';
+                  action: [ self filterOnUserClasses ]) ;
+    add: (MenuAction new
+                  name: 'Blue Book classes';
+                  action: [self filterOnBlueBookClasses ]);
+    add: (MenuAction new
+                  name: 'UI user classes';
+                  action: [	self filterOnUIUserClasses ]);
+    add: (MenuAction new
+                  name: 'All UI classes';
+                  action: [ self filterOnAllUIClasses ]);
+    addSeparator;
+	add: (MenuAction new
+                  name: 'Comment filter ...';
+                  action: [self promptForFilter]);
+    add: (MenuAction new
+                  name: 'Show only subclasses of ...';
+                  action: [self promptForSubclassFilter]);
+    addSeparator;
+    add: (MenuAction new
+                  name: 'with subclasses';
+                  action: [self orSubclasses]);
+    add: (MenuAction new
+                  name: 'AND comment filter ...';
+                  action: [self promptForAdditionalFilter]);
+    addSeparator;
+    add: (MenuAction new
+                  name: 'No filtering';
+                  action: [self clearFilter]).
+!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+hasPopUpMenuForTop ^<Boolean>
+	
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self viewMenu;
+		add: self typecheckingMenu;
+		add: self filterMenu!
+
+popUpMenu ^<Menu>
+
+	| m <Menu> |
+	m := Menu new
+		addAll: self fileMenu removeAll;
+		addSeparator;
+		addAll: self viewMenu removeAll;
+		addSeparator;
+		add: self typecheckingMenu.
+	self parent isNil
+		ifTrue: [ m add: self filterMenu ].
+	^m!
+
+typecheckingMenu ^ <Menu>
+
+^Menu new name: 'Typecheck';
+    add: (MenuAction new
+                  name: 'Typecheck all classes';
+                  action: [self typecheckAll]);
+    add: (MenuAction new
+                  name: 'Typecheck interfaces of all classes';
+                  action: [self typecheckAllInterfaces]);
+    add: (MenuAction new
+                  name: 'Typecheck definitions of all classes';
+                  action: [self typecheckAllDefs])
+! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	Smalltalk addDependent: self.
+	showAnonymousInvocations := false.
+	sorted := false.
+	self resetSearch.! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'control' !
+
+
+clearFilter
+
+
+	| all <Cltn[Class]>  |
+	all := self allClasses.
+	self	matchingClasses: all
+			matchingClassesAndSuperclasses: all.
+	self parent isNil
+		ifTrue: [ self filterView model: '' ].
+	self refreshLabelButton.!
+
+closeRequest: toClose <[]>
+
+	Smalltalk removeDependent: self.
+	super closeRequest: toClose.!
+
+fileOutMatchingClasses
+
+	self visual
+		userPickSaveFileWithAction: [ :file< FilePath> | self fileOutMatchingDefinitionsToFile: file ]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'Delta files (*.dlt)' ,, '*.dlt' with: 'All files (*.*)' ,, '*.*')
+		defaultFile: (FilePath for: '.dlt')
+		defaultDir: nil
+		title: 'File out classes matching ', self filterView model
+!
+
+fileOutMatchingDefinitionsTo: out <CharOutputStream>
+
+	self classMatchesFilter
+			ifTrue: [ self fileOutDefinitionTo: out ].
+	self children do:
+		[ :child <Object> |		"the type of children is wrong right now, so use Object & coerce"
+			(ClassHierarchyOutliner coerce: child)
+				fileOutMatchingDefinitionsTo: out	].!
+
+fileOutMatchingDefinitionsToFile: file <FilePath>
+
+	| out <CharOutputStream> |
+	out := file charOutputStream.
+	[ self fileOutMatchingDefinitionsTo: out ]
+		ensure: [ out close ].
+	!
+
+findSubclass: retry <Boolean>
+
+	| title <Str> default <Str> |
+	retry 
+		ifTrue: [	title := 'No matching subclass of ', self mirror name, ' found. Try again?'.
+						default := self lastSearch ]
+		ifFalse: [	title := 'Find subclass of ', self mirror name.
+						default := '*' ].
+	self 
+		launchSingleLineTextDialogWithPainter: self classPainter 
+		title: title
+		caption: 'Matching expression' 
+		default: default
+		action: [ :s <Str> | 
+			self lastSearch: s.
+			self findSubclassMatching: s ]
+!
+
+launchHierarchyInContext
+
+	(ClassHierarchyOutliner withSuperclassesFor: self mirror)
+		launch!
+
+promptForAdditionalFilter
+
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'And Filter On'
+		caption: 'Add filter (i.e. AND) on classes whose comment contains (wildcards allowed):'
+		default: ''
+		action: [ :s <Str> | self andFilterOnCommentsContaining: s ]!
+
+promptForFilter
+
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'Set Filter'
+		caption: 'Filter on classes whose comment contains (wildcards allowed):' 
+		default: ''
+		action: [ :s <Str> | self filterOnCommentsContaining: s ]!
+
+promptForSubclassFilter
+
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'Show subhierarchy'
+		caption: 'Show only subclass hierarchy for class:'
+		default: ''
+		action: [ :s <Str> |
+			| cl <Object> |
+			cl := Smalltalk at: s ifAbsent: [ nil ].
+			(cl notNil and: [ (cl isKindOf: Class) and: [ self mirrorIsOrHasSubclass: (Class coerce: cl) ]]) 
+				ifTrue: [ 
+					| cm <ClassMirror> |
+					cm := ClassMirror on: (Class coerce: cl).
+					self restrictToSubhierarchyOf: cm.
+				 ]	]!
+
+restrictToSubhierarchy
+
+	self restrictToSubhierarchyOf: self mirror!
+
+spawnHierarchy
+
+	(ClassHierarchyOutliner for: self mirror) launch!
+
+toggleShowAnonymousInvocations
+
+	self showAnonymousInvocations: self showAnonymousInvocations not!
+
+typecheckAll
+
+ self typecheckAction: [
+ 			self matchingClasses do: [ :cl <Class> |  | m <AbstractClassMirror> |
+ 				m := AbstractClassMirror on: cl.
+				m typecheck.
+				m classSide typecheck.
+				]	]
+		title: 'Typechecking ', self mirror name, ' and all subclasses'.!
+
+typecheckAllDefs
+
+ self typecheckAction: [
+ 			self matchingClasses do: [ :cl <Class> |  | m <AbstractClassMirror> |
+ 				m := AbstractClassMirror on: cl.
+				m typecheckDefinition.
+				]	]
+		title: 'Typechecking definitions of ', self mirror name, 'and all subclasses'.!
+
+typecheckAllInterfaces
+
+ self typecheckAction: [
+ 			self matchingClasses do: [ :cl <Class> |  | m <ClassMirror> |
+ 				m := ClassMirror on: cl.
+				m typecheckInterface.
+				m classSide typecheckInterface.
+				]	]
+		title: 'Typechecking interfaces of ', self mirror name, 'and all subclasses'.! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'restricted-to parent' !
+
+
+expandAndSetFocusForPath: path <OrdCltn[AbstractClassMirror]> startingAt: index <Int>
+
+	| first <AbstractClassMirror> outliner <ClassHierarchyOutliner> |
+	self assert: [ path size >= 1 and: [index <= path size]].
+	self assert: [	(path at: index) reflectee == self mirror reflectee ].
+	index = path size
+		ifTrue: [	self labelButton becomeFocus.
+						self makeVisible.
+						^self ]
+		ifFalse: [	self open: true.
+						self childrenDo: [ :e <OutlinerApp> |
+							outliner :=ClassHierarchyOutliner coerce: e.
+							outliner mirror reflectee == (path at: index + 1) reflectee
+								ifTrue: [	outliner expandAndSetFocusForPath: path startingAt: index + 1.
+												^self ] ] ].
+	self shouldNotHappen! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		(aspect = #subclasses or: 
+			[(aspect = #addGlobal or: [aspect = #removeGlobal]) and: 
+				[ Metaclass = ((Association[Object,Object] coerce: value) at2) class class and: 
+					[self mirror reflectee == 
+							((Class coerce:  (Association[Object,Object] coerce: value) at2) superclassIfAbsent: [nil])]]])
+						ifTrue: [	self update ] ]
+! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'event processing' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> interceptor: in <ApplicationInterceptor> ^<Boolean>
+
+	"Check is a sub-visual wants to process the event"
+	(super character: c focus: focus event: ev  interceptor: in) ifTrue: [^true].
+
+	c isPrintable ifTrue: [
+		"Clear the prefix if distance from last event is more than one second"
+		(ev time - lastEventTime) > 1000 ifTrue: [ self resetSearch].
+		
+		"Extend the search string"
+		lastSearch := lastSearch, c asString.
+		
+		self selectSearchFocus.
+		lastEventTime := ev time.
+		^true
+	].
+	^false
+!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> interceptor: in <ApplicationInterceptor> ^<Boolean>
+
+	(key = #S and: [ ev ctrlPressed ]) ifTrue: [	
+		lastSearchNumber := lastSearchNumber + 1.	
+		self selectSearchFocus.
+		^true
+	].
+	^super  keyDown: key focus: focus  event: ev interceptor:  in! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'incremental searching' !
+
+
+resetSearch
+
+	"Reset the incremental search state"
+	lastSearch					:= ''.
+	lastSearchNumber	:= 1.
+	lastEventTime			:= 0.!
+
+selectSearchFocus
+
+		| list <SeqCltn[AbstractClassMirror]> pattern <Str> |
+
+		pattern := lastSearch, (String with: Platform multipleMatchWildcardCharacter).
+		list := OrderedCollection[AbstractClassMirror] new.
+
+		mirror sortedSubclassesSkipAnonymous do: [ :m <AbstractClassMirror> | (pattern platformMatch: m name) ifTrue: [	list add: m ] ].
+
+		lastSearchNumber > list size  ifTrue: [ lastSearchNumber := 1 ].
+		
+		list size > 0 ifTrue: [ self expandAndSetFocusForClass: (list at: lastSearchNumber) ].
+	! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'toolbar' !
+
+
+buildFindButtons
+
+	super buildFindButtons.
+	self toolBar
+		addButtonWithImageFrom: 'resources/find.bmp'
+				action: [ :b <Button> |	self findSubclass: false ].
+	self mirror reflectee = Object
+		ifFalse: [ self toolBar
+						addButtonWithImageFrom: 'resources/incontext.bmp'
+								action: [ :b <Button> |	self launchHierarchyInContext ].	].
+!
+
+buildToolBar
+	
+	super buildToolBar.
+	self toolBar
+		addSpace;
+		add: self filterView imbeddedVisual! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'filtering utilities' !
+
+
+andFilterOnCommentsContaining: s <Str>
+	"sets the filter to display only subclasses whose comments contain the substring s"
+
+	self andFilter: (self getFilterOnCommentsContaining: s).
+	self parent isNil
+		ifTrue: [	self filterView model: self filterView model,' AND ',s].!
+
+filterOnAllUIClasses
+
+	self filterOnCommentsContaining: '%UI';
+			orSubclasses!
+
+filterOnBlueBookClasses
+
+	self filterOnCommentsContaining: '%BlueBook'!
+
+filterOnCommentsContaining: s <Str>
+	"sets the filter to display only subclasses whose comments contain the substring s"
+
+	self filter: (self getFilterOnCommentsContaining: s).
+	self parent isNil
+		ifTrue: [	self filterView model: 'Filter: ',s].!
+
+filterOnUIUserClasses
+
+	self	filterOnCommentsContaining: '%UI';
+			andFilterOnCommentsContaining: '%User';
+			orSubclasses!
+
+filterOnUserClasses
+
+	self filterOnCommentsContaining: '%User'!
+
+getFilterForSubclasses ^<[AbstractClassMirror,^Boolean]>
+
+	| currentMatches <Cltn[Class]> |
+	currentMatches := self matchingClasses.
+	^[ :acm <AbstractClassMirror> |
+			self	class: acm reflectee
+					isOrIsSubclassOfOneOf: currentMatches ]!
+
+getFilterOnCommentsContaining: s <Str>  ^<[AbstractClassMirror,^Boolean]>
+	"build and return (but don't set) a filter to display only subclasses
+		whose comments contain the substring s"
+
+	| pattern <Str> |
+	pattern := '*',s,'*'.
+	^[ :acm <AbstractClassMirror> |
+			ClassMirror coerce: acm
+					do: [ :cm <ClassMirror> |
+									"%hack: yield, so the first time a filtered hierarchy is opened
+										up,  it doesn't lock up everything."
+								Processor yield.
+								
+								pattern match: cm comment ignoreCase: false  ]
+					else: [ true ]	"Always include the anonymous invocations"
+		]!
+
+orSubclasses
+	"Adds a filter clause that expands the filter to include all subclasses
+		of currently matching classes (not counting object, which would
+		make the filter useless)"
+	self orFilter: self getFilterForSubclasses.
+	self parent isNil
+		ifTrue: [	self filterView model: self filterView model,' with subclasses'. ].!
+
+restrictToSubhierarchyOf: m <AbstractClassMirror>
+
+	(self parent isNil or: [ (self parent isKindOf: ClassHierarchyOutliner) not ])
+		ifTrue: [ self filter: [ :acm <AbstractClassMirror> |
+											self class: acm reflectee isClassKindOf: m reflectee ].
+					 self parent isNil
+						ifTrue: [ self filterView model: 'Filter: ', 
+					 						(Class coerce: m reflectee) name, ' hierarchy'.	].
+					 visual notNil
+					 	ifTrue: [ self expandAndSetFocusForClass: m. ] ]
+		ifFalse: [ (ClassHierarchyOutliner coerce: self parent)
+						  restrictToSubhierarchyOf: m ].! !
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'utility' !
+
+
+asImbeddedVisualOpen: open <Boolean>  ^<Visual>
+	"Make the receivre suitable for imbedding, with
+	  a border and backdrop."
+
+	self button model: open.
+	^((self  imbeddedVisual
+		withBackdrop: (Painter new paint: Paint backgroundGray))
+		with3DBorder
+		withBorder: (Border standard3DRaised: true)
+	 ) baselined forMultiLine! !
+

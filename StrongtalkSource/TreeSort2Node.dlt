@@ -1,0 +1,37 @@
+Delta define: #TreeSort2Node as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: 'left right val')) !
+
+(Delta mirrorFor: #TreeSort2Node) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #TreeSort2Node) group: 'benchmark'!
+
+(Delta mirrorFor: #TreeSort2Node)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TreeSort2Node) methodsFor: 'misc' !
+
+
+checkTree
+^	(nil == left or: [left val < val and: [left checkTree]]) and:
+	[nil == right or: [right val > val and: [right checkTree]]]!
+
+contents: c val := c!
+
+createNode: n
+	^self class new contents: n!
+
+insert: n 
+	n = val ifTrue: [^self error: 'error'].
+	n < val
+		ifTrue: [nil == left
+				ifTrue: [left := self createNode: n]
+				ifFalse: [left insert: n]]
+		ifFalse: [nil == right
+				ifTrue: [right := self createNode: n]
+				ifFalse: [right insert: n]]!
+
+val ^val! !
+

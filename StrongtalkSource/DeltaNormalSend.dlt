@@ -1,0 +1,30 @@
+Delta define: #DeltaNormalSend as: (
+(Class subclassOf: 'DeltaSend' instanceVariables: 'recv ')) !
+
+(Delta mirrorFor: #DeltaNormalSend) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaNormalSend) group: 'ast'!
+
+(Delta mirrorFor: #DeltaNormalSend)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaNormalSend) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool normalSendNode: self!
+
+isNormalSendNode ^ <Boolean>
+    ^ true!
+
+recv ^ <Expression>
+    ^ recv!
+
+to: anExpression <Expression >send: aMessage <DeltaMessage > ^ <Self>
+    self assert: [anExpression isExpressionNode].
+    self assert: [aMessage isMessageNode].
+    recv := anExpression.
+    msg := aMessage! !
+

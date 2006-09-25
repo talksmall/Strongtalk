@@ -1,0 +1,94 @@
+Delta define: #Screen as: (
+(Class subclassOf: 'ClassCritical |> Medium' instanceVariables: 'extent <Point>
+			"The size of the screen"
+		') classVariables: 'DefaultScreen <Screen>
+		') !
+
+(Delta mirrorFor: #Screen) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Screen) group: 'ui'!
+
+(Delta mirrorFor: #Screen)
+comment: 
+'Represents the interactive graphics display screen.
+
+Note that since mediums and screens are shared by different windows and sessions, their
+mutable state must be managed in a thread-safe fashion.
+
+%todo: we will have to flush some things, like extent, on image reloading, for instances (the default)
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #Screen) classSide methodsFor: 'instance creation' !
+
+
+default ^<Screen>
+
+	"%todo: put critical regions around all these sorts of initalizations, like here"
+"%todo: remove self at end of block below when bytecode compiler fixed"
+	Screen critical:
+		[	DefaultScreen isNil
+				ifTrue: [ DefaultScreen := self new. ].		].
+	^DefaultScreen! !
+
+! (Delta mirrorFor: #Screen) methodsFor: 'accessing' !
+
+
+extent ^<Point>
+
+	extent isNil
+		ifTrue: [	| can <Canvas> x <Int> y <Int> |
+						can := self newCanvas.
+						x := {{<gdi ExternalProxy GetDeviceCaps>
+									can: can query: Win32 HORZRES}} asSmallInteger.
+						y := {{<gdi ExternalProxy GetDeviceCaps>
+									can: can query: Win32 VERTRES}} asSmallInteger.
+						can release.
+						extent := x @ y.	].
+	^extent!
+
+newCanvas ^<Canvas>
+
+	| can <HDC> str <CString> |
+
+	str := CString for: 'Display'.
+	can := {{<gdi HDC CreateDCA> with: str with: Win32 NULL with: Win32 NULL with: Win32 NULL}}.
+	str free.
+	can initialize; toRelease: [ :dc <HDC> | dc deleteDC ].
+	^can! !
+
+! (Delta mirrorFor: #Screen) methodsFor: 'restricted-win32 accessing' !
+
+
+adjustPoints: p <Int> ^<Int>
+	"Screen fonts are scaled up by 1.333 to make them readable"
+
+	^(p*1333)//1000
+!
+
+deadjustPoints: p <Int> ^<Int>
+	"Screen fonts are scaled up by 1.333 to make them readable"
+
+	^(p*1000)//1333
+	! !
+
+! (Delta mirrorFor: #Screen) methodsFor: 'restricted-to session' !
+
+
+newStandardWindow: name <Str>
+session: sess <Session>
+for: vis <Visual>
+^<StandardWindow>
+	"Create a standard top-level window"
+
+	| w <Window> |
+	w := StandardWindow 
+			named: name
+			session: sess
+			for: vis.
+	^w! !
+

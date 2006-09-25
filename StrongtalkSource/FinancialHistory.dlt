@@ -1,0 +1,134 @@
+Delta define: #FinancialHistory as: (
+(Class subclassOf: 'Object' instanceVariables: 'cashOnHand <Integer> incomes <VarDict[Symbol, Integer]> expenditures <VarDict[Symbol, Integer]>')) !
+
+(Delta mirrorFor: #FinancialHistory) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #FinancialHistory) group: 'tutorial'!
+
+(Delta mirrorFor: #FinancialHistory)
+comment: 
+'Blue book FinancialHistory example, slightly revised to run in our system.
+The intent is to use it to demonstrate the advantages of typechecking.
+
+This example originally appeared in the books
+"Smalltalk-80: The Language and its Implementation" (aka "the blue book")
+and
+"Smalltalk-80: The Language" (aka "the purple book")
+both by Adele Goldberg and David Robson, 
+published by Addison-Wesley in 1983 and 1989 respectively.
+Thanks to Adele Goldberg for permission to use these examples.
+
+The code here differs from the blue/purple book in the following details:
+
+1. We have added type annotations.n
+2. In the report method, we create reportStream using CharacterReadWriteStream>>over:
+rather than WriteStream>>on:. This reflects library differences between our system and the
+blue book, necessitated by typing constraints.
+
+To see some of the benefits Strongtalk provides:
+
+ a. Try and determine how to call the methods of this class, based on the headers given in
+ the protocol description in the blue book. Then look at the signatures provided here.
+ You will see how valuable type information is in increasing code readability.
+ 
+  b. Compare the results of typechecking the
+report method to the account of debugging given on pages 315-327 of the blue (actually, purple)
+book.
+
+(c) Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license .'!
+
+! (Delta mirrorFor: #FinancialHistory) classSide methodsFor: 'instance creation' !
+
+
+initialBalance: amount <Integer> ^ <Instance>
+
+	^super new setInitialBalance: amount!
+
+new ^ <Instance>
+
+	^super new setInitialBalance: 0! !
+
+! (Delta mirrorFor: #FinancialHistory) methodsFor: 'transaction recording' !
+
+
+receive: amount <Integer> from: source <Symbol>
+
+	incomes 	at: source
+					put: (self totalReceivedFrom: source) + amount.
+	cashOnHand := cashOnHand + amount!
+
+spend: amount <Integer> for: reason <Symbol>
+
+	expenditures 	at: reason
+						put: (self totalSpentFor: reason) + amount.
+	cashOnHand := cashOnHand - amount! !
+
+! (Delta mirrorFor: #FinancialHistory) methodsFor: 'inquiries' !
+
+
+cashOnHand ^ <Integer>
+
+	cashOnHand!
+
+totalReceivedFrom: source <Symbol> ^ <Integer>
+
+	(incomes includesKey: source)
+		ifTrue:[^incomes at: source]
+		ifFalse:[^0].!
+
+totalSpentFor: reason <Symbol> ^ <Integer>
+
+	(expenditures includesKey: reason)
+		ifTrue:[^expenditures at: reason]
+		ifFalse:[^0].! !
+
+! (Delta mirrorFor: #FinancialHistory) methodsFor: 'private' !
+
+
+setInitialBalance: amount <Integer>
+
+	cashOnHand := amount.
+	incomes := Dictionary[Symbol, Integer] new.
+	expenditures := Dictionary[Symbol, Integer] new! !
+
+! (Delta mirrorFor: #FinancialHistory) methodsFor: 'reporting' !
+
+
+expenditureReasons ^ <Cltn[Symbol]>
+
+	^expenditures keys!
+
+incomeSources ^ <Cltn[Symbol]>
+
+	^incomes keys!
+
+report ^ <SeqCltn[Character]>
+
+| reportStream <CharacterReadWriteStream> |
+
+	reportStream := CharacterReadWriteStream over: (String new: 10).
+	reportStream cr
+	reportStream nextPutAll: 'Expenses'.
+	reportStream cr.
+	self expenseReasons do:
+		[: reason <Symbol>  |	
+							reportStream tab.
+							reportStream nextPutAll: reason.
+							reportStream tab.
+							reportStream nextPutAll: (self totalSpentFor: reason).
+							reportStream cr].
+	reportStream nextPutAll: 'incomes'.
+	reportStream cr.
+	self incomeSources do:
+		[: source <Symbol> |	
+							reportStream tab.
+							reportStream nextPutAll: source.
+							reportStream tab.
+							reportStream nextPutAll: (self totalReceivedFrom: source).
+							reportStream cr].
+	^reportStream contents.
+							
+							
+! !
+

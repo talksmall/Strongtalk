@@ -1,0 +1,486 @@
+Delta define: #HTMLParser as: (
+(Class subclassOf: 'Object' instanceVariables: 'chars <CharInputStream>
+	"the document, as characters"
+tokens <InputStream[Str | HTMLTag]>
+	"the document, as tokens"
+stringBuilder <CharReadWriteStream>
+	"Reused to build strings"') classVariables: 'Grammar <KeyedSet[Str,HTMLProduction]>') !
+
+(Delta mirrorFor: #HTMLParser) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #HTMLParser) group: 'HTML'!
+
+(Delta mirrorFor: #HTMLParser)
+comment: 
+'Tags: %HTML %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #HTMLParser) classSide methodsFor: 'instance creation' !
+
+
+on: strm <CharInputStream>  ^<Instance>
+
+	^self new initOn: strm! !
+
+! (Delta mirrorFor: #HTMLParser) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	Grammar := KeyedSet[Str,HTMLProduction]
+			newKeyedBy: [ :prod <HTMLProduction> |
+												prod name ].
+	Grammar
+		include:  (HTMLProduction named: 
+				#html
+						elementHolds: #(head body topContent) );
+						" strict: #(head body) "
+		include:  (HTMLProduction named:
+				#head	
+						elementHolds: #(title) );
+		include:  (HTMLProduction named: 
+				#title
+						elementHolds: #() );
+		include:  (HTMLProduction named:
+				#body
+							  elementHolds: #(topContent) );
+		include:  (HTMLProduction named:
+				#topContent
+							  holds: #(content headings) );
+		include:  (HTMLProduction named:
+				#headings
+							  holds: #(h1 h2 h3 h4 h5 h6) );
+		include:  (HTMLProduction named:
+				#content
+							  holds: #(phrase multiLine headings) );
+						" strict: #(phrase multiLine) "
+		include:  (HTMLProduction named:
+				#phrase
+							  holds: #(charMarkup a) );
+		include:  (HTMLProduction named:
+				#multiLine
+							  holds: #(p ul ol dl pre blockQuote address br hr ) );
+		include:  (HTMLProduction named:
+				#charMarkup
+							  holds: #(dfn em cite code kbd samp strong var 
+							  										b i tt  img smappl) );
+		include:  (HTMLProduction named:
+				#h1
+							  elementHolds: #(phrase br) );
+		include:  (HTMLProduction named:
+				#h2
+							  elementHolds: #(phrase br) );
+		include:  (HTMLProduction named:
+				#h3
+							  elementHolds: #(phrase br) );
+		include:  (HTMLProduction named:
+				#h4
+							  elementHolds: #(phrase br) );
+		include:  (HTMLProduction named:
+				#h5
+							  elementHolds: #(phrase br) );
+		include:  (HTMLProduction named:
+				#h6
+							  elementHolds: #(phrase br) );
+		include:  (HTMLProduction named:
+				#a
+							  elementHolds: #(charMarkup) );
+		include:  (HTMLProduction singletonNamed:
+				#img);
+		include:  (HTMLProduction named:
+				#p
+							  elementHolds: #(phrase br) );
+		include:  (HTMLProduction named:
+				#ul
+							  elementHolds: #(content li) );
+		include:  (HTMLProduction named:
+				#ol
+							  elementHolds: #(li) );
+		include:  (HTMLProduction named:
+				#li
+							  elementHolds: #(content content) );
+		include:  (HTMLProduction named:
+				#dl
+							  elementHolds: #(content dt dd) );
+		include:  (HTMLProduction named:
+				#pre
+							  elementHolds: #(a) );
+		include:  (HTMLProduction named:
+				#blockQuote
+							  elementHolds: #(content) );
+		include:  (HTMLProduction named:
+				#address
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction singletonNamed:
+				#br);
+		include:  (HTMLProduction singletonNamed:
+				#smappl);
+		include:  (HTMLProduction singletonNamed:
+				#hr);
+		include:  (HTMLProduction named:
+				#dfn
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#em
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#cite
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#code
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#kbd
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#samp
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#strong
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#var
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#b
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#i
+							  elementHolds: #(phrase) );
+		include:  (HTMLProduction named:
+				#dt
+							  elementHolds: #(content) );
+		include:  (HTMLProduction named:
+				#dd
+							  elementHolds: #(content) );
+		include:  (HTMLProduction named:
+				#tt
+							  elementHolds: #(phrase) )! !
+
+! (Delta mirrorFor: #HTMLParser) methodsFor: 'initialization-private' !
+
+
+initOn: strm <CharInputStream>
+
+	chars := strm.
+	tokens := CustomInputStream[Str | HTMLTag] new
+			nextBlock: [	self actualNextToken ];
+			atEndBlock: [	chars atEnd ].
+	stringBuilder := (String new: 1000) readWriteStream.! !
+
+! (Delta mirrorFor: #HTMLParser) methodsFor: 'lexing-private' !
+
+
+actualNextToken ^<Str | HTMLTag>
+
+	self chars atEnd
+		ifTrue: [	"If we encounter the end, just generate a spurious html end tag"
+						^HTMLTag name: #HTML attributes: nil isEnd: true		].
+						
+	"do NOT skip whitespace; whitespace outside a tag is data characters!!"
+	^self chars peek = $<
+		ifTrue: [ | tag <HTMLTag> |
+						tag := self buildTagToken.
+						(tag name size >= 1 and: [ (tag name at: 1) = $!! ])
+							ifTrue: [	"It is a comment, so ignore"
+											^'' ].
+						((self grammar includesKey: tag name) and: [ self haveElementClassFor: tag name ])
+							ifFalse: [	self reportUnknownTagTypes
+												ifTrue: [ Platform errorStream show: 'Unsupported tag type '; print: tag; show: ' encountered'; cr. ].
+												"unrecognized tag, so convert to empty string & ignore"
+												'' 		]
+							ifTrue: [	tag ]
+					 ]
+		ifFalse: [ self buildTextToken ]!
+
+addToString: c <Character>
+
+	self stringBuilder put: c!
+
+buildString ^<Str>
+
+	| s <Str> |
+	s := self stringBuilder contentsWritten.
+	self stringBuilder position: 0.
+	^s!
+
+buildTagToken ^<HTMLTag>
+
+	| name <Str> attrs <OrdCltn[Tuple[Str,Str]]> isEnd <Boolean> |
+	"consume the <"
+	self chars next.
+
+	self skipWhitespace.
+	isEnd := self chars peek == $/
+		onTrue: [	 self chars next	"consume the /" ].
+		
+	self skipWhitespace.
+	name := self lexName.
+
+	attrs := self parseTagAttributes.
+
+	self skipWhitespace.
+	[ self chars next == $> ] verify.
+
+	^HTMLTag
+		name: name
+		attributes: attrs
+		isEnd: isEnd!
+
+buildTextToken ^<Str>
+
+	[ self addToString: (self lexNextDataCharacterIfFail: 
+								[ ^self buildString ])
+	] repeat!
+
+haveElementClassFor: nm <Str>  ^<Boolean>
+
+	Smalltalk at: ('Element',nm asUppercase)  ifAbsent: [ ^false ].
+	^true!
+
+lexAttrValue ^<Str>
+
+	| c <Character> delim <Character> buf <CharReadWriteStream> |
+	delim := self chars peek.
+	(delim == $' or: [ delim == $" ])
+		ifFalse: [ ^self lexName ]
+		ifTrue: [ self chars next	.	"consume the delimiter"	].
+	buf := (String new: 10) readWriteStream.
+	[	self chars atEnd
+			ifTrue: [ ^buf contentsWritten ].
+		c := self chars peek.
+		c == delim
+			ifTrue: [	self chars next.		"consume the end delim"
+							^buf contentsWritten ].
+		buf put: self lexNextAttrValueCharacter.
+	] repeat!
+
+lexEntityName ^<Str>
+	"This is like lexName, but it uses a temp stream because it can be
+		called during outer string building and can't use the string builder"
+
+	| c <Character> name <Str> buf <CharReadWriteStream> |
+	buf := (String new: 5) readWriteStream.
+	buf put: self chars next asUppercase.
+	[	c := self chars peek.
+		(c isAlphaNumeric or: [ c == $- or: [ c == $. ]]) ] whileTrue:
+			[	c isAlphaNumeric
+					ifTrue: [ c := c asUppercase ].
+				self chars next.
+				buf put: c ].
+	^buf contentsWritten!
+
+lexEntityRef ^<Character>
+
+	| c <Character> ns <CharReadWriteStream> name <Str> |
+	"consume the &"
+	self chars next.
+	name := self lexEntityName.
+	"consume the ; if there was one"
+	self chars peek == $;
+		ifTrue: [ self chars next ].
+	
+	name = 'LT'
+		ifTrue: [ ^$< ].
+	name = 'GT'
+		ifTrue: [ ^$> ].
+	name = 'AMP'
+		ifTrue: [ ^$& ].
+	name = 'QUOT'
+		ifTrue: [ ^$" ].
+
+	Platform errorStream show: 'Unknown character entity &',name; cr.
+	^Character space!
+
+lexName ^<Str>
+
+	| c <Character> name <Str> |
+	self addToString: self chars next asUppercase.
+	[	c := self chars peek.
+		(c isAlphaNumeric or: [ c == $- or: [ c == $. ]]) ] whileTrue:
+			[	c isAlphaNumeric
+					ifTrue: [ c := c asUppercase ].
+				self chars next.
+				self addToString: c ].
+	^self buildString!
+
+lexNextAttrValueCharacter ^<Character>
+
+	| c <Character> |
+	c := self chars peek.
+	c == $&
+		ifTrue: [ ^self lexEntityRef ].
+	^self chars next!
+
+lexNextDataCharacterIfFail: fail <AbortBlock>  ^<Character>
+
+	| c <Character> |
+	self chars atEnd
+		ifTrue: [ ^fail value ].
+	c := self chars peek.
+	c == $<
+		ifTrue: [	^fail value ].
+	c == $&
+		ifTrue: [ ^self lexEntityRef ].
+	^self chars next!
+
+parseTagAttributes ^<OrdCltn[Tuple[Str,Str]]>
+
+	| attrs <OrdCltn[Tuple[Str,Str]]> name <Str> value <Str> |
+
+	[	self skipWhitespace.
+		self chars peek == $>
+			ifTrue: [ ^attrs ].
+		attrs isNil
+			ifTrue: [ attrs := OrderedCollection[Tuple[Str,Str]] new. ].
+		name := self lexName.
+		self skipWhitespace.
+		self chars peek == $=
+			ifTrue: [	"Then there is a value for the attribute."
+							self chars next.		"consume the ="
+							value := self lexAttrValue.	].
+		attrs addLast: name ,, value.
+	] repeat!
+
+skipWhitespace
+
+	[	| c <Character> |
+		self chars atEnd
+			ifTrue: [ ^self ].
+		c := self chars peek.
+		(c == Character space or: [ c == Character cr or: [ c == Character tab ]])
+	] whileTrue:
+			[ self chars next ]!
+
+stringBuilder ^<CharReadWriteStream>
+
+	^stringBuilder
+! !
+
+! (Delta mirrorFor: #HTMLParser) methodsFor: 'private-accessing' !
+
+
+chars ^<CharInputStream>
+
+	^chars!
+
+grammar ^<KeyedSet[Str,HTMLProduction]>
+
+	^Grammar!
+
+tokens ^<InputStream[Str | HTMLTag]>
+
+	^tokens! !
+
+! (Delta mirrorFor: #HTMLParser) methodsFor: 'parsing' !
+
+
+parse ^<HTMLNode>
+	"The top-level entry point for document parsing"
+
+	|	token <Str | HTMLTag>
+		node <HTMLNode>
+		extra <HTMLTag |Str> |
+	self skipToStartToken.
+	token := self tokens next.
+	node := self parseElementWithStartTag:
+			(HTMLTag coerce: token).
+	"If there is anything left unparsed, report it!!  It is ok to
+		go ahead and read the next token, because reading
+		tokens past the end of the stream just produces
+		extra </html> tags."
+	extra := self tokens next.
+	HTMLTag coerce: extra
+			do: [ :tag <HTMLTag> |
+						(tag name = #HTML and: [ tag isEnd ])
+							ifFalse: [ Platform errorStream
+												show: 'Extra token past end: '; print: tag; cr.	].
+					]
+			else: [ | s <Str> |
+							s := ReadString coerce: extra.
+							(s reject: [ :c <Character> |
+												c == Character space
+												or: [ c == Character cr
+												or: [ c == Character tab ]]
+											]
+								) isEmpty
+									ifFalse: [ Platform errorStream
+														show: 'Extra text past end: ';
+														print: s;
+														cr. ].
+						].
+	^node! !
+
+! (Delta mirrorFor: #HTMLParser) methodsFor: 'parsing-private' !
+
+
+parseElementWithStartTag: startTag <HTMLTag>  ^<HTMLNode>
+
+	| prod <HTMLProduction> parts <OrdCltn[HTMLNode]> |
+	prod := self grammar at: startTag name.
+	self assert: [ prod isElement ].
+	prod isSingleton
+		ifTrue: [	^HTMLElement fromStartTag: startTag parts: parts ].
+
+	"parse the parts"
+	parts := OrderedCollection[HTMLNode] new.
+	[	parts addLast:
+			(self parseNextPartFor: prod
+				ifAtEnd: [ ^HTMLElement fromStartTag: startTag parts: parts ]
+			).
+	] repeat.
+!
+
+parseNextPartFor: prod <HTMLProduction> ifAtEnd: atEndBlk <AbortBlock>  ^<HTMLNode>
+
+	^self tokens atEnd
+		ifTrue: [ atEndBlk value ]
+		ifFalse: [	| token <Str | HTMLTag> |
+							token := self tokens peek.
+							HTMLTag coerce: token
+							do: [ :tag <HTMLTag> |
+											tag isEnd
+												ifTrue: [	tag name = prod name
+																	ifTrue: [	self tokens next		"consume our end token" ].
+																atEndBlk value.
+															 ]
+												ifFalse: [	(prod canHold: tag name in: self grammar)
+																		ifFalse: [ atEndBlk value ]
+																		ifTrue: [	"Go ahead and parse the nested element"
+																		
+																						"Consume the start tag"
+																						self tokens next.
+																						
+																						self parseElementWithStartTag: tag		]
+																]
+										]
+							else: [	"Is regular text, so consume"
+												self tokens next.
+												HTMLText for: (ReadString coerce: token). 	].
+						]!
+
+skipToStartToken
+
+	"This skips over any stuff at the beginning of an
+		html file, up to the HTML start tag"
+
+	| token <Str | HTMLTag> |
+	[	token := self tokens peek.
+		HTMLTag coerce: token
+				do: [ :tag <HTMLTag> |
+							tag name = #HTML
+								ifTrue: [ ^self ].
+						].
+		self tokens next
+	] repeat! !
+
+! (Delta mirrorFor: #HTMLParser) methodsFor: 'testing' !
+
+
+reportUnknownTagTypes ^<Boolean>
+
+	^false! !
+

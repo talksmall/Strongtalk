@@ -1,0 +1,343 @@
+<HTML>
+<!-- do not modify - use delta +GenerateHTML to generate -->
+<HEAD>
+<TITLE>Strongtalk Bytecodes</TITLE>
+</HEAD>
+<BODY>
+<H2>
+Strongtalk Bytecodes (Version 2)
+</H2>
+<H3>
+local_access bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>00<SUB>H</SUB><TD><B>push_temp_0</B><TD> byte<TD><TR>
+<TD>01<SUB>H</SUB><TD><B>push_temp_1</B><TD> byte<TD><TR>
+<TD>02<SUB>H</SUB><TD><B>push_temp_2</B><TD> byte<TD><TR>
+<TD>03<SUB>H</SUB><TD><B>push_temp_3</B><TD> byte<TD><TR>
+<TD>04<SUB>H</SUB><TD><B>push_temp_4</B><TD> byte<TD><TR>
+<TD>05<SUB>H</SUB><TD><B>push_temp_5</B><TD> byte<TD><TR>
+<TD>07<SUB>H</SUB><TD><B>push_temp_n</B><TD> byte byte<TD><TR>
+<TD>08<SUB>H</SUB><TD><B>push_arg_1</B><TD> byte<TD><TR>
+<TD>09<SUB>H</SUB><TD><B>push_arg_2</B><TD> byte<TD><TR>
+<TD>0A<SUB>H</SUB><TD><B>push_arg_3</B><TD> byte<TD><TR>
+<TD>0B<SUB>H</SUB><TD><B>push_arg_n</B><TD> byte byte<TD><TR>
+<TD>10<SUB>H</SUB><TD><B>store_temp_0_pop</B><TD> byte<TD>intercepted<TR>
+<TD>11<SUB>H</SUB><TD><B>store_temp_1_pop</B><TD> byte<TD>intercepted<TR>
+<TD>12<SUB>H</SUB><TD><B>store_temp_2_pop</B><TD> byte<TD>intercepted<TR>
+<TD>13<SUB>H</SUB><TD><B>store_temp_3_pop</B><TD> byte<TD>intercepted<TR>
+<TD>14<SUB>H</SUB><TD><B>store_temp_4_pop</B><TD> byte<TD>intercepted<TR>
+<TD>15<SUB>H</SUB><TD><B>store_temp_5_pop</B><TD> byte<TD>intercepted<TR>
+<TD>16<SUB>H</SUB><TD><B>store_temp_n</B><TD> byte byte<TD>intercepted<TR>
+<TD>17<SUB>H</SUB><TD><B>store_temp_n_pop</B><TD> byte byte<TD>intercepted<TR>
+</TABLE>
+<HR>
+<H3>
+instVar_access bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>28<SUB>H</SUB><TD><B>return_instVar_name</B><TD> byte oop<TD><TR>
+<TD>2C<SUB>H</SUB><TD><B>return_instVar</B><TD> byte long<TD>intercepted<TR>
+<TD>2D<SUB>H</SUB><TD><B>push_instVar</B><TD> byte long<TD><TR>
+<TD>2E<SUB>H</SUB><TD><B>store_instVar_pop</B><TD> byte long<TD>intercepted<TR>
+<TD>2F<SUB>H</SUB><TD><B>store_instVar</B><TD> byte long<TD>intercepted<TR>
+<TD>3D<SUB>H</SUB><TD><B>push_instVar_name</B><TD> byte oop<TD><TR>
+<TD>3E<SUB>H</SUB><TD><B>store_instVar_pop_name</B><TD> byte oop<TD><TR>
+<TD>3F<SUB>H</SUB><TD><B>store_instVar_name</B><TD> byte oop<TD><TR>
+</TABLE>
+<HR>
+<H3>
+context_access bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>40<SUB>H</SUB><TD><B>push_temp_0_context_0</B><TD> byte<TD><TR>
+<TD>41<SUB>H</SUB><TD><B>push_temp_1_context_0</B><TD> byte<TD><TR>
+<TD>42<SUB>H</SUB><TD><B>push_temp_2_context_0</B><TD> byte<TD><TR>
+<TD>43<SUB>H</SUB><TD><B>push_temp_n_context_0</B><TD> byte byte<TD><TR>
+<TD>44<SUB>H</SUB><TD><B>store_temp_0_context_0_pop</B><TD> byte<TD>intercepted<TR>
+<TD>45<SUB>H</SUB><TD><B>store_temp_1_context_0_pop</B><TD> byte<TD>intercepted<TR>
+<TD>46<SUB>H</SUB><TD><B>store_temp_2_context_0_pop</B><TD> byte<TD>intercepted<TR>
+<TD>47<SUB>H</SUB><TD><B>store_temp_n_context_0_pop</B><TD> byte byte<TD>intercepted<TR>
+<TD>50<SUB>H</SUB><TD><B>push_temp_0_context_1</B><TD> byte<TD><TR>
+<TD>51<SUB>H</SUB><TD><B>push_temp_1_context_1</B><TD> byte<TD><TR>
+<TD>52<SUB>H</SUB><TD><B>push_temp_2_context_1</B><TD> byte<TD><TR>
+<TD>53<SUB>H</SUB><TD><B>push_temp_n_context_1</B><TD> byte byte<TD><TR>
+<TD>54<SUB>H</SUB><TD><B>store_temp_0_context_1_pop</B><TD> byte<TD>intercepted<TR>
+<TD>55<SUB>H</SUB><TD><B>store_temp_1_context_1_pop</B><TD> byte<TD>intercepted<TR>
+<TD>56<SUB>H</SUB><TD><B>store_temp_2_context_1_pop</B><TD> byte<TD>intercepted<TR>
+<TD>57<SUB>H</SUB><TD><B>store_temp_n_context_1_pop</B><TD> byte byte<TD>intercepted<TR>
+<TD>60<SUB>H</SUB><TD><B>push_temp_0_context_n</B><TD> byte byte<TD><TR>
+<TD>61<SUB>H</SUB><TD><B>push_temp_1_context_n</B><TD> byte byte<TD><TR>
+<TD>62<SUB>H</SUB><TD><B>push_temp_2_context_n</B><TD> byte byte<TD><TR>
+<TD>63<SUB>H</SUB><TD><B>push_temp_n_context_n</B><TD> byte byte byte<TD><TR>
+<TD>64<SUB>H</SUB><TD><B>store_temp_0_context_n_pop</B><TD> byte byte<TD>intercepted<TR>
+<TD>65<SUB>H</SUB><TD><B>store_temp_1_context_n_pop</B><TD> byte byte<TD>intercepted<TR>
+<TD>66<SUB>H</SUB><TD><B>store_temp_2_context_n_pop</B><TD> byte byte<TD>intercepted<TR>
+<TD>67<SUB>H</SUB><TD><B>store_temp_n_context_n_pop</B><TD> byte byte byte<TD>intercepted<TR>
+<TD>68<SUB>H</SUB><TD><B>set_self_via_context</B><TD> byte<TD><TR>
+<TD>69<SUB>H</SUB><TD><B>copy_1_into_context</B><TD> byte byte<TD><TR>
+<TD>6A<SUB>H</SUB><TD><B>copy_2_into_context</B><TD> byte byte byte<TD><TR>
+<TD>6B<SUB>H</SUB><TD><B>copy_n_into_context</B><TD> byte byte {byte}<TD><TR>
+<TD>6C<SUB>H</SUB><TD><B>copy_self_into_context</B><TD> byte<TD><TR>
+<TD>6D<SUB>H</SUB><TD><B>copy_self_1_into_context</B><TD> byte byte<TD><TR>
+<TD>6E<SUB>H</SUB><TD><B>copy_self_2_into_context</B><TD> byte byte byte<TD><TR>
+<TD>6F<SUB>H</SUB><TD><B>copy_self_n_into_context</B><TD> byte byte {byte}<TD><TR>
+</TABLE>
+<HR>
+<H3>
+classVar_access bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>29<SUB>H</SUB><TD><B>push_classVar</B><TD> byte oop<TD><TR>
+<TD>2A<SUB>H</SUB><TD><B>store_classVar_pop</B><TD> byte oop<TD>intercepted<TR>
+<TD>2B<SUB>H</SUB><TD><B>store_classVar</B><TD> byte oop<TD>intercepted<TR>
+<TD>F3<SUB>H</SUB><TD><B>push_classVar_name</B><TD> byte oop<TD><TR>
+<TD>F4<SUB>H</SUB><TD><B>store_classVar_pop_name</B><TD> byte oop<TD><TR>
+<TD>F5<SUB>H</SUB><TD><B>store_classVar_name</B><TD> byte oop<TD><TR>
+</TABLE>
+<HR>
+<H3>
+global_access bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>F0<SUB>H</SUB><TD><B>push_global</B><TD> byte oop<TD><TR>
+<TD>F1<SUB>H</SUB><TD><B>store_global_pop</B><TD> byte oop<TD>intercepted<TR>
+<TD>F2<SUB>H</SUB><TD><B>store_global</B><TD> byte oop<TD>intercepted<TR>
+</TABLE>
+<HR>
+<H3>
+new_closure bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>48<SUB>H</SUB><TD><B>push_new_closure_context_0</B><TD> byte oop<TD><TR>
+<TD>49<SUB>H</SUB><TD><B>push_new_closure_context_1</B><TD> byte oop<TD><TR>
+<TD>4A<SUB>H</SUB><TD><B>push_new_closure_context_2</B><TD> byte oop<TD><TR>
+<TD>4B<SUB>H</SUB><TD><B>push_new_closure_context_n</B><TD> byte byte oop<TD><TR>
+<TD>58<SUB>H</SUB><TD><B>push_new_closure_tos_0</B><TD> byte oop<TD><TR>
+<TD>59<SUB>H</SUB><TD><B>push_new_closure_tos_1</B><TD> byte oop<TD><TR>
+<TD>5A<SUB>H</SUB><TD><B>push_new_closure_tos_2</B><TD> byte oop<TD><TR>
+<TD>5B<SUB>H</SUB><TD><B>push_new_closure_tos_n</B><TD> byte byte oop<TD><TR>
+</TABLE>
+<HR>
+<H3>
+new_context bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>4C<SUB>H</SUB><TD><B>install_new_context_method_0</B><TD> byte<TD><TR>
+<TD>4D<SUB>H</SUB><TD><B>install_new_context_method_1</B><TD> byte<TD><TR>
+<TD>4E<SUB>H</SUB><TD><B>install_new_context_method_2</B><TD> byte<TD><TR>
+<TD>4F<SUB>H</SUB><TD><B>install_new_context_method_n</B><TD> byte byte<TD><TR>
+<TD>5C<SUB>H</SUB><TD><B>only_pop</B><TD> byte<TD><TR>
+<TD>5D<SUB>H</SUB><TD><B>install_new_context_block_1</B><TD> byte<TD><TR>
+<TD>5E<SUB>H</SUB><TD><B>install_new_context_block_2</B><TD> byte<TD><TR>
+<TD>5F<SUB>H</SUB><TD><B>install_new_context_block_n</B><TD> byte byte<TD><TR>
+</TABLE>
+<HR>
+<H3>
+control_struc bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>70<SUB>H</SUB><TD><B>ifTrue_byte</B><TD> byte byte byte<TD><TR>
+<TD>71<SUB>H</SUB><TD><B>ifFalse_byte</B><TD> byte byte byte<TD><TR>
+<TD>72<SUB>H</SUB><TD><B>and_byte</B><TD> byte byte<TD><TR>
+<TD>73<SUB>H</SUB><TD><B>or_byte</B><TD> byte byte<TD><TR>
+<TD>74<SUB>H</SUB><TD><B>whileTrue_byte</B><TD> byte byte<TD><TR>
+<TD>75<SUB>H</SUB><TD><B>whileFalse_byte</B><TD> byte byte<TD><TR>
+<TD>76<SUB>H</SUB><TD><B>jump_else_byte</B><TD> byte byte<TD><TR>
+<TD>77<SUB>H</SUB><TD><B>jump_loop_byte</B><TD> byte byte byte<TD><TR>
+<TD>78<SUB>H</SUB><TD><B>ifTrue_word</B><TD> byte byte long<TD><TR>
+<TD>79<SUB>H</SUB><TD><B>ifFalse_word</B><TD> byte byte long<TD><TR>
+<TD>7A<SUB>H</SUB><TD><B>and_word</B><TD> byte long<TD><TR>
+<TD>7B<SUB>H</SUB><TD><B>or_word</B><TD> byte long<TD><TR>
+<TD>7C<SUB>H</SUB><TD><B>whileTrue_word</B><TD> byte long<TD><TR>
+<TD>7D<SUB>H</SUB><TD><B>whileFalse_word</B><TD> byte long<TD><TR>
+<TD>7E<SUB>H</SUB><TD><B>jump_else_word</B><TD> byte long<TD><TR>
+<TD>7F<SUB>H</SUB><TD><B>jump_loop_word</B><TD> byte long long<TD><TR>
+<TD>FF<SUB>H</SUB><TD><B>halt</B><TD> byte<TD><TR>
+</TABLE>
+<HR>
+<H3>
+message_send bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TH>Send type<TH>Arguments<TR>
+<TD>80<SUB>H</SUB><TD><B>interpreted_send_0</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>receiver<TR>
+<TD>81<SUB>H</SUB><TD><B>interpreted_send_1</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>receiver argument_1<TR>
+<TD>82<SUB>H</SUB><TD><B>interpreted_send_2</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>receiver argument_1 argument_2<TR>
+<TD>83<SUB>H</SUB><TD><B>interpreted_send_n</B><TD> byte byte oop oop<TD>intercepted<TD>interpreted_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>84<SUB>H</SUB><TD><B>interpreted_send_0_pop</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>receiver<TR>
+<TD>85<SUB>H</SUB><TD><B>interpreted_send_1_pop</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>receiver argument_1<TR>
+<TD>86<SUB>H</SUB><TD><B>interpreted_send_2_pop</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>receiver argument_1 argument_2<TR>
+<TD>87<SUB>H</SUB><TD><B>interpreted_send_n_pop</B><TD> byte byte oop oop<TD>intercepted<TD>interpreted_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>88<SUB>H</SUB><TD><B>interpreted_send_self</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>89<SUB>H</SUB><TD><B>interpreted_send_self_pop</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>8A<SUB>H</SUB><TD><B>interpreted_send_super</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>8B<SUB>H</SUB><TD><B>interpreted_send_super_pop</B><TD> byte oop oop<TD>intercepted<TD>interpreted_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>90<SUB>H</SUB><TD><B>polymorphic_send_0</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>receiver<TR>
+<TD>91<SUB>H</SUB><TD><B>polymorphic_send_1</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>receiver argument_1<TR>
+<TD>92<SUB>H</SUB><TD><B>polymorphic_send_2</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>receiver argument_1 argument_2<TR>
+<TD>93<SUB>H</SUB><TD><B>polymorphic_send_n</B><TD> byte byte oop oop<TD>intercepted<TD>polymorphic_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>94<SUB>H</SUB><TD><B>polymorphic_send_0_pop</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>receiver<TR>
+<TD>95<SUB>H</SUB><TD><B>polymorphic_send_1_pop</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>receiver argument_1<TR>
+<TD>96<SUB>H</SUB><TD><B>polymorphic_send_2_pop</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>receiver argument_1 argument_2<TR>
+<TD>97<SUB>H</SUB><TD><B>polymorphic_send_n_pop</B><TD> byte byte oop oop<TD>intercepted<TD>polymorphic_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>98<SUB>H</SUB><TD><B>polymorphic_send_self</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>99<SUB>H</SUB><TD><B>polymorphic_send_self_pop</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>9A<SUB>H</SUB><TD><B>polymorphic_send_super</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>9B<SUB>H</SUB><TD><B>polymorphic_send_super_pop</B><TD> byte oop oop<TD>intercepted<TD>polymorphic_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>A0<SUB>H</SUB><TD><B>compiled_send_0</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>receiver<TR>
+<TD>A1<SUB>H</SUB><TD><B>compiled_send_1</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>receiver argument_1<TR>
+<TD>A2<SUB>H</SUB><TD><B>compiled_send_2</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>receiver argument_1 argument_2<TR>
+<TD>A3<SUB>H</SUB><TD><B>compiled_send_n</B><TD> byte byte long oop<TD>intercepted<TD>compiled_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>A4<SUB>H</SUB><TD><B>compiled_send_0_pop</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>receiver<TR>
+<TD>A5<SUB>H</SUB><TD><B>compiled_send_1_pop</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>receiver argument_1<TR>
+<TD>A6<SUB>H</SUB><TD><B>compiled_send_2_pop</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>receiver argument_1 argument_2<TR>
+<TD>A7<SUB>H</SUB><TD><B>compiled_send_n_pop</B><TD> byte byte long oop<TD>intercepted<TD>compiled_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>A8<SUB>H</SUB><TD><B>compiled_send_self</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>A9<SUB>H</SUB><TD><B>compiled_send_self_pop</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>AA<SUB>H</SUB><TD><B>compiled_send_super</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>AB<SUB>H</SUB><TD><B>compiled_send_super_pop</B><TD> byte long oop<TD>intercepted<TD>compiled_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>B8<SUB>H</SUB><TD><B>access_send_self</B><TD> byte oop oop<TD>intercepted<TD>accessor send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>B9<SUB>H</SUB><TD><B>primitive_send_0</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>receiver<TR>
+<TD>BA<SUB>H</SUB><TD><B>primitive_send_super</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>BB<SUB>H</SUB><TD><B>primitive_send_super_pop</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>BD<SUB>H</SUB><TD><B>primitive_send_1</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>receiver argument_1<TR>
+<TD>BE<SUB>H</SUB><TD><B>primitive_send_2</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>receiver argument_1 argument_2<TR>
+<TD>BF<SUB>H</SUB><TD><B>primitive_send_n</B><TD> byte byte oop oop<TD>intercepted<TD>primitive_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>C8<SUB>H</SUB><TD><B>access_send_0</B><TD> byte oop oop<TD>intercepted<TD>accessor send<TD>receiver<TR>
+<TD>C9<SUB>H</SUB><TD><B>primitive_send_0_pop</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>receiver<TR>
+<TD>CA<SUB>H</SUB><TD><B>primitive_send_self</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>CB<SUB>H</SUB><TD><B>primitive_send_self_pop</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>CD<SUB>H</SUB><TD><B>primitive_send_1_pop</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>receiver argument_1<TR>
+<TD>CE<SUB>H</SUB><TD><B>primitive_send_2_pop</B><TD> byte oop oop<TD>intercepted<TD>primitive_send<TD>receiver argument_1 argument_2<TR>
+<TD>CF<SUB>H</SUB><TD><B>primitive_send_n_pop</B><TD> byte byte oop oop<TD>intercepted<TD>primitive_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>D0<SUB>H</SUB><TD><B>megamorphic_send_0</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>receiver<TR>
+<TD>D1<SUB>H</SUB><TD><B>megamorphic_send_1</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>receiver argument_1<TR>
+<TD>D2<SUB>H</SUB><TD><B>megamorphic_send_2</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>receiver argument_1 argument_2<TR>
+<TD>D3<SUB>H</SUB><TD><B>megamorphic_send_n</B><TD> byte byte oop oop<TD>intercepted<TD>megamorphic_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>D4<SUB>H</SUB><TD><B>megamorphic_send_0_pop</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>receiver<TR>
+<TD>D5<SUB>H</SUB><TD><B>megamorphic_send_1_pop</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>receiver argument_1<TR>
+<TD>D6<SUB>H</SUB><TD><B>megamorphic_send_2_pop</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>receiver argument_1 argument_2<TR>
+<TD>D7<SUB>H</SUB><TD><B>megamorphic_send_n_pop</B><TD> byte byte oop oop<TD>intercepted<TD>megamorphic_send<TD>receiver argument_1 argument_2 ... argument_n<TR>
+<TD>D8<SUB>H</SUB><TD><B>megamorphic_send_self</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>D9<SUB>H</SUB><TD><B>megamorphic_send_self_pop</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>DA<SUB>H</SUB><TD><B>megamorphic_send_super</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>DB<SUB>H</SUB><TD><B>megamorphic_send_super_pop</B><TD> byte oop oop<TD>intercepted<TD>megamorphic_send<TD>argument_1 argument_2 ... argument_n<TR>
+<TD>E0<SUB>H</SUB><TD><B>smi_add</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E1<SUB>H</SUB><TD><B>smi_sub</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E2<SUB>H</SUB><TD><B>smi_mult</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E3<SUB>H</SUB><TD><B>smi_div</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E4<SUB>H</SUB><TD><B>smi_mod</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E5<SUB>H</SUB><TD><B>smi_create_point</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E6<SUB>H</SUB><TD><B>smi_equal</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E7<SUB>H</SUB><TD><B>smi_not_equal</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E8<SUB>H</SUB><TD><B>smi_less</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>E9<SUB>H</SUB><TD><B>smi_less_equal</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>EA<SUB>H</SUB><TD><B>smi_greater</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>EB<SUB>H</SUB><TD><B>smi_greater_equal</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>EC<SUB>H</SUB><TD><B>objArray_at</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>ED<SUB>H</SUB><TD><B>objArray_at_put</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>F6<SUB>H</SUB><TD><B>smi_and</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>F7<SUB>H</SUB><TD><B>smi_or</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>F8<SUB>H</SUB><TD><B>smi_xor</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+<TD>F9<SUB>H</SUB><TD><B>smi_shift</B><TD> byte oop oop<TD>intercepted<TD>predicted_send<TD>receiver argument_1<TR>
+</TABLE>
+<HR>
+<H3>
+nonlocal_return bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>AE<SUB>H</SUB><TD><B>non_local_return_tos_pop_n</B><TD> byte byte<TD>intercepted<TR>
+<TD>AF<SUB>H</SUB><TD><B>non_local_return_self_pop_n</B><TD> byte byte<TD>intercepted<TR>
+</TABLE>
+<HR>
+<H3>
+primitive_call bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>B0<SUB>H</SUB><TD><B>prim_call</B><TD> byte long<TD>intercepted<TR>
+<TD>B1<SUB>H</SUB><TD><B>predict_prim_call</B><TD> byte long<TD>intercepted<TR>
+<TD>B2<SUB>H</SUB><TD><B>prim_call_failure</B><TD> byte long long<TD>intercepted<TR>
+<TD>B3<SUB>H</SUB><TD><B>predict_prim_call_failure</B><TD> byte long long<TD>intercepted<TR>
+<TD>B5<SUB>H</SUB><TD><B>prim_call_self</B><TD> byte long<TD>intercepted<TR>
+<TD>B6<SUB>H</SUB><TD><B>prim_call_self_failure</B><TD> byte long long<TD>intercepted<TR>
+<TD>C0<SUB>H</SUB><TD><B>prim_call_lookup</B><TD> byte oop<TD><TR>
+<TD>C1<SUB>H</SUB><TD><B>predict_prim_call_lookup</B><TD> byte oop<TD><TR>
+<TD>C2<SUB>H</SUB><TD><B>prim_call_failure_lookup</B><TD> byte oop long<TD><TR>
+<TD>C3<SUB>H</SUB><TD><B>predict_prim_call_failure_lookup</B><TD> byte oop long<TD><TR>
+<TD>C5<SUB>H</SUB><TD><B>prim_call_self_lookup</B><TD> byte oop<TD><TR>
+<TD>C6<SUB>H</SUB><TD><B>prim_call_self_failure_lookup</B><TD> byte oop long<TD><TR>
+</TABLE>
+<HR>
+<H3>
+dll_call bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>B4<SUB>H</SUB><TD><B>dll_call_sync</B><TD> byte oop oop long byte<TD>intercepted<TR>
+<TD>C4<SUB>H</SUB><TD><B>dll_call_async</B><TD> byte oop oop long byte<TD>intercepted<TR>
+</TABLE>
+<HR>
+<H3>
+float_operation bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>30<SUB>H</SUB><TD><B>float_allocate</B><TD> byte byte byte byte<TD><TR>
+<TD>31<SUB>H</SUB><TD><B>float_floatify_pop</B><TD> byte byte<TD><TR>
+<TD>32<SUB>H</SUB><TD><B>float_move</B><TD> byte byte byte<TD><TR>
+<TD>33<SUB>H</SUB><TD><B>float_set</B><TD> byte byte oop<TD><TR>
+<TD>34<SUB>H</SUB><TD><B>float_nullary_op</B><TD> byte byte byte<TD><TR>
+<TD>35<SUB>H</SUB><TD><B>float_unary_op</B><TD> byte byte byte<TD><TR>
+<TD>36<SUB>H</SUB><TD><B>float_binary_op</B><TD> byte byte byte<TD><TR>
+<TD>37<SUB>H</SUB><TD><B>float_unary_op_to_oop</B><TD> byte byte byte<TD><TR>
+<TD>38<SUB>H</SUB><TD><B>float_binary_op_to_oop</B><TD> byte byte byte<TD><TR>
+</TABLE>
+<HR>
+<H3>
+miscellaneous bytecodes
+</H3>
+<TABLE>
+<TH>Code<TH>Name<TH>Format<TH>Single step<TR>
+<TD>0C<SUB>H</SUB><TD><B>allocate_temp_1</B><TD> byte<TD><TR>
+<TD>0D<SUB>H</SUB><TD><B>allocate_temp_2</B><TD> byte<TD><TR>
+<TD>0E<SUB>H</SUB><TD><B>allocate_temp_3</B><TD> byte<TD><TR>
+<TD>0F<SUB>H</SUB><TD><B>allocate_temp_n</B><TD> byte byte<TD><TR>
+<TD>18<SUB>H</SUB><TD><B>push_neg_n</B><TD> byte byte<TD><TR>
+<TD>19<SUB>H</SUB><TD><B>push_succ_n</B><TD> byte byte<TD><TR>
+<TD>1A<SUB>H</SUB><TD><B>push_literal</B><TD> byte oop<TD><TR>
+<TD>1B<SUB>H</SUB><TD><B>push_tos</B><TD> byte<TD><TR>
+<TD>1C<SUB>H</SUB><TD><B>push_self</B><TD> byte<TD><TR>
+<TD>1D<SUB>H</SUB><TD><B>push_nil</B><TD> byte<TD><TR>
+<TD>1E<SUB>H</SUB><TD><B>push_true</B><TD> byte<TD><TR>
+<TD>1F<SUB>H</SUB><TD><B>push_false</B><TD> byte<TD><TR>
+<TD>8C<SUB>H</SUB><TD><B>return_tos_pop_0</B><TD> byte<TD>intercepted<TR>
+<TD>8D<SUB>H</SUB><TD><B>return_tos_pop_1</B><TD> byte<TD>intercepted<TR>
+<TD>8E<SUB>H</SUB><TD><B>return_tos_pop_2</B><TD> byte<TD>intercepted<TR>
+<TD>8F<SUB>H</SUB><TD><B>return_tos_pop_n</B><TD> byte byte<TD>intercepted<TR>
+<TD>9C<SUB>H</SUB><TD><B>return_self_pop_0</B><TD> byte<TD>intercepted<TR>
+<TD>9D<SUB>H</SUB><TD><B>return_self_pop_1</B><TD> byte<TD>intercepted<TR>
+<TD>9E<SUB>H</SUB><TD><B>return_self_pop_2</B><TD> byte<TD>intercepted<TR>
+<TD>9F<SUB>H</SUB><TD><B>return_self_pop_n</B><TD> byte byte<TD>intercepted<TR>
+<TD>AC<SUB>H</SUB><TD><B>return_tos_zap_pop_n</B><TD> byte byte<TD>intercepted<TR>
+<TD>AD<SUB>H</SUB><TD><B>return_self_zap_pop_n</B><TD> byte byte<TD>intercepted<TR>
+<TD>DD<SUB>H</SUB><TD><B>special_primitive_send_1_hint</B><TD> byte byte<TD><TR>
+<TD>EE<SUB>H</SUB><TD><B>double_equal</B><TD> byte<TD>intercepted<TR>
+<TD>EF<SUB>H</SUB><TD><B>double_tilde</B><TD> byte<TD>intercepted<TR>
+</TABLE>
+<HR>
+<br>(c) 1994-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
+<br>Use and distribution of this software is subject to the terms of the
+<br> <a href='sourceLicense.html'> source license. </a>
+</BODY>
+</HTML>

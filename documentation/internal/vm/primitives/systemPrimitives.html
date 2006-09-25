@@ -1,0 +1,726 @@
+<HTML>
+<HEAD>
+<TITLE>
+systemPrimitives
+</TITLE>
+</HEAD>
+<BODY>
+<H1>
+systemPrimitives
+</H1>
+<UL>
+<HR>
+<LI>
+<B>
+primitiveCreateInvocationOf:named:isPrimaryInvocation:superclass:format:ifFail:
+</B>
+ ^&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt;
+<BR> 
+<PRE>'format: #Oops, #ExternalProxy #Process'
+'        #IndexedInstanceVariables #IndexedByteInstanceVariables'
+'        #IndexedDoubleByteInstanceVariables #IndexedNextOfKinInstanceVariables'
+</PRE>
+<EM>Parameters:</EM><BR>
+mixin &lt;<A href="types.html#Mixin">Mixin</A>&gt;<BR>
+name &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+primary &lt;<A href="types.html#Boolean">Boolean</A>&gt;<BR>
+superclass &lt;<A href="types.html#Behavior">Behavior</A>&gt;<BR>
+format &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+<EM>Errors:</EM>  
+WrongFormat 
+<BR>
+
+<HR>
+<LI>
+<B>
+primitiveCreateInvocationOf:superclass:format:ifFail:
+</B>
+ ^&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt;
+<BR> 
+<PRE>'format: #Oops, #ExternalProxy #Process'
+'        #IndexedInstanceVariables #IndexedByteInstanceVariables'
+'        #IndexedDoubleByteInstanceVariables #IndexedNextOfKinInstanceVariables'
+</PRE>
+<EM>Parameters:</EM><BR>
+mixin &lt;<A href="types.html#Mixin">Mixin</A>&gt;<BR>
+superclass &lt;<A href="types.html#Behavior">Behavior</A>&gt;<BR>
+format &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+<EM>Errors:</EM>  
+WrongFormat 
+<BR>
+
+<HR>
+<LI>
+<B>
+primitiveApplyChange:ifFail:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Apply change to a mixin and their invocations.'
+'The change is a <IndexedInstanceVariables> with the following structure:'
+'  [1]     = new-mixin   <Mixin>'
+'  [2]     = old-mixin   <Mixin>'
+'  [3 - n] = invocations <IndexedInstanceVariables>'
+'Where the format for the a incovation is:'
+'  [1]     = incovation  <Class>'
+'  [2]     = format      <Symbol>'
+'  [3]     = superClass  <Class>'
+'  [4 - m] = {subclass, format}*  <IndexedInstanceVariables>, <Symbol>'
+'The list of classes are sub classes of the invocation (topological sorted).'
+</PRE>
+<EM>Parameters:</EM><BR>
+change &lt;<A href="types.html#IndexedInstanceVariables">IndexedInstanceVariables</A>&gt;<BR>
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#Object">Object</A>&gt; <B>
+primitiveScavenge
+</B>
+ ^&lt;<A href="types.html#Self">Self</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#Object">Object</A>&gt; <B>
+primitiveGarbageCollect
+</B>
+ ^&lt;<A href="types.html#Self">Self</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveBreakpoint
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveHalt
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveUserTime
+</B>
+ ^&lt;<A href="types.html#Float">Float</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveSystemTime
+</B>
+ ^&lt;<A href="types.html#Float">Float</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveElapsedTime
+</B>
+ ^&lt;<A href="types.html#Float">Float</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveWriteSnapshot:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+fileName &lt;<A href="types.html#String">String</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveQuit
+</B>
+ ^&lt;<A href="types.html#BottomType">BottomType</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt; <B>
+primitiveGlobalAssociationKey
+</B>
+ ^&lt;<A href="types.html#Symbol">Symbol</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt; <B>
+primitiveGlobalAssociationSetKey:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+key &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt; <B>
+primitiveGlobalAssociationValue
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt; <B>
+primitiveGlobalAssociationSetValue:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+value &lt;<A href="types.html#Object">Object</A>&gt;<BR>
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt; <B>
+primitiveGlobalAssociationIsConstant
+</B>
+ ^&lt;<A href="types.html#Boolean">Boolean</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt; <B>
+primitiveGlobalAssociationSetConstant:
+</B>
+ ^&lt;<A href="types.html#Boolean">Boolean</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+value &lt;<A href="types.html#Boolean">Boolean</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveSmalltalkAt:ifFail:
+</B>
+ ^&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt;
+<BR> 
+<PRE>'Returns the global association at index'
+</PRE>
+<EM>Parameters:</EM><BR>
+index &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+<EM>Errors:</EM>  
+OutOfBounds 
+<BR>
+
+<HR>
+<LI>
+<B>
+primitiveSmalltalkAt:Put:ifFail:
+</B>
+ ^&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt;
+<BR> 
+<PRE>'Add a new non-constant global association'
+</PRE>
+<EM>Parameters:</EM><BR>
+key &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+value &lt;<A href="types.html#Object">Object</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveSmalltalkRemoveAt:ifFail:
+</B>
+ ^&lt;<A href="types.html#GlobalAssociation">GlobalAssociation</A>&gt;
+<BR> 
+<PRE>'Removes the association at index, and returns the removed element'
+</PRE>
+<EM>Parameters:</EM><BR>
+index &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveSmalltalkSize
+</B>
+ ^&lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveSmalltalkArray
+</B>
+ ^&lt;<A href="types.html#IndexedInstanceVariables">IndexedInstanceVariables</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitivePrintPrimitiveTable
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitivePrintMemory
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitivePrintZone
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveDefWindowProc:ifFail:
+</B>
+ ^&lt;<A href="types.html#Proxy">Proxy</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+resultProxy &lt;<A href="types.html#Proxy">Proxy</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveWindowsHInstance:ifFail:
+</B>
+ ^&lt;<A href="types.html#Proxy">Proxy</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+resultProxy &lt;<A href="types.html#Proxy">Proxy</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveWindowsHPrevInstance:ifFail:
+</B>
+ ^&lt;<A href="types.html#Proxy">Proxy</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+resultProxy &lt;<A href="types.html#Proxy">Proxy</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveWindowsNCmdShow
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveCharacterFor:ifFail:
+</B>
+ ^&lt;<A href="types.html#Proxy">Proxy</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+value &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+<EM>Errors:</EM>  
+OutOfBounds 
+<BR>
+
+<HR>
+<LI>
+<B>
+primitiveTraceStack
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveFlatProfilerReset
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Resets the flat profiler to initial state.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveFlatProfilerProcess
+</B>
+ ^&lt;<A href="types.html#Process|nil">Process|nil</A>&gt;
+<BR> 
+<PRE>'Returns the process beeing profiler, nil otherwise.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveFlatProfilerEngage:ifFail:
+</B>
+ ^&lt;<A href="types.html#Process">Process</A>&gt;
+<BR> 
+<PRE>'Starts profiling process.'
+</PRE>
+<EM>Parameters:</EM><BR>
+process &lt;<A href="types.html#Process">Process</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveFlatProfilerDisengage
+</B>
+ ^&lt;<A href="types.html#Process|nil">Process|nil</A>&gt;
+<BR> 
+<PRE>'Stops profiling.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveFlatProfilerPrint
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Prints the collected profile information.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveNotificationQueueGetIfFail:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Returns the first element in the notification queue (FIFO).'
+</PRE>
+<EM>Errors:</EM>  
+EmptyQueue 
+<BR>
+
+<HR>
+<LI>
+<B>
+primitiveNotificationQueuePut:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Appends the argument to the notification queue (FIFO).'
+</PRE>
+<EM>Parameters:</EM><BR>
+value &lt;<A href="types.html#Object">Object</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveHadNearDeathExperience:
+</B>
+ ^&lt;<A href="types.html#Boolean">Boolean</A>&gt;
+<BR> 
+<PRE>'Tells whether the receiver had a near death experience.'
+</PRE>
+<EM>Parameters:</EM><BR>
+value &lt;<A href="types.html#Object">Object</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveDLLSetupLookup:selector:ifFail:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Setup call back for DLL lookup. Fails if selector does not have right number of arguments'
+</PRE>
+<EM>Parameters:</EM><BR>
+receiver &lt;<A href="types.html#Object">Object</A>&gt;<BR>
+selector &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveDLLLookup:in:result:ifFail:
+</B>
+ ^&lt;<A href="types.html#Proxy">Proxy</A>&gt;
+<BR> 
+<PRE>'Lookup name in library'
+</PRE>
+<EM>Parameters:</EM><BR>
+name &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+library &lt;<A href="types.html#Proxy">Proxy</A>&gt;<BR>
+entry &lt;<A href="types.html#Proxy">Proxy</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveDLLLoad:result:ifFail:
+</B>
+ ^&lt;<A href="types.html#Proxy">Proxy</A>&gt;
+<BR> 
+<PRE>'Load library'
+</PRE>
+<EM>Parameters:</EM><BR>
+name &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+library &lt;<A href="types.html#Proxy">Proxy</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveDLLUnload:ifFail:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Unload the library'
+</PRE>
+<EM>Parameters:</EM><BR>
+library &lt;<A href="types.html#Proxy">Proxy</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseDirectory
+</B>
+ ^&lt;<A href="types.html#Symbol">Symbol</A>&gt;
+<BR> 
+<PRE>'Returns the directory for the external inlining database.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseSetDirectory:ifFail:
+</B>
+ ^&lt;<A href="types.html#Symbol">Symbol</A>&gt;
+<BR> 
+<PRE>'Sets the directory for external inlining database.'
+'Returns the old directory.'
+</PRE>
+<EM>Parameters:</EM><BR>
+name &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseFileOutClass:ifFail:
+</B>
+ ^&lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;
+<BR> 
+<PRE>'Adds inlining information to the external database for all compiled methods with the specific receiver class.'
+'Returns the number of filed out structures.'
+</PRE>
+<EM>Parameters:</EM><BR>
+receiverClass &lt;<A href="types.html#Behavior">Behavior</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseFileOutAllIfFail:
+</B>
+ ^&lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;
+<BR> 
+<PRE>'Adds inlining information to the external database for all compiled methods.'
+'Returns the number of filed out structures.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseCompile:ifFail:
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Compiles a method described in fileName.'
+</PRE>
+<EM>Parameters:</EM><BR>
+fileName &lt;<A href="types.html#String">String</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseCompile
+</B>
+ ^&lt;<A href="types.html#Boolean">Boolean</A>&gt;
+<BR> 
+<PRE>'Compiles a method for the inlining database (for background compilation).'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseMangle:ifFail:
+</B>
+ ^&lt;<A href="types.html#IndexedByteInstanceVariables">IndexedByteInstanceVariables</A>&gt;
+<BR> 
+<PRE>'Returns the mangled name'
+</PRE>
+<EM>Parameters:</EM><BR>
+name &lt;<A href="types.html#String">String</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseCompileDemangled:ifFail:
+</B>
+ ^&lt;<A href="types.html#IndexedByteInstanceVariables">IndexedByteInstanceVariables</A>&gt;
+<BR> 
+<PRE>'Returns the demangled name'
+</PRE>
+<EM>Parameters:</EM><BR>
+name &lt;<A href="types.html#String">String</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveInliningDatabaseAddLookupEntryClass:selector:ifFail:
+</B>
+ ^&lt;<A href="types.html#Boolean">Boolean</A>&gt;
+<BR> 
+<EM>Parameters:</EM><BR>
+class &lt;<A href="types.html#Behavior">Behavior</A>&gt;<BR>
+selector &lt;<A href="types.html#Symbol">Symbol</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveSlidingSystemAverageIfFail:
+</B>
+ ^&lt;<A href="types.html#IndexedInstanceVariables">IndexedInstanceVariables</A>&gt;
+<BR> 
+
+
+<HR>
+<LI>
+<B>
+primitiveInstancesOf:limit:ifFail:
+</B>
+ ^&lt;<A href="types.html#IndexedInstanceVariables">IndexedInstanceVariables</A>&gt;
+<BR> 
+<PRE>'Returns an array with instances of class.'
+'limit specifies the maximum number of elements.'
+</PRE>
+<EM>Parameters:</EM><BR>
+class &lt;<A href="types.html#Class">Class</A>&gt;<BR>
+limit &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveReferencesTo:limit:ifFail:
+</B>
+ ^&lt;<A href="types.html#IndexedInstanceVariables">IndexedInstanceVariables</A>&gt;
+<BR> 
+<PRE>'Returns an array with all objects referring obj.'
+'limit specifies the maximum number of elements.'
+</PRE>
+<EM>Parameters:</EM><BR>
+obj &lt;<A href="types.html#Object">Object</A>&gt;<BR>
+limit &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveReferencesToInstancesOf:limit:ifFail:
+</B>
+ ^&lt;<A href="types.html#IndexedInstanceVariables">IndexedInstanceVariables</A>&gt;
+<BR> 
+<PRE>'Returns an array with all objects referring instances of class.'
+'limit specifies the maximum number of elements.'
+</PRE>
+<EM>Parameters:</EM><BR>
+class &lt;<A href="types.html#Class">Class</A>&gt;<BR>
+limit &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveAllObjectsLimit:ifFail:
+</B>
+ ^&lt;<A href="types.html#IndexedInstanceVariables">IndexedInstanceVariables</A>&gt;
+<BR> 
+<PRE>'Returns an array containing all objects.'
+'limit specifies the maximum number of elements.'
+</PRE>
+<EM>Parameters:</EM><BR>
+limit &lt;<A href="types.html#SmallInteger">SmallInteger</A>&gt;<BR>
+
+
+<HR>
+<LI>
+<B>
+primitiveFlushCodeCache
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Flushes all compiled code.'
+</PRE>
+
+
+<HR>
+<LI>
+<B>
+primitiveFlushDeadCode
+</B>
+ ^&lt;<A href="types.html#Object">Object</A>&gt;
+<BR> 
+<PRE>'Flushes all invalidate compiled code.'
+</PRE>
+
+
+</UL>
+</BODY>
+</HTML>

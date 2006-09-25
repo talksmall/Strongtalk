@@ -1,0 +1,256 @@
+Delta define: #DeltaProtocolUpdate as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaProtocolUpdate) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaProtocolUpdate) group: 'ast'!
+
+(Delta mirrorFor: #DeltaProtocolUpdate)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaProtocolUpdate) methodsFor: 'Unclassified' !
+
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^self superprotocol allSelfClassTVs add: self selfClassTV; yourself!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^self superprotocol allSelfTVs add: self selfTV; yourself!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+	| result |
+	self errorHandler pushDefinition: self.
+	result := self delta antimonotonicIn: tv.
+	self errorHandler popDefinition.
+	^result!
+
+asMixinSide  ^ <Protocol>
+
+ ^ self asSide!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self filteree bareAttributes
+!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+
+^self filteree bareSecondaryAttributes
+    !
+
+base ^ <Protocol>
+    ^self superprotocol!
+
+basicLocator
+	self isMagicProtocol
+		ifTrue: [^DeltaBasicProtocolMagicLocator new id: self name; isMetaSide: false]
+		ifFalse: [^DeltaBasicProtocolLocator new id: self name; isMetaSide: false]
+!
+
+branded ^ <Boolean>
+    ^self filteree branded!
+
+branded: b<Boolean>
+    self filteree branded: b!
+
+canonicalRep ^ <Protocol>
+    ^self!
+
+classProtocol ^ <Protocol>
+    ^classProtocol isNil ifTrue:[classProtocol := DeltaUnaryUpdate new dual: self]
+                                ifFalse:[classProtocol].!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^self  == p or:[self superprotocol isNil ifFalse:[self subtype and:[self superprotocol declaredSubprotocolOf: p]] ifTrue:[false]]!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^false!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+| c <OrdCltn[ObjectType]> |
+
+c := OrderedCollection[ObjectType] new.
+c 	add: self superprotocol.
+^c!
+
+delta ^ <Protocol>
+    ^self filteree delta substitute: self substitution!
+
+isMagicProtocol
+	(self name isNil or: [self name isEmpty]) ifTrue: [^false].
+	^(self name at: 1) isDigit!
+
+isMonotonic ^ <Boolean>
+	| result |
+	self errorHandler pushDefinition: self.
+	result := self delta isMonotonic and:[self subtype or:[self superprotocol isMonotonic]].
+	self errorHandler popDefinition.
+	^result!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self filteree localBareAttributes
+!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+
+^self filteree localBareSecondaryAttributes
+    !
+
+localPrimaryInterface ^ <Interface>
+	^self delta primaryInterface!
+
+localSecondaryInterface ^ <Interface>
+	^self delta secondaryInterface!
+
+messages  ^ <Dict[Symbol,Type]>
+
+^self filteree messages!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+	| result |
+	self errorHandler pushDefinition: self.
+	result := self delta monotonicIn: tv.
+	self errorHandler popDefinition.
+	^result!
+
+myLocalSubstitution ^ <Substitution>
+
+" This method returns a substitution that replaces my super protocol's
+type variables with my own. It is used to modify the signatures
+inherited from the super protocol so that all self reference uses
+my type variables. That is equivalent to invoking the super protocol's
+generator with the formal parameters of my generator during
+inheritance.
+"
+    | theta <Substitution>  superProtocol <Protocol>  |
+
+theta := DeltaSubstitution new initialize.
+superProtocol := self superprotocol.
+theta at: superProtocol selfTV put: self selfTV.
+theta at: superProtocol selfClassTV put: self selfClassTV.
+
+^theta!
+
+name ^ <Symbol>
+    ^self filteree name!
+
+name: n <Symbol>
+    self filteree name: n!
+
+name: n <Symbol >superprotocol: sp <Protocol >delta: d <ProtocolData >branded: b <Boolean >subtype: subT <Boolean > ^ <Self>
+    self filter: (BasicProtocolUpdateData new name: n  superprotocol: sp  delta: d  branded: b subtype: subT typeOfInstances: self ) using: DeltaSubstitution new initialize.!
+
+privateToPublicSubstitution ^<Substitution> 
+
+^self filteree privateToPublicSubstitution!
+
+rawPrimaryInterface ^ <Interface>
+
+    ^self delta rawPrimaryInterface override: (self superprotocol rawPrimaryInterface substitute: self myLocalSubstitution)!
+
+rawSecondaryInterface ^ <Interface>
+
+    ^self delta rawSecondaryInterface override: (self superprotocol rawSecondaryInterface  substitute: self myLocalSubstitution)!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+set := self filteree relevantTypeVars copy.
+set add: self selfTV;
+       add: self selfClassTV.
+self substitution keys do: [:k <Symbol> | set remove: k ifAbsent:[].].
+self myLocalSubstitution keys do: [:k <Symbol> | set remove: k ifAbsent:[].].
+self substitution values do:[:v <ObjectType> |
+                                                      v isTypeVar ifTrue:[set add: v].
+                                                       ].
+^set.!
+
+retractTypeAssumptions ^ <Self>
+
+self selfTV retractBoundFromTrail: DeltaGlobalTrail.
+self selfTV dual retractBoundFromTrail: DeltaGlobalTrail.!
+
+scope ^ <Scope>
+    ^self filteree scope!
+
+setupTypeAssumptions ^ <Self>
+
+self selfTV declareBoundToTrail: DeltaGlobalTrail.
+self selfTV dual declareBoundToTrail: DeltaGlobalTrail.!
+
+subtype ^ <Boolean>
+    ^self filteree subtype!
+
+subtype: st <Boolean>
+
+self filteree subtype: st!
+
+superprotocol ^ <DeltaProtocol>
+    | fs <DeltaProtocol>  |
+
+^(fs := self filteree superprotocol) isNil ifFalse:[fs substitute: self substitution] ifTrue:[nil]!
+
+superprotocol: p<Protocol>
+	"This will only work for protocol updates whose filteree is a BasicProtocolUpdateData,
+	and not when the filteree is a side."
+	self deltaHack.
+	self filteree superprotocol: p
+!
+
+typecheckDeclaration ^ <Self>
+
+self errorHandler pushDefinition: self.
+self superprotocol wellFormed.
+self errorHandler popDefinition.
+
+
+!
+
+typecheckMessage: m <Message >
+
+m setupTypeAssumptions.
+self errorHandler pushSelector: m selector.
+self wellFormedMessage: m.
+self errorHandler popSelector.
+m retractTypeAssumptions.!
+
+wellFormed ^ <Boolean>
+
+self superprotocol wellFormed.
+self messages associationsDo:[:m <Assoc[Symbol,MsgSignature]> | 
+                                                             self typecheckMessage: (DeltaMessagePattern new selector: m key type: m value).
+                                                             ].
+ "   ^self subtype
+              ifTrue:[self structuralSubprotocolOf: self superprotocol assuming: DeltaGlobalTrail]
+              ifFalse:[self structuralInheritedProtocolOf: self superprotocol assuming: DeltaGlobalTrail]"!
+
+wellFormedMessage: m <Message >
+|
+thetas <OrdCltn[Substitution]> 
+mt <MsgSignature> 
+smt <MsgSignature> 
+|
+
+m type wellFormed.
+self subtype
+  ifTrue:[
+            smt := self superprotocol selectMsg: m selector ifAbsent:[^self].
+            mt := self selectMsg: m selector.
+            (mt subtypeOf: smt assuming: DeltaTrail new initialize)
+                ifFalse:[self reportError: DeltaMsgSubtypeOfSuperProtocolError new ].
+            ]
+  ifFalse:[
+               thetas := self inheritedTypeSubstitutionsVisaVis: self superprotocol.
+              smt := self superprotocol rawSelectMsg: m selector ifAbsent:[^self].
+              mt := m type substitute: (thetas at: 1).
+              smt := smt substitute: (thetas at: 2).
+             (mt subtypeOf: smt assuming: DeltaTrail new initialize)
+                  ifFalse:[self reportError: DeltaMsgInheritedTypeOfSuperProtocolError new ].
+             ].
+
+! !
+

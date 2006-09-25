@@ -1,0 +1,96 @@
+Delta define: #CallBack as: (
+(Class subclassOf: 'ExternalProxy' instanceVariables: 'parameters block')) !
+
+(Delta mirrorFor: #CallBack) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #CallBack) group: 'base'!
+
+(Delta mirrorFor: #CallBack)
+comment: 
+'CallBack is the abstract superclass for all call back classes.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #CallBack) classSide methodsFor: 'registration' !
+
+
+initialize
+    "create callBack array"
+    CallBackArray isNil
+    	ifTrue: [	CallBackArray := OrderedCollection new. ].
+
+    "initialize the vm for callBack"
+    {{primitiveCallBackReceiver: self
+                        selector: #vmCallBackIndex:stackHigh:stackLow:
+                          ifFail: [ :err | self error: err]}}!
+
+register: block parameters: params
+    self subclassResponsibility
+!
+
+vmCallBackIndex: index stackHigh: h stackLow: l
+    "This method is invoked whenever a CallBack is executed"
+    | stack |
+
+    "create a proxy pointing to the first parameter"
+    stack := ExternalProxy new setHigh: h low: l.
+
+    ^(CallBackArray at: index) evaluate: stack.! !
+
+! (Delta mirrorFor: #CallBack) methodsFor: 'accessors' !
+
+
+block
+    ^block!
+
+block: b
+    block := b!
+
+fetchArgument: arg stack: stack class: class
+    | proxy |
+    class = SmallInteger ifTrue: [^stack smallIntegerAt: arg * 4].
+    proxy := class new.
+    stack proxyAt: (arg * 4) result: proxy.
+    ^proxy!
+
+parameters
+    ^parameters!
+
+parameters: p
+    parameters := p! !
+
+! (Delta mirrorFor: #CallBack) methodsFor: 'evaluating' !
+
+
+evaluate: stack
+    | nofArgs a b c d e |
+    nofArgs := parameters size.
+    nofArgs = 0 ifTrue: [^block value].
+
+    a := self fetchArgument: 0 stack: stack class: (parameters at: 1).
+    nofArgs = 1 ifTrue: [^block value: a].
+
+    b := self fetchArgument: 1 stack: stack class: (parameters at: 2).
+    nofArgs = 2 ifTrue: [^block value: a value: b].
+
+    c := self fetchArgument: 2 stack: stack class: (parameters at: 3).
+    nofArgs = 3 ifTrue: [^block value: a value: b value: c].
+
+    d := self fetchArgument: 3 stack: stack class: (parameters at: 4).
+    nofArgs = 4 ifTrue: [^block value: a value: b value: c value: d].
+
+    e := self fetchArgument: 4 stack: stack class: (parameters at: 5).
+    nofArgs = 5 ifTrue: [^block value: a value: b value: c value: d value: e].
+
+    self error: 'too many arguments for callBack'! !
+
+! (Delta mirrorFor: #CallBack) methodsFor: 'deleting' !
+
+
+free
+
+  {{primitiveCallBackUnregister: self ifFail: [:err| self error: err]}}.
+  CallBackArray at: self index put: nil.! !
+

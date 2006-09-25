@@ -1,0 +1,56 @@
+Delta define: #UncompressedReadString as: (
+(Class subclassOf: 'IndexedDoubleByteInstanceVariables |> ReadString' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #UncompressedReadString) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #UncompressedReadString) group: 'base'!
+
+(Delta mirrorFor: #UncompressedReadString)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #UncompressedReadString) methodsFor: 'accessing' !
+
+
+at: i <Int> ^<Character>
+	^{{self primitiveIndexedDoubleByteCharacterAt: i 
+				ifFail: [ :err <Symbol> | Character value: (self primitiveAt: i) ]}}!
+
+size ^<Int>
+
+	^self primitiveSize!
+
+unicodeAt: index <Int> ^<Int>
+
+  ^self primitiveAt: index! !
+
+! (Delta mirrorFor: #UncompressedReadString) methodsFor: 'converting' !
+
+
+asSymbol ^<Symbol>
+  ^{{self primitiveIndexedDoubleByteInternIfFail: [ :error <Symbol> |
+       self error: error]}}
+! !
+
+! (Delta mirrorFor: #UncompressedReadString) methodsFor: 'comparing' !
+
+
+compare: other <Str>  ^<Int>
+
+	^{{self primitiveIndexedDoubleByteCompare: other
+			ifFail: [ :err <Symbol> |
+							^super compare: other 	] }}! !
+
+! (Delta mirrorFor: #UncompressedReadString) methodsFor: 'private' !
+
+
+equalsStr: other <Str> ^<Boolean>
+
+	"We check the size first as an optimization, since #compare: must scan even if the sizes aren't equal"
+	^self size = other size
+		and:  [	0 == {{self primitiveIndexedDoubleByteCompare: other
+								ifFail: [ :err <Symbol> |
+											^super equalsStr: other	] }}	]! !
+

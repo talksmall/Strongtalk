@@ -1,0 +1,273 @@
+Delta define: #SystemInitializer as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #SystemInitializer) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #SystemInitializer) group: 'base'!
+
+(Delta mirrorFor: #SystemInitializer)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'library class initialization' !
+
+
+run
+	"This is the entry point for normal execution."
+	
+	| commands <OrderedCollection[Str]> |
+
+	self runBaseClassInitializers.
+	commands := self commandLineArguments.
+	commands size > 0 ifTrue: [
+		self runNonCriticalClassInitializers.
+		self processArguments: commands.
+	] ifFalse: [
+		[	self runNonCriticalClassInitializers.
+			UI start.
+		] fork
+	]!
+
+runBaseClassInitializers
+	"Initialize critical base library classes (run in the process scheduler)"
+
+	Platform initialize.
+	Transcript := TempTranscript new.
+	SmallInteger initialize.
+	Character initialize.
+	CallBack initialize.
+	IdleProcess initialize.
+	InliningDatabase initialize.
+!
+
+runNonCriticalClassInitializers
+	"This is the root class initializer that is called when the system starts up.
+		Any class initializers that must be called should be called from
+		this method."
+
+	Session initialize.
+
+	Rectangle initialize.
+	Paint initialize.
+	Painter initialize.
+	HPEN initialize.
+	GeometricHPEN initialize.
+	HBRUSH initialize.
+	InfiniteRegion initialize.
+
+	Smalltalk initialize.
+
+	CodeEditor initialize.
+	Workspace initialize.
+
+	HTMLElement initialize.
+	HTMLParser initialize.! !
+
+! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'command line arguments' !
+
+
+argumentsDo: blk
+	| args benchmark test runner |
+	args :=  Platform getArguments.
+	2 to: args size do: [ :index |
+		blk value: (args at: index)
+	]!
+
+benchmarkDictionary
+	| dict |
+	dict := Dictionary new.
+
+	"Benchmarks"
+	dict at: #richards			put: [ :runner :repeat :inner | runner new runRichardsBenchmarks: 		repeat ].
+	dict at: #smopstones	put: [ :runner :repeat :inner | runner new runSmopstoneBenchmarks:	repeat ].
+	dict at: #slopstones		put: [ :runner :repeat :inner | runner new runSlopstoneBenchmarks:		repeat ].
+	dict at: #stanford			put: [ :runner :repeat :inner | runner new runStanfordBenchmarks:		repeat ].
+	dict at: #deltablue			put: [ :runner :repeat :inner | runner new runDeltaBlue:							repeat ].
+	dict at: #benchmarks	put: [ :runner :repeat :inner | 
+		runner new runStanfordBenchmarks:			repeat.
+		runner new runRichardsBenchmarks:		repeat.
+		runner new runDeltaBlue:								repeat.
+		runner new runSlopstoneBenchmarks:		repeat.
+		runner new runSmopstoneBenchmarks:	repeat.
+	].
+	
+	dict at: #loop			put: [ :runner :repeat :inner | runner new runStanfordLoopBenchmarks: repeat ].
+	
+	"Individual Stanford Benchmarks"
+	dict at: #bubblesort		put: [ :runner :repeat :inner | runner new runIndividualStanford: BubbleSortBenchmark repeat: repeat inner: inner].
+	dict at: #bubblesort2	put: [ :runner :repeat :inner | runner new runIndividualStanford: BubbleSort2Benchmark repeat: repeat inner: inner].
+	dict at: #intmm				put: [ :runner :repeat :inner | runner new runIndividualStanford: IntMMBenchmark repeat: repeat inner: inner].
+	dict at: #intmm2			put: [ :runner :repeat :inner | runner new runIndividualStanford: IntMM2Benchmark repeat: repeat inner: inner].
+	dict at: #mm					put: [ :runner :repeat :inner | runner new runIndividualStanford: MMBenchmark repeat: repeat inner: inner].
+	dict at: #mm2				put: [ :runner :repeat :inner | runner new runIndividualStanford: MM2Benchmark repeat: repeat inner: inner].
+	dict at: #perm				put: [ :runner :repeat :inner | runner new runIndividualStanford: PermBenchmark repeat: repeat inner: inner].
+	dict at: #perm2				put: [ :runner :repeat :inner | runner new runIndividualStanford: Perm2Benchmark repeat: repeat inner: inner].
+	dict at: #queens			put: [ :runner :repeat :inner | runner new runIndividualStanford: QueensBenchmark repeat: repeat inner: inner].
+	dict at: #queens2			put: [ :runner :repeat :inner | runner new runIndividualStanford: Queens2Benchmark repeat: repeat inner: inner].
+	dict at: #quicksort		put: [ :runner :repeat :inner | runner new runIndividualStanford: QuicksortBenchmark repeat: repeat inner: inner].
+	dict at: #quicksort2		put: [ :runner :repeat :inner | runner new runIndividualStanford: Quicksort2Benchmark repeat: repeat inner: inner].
+	dict at: #towers			put: [ :runner :repeat :inner | runner new runIndividualStanford: TowersBenchmark repeat: repeat inner: inner].
+	dict at: #towers2			put: [ :runner :repeat :inner | runner new runIndividualStanford: Towers2Benchmark repeat: repeat inner: inner].
+	dict at: #treesort			put: [ :runner :repeat :inner | runner new runIndividualStanford: TreeSortBenchmark repeat: repeat inner: inner].
+	dict at: #treesort2		put: [ :runner :repeat :inner | runner new runIndividualStanford: TreeSort2Benchmark repeat: repeat inner: inner].
+	dict at: #puzzle				put: [ :runner :repeat :inner | runner new runIndividualStanford: PuzzleBenchmark repeat: repeat inner: inner].
+	dict at: #sieve				put: [ :runner :repeat :inner | runner new runIndividualStanford: SieveBenchmark repeat: repeat inner: inner].
+	dict at: #sumto				put: [ :runner :repeat :inner | runner new runIndividualStanford: SumToBenchmark repeat: repeat inner: inner].
+	dict at: #recurse			put: [ :runner :repeat :inner | runner new runIndividualStanford: RecurseBenchmark repeat: repeat inner: inner].
+	dict at: #atallput			put: [ :runner :repeat :inner | runner new runIndividualStanford: AtAllPutBenchmark repeat: repeat inner: inner].
+	dict at: #incrementall	put: [ :runner :repeat :inner | runner new runIndividualStanford: IncrementAllBenchmark repeat: repeat inner: inner].
+	dict at: #nestedloop		put: [ :runner :repeat :inner | runner new runIndividualStanford: NestedLoopBenchmark repeat: repeat inner: inner].
+	dict at: #tak					put: [ :runner :repeat :inner | runner new runIndividualStanford: TakBenchmark repeat: repeat inner: inner].
+	dict at: #takl					put: [ :runner :repeat :inner | runner new runIndividualStanford: TaklBenchmark repeat: repeat inner: inner].
+	dict at: #ordcol				put: [ :runner :repeat :inner | runner new runIndividualStanford: OrderedCollectionBenchmark repeat: repeat inner: inner].
+	dict at: #dictionary		put: [ :runner :repeat :inner | runner new runIndividualStanford: DictionaryBenchmark repeat: repeat inner: inner].
+	dict at: #dictatput		put: [ :runner :repeat :inner | runner new runIndividualStanford: DictionaryAtPutBenchmark repeat: repeat inner: inner].
+	dict at: #livermore		put: [ :runner :repeat :inner | runner new runIndividualStanford: LivermoreBenchmark repeat: repeat inner: inner].
+
+	"Individual Slopstone Benchmarks"
+	dict at: #addint				put: [ :runner :repeat :inner | runner new runIndividualSlopstone: 1 repeat: repeat inner: inner].
+	dict at: #addfloat			put: [ :runner :repeat :inner | runner new runIndividualSlopstone: 2 repeat: repeat inner: inner].
+	dict at: #stringaccess	put: [ :runner :repeat :inner | runner new runIndividualSlopstone: 3 repeat: repeat inner: inner].
+	dict at: #createobject	put: [ :runner :repeat :inner | runner new runIndividualSlopstone: 4 repeat: repeat inner: inner].
+	dict at: #perform			put: [ :runner :repeat :inner | runner new runIndividualSlopstone: 5 repeat: repeat inner: inner].
+	dict at: #evaluate			put: [ :runner :repeat :inner | runner new runIndividualSlopstone: 6 repeat: repeat inner: inner].
+	
+	"Individual Smopstone Benchmarks"
+	dict at: #fractonacci	put: [ :runner :repeat :inner | runner new runIndividualSmopstone: 1 repeat: repeat inner: inner].
+	dict at: #primes   		put: [ :runner :repeat :inner | runner new runIndividualSmopstone: 2 repeat: repeat inner: inner].
+	dict at: #streams		put: [ :runner :repeat :inner | runner new runIndividualSmopstone: 3 repeat: repeat inner: inner].
+	dict at: #strings			put: [ :runner :repeat :inner | runner new runIndividualSmopstone: 4 repeat: repeat inner: inner].
+	dict at: #sets				put: [ :runner :repeat :inner | runner new runIndividualSmopstone: 5 repeat: repeat inner: inner].
+	dict at: #sorting 			put: [ :runner :repeat :inner | runner new runIndividualSmopstone: 6 repeat: repeat inner: inner].
+	dict at: #sorcerer		put: [ :runner :repeat :inner | runner new runIndividualSmopstone: 7 repeat: repeat inner: inner].
+
+	"Test Suites"
+	dict at: #testsuite		put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new testBasicClasses] ].
+
+	"Individual Tests"
+	dict at: #string				put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: String title: 'String' ] ].
+	dict at: #number			put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: Number title: 'Number' ] ].
+	dict at: #sortedcol		put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: SortedCollection title: 'SortedCollection' ] ].
+	dict at: #readstream	put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: SeqCltnReadStream title: 'SeqCltnReadStream' ] ].
+	dict at: #writestream	put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: SeqCltnReadWriteStream title: 'SeqCltnReadWriteStream' ] ].
+	dict at: #bag				put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: Bag title: 'Bag' ] ].
+	dict at: #keyedset		put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: KeyedSet title: 'KeyedSet' ] ].
+	dict at: #set					put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: Set title: 'Set' ] ].
+	dict at: #orderedcol	put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: OrderedCollection title: 'OrderedCollection' ] ].
+	dict at: #character		put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: Character title: 'Character' ] ].
+	dict at: #readwrite		put: [ :runner :repeat :inner | repeat timesRepeat: [ VMSuite new test: ExternalReadWriteStream title: 'ExternalReadWriteStream' ] ].
+
+	"Errors"
+	dict at: #break				put: [ :runner :repeat :inner | {{primitiveBreak}} ].
+
+	"Bootstrap"
+	dict at: #boot				put: [ :runner :repeat :inner | Dumper fileOut ].
+
+	"Test Suite for the VM people"
+	dict at: #vmtest				put: [ :runner :repeat :inner | VMSuite run ].
+	dict at: #vminterpreted	put: [ :runner :repeat :inner | VMSuite runInterpreted ].
+	dict at: #vmcompiled	put: [ :runner :repeat :inner | VMSuite runCompiled ].
+	dict at: #vmvanilla			put: [ :runner :repeat :inner | VMSuite runVanilla ].
+	dict at: #dump					put: [  :runner :repeat :inner | InliningDatabase dump ].
+	dict at: #compileAll		put: [  :runner :repeat :inner | InliningDatabase compileAll ].
+	dict at: #gc						put: [  :runner :repeat :inner | VM collectGarbage ].
+	dict at: #norecomp		put: [  :runner :repeat :inner | VM booleanAt: #UseRecompilation put: false ].
+
+	"Misc."
+	dict at: #zone					put: [ :runner :repeat :inner | {{primitivePrintZone}} ].
+	dict at: #decode				put: [ :runner :repeat :inner | {{primitiveDecodeAllMethods}} ].
+	dict at: #mandelbrot		put: [ :runner :repeat :inner | repeat timesRepeat: [ Mandelbrot new computeImageOnly ] ].
+	dict at: #mandelprof		put: [ :runner :repeat :inner | Profiler do: [ Mandelbrot new computeImageOnly ] ].
+	dict at: #mandeltest		put: [ :runner :repeat :inner | Mandelbrot new computeImageOnly ].
+	dict at: #typecheck		put: [ :runner :repeat :inner | runner new runTypecheckerBenchmarks: repeat ].
+	dict at: #genprims			put: [ :runner :repeat :inner | DeltaPrimitiveGenerator doit].
+
+	^dict!
+
+commandLineArguments ^<OrderedCollection[Str]>
+
+	| list skipNext |
+	list := OrderedCollection new.
+
+	skipNext := false.
+	self argumentsDo: [ :arg | | pre |
+		skipNext ifFalse: [
+			pre := arg at: 1.
+			(arg = '-b' or: [ arg = '-f' ]) ifTrue: [
+				skipNext := true
+			] ifFalse: [
+				(pre = $+ or: [ pre = $- ]) ifFalse: [
+					list add: arg
+				]	
+			]
+		] ifTrue: [ skipNext := false ]
+	].
+	^list!
+
+findRunner: test ifAbsent: blk
+	test = 'timer'
+		ifTrue: [^BenchmarkRunner].
+	test = 'nmethod'
+		ifTrue: [^BenchmarkNMethodInvocationRunner].
+	test = 'method'
+		ifTrue: [^BenchmarkMethodInvocationRunner].
+	test = 'prims'
+		ifTrue: [^BenchmarkPrimitiveRunner].
+	test = 'lookup'
+		ifTrue: [^BenchmarkLookupCacheRunner].
+	test = 'blocks'
+		ifTrue: [^BenchmarkBlockRunner].
+	blk value.!
+
+lower: str
+	| result |
+	result := String new: str size.
+	1 to: str size do: [ :index |
+		result at: index put: (str at: index) asLowercase
+	].
+	^result!
+
+parseInteger: str ifFail: blk
+	| result |
+	result := 0.
+	str do: [ :c | | val |
+		val := c asciiValue.
+		(val >= $0 asciiValue and: [ val <= $9 asciiValue ])  ifTrue: [
+			result := (result * 10) + ( val - $0 asciiValue)
+		] ifFalse: [
+			^blk value
+		]
+	].
+	^result!
+
+processArguments: commands
+
+	| dict runner repeat inner print |
+	dict := self benchmarkDictionary.
+	runner	:= BenchmarkRunner.
+	repeat	:= 1.
+	inner	:= 1.
+	print		:= false.
+
+	commands do: [ :arg | | cmd options |
+		options	:= false.
+		arg = 'profile'	ifTrue: [ runner := BenchMarkProfileRunner.		options := true ].
+		arg = 'prims'		ifTrue: [ runner := BenchmarkPrimTraceRunner.	options := true ].
+		arg = 'inner'		ifTrue: [ inner := repeat. repeat := 1.						options := true ].
+		arg = 'print'		ifTrue: [ print := true.												options := true ].
+		options ifFalse: [
+			repeat := self parseInteger: arg ifFail: [
+				Transcript show: 'Processing '; show: arg; show: ' ('; show: repeat printString; show: ' times)'; cr.
+				cmd := dict at: arg ifAbsent: [nil].
+				cmd isNil ifTrue:  [ Transcript show: 'Command not found'; cr ]
+							   ifFalse: [ cmd value: runner value: repeat value: inner ].
+				repeat
+			]
+		]
+	].
+
+	print ifTrue: [
+		{{primitivePrintMemory}}.
+	]! !
+

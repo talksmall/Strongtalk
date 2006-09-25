@@ -1,0 +1,46 @@
+Delta define: #InputStream as: (
+Generic forAll: '(E covar) ' body: (Protocol superProtocol: '<Cltn[E]>')) !
+
+(Delta mirrorFor: #InputStream) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #InputStream) group: 'base'!
+
+(Delta mirrorFor: #InputStream)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #InputStream) methodsFor: 'Unclassified' !
+
+
+atEnd ^<Boolean> !
+
+close !
+
+contentsRemaining ^<SeqCltn[E]>
+"Return a collection of all the elements remaining
+in the stream.  The elements are consumed." !
+
+do: f <[E]> !
+
+next ^<E> !
+
+next: nElements <Int> ^<SeqCltn[E]> !
+
+nextIfAbsent: <[^X def]> ^<E | X> !
+
+nextMatchFor: o <Object> ^<Boolean> !
+
+peek ^<E> !
+
+peekFor: o <Object> ^<Boolean> !
+
+skip: nElements <Int> !
+
+skipTo: o <Object> ^<Boolean>
+"Skip to just past the next occurence of o, or the end
+of the stream, if it does not occur.  Return whether
+it occurred." !
+
+upTo: delimiter <Object> ^<SeqCltn[E]> ! !
+

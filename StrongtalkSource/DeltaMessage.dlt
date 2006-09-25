@@ -1,0 +1,46 @@
+Delta define: #DeltaMessage as: (
+(Class subclassOf: 'DeltaExpression' instanceVariables: 'sel args ')) !
+
+(Delta mirrorFor: #DeltaMessage) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaMessage) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMessage)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMessage) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool messageNode: self!
+
+arg1 ^ <Expression>
+    ^ args at: 1!
+
+args ^ <OrdCltn[Expression]>
+    ^ args!
+
+arguments
+    "Answers an OrderedCollection of arguments."
+    ^ args!
+
+isCompleteTerm
+	^false!
+
+isMessageNode ^ <Boolean>
+    ^ true!
+
+nofArgs ^ <Int>
+    ^ args size!
+
+selector ^ <Symbol>
+    ^ sel!
+
+send: aSelector <Symbol >with: arguments <OrdCltn[Expression] > ^ <Self>
+    self assert: [aSelector isSymbol].
+    self assert: [arguments isCollection]. "no such method"
+    sel := aSelector.
+    args := arguments! !
+

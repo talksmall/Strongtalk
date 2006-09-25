@@ -1,0 +1,237 @@
+Delta define: #DeltaASTNode as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaASTNode) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaASTNode) group: 'ast'!
+
+(Delta mirrorFor: #DeltaASTNode)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaASTNode) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+    self subclassResponsibility!
+
+errorHandler ^<TypeErrorHandler>
+	^DeltaTypeErrorHandler current!
+
+isAbstractMethodNode ^ <Boolean>
+    ^ false!
+
+isAccessMethodNode ^ <Boolean>
+    ^ false!
+
+isActivationVarNode ^ <Boolean>
+    ^ false!
+
+isAndOrNode ^ <Boolean>
+    ^ false!
+
+isArrayNode ^ <Boolean>
+    ^ false!
+
+isAssignmentNode ^ <Boolean>
+    ^ false!
+
+isBlockNode ^ <Boolean>
+    ^ false!
+
+isBoolNode ^ <Boolean>
+    ^ false!
+
+isByteArrayNode ^ <Boolean>
+    ^ false!
+
+isCascadedSendNode ^ <Boolean>
+    ^ false!
+
+isCharNode
+    ^ false!
+
+isClass ^ <Boolean>
+    ^false!
+
+isClassVarNode ^ <Boolean>
+    ^ false!
+
+isCodeBodyNode ^ <Boolean>
+    ^false!
+
+isCompleteTerm
+	"Returns whether this node is a complete term (for showing the type of a selection)"
+	^false!
+
+isDLLCallNode
+    ^ false!
+
+isDoubleNode ^ <Boolean>
+    ^ false!
+
+isExpressionNode ^ <Boolean>
+    ^ false!
+
+isFloatExpressionNode ^ <Boolean>
+    ^ false!
+
+isFloatNode ^ <Boolean>
+    ^ false!
+
+isFloatValue
+	^ false!
+
+isGeneric  ^ <Boolean>
+    ^false!
+
+isGenericApplicationExpressionNode ^ <Boolean>
+    ^ false!
+
+isGenericNode  ^ <Boolean>
+    ^false!
+
+isGlobalVarNode ^ <Boolean>
+    ^ false!
+
+isGuaranteed
+  ^false!
+
+isGuaranteedNode ^ <Boolean>
+    ^ false!
+
+isIfNode ^ <Boolean>
+    ^ false!
+
+isInlinedBlockNode
+	^ false!
+
+isInstVarNode ^ <Boolean>
+    ^ false!
+
+isIntNode ^ <Boolean>
+    ^ false!
+
+isKlass ^ <Boolean>
+    ^false!
+
+isLiteralNode ^ <Boolean>
+    ^ false!
+
+isLoopNode ^ <Boolean>
+    ^ false!
+
+isMemOop
+	^ false!
+
+isMessageNode ^ <Boolean>
+    ^ true!
+
+isMethodNode ^ <Boolean>
+    ^ false!
+
+isMixin
+	^ false!
+
+isNormalSendNode
+    ^ false!
+
+isObjectType ^ <Boolean>
+    ^false!
+
+isParameterNode ^ <Boolean>
+    ^ false!
+
+isPoolVarNode ^ <Boolean>
+    ^ false!
+
+isPredictPrimitiveNode
+	^ false!
+
+isPrimitiveCallNode
+    ^ false!
+
+isPrimitiveNode ^ <Boolean>
+    ^ false!
+
+isProtocol ^ <Boolean>
+    ^false!
+
+isReceiverNode ^ <Boolean>
+    ^ false!
+
+isRefNode ^ <Boolean>
+    ^ false!
+
+isReturnInstVarNode
+	^ false!
+
+isReturnStatNode ^ <Boolean>
+    ^ false!
+
+isSelfSendNode
+	^ false!
+
+isSendNode ^ <Boolean>
+    ^ false!
+
+isSmallIntNode ^ <Boolean>
+    ^ false!
+
+isStatementListNode ^ <Boolean>
+    ^ false!
+
+isStatementNode ^ <Boolean>
+    ^ false!
+
+isStringNode ^ <Boolean>
+    ^ false!
+
+isSuperNode ^ <Boolean>
+    ^ false!
+
+isSuperSendNode ^ <Boolean>
+    ^ false!
+
+isSuperVarNode ^ <Boolean>
+    ^ false!
+
+isSymbolNode ^ <Boolean>
+    ^ false!
+
+isTemporary ^ <Boolean>
+    ^false!
+
+isTemporaryNode ^ <Boolean>
+    ^ false!
+
+isType ^ <Boolean>
+    ^false!
+
+isTypeVar  ^ <Boolean>
+    ^false!
+
+isValidTerm  ^ <Boolean>
+
+	^true!
+
+isVarNode ^ <Boolean>
+    ^ false!
+
+printOn: aStream
+
+	super printOn: aStream.
+"
+	DeltaASTPrinter new print: self on: aStream
+"!
+
+reportError: e <TypeError> ^ <TypeError>
+	self errorHandler reportError: e at: self.
+	^e
+!
+
+unfiltered  ^<ASTNode>
+	^self
+! !
+

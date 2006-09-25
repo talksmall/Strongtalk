@@ -1,0 +1,115 @@
+Delta define: #EnterLeaveHandler as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'onEnter <[UIEvent]>
+onLeave <[UIEvent]>
+inside <Boolean>
+		')) !
+
+(Delta mirrorFor: #EnterLeaveHandler) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #EnterLeaveHandler) group: 'ui'!
+
+(Delta mirrorFor: #EnterLeaveHandler)
+comment: 
+'Is used to get notification of when the pointer enters or leaves a region.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 
+'!
+
+! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	inside := false.
+	onEnter := [ :ev <UIEvent> | ].
+	onLeave := [ :ev <UIEvent> | ].! !
+
+! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'accessing' !
+
+
+inside ^<Boolean>
+
+	^inside!
+
+onEnter ^<[UIEvent]>
+
+	^onEnter!
+
+onEnter: blk <[UIEvent]>
+
+	onEnter := blk!
+
+onLeave ^<[UIEvent]>
+
+	^onLeave!
+
+onLeave: blk <[UIEvent]>
+
+	onLeave := blk! !
+
+! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'event handling' !
+
+
+mouseEvent: type <Symbol>
+at: loc <Point>
+event: ev <UIEvent>
+^<Boolean>
+
+	self inside
+		ifFalse: [	self assert: [ self allocation containsPoint: loc ].  "Make sure the grab logic works"
+						(self topWindow isActive and: [ self acquireGrab ])
+								ifTrue: [	self enterWith: ev.
+												^true ]]
+		ifTrue: [ ((self allocation containsPoint: loc) and: [ self topWindow isActive ])
+						ifFalse: [	self leaveWith: ev.
+										^true ]].
+	^super mouseEvent: type at: loc event: ev! !
+
+! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'private' !
+
+
+enterWith: ev <UIEvent>
+
+	self recordEnter.
+	self onEnter value: ev
+!
+
+inside: f <Boolean>
+
+	inside := f!
+
+leaveWith: ev <UIEvent>
+
+	self recordLeave.
+	self onLeave value: ev.!
+
+recordEnter
+
+	self	inside: true.
+!
+
+recordLeave
+
+	self isGrabbing
+		ifTrue: [ self releaseGrab ].
+	self inside: false.
+! !
+
+! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'notification' !
+
+
+detaching
+
+	super detaching.
+	self inside
+		ifTrue: [ self recordLeave ]!
+
+lostGrab
+
+	self inside
+		ifTrue: [ self recordLeave ]! !
+

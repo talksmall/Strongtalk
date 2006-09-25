@@ -1,0 +1,94 @@
+Delta define: #ExternalReadStream as: (
+(Class subclassOf: 'BasicReadStream[Int] mixin |> ExternalInputStream[ExternalFileDescriptor]' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #ExternalReadStream) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ExternalReadStream) group: 'base'!
+
+(Delta mirrorFor: #ExternalReadStream)
+comment: 
+'%note: the actualPosition instance variable inherited from BasicReadStream is
+not used; its access methods are reimplemented to use the
+buffer origin and buffer position.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #ExternalReadStream) classSide methodsFor: 'instance creation' !
+
+
+on: sc <SeqCltn[E]> ^<ReadStream[E]>
+
+	"This blocks access to the instance creation messages inherited from BasicReadStream"
+	self shouldNotImplement! !
+
+! (Delta mirrorFor: #ExternalReadStream) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+    "copied-down implementation from ExternalInputStream for efficiency"
+    ^self nextBufferPosition >= self bufferNumElements!
+
+actualPosition ^<Int>
+
+	^self bufferOrigin + self nextBufferPosition!
+
+actualPosition: p <Int>
+    | bufPos <Int> |
+    bufPos := p - self bufferOrigin.
+    (bufPos >= 0 and: [ bufPos < self bufferNumElements ])
+        ifTrue: [ self nextBufferPosition: bufPos ]
+        ifFalse: [    "We need to reload the buffer"
+					self assert: [ p between: 0 and: self size ].
+                    self writeIfNeededBeforePositionChange.
+                    self bufferOrigin: (self goodBufferOriginForPosition: p).
+                    self descriptor position: self bufferOrigin.
+                    self fillBuffer.
+                    self nextBufferPosition: p - self bufferOrigin.    ].!
+
+goodBufferOriginForPosition: nextPos <Int> ^<Int>
+    "Try to keep the origin on a buffer-aligned boundary"
+    ^nextPos - (nextPos \\ self bufferSize)!
+
+writeIfNeededBeforePositionChange
+
+	"This is a hook for mutable subclasses to do any buffer flushing necessary before
+	 the buffer is repositioned.  By default, do nothing"! !
+
+! (Delta mirrorFor: #ExternalReadStream) methodsFor: 'initialization' !
+
+
+initializeActualPosition
+    "disable initialization, since we don't use the inherited actualPosition instance variable"! !
+
+! (Delta mirrorFor: #ExternalReadStream) methodsFor: 'accessing' !
+
+
+at: index <Int> ^<Int>
+
+	| i <Int> |
+	i := index - self bufferOrigin.
+	^(i < 1 or: [ i > self bufferNumElements ])
+		ifFalse: [ self buffer byteAt: i - 1 ]
+		ifTrue: [	| pos <Int> result <Int> |
+						pos := self position.
+						self position: index - 1.
+						"Use a recursive call, which should now be in range"
+						result := self at: index.
+						self position: pos.
+						result	]!
+
+repositioningAt: index <Int> ^<Int>
+	
+	| i <Int> |
+	i := index - self bufferOrigin.
+	^(i < 1 or: [ i > self bufferNumElements ])
+		ifFalse: [ self buffer byteAt: i - 1 ]
+		ifTrue: [	self position: index - 1.
+						self at: index  ]!
+
+size ^<Int>
+
+	^self descriptor size! !
+

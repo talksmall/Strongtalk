@@ -1,0 +1,58 @@
+Delta define: #Dict as: (
+Generic forAll: 'K , (E covar) ' body: (Protocol superProtocol: '<Indexed[Object,E]>')) !
+
+(Delta mirrorFor: #Dict) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #Dict) group: 'base'!
+
+(Delta mirrorFor: #Dict)
+comment: 
+'The dictionary protocol.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Dict) methodsFor: 'Unclassified' !
+
+
+associationAt: k <K> ^<Assoc[K,E]>!
+
+associationAt: k <K> ifAbsent: <[^X def]> ^<Assoc[K,E] | X> 
+!
+
+associations ^<Cltn[Assoc[K,E]]> !
+
+associationsDo: blk <[Assoc[K,E]]> !
+
+at: index <Object> ifAbsent: <[^X def]> ^<E | X> 
+
+	"%note on typing: 
+	   The index type is weakened here because dictionaries can
+		be queried with any object as an index, since only the
+		object protocol is used for lookup.  This is important
+		in places like Bags, where #includes: must query its
+	    internal dictionary with its argument.  The argument to
+	    #includes: has to be <Object> since it is defined in
+		Collection, and it is critical that Collections be covariant
+	    on their element type, so the element type can't be
+	    used as an argument type"!
+
+includesAssociation: assoc <Assoc[K,Object]> ^<Boolean> !
+
+includesKey: index <Object> ^<Boolean> !
+
+keyAtValue: v <Object> ^<K>!
+
+keyAtValue: v <Object> ifAbsent: <[^X def]> ^<K | X>!
+
+keys ^<Cltn[K]>
+"This doesn''t declare that a set is returned because it should be read only,
+to allow this protocol to be covariant on K.
+It turns out that Collection is the exactly readonly part of a 
+Set''s interface anyway." !
+
+keysAndValuesDo: blk <[K,E]> !
+
+keysDo: blk <[K]> !
+
+values ^<Cltn[E]> ! !
+

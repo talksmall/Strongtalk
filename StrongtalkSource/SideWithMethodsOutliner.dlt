@@ -1,0 +1,38 @@
+Delta define: #SideWithMethodsOutliner as: (
+(Class subclassOf: 'SideOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #SideWithMethodsOutliner) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #SideWithMethodsOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #SideWithMethodsOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SideWithMethodsOutliner) methodsFor: 'menus' !
+
+
+typeCheckMenu ^<Menu>
+
+	^super typeCheckMenu
+			add: (MenuAction new
+                  name: 'Typecheck interface';
+                  action: [self typecheckInterface])
+! !
+
+! (Delta mirrorFor: #SideWithMethodsOutliner) methodsFor: 'private' !
+
+
+categoryOutlinerClass ^ <CategoryWithMethodsOutliner class>
+
+	^CategoryWithMethodsOutliner! !
+
+! (Delta mirrorFor: #SideWithMethodsOutliner) methodsFor: 'control' !
+
+
+typecheckInterface
+
+	self typecheckAction:[self mirror typecheckInterface]
+		title: 'Typechecking interface of ', self mirror name! !
+

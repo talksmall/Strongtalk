@@ -1,0 +1,149 @@
+Delta define: #SelectableTypeError as: (
+(Class subclassOf: 'Object' instanceVariables: 'errorView <View> codeView <CodeView> te <TypeError> left <ToggleButton> right <ToggleButton>')) !
+
+(Delta mirrorFor: #SelectableTypeError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #SelectableTypeError) group: 'outliner'!
+
+(Delta mirrorFor: #SelectableTypeError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SelectableTypeError) classSide methodsFor: 'looks' !
+
+
+leftButtonFalseLook ^ <Visual>
+
+^(Image fromFile: (FilePath for: 'resources\ldel.bmp'))
+							alignLowerLeft asVisual!
+
+leftButtonTrueLook ^ <Visual>
+
+
+^(Image fromFile: (FilePath for: 'resources\ldel.bmp'))
+							alignLowerLeft asVisual!
+
+rightButtonFalseLook ^ <Visual>
+
+^(Image fromFile: (FilePath for: 'resources\rdel.bmp'))
+							alignLowerLeft asVisual!
+
+rightButtonTrueLook ^ <Visual>
+
+^(Image fromFile: (FilePath for: 'resources\rdel.bmp'))
+							alignLowerLeft asVisual! !
+
+! (Delta mirrorFor: #SelectableTypeError) classSide methodsFor: 'instance creation' !
+
+
+onTypeError: e <TypeError> inView: cv <CodeView>  ^ <Instance>
+
+^self new initialize te: e ; codeView: cv! !
+
+! (Delta mirrorFor: #SelectableTypeError) methodsFor: 'accessing' !
+
+
+codeView ^ <CodeView>
+
+^codeView!
+
+codeView: cv <CodeView>
+
+codeView := cv!
+
+deselect
+
+self selected: false.
+self unhighlightError.!
+
+left ^ <ToggleButton>
+
+^left!
+
+right ^ <ToggleButton>
+
+^right!
+
+selectIfFail: fb <[^DoesNotMatter]>
+
+self selected: true.
+self highlightErrorIfFail: fb.!
+
+selected: b <Boolean>
+
+self left model: b.
+self right model: b.!
+
+te ^ <TypeError>
+
+^te!
+
+te: e  <TypeError>
+
+te := e! !
+
+! (Delta mirrorFor: #SelectableTypeError) methodsFor: 'initialization' !
+
+
+initialize
+
+| blk <[Boolean]> |
+
+blk := [: b <Boolean> | b ifTrue:[self codeView codeManager showTypeError: self] ifFalse:[self deselect]].
+left := ToggleButton withTrueLook: self actualClass leftButtonTrueLook  falseLook: self actualClass leftButtonFalseLook.
+right := ToggleButton withTrueLook: self actualClass rightButtonTrueLook  falseLook: self actualClass rightButtonFalseLook.
+left modelSink: blk.
+right modelSink: blk.
+! !
+
+! (Delta mirrorFor: #SelectableTypeError) methodsFor: 'operations' !
+
+
+highlightErrorIfFail: fb <[^DoesNotMatter]>
+
+self codeView selection: (self leftSpotIfAbsent: fb)  ,, (self rightSpotIfAbsent: fb)!
+
+leftSpotIfAbsent: blk <[^Point]>  ^ <Point>
+"returns the coordinate just after the left  marker"
+| li <Integer> |
+
+li := self codeView linearIndexForGlyph: self left ifAbsent:[^blk value].
+^self codeView linearSpotAt: li + 1 ifAbsent:[^blk value].
+
+
+!
+
+mark
+| start <Point> stop <Point> |
+ 
+start := self codeView viewIndexFromSourceIndex: self te loc sourceHighlight at1.
+self codeView	replaceModelFrom:start
+								to: start
+								withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: self left)).
+stop := 	self codeView viewIndexFromSourceIndex: self te loc sourceHighlight at2.
+self codeView	replaceModelFrom: stop
+								to: stop
+								withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: self right)).
+								!
+
+rightSpot ^ <Point>
+
+"returns the coordinate just before the right  marker"
+
+^self codeView spotForGlyph: self right ifAbsent:[self shouldNotHappen]!
+
+rightSpotIfAbsent: blk <[^Point]>  ^ <Point>
+
+"returns the coordinate just before the right  marker"
+
+^self codeView spotForGlyph: self right ifAbsent:[^blk value]!
+
+unhighlightError
+
+self codeView selection: self rightSpot ,, self rightSpot!
+
+unhighlightErrorIfFail: fb <[^DoesNotMatter]>
+
+self codeView selection: (self rightSpotIfAbsent: fb)  ,, (self rightSpotIfAbsent: fb)! !
+

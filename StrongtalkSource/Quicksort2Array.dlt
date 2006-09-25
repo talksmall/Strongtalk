@@ -1,0 +1,58 @@
+Delta define: #Quicksort2Array as: (
+(Class subclassOf: 'Array' instanceVariables: '')) !
+
+(Delta mirrorFor: #Quicksort2Array) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Quicksort2Array) group: 'benchmark'!
+
+(Delta mirrorFor: #Quicksort2Array)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Quicksort2Array) methodsFor: 'misc' !
+
+
+initarr: b
+
+	| biggest littlest temp |
+	biggest := -1000000.
+	littlest := 1000000.
+	1 to: self size do: [:i |
+		temp := b rand.
+		self at: i put: temp - (temp // 100000 * 100000) - 50000.
+		(self at: i) > biggest ifTrue: [biggest := self at: i].
+		(self at: i) < littlest ifTrue: [littlest := self at: i]
+	].
+	b biggest: biggest.
+	b littlest: littlest.!
+
+quickSort
+	self quickSortFrom: 1 to: self size!
+
+quickSortFrom: l to: r 
+	| i j x w |
+	i := l.
+	j := r.
+	x := self at: l + r // 2.
+	[i <= j]
+		whileTrue: 
+			[[(self at: i)
+				< x]
+				whileTrue: [i := i + 1].
+			[x < (self at: j)]
+				whileTrue: [j := j - 1].
+			i <= j
+				ifTrue: 
+					[w := self at: i.
+					self at: i put: (self at: j).
+					self at: j put: w.
+					i := i + 1.
+					j := j - 1]].
+	l < j ifTrue: [self quickSortFrom: l to: j].
+	i < r ifTrue: [self quickSortFrom: i to: r]!
+
+sort
+	self quickSort! !
+

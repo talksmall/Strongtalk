@@ -1,0 +1,64 @@
+Delta define: #DefinitionReader as: (
+(Class subclassOf: 'DefinitionFiler' instanceVariables: 'category visibility ')) !
+
+(Delta mirrorFor: #DefinitionReader) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DefinitionReader) group: 'reflection'!
+
+(Delta mirrorFor: #DefinitionReader)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DefinitionReader) classSide methodsFor: 'Unclassified' !
+
+
+for: m <Mirror> category: c <Symbol>  ^ <Instance>
+	^(self for: m) category: c
+! !
+
+! (Delta mirrorFor: #DefinitionReader) methodsFor: 'Unclassified' !
+
+
+category ^ <Str>
+	^category isNil 
+		ifTrue: ['Unclassified']
+		ifFalse: [category]
+!
+
+category: c <Str>
+	category := c.
+	('*private*' match: c)
+		ifTrue: [ visibility := #private ]
+		ifFalse: [ visibility := #public ]
+!
+
+fileInFrom: stream <ReadStream>
+	| source <String> |
+	[(source := stream nextChunk) isEmpty]
+		whileFalse: [self fileInMethod: source].
+!
+
+fileInMethod: source <Str>
+	| pt <ParseTree> ast <DeltaMethod> |
+	pt := self mirror addMethod: source visibility: self visibility category: self category ifFail: [ :msg <String> :pos <Int> |
+		^Transcript 
+			nextPutAll: '"<< Method filein error in ';
+			nextPutAll: self mirror name; 
+			nextPutAll: ' category ';
+			nextPutAll: self category; 
+			nextPut: $"; cr;
+			nextPutAll: (source copyFrom: 1 to: pos); cr;
+			nextPutAll: '"<< ';
+			nextPutAll: msg;
+			nextPutAll: ' <<"'; cr;
+			nextPutAll: (source copyFrom: pos + 1 to: source size); cr ].
+	
+	ast := pt body.
+	ast clearBody. 			"Clear the body part of the ast. 
+											This will go away once the type information no longer stores DeltaMethods."
+!
+
+visibility ^ <Symbol>
+	^visibility! !
+

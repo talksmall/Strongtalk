@@ -1,0 +1,232 @@
+Delta define: #Outliner as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'row <GlyphRow>
+button <View[Boolean]>
+bodyBlock <[^Visual]>
+			"Builds the body"
+body <Visual>
+			"Cache for result of bodyBlock"
+indent <Int>
+openSink <[Boolean]>
+		') classVariables: 'UnpressedBorder <Border>
+			"Shared empty border for unpressed state"
+PressedBorder <Border>
+			"Shared  border for pressed state"
+DefaultOpenGlyph <Glyph>
+DefaultClosedGlyph <Glyph>
+		') !
+
+(Delta mirrorFor: #Outliner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Outliner) group: 'ui'!
+
+(Delta mirrorFor: #Outliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Outliner) classSide methodsFor: 'instance creation' !
+
+
+forHeader: h <Visual>
+bodyBlock: bblk <[^Visual]>
+^<Instance>
+
+	^self forHeader: h
+			closedLook: (self defaultClosedGlyph asVisual)
+			openLook: (self defaultOpenGlyph asVisual)
+			bodyBlock: bblk!
+
+forHeader: h <Visual>
+closedLook: cl <Visual>
+openLook: ol <Visual>
+bodyBlock: bblk <[^Visual]>
+^<Instance>
+
+	^self new initForHeader: h
+			closedLook: cl
+			openLook: ol
+			bodyBlock: bblk! !
+
+! (Delta mirrorFor: #Outliner) classSide methodsFor: 'constants' !
+
+
+defaultClosedGlyph ^<Glyph>
+
+	DefaultClosedGlyph isNil
+		ifTrue: [ DefaultClosedGlyph :=
+						(Image fromFile: (FilePath for: 'resources\closedItem.bmp'))
+							alignLowerLeft. 	].
+	^DefaultClosedGlyph!
+
+defaultOpenGlyph ^<Glyph>
+
+	DefaultOpenGlyph isNil
+		ifTrue: [ DefaultOpenGlyph :=
+						(Image fromFile: (FilePath for: 'resources\openItem.bmp'))
+							alignLowerLeft. 	].
+	^DefaultOpenGlyph! !
+
+! (Delta mirrorFor: #Outliner) methodsFor: 'initialization' !
+
+
+initForHeader: h <Visual>
+closedLook: cl <Visual>
+openLook: ol <Visual>
+bodyBlock: bblk <[^Visual]>
+
+	self buildButtonForClosedLook: cl openLook: ol.
+	self row: (Row withAll: (Array[Visual]
+						with: self button
+						with: h)).
+	self bodyBlock: bblk.
+	self indent: self defaultIndent.
+	self openSink: [ :b <Boolean> |  ].
+	self build.! !
+
+! (Delta mirrorFor: #Outliner) methodsFor: 'private' !
+
+
+build
+
+	self hasPart
+		ifTrue: [ self part == self row
+						ifTrue: [ self removePart ]
+						ifFalse: [	"Remove the body & header from the column"
+										self column remove: 2 at: 1.	]	].
+	self open
+		ifTrue: [	self part: ((Column withAll: (Array[Visual]
+											with: self row
+											with: self body		)
+										) optimizeIncrementalLayout: false).
+						self session updateLayoutsIfNeeded.
+						self scrollIfNeededToMakeVisible.	]
+		ifFalse: [	self part: self row.		 ].
+!
+
+buildButtonForClosedLook: cl <Visual>
+openLook: ol <Visual>
+
+	self button:
+		((ToggleButton withTrueLook: ol falseLook: cl)
+			unpressedBorder: self unpressedBorder;
+			pressedBorder: self pressedBorder).
+!
+
+button ^<View[Boolean]>
+
+	^button!
+
+button: b <View[Boolean]>
+
+	button := b.
+	b modelSink:
+		[ :state <Boolean> |
+			self userOpen: state ].!
+
+column ^<GlyphColumn>
+
+	^Column coerce: self part!
+
+defaultIndent ^<Int>
+
+	^20!
+
+pressedBorder ^<Border>
+
+	PressedBorder isNil
+		ifTrue: [ PressedBorder := Border standard3DWithExtraInteriorSpace: 2 raised: false ].
+	^PressedBorder!
+
+row ^<GlyphRow>
+
+	^row!
+
+row: r <GlyphRow>
+
+	row := r!
+
+unpressedBorder ^<Border>
+
+	UnpressedBorder isNil
+		ifTrue: [	UnpressedBorder := Border withRigidInset: 4 ].
+	^UnpressedBorder!
+
+userOpen: state <Boolean>
+
+	self openSink: state.
+	self build.
+	self session updateLayoutsIfNeeded! !
+
+! (Delta mirrorFor: #Outliner) methodsFor: 'accessing' !
+
+
+body ^<Visual>
+
+	body isNil
+		ifTrue: [ body := ((Frame for: self bodyBlock value)
+										border: Border leftBracket
+									) baselined. ].
+	^body!
+
+bodyBlock ^<[^Visual]>
+
+	^bodyBlock!
+
+bodyBlock: bblk <[^Visual]>
+
+	| oldBlock <Object> |
+	oldBlock := bodyBlock.
+
+	bodyBlock := bblk.
+	body := nil.
+
+	oldBlock isNil
+		ifFalse: [ self button model
+							ifTrue: [ self build ]].!
+
+indent ^<Int>
+
+	^indent!
+
+indent: i <Int>
+
+	indent := i!
+
+leftBracketbody ^<Visual>
+
+	body isNil
+		ifTrue: [ body := ((Frame for: self bodyBlock value)
+										border: Border leftBracket
+									) baselined. ].
+	^body!
+
+open ^<Boolean>
+
+	^self button model!
+
+open: o <Boolean>
+
+	self button model: o.
+	self build.!
+
+openSink ^<[Boolean]>
+
+	^openSink!
+
+openSink: b <[Boolean]>
+
+	openSink := b !
+
+threeDbodybody ^<Visual>
+
+	body isNil
+		ifTrue: [ 	body := self bodyBlock value.
+						body := (Frame for: body)
+								border: (Border standard3DWithColor: Paint gray
+													extraInteriorSpace: 2
+													raised: true).
+						body := (Frame for: body)
+									border: (Border withRigidInset: (self indent @ 0 corner: Point origin)).
+						body := body baselined.  ].
+	^body! !
+

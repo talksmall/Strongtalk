@@ -1,0 +1,74 @@
+Delta define: #BasicGenericApplicationTypeData as: (
+(Class subclassOf: 'BasicTypeData' instanceVariables: 'target actuals ')) !
+
+(Delta mirrorFor: #BasicGenericApplicationTypeData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicGenericApplicationTypeData) group: 'ast'!
+
+(Delta mirrorFor: #BasicGenericApplicationTypeData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicGenericApplicationTypeData) methodsFor: 'Unclassified' !
+
+
+actuals ^ <OrdCltn[ObjectType]>
+    ^actuals!
+
+apply: tid <TypeId >to: tas <OrdCltn[ObjectType] > ^ <Self>
+self  target: tid.
+actuals := tas.!
+
+blockGeneric
+
+self deltaHack.
+
+^Delta at: (self actuals size printString, '_argFun') asSymbol
+
+!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^((self target asGeneric compositeSubstitute:t) substitute: self target asGeneric privateToPublicSubstitution)
+substitute: (self target asGeneric substitutionOfFormalsWithActuals: self actuals)!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+
+ ^(self target  compositeSubstitute:t)
+substitute: (self target asGeneric substitutionOfFormalsWithActuals: self actuals)!
+
+generic
+
+self deltaHack.
+
+^self target name = #Fun 
+   ifTrue:[self blockGeneric]
+   ifFalse: [self target asGeneric]!
+
+selfClassTV ^ <TypeVar>
+
+^self target  asGeneric selfClassTV.
+ !
+
+selfPublicClassTV ^ <TypeVar>
+
+^self target asGeneric selfPublicClassTV.
+ !
+
+selfPublicTV ^ <TypeVar>
+
+^self target  asGeneric selfPublicTV.
+ !
+
+selfTV ^ <TypeVar>
+
+^self target asGeneric selfTV
+!
+
+target ^ <TypeId>
+    ^target!
+
+target: t  <TypeId>
+    target := t.! !
+

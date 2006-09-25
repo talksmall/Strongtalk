@@ -1,0 +1,47 @@
+Delta define: #DeltaMsgArgumentError as: (
+(Class subclassOf: 'DeltaMsgNotSubtypesError' instanceVariables: 'argument ')) !
+
+(Delta mirrorFor: #DeltaMsgArgumentError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaMsgArgumentError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMsgArgumentError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMsgArgumentError) methodsFor: 'Unclassified' !
+
+
+argument   ^ <Int >
+	^argument!
+
+argument: i <Int > ^ <Self>
+	argument := i!
+
+errorMessage  ^ <String>
+    ^'Argument ', self argument printString,
+     ' of ', self subtypeLoc name, ' is not a subtype of argument ',
+    self argument printString,' of ', self supertypeLoc name!
+
+setLocationFor: node <ASTNode> using: eh <TypeErrorHandler>
+
+	"Swap subtype/supertype for function arguments"
+
+	| tempLoc <Locator> tempDeltaMethod <DeltaMethod> |
+	tempLoc := eh supertypeLocFor: node.
+	(tempDeltaMethod :=  tempLoc deltaMethodIfAbsent: [nil]) isNil
+		ifTrue: [ self subtypeLoc: tempLoc ]
+		ifFalse: [self subtypeLoc: (eh supertypeLocFor: (tempLoc deltaMethod type domain at: self argument)) ].
+	tempLoc := eh subtypeLocFor: node.
+	(tempDeltaMethod :=  tempLoc deltaMethodIfAbsent: [nil]) isNil
+		ifTrue: [ self supertypeLoc: tempLoc ]
+		ifFalse: [ self supertypeLoc: (eh subtypeLocFor: (tempLoc deltaMethod type domain at: self argument)) ].
+!
+
+subtypeExpr  ^ <DeltaType>
+    ^super subtypeExpr domain at: self argument!
+
+supertypeExpr  ^ <DeltaType>
+    ^super supertypeExpr domain at: self argument! !
+

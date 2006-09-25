@@ -1,0 +1,47 @@
+Delta define: #DeltaDoubleLocTypeError as: (
+(Class subclassOf: 'DeltaTypeError' instanceVariables: 'subtypeLoc supertypeLoc ')) !
+
+(Delta mirrorFor: #DeltaDoubleLocTypeError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaDoubleLocTypeError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaDoubleLocTypeError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaDoubleLocTypeError) methodsFor: 'Unclassified' !
+
+
+loc ^ <DeltaSourceLocator>
+
+    ^self subtypeLoc!
+
+matchesError: e
+	(super matchesError: e) ifFalse: [^false].
+	^(e matchesLocator: self subtypeLoc) and: [e matchesLocator: self supertypeLoc]!
+
+matchesLocator: l
+	^(self subtypeLoc matchesLocator: l) or: [self supertypeLoc matchesLocator: l]!
+
+setLocationFor: node <ASTNode> using: eh <TypeErrorHandler>
+	self subtypeLoc: (eh subtypeLocFor: node).
+	self supertypeLoc: (eh supertypeLocFor: node).
+!
+
+subtypeLoc ^ <DeltaSourceLocator>
+
+    ^subtypeLoc!
+
+subtypeLoc: l <DeltaSourceLocator>
+
+    subtypeLoc isNil ifTrue: [subtypeLoc := l]!
+
+supertypeLoc ^ <DeltaSourceLocator>
+
+    ^supertypeLoc!
+
+supertypeLoc: l <DeltaSourceLocator>
+
+    supertypeLoc isNil ifTrue: [supertypeLoc:= l]! !
+

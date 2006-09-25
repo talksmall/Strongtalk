@@ -1,0 +1,333 @@
+Delta define: #DeltaGeneric as: (
+(Class subclassOf: 'DeltaDecl' instanceVariables: 'name <Str>
+formals <OrdCltn[TypeFormal]> 
+body <BodyType>
+scope <Scope>
+cache <DeltaGenericCache>')) !
+
+(Delta mirrorFor: #DeltaGeneric) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #DeltaGeneric) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGeneric)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGeneric) classSide methodsFor: 'instance creation' !
+
+
+formals: fs <VarOrdCltn[TypeFormal]> body: b <BodyType> ^ <Instance>
+
+^self new body: b formals: fs.!
+
+new ^ <Instance>
+
+^super new genericScope: (DeltaScope new initialize: nil)! !
+
+! (Delta mirrorFor: #DeltaGeneric) methodsFor: 'Unclassified' !
+
+
+asGeneric ^ <GenericDecl>
+    ^self!
+
+asProtocol ^ <Type>
+    ^self reportError: (DeltaGenericNotATypeError new id: self name)!
+
+asType ^ <Type>
+	^DeltaGenericNotATypeError new id: self name
+!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body bareAttributes!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body bareSecondaryAttributes!
+
+basicLocator
+	^self body basicLocator!
+
+body ^ <BodyType>
+    ^body!
+
+body: b  <BodyType>
+
+body := b.
+body scope superScope: (DeltaOverrideScope new setBase:  body scope superScope
+                                                                                         delta: self genericScope ).
+!
+
+body: b <BodyType >formals: fs <OrdCltn[TypeFormal] > ^ <Self>
+    
+self body: b.
+self formals: fs.
+self formals do:[:f <TypeFormal>  | 
+                               self genericScope at: f typeVar name put: f typeVar.
+                                ].
+!
+
+branded ^ <Boolean>
+    ^self body branded!
+
+cache ^ <DeltaGenericCache>
+^cache!
+
+cache: c <DeltaGenericCache>
+cache := c!
+
+clearCaches
+
+self body clearCaches.
+self cache: (DeltaGenericCache new setDimension: self formals size).
+!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^self body compositeSubstitute: t!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^ self body declaredSupertypes!
+
+defaultInvocation ^ <GenericApplicationType>
+
+^DeltaGenericApplicationType new apply: (DeltaTypeId new setId: self name; scope: DeltaGlobals)
+																		to: (self formals collect:[:tf <TypeFormal> | tf typeVar declaredBound])
+
+
+!
+
+formals ^ <OrdCltn[TypeFormal]>
+    ^formals!
+
+formals: fs <OrdCltn[TypeFormal]>
+
+formals := fs.
+self clearCaches.
+self formals do:[:f <TypeFormal>  | 
+                               self body addRelevantTypeVar: f typeVar.
+                                ].!
+
+genericScope ^ <DeltaScope>
+    ^scope!
+
+genericScope: s  <DeltaScope>
+    scope := s.!
+
+invocationCache ^ <Dict[ObjectType, ObjectType]>
+^self body invocationCache!
+
+invokeWith: actuals <OrdCltn[ObjectType] > ^ <Type>
+"At this point, we can look up the canonical representative for an invocation
+based on actuals and return it, if it exists. If not, we create it, cache it
+and then return it"
+
+	actuals size = self formals size ifFalse:[^DeltaGenericArityError new id: self name].
+    ^self lookupInvocationWith: actuals ifAbsent:[self newInvocationWith: actuals]!
+
+isGeneric ^ <Boolean>
+    ^true!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body localBareAttributes!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body localBareSecondaryAttributes!
+
+lookupInvocationWith: actuals <OrdCltn[ObjectType] > ifAbsent: blk <[^ObjectType]> ^ <ObjectType>
+"Private"
+| key <GenericKey> |
+"prepare a key, based on canonical versions of actuals.
+Then use key to lookup"
+
+key := DeltaGenericKey new from: actuals.
+^self cache at: key ifAbsent: blk.
+
+!
+
+name ^ <Symbol>
+    ^self body name!
+
+name: n  <Symbol>
+    name := n.
+!
+
+name: n <Symbol >body: b <BodyType >formals: fs <OrdCltn[TypeFormal] > ^ <Self>
+ 
+self body: b formals: fs.
+self name: n.					"We set the name last, otherwise the body could be nil"!
+
+newInvocationWith: actuals <OrdCltn[ObjectType] > ^ <DeltaType>
+"Private"
+
+    ^self body substitute: (self substitutionOfFormalsWithActuals: actuals)!
+
+primaryInterface ^ <Interface>
+    ^self body primaryInterface!
+
+privateToPublicSubstitution ^<Substitution> 
+
+^self body privateToPublicSubstitution!
+
+rawPrimaryInterface ^ <Interface>
+    ^self body rawPrimaryInterface!
+
+rawSecondaryInterface ^ <Interface>
+    ^self body rawSecondaryInterface!
+
+rawSelectMsg: m  <Symbol > ifAbsent: block <[^Object]> ^ <MsgSignature>
+
+	^self body rawSelectMsg: m ifAbsent: block.!
+
+scope ^ <DeltaScope>
+    ^self body scope!
+
+scope: s  <DeltaScope>
+self halt.
+    scope := s.!
+
+secondaryInterface ^ <Interface>
+    ^self body secondaryInterface!
+
+selectMsg: selector <Symbol > ^ <DeltaMsgSignature>
+    ^self selectMsg: selector ifAbsent: [DeltaSelectorUndefinedError new selector: selector].!
+
+selectMsg: m  <Symbol > ifAbsent: block <[^Object]> ^ <MsgSignature>
+	self deltaHack.
+	^self body selectMsg: m ifAbsent: block.!
+
+selfClassTV ^ <TypeVar>
+    ^self body selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self body selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self body selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self body selfTV!
+
+substitutionOfFormalsWithActuals: actuals <OrdCltn[ObjectType] > ^ <Substitution>
+    |
+actualsForFormals <Substitution> 
+|
+
+actualsForFormals := DeltaSubstitution new initialize.
+actuals size = self formals size
+   ifTrue:[actuals with: self formals do:
+                     [: a <ObjectType>  :f <TypeFormal>  | actualsForFormals at: f typeVar put: a].
+                ].
+^actualsForFormals!
+
+superprotocol ^ <Protocol>
+	^self body superprotocol!
+
+typeForNode: n <ASTNode> inMethod: m <Method > ^ <ObjectType>
+
+"Typename for specific AST node"
+
+| otype <ObjectType> |
+
+self setupTypeAssumptions.
+otype := self body typeForNode: n inMethod: m.
+self retractTypeAssumptions.
+^otype!
+
+typeInfo
+	self deltaHack.
+	^self
+!
+
+typeNameForNode: n <ASTNode> inMethod: m <Method > ^ <String>
+
+"Typename for specific AST node"
+
+| typename <String> |
+
+self setupTypeAssumptions.
+typename := self body typeNameForNode: n inMethod: m.
+self retractTypeAssumptions.
+^typename! !
+
+! (Delta mirrorFor: #DeltaGeneric) methodsFor: 'typechecking' !
+
+
+typecheck ^ <Self>
+   
+"Typecheck entire side (declaration and all methods/messages)"
+
+self errorHandler pushDefinition: self.
+self testFormals.
+self setupTypeAssumptions.
+self body typecheck.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckDeclaration ^ <Self>
+    
+"Typecheck definition of side (no methods/messages are checked)"
+
+self errorHandler pushDefinition: self.
+self testFormals.
+self setupTypeAssumptions.
+self body typecheckDeclaration.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckInterface ^ <Self>
+    
+"Typecheck declaration and signatures of all methods/messages (no method bodies are checked)"
+
+self errorHandler pushDefinition: self.
+self testFormals.
+self setupTypeAssumptions.
+self body typecheckInterface.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckMethod: m <DeltaMethod > ^ <Self>
+
+"Typecheck signatures and body of method"
+
+self setupTypeAssumptions.
+self body typecheckMethod: m.
+self retractTypeAssumptions.!
+
+typecheckTypeArgs
+
+self errorHandler pushDefinition: self.
+self setupTypeAssumptions.
+self testFormals.
+self retractTypeAssumptions.
+self errorHandler popDefinition.! !
+
+! (Delta mirrorFor: #DeltaGeneric) methodsFor: 'private typechecking' !
+
+
+retractTypeAssumptions ^ <Self>
+    self formals do:[ :f <FormalType>  |
+                        f typeVar retractBoundFromTrail: DeltaGlobalTrail.
+                        f typeVar dual retractBoundFromTrail: DeltaGlobalTrail.
+                        ].!
+
+setupTypeAssumptions ^ <Self>
+    self formals do:[ :f <FormalType>  |
+                        f typeVar declareBoundToTrail: DeltaGlobalTrail.
+                        f typeVar dual declareBoundToTrail: DeltaGlobalTrail.
+                        ].!
+
+testFormals ^ <Self>
+
+self formals do: [: f <TypeFormal>  |
+   self  errorHandler pushDefinition: (TypeArgumentLocator onTypeArgument: f typeVar name ofDefinition: self basicLocator).
+	f typeVar wellFormed.
+	f variance = #covar 
+		ifTrue:[(self body monotonicIn: f typeVar)
+			ifFalse:[self reportError: (DeltaTypeCovarianceError new id: self name; typeVarName: f typeVar name)]]
+		ifFalse:[f variance = #contra 
+			ifTrue:[(self body antimonotonicIn: f typeVar)
+				ifFalse:[self reportError:  (DeltaTypeContravarianceError new id: self name; typeVarName: f typeVar name)]]].
+	self errorHandler popDefinition.
+]! !
+

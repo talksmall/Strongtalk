@@ -1,0 +1,40 @@
+Delta define: #ClassMixin as: (
+(Class subclassOf: 'Mixin' instanceVariables: 'name')) !
+
+(Delta mirrorFor: #ClassMixin) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ClassMixin) group: 'base'!
+
+(Delta mirrorFor: #ClassMixin)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+! (Delta mirrorFor: #ClassMixin) methodsFor: 'Unclassified' !
+
+
+instanceMixin ^ <Mixin>
+	^self!
+
+instanceMixin: m  <ClassMixin> ifFail: fb <[Str]>
+	fb value: 'Cannot set instance mixin of a ClassMixin'!
+
+isMeta  ^ <Boolean>
+
+^false!
+
+komment
+
+"This node should represent the first class representative of a mixin declaration."!
+
+name ^ <Symbol>
+
+	^name
+
+!
+
+name: n  <Symbol> ifFail: fb <[Str]>
+
+n isSymbol ifFalse:[fb value: 'Name ', n printString, ' is  not a symbol'].
+name := n.! !
+

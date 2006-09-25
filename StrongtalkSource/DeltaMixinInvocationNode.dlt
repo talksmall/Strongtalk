@@ -1,0 +1,327 @@
+Delta define: #DeltaMixinInvocationNode as: (
+(Class subclassOf: 'DeltaSideTypeBehavior' instanceVariables: 'name classObj ')) !
+
+(Delta mirrorFor: #DeltaMixinInvocationNode) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #DeltaMixinInvocationNode) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMixinInvocationNode)
+comment: 
+'This node represents the AST for a mixin invocation. It supports the
+required behavior of a side type. 
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMixinInvocationNode) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^self myMixin abstract!
+
+allDeclaredSupertypes ^ <Cltn[ObjectType]>
+
+| s <Set[ObjectType]> c <Cltn[ObjectType]>  |
+
+c := self declaredSupertypes.
+s := Set[ObjectType] new.
+s add: self.
+c do:	[: sp <ObjectType> | 
+			sp allDeclaredSupertypes do:[: csp <ObjectType> | s add: csp].
+			].
+^s
+!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self asObjectType antimonotonicIn: tv!
+
+apply: tool <DeltaASTTool>
+
+tool mixinInvocationNode: self!
+
+asMixinSide ^ <Side>
+    ^(Type forInvocation: self classObj) asMixinSide!
+
+asObjectType  ^ <ObjectType>
+    ^self asProtocol!
+
+asProtocol ^ <Protocol>
+"    ^self asSide asProtocol substitute: self substitution"
+^self myMixin protocolForInvocation: self!
+
+asSide ^ <Side>
+    ^Type forInvocation: self classObj!
+
+atomicTypes ^ <IdentitySet[ObjectType]>
+    ^self asObjectType atomicTypes!
+
+bareAttributes  ^ <Dict[Symbol,MsgSignature]>
+
+^self asSide bareAttributes !
+
+bareSecondaryAttributes  ^ <Dict[Symbol,MsgSignature]>
+
+^self asSide bareSecondaryAttributes!
+
+basicLocator
+	^self myMixin basicLocator!
+
+branded ^ <Boolean>
+    ^self myMixin branded!
+
+classObj ^ <Class>
+
+"Return the class I denote"
+^self filteree classObj"
+classObj isNil  ifTrue:[self computeClassObj].
+^classObj."
+  
+!
+
+classObj: c <Class>
+
+self deltaHack.
+Delta initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+self filteree classObj: c!
+
+classProtocol ^ <Protocol>
+    ^self asProtocol classProtocol!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^ (self myMixin mixinSubstitute: ((Type forClass: self classObj) compositeSubstitute: t))  substitute: self substitution
+!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+
+ ^ ((Type forClass: self classObj) compositeSubstitutePrivate: t) substitute: self substitution
+!
+
+computeClassObj  ^ <Class>
+"Private"
+   |   m <Mixin>  superclassObj <AbstractClassMirror> mMirror  <MixinMirror> cMirror   <InvocationMirror> |
+
+    superclassObj := AbstractClassMirror on: self myClass classObj.
+    m := self myMixin mixinObj.
+    self assert: [m isKindOf: Mixin].
+    mMirror := MixinMirror on: m.
+    cMirror := mMirror |> superclassObj.
+    classObj := cMirror reflectee.
+    (Type forClass: self classObj) mixinType: self myMixin.
+    (Type forClass: cMirror classSide reflectee) mixinType: self myMixin dualClassType.
+    ^self classObj.!
+
+computeTypeOfInstances ^ <Protocol>
+
+^self filteree computeTypeOfInstances forcedSubstitute: self substitution!
+
+declaredSubMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+m asMixinSide == self asMixinSide  ifFalse:[^false].
+^m myMixin asProtocol canonicalRep == self myMixin asProtocol canonicalRep
+ and:[self myClass declaredSubprotocolOf: m myClass].!
+
+declaredSubMixinInvocationOfNonInvocation: p <Protocol> ^<Boolean>
+
+p asMixinSide == self asMixinSide  ifFalse:[^false].
+^p asProtocol canonicalRep == self myMixin asProtocol canonicalRep
+ and:[self myClass declaredSubprotocolOf: p superprotocol asProtocol].!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+   ^(p declaredSuperMixinInvocationOf: self) or:
+    [self asProtocol declaredSubprotocolOf: p]!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^m declaredSubMixinInvocationOf: self!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^self asProtocol declaredSuperprotocolOfGeneric: p!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+| o <OrdCltn[ObjectType]> |
+
+o := OrderedCollection[ObjectType] new.
+o add: self myClass.
+^o!
+
+dual ^ <Protocol>
+    ^self asSide dual substitute: self substitution!
+
+dualClassType ^ <ClassType>
+    ^DeltaUnaryClassTypeExpr new target: self selector: #class.!
+
+extensionsAreSubtypes ^ <Boolean>
+    ^self myMixin extensionsAreSubtypes!
+
+functions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide functions  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+heirScope ^ <Scope>
+    ^self asSide heirScope substitute: self substitution!
+
+implementedPrivateProtocol ^ <Protocol>
+    ^self asSide implementedPrivateProtocol  substitute: self substitution!
+
+involvesTypeVariables ^ <Boolean>
+    ^self asObjectType involvesTypeVariables!
+
+isMonotonic ^ <Boolean>
+    ^self myMixin isMonotonic!
+
+komment
+
+"This node represents the AST for a mixin invocation. It supports the
+required behavior of a side type. "!
+
+localBareAttributes  ^ <Dict[Symbol,MsgSignature]>
+
+^self asSide localBareAttributes !
+
+localBareSecondaryAttributes  ^ <Dict[Symbol,MsgSignature]>
+
+^self asSide localBareSecondaryAttributes!
+
+localScope ^ <Scope>
+    ^self asSide localScope substitute: self substitution!
+
+messages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide messages  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+methods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide methods  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+mix: m <MixinNode >on: c <ClassNode > ^ <Self>
+
+self filter:(BasicMixinInvocationData new mix: m on: c)
+         using: DeltaSubstitution new initialize.!
+
+mixinObj ^ <Mixin>
+
+self error: self name, ' is not a mixin!!'.
+!
+
+monotonic ^ <Boolean>
+    ^self myMixin monotonic!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self asObjectType monotonicIn: tv!
+
+myClass ^ <ClassNode>
+    ^self filteree myClass substitute: self substitution!
+
+myMixin ^ <MixinNode>
+    ^self filteree myMixin substitute: self substitution!
+
+name ^ <Symbol>
+    ^"name isNil ifFalse:[name]
+                    ifTrue:["
+
+(self myMixin name, '|>', self myClass name) asSymbol"]."!
+
+privateFunctions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateFunctions  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+privateMessages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateMessages  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+privateMethods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide privateMethods virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+privateProtocol ^ <Protocol>
+    ^self asSide privateProtocol substitute: self substitution!
+
+publicFunctions ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicFunctions  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+publicMessages ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicMessages  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+publicMethods ^ <Dict[Symbol,MsgDecl]>
+    ^self asSide publicMethods  virtualCollect:[:f <Method>  | f  substitute: self substitution].!
+
+rawPrimaryInterface
+
+^self asSide rawPrimaryInterface  substitute: self substitution!
+
+rawSecondaryInterface
+
+^self asSide rawSecondaryInterface substitute: self substitution!
+
+rawSelectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+    ^self asObjectType rawSelectMsg: selector ifAbsent: block!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+    ^self asObjectType selectMsg: selector ifAbsent: block!
+
+selfClassTV ^ <TypeVar>
+    ^self asSide selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self asSide selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self asSide selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self asSide selfTV!
+
+subprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asProtocol subprotocolOf:p assuming: trail!
+
+subtype ^ <Boolean>
+    ^self myMixin subtype!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asObjectType subtypeOf: t assuming: trail.!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asObjectType  superGenAppOf: p assuming: trail!
+
+superclassType ^ <ClassType>
+
+^self asSide superclassType!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asProtocol superprotocolOf:p assuming: trail!
+
+supertypeOfUnion: u <UnionType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self asObjectType supertypeOfUnion: u assuming: trail!
+
+supportedProtocol ^ <Protocol>
+    ^self myMixin supportedProtocol!
+
+type ^ <ClassType>
+    | c <Class>  |
+
+(self myClass type mixinCompatibleWith: self myMixin bound) ifFalse:[
+	^self reportError: (DeltaInvalidMixinInvocationError new actualName: self myClass name; declaredName: self myMixin bound name; mixinName: self myMixin name)].
+c := DeltaClassTypeDecl new type: self myMixin bound.!
+
+typeOfClass ^ <Protocol>
+    ^self asObjectType typeOfClass!
+
+typeOfInstances ^ <ObjectType>
+
+^self asProtocol!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+    ^self asSide unimplementedMessages !
+
+untypedName  ^ <Symbol>
+
+^self myMixin untypedName!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+    ^self asSide varDecls  virtualCollect:[:v <VarDecl>  | v type substitute: self substitution].!
+
+wellFormed ^ <Boolean>
+
+"should test if myMixin is a mixin and myClass is a class.
+Also, should test if this is a valid mixin invocation - is myClass
+mixin-compatible with myMixin?
+"
+
+^self myMixin wellFormed and:[self myClass wellFormed].! !
+

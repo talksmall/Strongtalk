@@ -1,0 +1,147 @@
+Delta define: #GlobalVariableMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee <GlobalAssociation> sourceInfo <GlobalVariableSourceHandler>')) !
+
+(Delta mirrorFor: #GlobalVariableMirror) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #GlobalVariableMirror) group: 'reflection'!
+
+(Delta mirrorFor: #GlobalVariableMirror)
+comment: 
+'I represent  a mirror on a global variable declaration.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GlobalVariableMirror) classSide methodsFor: 'instance creation' !
+
+
+on: a<GlobalAssociation> ^ <Instance> 
+
+^self new reflectee: a! !
+
+! (Delta mirrorFor: #GlobalVariableMirror) methodsFor: 'Unclassified' !
+
+
+basicDefinitionString   ^ <Str>
+
+	^'Delta declareGlobal: #', self name, ' type: ', self sourceInfo declaredTypeString asString printString
+!
+
+basicLocator
+
+^GlobalVariableLocator new id: self name!
+
+convert: c   <Mirror> ifFail: fb <[Str]>
+
+c convertToGlobalVariable: self ifFail: fb!
+
+convertToClass: c   <ClassMirror> ifFail: fb <[Str]>
+
+|  me <DeltaGlobal> assoc <Assoc[Symbol,Object]> |
+
+Delta removeKey: self name.
+me := DeltaGlobals removeKey: self name ifAbsent:[].
+c nameNew: self name      ifFail: [: e <Str> |
+                 me isNil ifFalse:[DeltaGlobals at: me name put: me].
+                 assoc isNil ifFalse:[Delta at: me name put: assoc].
+                 fb value: e.
+                 ].
+
+
+!
+
+convertToGeneric: g   <GenericMirror> ifFail: fb <[Str]>
+
+| me <DeltaGlobal> |
+
+me := DeltaGlobals removeKey: self name.
+g nameNew: self name ifFail: [:e <Str> | DeltaGlobals at: me name put: me.
+                                                          fb value: e].
+
+
+!
+
+convertToMixin: m <MixinDeclMirror> ifFail: fb <[Str]>
+
+|  me <DeltaGlobal> assoc <Assoc[Symbol,Object]> |
+
+assoc := Delta removeKey: self name ifAbsent:[].
+me := DeltaGlobals removeKey: self name ifAbsent:[].
+m nameNew: self name 
+     ifFail: [: e |
+                 me isNil ifFalse:[DeltaGlobals at: me name put: me].
+                 assoc isNil ifFalse:[Delta at: me name put: assoc].
+                 fb value: e
+                 ].
+!
+
+declaredType: dts <Str> ifFail: fb <[Str, Integer, ^DoesNotMatter]>
+
+DeltaGlobals declare: self name type: dts ifFail: fb.
+self sourceInfo declaredTypeString: dts.!
+
+declaredTypeString   ^ <Str>
+
+^self sourceInfo declaredTypeString
+	!
+
+definitionString   ^ <Str>
+
+^self basicDefinitionString
+	!
+
+definitionWriterClass ^ <GlobalVariableWriter class>
+
+^GlobalVariableWriter!
+
+isMeta ^ <Boolean>
+
+^false!
+
+name  ^ <Symbol> 
+
+^self reflectee key !
+
+reflectee ^ <GlobalAssociation>
+	^reflectee!
+
+reflectee: a <GlobalAssociation>
+	reflectee := a!
+
+removeDefinitionIfFail: blk <[]>
+
+DeltaGlobals removeKey: self name ifAbsent:[].
+super removeDefinitionIfFail: [].!
+
+rename: oldId <Symbol> to: newId <Symbol>
+| s <ReadString> src <ReadString> |
+"rename in type expression"
+s := self rename: oldId to: newId in: (src := self declaredTypeString).
+s == src 
+	ifFalse:[self declaredType: s ifFail:[:msg <Str>  :i <Int>  | self error: 'Renamed code uparseable: ', msg].].!
+
+renameGroup: grp<Dict[Symbol,Symbol]>
+| s <ReadString> src <ReadString> |
+"rename in type expression"
+s := self renameGroup: grp  in: (src := self declaredTypeString).
+s == src 
+	ifFalse:[self declaredType: s ifFail:[:msg <Str>  :i <Int>  | self error: 'Renamed code uparseable: ', msg].].!
+
+sourceInfo ^ <GlobalVariableSourceHandler>
+
+sourceInfo isNil 
+		ifTrue: [ sourceInfo := GlobalVariableSourceHandler for: self ].
+	^sourceInfo!
+
+typecheck
+
+| ti <ObjectType> |
+
+ti := self varDecl type.
+ti errorHandler pushDefinition: self.
+ti  wellFormed.
+ti errorHandler popDefinition!
+
+varDecl ^ <DeltaGlobalVar>
+
+^DeltaGlobals at: self name! !
+

@@ -1,0 +1,42 @@
+Delta define: #HeavyPoint as: (
+(Class subclassOf: 'Point' instanceVariables: 'x <Number>
+y <Number>	')) !
+
+(Delta mirrorFor: #HeavyPoint) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HeavyPoint) group: 'base'!
+
+(Delta mirrorFor: #HeavyPoint)
+comment: 
+'Heavy points are regular allocated Points (as opposed to potentially lightweight immediate SmallPoints).
+
+Note: At this point, all points are actually allocated as HeavyPoints, but this class is here
+so that the libraries are all set up for using one of the
+remaining undefined immediate tag type for immediate points, which would not have to be allocated, which
+would speed up user interface ops somewhat.  We have not decided whether to do this; it would have to 
+really be justified.  But points are fundamental and pervasive for UI operations, and are allocated functionally,
+which means LOTS of allocation, which immediate points would completely eliminate (for 2D ops).
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #HeavyPoint) methodsFor: 'initialization' !
+
+
+x: xval <Number> y: yval <Number>
+
+	x := xval.
+	y := yval.! !
+
+! (Delta mirrorFor: #HeavyPoint) methodsFor: 'accessing' !
+
+
+x ^<Number>
+
+	^x!
+
+y ^<Number>
+
+	^y! !
+

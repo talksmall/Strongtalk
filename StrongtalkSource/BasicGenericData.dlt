@@ -1,0 +1,25 @@
+Delta define: #BasicGenericData as: (
+(Class subclassOf: 'BasicDeclData' instanceVariables: 'formals body ')) !
+
+(Delta mirrorFor: #BasicGenericData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicGenericData) group: 'ast'!
+
+(Delta mirrorFor: #BasicGenericData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicGenericData) methodsFor: 'Unclassified' !
+
+
+body ^ <BodyType>
+    ^body!
+
+body: b <BodyType >formals: fs <VarOrdCltn[TypeFormal] > ^ <Self>
+    body := b.
+formals := fs.!
+
+formals ^ <OrdCltn[TypeFormal]>
+    ^formals! !
+

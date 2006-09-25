@@ -1,0 +1,142 @@
+Delta define: #CharacterReadConverter as: (
+(Class subclassOf: 'CharacterInputConverter[ReadStream[Int]]' instanceVariables: '')) !
+
+(Delta mirrorFor: #CharacterReadConverter) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #CharacterReadConverter) group: 'base'!
+
+(Delta mirrorFor: #CharacterReadConverter)
+comment: 
+'Like CharacterInputConverter, but takes a ReadStream[Int] rather than an InputStream[Int], so that it can do some operations like
+upTo: faster.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #CharacterReadConverter) classSide methodsFor: 'testing' !
+
+
+test
+
+	| f <FilePath> out <CharOutputStream> in <CharInputStream> s <Str> |
+	f := FilePath for: 'foo.dat'.
+	out := f charOutputStream.
+	out next: 15000 put: $a.
+	out nextPut: $x.
+	out putAll: 'hello'; cr; putAll: 'there'; cr.
+	out put: $!!.
+	out close.
+
+	in := f charInputStream.
+	in skipTo: $x.
+	s := in upTo: $o.
+	[ s = 'hell' ] verify.
+	s := in upTo: $!!.
+	[ s = '
+there
+' ] verify.
+	s := in upTo: $!!.
+	[ s = '' ] verify.
+	in close.
+
+	f delete.!
+
+test2
+
+	| f <FilePath> out <CharOutputStream> in <CharInputStream> s <Str> next <Character> |
+	f := FilePath for: 'prims.src'.
+
+	in := f charInputStream.
+	s := in nextChunk.
+	[ (s at: s size) ~= $!! ] verify.
+	next := in peek.
+	[ next ~= $!! ] verify.
+	in close.
+!
+
+test3
+
+	| f <FilePath> in2 <CharOutputStream> in <CharInputStream> s <Str> next <Character> s1 s2 |
+	f := FilePath for: '.index'.
+
+	in := f charInputStream.
+	in2 := f oldCharInputStream.
+Transcript print: in class; print: in2 class; cr.
+	[ in atEnd or: [ in2 atEnd ] ]
+		whileFalse: [	s1 := in nextChunk.
+								Transcript show: s1; cr.
+								s2 := in2 nextChunk.
+								Transcript show: s2; cr.
+								[ s1 = s2 ] verify
+							].
+	s1 := in nextChunk.
+	Transcript show: s1; cr.
+	s2 := in2 nextChunk.
+	Transcript show: s2; cr.
+	[ s1 = s2 ] verify.
+	[ in atEnd = in2 atEnd ] verify.
+	in close.
+	in2 close.! !
+
+! (Delta mirrorFor: #CharacterReadConverter) methodsFor: 'accessing' !
+
+
+upTo: del <Object> ^<Str>
+
+	| sz <Int> s <String> lfs <Int> offset <Int> delimiter <Int> pos <Int> bsize <Int> i <Int> |
+
+	(self havePeeked and: [ self peek == del ])
+		ifTrue: [ ^super upTo: del ].
+
+	delimiter := (Character coerce: del) asciiValue.
+	pos := self binaryStream position.
+
+	"Scan for the delimiter in the binary stream"
+	sz := self numCharsUpToAscii: delimiter.
+
+	self havePeeked
+		ifFalse: [	s := String new: sz.
+						offset := 0. ]
+		ifTrue: [	s := String new: sz + 1.
+						s at: 1 put: self next.
+						offset := 1. ].
+
+	pos := pos + 1.
+	i := 1.
+	[ i <= sz ]
+		whileTrue: [	| code <Int> |
+							code := self binaryStream repositioningAt: pos.
+							s at: i + offset putUnicode: code.
+							i := i + 1.
+							(code == 13 and: [Platform usesCrLfConvention])
+								ifTrue: [	pos := pos + 1. ].
+							pos := pos + 1.	].
+	"The following fiddly code is to set the binary stream position to pos without
+		going past the end of the stream"
+	self binaryStream position: pos - 1.
+	self binaryStream atEnd
+		ifFalse: [ self binaryStream next ].
+	^s! !
+
+! (Delta mirrorFor: #CharacterReadConverter) methodsFor: 'private' !
+
+
+numCharsUpToAscii: del <Int> ^<Int>
+	"Num chars from current pos to del, not counting lfs if they shouldn't be.  May leave the position changed."
+
+	| n <Int> sz <Int> |
+	n := 0.
+	sz := self binaryStream size.
+	self binaryStream position + 1 to: sz do:
+		[ :i <Int> |
+			| asc <Int> |
+			asc := self binaryStream repositioningAt: i.
+			(Platform usesCrLfConvention and: [ asc == 10 ]) "lf"
+				ifFalse: [	asc == del
+									ifTrue: [ ^n ]
+									ifFalse: [	n := n + 1 ]
+							 ]
+		].
+	^n! !
+

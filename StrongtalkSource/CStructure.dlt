@@ -1,0 +1,37 @@
+Delta define: #CStructure as: (
+(Class subclassOf: 'ExternalProxy' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #CStructure) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #CStructure) group: 'base'!
+
+(Delta mirrorFor: #CStructure)
+comment: 
+'Superclass for proxies for allocated C structures.  When send the malloc
+message, an instance allocates a C structure of the size specified by the
+structureSize.  Subclasses often add accessing messages for structure
+members.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #CStructure) methodsFor: 'reflective' !
+
+
+structureSize ^<Int>
+	"The size of the structure in bytes"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #CStructure) methodsFor: 'allocating' !
+
+
+allocate
+
+	self malloc: self structureSize!
+
+allocateZeroed
+
+	self calloc: self structureSize! !
+

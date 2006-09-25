@@ -1,0 +1,39 @@
+Delta define: #DeltaSideDeltaProtocol as: (
+(Class subclassOf: 'DeltaRawProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaSideDeltaProtocol) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaSideDeltaProtocol) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSideDeltaProtocol)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSideDeltaProtocol) methodsFor: 'Unclassified' !
+
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self  localBareAttributes!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self localBareSecondaryAttributes!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self filteree localBareAttributes!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self filteree localBareSecondaryAttributes!
+
+localRawPrimaryInterface ^ <Interface>
+    ^self filteree localRawPrimaryInterface substitute: self substitution!
+
+localRawSecondaryInterface ^ <Interface>
+    ^self filteree localRawSecondaryInterface substitute: self substitution!
+
+rawPrimaryInterface ^ <Interface>
+    ^self localRawPrimaryInterface !
+
+rawSecondaryInterface ^ <Interface>
+    ^self  localRawSecondaryInterface ! !
+

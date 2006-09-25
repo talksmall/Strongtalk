@@ -1,0 +1,130 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Programming Environment</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="progenv.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="progenv3.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 >The Programming Environment (cont.)</h2>
+
+<p align="left">The Strongtalk programming environment (mostly
+written by Steffen Grarup; Gilad Bracha added the typechecking
+stuff) is quite different than the ones in traditional Smalltalk
+systems. It uses an <em>outliner</em> design, where
+constructs are represented in an indented, bullet-list tree
+format, which is familiar to users of Windows Explorer, and other
+similar programs. This format has several advantages, including
+the fact that it allows you to see the whole interface for a
+class at once, and open multiple methods at the same time in the
+same browser.</p>
+
+<p align="left">To understand the Strongtalk system, it will be
+helpful to have a relatively small, self-contained application to
+examine, that uses many of the major features of the system. So
+let's use use the Strongtalk HTML browser itself for this
+purpose. This browser, which is the same one that you should be
+viewing this tour in, is very primitive, and doesn't have the
+right architecture for a full-blown HTML browser. It can't even
+support http at the moment, so it is only good for viewing pages
+on the local disk (its only excuse is that it was written in a
+few weeks when Lars Bak bet me I couldn't write one in less than
+two weeks. I lost the bet). However, it is a real application; it
+is written in Strongtalk; it is typesafe; it is written in a
+normal Smalltalk style; and it uses most of the basic libraries
+as well as the UI libraries. So it is not a bad application to
+look at if you want to see how the Strongtalk system 'feels' in
+use.</p>
+<h3 align="left">Hierarchy Browsers</h3>
+<p align="left">Below is a Hierarchy Browser on the HTML browser
+classes. Note the description &quot;Filter: %HTML with
+subclasses&quot;. What this means is that we are filtering the chosen hierarchy
+(I chose the whole Object hierarchy here) for classes whose comment contains the
+string '%HTML', and their subclasses. You can also see their
+superclasses, in a less bold font. You can open or close
+individual levels of the hierarchy by pressing on the <img
+src="resources/closedItem.bmp"> or <img
+src="resources/openItem.bmp"> buttons, respectively.
+If you right-click on any item, you can see its context menu. To
+see any subhierarchy in its entirety, choose &quot;Expand All
+Levels&quot; from its menu. To open the hierarchy all the way
+down in one step, press the
+<smappl visual="
+	Button
+			withImage:  (Image fromFile: (FilePath for: 'resources/openAll.bmp'))
+			action: [ :b | 	
+							b	promptOk: 'Not that one- the one on the toolbar!'
+								title: ''
+								type: #info
+								action: []] 
+"> button on the toolbar.</p>
+
+<blockquote>
+    <p align="center">
+<smappl visual="
+	| h v |
+	h := (ClassHierarchyOutliner for: (ClassMirror on: Object)) 
+    								filterOnCommentsContaining: '%HTML';
+    								orSubclasses.
+    v := (h topVisualWithHRule: false)
+		withBorder: (Border standard3DRaised: true).
+    v
+">
+	<br><strong>Class Hierarchy Browser on HTML classes</strong>
+			<a DOIT=" (ClassHierarchyOutliner for: (ClassMirror on: Object)) 
+    									filterOnCommentsContaining: '%HTML';
+    									orSubclasses;
+    									launch
+			">(spawn)</a>
+</p>
+</blockquote>
+
+<p>Because the hierarchy browser above is imbedded inside another
+application, the menu for the browser as a whole is the context
+menu for the top-level entity, Object. Normally browsers have a
+window to themselves, in which case their top-level menu appears
+as the usual pull-down menu. Try pressing 
+<em>spawn</em> above to launch a copy of the
+browser in its own window. </p>
+
+<p>In the browser you opened in its own window, try looking at
+the 'Filtering' menu, to see how filtering works. If you turn off
+filtering, the whole Object hierarchy appears. You can filter on
+any comment substring, or on subclasses of a particular class,
+and you can use AND to look for multiple comment strings. You can
+also include all subclasses of the current filter.</p>
+
+<p>At the top of the filtering menu you will find pre-constructed
+filters that let you look at commonly browsed library subsets,
+such as &quot;User classes&quot;, which shows all the classes
+that users normally reference during coding. Try filtering on
+&quot;Blue Book classes&quot;, and then doing &quot;expand
+all&quot;. This will let you see at a glance where all the
+familiar classes from the Blue Book reside in the library. Note
+that filtering hides all subclasses that don't match the filter;
+if you want to see <em>all</em> the subclasses of the Blue Book classes,
+choose &quot;with subclasses&quot; from the Filter menu, and then
+&quot;expand all&quot; (<smappl visual="
+	Button
+			withImage:  (Image fromFile: (FilePath for: 'resources/openAll.bmp'))
+			action: [ :b | ] 
+">) again. Also note that file-out, typecheck,
+etc. all operate on the set of filtered classes, which is very
+convenient for saving or typechecking an application by itself.
+This is easy to set up for new applications, simply by adopting
+the convention of having some known tag string in your class
+comment.</p>
+
+<p>Now let's open a class browser on the main class for the HTML
+Browser, which is HTMLView. To do this, just press on the class
+name in the hierarchy browser, and then continue to the next page of the tour.</p>
+
+<h3 align="right"><a href="progenv3.html"><strong>Programming
+Environment, cont. ==&gt;</strong></a></h3>
+</body>
+</html>

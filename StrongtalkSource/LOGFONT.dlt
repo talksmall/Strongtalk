@@ -1,0 +1,134 @@
+Delta define: #LOGFONT as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #LOGFONT) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #LOGFONT) group: 'base'!
+
+(Delta mirrorFor: #LOGFONT)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #LOGFONT) methodsFor: 'accessing' !
+
+
+lfCharSet ^<ExternalData>
+
+	^self byteAt: self lfCharSetOffset!
+
+lfCharSet: v <ExternalData>
+
+	self byteAt: self lfCharSetOffset put: v!
+
+lfFaceName ^<Str>
+
+	^(self cStringAt: self lfFaceNameOffset) asString!
+
+lfFaceName: nm <Str>
+
+	self store: nm asCStringAt: self lfFaceNameOffset!
+
+lfHeight ^<Int>
+
+	^self smallIntegerAt: self lfHeightOffset!
+
+lfHeight: v <Int>
+
+	self smallIntegerAt: self lfHeightOffset put: v!
+
+lfItalic ^<Int>
+
+	^self byteAt: self lfItalicOffset!
+
+lfItalic: v <Int>
+
+	self byteAt: self lfItalicOffset put: v!
+
+lfPitchAndFamily ^<Int>
+
+	^self byteAt: self lfPitchAndFamilyOffset!
+
+lfPitchAndFamily: v <ExternalData>
+
+	self byteAt: self lfPitchAndFamilyOffset put: v!
+
+lfUnderline ^<Int>
+
+	^self byteAt: self lfUnderlineOffset!
+
+lfUnderline: v <ExternalData>
+
+	self byteAt: self lfUnderlineOffset put: v!
+
+lfWeight ^<Int>
+
+	^self smallIntegerAt: self lfWeightOffset!
+
+lfWeight: v <ExternalData>
+
+	self externalDataAt: self lfWeightOffset put: v!
+
+structureSize ^<Int>
+
+	^60! !
+
+! (Delta mirrorFor: #LOGFONT) methodsFor: 'offsets' !
+
+
+lfCharSetOffset ^<Int>
+
+	^23!
+
+lfClipPrecisionOffset ^<Int>
+
+	^25!
+
+lfEscapementOffset ^<Int>
+
+	^8!
+
+lfFaceNameOffset ^<Int>
+
+	^28!
+
+lfHeightOffset ^<Int>
+
+	^0!
+
+lfItalicOffset ^<Int>
+
+	^20!
+
+lfOrientationOffset ^<Int>
+
+	^12!
+
+lfOutPrecisionOffset ^<Int>
+
+	^24!
+
+lfPitchAndFamilyOffset ^<Int>
+
+	^27!
+
+lfQualityOffset ^<Int>
+
+	^26!
+
+lfStrikeOutOffset ^<Int>
+
+	^22!
+
+lfUnderlineOffset ^<Int>
+
+	^21!
+
+lfWeightOffset ^<Int>
+
+	^16!
+
+lfWidthOffset ^<Int>
+
+	^4! !
+

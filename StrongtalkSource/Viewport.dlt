@@ -1,0 +1,487 @@
+Delta define: #Viewport as: (
+(Class subclassOf: 'VisualWithNativeWindow[Visual]' instanceVariables: 'xScrollState <ScrollState>
+child <OverlappingVisual[Visual]>
+yScrollState <ScrollState>
+constrainX <Boolean>
+			"If this is true, then the part is forced to be the same width as the receiver
+				(and thus will never scroll in the x direction)"
+constrainY <Boolean>
+			"If this is true, then the part is forced to be the same height as the receiver
+				(and thus will never scroll in the y direction)"
+optimizeIncrementalLayout <Boolean>
+			"If true, do not propagate preference changes upwards"
+optimizeScrolling <Boolean>
+			"If this is true (the default), then the client will be wrapped in an OverlappingVisual
+				to optimize invalidation when scrolling.  This also speeds up scrolling of
+				hierarchies containing nativeWindows, since otherwise we have to
+				do work to move them.   The tradeoff is that when this is false, children
+				larger than the largest native window size can be viewed correctly."
+notForScroller <Boolean>
+			"If this is set to true, then when one dimension is constrained, extra space for
+				the scrollers scrollbar is not allocated"
+minScrollExtentBlock <[Viewport,^Point]>
+			"If non-nil, this block is called each time the preferences are computed to
+				compute the minScrollExtent"
+minScrollExtent <Point>
+			"when the childs extent is less than this (independently in each dimension), the viewports
+				natural size is the childs.   The natural size is never bigger than this."
+		')) !
+
+(Delta mirrorFor: #Viewport) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #Viewport) group: 'ui'!
+
+(Delta mirrorFor: #Viewport)
+comment: 
+'A Viewport shows a clipped view of its single part.  The part may be larger than the Viewport,
+and may be offset in both the x and y directions.  The size of the child, the size of the Viewport,
+and the child''s offset are all recorded in, and controlled by, ScrollState instances for both x and y.
+The ScrollStates can be used (among other things) to syncronize the Viewport with a Scroller,
+which provides scrollbars (see Scroller).
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.7 
+'!
+
+! (Delta mirrorFor: #Viewport) classSide methodsFor: 'instance creation' !
+
+
+for: v <Visual> ^<Instance>
+
+	^self new client: v! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'initialization' !
+
+
+constrainX ^<Boolean>
+
+	^constrainX!
+
+constrainX: v <Boolean>
+
+	constrainX := v!
+
+constrainY ^<Boolean>
+
+	^constrainY!
+
+constrainY: v <Boolean>
+
+	constrainY := v!
+
+initialize
+
+	super initialize.
+	optimizeIncrementalLayout := true.
+	self	xScrollState: (ScrollState new
+									gridBlock: [ :x <Int> |
+														| r <Rect> xOrigin <Int> |
+														xOrigin := self allocation enclosingRect origin x.
+														r := self part gridFor: (x + xOrigin) @ 0.
+														(r left - xOrigin) ,, (r right - xOrigin) ]);
+			yScrollState: (ScrollState new
+									gridBlock: [ :y <Int> |
+														| r <Rect> yOrigin <Int> |
+														yOrigin := self allocation enclosingRect origin y.
+														r := self part gridFor: 0 @ (y + yOrigin).
+														(r top - yOrigin) ,, (r bottom - yOrigin) ]);
+			constrainX: false;
+			constrainY: false.
+	self optimizeScrolling: true.
+	self notForScroller: true.!
+
+xScrollState: sc <ScrollState>
+
+	xScrollState notNil
+		ifTrue: [ xScrollState removeDependent: self ].
+	xScrollState := sc.
+	sc addDependent: self.!
+
+yScrollState: sc <ScrollState>
+
+	yScrollState notNil
+		ifTrue: [ yScrollState removeDependent: self ].
+	yScrollState := sc.
+	sc addDependent: self.! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'private' !
+
+
+child: c <OverlappingVisual[Visual]>
+
+	self part: c.
+	child := c!
+
+computedChildAllocation ^<Rect>
+
+	| top <Int> bottom <Int> left <Int> right <Int> partnat <Rect> ouralloc <Rect> |
+
+	ouralloc := self allocation enclosedRect.
+	partnat := self partNatural.
+
+	left := partnat left.
+	top := partnat top.
+	(self constrainX and: [ self notForScroller not ])
+		ifFalse: [	"take the vertical scrollbar into account when figuring out how wide to make the child"
+						(self constrainY not and: [ partnat height > ouralloc height ])
+							ifTrue: [ right := partnat right max: ouralloc right - Scroller verticalScrollBarDefaultWidth ]
+							ifFalse: [ right := partnat right max: ouralloc right ]. ]
+		ifTrue: [	right := ouralloc right - Scroller verticalScrollBarDefaultWidth. ].
+	(self constrainY and: [ self notForScroller not ])
+		ifFalse: [	"take the horiz scrollbar into account when figuring out how wide to make the child"
+						(self constrainX not and: [ partnat width > ouralloc width ])
+							ifTrue: [  bottom := partnat bottom
+											max: ouralloc bottom - Scroller horizontalScrollBarDefaultHeight. ]
+							ifFalse: [ bottom := partnat bottom max: ouralloc bottom ].		]
+		ifTrue: [	bottom := ouralloc bottom - Scroller horizontalScrollBarDefaultHeight. ].
+	^left @ top corner: right @ bottom!
+
+layout
+
+	| partalloc <Rect> ouralloc <Rect> |
+
+	partalloc := self computedChildAllocation.
+	ouralloc := self allocation enclosedRect.
+
+"%remove this optimization if it works without"
+	"Avoid relaying out the child if we can"
+	(self part layoutStatus = Visual valid and: [ self part allocation = partalloc ])
+		ifTrue: [	"We still need to update the shown value, in case
+							the receiver changed size (see below for why we defer notification)"
+						self xScrollState setShown: ouralloc width.
+						self yScrollState setShown: ouralloc height.
+						self xScrollState notify.
+						self yScrollState notify.
+						^self ].
+
+	self part
+		allocation: partalloc
+		at: self xScrollState scrollPosition negated @ self yScrollState scrollPosition negated.
+
+	"Update the scrollstate"
+
+	"We have to defer notification until after we have set all these
+		values (to BOTH x and y), because otherwise the scrollbar visibility adjustments done
+	    by the scroller to shown will screw us up"
+
+	self xScrollState
+		setRange: partalloc width;
+		setShown: ouralloc width.
+	self yScrollState
+		setRange: partalloc height;
+		setShown: ouralloc height.
+
+	self xScrollState notify.
+	self yScrollState notify.
+
+	super layout.!
+
+partNatural ^<Rect>
+
+	^self part natural enclosingRect.! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'accessing' !
+
+
+child ^<OverlappingVisual[Visual]>
+
+	^child!
+
+client: v <Visual>
+	"Set the client visual (the visual that is being scrolled over).  This
+       is not be the same as the part if optimizeScrolling is true."
+
+	self optimizeScrolling
+		ifTrue: [ self child: (OverlappingVisual[Visual] for: v)	]
+		ifFalse: [ self part: v ]!
+
+minScrollExtent ^<Point>
+
+	^self minScrollExtentBlock notNil
+			ifTrue: [ self minScrollExtentBlock value: self ]
+			ifFalse: [ nil ]!
+
+minScrollExtentBlock ^<[Viewport,^Point]>
+
+	^minScrollExtentBlock!
+
+minScrollExtentBlock: blk <[Viewport,^Point]>
+
+	minScrollExtentBlock := blk!
+
+notForScroller ^<Boolean>
+
+	^notForScroller!
+
+notForScroller: f <Boolean>
+
+	notForScroller := f!
+
+optimizeIncrementalLayout ^<Boolean>
+
+	^optimizeIncrementalLayout!
+
+optimizeIncrementalLayout: f <Boolean>
+
+	self changing.
+	optimizeIncrementalLayout := f.!
+
+optimizeScrolling ^<Boolean>
+
+	^optimizeScrolling!
+
+optimizeScrolling: f <Boolean>
+
+	(self hasPart and: [ f ~~ optimizeScrolling ])
+		ifTrue: [	"reinstall the client"
+						| c <Visual> |
+						c := self optimizeScrolling
+							ifTrue: [ self part removePart ]
+							ifFalse: [ self part ].
+						self removePart.
+						optimizeScrolling := f.
+						self client: c.	].
+	optimizeScrolling := f.!
+
+scrollPosition ^<Point>
+	"the scroll position is the part position negated."
+
+	^self part position negated!
+
+scrollPosition: p <Point>
+	"Set the scroll position.  This is the part position negated."
+
+	p = self scrollPosition
+		ifFalse: [ self part moveTo: p negated ]!
+
+xScrollState ^<ScrollState>
+
+		^xScrollState!
+
+yScrollState ^<ScrollState>
+
+		^yScrollState! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'geometry-local' !
+
+
+max ^<Region>
+
+	"We use the natural left/top for dimensions that aren't constrained: we
+		can't let the top/left stretch, since
+	  that would show the child at the wrong spot, because it doesn't actually
+		get stretched."
+
+	| childnat <Rect> childmax <Rect> left <Int> right <Int> bottom <Int> top <Int> |
+	childmax := self part max enclosingRect.
+	childnat := self part natural enclosingRect.
+	left := childnat left.
+	top := childnat top.
+	self constrainX
+		ifTrue: [ self notForScroller
+						ifTrue: [ right := childmax right ]
+						ifFalse: [ right := childmax right  + Scroller verticalScrollBarDefaultWidth. ]
+					]
+		ifFalse: [	right := UI huge. ].
+	self constrainY
+		ifTrue: [ self notForScroller
+						ifTrue: [ bottom := childmax bottom ]
+						ifFalse: [  bottom := childmax bottom + Scroller horizontalScrollBarDefaultHeight. ]
+					]
+		ifFalse: [	bottom := UI huge. ].
+	^left @ top corner: right @ bottom!
+
+min ^<Region>
+
+	| childmin <Rect> childnat <Rect> left <Int> right <Int> bottom <Int> top <Int> |
+	childmin := self part min enclosingRect.
+	childnat := self part natural enclosingRect.
+	left := childnat left.
+	top := childnat top.
+	right := bottom := 0.
+	(self constrainX and: [ self notForScroller not ])
+		ifTrue: [	right := childmin right + Scroller verticalScrollBarDefaultWidth. ].
+	(self constrainY and: [ self notForScroller not ])
+		ifTrue: [	bottom := childmin bottom + Scroller horizontalScrollBarDefaultHeight. ].
+	^left @ top corner: right @ bottom!
+
+natural ^<Region>
+
+	| childnat <Rect> right <Int> bottom <Int> result <Rect> |
+
+	childnat := self part natural enclosingRect.
+	(self constrainX and: [ self notForScroller not ])
+		ifTrue: [	right := childnat right + Scroller verticalScrollBarDefaultWidth. ]
+		ifFalse: [ right := childnat right ].
+	(self constrainY and: [ self notForScroller not ])
+		ifTrue: [	bottom := childnat bottom + Scroller horizontalScrollBarDefaultHeight. ]
+		ifFalse: [ bottom := childnat bottom ].
+	result := childnat origin corner: right @ bottom.
+	
+	"clip the result if have a minScrollSize"
+	self minScrollExtent notNil
+		ifTrue: [	| x <Int> y <Int> ext <Point> xClipped <Boolean> yClipped <Boolean> |
+						xClipped := yClipped := false.
+						ext := result extent.
+						x := ext  x.
+						y := ext y.
+						(self constrainX not and: [ x > self minScrollExtent x ])
+							ifTrue: [	x := self minScrollExtent x.
+											xClipped := true. ].
+						(self constrainY not and: [ y > self minScrollExtent y ])
+							ifTrue: [	y := self minScrollExtent y.
+											yClipped := true. ].
+						(xClipped and: [ yClipped not ])
+							ifTrue: [ y := y + Scroller horizontalScrollBarDefaultHeight ].
+						(yClipped and: [ xClipped not ])
+							ifTrue: [ x := x + Scroller verticalScrollBarDefaultWidth ].
+						result := result origin extent: x @ y.
+					 ].
+
+	^result! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'updating' !
+
+
+update: aspect <Symbol>
+
+	super update: aspect.
+	(aspect = #scrollPosition or: [ aspect = #all ])
+		ifTrue: [	self scrollPosition: (self xScrollState scrollPosition @ self yScrollState scrollPosition).
+						aspect = #scrollPosition
+							ifTrue: [ self displayNowIfInvalid.]	].! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'event handling' !
+
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	(super keyDown: key focus: focus event: ev)
+		ifTrue: [ ^true ].
+
+	self partIsFullyVisibleInY
+		ifFalse: [	key = #PRIOR
+								ifTrue: [	self pageBack.
+												^true ].
+							key = #NEXT
+								ifTrue: [	self pageForward.
+												^true ].
+						].
+	^false! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'control' !
+
+
+pageBack
+
+	self constrainY
+		ifFalse: [ self yScrollState pageBack ]
+		ifTrue: [ self xScrollState pageBack ]!
+
+pageForward
+
+	self constrainY
+		ifFalse: [ self yScrollState pageForward ]
+		ifTrue: [ self xScrollState pageForward ]!
+
+relayoutAndInvalidate
+
+	super relayoutAndInvalidate.
+	self part invalidate.!
+
+scrollIfNeededToMakeVisible: area <Rect>
+relativeTo: v <Visual>
+minimizeMotion: minimizeMotion <Boolean>
+
+	| adjusted <Rect> orig <Point> |
+
+	orig := self allocation enclosingRect origin.
+	v == self
+		ifFalse: [ adjusted := area translatedBy: ((v positionRelativeTo: self part) relativeTo: orig). ]
+		ifTrue: [ adjusted := area ].
+	self xScrollState
+			scrollIfNeededToMakeVisible: adjusted left ,, adjusted right
+			minimizeMotion: minimizeMotion.
+	self yScrollState
+		scrollIfNeededToMakeVisible: adjusted top ,, adjusted bottom
+		minimizeMotion: minimizeMotion.
+	super	scrollIfNeededToMakeVisible: (adjusted translatedBy: orig)
+				relativeTo: self part
+				minimizeMotion: minimizeMotion.! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'restricted-to session' !
+
+
+checkLayout: oldPrefs <SeqCltn[Region]>
+
+	"If our prefs change along a constrained dimension or our preference origin is changing,
+		delegate to super, otherwise, relayout in place"
+	| nat <Rect> min <Rect> max <Rect> oldnat <Rect> oldmin <Rect> oldmax <Rect> |
+	
+	self minScrollExtent notNil
+		ifTrue: [ ^super checkLayout: oldPrefs ].
+
+	nat := self natural enclosingRect.
+	min := self min enclosingRect.
+	max := self max enclosingRect.
+	oldmin := (oldPrefs at: 1) enclosingRect.
+	oldnat := (oldPrefs at: 2) enclosingRect.
+	oldmax := (oldPrefs at: 3) enclosingRect.
+
+	"See if our origin is changing"
+	(nat left = oldnat left and: [ nat top = oldnat top ])
+		ifFalse: [ ^super checkLayout: oldPrefs ].
+
+	self constrainX
+		ifTrue: [	((nat xSameAs: oldnat) and: [ (min xSameAs: oldmin) and: [ max xSameAs: oldmax ]])
+							ifFalse: [ ^super checkLayout: oldPrefs ].	].
+	self constrainY
+		ifTrue: [	((nat ySameAs: oldnat) and: [ (min ySameAs: oldmin) and: [ max ySameAs: oldmax ]])
+							ifFalse: [ ^super checkLayout: oldPrefs ].	].
+	self relayoutAndInvalidate.
+	self prefsStatus: Visual valid.!
+
+oldcheckLayout: oldPrefs <SeqCltn[Region]>
+
+	"If our prefs change along a constrained dimension or our preference origin is changing,
+		delegate to super, otherwise, relayout in place"
+	| nat <Rect> min <Rect> max <Rect> oldnat <Rect> oldmin <Rect> oldmax <Rect> |
+
+	nat := self natural enclosingRect.
+	min := self min enclosingRect.
+	max := self max enclosingRect.
+	oldmin := (oldPrefs at: 1) enclosingRect.
+	oldnat := (oldPrefs at: 2) enclosingRect.
+	oldmax := (oldPrefs at: 3) enclosingRect.
+
+	"See if our origin is changing"
+	(nat left = oldnat left and: [ nat top = oldnat top ])
+		ifFalse: [ ^super checkLayout: oldPrefs ].
+
+	self constrainX
+		ifTrue: [	((nat xSameAs: oldnat) and: [ (min xSameAs: oldmin) and: [ max xSameAs: oldmax ]])
+							ifFalse: [ ^super checkLayout: oldPrefs ].	].
+	self constrainY
+		ifTrue: [	((nat ySameAs: oldnat) and: [ (min ySameAs: oldmin) and: [ max ySameAs: oldmax ]])
+							ifFalse: [ ^super checkLayout: oldPrefs ].	].
+	self relayoutAndInvalidate.
+	self prefsStatus: Visual valid.! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'testing' !
+
+
+partIsFullyVisibleInY ^<Boolean>
+
+	^self yScrollState shown >= self yScrollState range! !
+
+! (Delta mirrorFor: #Viewport) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	self optimizeScrolling
+		ifTrue: [ can subwindowsToDisplay add: self part ]
+		ifFalse: [ super localDisplayOn: can ]! !
+

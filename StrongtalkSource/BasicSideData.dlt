@@ -1,0 +1,54 @@
+Delta define: #BasicSideData as: (
+(Class subclassOf: 'BasicDeclData' instanceVariables: 'classDecl klass messages methods selfTV selfPublicTV typeOfInstances ')) !
+
+(Delta mirrorFor: #BasicSideData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicSideData) group: 'ast'!
+
+(Delta mirrorFor: #BasicSideData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicSideData) methodsFor: 'Unclassified' !
+
+
+classDecl ^ <DeltaClassUpdate>
+    ^classDecl!
+
+classDecl: cd <DeltaClassUpdate > ^ <Self>
+    classDecl := cd!
+
+initialize ^ <Self>
+    selfTV := DeltaTypeVar new name: #Self bound: self.
+messages := Dictionary[Symbol, Message]  new.
+"typeOfInstances := DeltaRawProtocol new filter: self using: DeltaSubstitution new initialize."!
+
+klass ^ <DeltaClass>
+    ^klass!
+
+klass: k <DeltaClass > ^ <Self>
+
+klass := k.
+self scope at: #Self put: self selfTV.
+self scope at: #PublicSelf put: self selfPublicTV.
+self isMetaSide ifFalse:[self scope at: #Instance put: self selfTV]
+                         ifTrue:[
+                                   self selfTV isMeta: true.
+                                   self selfPublicTV isMeta: true.
+                                   self scope at: #Instance put: self selfClassTV.
+                                   self scope at: #PublicInstance put: self selfPublicClassTV.
+                                   self selfTV dual: self selfClassTV.
+                                   self selfClassTV dual: self selfTV.
+                                   ].
+"Whatever class is linked to me, must have my type var in its scope"!
+
+messages ^ <Dict[Symbol,Message]>
+    ^messages!
+
+selfPublicTV ^ <TypeVar>
+    ^selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^selfTV! !
+

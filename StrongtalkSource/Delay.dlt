@@ -1,0 +1,92 @@
+Delta define: #Delay as: (
+(Class subclassOf: 'Object' instanceVariables: '"Only one of the following instvars is non-nil"
+resumptionTime <Int>
+		"The value of the millisecondClock at which to resume"
+interval <Int>
+		"The relative interval, in milliseconds, to wait"
+	')) !
+
+(Delta mirrorFor: #Delay) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Delay) group: 'base'!
+
+(Delta mirrorFor: #Delay)
+comment: 
+'Delay objects can be used to cause the current process to wait for a relative
+time, or for an absolute time to be reached, at which time the current process
+will resume.
+
+Tags: %BlueBook %User
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
+'!
+
+! (Delta mirrorFor: #Delay) classSide methodsFor: 'instance creation' !
+
+
+forMilliseconds: millis <Int>  ^<Instance>
+
+	^self new interval: millis!
+
+forSeconds: seconds <Int>  ^<Instance>
+
+	^self forMilliseconds: seconds * 1000!
+
+until: timeInSeconds <Float>  ^<Instance>
+	"Delay until Time clockValue has reached timeInSeconds"
+
+	^self untilMilliseconds: (timeInSeconds * 1000.0) asInteger!
+
+untilMilliseconds: millis <Int>  ^<Instance>
+
+	^self new resumptionTime: millis! !
+
+! (Delta mirrorFor: #Delay) classSide methodsFor: 'inquiries' !
+
+
+millisecondClockValue ^<Int>
+
+	^Time millisecondClockValue! !
+
+! (Delta mirrorFor: #Delay) methodsFor: 'private-initialization' !
+
+
+interval: millis <Int>
+
+	interval := millis!
+
+resumptionTime: t <Int>
+
+	resumptionTime := t! !
+
+! (Delta mirrorFor: #Delay) methodsFor: 'accessing' !
+
+
+interval ^<Int>
+
+	^interval!
+
+resumptionTime ^<Int>
+
+	^resumptionTime! !
+
+! (Delta mirrorFor: #Delay) methodsFor: 'control' !
+
+
+wait
+
+	| sem <Semaphore> |
+	sem := Semaphore new.
+	Processor signal: sem atTime: self resumptionTimeFromNow.
+	sem wait.! !
+
+! (Delta mirrorFor: #Delay) methodsFor: 'private' !
+
+
+resumptionTimeFromNow ^<Int>
+
+	^resumptionTime isNil
+		ifFalse: [ resumptionTime ]
+		ifTrue: [ Time millisecondClockValue + self interval ]! !
+

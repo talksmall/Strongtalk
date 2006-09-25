@@ -1,0 +1,38 @@
+Delta define: #MetaClassMixin as: (
+(Class subclassOf: 'Mixin' instanceVariables: 'instanceMixin')) !
+
+(Delta mirrorFor: #MetaClassMixin) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #MetaClassMixin) group: 'base'!
+
+(Delta mirrorFor: #MetaClassMixin)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MetaClassMixin) methodsFor: 'Unclassified' !
+
+
+instanceMixin  ^ <ClassMixin> 
+
+ ^instanceMixin!
+
+instanceMixin: m  <ClassMixin> ifFail: fb <[Str]>
+	instanceMixin := m!
+
+isMeta  ^ <Boolean>
+	^true!
+
+name ^ <Symbol>
+
+	^self instanceMixin name isNil
+		ifTrue: [ nil ]
+		ifFalse: [ (self instanceMixin name, ' classMixin') asSymbol	]
+
+
+
+!
+
+name: n  <Symbol> ifFail: fb <[Str]>
+	fb value: 'Attempt to name a meta mixin'! !
+

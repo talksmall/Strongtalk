@@ -1,0 +1,139 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Benchmarking Guide</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h2 align="left">Benchmarking Guide</h2>
+
+<p>Micro-benchmarks are notoriously inaccurate, in any system.
+Here are some guidelines you should read carefully before trying
+to construct an accurate benchmark in the Strongtalk system. This
+is very important because there is one big 'gotcha' associated
+with running benchmarks from a &quot;do it&quot; in Strongtalk:</p>
+
+<ul>
+    <li><strong>Put your benchmark in a real method</strong>. As
+        mentioned in the tour, to get compiled performance
+        results in Strongtalk, the primary computation (the code
+        where your benchmark is spending most of its time) needs
+        to be in an actual method, not in a &quot;do it&quot;
+        from a workspace. This is because the current version of
+        the VM doesn't use the optimized method until the <em>next</em>
+        time that it is called after compilation, and a &quot;do
+        it&quot; method by definition is never called more than
+        once. (In a real program or normal &quot;do it&quot;,
+        this effect is never an issue- only micro-benchmarks have
+        loops that iterate zillions of times with the loop itself
+        in the &quot;do it&quot;). This is not a fundamental
+        limitation in the technology, but we hadn't implemented
+        &quot;on-stack-replacement&quot; in the Smalltalk system
+        at the time of release (we did implement it for Java). <p>Note
+        that this does <em>not</em> mean that the code that your
+        &quot;do it&quot; invokes won't be optimized and used the
+        first time around- it will. But the big performance gains
+        for micro-benchmarks come from inlining <em>all </em>the
+        called methods directly into the performance critical
+        benchmark loop, and if that loop is literally in the
+        &quot;do it&quot;, that isn't possible. </p>
+        <p>A good way to run your benchmark is to create a method
+        in the Test class (which is there for this kind of thing)
+        that runs for at least 100 milliseconds, and then call
+        that method a number of times until it becomes optimized.
+        The Test&gt;benchmark: method will do this for you, and
+        report the fastest time. To tell if your code is running
+        enough, a good rule of thumb is that if your method
+        doesn't get faster and then stabilize at some speed, then
+        it's not being run </p>
+    </li>
+    <li><strong>Know how to choose a benchmark. </strong>Micro-benchmarks
+        are notorious for producing misleading results in all
+        systems, which is why all real benchmarks are bigger
+        programs that as much as possible use the same code on
+        both systems. If you insist on writing a micro-benchmark,
+        keep these issues in mind:<ul>
+            <li><strong>Your code should spend its time in
+                Smalltalk</strong>, not down in rarely-used
+                system primitives or C-callouts. For example,
+                'factorial' spends almost all of its time in the
+                LargeInteger multiplication primitive, not
+                Smalltalk code.</li>
+            <li><strong>Use library methods that are commonly
+                used in real performance-critical code. </strong>Take
+                factorial as an example: when is the last time
+                your program was performance bound on
+                LargeInteger multiplication?</li>
+            <li><strong>Use code that is like normal Smalltalk
+                code (use of core data structures, allocation,
+                message sending in a normal pattern, instance
+                variable access, blocks).</strong> This is the
+                biggest reason most micro-benchmarks aren't
+                accurate. Real code is broken up into many
+                methods, with lots of message sends, instance
+                variable reads, boolean operations, SmallInteger
+                operations, temporary allocations, and Array
+                accesses, all mixed together. These are the
+                things that Strongtalk is designed to optimize.</li>
+            <li><strong>Use the same code and input data on both
+                systems.</strong> Running a highly
+                implementation- dependent operation like
+                &quot;compile all methods&quot; is not a good
+                benchmark because the set of methods is totally
+                different, and the bytecode compilers are
+                implemented completely differently. (Also, the
+                byte-code compiler is not a performance critical
+                routine in applications, so it has not been tuned
+                at all in Strongtalk. When was the last time your
+                users were twiddling their thumbs waiting for the
+                bytecode compiler?)</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>How we did Benchmarking</h3>
+
+<p>When we benchmarked the system ourselves, we assembled a large
+suite of accepted OO benchmarks, such as Richards, DeltaBlue (a
+constraint solver), the Stanford benchmarks, Slopstones and
+Smopstones. These benchmarks are already in the image, if you
+want to run them. Try evaluating &quot;VMSuite
+runBenchmarks&quot; and look at the code it runs. If you want a
+real performance comparison, run these on other VMs.</p>
+
+<p>As an example, I put a couple of very small microbenchmarks
+that are run the right way in the system tour (the code is in the
+Test class). You can try running them on other Smalltalks as a
+start.</p>
+
+<h3>Other benchmarkling problems people have been having</h3>
+
+<ul>
+    <li>Several have people complained about their benchmark that
+        runs &quot;5000 factorial&quot; in a loop crashes. If you
+        read the troubleshooting section, you will see that the
+        error message you are getting indicates that you are
+        running out of virtual memory, which explains the crash.
+        This is happening because the full garbage collector does
+        not run automatically in Strongtalk right now (the
+        generation scavenger of course runs fine). Obviously it
+        would be nice if it ran automatically, but if you are
+        allocating vast amounts of memory (which 5000 factorial
+        does), plese run &quot;VM collectGarbage&quot;
+        occasionally. And as we have already pointed out,
+        factorial is a very bad (unrepresentative) benchmark on
+        any system. <p>The moral of the story: if you have a
+        crash, read the troubleshooting section.</p>
+    </li>
+    <li>&quot;Compile all methods&quot; crashes. Yes, it is a
+        known problem that is one method in the image that
+        crashes the bytecode compiler when it is run this way,
+        even in interpreted mode. Use some other benchmark (this
+        isn't a good benchmark anyway, as pointed out above).</li>
+</ul>
+</body>
+</html>

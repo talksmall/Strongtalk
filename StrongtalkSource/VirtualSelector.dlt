@@ -1,0 +1,41 @@
+Delta define: #VirtualSelector as: (
+Generic forAll: '(T covar) ' body: ((Class subclassOf: 'Collection[T]' instanceVariables: 'cltn filter '))) !
+
+(Delta mirrorFor: #VirtualSelector) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #VirtualSelector) group: 'misc'!
+
+(Delta mirrorFor: #VirtualSelector)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VirtualSelector) classSide methodsFor: 'Unclassified' !
+
+
+on: c <Collection[T] >filter: b <[X,^Boolean] > ^ <Instance>
+    ^super new on: c filter: b! !
+
+! (Delta mirrorFor: #VirtualSelector) methodsFor: 'Unclassified' !
+
+
+cltn ^ <Collection[T]>
+    ^cltn!
+
+cltnSpecies
+
+^self cltn cltnSpecies!
+
+do: blk <[T,^Object] > ^ <Self>
+    cltn do: [ :e <X>  | (filter value: e) ifTrue:[ blk value: e] ]!
+
+filter ^ <[T,^Boolean]>
+    ^filter!
+
+on: c <Collection[T] >filter: b <[T,^Boolean] > ^ <Self>
+    cltn := c.
+    filter := b.!
+
+size ^ <Int>
+    ^cltn size! !
+

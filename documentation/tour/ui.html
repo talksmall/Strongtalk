@@ -1,0 +1,120 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The User Interface Framework</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="mixins.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="conclusion.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">The User Interface Framework</h2>
+
+<p>The Strongtalk user interface framework departs considerably
+from the Model-View-Controller framework of Smalltalk-80. It has
+a number of interesting design freatures:</p>
+
+<ul>
+    <li>Use of flyweight <em>glyphs </em>(an idea borrowed from
+        Calder's implementation in the InterViews system). A
+        glyph is a shareable widget, i.e. it can have many
+        parents. This shareability allows them to be used in a
+        much more fine-grained manner than normal widgets (called
+        <em>Visuals</em> in the Strongtalk system). For example,
+        every character on this page is represented by an
+        individual glyph that manages its own layout and
+        rendering.</li>
+    <li>Advanced, automatic dynamic layout using a shrink/stretch
+        model computed from minimum/desired/maximum sizes. A
+        layout is specified by combining a number of standard
+        visuals such as Row, Column, Table, and Glue, which then
+        manage the layout process for the application. For
+        example, the lines of text on this page are actually just
+        standard GlyphRow visuals, that knows how to lay things
+        out horizontally. <p>
+        The goal is that applications should normally not have to
+        create their own subclasses of Visual, or worry about
+        doing layout on their own, which is fraught with
+        difficulty in most systems as soon as layouts become
+        dynamic. This works nicely; for example, the entire
+        programming environment in Strongtalk was designed
+        without creating a single additional Visual subclass, or
+        doing any layout other than using the standard layout
+        widgets.</p></li>
+    <li>The layout mechanism uses lazy relayout and intelligent
+        layout reordering to eliminate the algorithmic problems
+        seen in most other UI frameworks whereby widgets
+        inadvertently get layed out and redrawn multiple times
+        when simple changes are made.</li>
+    <li>The UI framework provides a framework for imbedding true
+        native widgets into any place in any Visual layout, which
+        is traditionally a shortcoming of most Smalltalk systems.
+        A subset of the Visual classes support many of the
+        standard native aspects of the UI (buttons, check boxes,
+        listboxes, dialogs, message boxes, and scrollbars)</li>
+    <li>The framework's API is designed to be highly portable
+        (although some parts require a different implementation
+        on other platforms). Native widgets are represented by
+        Visual subclasses that abstract their behavior in a
+        portable way.</li>
+</ul>
+
+<p>Visuals are responsible for the <em>physical</em> aspects of
+the UI (layout, rendering, event processing, etc). Separate
+wrapper visuals can be used to control and modify event
+processing, taking the place of the separate Controller hierarchy
+in other Smalltalk systems. Glyphs and Visuals interact smoothly:
+all Visuals are Glyphs, and any glyph can be wrapped for use as a
+Visual with the message #asVisual.</p>
+
+<p>Application and model-specific logic is placed in a separate
+hierarchy, the Application hierarchy. Applications are
+responsible for creating and parameterizing the Visual instances
+they need, handling logical interaction. A subclass of
+Application, View, mediates between Visuals and model objects.</p>
+
+<p>Because the Strongtalk UI framework is strongly-typed, it uses
+Blocks to parameterize the behavior of Visuals, rather than using
+the selector/perform approach used in other Smalltalk systems.</p>
+
+<p>Here is a hierarchy browser showing the UI framework public API:</p>
+
+<p align="center">
+<smappl visual="
+	| h v |
+	h := (ClassHierarchyOutliner for: (ClassMirror on: Object)) 
+    								filterOnUIUserClasses.
+    v := (h topVisualWithHRule: false)
+		withBorder: (Border standard3DRaised: true).
+    v
+"><br><strong>The UI framework public API</strong>
+			<a DOIT="  (ClassHierarchyOutliner for: (ClassMirror on: Object)) 
+    								filterOnUIUserClasses;
+    									launch
+			">(spawn)</a></p>
+
+<p>If you are interested in looking at what kind of Visuals and
+Applications are in the windows you are looking at, there are two
+neat tools for doing that directly. First, most of strongtalk
+applications have a &quot;Meta&quot; menu item on their main
+menu. This will open an inspector on the Application object
+associated with that window.</p>
+
+<p>To look at the Visuals associated with any point in any
+Strongtalk window, you can open a <em>Core Sampler</em> by
+clicking <a DOIT="
+	CoreSampler new launch">here</a>. Once a core sampler is open, clicking the left
+mouse button while holding down the &lt;Ctrl&gt; key in any other
+window will display a list of inspectors on Visuals in the
+CoreSampler window. The list represents the slice of the Visual
+hierarchy that contains the point you clicked on, from outermost
+to innermost. Try ctrl-clicking on this line of text to see all
+the levels of glyphs and Visuals that make up an HTML browser
+page.</p>
+
+<h3 align="right"><a href="conclusion.html">Next ==&gt;</a></h3>
+</body>
+</html>

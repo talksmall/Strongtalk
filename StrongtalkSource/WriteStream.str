@@ -1,0 +1,22 @@
+Delta define: #WriteStream as: (
+Generic forAll: '(E contra) ' body: (Protocol superProtocol: '<OutputStream[E] ; PositionableStream>')) !
+
+(Delta mirrorFor: #WriteStream) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #WriteStream) group: 'base'!
+
+(Delta mirrorFor: #WriteStream)
+comment: 
+'A WriteStream is a positionable OutputStream
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #WriteStream) methodsFor: 'Unclassified' !
+
+
+contentsWritten ^<SeqCltn[Object]>
+"Returns all the elements in the stream before the
+current position, and leaves the position unchanged.
+
+Classes should implement contents for untyped use." ! !
+

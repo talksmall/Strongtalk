@@ -1,0 +1,50 @@
+Delta define: #DeltaObjectSideBehavior as: (
+(Class subclassOf: 'DeltaSideBehavior' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #DeltaObjectSideBehavior) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaObjectSideBehavior) group: 'ast'!
+
+(Delta mirrorFor: #DeltaObjectSideBehavior)
+comment: 
+'Specialized hierarchy for the sides of Object.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaObjectSideBehavior) methodsFor: 'Unclassified' !
+
+
+fixupScopes  ^ <Self>
+
+"This should be removed at some point after bootstrap. The missing scope entries 
+  should be set correctly by the mirrors when the scope is created, but this it awkward 
+  at the moment."
+
+self deltaHack.
+super fixupScopes.
+
+"Type for super"
+(self scope at: #super) type isNil ifTrue:[
+	(self scope at: #super)
+		name: #super
+		type: DeltaSuperSendToNilError new.
+].
+!
+
+heirScope ^ <Scope>
+    ^self localScope!
+
+localScope ^ <Scope>
+    ^self scope delta!
+
+typeOfInstances ^ <ObjectType>
+"This method returns the public protocol of the side.  For the class side,
+we delegate responsibility to the dual.
+
+For the instance side,  we create an object protocol, using self as the
+filteree.
+We must take care to replace private type variables with public ones;
+this is done by using the appropriate substitution"
+
+^ DeltaObjectProtocol new filter: self using: self instanceTypeSubstitution.! !
+

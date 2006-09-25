@@ -1,0 +1,140 @@
+Delta define: #EventHandler as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'charHandler <[Character,Visual,UIEvent,^Boolean]>
+keyDownHandler <[Symbol,Visual,UIEvent,^Boolean]>
+keyUpHandler <[Symbol,Visual,UIEvent,^Boolean]>
+mouseHandler <[Symbol,Point,UIEvent,^Boolean]>
+onRelease <[]>
+isFocusCandidate <Boolean>
+		')) !
+
+(Delta mirrorFor: #EventHandler) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #EventHandler) group: 'ui'!
+
+(Delta mirrorFor: #EventHandler)
+comment: 
+'A class that intercepts various kinds of events, and forwards handling of 
+those events to blocks that are used to determine its behavior.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
+'!
+
+! (Delta mirrorFor: #EventHandler) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	
+	self charHandler: [ :c <Character> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
+		self defaultCharacter: c focus: focus  event: ev ].
+		
+	self keyDownHandler: [ :key <Symbol> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
+		self defaultKeyDown: key focus: focus  event: ev ].
+		
+	self keyUpHandler: [ :key <Symbol> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
+		self defaultKeyUp: key focus: focus  event: ev ].
+		
+	self mouseHandler: [ :button <Symbol> :loc <Point> :ev <UIEvent> :eh <EventHandler> |
+		self defaultMouseEvent: button at: loc event: ev ].
+		
+	isFocusCandidate := false.
+	onRelease := [ ].! !
+
+! (Delta mirrorFor: #EventHandler) methodsFor: 'accessing' !
+
+
+charHandler ^<[Character,Visual,UIEvent,^Boolean]>
+
+	^charHandler!
+
+charHandler: b <[Character,Visual,UIEvent,^Boolean]>
+
+	charHandler := b!
+
+isFocusCandidate ^<Boolean>
+
+	^isFocusCandidate!
+
+isFocusCandidate: flag <Boolean>
+
+	isFocusCandidate := flag!
+
+keyDownHandler ^<[Symbol,Visual,UIEvent,^Boolean]>
+
+	^keyDownHandler!
+
+keyDownHandler: b <[Symbol,Visual,UIEvent,^Boolean]>
+
+	keyDownHandler := b!
+
+keyUpHandler ^<[Symbol,Visual,UIEvent,^Boolean]>
+
+	^keyUpHandler!
+
+keyUpHandler: b <[Symbol,Visual,UIEvent,^Boolean]>
+
+	keyUpHandler := b!
+
+mouseHandler ^<[Symbol,Point,UIEvent,^Boolean]>
+
+	^mouseHandler!
+
+mouseHandler: b <[Symbol,Point,UIEvent,^Boolean]>
+
+	mouseHandler := b!
+
+onRelease ^<[^Object]>
+
+	^onRelease!
+
+onRelease: b <[^Object]>
+
+	onRelease := b! !
+
+! (Delta mirrorFor: #EventHandler) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self charHandler value: c value: focus value: ev value: self!
+
+defaultCharacter: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^super character: c focus: focus  event: ev!
+
+defaultKeyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^super keyDown: key focus: focus  event: ev!
+
+defaultKeyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^super keyUp: key focus: focus  event: ev!
+
+defaultMouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	^super mouseEvent: type at: loc event: ev!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self keyDownHandler value: key value: focus value: ev value: self!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self keyUpHandler value: key value: focus value: ev value: self!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	^self mouseHandler value: type value: loc value: ev value: self! !
+
+! (Delta mirrorFor: #EventHandler) methodsFor: 'control' !
+
+
+release
+
+	self onRelease value.
+	super release.! !
+

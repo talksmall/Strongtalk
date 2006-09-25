@@ -1,0 +1,76 @@
+Delta define: #DeltaMixinTypeBehavior as: (
+(Class subclassOf: 'DeltaType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaMixinTypeBehavior) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaMixinTypeBehavior) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMixinTypeBehavior)
+comment: 
+'This class represents the shared behavior of mixin types.
+Nodes that represent the abstract syntax of mixins must support the
+protocol defined here (it is not yet clear if there is any real code that can be
+shared; perhaps this should be a protocol not a class).
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMixinTypeBehavior) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    
+self subclassResponsibility!
+
+branded ^ <Boolean>
+
+self subclassResponsibility!
+
+dualClassType ^ <ClassType>
+    ^DeltaUnaryClassTypeExpr new target: self selector: #class.!
+
+extensionsAreSubtypes ^ <Boolean>
+
+self subclassResponsibility!
+
+firstClassRepType  ^ <ObjectType>
+
+   self subclassResponsibility!
+
+komment
+
+"This class represents the shared behavior of mixin types.
+Nodes that represent the abstract syntax of mixins must support the
+protocol defined here (it is not yet clear if there is any real code that can be
+shared; perhaps this should be a protocol not a class).
+" !
+
+messages ^ <Dict[Symbol,Message]>
+
+   self subclassResponsibility!
+
+methods ^ <Dict[Symbol,Method]>
+   self subclassResponsibility!
+
+monotonic ^ <Boolean>
+
+self subclassResponsibility!
+
+protocolForInvocation: i <MixinInvocationNode> ^ <Protocol>
+
+self subclassResponsibility!
+
+subtype ^ <Boolean>
+
+self subclassResponsibility!
+
+supportedProtocol ^ <Protocol>
+    self subclassResponsibility!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+     self subclassResponsibility!
+
+wellFormed ^ <Boolean>
+
+self subclassResponsibility! !
+

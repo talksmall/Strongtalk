@@ -1,0 +1,416 @@
+Delta define: #DeltaSideUpdateBehavior as: (
+(Class subclassOf: 'DeltaSideBehavior' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #DeltaSideUpdateBehavior) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #DeltaSideUpdateBehavior) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSideUpdateBehavior)
+comment: 
+'I represent the "sides" of classes and mixins that have a non-nil ancestor.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSideUpdateBehavior) methodsFor: 'Unclassified' !
+
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^self typeOfInstances allSelfTVs!
+
+asGeneric ^ <GenericDecl>
+    ^self classDecl asGeneric.!
+
+attributes ^ <Dict[Symbol,MsgSignature]>
+
+    ^self localAttributes override:self superAttributes!
+
+classProtocol ^ <Protocol>
+    self typeOfInstances classProtocol!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^((self superprotocol compositeSubstitute: t) substitute: self myLocalSubstitution)
+substitute: self privateToPublicSubstitution!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+
+ ^(self superprotocol compositeSubstitute: t) substitute: self myLocalSubstitution!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^self typeOfInstances declaredSubprotocolOf: p!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^self typeOfInstances declaredSuperprotocolOfGeneric: p!
+
+delta ^ <Protocol>
+
+    ^ DeltaSideDeltaProtocol new filter: self using: DeltaSubstitution new initialize!
+
+firstClassRepType  ^ <ObjectType>
+
+^DeltaTypeId new setId: #MixinMirror; scope: DeltaGlobals.!
+
+fixupScopes  ^ <Self>
+
+"This should be removed at some point after bootstrap. The missing scope entries 
+  should be set correctly by the mirrors when the scope is created, but this it awkward 
+  at the moment."
+
+self deltaHack.
+super fixupScopes.
+
+"Type for super"
+"(self scope at: #super) type isNil ifTrue: ["
+	(self scope at: #super)
+		name: #super
+		type: self typeOfSuper.
+"]."
+!
+
+generifyWithFormals: formals
+
+| genericTypeInfo |
+
+    genericTypeInfo := DeltaGenericSideUpdate new name: self name
+                                                                                                      body: self
+                                                                                                      formals: formals.
+    Type atClass: self klass put:  genericTypeInfo.
+"must rearrange scope"
+
+   self scope base: (DeltaOverrideScope new setBase:  self scope base
+                                                                                         delta: genericTypeInfo genericScope ).
+
+  self supportedProtocol isNil 
+        ifFalse:[self supportedProtocol scope: self scope base].
+
+!
+
+implementedPrivateProtocol ^ <Protocol>
+    | d <DeltaRawProtocol>   ip <ProtocolUpdate> |
+
+d := super implementedPrivateProtocol.
+ip := self privateProtocolsConstructor new name: (self name, ' implemented private protocol') asSymbol
+                                           superprotocol: (self superclass implementedPrivateProtocol forcedSubstitute: self myLocalSubstitution)
+                                           delta: d
+                                           branded: self branded
+                                           subtype: self subtype.
+
+self relevantTypeVars do:[: rtv <TypeVar> | ip addRelevantTypeVar: rtv].
+^ip.!
+
+invocationCache ^ <Dict[ObjectType, ObjectType]>
+
+self subclassResponsibility!
+
+isInheritedTypeOfSuper ^ <Boolean>
+    ^(self privateProtocol structuralInheritedProtocolOf: self superClass privateProtocol assuming: DeltaGlobalTrail) and:[self structuralInheritedProtocolOf: self superClass  assuming: DeltaGlobalTrail]!
+
+isSubtypeOfSuper ^ <Boolean>
+    ^(self privateProtocol structuralSubprotocolOf: self superclass privateProtocol assuming: DeltaGlobalTrail) and:[self structuralSubprotocolOf: self superClass  assuming: DeltaGlobalTrail].!
+
+isSubtypeOfSupported ^ <Boolean>
+    ^self supportedProtocol isNil
+     ifTrue:[true]
+     ifFalse:[
+                self structuralSubprotocolOf: self supportedProtocol
+                                                assuming: DeltaGlobalTrail.
+                ].!
+
+localAttributes ^ <Dict[Symbol,MsgSignature]>
+
+    ^self publicFunctions virtualCollect:[: f <Method | Message>  | f type]
+ !
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self localAttributes!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self dual localAttributes!
+
+localRawPrimaryInterface ^ <Interface>
+    ^DeltaInterface new attributes: self  localAttributes!
+
+localRawSecondaryInterface ^ <Interface>
+       ^DeltaInterface new attributes: self  dual localAttributes!
+
+myLocalSubstitution ^ <Substitution>
+
+" This method returns a substitution that replaces my super side's
+type variables with my own. It is used to modify the signatures
+inherited from the super side so that all self reference uses
+my type variables. That is equivalent to invoking the super side's
+generator with the formal parameters of my generator during
+inheritance.
+"
+
+    | theta <Substitution>  superProtocol <Protocol>  |
+
+theta := DeltaSubstitution new initialize.
+superProtocol := self superprotocol.
+theta at: superProtocol asSide selfTV put: self selfTV.
+theta at: superProtocol asSide selfClassTV put: self selfClassTV.
+theta at: superProtocol selfPublicTV put: self selfPublicTV.
+theta at: superProtocol selfPublicClassTV put: self selfPublicClassTV.
+
+^theta!
+
+privateProtocol ^ <Protocol>
+    | d <DeltaRawProtocol>  p <ProtocolUpdate> |
+
+d := super privateProtocol.
+p := self privateProtocolsConstructor new name: (self name, ' private protocol') asSymbol
+                                           superprotocol: (self superclass privateProtocol forcedSubstitute: self myLocalSubstitution)
+                                           delta: d
+                                           branded: self branded
+                                           subtype: self subtype.
+self relevantTypeVars do:[: rtv <TypeVar> | p addRelevantTypeVar: rtv].
+^p.!
+
+privateProtocolsConstructor ^ <ProtocolUpdate class>
+
+^ DeltaProtocolUpdate!
+
+superAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^ self superprotocol bareAttributes
+
+!
+
+superSelect: sel <Symbol> ifAbsent: blk <[]> ^ <DeltaMsgSignature>
+
+^self compositeSubstitute: (self superclass privateProtocol bareAttributes at: sel ifAbsent: blk).!
+
+superclass ^ <Class>
+    ^self superclassType!
+
+superprotocol ^ <Protocol>
+    ^self superclassType!
+
+superside ^ <Side>
+    ^self superclassType
+!
+
+supportedProtocol ^ <Protocol>
+
+self subclassResponsibility!
+
+typeOfInstances ^ <ObjectType>
+
+"This method returns the public protocol of the side.  For the class side,
+we delegate responsibility to the dual.
+
+For the instance side,  we create a protocol update, using self as the
+filteree.
+We must take care to replace private type variables with public ones;
+this is done by using the appropriate substitution"
+         
+^self isMetaSide
+             ifTrue:[self dual typeOfClass]
+             ifFalse:[DeltaProtocolOfSideUpdate new filter: self using: self instanceTypeSubstitution.]!
+
+typeOfSuper " ^ <Protocol>"
+"return the type of the pseudo-variable 'super'         
+"
+
+^DeltaEncapsulatedProtocol new
+    body:  (self superclass implementedPrivateProtocol forcedSubstitute: self myLocalSubstitution)
+    bound: (DeltaTypeId new setId: #PublicSelf; scope: self localScope)
+!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+| d <Set[Symbol]> |
+
+d := self superclass unimplementedMessages copy.
+self methods do:[:m <DeltaMethod> | d remove: m selector ifAbsent:[]].
+self messages  keys do: [: k <Symbol> | d add: k].
+^d! !
+
+! (Delta mirrorFor: #DeltaSideUpdateBehavior) methodsFor: 'typechecking' !
+
+
+typecheckSuperclassType
+
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self testSuperclassType.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckSupportedProtocol
+
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self testSupportedProtocol.
+self retractTypeAssumptions.
+self errorHandler popDefinition.! !
+
+! (Delta mirrorFor: #DeltaSideUpdateBehavior) methodsFor: 'private typechecking' !
+
+
+checkForUnsupportedMessages
+
+| ba <Dict[Symbol,MsgSignature]> |
+
+self supportedProtocol isNil
+  ifFalse:[
+			self errorHandler pushDefinitions: self and: self supportedProtocol.
+                 ba := self bareAttributes.
+                 self errorHandler pushDefinition: (SupportedProtocolLocator ofDefinition: self basicLocator).
+                self supportedProtocol bareAttributes keys
+                      do:[: k | 
+ba at: k
+                                           ifAbsent:[
+                                                              self reportError: (DeltaSupportedMsgMissingError new msgName: k).
+                                                              ]
+                            ].
+            self errorHandler popDefinition.
+			self errorHandler popDefinitions
+                ].!
+
+innerTypecheckDeclaration
+
+self testSupportedProtocol.
+self testSuperclassType.
+super innerTypecheckDeclaration
+!
+
+testAttributeAgainstSuper: m <Attribute > ^ <Self>
+
+self superside isNil ifTrue:[^self].
+self errorHandler pushDefinitions: self and: self superside.
+self errorHandler pushSelector: m selector.
+self subtype
+  ifTrue:[self testSubtypeAttributeAgainstSuper: m.]
+  ifFalse:[self testInheritedTypeAttributeAgainstSuper: m.].
+self errorHandler popDefinitions.
+self errorHandler popSelector
+!
+
+testAttributeAgainstSupported: m <Attribute > ^ <Self>
+    | mSupportedType <Attribute>  |
+
+self supportedProtocol isNil ifTrue:[^self].
+self errorHandler pushDefinitions: self and: self supportedProtocol.
+mSupportedType := self supportedProtocol selectMsg: m name ifAbsent:[self errorHandler popDefinition. ^self].
+self errorHandler pushSelector: m selector.
+mSupportedType setupTypeAssumptions.
+m type setupTypeAssumptions.
+
+m visibility = #private ifTrue:[self reportError: DeltaMsgConflictSupportedPrivacyError new].
+(m type subtypeOf: mSupportedType assuming: DeltaGlobalTrail)
+  ifFalse:[self reportError: DeltaMsgConflictInSupportedError new].
+
+mSupportedType retractTypeAssumptions.
+m type retractTypeAssumptions.
+
+self errorHandler popDefinitions.
+self errorHandler popSelector.!
+
+testInheritedTypeAttributeAgainstSuper: m <Attribute > ^ <Self>
+"
+ Here we test to see if the inherited signature of m is a supertype 
+of our signature for m.  We  obtain the inherited signature for m by
+selecting  from the rawPrimaryInterface of the  private protocol of
+the super class. We then substitute our type variables for those of
+the inherited protocol. The signature of our version of m can be used
+directly, as it uses our type variables directly.
+
+Assuming this side implements the recursive type sigma = rec s. G[s],
+and the inherited protocol is tau = rec t. F[t], we effectively implement
+the condition
+
+Forall t < G[t]. G[t] < F[t]
+
+Which is the necessary and sufficient condition to ensure the type 
+safety of the inheriting class.
+ The unsubstituted signatures of this class  form G[Self], and the 
+substituted signatures of the inherited protocol form F[Self].
+The type variables of this class  support the appropriate assumptions 
+for this test (namely, Self < G[Self]). Of course, the same applies to
+all type variables (public, private, class and instance side).
+"
+|
+mSuper <Attribute> 
+mSelf <Attribute> 
+|
+             
+mSuper := self superSelect: m selector ifAbsent:[^self].
+mSelf := m type.
+mSuper setupTypeAssumptions.
+mSelf setupTypeAssumptions.
+
+(mSelf subtypeOf: mSuper assuming: DeltaGlobalTrail)
+              ifFalse:[self reportError: DeltaMsgConflictInheritedTypeInSuperError new].
+
+mSuper retractTypeAssumptions.
+mSelf retractTypeAssumptions.
+!
+
+testSubtypeAttributeAgainstSuper: m <Attribute > ^ <Self>
+
+"
+Invoke testInheritedAttributeAgainstSuper: m, to ensure that
+Forall t < G[t]. G[t] < F[t].
+Then select m from self  and from the superclass and do 
+the subtype check.
+"
+|
+mSuper <Attribute> 
+mSelf <Attribute> 
+|
+
+self testInheritedTypeAttributeAgainstSuper: m.
+
+"mSuper := self superside type functions at: m name."
+"find if m is defined in super, and if so extract it"
+mSuper := self superclass  selectMsg: m name ifAbsent:[^self].                                                
+mSelf := self selectMsg: m name.
+
+"visibility: If m is private but mSuper is public, we have an error"
+m visibility = #private ifTrue:[^self reportError: DeltaMsgConflictPrivacyError new].
+
+mSuper setupTypeAssumptions.
+mSelf setupTypeAssumptions.
+
+(mSelf subtypeOf: mSuper assuming: DeltaGlobalTrail)
+              ifFalse:[self reportError: DeltaMsgConflictSubtypeInSuperError new].
+
+mSuper retractTypeAssumptions.
+mSelf retractTypeAssumptions.
+
+
+!
+
+testSuperclassType
+
+self errorHandler pushDefinition: (SuperclassClauseLocator ofDefinition: self basicLocator).
+self superclassType isNil ifFalse:[self superclassType wellFormed].
+self errorHandler popDefinition.!
+
+testSupportedProtocol
+
+self errorHandler pushDefinition: (SupportedProtocolLocator ofDefinition: self basicLocator).
+self supportedProtocol isNil ifFalse:[self supportedProtocol wellFormed].
+self errorHandler popDefinition.!
+
+wellTypedAttribute: m <Attribute > ^ <Boolean>
+
+	"Check inherited signatures"
+	self testAttributeAgainstSuper: m.
+	"Check protocol signatures"
+	self testAttributeAgainstSupported: m.
+
+	super wellTypedAttribute: m
+!
+
+wellTypedAttributeInterface: m <Attribute > ^ <Boolean>
+
+	"Check inherited signatures"
+	self testAttributeAgainstSuper: m.
+	"Check protocol signatures"
+	self testAttributeAgainstSupported: m.
+
+	super wellTypedAttributeInterface: m! !
+

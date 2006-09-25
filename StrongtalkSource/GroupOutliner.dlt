@@ -1,0 +1,43 @@
+Delta define: #GroupOutliner as: (
+(Class subclassOf: 'DefinitionItemOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #GroupOutliner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #GroupOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #GroupOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GroupOutliner) methodsFor: 'private' !
+
+
+aspectForUpdate ^ <Symbol>
+
+	^#group
+!
+
+header ^ <Str>
+
+	^'Source file group'
+!
+
+initialOpenState ^ <Boolean>
+
+	^false
+!
+
+modelAsCharGlyphs ^ <CharGlyphs>
+
+	^self standardTextForString: self mirror group painter: self codePainter
+!
+
+storeAndOnSuccess: blk <[]>
+		
+	| group <Str> |
+	group := self charGlyphModelAsString: self codeView.
+	self mirror group: group.
+	blk value.
+! !
+

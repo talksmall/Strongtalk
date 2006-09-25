@@ -1,0 +1,1696 @@
+Delta define: #Visual as: (
+(Class subclassOf: 'Region' instanceVariables: 'parent <VisualParent>
+id <Int>						"The child id, assigned by the parent"
+session <Session>		"Initialized if the visual is attached"
+nonLocalCount <Int>
+				"# of descendants that must be notified if we are detached"
+prefsStatus <Int>
+			"Status of allocation preferences.  States are:
+				 Visual invalid, Visual mightHaveChanged, and Visual valid"
+position <Point>		"our origin in the parent''s coordinates"
+allocation <Region>
+layoutStatus <Int>
+			"Status of allocation & position.  States are:
+				Visual invalid, Visual needsRelayout, Visual valid"
+		') protocols: 'UIEventHandler; Glyph; RelayoutTarget'; abstract) !
+
+(Delta mirrorFor: #Visual) revision: '$Revision: 1.11 $'!
+
+(Delta mirrorFor: #Visual) group: 'ui'!
+
+(Delta mirrorFor: #Visual)
+comment: 
+'A user-interface object that is responsible for the "physical", low-level tasks associated with
+	layout, rendering, and event processing.
+
+%note relative to physical media: we define pixels to be the areas BETWEEN integral
+	physical coordinates.  The general convention when referring to a pixel is to use the
+	coordinates of the grid point at its upper left corner.
+
+Subclass Responsibilities:
+
+	%responsibility #parent: - any subvisuals must be sent #parent:.
+	%responsibility #detaching - must be forwarded to any subvisuals before executing the Visual version.
+	%responsibility #release - must be forwarded to any subvisuals.
+	%responsibility #allocation:at: - must be implemented to cause #allocation: and then #position: to be sent
+			to all attached subvisuals.  The version in this class must also be executed.
+	%optional #isRectangularAndOpaque - must be overidden if the receiver is not both rectangular and 
+			completely opaque.  In this case, you can optionally reimplement #enclosedRegion to provide a
+			more precise enclosed region.
+	%optional minAndMax - The min and max regions are the same as the natural region by default.
+			You can override #min and #max to use different limits.
+
+Notes on use of regions: 
+	A visual has a rendering region, which it draws on.  Some visuals (e.g. characters) draw a complicated
+	non-square shape on their background; 
+
+	Different host window systems may have radically different facilities for dealing with such regions, in
+	terms of clipping, etc, so the visual protocol is designed to work with regions in a way that
+	is entirely portable, yet can be made to support host region operations without modification
+	of the general protocols.  The essence of how to accomplish this is to recognize that since
+	any visual might cover a region too complicated (or too slow) to operate on precisely,
+	the protocols don''t usually try to deal with precise regions... they deal with ''conservative''
+	regions.  This allows use of very simple region representations, like rectangles, without
+	loss of generality, yet works with more precise ones.  The two fundamental region queries
+	for a visual are conservative in opposite fashions: #enclosingRegion, and #enclosedRegion.
+	The first is allowed to include too much, and the other is allowed to include too little.  By
+	explicitly allowing this, visuals are free to use the most precise region representation
+	possible, but can fall back on simpler forms like rectangles without loss of correctness
+	if they are not supported, transparently to clients of the visual.
+
+%todo: Region should not be a supertype of Visual; that is an implementation detail.
+
+Tags: %User %UI
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Visual) classSide methodsFor: 'prefs and layout status constants' !
+
+
+invalid ^<Int>
+
+	^0!
+
+mightHaveChanged ^<Int>
+
+	^1!
+
+needsRelayout ^<Int>
+
+	^1!
+
+valid ^<Int>
+
+	^2! !
+
+! (Delta mirrorFor: #Visual) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'private' !
+
+
+allocation: a <Region> at: pos <Point> toLayout: toLayout <[]>
+	"This does the work of allocation:at:, except that it takes a block to execute for the
+			layout algorithm"
+
+	| oldStatus <Int> |
+	self assert: [ self hasMedium ].
+
+	"Optimize away relayout when we can avoid it"
+	(self layoutStatus = Visual valid and: [ self allocation = a ])
+		ifTrue: [	(self position = pos and: [ self isNonLocal not ])
+							ifFalse: [ self adjustPositionBy: pos - self position. ].
+						^self ].
+
+	oldStatus := self layoutStatus.
+
+	self setPosition: pos.
+	allocation := a.
+
+	toLayout value.
+
+"%remove: we shouldn't need this:
+	self layoutStatus ~= Visual valid
+		ifTrue: [ self layout. ]."
+
+	"If this assertion fails, then a subclass forgot to call super layout in its layout method."
+	self assert: [ self layoutStatus = Visual valid ].
+!
+
+blinkState ^<Boolean>
+
+	^self session blinkState!
+
+layout
+	"Subclasses should extend to do anything that should be done to lay out the
+	  receiver.  Note that relayout is normally called if the receiver was previously
+	  layed out.  The message layoutComplete must always be send by any implementation
+	  of this message when layout is done."
+
+	self layoutComplete.!
+
+layoutComplete
+	"This must be sent when layout is complete."
+
+	self	prefsStatus: Visual valid;
+			layoutStatus: Visual valid.!
+
+layoutStatus ^<Int>
+
+	^layoutStatus!
+
+layoutStatus: s <Int>
+
+	layoutStatus := s!
+
+makeVisibleAsFocus
+	"Called when this becomes the focus to do any scrolling necessary
+	  to make the appropriate region of the receiver visible.
+	  By default, this tries to make the whole receiver visible."
+
+	self scrollIfNeededToMakeVisible.!
+
+noPosition
+
+	position := nil!
+
+nonLocalCount: c <Int>
+
+	nonLocalCount := c!
+
+prefsStatus ^<Int>
+
+	^prefsStatus!
+
+prefsStatus: s <Int>
+
+	prefsStatus := s!
+
+propagateSession
+
+	"Subclasses with children should implement this to send session: to them"
+
+	"By default, there are no children"!
+
+recordPrefs
+
+	self session recordPrefsFor: self.
+
+	"We have to immediately try to prerecord all parental preferences
+      because if we don't, they may not be accessible later."
+	self hasParent
+		ifTrue: [ self parent prerecordPrefsIfNeeded ]!
+
+setPosition: p <Point>
+
+	position := p! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'parent accessing' !
+
+
+hasParent ^<Boolean>
+
+	^parent notNil!
+
+parent ^<VisualParent>
+
+	^parent!
+
+parentThatIsDirectChildOf: aParent <VisualParent> ^<VisualParent>
+	"Return the outermost child visual of aParent that is either the receiver or a parent of the receiver"
+
+	^self parentThatIsDirectChildOf: aParent ifAbsent: [ self error: 'parent not found' ]!
+
+parentThatIsDirectChildOf: aParent <VisualParent> ifAbsent: fail <[^FAIL def]> ^<VisualParent | FAIL>
+	"Return the outermost child visual of aParent that is either the receiver or a parent of the receiver,
+		or the fail value if there is no such parent."
+
+	| par <VisualParent> |
+	par := self parent.
+	^par == aParent
+		ifTrue: [ self ]
+		ifFalse: [ par parentThatIsDirectChildOf: aParent ifAbsent: fail ]! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'geometry-nonlocal' !
+
+
+adjustPositionBy: positionDelta <Point>
+	"Like moveBy:, but assumes any invalidation needed is handled elsewhere"
+
+	self adjustPositionTo: self position + positionDelta!
+
+adjustPositionTo: newPosition <Point>
+	"Like moveTo:, but assumes any invalidation needed is handled elsewhere"
+
+	self setPosition: newPosition.
+	self positionChanged.!
+
+allocationInParent ^<Region>
+
+	^self parent translateRect: self allocation enclosingRect fromChild: self!
+
+allocationInParent: a <Region>
+	"This is a convenience form of allocationInParent:at: that computes the correct position"
+
+	self	allocationInParent: a
+			at: (self positionGivenAllocationInParent: a)!
+
+allocationInParent: a <Region> at: pos <Point>
+	"Sets the allocation, in the parent's coordinate system, and the position relative to the parent's coordinate system.
+	 This should perform any layout needed."
+
+	self allocation: (a relativeTo: pos) at: pos!
+
+allocationRelativeTo: p <Visual>  ^<Region>
+	"return the allocation of the receiver relative to the coordinate system of p,
+		which must be a parent of the receiver"
+
+	^self allocation translatedBy: (self positionRelativeTo: p)!
+
+moveBy: positionDelta <Point>
+	"Move the receiver's position by the indicated amount, and invalidate any areas that need
+		to be redrawn."
+
+	| oldParentAlloc <Rect> newParentAlloc <Rect> |
+	oldParentAlloc := self allocationInParent enclosingRect.
+	self adjustPositionBy: positionDelta.
+	newParentAlloc := self allocationInParent enclosingRect.
+	(newParentAlloc intersects: oldParentAlloc)
+		ifTrue: [  self parent invalidate: (newParentAlloc merge: oldParentAlloc). ]
+		ifFalse: [ self parent
+							invalidate: oldParentAlloc;
+							invalidate: newParentAlloc. ]!
+
+moveTo: newPosition <Point>
+	"Move the receiver to the indicated position, and invalidate any areas that need
+		to be redrawn."
+
+	self moveBy: newPosition - self position!
+
+point: p <Point> relativeTo: indirectParent <Visual>  ^<Point>
+	"return p relative to the coordinate system of indirectParent,
+		which (for now) must be the receiver or a direct or indirect parent of the receiver"
+
+	"%todo: generalize so doesn't have to be a parent child relationship"
+
+	^self = indirectParent
+		ifTrue: [ p ]
+		ifFalse: [ self parent
+							point: (self parent translate: p fromChild: self)
+							relativeTo: indirectParent	]!
+
+position ^<Point>
+
+	^position!
+
+positionGivenAllocationInParent: a <Region> ^<Point>
+	"This is a convenience method that computes the correct position for the receiver given the specified allocation in
+	  parent coordinates, based on the receiver's preferences.  This just returns the computed position; it does NOT
+	  set the position"
+
+	|	nat <Rect>
+		alloc <Rect>
+		limit <Rect>
+		diff <Dist>
+		natSide <Dist>
+		pool <Dist>
+		limitSide <Dist>
+		poolSide <Dist>
+		left <Dist>
+		top <Dist> |
+
+	nat := self natural enclosingRect.
+	alloc := a enclosedRect.
+
+	(nat width = alloc width and: [ nat height = alloc height ])
+		ifTrue: [	"Optimize the natural case"
+						left  := nat left.
+						top := nat top.	]
+		ifFalse: [	"-------- x"
+						diff := alloc width - nat width.
+						natSide := nat left.
+						diff < 0
+							ifTrue: [	limit := self min enclosingRect.
+											pool := nat width - limit width.
+											poolSide := natSide - limit left	]
+							ifFalse: [	limit := self max enclosedRect.
+											pool := limit width - nat width.
+											poolSide := limit left - natSide.  ].
+						poolSide = 0
+							ifTrue: [ left := natSide ]
+							ifFalse: [	left := natSide - ((diff * poolSide) // pool)  ].
+	
+						"-------- y"
+						diff := alloc height - nat height.
+						natSide := nat top.
+						diff < 0
+							ifTrue: [	limit := self min enclosingRect.
+											pool := limit height - nat height.
+											poolSide := natSide - limit top	]
+							ifFalse: [	limit := self max enclosedRect.
+											pool := nat height - limit height.
+											poolSide := limit top - natSide.  ].
+						poolSide = 0
+							ifTrue: [ top := natSide ]
+							ifFalse: [	top := natSide - ((diff * poolSide) // pool) ].	].
+
+	alloc := a enclosingRect.
+	^(alloc left - left)  @ (alloc top - top)!
+
+positionRelativeTo: indirectParent <Visual>  ^<Point>
+
+	^self point: Point origin relativeTo: indirectParent! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'geometry-local' !
+
+
+allocation ^<Region>
+
+	^allocation!
+
+allocation: a <Region> at: pos <Point>
+	"Sets the allocation, in the receiver's coordinate system, and the position relative to the containing coordinate system.
+		This does not do any invalidation.  Use changeAllocation:at: to change the allocation and invalidate the affected
+		areas. "
+
+	self allocation: a at: pos toLayout: [ self layout ]!
+
+changeAllocation: a <Region> at: pos <Point>
+	"like allocation:at:, but does invalidation"
+
+	self invalidate.
+	self allocation: a at: pos.
+	self invalidate.!
+
+max ^<Region>
+	"The maximum allocation region"
+
+	^self natural!
+
+min ^<Region>
+	"The minimum allocation region"
+
+	^self natural!
+
+natural ^<Region>
+	"The preferred allocation region"
+
+	self subclassResponsibility!
+
+oldPrefs ^<SeqCltn[Region]>
+	"This can be sent during relayout if and only if the receiver responds true to needsRelayout,
+		which means it is registered with the incremental layout mechanism."
+
+	^self session oldPrefsFor: self!
+
+prefs ^<SeqCltn[Region]>
+	"Returns a seqcltn with three elements: min, natural, and max, with the corresponding indices 1-3"
+
+	^Array[Region] with: self min with: self natural with: self max! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'accessing' !
+
+
+asVisual ^<Visual>
+
+	^self!
+
+backgroundPainter ^<Painter>
+
+	^self containerBackgroundPainter!
+
+continuousGridFor: p <Point> ^<Rect>
+
+	^p corner: (p x + 1) @ (p y + 1)!
+
+gridFor: p <Point> ^<Rect>
+	"Subclasses can override this if they have horizontal or vertical structure
+		to return a rectangle describing the grid coordinates that bracket p (where p
+		is in local coordinates)"
+
+	"We use a 1 pixel grid by default"
+	^self continuousGridFor: p!
+
+id ^<Int>
+
+	^id!
+
+id: i <Int>
+	"Should be sent only by parent"
+	id := i!
+
+medium ^<Medium>
+
+	^self session medium!
+
+nativeWindow ^<Window | Win32Control>
+
+	^self parent nativeWindow!
+
+nonLocalCount ^<Int>
+
+	^nonLocalCount!
+
+positionInContainingNativeWindow ^<Point>
+
+	^self parent positionInContainingNativeWindowOf: self!
+
+positionInTopWindow ^<Point>
+
+	^self parent positionInTopWindowOf: self!
+
+renderingRegion ^<Region>
+	"The region in which the visual renders, in the local coordinate
+	  system"
+
+	^self!
+
+session ^<Session>
+
+	^session!
+
+session: s <Session>
+
+	| oldSession <Session> |
+	oldSession := self session.
+	(oldSession = s)
+		ifTrue: [ ^self ].
+	session := s.
+	self propagateSession.
+
+	"If the medium is changed when we are already valid, we had better
+	  check for changes"
+	(self prefsStatus = Visual valid
+			and: [ oldSession isNil or: [ oldSession medium ~= s medium ] ])
+		ifTrue: [ self changing ].
+!
+
+topWindow ^<Window>
+
+	^self parent topWindow! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'testing' !
+
+
+containsPoint: p <Point>  ^<Boolean>
+	"Returns true if the point p (which is in parent coordinates) is contained by the receiver's rendering region"
+
+	^self allocation containsPoint: p!
+
+inParentContainsPoint: p <Point>  ^<Boolean>
+	"Returns true if the point p (which is in parent coordinates) is contained by the receiver's rendering region"
+
+	^self allocation relativeTo: self position containsPoint: p!
+
+inParentMightIntersect: r <Region>  ^<Boolean>
+	"Returns true if the receiver might intersect the region r, in the
+	  parent's coordinates"
+
+	"It is important to make sure the passed-in region is the
+	 receiver of the following message, not the allocation, to make pruning efficient"
+
+	^r relativeTo: self position mightIntersect: self allocation!
+
+isAttached ^<Boolean>
+
+	^self hasParent and: [ self parent isAttached ]!
+
+isFocus ^<Boolean>
+
+	^self hasSession and: [ session inputFocus = self ]!
+
+isGrabbing ^<Boolean>
+
+	^self session hasGrabFor: self!
+
+isNonLocal ^<Boolean>
+
+	^self nonLocalCount > 0!
+
+isSurelyRigid ^<Boolean>
+
+	^false!
+
+layoutValid ^<Boolean>
+
+	^self layoutStatus = Visual valid!
+
+needsLayout ^<Boolean>
+	"Does the receiver need its parent to lay it out?"
+
+	^self layoutStatus < Visual valid!
+
+needsRelayout ^<Boolean>
+	"Does the receiver need its parent to re-lay it out?"
+
+	^self layoutStatus = Visual needsRelayout! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'private-testing' !
+
+
+hasMedium ^<Boolean>
+
+	^self hasSession!
+
+hasSession ^<Boolean>
+
+	^session notNil!
+
+isFocusCandidate ^<Boolean>
+
+	"By default, visuals are not focus candidates"
+	^false!
+
+isRectangularAndOpaque ^<Boolean>
+	"Test whether the receiver is rectangular, completely opaque,
+	 and aligned with the x,y axes (i.e. not rotated)."
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'notification' !
+
+
+detaching
+	"Sent recursively downwards just BEFORE the path to the medium is snapped.   
+	 	If the receiver is not nonLocal, then it cannot count on receiving this message.
+		Subclasses must
+	 	extend this if needed to send it to subvisuals, BEFORE executing this method.
+	 	The path to the top must be intact at this point (if it was before) since
+	 	this visual might have grabs etc. outstanding.
+		Part of the semantics of this message is that it is ok to send detaching to an already
+		detached visual (it is too expensive to determine whether a visual is attached when
+		snapping its parent pointer).  All that is guaranteed is that at exactly one detached
+		message will always be sent to any nonLocal visual before a (transitive)
+		parent becomes unreachable."
+
+	self isFocus
+		ifTrue: [ self session noInputFocus ].!
+
+lostGrab
+	"Sent to notify the receiver that it has lost the grab involuntarily."
+
+	"By default, do nothing"!
+
+nativePositionChanged
+	"Informs the receiver that its position in its containing native window has changed
+	    (NOT necessarily involving a different position value for self).  This is guaranteed to be sent each time the native
+		position is established or changed to any visual that is nonLocal."
+
+	"By default, we don't care about this"! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'control' !
+
+
+changing
+	"Indicates that the receiver will now be changing in some way
+       that will require redrawing, and (if the allocation preferences have changed) relayout.
+	   Must be sent BEFORE changes are made to the receiver.  Relayout and redrawing will be deferred
+	   at least until processing of the current event is complete."
+
+	self prefsStatus = Visual valid
+		ifTrue: [	self prefsStatus: Visual mightHaveChanged.
+						self session changing: self.
+						self recordPrefs.	].!
+
+close
+	"detach and release this visual.  This should NOT be passed down; the
+	  unattached call must be made recursively first, and then the release, as
+	  implemented here."
+
+	self noParent; release!
+
+displayNowIfInvalid
+	"Redraw any invalid areas before proceeded"
+
+	self parent displayNowIfInvalid!
+
+displayPopUpMenu: menu <Menu> at: loc <Point> forButton: button <Symbol>
+	"Display a pop-up menu temporarily.  This call may be synchronous
+	  or asynchronous (i.e. it may not return until menu processing is done, or it
+	  may return immediately), so the caller should be insensitive to the distinction."
+
+	self parent
+		displayPopUpMenu: menu
+		at: (self parent translate: loc fromChild: self)
+		forButton: button!
+
+relayoutAndInvalidate
+	"relayout the receiver, and invalidate any areas that will need to be redrawn
+		as a result of the layout.
+		Subclasses can override this to optimize invalidation during incremental
+		layout.  By default, the entire receiver is redrawn."
+
+	self layout; invalidate.!
+
+release
+	"recursively release any resources (including in any attached applications).  After this is performed,
+	  the visual is permanently 'dead' as far as the caller is concerned."
+
+	self prefsStatus = Visual mightHaveChanged
+		ifTrue: [	self session cancelChanging: self.
+						self prefsStatus: Visual invalid.	]!
+
+scrollIfNeededToMakeVisible
+
+	self layoutStatus = Visual valid
+		ifTrue: [	self scrollIfNeededToMakeVisible: self allocation enclosingRect	].!
+
+scrollIfNeededToMakeVisible: area <Rect>
+	"Try to make area entirely visible, by scrolling parents, etc.  area is in local coordinates"
+
+	self scrollIfNeededToMakeVisible: area relativeTo: self minimizeMotion: false!
+
+scrollIfNeededToMakeVisible: area <Rect>
+relativeTo: v <Visual>
+minimizeMotion: minimizeMotion <Boolean>
+	"Try to make area entirely visible, by scrolling parents, etc.  area is in local coordinates.
+		If minimizeMotion is true, we try to scroll only enough to make the area visible; otherwise
+		we may scroll by more to show context (for example, by centering the area)."
+
+	self hasParent
+		ifTrue: [	self parent
+						scrollIfNeededToMakeVisible: area
+						relativeTo: v
+						minimizeMotion: minimizeMotion	].!
+
+scrollMeOrAParentBy: distance <Int> vertical: vertical <Boolean>
+
+	self hasParent
+		ifTrue: [	 self parent scrollMeOrAParentBy: distance vertical: vertical ]! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm putAll: self class name; put: $(.
+	self printStateOn: strm.
+	strm put: $).!
+
+printStateOn: strm <CharOutputStream>
+
+	strm putAll: 'hasParent= '; print: self hasParent;
+			putAll: ' position= ';
+			print: self position;
+			putAll: ' allocation= '; print: self allocation! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'input focus' !
+
+
+becomeFocus
+	"Request that the receiver become the input focus.  This is the user-level interface for setting the
+	  input focus.
+
+		Note: This message is not the right one to use to
+		do/record something when becoming the input focus, since visuals can become the input
+	  	focus without the program requesting it.  Instead, override #isFocus:."
+
+	self assert: [ self isFocusCandidate ].
+
+	self session inputFocus = self
+		ifTrue: [ ^self ].
+	self session inputFocus: self.
+
+	(self isFocus and: [ self layoutValid ])
+		ifTrue: [ self makeVisibleAsFocus ].
+!
+
+containsFocus: flag <Boolean>
+
+	"%remove this test after find the bug causing input focuses to not
+		get notified when detaching"
+	flag ifTrue: [ self assert: [ self isNonLocal ] ].
+
+	self parent containsFocus: flag!
+
+firstFocusCandidateIfAbsent: blk <[^Visual]> ^<Visual>
+
+	self focusCandidatesDo:
+		[ :cand <Visual> |
+			^cand ].
+	^blk value!
+
+focusCandidatesDo: blk <[Visual]>
+	"Iterate over the visuals that are willing to accept the input focus."
+
+	self isFocusCandidate
+		ifTrue: [ blk value: self ]!
+
+isFocus: flag <Boolean>
+	"Restricted- the session sends this to notify of focus changes."
+
+	"We become nonlocal when we are the focus, so that we get detached messages, 
+		so that we can lose the focus when detached"
+	flag
+		ifTrue: [ self addNonLocalCount: 1 ]
+		ifFalse: [ self addNonLocalCount: -1 ].
+
+	self parent containsFocus: flag.
+!
+
+lastFocusCandidateBefore: nextCandidate <Visual> ^<Visual>
+	"Return the previous focus candidate in the tab order.  This wraps around on the first one."
+
+	^self lastFocusCandidateBefore: nextCandidate
+		ifFirst: [	"wrap around"
+						self lastFocusCandidateIfAbsent: [ self shouldNotHappen ]
+					]!
+
+lastFocusCandidateBefore: nextCandidate <Visual> ifFirst: blk <[^X def]> ^<Visual | X>
+	"Return the previous focus candidate in the tab order.  This does *not* wrap around-
+		the blk is called if the candidate is the first one."
+
+	| last <Visual> |
+	self focusCandidatesDo:
+		[ :cand <Visual> |
+			cand = nextCandidate
+				ifTrue: [ ^last isNil
+									ifFalse: [ last ]
+									ifTrue: [ blk value ]
+							 ].
+			last := cand ].
+	self error: 'Invalid focus candidate'!
+
+lastFocusCandidateIfAbsent: blk <[^Visual]> ^<Visual>
+
+	| last <Visual> |
+	self focusCandidatesDo:
+		[ :cand <Visual> |
+			last := cand ].
+	^last isNil
+		ifTrue: [ blk value ]
+		ifFalse: [ last ]!
+
+nextFocusCandidateAfter: previousCandidate <Visual> ^<Visual>
+	"Return the next focus candidate in the tab order.  This wraps around on the last one."
+
+	^self nextFocusCandidateAfter: previousCandidate
+			ifLast: [	"wrap around and return the first one"
+							self firstFocusCandidateIfAbsent: [ self shouldNotHappen ]
+						]!
+
+nextFocusCandidateAfter: previousCandidate <Visual> ifLast: blk <[^X def]> ^<Visual | X>
+	"Return the next focus candidate in the tab order.  This does *not* wrap around-
+		the blk is called if the candidate is the last one."
+
+	| found <Boolean> |
+	found := false.
+	self focusCandidatesDo:
+		[ :cand <Visual> |
+			found
+				ifTrue: [ ^cand ].
+			cand = previousCandidate
+				ifTrue: [ found := true ].	].
+	found
+		ifFalse: [ self error: 'Invalid focus candidate specified' ].
+
+	^blk value! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'displaying' !
+
+
+displayOn: can <Canvas>
+	"draw the receiver.  The canvas is expected to be in the parent's coordinate system"
+
+	can atOffset: self position
+		do: [ self localDisplayOn: can ]!
+
+localDisplayOn: can <Canvas>
+	"draw the receiver.  The canvas is expected to already be in the local coord system.
+
+	  Normally, Canvas>>display: is the caller of this, since it handles the coord transformations"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'region operations' !
+
+
+enclosedRect ^<Rect>
+	"Return the largest Rectangle feasible that is entirely contained within the receiver's region.
+	  This is conservative in the opposite sense from #enclosingRect, in that it is ok if some parts of the
+	  receiver are not included.  Note that this is in the receiver's coordinates."
+
+	"The default impl uses one of two extremes: a null rectangle if the receiver is not rectangular and
+	  opaque, or the entire receiver if it is"
+
+	^self isRectangularAndOpaque
+		ifTrue: [ self enclosingRect ]
+		ifFalse: [ self enclosingRect origin corner: self enclosingRect origin ]!
+
+enclosingRect ^<Rect>
+	"Return a region that completely encloses the receiver (relative to its origin).
+	 This is conservative in that the region returned may actually enclose more
+	  than the receiver does.  By default this is the allocation.
+	 Note that this is in the receiver's coordinates"
+
+	^self allocation enclosingRect! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	"By default, do nothing with this event"
+	^false!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	"By default, do nothing with this event"
+	^false!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	"By default, do nothing with this event"
+	^false!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+	"Possible types are: 
+				#primaryButtonDown #primaryButtonUp #primaryButtonDoubleClick
+				#middleButtonDown #middleButtonUp #middleButtonDoubleClick 
+				#secondaryButtonDown #secondaryButtonUp #secondaryButtonDoubleClick
+				#mouseMove
+	"
+
+	"By default, do nothing with this event"
+	^false! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'restricted-glyph event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
+
+	^self character: c focus: focus event: ev!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
+
+	^self keyDown: key focus: focus event: ev!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
+
+	^self keyUp: key focus: focus event: ev!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
+
+	^self mouseEvent: type at: loc event: ev! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'restricted-glyph support' !
+
+
+allocation: r <Region> at: pos <Point> for: context <VisualGlyph>
+
+	self allocation: r at: pos!
+
+allocationFor: context <VisualGlyph>  ^<Region>
+
+	^self allocation!
+
+displayOn: can <Canvas> for: context <VisualGlyph>
+
+	self displayOn: can!
+
+enclosedRectFor: context <VisualGlyph> ^<Rect>
+
+	^self enclosedRect!
+
+enclosingRectFor: context <VisualGlyph> ^<Rect>
+
+	^self enclosingRect!
+
+gridFor: p <Point> for: context <VisualGlyph> ^<Rect>
+
+	^self gridFor: p!
+
+localDisplayOn: can <Canvas> for: context <VisualGlyph>
+
+	self localDisplayOn: can!
+
+maxIn: m <Medium>  ^<Region>
+
+	^self max!
+
+minIn: m <Medium>  ^<Region>
+
+	^self min!
+
+naturalIn: m <Medium>  ^<Region>
+
+	^self natural!
+
+naturalIn: m <Medium>  at: proposedPosition <Point> ^<Region>
+
+	^self naturalIn: m!
+
+noParentFor: context <VisualGlyph>
+
+	self noParent.!
+
+positionChanged
+
+	self nativePositionChanged! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'restricted-to parts' !
+
+
+addNonLocalCount: delta <Int>
+
+	self nonLocalCount: self nonLocalCount + delta.
+	self hasParent
+		ifTrue: [ self parent addNonLocalCount: delta ].
+	self assert: [ self nonLocalCount >= 0].!
+
+containerBackgroundPainter ^<Painter>
+
+	^self parent containerBackgroundPainter!
+
+enabled ^<Boolean>
+	"True if this visual can be interacted with.  If a subclass wants to change
+	  the enabled state for its children dynamically, it should attach and reattach
+	  its children so that they query the changed state if they are native visuals."
+
+	^self hasParent
+		ifTrue: [ self parent enabled ]
+		ifFalse: [ true ]!
+
+prerecordPrefsIfNeeded
+	"Sent to ensure that the current preferences can be accessed later by the incremental layout
+	  mechanism.  They only need to be recorded for visuals up to the innermost containing
+	  visual that has preference caches."
+
+	"By default, there is no preference cache, so record the preferences."
+	self recordPrefs.! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'wrapping' !
+
+
+withoutWrapper: w <VisualWrapper> ^<Visual>
+	"This is a utility message used to remove a wrapper from a visual that may have several
+		levels of wrappers around it.  Note that the result may or may not have a different identity
+		from the receiver."
+
+	"For non-wrappers, this is an error"
+	^self error: 'Attempt to remove a non-existent wrapper from a Visual'! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'initialization' !
+
+
+initialize
+
+	self nonLocalCount: 0.
+	self prefsStatus: Visual invalid.
+	self layoutStatus: Visual invalid.! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'restricted-to session' !
+
+
+blinkFocus: shown <Boolean>
+	"Sent by session when the receiver is the input focus, every time the blink state
+		changes.  By default, this invalidates the receiver.  The receiver's rendering
+		methods should take (self blinkState) into account when drawing the focus indicator."
+
+	self invalidate.!
+
+checkLayout: oldPrefs <SeqCltn[Region]>
+	"Sent by the session sometime after the receiver has sent (self changing).
+		This computes new allocation preferences, and if they have changed,
+		propagates the checking to the parent.  Otherwise, it just re-layes out the
+		 receiver.  Reimplementers must make sure that prefsStatus is set to valid
+		and either the parent is sent changing, or the receiver is layed out & 
+		affected regions invalidated."
+
+	(self prefs hasSameElementsAndOrderAs: oldPrefs)
+		ifTrue: [	"We have ended up with the same prefs, so we don't
+						  need to propagate it up any further.  Terminate
+						  the layout propagation by simply re-laying out
+						  and redrawing"
+
+						"We only layout if we have been layed out before."
+						self layoutStatus = Visual invalid
+							ifFalse: [		self session debugIncrementalLayout
+														ifTrue: [ Platform errorStream show: 'relaying out because prefs same for ', self class name;
+																			show: ' prefs = '; print: oldPrefs; cr. ].
+												self relayoutAndInvalidate.		 ]	]
+		ifFalse: [	"Our preferences have changed, so signal our parent that
+							its preferences need to be checked, and mark the receiver
+							so that the parent can figure out which children have changed"
+
+						self session debugIncrementalLayout
+								ifTrue: [ Platform errorStream show: 'prefs changed from '; print: oldPrefs; show: ' to '; print: self prefs; show: ' for ', self class name; cr. ].
+
+						self hasParent
+							ifTrue: [	self layoutStatus: Visual needsRelayout.
+											self parent changing ]		].
+	self prefsStatus: Visual valid.!
+
+removeParentsFrom: leaves <Set[RelayoutTarget]>
+alreadyChecked: checked <Set[RelayoutTarget]>
+
+	self hasParent
+		ifTrue: [	(checked includes: self parent)
+							ifFalse: [	checked include: self parent.
+											leaves removeEvery: self parent.
+											self parent removeParentsFrom: leaves alreadyChecked: checked.	]	].! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'private-grabbing' !
+
+
+acquireGrab ^<Boolean>
+	"Try to grab all events.  True is returned on success"
+
+	^self session addGrab: self!
+
+releaseGrab
+
+	self session removeGrab: self! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'debugging' !
+
+
+dump
+
+	self dumpOn: Transcript!
+
+dumpOn: strm <CharOutputStream>
+
+	self dumpOn: strm indent: 0!
+
+dumpOn: strm <CharOutputStream> indent: level <Int>
+
+	level timesRepeat: [ strm show: '    ' ].
+	strm show: self class name.
+	self printAllocOn: strm.
+	strm cr.!
+
+printAllocOn: strm <CharOutputStream>
+
+	self isNonLocal
+		ifTrue: [ strm show: ' (nonLocal: '; print: self nonLocalCount; show: ')'.	]
+		ifFalse: [ strm show: ' (local) ' ].
+	self layoutStatus = Visual invalid
+		ifTrue: [	strm show: '  alloc: (layout invalid)'.
+						^self		].
+	self layoutStatus = Visual needsRelayout
+		ifTrue: [	strm show: ' alloc: (needs relayout) '. ]
+		ifFalse: [	strm show: ' alloc: '. ].
+	strm print: self allocation; show: ' pos: '; print: self position.
+strm show: ' nat: '; print: self natural.! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'restricted-to parent' !
+
+
+noParent
+	"Unparent the visual"
+
+	parent isNil
+		ifFalse: [	self detaching.
+						self isNonLocal
+							ifTrue: [ self parent addNonLocalCount: self nonLocalCount negated ].
+						parent := nil.
+						id := nil.	]!
+
+parent: p <VisualParent> id: childId <Int>
+	"To change the parent once there is one, you must first send noParent, and then this message"
+
+	self assert: [ parent isNil ].
+	self id: childId.
+	parent := p.
+	self isNonLocal
+		ifTrue: [ p addNonLocalCount: self nonLocalCount ].
+	p hasSession
+		ifTrue: [ self session: p session ].
+! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'private-user messages-win32 restricted' !
+
+
+iconFlagsFor: type <Symbol>  ^<ExternalData>
+
+	type = #info
+		ifTrue: [ ^Win32 MB_ICONINFORMATION ].
+	type = #stop
+		ifTrue: [ ^Win32 MB_ICONSTOP ].
+	type = #exclamation
+		ifTrue: [ ^Win32 MB_ICONEXCLAMATION ].
+	type = #question
+		ifTrue: [ ^Win32 MB_ICONQUESTION ].
+	self error: 'Invalid type specified'!
+
+win32PromptUser: caption <Str>
+title: title <Str>
+buttons: buttonsCode <ExternalData>
+type: type <Symbol>
+default: buttonIndex <Int>
+^<Boolean | Nil>
+
+	"Display a dialog box with buttons specified by the buttons code.  The type is one of
+		(#info #stop #exclamation #question).  The return value is true,false, or nil.
+	    true stands for one of (yes,ok,retry).  False stands for one of (no,ignore).  Nil
+	    stands for one of (cancel,abort)."
+
+	|	cap <CString>
+		t <CString>
+		flags <ExternalData>
+		result <ExternalData> |
+
+	cap := CString for: caption.
+	t := CString for: title.
+	[	flags := buttonsCode externalBitOr: (self iconFlagsFor: type).
+		buttonIndex = 1
+			ifTrue: [ flags := flags externalBitOr: Win32 MB_DEFBUTTON1 ].
+		buttonIndex = 2
+			ifTrue: [ flags := flags externalBitOr: Win32 MB_DEFBUTTON2 ].
+		buttonIndex = 3
+			ifTrue: [ flags := flags externalBitOr: Win32 MB_DEFBUTTON3 ].
+		buttonIndex = 4
+			ifTrue: [ flags := flags externalBitOr: Win32 MB_DEFBUTTON4 ].
+
+		"flags := flags externalBitOr: Win32 MB_TASKMODAL."
+		self session modalDo:
+			[	result := {{<user ExternalProxy MessageBoxA async>
+							hwnd: self topWindow win32Handle  "We do this so it comes up over the right window"
+							text: cap
+							title: t
+							type: flags	}}.
+			].
+		result @= Win32 IDABORT
+			ifTrue: [ ^nil ].
+		result @= Win32 IDCANCEL
+			ifTrue: [ ^nil ].
+		result @= Win32 IDIGNORE
+			ifTrue: [ ^false ].
+		result @= Win32 IDNO
+			ifTrue: [ ^false ].
+		result @= Win32 IDOK
+			ifTrue: [ ^true ].
+		result @= Win32 IDRETRY
+			ifTrue: [ ^true ].
+		result @= Win32 IDYES
+			ifTrue: [ ^true ].
+		self shouldNotHappen.
+	] ensure:
+		[	cap free.
+			t free.	]! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'user-messages' !
+
+
+promptAbortRetryIgnore: caption <Str>
+title: title <Str>
+type: type <Symbol>
+default: buttonIndex <Int>
+action: action <[Boolean | Nil]>
+	"Prompt the user with a modal request window with the specified caption and title,
+	  and evaluate the action block with:
+			true		if retry is selected
+			false	if ignore is selected
+			nil		if abort is selected.
+      The action block may be evaluated before this method returns, or later; you should
+	  write that block so that it will work either way.
+	  The type is a symbol that indicates the purpose of the prompt; it must be one
+	  of: (#info #stop #exclamation #question).
+	  "
+
+	self assert: [ buttonIndex <= 3 ].
+	action value: 
+		(self win32PromptUser: caption
+			title: title
+			buttons: Win32 MB_ABORTRETRYIGNORE
+			type: type
+			default: buttonIndex )!
+
+promptOk: caption <Str>
+title: title <Str>
+type: type <Symbol>
+action: action <[]>
+	"Prompt the user with a modal request window with the specified caption and title,
+	  and evaluate the action block when the user selects ok.
+      The action block may be evaluated before this method returns, or later; you should
+	  write that block so that it will work either way.
+	  The type is a symbol that indicates the purpose of the prompt; it must be one
+	  of: (#info #stop #exclamation #question).
+	  "
+
+	self win32PromptUser: caption
+			title: title
+			buttons: Win32 MB_OK
+			type: type
+			default: 1.
+	action value.
+!
+
+promptOkCancel: caption <Str>
+title: title <Str>
+type: type <Symbol>
+default: buttonIndex <Int>
+action: action <[Boolean]>
+	"Prompt the user with a modal request window with the specified caption and title,
+	  and evaluate the action block with:
+			true		if ok is selected
+			false	if cancel is selected.
+      The action block may be evaluated before this method returns, or later; you should
+	  write that block so that it will work either way.
+	  The type is a symbol that indicates the purpose of the prompt; it must be one
+	  of: (#info #stop #exclamation #question).
+	  "
+
+	self assert: [ buttonIndex <= 2 ].
+	"We have to compare to true below to convert nil return values to false"
+	action value: true =
+		(self win32PromptUser: caption
+			title: title
+			buttons: Win32 MB_OKCANCEL
+			type: type
+			default: buttonIndex	)
+!
+
+promptRetryCancel: caption <Str>
+title: title <Str>
+type: type <Symbol>
+default: buttonIndex <Int>
+action: action <[Boolean]>
+	"Prompt the user with a modal request window with the specified caption and title,
+	  and evaluate the action block with:
+			true		if retry is selected
+			false	if cancel is selected.
+      The action block may be evaluated before this method returns, or later; you should
+	  write that block so that it will work either way.
+	  The type is a symbol that indicates the purpose of the prompt; it must be one
+	  of: (#info #stop #exclamation #question).
+	  "
+
+	self assert: [ buttonIndex <= 2 ].
+	"We have to compare to true below to convert nil return values to false"
+	action value: true =
+		(self win32PromptUser: caption
+			title: title
+			buttons: Win32 MB_RETRYCANCEL
+			type: type
+			default: buttonIndex )
+!
+
+promptYesNo: caption <Str>
+title: title <Str>
+type: type <Symbol>
+default: buttonIndex <Int>
+action: action <[Boolean]>
+	"Prompt the user with a modal request window with the specified caption and title,
+	  and evaluate the action block with:
+			true		if yes is selected
+			false	if no is selected
+      The action block may be evaluated before this method returns, or later; you should
+	  write that block so that it will work either way.
+	  The type is a symbol that indicates the purpose of the prompt; it must be one
+	  of: (#info #stop #exclamation #question).
+	  "
+
+	self assert: [ buttonIndex <= 2 ].
+	action value:
+		(self win32PromptUser: caption
+			title: title
+			buttons: Win32 MB_YESNO
+			type: type
+			default: buttonIndex	)!
+
+promptYesNoCancel: caption <Str>
+title: title <Str>
+type: type <Symbol>
+default: buttonIndex <Int>
+action: action <[Boolean | Nil]>
+	"Prompt the user with a modal request window with the specified caption and title,
+	  and evaluate the action block with:
+			true		if yes is selected
+			false	if no is selected
+			nil		if cancel is selected.
+      The action block may be evaluated before this method returns, or later; you should
+	  write that block so that it will work either way.
+	  The type is a symbol that indicates the purpose of the prompt; it must be one
+	  of: (#info #stop #exclamation #question).
+	  "
+
+	self assert: [ buttonIndex <= 3 ].
+	action value:
+		(self win32PromptUser: caption
+			title: title
+			buttons: Win32 MB_YESNOCANCEL
+			type: type
+			default: buttonIndex)
+! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'standard dialog boxes' !
+
+
+userChangeFontAndPaintFor: painter <Painter> action: action <[Painter]>
+	"Lets the user change the font and paint for a painter.  The user
+		is allowed to mutate the painter, and then the action block
+		is evaluated with the result.  Since the painter is mutated,
+		it must not be frozen.  The painter's paint must be a SolidPaint.
+		If the user does not change anything, the action is not evaluated."
+
+	| ch <CHOOSEFONT> lf <LOGFONT> p <SolidPaint> |
+
+	self assert: [ painter notFrozen ].
+	p := SolidPaint coerce: painter paint.
+
+	ch := CHOOSEFONT new allocateZeroed.
+	painter font medium: self medium.
+	lf := painter font newLOGFONT.
+
+	[	ch lStructSize: ch structureSize.
+		ch lpLogFont: lf.
+		ch rgbColors: p win32Color.
+		ch Flags:
+			(((Win32 CF_SCREENFONTS
+				externalBitOr: Win32 CF_EFFECTS)
+				externalBitOr: Win32 CF_INITTOLOGFONTSTRUCT)
+				externalBitOr: Win32 CF_FORCEFONTEXIST).
+		ch hwndOwner: self topWindow win32Handle.
+		self session
+			modalDo: [	{{<comdlg ExternalProxy ChooseFontA async>
+									struct: ch
+								}} asBoolean
+									ifFalse: [ ^self ]
+									ifTrue: [	painter font: (Font forSpec: (FontSpec fromLOGFONT: lf in: self medium));
+																paint: (SolidPaint forWin32Color: ch rgbColors).
+													action value: painter.	].
+							].
+	] ensure:
+		[	ch free.
+			lf free.	]!
+
+userPickOpenFileWithAction: action <[FilePath,Boolean]>
+	"the action is called back with the file name selected, and a boolean that is true if
+		the user did not choose read-only"
+fileTypes: fileTypes <Cltn[Tuple[Str,Str]]>
+	"tuples describing allowed file types.  The first element is a description, the second is the
+		filter pattern, e.g. ('Text Files' -> '*.txt') "
+defaultFile: defaultFile <FilePath | Nil>
+	"If nil, then there is no default file"
+defaultDir: defaultDir <FilePath | Nil>
+	"If nil, then the current dir is the default directory.
+		Only one of the default file or default dir should be provided"
+title: title <Str>
+allowReadOnly: allowReadOnly <Boolean>
+	"If true, then allow the user to choose false for the writability of the file"
+mustExist: mustExist <Boolean>
+
+	"Prompt the user to choose a file name.  Action is evaluated if a file is chosen."
+
+	|	ofn <OPENFILENAME>
+		filters <ExternalProxy>
+		filtersLen <Int>
+		p <Int>
+		cfilename <CString>
+		maxFileSize <Int>
+		dir <CString>
+		ctitle <CString>
+		flags <ExternalData>
+		|
+	self assert: [ defaultFile isNil or: [ defaultDir isNil ] ].
+	maxFileSize := 10000.
+	ofn := OPENFILENAME new allocateZeroed.
+	ofn lStructSize: ofn structureSize.
+	ofn hwndOwner: self topWindow win32Handle.
+	cfilename := CString new calloc: maxFileSize.
+	ctitle := CString for: title.
+
+	[	"------- create the filters structure"
+		filters := self win32FilterStructFor: fileTypes.
+		ofn lpstrFilter: filters.
+		ofn nFilterIndex: 1.		"Use the first filter as the default"
+
+		"use coerce instead of guaranteed below when coerce: works for mixins"
+		defaultFile notNil
+			ifTrue: [	cfilename value: (guaranteed <FilePath> defaultFile) name ].
+		ofn lpstrFile: cfilename.
+		ofn nMaxFile: maxFileSize.
+
+		defaultDir notNil
+			ifTrue: [	dir := CString for: (guaranteed <FilePath> defaultFile) name.
+							ofn lpstrInitialDir: dir.  ].
+
+		ofn lpstrTitle: ctitle.
+
+		flags := Win32 OFN_NOCHANGEDIR.
+		allowReadOnly
+			ifFalse: [ flags := flags externalBitOr: Win32 OFN_HIDEREADONLY ].
+		mustExist
+			ifTrue: [ flags := flags externalBitOr: Win32 OFN_PATHMUSTEXIST ].
+		ofn Flags: flags.
+
+		self session modalDo:
+			[	{{<comdlg ExternalProxy GetOpenFileNameA async>
+						struct: ofn
+				}} asBoolean
+					ifTrue: [	| readOnly <Boolean> |
+									readOnly := (ofn Flags externalBitAnd: Win32 OFN_NOREADONLYRETURN)
+															@= 0.
+									action
+										value: (FilePath for: cfilename asString)
+										value: readOnly.		].
+			].
+	] ensure:
+		[	ofn free.
+			filters isNil  ifFalse: [ filters free ].
+			cfilename free.
+			dir isNil  ifFalse: [ dir free ].
+			ctitle free.
+			]!
+
+userPickSaveFileWithAction: action <[FilePath]>
+	"the action is called back with the file name selected"
+fileTypes: fileTypes <Cltn[Tuple[Str,Str]]>
+	"tuples describing allowed file types.  The first element is a description, the second is the
+		filter pattern, e.g. ('Text Files' -> '*.txt') "
+defaultFile: defaultFile <FilePath | Nil>
+	"If nil, then there is no default file"
+defaultDir: defaultDir <FilePath | Nil>
+	"If nil, then the current dir is the default directory"
+title: title <Str>
+
+	"Prompt the user to choose a file name.  Action is evaluated if a file is chosen."
+
+	|	ofn <OPENFILENAME>
+		filters <ExternalProxy>
+		cfilename <CString>
+		maxFileSize <Int>
+		dir <CString>
+		ctitle <CString>
+		flags <ExternalData>
+		|
+	maxFileSize := 10000.
+	ofn := OPENFILENAME new allocateZeroed.
+	ofn lStructSize: ofn structureSize.
+	ofn hwndOwner: self topWindow win32Handle.
+	cfilename := CString new calloc: maxFileSize.
+	ctitle := CString for: title.
+
+	[	"------- create the filters structure"
+		filters := self win32FilterStructFor: fileTypes.
+		ofn lpstrFilter: filters.
+		ofn nFilterIndex: 1.		"Use the first filter as the default"
+
+		"use coerce instead of guaranteed below when coerce: works for mixins"
+		defaultFile notNil
+			ifTrue: [	cfilename value: (guaranteed <FilePath> defaultFile) name ].
+		ofn lpstrFile: cfilename.
+		ofn nMaxFile: maxFileSize.
+
+		defaultDir notNil
+			ifTrue: [	dir := CString for: (guaranteed <FilePath> defaultFile) name.
+							ofn lpstrInitialDir: dir.  ].
+
+		ofn lpstrTitle: ctitle.
+
+		flags := (Win32 OFN_NOCHANGEDIR externalBitOr: Win32 OFN_HIDEREADONLY)
+									externalBitOr: Win32 OFN_NOREADONLYRETURN.
+		ofn Flags: flags.
+
+		self session modalDo:
+			[	{{<comdlg ExternalProxy GetSaveFileNameA async>
+						struct: ofn
+				}} asBoolean
+					ifTrue: [	action value: (FilePath for: cfilename asString).		].
+			].
+	] ensure:
+		[	ofn free.
+			filters isNil  ifFalse: [ filters free ].
+			cfilename free.
+			dir isNil  ifFalse: [ dir free ].
+			ctitle free.
+			]! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'private-dialog boxes' !
+
+
+win32FilterStructFor: fileTypes <Cltn[Tuple[Str,Str]]> ^<ExternalProxy>
+
+	| filtersLen <Int> filters <ExternalProxy> p <Int> |
+	filtersLen := fileTypes
+			inject: 0
+			into: [ :len <Int> :filter <Tuple[Str,Str]> |
+						len + filter at1 size + filter at2 size + 2 "count null terminations" ].
+	filters := ExternalProxy new malloc: filtersLen + 1.
+	p := 0.
+	fileTypes do:
+			[ :filter <Tuple[Str,Str]> |
+				filters store: filter at1 asCStringAt: p.
+				p := p + filter at1 size + 1.
+				filters store: filter at2 asCStringAt: p.
+				p := p + filter at2 size + 1.	].
+	filters byteAt: p put: 0.
+	^filters! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'wrapping utilities' !
+
+
+baselined ^<Visual>
+
+	^Baseliner for: self!
+
+with3DBorder ^<Frame>
+
+	^self withBorder: (Border standard3DWithColor: Paint gray
+										  raised: false)!
+
+withBackdrop: p <Painter> ^<Frame>
+
+	^(Frame for: self) backdrop: p!
+
+withBorder: b <Border> ^<Frame>
+
+	^(Frame for: self) border: b!
+
+withBorderInset: inset <Number | Point | Rect>
+
+	^(Frame for: self)
+		border: (Border withRigidInset: inset)!
+
+withDefaultButton: b <Button> ^<DefaultButtonWrapper>
+
+	^(DefaultButtonWrapper for: self)
+		button: b!
+
+withPopUpMenuSource: m <[^Menu]> ^<Visual>
+
+	^(PopUpMenuHandler for: self) menuBlock: m! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'custom dialog boxes' !
+
+
+customDialogFor: v <Visual>
+showApply: showApply <Boolean>
+toValidate: validateBlock <[[]]>
+action: action <[]>
+^<Visual>
+	"Build the visual for a dialog box displaying v with ok and cancel buttons, and also with
+		an apply button if showApply is true.  When apply or ok is pressed, the validate
+		block is called with a continuation block to be evaluated if the dialog box
+		is ready for the action to be evaluated.  If the continuation block is called, then
+		the action is evaluated, and if the ok button was pressed, the containing
+		window is then closed."
+
+	| space <Int> col <Column[Visual]> buttons <Row[Visual]>
+		equalizer <Equalizer> default <Button> top <Visual> butspace <Int>
+		 |
+	space := 6.
+	butspace := 6.
+	equalizer := Equalizer new rigid: true.
+
+	buttons := Row[Visual] new.
+	buttons
+		add: Glue xStretchy;
+		add: (equalizer for: 
+					(default := Button labeled: 'OK' action:
+						[ :b <Button> |
+							validateBlock value:
+								[	top topWindow close.		"Close dialog first, otherwise a window launched from evaluating action will not be active"
+									action value ].
+						]
+					)
+				 );
+		add: (Glue xRigid: butspace);
+		add: (equalizer for:
+					(Button labeled: 'Cancel' action:
+						[ :b <Button> |
+							top topWindow close.
+						]
+					)
+				 ).
+
+	showApply
+		ifTrue: [ buttons 
+						add: (Glue xRigid: butspace);
+						add: (equalizer for:
+									(Button labeled: 'Apply' action:
+										[ :b <Button> |
+											validateBlock value:
+												[ action value ].
+										]
+									)
+								).
+					].
+
+	col := Column[Visual] new.
+	col add: v; add: (Glue yRigid: space); add: buttons.
+	top := ((col withDefaultButton: default)
+					withBorderInset: space)
+					withBackdrop: (Painter new paint: Paint backgroundGray).
+	^top!
+
+launchCustomDialog: title <Str>
+for: v <Visual>
+showApply: showApply <Boolean>
+modal: modal <Boolean>
+toValidate: validateBlock <[[]]>
+action: action <[]> ^ <Window>
+	"Launch a dialog box displaying v with ok and cancel buttons, and also with
+		an apply button if showApply is true.  When apply or ok is pressed, the validate
+		block is called with a continuation block to be evaluated if the dialog box
+		is ready for the action to be evaluated.  If the continuation block is called, then
+		the action is evaluated, and if the ok button was pressed, the window is then
+		closed."
+
+	|  win <Window> top <Visual> |
+	top := self customDialogFor: v
+						showApply: showApply
+						toValidate: validateBlock
+						action: action.
+	win := StandardWindow
+					named: title
+					session: self session
+					for: top.
+	modal
+		ifTrue: [ 	win parent: self topWindow.
+						win showModal ]
+		ifFalse: [ win show ].
+	^win! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'invalidation' !
+
+
+invalidate
+	"Request that the receiver be redrawn.  This assumes that it has not changed size or
+	  position; if it has, then EITHER an invalidation message should also have been sent
+	  before the size and position changed, OR the parent should use (self invalidate:) to
+	  invalidate the union of the before and after allocations, OR the parent can do something
+	  safe but inefficient like invalidating itself."
+
+	(self hasParent and: [ self layoutStatus > Visual invalid ])
+		ifTrue: [ self invalidate: self allocation ]!
+
+invalidate: r <Region>
+	"Request that the specified region of the receiver be redrawn"
+
+	(self hasParent and: [ self layoutStatus > Visual invalid ])
+		ifTrue: [ self parent invalidate: r forChild: self ]! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'launching' !
+
+
+launch
+
+	self launchWithTitle: self class name!
+
+launchWithTitle: title <Str>
+
+	Session in: Screen default
+	do: [ :sess <Session> |
+			| win <Window> |
+				win := sess
+					newStandardWindow: title
+					for: self.
+				win show.
+			]! !
+
+! (Delta mirrorFor: #Visual) methodsFor: 'core sampler' !
+
+
+drillAt: loc <Point> for: sampler <CoreSampler>
+
+	sampler record: self! !
+

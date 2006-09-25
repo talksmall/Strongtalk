@@ -1,0 +1,24 @@
+Delta define: #DeltaNilType as: (
+(Class subclassOf: 'DeltaBottomType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaNilType) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaNilType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaNilType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaNilType) methodsFor: 'Unclassified' !
+
+
+name ^ <Symbol>
+    ^#Nil!
+
+rawSelectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+     ^(Type forClass: (Delta at: #UndefinedObject) ) rawSelectMsg: selector ifAbsent: block!
+
+selectMsg: selector <Symbol >  ifAbsent: block <[^Object]> ^ <DeltaMsgSignature>
+     ^(Type forClass: (Delta at: #UndefinedObject) ) selectMsg: selector ifAbsent: block! !
+

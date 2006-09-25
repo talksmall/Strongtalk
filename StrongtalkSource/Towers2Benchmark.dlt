@@ -1,0 +1,103 @@
+Delta define: #Towers2Benchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: 'stack movesdone') classVariables: 'Maxcells Sentinel Stackrange ') !
+
+(Delta mirrorFor: #Towers2Benchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Towers2Benchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #Towers2Benchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Towers2Benchmark) classSide methodsFor: 'constants' !
+
+
+initialize Maxcells := 18. Stackrange := 3. Sentinel := Towers2Disk new discSize: 15. "Towers2Benchmark initialize"! !
+
+! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'run' !
+
+
+makenull: s
+	stack at: s put: Sentinel!
+
+run
+	stack := Array new: Stackrange.
+	self makenull: 1.
+	self makenull: 2.
+	self makenull: 3.
+	self init: 1 to: 14.
+	movesdone := 0. 
+	self
+		towerI: 1
+		j: 2
+		k: 14.
+	movesdone = 16383 ifFalse: [self error: ' Error in towers.'].
+	"Towers2Benchmark new run"! !
+
+! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'private' !
+
+
+error: msg
+	super error: 'Error in towers: ', msg! !
+
+! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'misc' !
+
+
+init: s to: n 
+
+	n
+		to: 1
+		by: -1
+		do: [:discctr | self push: (Towers2Disk new discSize: discctr) onto: s]!
+
+moveFrom: s1 to: s2 
+	self push: (self pop: s1)
+		onto: s2.
+	movesdone := movesdone + 1!
+
+pop: s 
+	| result |
+	Sentinel == (stack at: s) ifTrue: [self error: 'empty'].
+	result := stack at: s.
+	stack at: s put: result next.
+	^result!
+
+push: d onto: s 
+	| localel |
+	localel := stack at: s.
+	d >= localel ifTrue: [^self error: 'disc size error'].
+	stack at: s put: (d next: localel)!
+
+towerI: i j: j k: k 
+	| other |
+	k = 1
+		ifTrue: [self moveFrom: i to: j]
+		ifFalse: 
+			[other := 6 - i - j.
+			self
+				towerI: i
+				j: other
+				k: k - 1.
+			self moveFrom: i to: j.
+			self
+				towerI: other
+				j: j
+				k: k - 1]! !
+
+! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^70!
+
+factor
+	^25!
+
+name
+	^#Towers2!
+
+parcplaceTime
+	^90! !
+

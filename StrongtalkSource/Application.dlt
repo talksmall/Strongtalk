@@ -1,0 +1,333 @@
+Delta define: #Application as: (
+(Class subclassOf: 'Object' instanceVariables: 'visual <Visual>
+			"Cache for visual representation.  This is NOT necessarily the same visual	
+				that buildBareVisual returns; subclasses must cached that independently
+				if it is needed."
+		') abstract) !
+
+(Delta mirrorFor: #Application) revision: '$Revision: 1.12 $'!
+
+(Delta mirrorFor: #Application) group: 'ui'!
+
+(Delta mirrorFor: #Application)
+comment: 
+'Applications implement the functionality of an application that is too tied to
+the user interface to go in a model object.   This includes things like constructing
+and managing a Visual representation, input validation, etc.
+
+It is important as a matter of both design and style to keep the ''logical'' functionality
+of an application in separate methods and categories from the methods that interact
+with the Visual representation on the screen.  Factoring out another level of objects
+between Applications and Visuals to do this is usually too clumsy, so applications
+usually have both kinds of functionality in one class, however, you should try to
+make sure that the logical methods in an application are usable as an ''API'' even if
+the Visual representation doesn''t exist.  %todo: we aren''t following this style guide
+well right now; we need to go back and do it more rigorously.
+
+Subclass responsibilities:
+
+%optional menu
+		If you want a menu, you must make sure that #hasMenu returns true, and #menu returns the menu.
+		If the menu changes dynamically, you must call #menuChanged when that happens.
+
+%todo: need to add a message #initializeInSession sent as the first thing in the
+				Session process.  Also need to make sure that it is recursively sent to all subapps.
+				This is needed so that there is a clean hook for when to create things like timers
+				that must be created in the session.
+
+%bug/%todo: when an application''s visual is imbedded in a visual that is not via an application,
+			it does not get closeRequests; so that dependencies in it etc. do not get cleaned up.
+			Currently this causes memory leaks for imbedded outliner applets in HTML, for
+			example.
+
+Tags: %User %UI
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Application) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'accessing' !
+
+
+bareVisualTop: top <Boolean> ^ <Visual>
+	"Visual representation of the application.  If it does not exist yet, it is built
+		exactly as (buildBareVisual: top) does it"
+
+	self assert: [ visual isNil ].
+	visual := self buildBareVisualTop: top.
+	^visual!
+
+hasWinBackdrop ^<Boolean>
+
+	^false!
+
+imbeddedVisual ^ <Visual>
+	"Visual representation of the application.  It is built
+		as an imbedded visual (i.e. with no winBackdrop and with a pop-up menu
+		if there is a menu)"
+
+	self assert: [ visual isNil ].
+	visual := self buildVisualTop: false.
+	^visual!
+
+session ^<Session>
+
+	^self visual session!
+
+session: s <Session>
+	"This is a hook that can be overridden if the application needs to be notified when the
+	  session is set for its visual.  To make this work, the application needs to include an
+	  ApplicationInterceptor instance in its visual hierarchy, which will then forward the
+	  #session: message to the receiver."
+	  
+	  "by default, do nothing"!
+
+topVisual ^ <Visual>
+	"Visual representation of the application.  It is built
+		as a top-level visual (i.e. with a winBackdrop if there is one and no pop-up menu)"
+
+	^self topVisualWithHRule: true!
+
+topVisualWithHRule: showHRule <Boolean> ^ <Visual>
+	"Visual representation of the application.  It is built
+		as a top-level visual (i.e. with a winBackdrop if there is one and no pop-up menu).
+	 if showHRule is true, a horizontal rule is shown at the top (to visually separate
+	 the pull-down menus)"
+
+	| v <Visual> |
+	self assert: [ visual isNil ].
+	visual := v := self buildVisualTop: true.
+	self hasToolBar
+			ifTrue: [		| h <ToolBarHolder> |
+							h := ToolBarHolder new.
+							showHRule
+								ifTrue: [ h add: (HorizontalRule new asVisual baselined) ].
+							h	add: self toolBar imbeddedVisual;
+								add: v baselined.
+							v := h.
+						 ].
+	self hasWinBackdrop
+		ifTrue: [ v := v withBackdrop: self winBackdrop ].
+	^v!
+
+visual ^ <Visual>
+	"Visual representation of the application.  It must exist before this can be
+		asked for."
+
+	self assert: [ visual notNil ].
+	^visual!
+
+winBackdrop ^<Painter>
+
+	self error: 'No backdrop has been defined'!
+
+windowTitle ^ <Str>
+
+	^self class name! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	self subclassResponsibility!
+
+buildVisualTop: forTop <Boolean> ^ <Visual>
+
+	| v <Visual> |
+	v := self buildBareVisualTop: forTop.
+	(forTop not or: [ self hasPopUpMenuForTop ])
+		ifTrue: [	self hasMenu
+							ifTrue: [ v := v withPopUpMenuSource: [ self popUpMenu ] ] ].
+	^v!
+
+defaultPainter ^<Painter>
+
+	^Painter default!
+
+sendCloseRequest: toClose <[]>
+toAll: apps <Cltn[Application]>
+	"This is a utility method to correctly send close requests to all of a set of children.
+	  This must be done this way because the toClose block handed to each child must
+	  wrap the successive children"
+	  
+	| a <Array[Application]> i <Int> b <[]> |
+	a := apps asArray.
+	i := 0.
+	b := [	i := i + 1.
+				i > a size
+					ifTrue: [ toClose value ]
+					ifFalse: [ (a at: i) closeRequest: b ]
+			].
+	b value.! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'testing' !
+
+
+hasVisual ^<Boolean>
+
+	^visual notNil! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+	"Request that the user decide whether to save and close, close, or cancel close.
+		toClose is evaluated if the user decides to close.  The save is done first
+		if the user requests it."
+
+	"by default, just close"
+	toClose value!
+
+inSessionProcessDo: blk <[]>
+
+	"First check if the visual and session is present"
+	(visual isNil or: [ self session isNil ]) 
+		ifTrue: [^self].
+	
+	self session inProcessDo: blk! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^false!
+
+hasPopUpMenuForTop ^<Boolean>
+	"Decides whether a top-level window should have a pop-up menu as well."
+	
+	^false!
+
+menuBar ^<Menu>
+	"Return a menu to show as the menu bar if this is in a top-level window.  If the
+		menu needs to be changed dynamically, it should be stored somewhere and
+		changed in-place as needed.  The menu-bar will be updated automatically."
+
+	self error: 'You have not defined a menu for this application'!
+
+popUpMenu ^<Menu>
+	"Return a menu to show in pop-up fashion if this is not in a top-level window"
+
+	"By default this is the same as the menu bar; but this can be overriden if the menu
+		should look different when it is pop-up"
+	^self menuBar! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'private-initialization' !
+
+
+initialize
+
+! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'launching' !
+
+
+launch ^<Window>
+
+	| win <Window> sess <Session> winCreated <Semaphore> |
+	winCreated := Semaphore new.
+	sess := Session in: Screen default
+		do: [ :sess <Session> |
+					winCreated wait.
+					win makeActive show.	].
+	win := self windowIn: sess.
+	winCreated signal.
+	sess sessionWindow: win.
+	^win!
+
+launchIn: sess <Session> ^<Window>
+
+	^(self windowIn: sess) show!
+
+windowIn: sess <Session> ^<Window>
+
+	| win <Window> m <Menu> |
+	win := sess
+		newStandardWindow: self windowTitle
+		for: self topVisual.
+	self hasMenu
+		ifTrue: [ win menu: self menuBar. ].
+	win toClose:
+		[ :w <Window> |
+			self closeRequest: [ w close ]		].
+	^win!
+
+windowIn: sess <Session> withPrefixMenu: preMenu <Menu> ^<Window>
+	"Like windowIn:, but prepends the items of preMenu to the menu bar."
+
+	| win <Window> |
+	win := self windowIn: sess.
+	self hasMenu
+		ifTrue: [	win menu prependItems: preMenu removeAll. 	]
+		ifFalse: [ win menu: preMenu ].
+	^win! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'input focus' !
+
+
+becomeFocusIfFail: blk <[]>
+
+	"Sets the input focus to the first focus candidate contained in the application's visual.
+	If no candidates are found the fail block is invoked."
+
+	| focusCandidate <Visual> |
+	(focusCandidate := self visual firstFocusCandidateIfAbsent: [ nil ]) isNil
+		ifTrue:	blk
+		ifFalse:	[ focusCandidate becomeFocus ]
+! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'event  handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> interceptor: in <ApplicationInterceptor> ^<Boolean>
+
+	^in defaultCharacter: c  focus: focus  event: ev
+
+!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> interceptor: in <ApplicationInterceptor> ^<Boolean>
+
+	^in defaultKeyDown: key focus: focus event: ev
+
+!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> interceptor: in <ApplicationInterceptor> ^<Boolean>
+
+	^in defaultKeyUp: key focus: focus event: ev
+!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> interceptor: in <ApplicationInterceptor> ^<Boolean>
+
+	^in defaultMouseEvent: type at: loc event: ev! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'toolbars' !
+
+
+hasToolBar ^<Boolean>
+
+	^false!
+
+toolBar ^<ToolBar>
+
+	self assert: [ self hasToolBar ].
+	self error: 'No toolbar method has been defined'! !
+
+! (Delta mirrorFor: #Application) methodsFor: 'notification' !
+
+
+visualAllocated
+
+	"This is a hook that can be used to get notification when the application's visual
+	  gets its allocation and position, which also means that it has a window, etc.  To
+	  get this notification, the application must create an instance of 
+	  ApplicationInterceptor for itself in its visual hierarchy."
+	
+	"by default, do nothing"! !
+

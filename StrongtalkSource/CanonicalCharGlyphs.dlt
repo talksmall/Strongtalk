@@ -1,0 +1,51 @@
+Delta define: #CanonicalCharGlyphs as: (
+(Class subclassOf: 'Array[CharacterGlyph]' instanceVariables: 'painter <Painter>')) !
+
+(Delta mirrorFor: #CanonicalCharGlyphs) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #CanonicalCharGlyphs) group: 'Unclassified'!
+
+(Delta mirrorFor: #CanonicalCharGlyphs)
+comment: 
+'Holds canonical char glyphs for a given font and paint. 
+This is done via an instance
+variable holding the paint so that in the common case
+we can avoid a critical region to get the canonical
+charglyphs.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CanonicalCharGlyphs) classSide methodsFor: 'instance creation' !
+
+
+forPainter: p <Painter>  ^<Instance>
+
+	^(self new: 128) initPainter: p! !
+
+! (Delta mirrorFor: #CanonicalCharGlyphs) methodsFor: 'initialization-private' !
+
+
+initPainter: p <Painter>
+
+	painter := p! !
+
+! (Delta mirrorFor: #CanonicalCharGlyphs) methodsFor: 'accessing' !
+
+
+paint ^<Paint>
+
+	^painter paint!
+
+painter ^<Painter>
+
+	^painter! !
+
+! (Delta mirrorFor: #CanonicalCharGlyphs) methodsFor: 'copying' !
+
+
+copyWithSize: s <Int> ^<Instance>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"%remove when the primitive is fixed to copy instvars"
+	^(super copyWithSize: s) initPainter: self painter! !
+

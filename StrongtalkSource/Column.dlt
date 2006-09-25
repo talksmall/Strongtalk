@@ -1,0 +1,60 @@
+Delta define: #Column as: (
+Generic forAll: '(SUB covar) <Visual> ' body: ((Class subclassOf: 'RowOrColumn[SUB]' instanceVariables: ''))) !
+
+(Delta mirrorFor: #Column) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Column) group: 'ui'!
+
+(Delta mirrorFor: #Column)
+comment: 
+'Organizes Visuals in a Column.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Column) methodsFor: 'private' !
+
+
+majorHighOf: r <Rect> ^<Dist>
+
+	^r bottom!
+
+majorLowOf: r <Rect> ^<Dist>
+
+	^r top!
+
+majorOf: p <Point> ^<Dist>
+
+	^p y!
+
+majorTotalOf: r <Rect> ^<Dist>
+
+	^r height!
+
+minorHighOf: r <Rect> ^<Dist>
+
+	^r right!
+
+minorLowOf: r <Rect> ^<Dist>
+
+	^r left!
+
+minorTotalOf: r <Rect> ^<Dist>
+
+	^r width!
+
+pointWithMinor: minor <Dist> major: major <Dist>  ^<Point>
+
+	^minor @ major!
+
+rectWithLowMajor: lowMajor <Dist>
+lowMinor: lowMinor <Dist>
+highMajor: highMajor <Dist>
+highMinor: highMinor <Dist>
+^<Rect>
+
+	^lowMinor @ lowMajor corner: highMinor @ highMajor! !
+

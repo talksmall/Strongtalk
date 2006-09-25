@@ -1,0 +1,43 @@
+Delta define: #Perm2Benchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: '') classVariables: 'Permcount Permrange ') !
+
+(Delta mirrorFor: #Perm2Benchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Perm2Benchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #Perm2Benchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Perm2Benchmark) classSide methodsFor: 'constants' !
+
+
+initialize Permcount := 5. Permrange := 10 "Perm2Benchmark initialize"! !
+
+! (Delta mirrorFor: #Perm2Benchmark) methodsFor: 'misc' !
+
+
+run | permarray |
+	permarray :=  PermArray new: Permrange.
+	permarray pctr: 0.
+	Permcount timesRepeat: [permarray permInitialize. permarray permute: 7].
+	permarray pctr ~= (8660 * Permcount) ifTrue: [ self error: 'error'].
+	"Perm2Benchmark new run"! !
+
+! (Delta mirrorFor: #Perm2Benchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^159!
+
+factor
+	^11!
+
+name
+	^#Perm2!
+
+parcplaceTime
+	^135! !
+

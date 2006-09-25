@@ -1,0 +1,29 @@
+Delta define: #DeltaReceiver as: (
+(Class subclassOf: 'DeltaActivationVar' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaReceiver) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaReceiver) group: 'ast'!
+
+(Delta mirrorFor: #DeltaReceiver)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaReceiver) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool receiverNode: self!
+
+isFloatValue
+	^ false!
+
+isReceiverNode ^ <Boolean>
+    ^ true!
+
+printOn: strm <CharOutputStream>
+
+	super printOn: strm.
+	strm nextPutAll: '(self)'! !
+

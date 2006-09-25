@@ -1,0 +1,30 @@
+Delta define: #ElementSMAPPL as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementSMAPPL) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ElementSMAPPL) group: 'Unclassified'!
+
+(Delta mirrorFor: #ElementSMAPPL)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementSMAPPL) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	builder
+		addVisual: 
+			[ (Visual coerce:
+					(Smalltalk evaluate: (self attributeAt: #VISUAL)
+						ifError: [ :err <Str> :spot <Int> |
+										Transcript show: 'Error in HTML doit: ''',
+			 								((self attributeAt: #VISUAL) stringCopyReplaceFrom: spot to: spot with: '<<',err,'>>'), ''''; cr.
+			 							^self ]
+					)
+				)
+			]
+		for: self! !
+

@@ -1,0 +1,89 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Troubleshooting</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h2 align="left">Troubleshooting</h2>
+
+<p align="left">If you are experiencing problems, here are some
+things you can try:</p>
+
+<ul>
+    <li><strong>Symptom:</strong> The system crashes and prints
+        &quot;Fatal: os::commit_memory failed&quot; in the
+        console window.
+        <p>This is usually caused by filling up object space so much
+        that the OS cannot allocate more memory for objects. This
+        may be because you needed to run a garbage collection
+        before object space grew to this point. This can happen
+        right now because the full garbage collector does not run
+        automatically in the implementation right now,
+        unfortunately. It can be invoked from the UI from the
+        &quot;System/Object Memory/Collect Garbage&quot; menu
+        item on the launcher, or programmatically by calling
+        &quot;VM collectGarbage&quot;.</p></li>
+    <li><strong>Symptom: </strong>The system crashes and prints
+        &quot;Fatal: cannot allocate enough space for
+        nmethod&quot;.
+        <p>This happens when the system runs out of space for
+        compiled code, which is held in a memory area whose size
+        is fixed at system startup. You can change the size of
+        this area by changing the CodeSize parameter in the
+        Strongtalk startup options file, <a
+doit="(CodeEditor on: (FilePath for: '.strongtalkrc')) launch">.strongtalkrc</a>. The code
+        size is specified in kilobytes. 6000kb is usually plenty
+        big enough. The startup options do not take effect until
+        the next session.</p></li>
+    <li><strong>Symptom: </strong>The user interface locks up,
+        but the program does not crash.
+        <p>This error has been seen in the past due to some unknown
+        bug, probably a deadlock of some kind in the UI. We think
+        that this bug has been eliminated, but if you encounter
+        it, it often clears up on its own if you wait a bit or
+        move the mouse over the window and other windows, and
+        then try clicking a few times on various windows.</p></li>
+</ul>
+
+<p>Other kinds of system crashes (other than stack overflows)
+usually are caused by some other bug in the native code compiler,
+which have not all been worked out. These are often hard to
+reproduce, so just trying the operation again after restarting may work. If it
+happens repeatedly and you need to make the system more stable,
+you can try the following steps:</p>
+
+<ul>
+    <li>First, try increasing the compilation threshold. This
+        controls how performance-critical a piece of code needs
+        to be before the compiler tries to compile it. The value
+        is set by the InvocationCounterLimit option in the
+        <a
+doit="(CodeEditor on: (FilePath for: '.strongtalkrc')) launch">.strongtalkrc</a> startup options file. The default value is
+        10000; increasing this should make the system more stable
+        by compiling less code. If you have trouble, try raising
+        the value to 15000 or 20000. You can even raise it to a
+        value like 50000 and the system should work fine. The
+        startup options do not take effect until the next
+        session.</li>
+    <li>If the system still crashes after raising the compilation
+        threshold, you can try turning the compiler off
+        altogether. You can do this during a session using the
+        &quot;System/Compiler/Compiler Enabled&quot; menu item on
+        the Launcher, and the system will not compile any
+        additional methods during that session (although it may
+        still try to recompile existing compiled methods). You
+        can <em>completely</em> eliminate compilation by changing
+        the +UseRecompilation flag in the <a
+doit="(CodeEditor on: (FilePath for: '.strongtalkrc')) launch">.strongtalkrc</a> startup
+        file to -UseRecompilation, which will cause the system to
+        run using only the interpreter, which is much more stable
+        (but obviously slower). The startup options do not take
+        effect until the next session.</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,132 @@
+Delta define: #Semaphore as: (
+(Class subclassOf: 'Object' instanceVariables: 'signalCount <Int>
+	waiting <Queue[Process]>
+	ownerProcess <Process>
+		"If we are in a critical region entered using #critical:,
+			then this is the process that entered the critical region.  Otherwise, nil"
+	')) !
+
+(Delta mirrorFor: #Semaphore) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Semaphore) group: 'base'!
+
+(Delta mirrorFor: #Semaphore)
+comment: 
+'Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #Semaphore) classSide methodsFor: 'instance creation' !
+
+
+forMutualExclusion ^<Instance>
+
+	^self new signal!
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #Semaphore) methodsFor: 'control' !
+
+
+critical: blk <[^X def]> ^<X>
+	"Enter a critical region on the receiver, using a signal to indicate that someone is in
+		the critical region.  The process in the critical
+		region can recursively reenter it without deadlocking"
+
+	"The first part is like wait except that it doesn't suspend if the owner is the active process"
+	| recursive <Boolean> |
+	recursive := false.
+	^[	Processor uninterruptablyDo:
+			[	self signalCount > 0
+					ifTrue: [	self signalCount: self signalCount - 1. ]
+					ifFalse: [	self ownerProcess = Processor activeProcess
+										ifTrue: [ recursive := true ]
+										ifFalse: [ (self waiting put: Processor activeProcess) suspend ]
+								 ].
+				self ownerProcess: Processor activeProcess.
+			].
+		blk value
+	 ] ensure: [ recursive ifFalse: [ self signal ] ]!
+
+signal
+
+	Processor uninterruptablyDo:
+		[	self waiting isEmpty
+				ifTrue: [	self signalCount: self signalCount + 1. ]
+				ifFalse: [	self waiting next resume ].
+			self ownerProcess: nil.
+		]!
+
+signalEvent
+	"This is used when the semaphore is being used as an event signaller.  It resumes all waiting
+		processes.  It does NOT increase the signal count if there are non-waiting."
+
+	| w <Queue[Process]> |
+	Processor uninterruptablyDo:
+		[	self waiting size > 0
+				ifTrue: [	w := self waiting.
+								waiting := Queue[Process] new. ].
+			self ownerProcess: nil.
+		].
+
+	w notNil
+		ifTrue: [ [ w isEmpty ]
+						whileFalse: [ w next resume ].
+					]!
+
+wait
+
+	Processor uninterruptablyDo:
+		[	self signalCount > 0
+				ifTrue: [	self signalCount: self signalCount - 1. ]
+				ifFalse: [	(self waiting put: Processor activeProcess) suspend ]
+		]! !
+
+! (Delta mirrorFor: #Semaphore) methodsFor: 'private' !
+
+
+ownerProcess ^<Process>
+
+	^ownerProcess!
+
+ownerProcess: p <Process>
+
+	ownerProcess := p!
+
+signalCount ^<Int>
+
+	^signalCount!
+
+signalCount: c <Int>
+
+	signalCount := c!
+
+waiting ^<Queue[Process]>
+
+	^waiting! !
+
+! (Delta mirrorFor: #Semaphore) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.	"Do this so that we can work ok when used as a mixin"
+	self signalCount: 0.
+	waiting := Queue[Process] new.! !
+
+! (Delta mirrorFor: #Semaphore) methodsFor: 'testing' !
+
+
+criticalWouldBlock ^<Boolean>
+	"Like wait would block except returns false in the recursive entry case"
+
+	^self waitWouldBlock and: [ Processor activeProcess ~= self ownerProcess ]!
+
+waitWouldBlock ^<Boolean>
+
+	^self signalCount = 0! !
+

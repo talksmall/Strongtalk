@@ -1,0 +1,100 @@
+Delta define: #HorizontalRule as: (
+(Class subclassOf: 'Glyph' instanceVariables: 'naturalWidth <Int>
+	"natural width (means rigid), or nil if 0 and stretchy"
+ascent <Int>
+	"extra space above the rule"
+descent <Int>
+	"extra space below the rule"')) !
+
+(Delta mirrorFor: #HorizontalRule) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HorizontalRule) group: 'Unclassified'!
+
+(Delta mirrorFor: #HorizontalRule)
+comment: 
+'A kind of glyph that displays a horizontal separator that stretches as much as needed
+horizontally.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #HorizontalRule) methodsFor: 'accessing' !
+
+
+ascent ^<Int>
+
+	^ascent isNil
+			ifFalse: [ ascent ]
+			ifTrue: [ 0 ]!
+
+ascent: v <Int>
+
+	ascent := v!
+
+descent ^<Int>
+
+	^descent isNil
+			ifFalse: [ descent ]
+			ifTrue: [ 0 ]!
+
+descent: v <Int>
+
+	descent := v!
+
+naturalWidth ^<Int>
+
+	^naturalWidth!
+
+naturalWidth: w <Int>
+
+	naturalWidth := w! !
+
+! (Delta mirrorFor: #HorizontalRule) methodsFor: 'geometry-local' !
+
+
+allocationFor: context <VisualGlyph>  ^<Region>
+
+	^context allocationFromParent!
+
+maxIn: m <Medium>  ^<Region>
+
+	| w <Number> |
+	w := self naturalWidth.
+	^w isNil
+		ifTrue: [ UI huge negated @ self ascent  negated corner: UI huge @ (self descent + 2) ]
+		ifFalse: [ w @ self ascent  negated corner: 0 @ (self descent + 2) ]!
+
+naturalIn: m <Medium>  ^<Region>
+
+	| w <Int> |
+	w := self naturalWidth.
+	w isNil
+		ifTrue: [ w := 0 ]
+		ifFalse: [ w := w negated ].
+	^w @ self ascent  negated corner: 0 @ (self descent + 2)! !
+
+! (Delta mirrorFor: #HorizontalRule) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas> for: context <VisualGlyph>
+
+	| left <Number> right <Number> |
+	left := context allocation enclosedRect left.
+	right := context allocation enclosedRect right.
+	can withPainter: (Painter new paint: Paint gray)
+		do: [	can displayLineFrom: left @0
+							to: right @ 0	].
+	can withPainter: (Painter new paint: Paint white)
+		do: [	can displayLineFrom: left@1
+							to: right @ 1	].! !
+
+! (Delta mirrorFor: #HorizontalRule) methodsFor: 'testing' !
+
+
+isRectangularAndOpaque ^<Boolean>
+
+	^true! !
+

@@ -1,0 +1,63 @@
+<html>
+<head><title>Strongtalk Start Page</title></head>
+<body>
+
+<h2 align="center">Welcome to the Strongtalk System!</h2>
+
+<p>This is the Strongtalk start page. It is designed to be viewed using the
+Strongtalk browser, not a regular html browser, because it contains Smalltalk
+code. Pressing the
+<smappl visual=" Button
+			withImage: (Image fromFile: (FilePath for: 'resources/smallHome.bmp'))
+			action: [ :b  |	 ]	">
+button on the Strongtalk Launcher (which is probably right behind this window)
+will always open this page. </p>
+
+<p>Feel free to modify this page to contain links to
+your commonly used commands, classes, and applications. This is
+useful because the Strongtalk browser, while very primitive
+in most respects, contains enhancements that let you attach 'do it'
+code to links (Smalltalk code that is executed when you click on the link). You can also easily imbed Smalltalk applications
+directly into pages, using the <strong>smappl</strong> tag. This page contains
+some examples of these techniques that you can copy and modify. To edit
+this page, press the 
+<smappl visual=" Button
+			withImage:  (Image fromFile: (FilePath for: 'resources/edit.bmp'))
+			action: [ :b |  (TextEditor on: (FilePath for: 'startPage.html')) launch	]  ">
+button on the toolbar.</p>
+
+<h3><a href="documentation/index.html">Browse Documentation</a></h3>
+
+<h3 align="left">Some Important Classes</h3>
+
+<ul>
+	<li><smappl visual="ClassHierarchyOutliner imbeddedVisualForClass: Object"></li>
+    <li><smappl visual="ClassHierarchyOutliner imbeddedVisualForClass: Collection"></li>
+    <li><smappl visual="ClassHierarchyOutliner imbeddedVisualForClass: Visual"></li>
+    <li><smappl visual="ClassHierarchyOutliner imbeddedVisualForClass: Application"></li>
+</ul>
+
+<h3 align="left">Applications</h3>
+
+<ul>
+    <li><a doit="TextEditor new launch">Text Editor</a> </li>
+    <li><a doit="Mandelbrot new launch">Mandelbrot Set</a> </li>
+    <li><a doit="SystemMonitor new launch">System Monitor</a> </li>
+</ul>
+
+<h3 align="left">Actions</h3>
+
+<ul>
+    <li><a doit="VM collectGarbage">Collect Garbage</a> </li>
+</ul>
+
+<h3 align="left">Files</h3>
+
+<ul>
+    <li><a doit="(TextEditor on: (FilePath for: '.strongtalkrc')) launch">VM Startup Options File (.strongtalkrc)</a> </li>
+    <li><a doit="(TextEditor on: (FilePath for: 'source/strongtalkSave.log')) launch">Source Save Log</a>
+    		(If this file, 'source/strongtalkSave.log', exists, it accumulates saved changes.  The normal change log, 
+    		'source/strongtalkchange.log', accumulates all changes, even unsaved one.) </li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,837 @@
+/* Copyright 1994 - 1996 LongView Technologies L.L.C. $Revision: 1.25 $ */
+/* Copyright (c) 2006, Sun Microsystems, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+	  disclaimer in the documentation and/or other materials provided with the distribution.
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+	  from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+
+
+*/
+# include "incls/_precompiled.incl"
+
+# ifdef DELTA_COMPILER
+# include "incls/_nodeBuilder.cpp.incl"
+
+// Class variables
+
+Node* NodeBuilder::EndOfCode = (Node*)-1;
+
+
+// Initialization
+
+void NodeBuilder::initialize(InlinedScope* scope) {
+  _exprStack = new ExprStack(scope, 8);
+  _inliner   = new Inliner(scope);
+  _scope     = scope;
+  _current   = NULL;
+}
+
+
+// Helper functions for node creation/concatenation
+
+void NodeBuilder::append(Node* node) { 
+  if (node->isExitNode()) warning("should use append_exit for consistency");
+  if (_current == EndOfCode) {
+    if (node->nPredecessors() == 0) {
+      // ignore this code 
+      // (sometimes, the bytecode compiler generates dead code after returns)
+    } else {
+      // node is already connected to graph (merge node), so restart code generation 
+      _current = node;
+    }
+  } else {
+    _current = _current->append(node); 
+  }
+}
+
+void NodeBuilder::append_exit(Node* node) { 
+  assert(node->isExitNode(), "not an exit node");
+  if (_current != EndOfCode) _current->append(node);
+  _current = NULL;
+}
+
+void NodeBuilder::branch(MergeNode* target) {
+  // connect current with target
+  if (_current != NULL && _current != EndOfCode && _current != target) {
+    _current->append(target);
+  }
+  _current = target;
+}
+
+void NodeBuilder::comment(char* s) {
+  if (CompilerDebug) append(NodeFactory::new_CommentNode(s));
+}
+
+void NodeBuilder::ignore_dead_code() {
+  _current = EndOfCode;
+}
+
+GrowableArray<PReg*>* NodeBuilder::copyCurrentExprStack() {
+  int l = exprStack()->length();
+  GrowableArray<PReg*>* es = new GrowableArray<PReg*>(l);
+  for (int i = 0; i < l; i++) {
+    es->push(exprStack()->at(i)->preg());
+  }
+  return es;
+}
+
+
+// Node creation
+
+void NodeBuilder::if_node(IfNode* node) {
+  Expr* cond = exprStack()->pop();
+  if (cond->isConstantExpr()) {
+    // constant condition
+    oop c = cond->asConstantExpr()->constant();
+    if (c == trueObj || c == falseObj) {
+      if (node->is_ifTrue() == (c == trueObj)) {
+        MethodIterator mi(node->then_code(), this);
+      } else if (node->else_code() != NULL) {
+        MethodIterator mi(node->else_code(), this);
+      } else {
+        // never executed -> ignore
+      }
+    } else {
+      // non-boolean condition -> fails always
+      append(NodeFactory::new_UncommonNode(copyCurrentExprStack()));
+    }
+  } else {
+    // non-constant condition
+    GrowableArray<klassOop>* list = new GrowableArray<klassOop>(2);
+    if (node->is_ifTrue()) {
+      list->append(trueObj->klass());
+      list->append(falseObj->klass());
+    } else {
+      list->append(falseObj->klass());
+      list->append(trueObj->klass());
+    }
+    TypeTestNode* test = NodeFactory::new_TypeTestNode(cond->preg(), list, true);
+    append(test);
+    test->append(0, NodeFactory::new_UncommonNode(copyCurrentExprStack()));
+    if (node->else_code() != NULL) {
+      // with else branch
+      Expr*      ifResult;
+      Expr*      elseResult;
+      SAPReg*    resultReg  = new SAPReg(scope());
+      MergeNode* ifBranch   = NodeFactory::new_MergeNode(node->then_code()->begin_bci());
+      MergeNode* elseBranch = NodeFactory::new_MergeNode(node->else_code()->begin_bci());
+      MergeNode* endOfIf    = NodeFactory::new_MergeNode(node->end_bci());
+      test->append(1, ifBranch);
+      test->append(2, elseBranch);
+      // then branch
+      setCurrent(ifBranch);
+      MethodIterator mi1(node->then_code(), this);
+      if (node->produces_result()) {
+        ifResult = exprStack()->pop();
+	if (!ifResult->isNoResultExpr()) append(NodeFactory::new_AssignNode(ifResult->preg(), resultReg));
+      }
+      append(endOfIf);
+      // else branch
+      setCurrent(elseBranch);
+      MethodIterator mi2(node->else_code(), this);
+      if (node->produces_result()) {
+        elseResult = exprStack()->pop();
+	if (!elseResult->isNoResultExpr()) append(NodeFactory::new_AssignNode(elseResult->preg(), resultReg));
+      }
+      append(endOfIf);
+      // end
+      if (node->produces_result()) {
+        exprStack()->push2nd(new MergeExpr(ifResult, elseResult, resultReg, current()), scope());
+      }
+    } else {
+      // no else branch
+      assert(!node->produces_result(), "inconsistency - else branch required");
+      MergeNode* ifBranch   = NodeFactory::new_MergeNode(node->then_code()->begin_bci());
+      MergeNode* endOfIf    = NodeFactory::new_MergeNode(node->end_bci());
+      test->append(1, ifBranch);
+      test->append(2, endOfIf);
+      // then branch
+      setCurrent(ifBranch);
+      MethodIterator mi1(node->then_code(), this);
+      append(endOfIf);
+    }
+    splitMergeExpr(cond, test);
+    comment("end of if");
+  }
+}
+
+
+void NodeBuilder::cond_node(CondNode* node) {
+  Expr* cond = exprStack()->pop();
+  if (cond->isConstantExpr()) {
+    // constant condition
+    oop c = cond->asConstantExpr()->constant();
+    if (c == trueObj || c == falseObj) {
+      if (node->is_and() == (c == trueObj)) {
+        MethodIterator mi(node->expr_code(), this);
+      } else {
+        exprStack()->push(cond, scope());
+      }
+    } else {
+      // non-boolean condition -> fails always
+      append(NodeFactory::new_UncommonNode(copyCurrentExprStack()));
+    }
+  } else {
+    // non-constant condition
+    Expr*   condResult;
+    SAPReg* resultReg  = new SAPReg(scope());
+    append(NodeFactory::new_AssignNode(cond->preg(), resultReg));
+    GrowableArray<klassOop>* list = new GrowableArray<klassOop>(2);
+    if (node->is_and()) {
+      list->append(trueObj->klass());
+      list->append(falseObj->klass());
+    } else {
+      list->append(falseObj->klass());
+      list->append(trueObj->klass());
+    }
+    TypeTestNode* test = NodeFactory::new_TypeTestNode(cond->preg(), list, true);
+    append(test);
+    test->append(0, NodeFactory::new_UncommonNode(copyCurrentExprStack()));
+    MergeNode* condExpr   = NodeFactory::new_MergeNode(node->expr_code()->begin_bci());
+    MergeNode* endOfCond  = NodeFactory::new_MergeNode(node->end_bci());
+    test->append(1, condExpr);
+    test->append(2, endOfCond);
+    splitMergeExpr(cond, test);
+    // conditional expression
+    setCurrent(condExpr);
+    MethodIterator mi1(node->expr_code(), this);
+    condResult = exprStack()->pop();
+    append(NodeFactory::new_AssignNode(condResult->preg(), resultReg));
+    append(endOfCond);
+    // end
+    exprStack()->push2nd(new MergeExpr(cond, condResult, resultReg, current()), scope());
+    comment("end of cond");
+  }
+}
+
+
+void NodeBuilder::while_node(WhileNode* node) {
+  int loop_bci    = node->body_code() != NULL ? node->body_code()->begin_bci() : node->expr_code()->begin_bci();
+  MergeNode* loop = NodeFactory::new_MergeNode(loop_bci);
+  MergeNode* exit = NodeFactory::new_MergeNode(node->end_bci());
+  MergeNode* entry= NULL;	// entry point into loop (start of condition)
+  exit->isLoopEnd   = true;
+  if (node->body_code() != NULL) {
+    // set up entry point
+    entry = NodeFactory::new_MergeNode(node->expr_code()->begin_bci());
+    append(entry);
+    entry->isLoopStart = true;
+  } else {
+    // no body code -> start with conditional expression
+    append(loop);
+    loop->isLoopStart = true;
+  }
+  MethodIterator mi(node->expr_code(), this);
+  Expr* cond = exprStack()->pop();
+  if (false && cond->isConstantExpr()) {
+    // ^^^ TURNED OFF - doesn't work for endless loops yet - FIX THIS
+    // constant condition
+    oop c = cond->asConstantExpr()->constant();
+    if (c == trueObj || c == falseObj) {
+      if (node->is_whileTrue() == (c == trueObj)) {
+        append(loop);
+	setCurrent(exit);
+      }
+    } else {
+      // non-boolean condition -> fails always
+      append(NodeFactory::new_UncommonNode(copyCurrentExprStack()));
+    }
+  } else {
+    // non-constant condition
+    GrowableArray<klassOop>* list = new GrowableArray<klassOop>(2);
+    if (node->is_whileTrue()) {
+      list->append(trueObj->klass());
+      list->append(falseObj->klass());
+    } else {
+      list->append(falseObj->klass());
+      list->append(trueObj->klass());
+    }
+    TypeTestNode* test = NodeFactory::new_TypeTestNode(cond->preg(), list, true);
+    append(test);
+    test->append(0, NodeFactory::new_UncommonNode(copyCurrentExprStack()));
+    test->append(1, loop);
+    test->append(2, exit);
+    setCurrent(exit);
+    //splitMergeExpr(cond, test);
+    comment("end of while");
+  }
+
+  if (node->body_code() != NULL) {
+    // generate loop body 
+    // NB: *must* be done after generating condition, because Node order must correspond to
+    // bci order, otherwise copy propagation breaks  -Urs 10/95
+    Node* curr = current();
+    setCurrent(loop);
+    MethodIterator mi(node->body_code(), this);
+    append(entry);
+    setCurrent(curr);
+  }
+}
+
+
+void NodeBuilder::primitive_call_node(PrimitiveCallNode* node) {
+  if (node->pdesc() == NULL) {
+    error("calling unknown primitive");
+    exprStack()->pop();
+    return;
+  } 
+  PrimInliner* p = new PrimInliner(this, node->pdesc(), node->failure_code());
+  p->generate();
+}
+
+
+void NodeBuilder::dll_call_node(DLLCallNode* node) {
+  GrowableArray<PReg*>* args = pass_arguments(NULL, node->nofArgs());
+  char* f = (char*)DLLs::lookup_fail(node->dll_name(), node->function_name());
+  assert(f != NULL, "compiler cannot handle unknown DLL calls yet");
+  assert(node->function() == NULL || node->function() == f, "inconsistent DLL entry point");
+  assert(node->failure_code() == NULL, "compiler cannot handle DLL calls with failure blocks yet");
+  DLLNode* dcall = NodeFactory::new_DLLNode(node->dll_name(), node->function_name(), f, scope()->nlrTestPoint(), args, copyCurrentExprStack());
+  append(dcall);
+  exprStack()->pop(node->nofArgs());
+  // a proxy object has been pushed before the arguments, assign result
+  // to its _pointer field - the proxy is also the result of the dll call
+  // (since the result is NOT a Delta pointer, no store check is needed)
+  append(NodeFactory::new_StoreOffsetNode(dcall->dest(), exprStack()->top()->preg(), pointer_no, false));
+}
+
+
+void NodeBuilder::allocate_temporaries(int nofTemps) {
+  methodOop m = _scope->method();
+  assert(m->temporaries_info() == m->more_than_two_temps, "no. of stack variables inconsistent");
+  assert(nofTemps + 2 == m->number_of_stack_temporaries(), "no. of stack variables inconsistent");
+  // temporaries are allocated in the beginning (NodeBuilder::buildNodes())
+}
+
+
+void NodeBuilder::push_self() {
+  exprStack()->push(scope()->self(), scope());
+}
+
+
+void NodeBuilder::push_tos() {
+  exprStack()->push(exprStack()->top(), scope());
+}
+
+
+void NodeBuilder::push_literal(oop obj) {
+  exprStack()->push(new ConstantExpr(obj, new_ConstPReg(_scope, obj), NULL), scope());
+}
+
+
+void NodeBuilder::push_argument(int no) {
+  // arguments are non-assignable, so no assignment to SAPReg necessary
+  assert((0 <= no) && (no < _scope->nofArguments()), "illegal argument no");
+  exprStack()->push(scope()->argument(no), scope());
+}
+
+
+void NodeBuilder::push_temporary(int no) {
+  // must assign non-parameters to temporary because exprStack entries must be singly-assigned
+  // and because source (i.e., temporary location) could be assigned between now and the send
+  // that actually consumes the value
+  assert((0 <= no) && (no < _scope->nofTemporaries()), "illegal temporary no");
+  Expr* temp = _scope->temporary(no);
+  PReg* src = temp->preg();
+  SAPReg* dst = new SAPReg(_scope);
+  append(NodeFactory::new_AssignNode(src, dst));
+  exprStack()->push(temp, scope());
+}
+
+
+void NodeBuilder::access_temporary(int no, int context, bool push) {
+  // generates code to access temporary no in (logical, i.e., interpreter) context
+  // context numbering starts a 0
+  //assert(_scope->allocatesInterpretedContext() == (_contextInitializer != NULL), "context must exist already if used (find_scope)");
+  assert(context >= 0, "context must be >= 0");
+  int nofIndirections;
+  InlinedScope* s = _scope->find_scope(context, nofIndirections);
+  if (nofIndirections < 0) {
+    // the accessed variable is in the same stack frame, in scope s
+    if (push) {
+      PReg* src = s->contextTemporary(no)->preg();
+      SAPReg* dst = new SAPReg(_scope);
+      append(NodeFactory::new_AssignNode(src, dst));
+      Expr* temp = s->contextTemporary(no)->shallowCopy(dst, _current);
+      exprStack()->push(temp, scope());
+    } else {
+      // store
+      PReg* src = exprStack()->top()->preg();
+      PReg* dst = s->contextTemporary(no)->preg();
+      append(NodeFactory::new_AssignNode(src, dst));
+    }
+  } else {
+    // the accessed variable is in higher stack frames
+    const int temp0_offs = 3; // first temporary is 3rd oop in context -- fix this (should be in contextOop)
+    if (push) {
+      SAPReg* dst = new SAPReg(_scope);
+      append(NodeFactory::new_LoadUplevelNode(dst, s->context(), nofIndirections, temp0_offs + no, NULL));
+      exprStack()->push(new UnknownExpr(dst, _current), scope());
+    } else {
+      // store
+      Expr* srcExpr = exprStack()->top();
+      PReg* src = srcExpr->preg();
+      append(NodeFactory::new_StoreUplevelNode(src, s->context(), nofIndirections, temp0_offs + no, NULL, srcExpr->needsStoreCheck()));
+    }
+  }
+}
+
+
+void NodeBuilder::push_temporary(int no, int context) {
+  access_temporary(no, context, true);
+}
+
+
+void NodeBuilder::push_instVar(int offset) {
+  assert(offset >= 0, "offset must be positive");
+  SAPReg* dst = new SAPReg(_scope);
+  PReg* base = _scope->self()->preg();
+  append(NodeFactory::new_LoadOffsetNode(dst, base, offset));
+  exprStack()->push(new UnknownExpr(dst, _current), scope());
+}
+
+
+void NodeBuilder::push_global(associationOop associationObj) {
+  SAPReg* dst = new SAPReg(_scope);
+  if (associationObj->is_constAssociation() || associationObj->value()->is_klass()) {
+    // constant association -- can inline the constant
+    assert(!associationObj->is_constAssociation(), "const assocs work -- take out || above");
+    oop c = associationObj->value();
+    ConstPReg* r = new_ConstPReg(_scope, c);
+    exprStack()->push(new ConstantExpr(c, r, NULL), _scope);
+  } else {
+    ConstPReg* base = new_ConstPReg(_scope, associationObj);
+    append(NodeFactory::new_LoadOffsetNode(dst, base, associationOopDesc::value_offset()));
+    exprStack()->push(new UnknownExpr(dst, _current), _scope);
+  }
+}
+
+
+void NodeBuilder::store_temporary(int no) {
+  PReg* src = exprStack()->top()->preg();
+  PReg* dst = _scope->temporary(no)->preg();
+  if (src != dst) append(NodeFactory::new_AssignNode(src, dst));
+}
+
+
+void NodeBuilder::store_temporary(int no, int context) {
+  access_temporary(no, context, false);
+}
+
+
+void NodeBuilder::store_instVar(int offset) {
+  assert(offset >= 0, "offset must be positive");
+  Expr* srcExpr = exprStack()->top();
+  PReg* src = srcExpr->preg();
+  PReg* base = _scope->self()->preg();
+  append(NodeFactory::new_StoreOffsetNode(src, base, offset, srcExpr->needsStoreCheck()));
+}
+
+
+void NodeBuilder::store_global(associationOop associationObj) {
+  Expr* srcExpr = exprStack()->top();
+  PReg* src = srcExpr->preg();
+  ConstPReg* base = new_ConstPReg(_scope, associationObj);
+  append(NodeFactory::new_StoreOffsetNode(src, base, associationOopDesc::value_offset(), srcExpr->needsStoreCheck()));
+}
+
+
+void NodeBuilder::pop() {
+  exprStack()->pop();
+}
+
+
+GrowableArray<PReg*>* NodeBuilder::pass_arguments(PReg* receiver, int nofArgs, bool leftToRight) { // leftToRight still needed? (was used for old style DLL)
+  // Generate code for argument passing (move all args into the right locations).
+  // If the arguments are passed on the stack (including the receiver) they should
+  // be assigned in the order of textual appearance. If the receiver is passed in
+  // a register that should happen at the end to allow this register to be used
+  // as long as possible.
+  int nofFormals = (receiver == NULL) ? nofArgs : nofArgs + 1;
+  GrowableArray<PReg*>* formals = new GrowableArray<PReg*>(nofFormals);
+  // setup formal receiver and pass if passed on the stack
+  SAPReg* formalReceiver;
+  if (receiver != NULL) {
+    formalReceiver = new SAPReg(_scope, receiverLoc, false, false, bci(), bci());
+    formals->append(formalReceiver);
+    if (receiverLoc.isStackLocation()) {
+      // receiver is passed on stack, must happen before the arguments are passed
+      append(NodeFactory::new_AssignNode(receiver, formalReceiver));
+    }
+  }
+  // pass arguments
+  int sp = exprStack()->length() - (leftToRight ? nofArgs : 1);
+  for (int i = 0; i < nofArgs; i++)  {
+    PReg*   actual = exprStack()->at(leftToRight ? sp++ : sp--)->preg();
+    SAPReg* formal = new SAPReg(_scope, Mapping::outgoingArg(i, nofArgs), false, false, bci(), bci());
+    formals->append(formal);
+    append(NodeFactory::new_AssignNode(actual, formal));
+  }
+  // pass receiver if not passed already
+  if ((receiver != NULL) && !receiverLoc.isStackLocation()) {
+    append(NodeFactory::new_AssignNode(receiver, formalReceiver));
+  }
+  return formals;
+}
+
+
+void NodeBuilder::gen_normal_send(SendInfo* info, int nofArgs, SAPReg* result) {
+  GrowableArray<PReg*>* args = pass_arguments(exprStack()->at(exprStack()->length() - nofArgs - 1)->preg(), nofArgs);
+  SendNode* send = NodeFactory::new_SendNode(info->key, scope()->nlrTestPoint(), args, 
+					     copyCurrentExprStack(), false, info);
+  append(send);
+  append(NodeFactory::new_AssignNode(send->dest(), result));
+}
+
+
+void NodeBuilder::gen_self_send(SendInfo* info, int nofArgs, SAPReg* result) {
+  GrowableArray<PReg*>* args = pass_arguments(_scope->self()->preg(), nofArgs);
+  SendNode* send = NodeFactory::new_SendNode(info->key, scope()->nlrTestPoint(), args, 
+					     copyCurrentExprStack(), false, info);
+  append(send);
+  append(NodeFactory::new_AssignNode(send->dest(), result));
+}
+
+
+void NodeBuilder::gen_super_send(SendInfo* info, int nofArgs, SAPReg* result) {
+  GrowableArray<PReg*>* args = pass_arguments(_scope->self()->preg(), nofArgs);
+  SendNode* send = NodeFactory::new_SendNode(info->key, scope()->nlrTestPoint(), args, 
+					     copyCurrentExprStack(), true, info);
+  append(send);
+  append(NodeFactory::new_AssignNode(send->dest(), result));
+}
+
+
+void NodeBuilder::normal_send(InterpretedIC* ic) {
+  int nofArgs = ic->selector()->number_of_arguments();
+  LookupKey* key = LookupKey::allocate(NULL, ic->selector());
+  Expr* rcvr = exprStack()->at(exprStack()->length() - nofArgs - 1);
+  SendInfo* info = new SendInfo(_scope, key, rcvr);
+  Expr* result = _inliner->inlineNormalSend(info);
+  exprStack()->pop(nofArgs + 1); // pop arguments & receiver
+  exprStack()->push(result, _scope);
+}
+
+
+void NodeBuilder::self_send(InterpretedIC* ic) {
+  int nofArgs = ic->selector()->number_of_arguments();
+  LookupKey* key = LookupKey::allocate(_scope->selfKlass(), ic->selector());
+  SendInfo* info = new SendInfo(_scope, key, _scope->self());
+  Expr* result = _inliner->inlineSelfSend(info);
+  exprStack()->pop(nofArgs);	// receiver has not been pushed
+  exprStack()->push(result, _scope);
+}
+
+
+void NodeBuilder::super_send(InterpretedIC* ic) {
+  int nofArgs = ic->selector()->number_of_arguments();
+  //LookupKey* key = ic->lookupKey(0);
+  klassOop klass = _scope->selfKlass()->klass_part()->superKlass();
+  LookupKey* key = LookupKey::allocate(klass, lookupCache::method_lookup(klass, ic->selector()));
+  SendInfo* info = new SendInfo(_scope, key, _scope->self());
+  Expr* result = _inliner->inlineSuperSend(info);
+  exprStack()->pop(nofArgs);	// receiver has not been pushed
+  exprStack()->push(result, _scope);
+}
+
+
+void NodeBuilder::double_equal() {
+  PrimInliner* p = new PrimInliner(this, primitives::lookup("primitiveEqual:"), NULL);
+  p->generate();
+}
+
+
+void NodeBuilder::double_not_equal() {
+  PrimInliner* p = new PrimInliner(this, primitives::lookup("primitiveNotEqual:"), NULL);
+  p->generate();
+}
+
+
+void NodeBuilder::method_return(int nofArgs) {
+  // assign result & return
+  Expr* result = exprStack()->pop();
+  if (_current == EndOfCode) {
+    // scope ends with dead code, i.e., there's no method return
+    // (e.g., because there is a preceding NLR)
+    _scope->addResult(new NoResultExpr);
+    return;
+  }
+
+  if (result->isNoResultExpr()) {
+    // scope will never return normally (i.e., is always left via a NLR)
+    _scope->addResult(result);	// make sure scope->result != NULL
+  } else {
+    // return TOS
+    PReg* src = result->preg();
+    if (_scope->isTop()) {
+      // real return from nmethod
+      append(NodeFactory::new_AssignNode(src, _scope->resultPR));
+      _scope->addResult(result->shallowCopy(_scope->resultPR, _current));
+    } else {
+      // inlined return
+      if (_scope->needsContextZapping()) {
+        // keep inlined return node (no context zap node yet)
+        append(NodeFactory::new_InlinedReturnNode(bci(), src, _scope->resultPR));
+      } else {
+        // only assignment required
+        append(NodeFactory::new_AssignNode(src, _scope->resultPR));
+      }
+      _scope->addResult(result->shallowCopy(_scope->resultPR, _current));
+    }
+  }
+
+  append(scope()->returnPoint());	// connect to return code
+  // The byte code compiler might generate a pushNil to adjust the stack;
+  // make sure that code is discarded.
+  _current = EndOfCode;
+}
+
+
+void NodeBuilder::nonlocal_return(int nofArgs) {
+  // assign result & return
+  Expr* resultExpr = exprStack()->pop();
+  PReg* src = resultExpr->preg();
+  if (_scope->isTop()) {
+    // real NLR from nmethod
+    append(NodeFactory::new_AssignNode(src, _scope->resultPR));
+    append(scope()->nlrPoint());
+  } else {
+    // inlined NLR
+    Scope* home = scope()->home();
+    if (home->isInlinedScope()) {
+      // the NLR target is in the same nmethod
+      InlinedScope* h = (InlinedScope*)home;
+      append(NodeFactory::new_AssignNode(src, h->resultPR));
+      h->addResult(resultExpr->shallowCopy(h->resultPR, _current));
+      // jump to home method's return point
+      // BUG: should zap contexts along the way -- fix this
+      append(h->returnPoint());
+    } else {
+      // NLR target is in a different nmethod -- unwind all sender frames and
+      // perform a real NLR
+      // BUG: should zap contexts along the way -- fix this
+      append(scope()->nlrPoint());
+      if (scope()->nlrPoint()->next() == NULL) {
+        append(NodeFactory::new_NLReturnNode(scope()->nlrPoint()->bci()));
+      }
+    }
+  }
+  // provide an anchor for code following the return
+  // (the byte code compiler might generate a pushNil
+  // to adjust the stack)
+  _current = EndOfCode;
+}
+
+
+void NodeBuilder::splitMergeExpr(Expr* expr, TypeTestNode* test) {
+  // Split MergeExpressions (currently works only for booleans).
+  // expr is the expression (generated somewhere upstream), test is the (only) node
+  // testing this expression.  If there's nothing "complicated" inbetween, split the
+  // merge to avoid the type test.
+  if (!Splitting) return;
+  if (!expr->isMergeExpr()) return;
+  MergeExpr* m = expr->asMergeExpr();
+  if (!m->isSplittable()) return;
+
+  int i = m->exprs->length();
+  while (i-- > 0) {
+    Expr* x = m->exprs->at(i);
+    if (x->isConstantExpr()) {
+      // check if there is a 'simple' connection between defining
+      // node and type test node -> split if possible
+      Node* n = x->node();
+      bool ok = true;
+      while (n != test && n->hasSingleSuccessor() && ok) {
+	ok = (n == x->node()) ||
+	      n->isTrivial() ||
+	      n->isAssignNode() ||
+	      n->isMergeNode();
+	n = n->next();
+      }
+      if (n == test && ok) {
+	// find 'to' node
+	klassOop c = x->asConstantExpr()->klass();
+	int j = test->classes()->length();
+	while (j-- > 0 && test->classes()->at(j) != c) ;
+	assert(j >= 0, "didn't find klass in type test");
+	Node* to = test->next(j+1);	// +1 because next(i) is branch for class i-1
+	if (!to->isMergeNode()) {
+	  // insert a MergeNode inbetween
+	  assert(to->hasSinglePredecessor(), "should have only one predecessor");
+	  MergeNode* merge = NodeFactory::new_MergeNode(to->bci());
+	  Node* prev = to->firstPrev();
+	  prev->moveNext(to, merge);
+	  merge->setPrev(prev);
+	  to->removePrev(prev);
+	  merge->append(to);
+	  to = merge;
+	}
+	// split
+	Node* from = x->node();
+	from->removeNext(from->next());
+        from->append(to);
+	if (PrintSplitting) lprintf("merge expression split: from N%d to N%d\n", from->id(), to->id());
+      }
+    }
+  }
+}
+
+
+void NodeBuilder::allocate_closure(AllocationType type, int nofArgs, methodOop method) {
+  PReg* context;
+  if (type == tos_as_scope) {
+    context = exprStack()->pop()->preg();
+  } else {
+    context = _scope->context();
+  }
+  CompileTimeClosure* closure = new CompileTimeClosure(_scope, method, context, nofArgs);
+  BlockPReg* block = new BlockPReg(_scope, closure, bci(), EpilogueBCI);
+  append(NodeFactory::new_BlockCreateNode(block, copyCurrentExprStack(), NULL));
+  exprStack()->push(new BlockExpr(block, _current), _scope);
+}
+
+
+static methodOopDesc::Block_Info incoming_info(methodOop m) {
+  // this function is here for compatibility reasons only
+  // should go away at some point: block_info replaced
+  // incoming_info, but is only defined for blocks
+  if (m->is_blockMethod()) {
+    return m->block_info();
+  } else {
+    return methodOopDesc::expects_self;
+  }
+}
+
+
+void NodeBuilder::allocate_context(int nofTemps, bool forMethod) {
+  _scope->createContextTemporaries(nofTemps);
+  assert(!scope()->contextInitializer(), "should not already have a contextInitializer");
+  PReg* parent;	// previous context in the context chain
+  if (forMethod) {
+    // method, not block context points to current stack frame
+    parent = new SAPReg(_scope, frameLoc, true, true, PrologueBCI, EpilogueBCI);
+  } else {
+    // context points to previous (incoming) context, if there
+    assert(incoming_info(_scope->method()) != methodOopDesc::expects_self, "fix this");
+    assert(incoming_info(_scope->method()) != methodOopDesc::expects_parameter, "fix this");
+    if (_scope->isTop()) {
+      parent =
+        (incoming_info(_scope->method()) == methodOopDesc::expects_context)
+        ? _scope->self()->preg()		// incoming context is passed in self's location (interpreter invariant); fix this to use different PReg
+        : NULL;					// home should never be used, set to 0 for debugging
+      						// (note: the interpreter sets home always to self)
+    } else {
+      // create new context PReg (_scope->context() is the context passed in by the caller)
+      parent = _scope->context();
+      _scope->setContext(new SAPReg(_scope, PrologueBCI, EpilogueBCI));
+    }
+  }
+  ContextCreateNode* creator = NodeFactory::new_ContextCreateNode(parent, _scope->context(), nofTemps, copyCurrentExprStack());
+  append(creator);
+  // append context initializer and initialize with nil
+  scope()->set_contextInitializer(NodeFactory::new_ContextInitNode(creator));
+  append(scope()->contextInitializer());
+  ConstantExpr* nil = new ConstantExpr(nilObj, new_ConstPReg(_scope, nilObj), NULL);
+  for (int i = 0; i < nofTemps; i++) scope()->contextInitializer()->initialize(i, nil);
+}
+
+
+void NodeBuilder::removeContextCreation() {
+  assert(scope()->contextInitializer() != NULL, "must have context");
+  ContextCreateNode* creator = scope()->contextInitializer()->creator();
+  creator->eliminate(creator->bb(), NULL, true, false);		// delete creator node
+  scope()->contextInitializer()->notifyNoContext();		// let initializer know about it
+}
+
+
+void NodeBuilder::set_self_via_context() {
+  if (Inline) {
+    Scope* s = _scope->parent();
+    if (s->isInlinedScope()) {
+      // self doesn't need to be set -- can directly use the Expr of the enclosing scope
+      assert(_scope->self() == ((InlinedScope*)s)->self(), "should have identical selves");
+      return;
+    }
+  }
+
+  // prevent multiple initializations (see BlockScope::initializeSelf)
+  if (_scope->is_self_initialized()) return;
+  _scope->set_self_initialized();
+
+  // must load self at runtime; first compute home context no
+  int contextNo = _scope->homeContext();
+  if (_scope->allocatesInterpretedContext()) {
+    // correct contextNo: the set_self_via_context works on the incoming context
+    // -> subtract 1 (homeContext() already counts the context allocated in this
+    // method (if there is one)
+    assert(_scope->contextInitializer() != NULL, "should have a _contextInitializer already");
+    contextNo--;
+  }
+
+  // do uplevel access and store into self
+  // Note: this should use the same mechanism as access_temporary(...). However,
+  // access_temporary relies on the fact that a possible local context is already
+  // allocated. Thus, for the time being (without inlining), explicitly generate
+  // the uplevel access node. Note: the incoming context is in the recv location!
+  const int temp0_offs	= 3; // first temporary is 3rd oop in context
+  const int self_no	= 0; // self is always the first entry in the top context, if there
+  PReg* reg = _scope->self()->preg();
+  append(NodeFactory::new_LoadUplevelNode(reg, reg, contextNo, temp0_offs + self_no, NULL));
+}
+
+Expr* NodeBuilder::hack_for_blocks_copied_into_context(Expr* e) {
+  // temporary hack to work around problem of copying blocks into context objects
+  // safe but inefficient (creates blocks unnecessarily if context isn't created)
+  // see note of 6/28   -Urs
+  if (e->isBlockExpr()) {
+    if (WizardMode) lprintf("unnecessarily materializing block -- fix this\n");
+    append(NodeFactory::new_BlockMaterializeNode((BlockPReg*)e->preg(), copyCurrentExprStack()));
+  }
+  return e->shallowCopy(new SAPReg(_scope, PrologueBCI, EpilogueBCI), NULL);
+}
+
+
+void NodeBuilder::copy_self_into_context() {
+  const int self_no = 0; // self is always the first temporary in a context, if there
+  // caution: must create new expr/preg for self in context because the two locations must be different 
+  Expr* self_expr_in_context = hack_for_blocks_copied_into_context(_scope->self());
+  _scope->contextTemporariesAtPut(self_no, self_expr_in_context);
+  scope()->contextInitializer()->initialize(self_no, _scope->self());
+}
+
+
+void NodeBuilder::copy_argument_into_context(int argNo, int no) {
+  // caution: must create new expr/preg for arg in context because the two locations must be different 
+  // i.e., arg is on stack, arg in context may be on heap
+  Expr* arg_expr_in_context = hack_for_blocks_copied_into_context(_scope->argument(argNo));
+  _scope->contextTemporariesAtPut(no, arg_expr_in_context);
+  scope()->contextInitializer()->initialize(no, _scope->argument(argNo));
+}
+
+
+void NodeBuilder::zap_scope() {
+  assert(_scope->isMethodScope(), "blocks cannot be target of a NLR, no zap required");
+  assert(scope()->contextInitializer() != NULL, "should have a context allocated");
+  // no explicit node generated
+}
+
+
+void NodeBuilder::predict_prim_call(primitive_desc* pdesc, int failure_start) {
+  // ignored
+}
+
+
+# endif

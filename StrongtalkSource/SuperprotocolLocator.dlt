@@ -1,0 +1,43 @@
+Delta define: #SuperprotocolLocator as: (
+(Class subclassOf: 'DeltaLocator[ProtocolMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #SuperprotocolLocator) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SuperprotocolLocator) group: 'ast'!
+
+(Delta mirrorFor: #SuperprotocolLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SuperprotocolLocator) methodsFor: 'locator matching' !
+
+
+matchesLocator: l <DeltaLocator[Mirror]> ^ <Boolean>
+	^l matchesSuperprotocolLocator: self!
+
+matchesSuperprotocolLocator: l  <SuperprotocolLocator> ^ <Boolean>
+
+^self matchesDefinitionLocator: l! !
+
+! (Delta mirrorFor: #SuperprotocolLocator) methodsFor: 'accessing' !
+
+
+ast ^ <TypeId | GenericApplicationType>
+
+^(Type forProtocol: self mirror reflectee) superprotocol!
+
+name ^ <Str>
+
+^self definitionName, ' superprotocol'!
+
+parseTree  ^ <ParseTree[TypeExpr]>
+	^DeltaParser new parseType: self source 
+													within: self mirror scope 
+													ifError: [:s <Str> :i <Int> | self error: s].
+	!
+
+source ^ <Str>
+
+^self mirror superprotocolString! !
+

@@ -1,0 +1,22 @@
+Delta define: #Plan as: (
+(Class subclassOf: 'OrderedCollection' instanceVariables: '')) !
+
+(Delta mirrorFor: #Plan) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #Plan) group: 'benchmark'!
+
+(Delta mirrorFor: #Plan)
+comment: 
+'A Plan is an ordered list of constraints to be executed in sequence to resatisfy
+ all currently satisfiable constraints in the face of one or more changing inputs.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Plan) methodsFor: 'execution' !
+
+
+execute
+	"Execute my constraints in order."
+
+	self do: [: c | c execute].! !
+

@@ -1,0 +1,895 @@
+Delta define: #DeltaCompiler as: (
+(Class subclassOf: 'DeltaASTTool' instanceVariables: 'result cgen class optimize scope resultOnTos loadVar withinCascade method blocks errorBlock lastEnclosedBlock ')) !
+
+(Delta mirrorFor: #DeltaCompiler) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaCompiler) group: 'ast'!
+
+(Delta mirrorFor: #DeltaCompiler)
+comment: 
+'Compilation of nodes is directed via a few instance variables:
+
+	resultOnTos			indicates that the result of the node should be on tos
+	loadVar				indicates that a variable should be loaded (rather than tos stored in that variable)
+	withinCascade		indicates that a cascaded send is compiled and that the receivers should be pushed twice
+	scope					the current scope
+	blocks					the set of blocks found in the method/block currently beeing compiled
+
+	If any of these instance variables are to change for a new node, its old state has to be saved and
+	restored after generating the code for that particular node. Saveing and restoring this state is
+	performed via the following methods:
+
+	cascadeTo:
+	resultOf:onTos:
+	resultOf:onTos:load
+	codeFor:within:
+	compileMethodOrBlock:
+	
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaCompiler) classSide methodsFor: 'Unclassified' !
+
+
+forClass: aClass optimize: aBoolean ifError: aBlock
+    "Answers a new compiler working within aClass."
+    ^ self new initializeClass: aClass optimize: aBoolean ifError: aBlock! !
+
+! (Delta mirrorFor: #DeltaCompiler) methodsFor: 'Unclassified' !
+
+
+accessViaAssociation: assoc
+	self assert: [ assoc isAssociationOop ].
+	loadVar
+		ifTrue: [
+			optimize
+				ifTrue: [
+					resultOnTos ifTrue: [ cgen pushGlobalVar: assoc ]
+				]
+				ifFalse: [
+					cgen pushGlobalVar: assoc.
+					resultOnTos ifFalse: [ cgen popTos ]
+				]
+		]
+		ifFalse: [
+			resultOnTos
+				ifTrue: [ cgen storeGlobalVar: assoc ]
+				ifFalse: [ cgen storeAndPopGlobalVar: assoc ]
+		]!
+
+accessViaName: name
+	self assert: [ name isSymbolOop ].
+	loadVar
+		ifTrue: [
+			optimize
+				ifTrue: [
+					resultOnTos ifTrue: [ cgen pushClassVar: name ]
+				]
+				ifFalse: [
+					cgen pushClassVar: name.
+					resultOnTos ifFalse: [ cgen popTos ]
+				]
+		]
+		ifFalse: [
+			resultOnTos
+				ifTrue: [ cgen storeClassVar: name ]
+				ifFalse: [ cgen storeAndPopClassVar: name ]
+		]!
+
+activationVarNode: node
+	self assert: [ node isActivationVarNode ].
+	scope
+		map: node
+
+		toStack: [ :loc |
+			loadVar
+				ifTrue: [
+					optimize
+						ifTrue: [
+							resultOnTos ifTrue: [ cgen pushTemp: loc ]
+						]
+						ifFalse: [
+							cgen pushTemp: loc.
+							resultOnTos ifFalse: [ cgen popTos ]
+						]
+				]
+				ifFalse: [
+					resultOnTos
+						ifTrue: [ cgen storeTemp: loc ]
+						ifFalse: [ cgen storeTempAndPop: loc ]
+				]
+		]
+
+		toFloat: [ :fno |
+			self assert: [ EnableFloatValues ].
+			loadVar
+				ifTrue: [
+					self assert: [ resultOnTos ].
+					cgen pushFloat: fno
+				]
+				ifFalse: [
+					self assert: [ resultOnTos ].
+					cgen storeFloat: fno
+				]
+		]
+
+		toHeap: [ :context :offset |
+			loadVar
+				ifTrue: [
+					optimize
+						ifTrue: [
+							resultOnTos ifTrue: [ cgen pushVar: offset viaContext: context ]
+						]
+						ifFalse: [
+							cgen pushVar: offset viaContext: context.
+							resultOnTos ifFalse: [ cgen popTos ]
+						]
+				]
+				ifFalse: [
+					resultOnTos
+						ifTrue: [ cgen storeVar: offset viaContext: context ]
+						ifFalse: [ cgen storeAndPopVar: offset viaContext: context ]
+				]
+		]!
+
+andOrNode: node
+    | index begin |
+    self assert: [node isAndOrNode].
+
+    self resultOf: node recv onTos: true.
+    index :=
+        node isAnd
+            ifTrue: [cgen and]
+            ifFalse: [cgen or].
+
+    begin := cgen bci.
+    self initializeTemporaries: node arg scope.
+    self codeFor: node arg statements lastResultOnTos: true.
+    node arg scope begin: begin end: cgen bci.
+
+    cgen label: index.
+    resultOnTos ifFalse: [cgen popTos]!
+
+assignmentNode: node
+    self assert: [ node isAssignmentNode ].
+    self resultOf: node expr onTos: true.
+    self resultOf: node var onTos: resultOnTos load: false!
+
+blockNode: node
+	| incoming block |
+	self assert: [node isBlockNode].
+
+	"Compile the block"
+	block := self compileBody: node body selector: nil.
+	blocks add: block.
+
+	"Setup block call site"
+	incoming := node scope incoming.
+	incoming = #context
+		ifTrue: [
+			cgen pushClosureWithContext: block nofArgs: node scope nofParameters
+		]
+		ifFalse: [
+			self assert: [ node scope superVars size <= 1 ].
+			incoming = #nil		ifTrue: [ cgen pushNil ].
+			incoming = #self		ifTrue: [ cgen pushSelf ].
+			incoming = #param	ifTrue: [ self parameterNode: node scope superVars first ].
+			cgen pushClosureWithTos: block nofArgs: node scope nofParameters
+		].
+
+    resultOnTos ifFalse: [cgen popTos]!
+
+cascadeTo: send
+	self assert: [ send isSendNode ].
+	^ self saveExcursion: [ resultOnTos := false. loadVar := true. withinCascade := true. send apply: self ]!
+
+cascadedSendNode: node
+	self assert: [node isCascadedSendNode].
+	self cascadeTo: node prevSend.
+	withinCascade ifTrue: [ cgen pushTos ].
+	self resultOf: node msg onTos: resultOnTos!
+
+classVarNode: node
+	| assoc |
+	self assert: [ node isClassVarNode ].
+	"Assumption: All class variables are introduced via mixins - gri 2/6/96"
+	self accessViaName: (Delta createSymbol: node name)!
+
+codeFor: statements lastResultOnTos: onTos
+    "Answers the receiver. Generates code for an OrderedCollection
+    of statements. Result of last statement may be onTos or not."
+    | i n stat res |
+	self assert: [ statements isCollection ].
+	EnableFloatValues
+		ifTrue: [
+			n := statements size.
+			n > 0
+				ifTrue: [
+					"Discard results of all statements before the last statement"
+					1 to: n - 1 do: [ :i |
+						stat := statements at: i.
+						stat isFloatValue
+							ifTrue: [ self resultOf: stat onTos: true. cgen popFloat ]		"simpler scheme: always produce a result and discard it afterwards - popFloat doesn't cost"
+							ifFalse: [ self resultOf: stat onTos: false ]
+					].
+					"Handle last statement"
+					stat := statements at: n.
+					stat isFloatValue
+						ifTrue: [ self resultOf: stat onTos: true. onTos ifFalse: [ cgen popFloat ] ]
+						ifFalse: [ self resultOf: stat onTos: onTos]
+				]
+				ifFalse: [
+					"Handle empty statements list"
+					onTos ifTrue: [ cgen pushNil ]
+				]
+		]
+		ifFalse: [
+    		"
+			This is the old code - only here in case the new code has broken something.
+			Should go away at some point.
+			"
+    		onTos
+				ifTrue: [i := 1]
+				ifFalse: [i := 0].
+			n := statements size.
+			statements do: [ :stat | res := self resultOf: stat onTos: i = n. i := i + 1].
+			((n = 0) and: [ onTos ]) ifTrue: [ cgen pushNil ].
+			^ res
+		]!
+
+codeFor: statements within: aScope useLongJumps: longJumps
+	"
+	Answers the HCode generated for an OrderedCollection of statements within aScope.
+	"
+	| prevCGen prevScope code |
+	prevCGen := cgen.
+	prevScope := scope.
+
+	cgen :=
+		DeltaHCodeGenerator new
+			  longJumps: longJumps
+			; shortJumpFailureBlock: [
+				"This is a hack - should find a better solution."
+				self deltaHack.
+				scope := prevScope.
+				cgen := prevCGen.
+				^ nil
+			].
+
+	scope := aScope.
+	scope computeMaps.
+
+	"prologue"
+	cgen allocateTemps: scope nofStackVariables floats: scope nofFloatTemporaries floatExprs: scope containsFloatValues.
+
+	scope allocatesContext ifTrue: [
+		scope isMethodScope
+			ifTrue: [ cgen installMethodContext: scope nofHeapTemporaries ]
+			ifFalse: [ cgen installBlockContext: scope nofHeapTemporaries ].
+		scope hasParametersInContext ifTrue: [ self copyParameters: scope heapParameters ]
+	].
+	scope incoming = #context ifTrue: [
+		scope accessesSelf ifTrue: [
+			scope nilOrContextOnly
+				ifTrue: [ cgen setSelfViaContext ]
+				ifFalse: [
+					"
+					setSelfViaContext cannot be used because it follows the context
+					chain until it finds a non-oop - with the more aggressive optimizations
+					turned on, the last element of the context chain may be any oop and
+					not only contexts in which case setSelfViaContext would fail.
+					For the time beeing use a sequence of two instructions - should
+					probably change at some point
+					"
+					cgen pushVar: 0 viaContext: (scope selfDistance).		"get receiver"
+					cgen storeTempAndPop: 0											"store it in self location"
+				]
+		]
+	].
+	
+	"body code"
+	self codeFor: statements lastResultOnTos: scope isBlockScope.
+
+	"make sure there is a return at the end"
+	cgen endsWithReturn ifFalse: [
+		scope isMethodScope
+			ifTrue: [
+				cgen pushSelf.
+				cgen return: scope nofParameters zapContext: scope allocatesContext
+			]
+			ifFalse: [
+				self assert: [scope isBlockScope].
+				"because blocks are invoked via a value... primitive, the receiver has to be popped too!!"
+				cgen return: scope nofParameters + 1 zapContext: false
+			]
+	].
+
+	"epilogue"
+	cgen close.
+	code := cgen code.
+	scope begin: 0 end: cgen bci.
+
+	scope := prevScope.
+	cgen := prevCGen.
+	^ code!
+
+compile: node
+	"
+	Applies self to the node and answers result.
+	apply must conform to general AST tools and
+	therefore can't return a value itself. The value
+	is returned in result. #compile is a wrapper for
+	apply.
+	"
+	node isNil ifFalse: [ 
+		self assert: [node isMethodNode].
+		node apply: self. 
+		^result ]!
+
+compileBody: node selector: sel
+    | prevBlocks code info methodOop |
+    prevBlocks := blocks.
+    blocks := Set new.
+
+	code := self codeFor: node statements within: node scope useLongJumps: false.
+	code isNil ifTrue: [
+		"No code has been generated because long jumps are required"
+		self deltaHack.
+		code := self codeFor: node statements within: node scope useLongJumps: true.
+		"Transcript show: 'compiler info: long jumps generated' ; cr"
+	].
+	self assert: [ code notNil ].
+
+    info := DeltaDebugInfo scopeInfo: node scope computeDebugInfo.
+    methodOop :=
+        Delta
+            createMethod: sel
+            code: code
+            nofArgs: node parameters size
+            flags: (self computeFlags: node scope)
+            debugInfo: info.
+
+    "Set the selector field of all the enclosed blocks of the current method
+    block beeing compiled to its compilation result."
+    blocks do: [ :block | 
+		block enclosingMethod: methodOop.
+		lastEnclosedBlock := block ].
+
+    blocks := prevBlocks.
+    ^ methodOop!
+
+compileDoit: node
+	"
+	Compile the method node as usual, but return the enclosed block method rather
+	than the method itself. The block method will be converted into a block closure and
+	evaluated.
+	"
+	node isNil ifFalse: [ 
+		self assert: [node isMethodNode].
+		node apply: self. 
+		^lastEnclosedBlock ]!
+
+computeFlags: s
+	"
+	Private:
+	Computes the flag set as used by methodOops in the VM
+	(see also: methodOop.hpp).
+	
+	bit(s)		information
+
+	0				containsNLR
+	1				allocatesContext
+	2				mustBeCustomizedToClass
+	3				-
+	4 .. 5		inlining_info/incoming_info
+	"
+	| f n |
+	f := 0.
+
+	"flags"
+	s containsNLR								ifTrue: [ f := f + (1 bitShift: 0) ].
+	s allocatesContext						ifTrue: [ f := f + (1 bitShift: 1) ].
+	s mustBeCustomizedToClass	ifTrue: [ f := f + (1 bitShift: 2) ].
+
+	s isMethodScope
+		ifTrue: [
+			"method info"
+			f := f + ((1) bitShift: 4).			"1 = inline_normal"
+		]
+		ifFalse: [
+			"block info"
+			f := f + ((self incomingAsInt: s incoming) bitShift: 4)
+		].
+	
+	^ f!
+
+copyParameters: params
+	| withSelf offsets |
+	self assert: [ params isCollection ].
+
+	"Find out if receiver is required"
+	withSelf := false.
+	params do: [ :var |
+		scope
+			map: var
+			toStack: [ :loc |
+				self assert: [ loc <= 0 ].
+				loc = 0 ifTrue: [ withSelf := true ]
+			]
+			toFloat: [ :fno | self error: 'should never be called' ]
+			toHeap: [ :a :b | self error: 'should never be called' ]
+	].
+
+	"Compute parameter offsets"
+	offsets := OrderedCollection new.
+	params do: [ :var |
+		scope
+			map: var
+			toStack: [ :loc |
+				self assert: [ loc <= 0 ].
+				loc < 0 ifTrue: [ offsets add: loc negated - 1 ]
+			]
+			toFloat: [ :fno | self error: 'should never be called' ]
+			toHeap: [ :a :b | self error: 'should never be called' ]
+	].
+
+	cgen copyParameters: offsets withRecv: withSelf!
+
+dllCallNode: node
+	self assert: [node isDLLCallNode].
+
+	"create object of result proxy - no version that discards result"
+	self resultOf: node proxy onTos: true. "push class"
+	cgen normalSend: (Delta createSymbol: #new) nofArgs: 0 pushResult: true. "send #new"
+
+	"push DLL call arguments"
+	node msg arguments do: [ :arg | self resultOf: arg onTos: true].
+
+	"DLL call"
+	cgen
+		dll: (Delta createSymbol: node dll)
+		call: (Delta createSymbol: node function)
+		nofArgs: node msg nofArgs
+		async: node async.
+
+	resultOnTos ifFalse: [cgen popTos]!
+
+floatAssignmentNode: node
+	self assert: [ node isFloatAssignmentNode ].
+	self assert: [ EnableFloatValues ].
+    self resultOf: node expr onTos: true.
+    self resultOf: node var onTos: resultOnTos load: false!
+
+floatBinaryOpNode: node
+	self assert: [ node isFloatBinaryOpNode ].
+	self assert: [ EnableFloatValues ].
+	self resultOf: node x onTos: true.
+	self resultOf: node y onTos: true.
+	cgen floatBinaryOp: node f.
+	self assert: [ resultOnTos ]!
+
+floatBinaryOpToOopNode: node
+	self assert: [ node isFloatBinaryOpToOopNode ].
+	self assert: [ EnableFloatValues ].
+	self resultOf: node x onTos: true.
+	self resultOf: node y onTos: true.
+	cgen floatBinaryOpToOop: node f.
+	resultOnTos ifFalse: [ cgen popTos ]!
+
+floatLiteralNode: node
+	| flit |
+	self assert: [ node isFloatLiteralNode ].
+	self assert: [ EnableFloatValues ].
+    flit := Delta createLiteral: node value.
+	cgen pushFloatLiteral: flit.
+	self assert: [ resultOnTos ]!
+
+floatRefNode: node
+	self assert: [ node isFloatRefNode ].
+	self assert: [ EnableFloatValues ].
+    self resultOf: node decl onTos: resultOnTos load: loadVar!
+
+floatUnaryOpNode: node
+	self assert: [ node isFloatUnaryOpNode ].
+	self assert: [ EnableFloatValues ].
+	self resultOf: node x onTos: true.
+	cgen floatUnaryOp: node f.
+	self assert: [ resultOnTos ]!
+
+floatUnaryOpToOopNode: node
+	self assert: [ node isFloatUnaryOpToOopNode ].
+	self assert: [ EnableFloatValues ].
+	self resultOf: node x onTos: true.
+	cgen floatUnaryOpToOop: node f.
+	resultOnTos ifFalse: [ cgen popTos ]!
+
+floatifyNode: node
+	self assert: [ node isFloatifyNode ].
+	self assert: [ EnableFloatValues ].
+	self resultOf: node obj onTos: true.
+	cgen floatify.
+	self assert: [ resultOnTos ]!
+
+globalVarNode: node
+	self assert: [node isGlobalVarNode].
+	self accessViaAssociation: (Delta assocAt: node name)!
+
+ifNode: node
+	| ifPos then else begin flags dist elseBranch genResult elseAdded |
+	self assert: [ node isIfNode ].
+
+	"Some constants..."
+	genResult	:= 1.		"bit 0"
+	elseBranch	:= 2.		"bit 1"
+	elseAdded	:= 4.		"bit 2"
+
+	"Decoder info"
+	flags := 0.
+	dist := 0.
+
+	"Condition"
+	self resultOf: node cond onTos: true.
+
+	"Then branch"
+	ifPos := cgen bci.
+	then := cgen if: node ifTrue.
+	begin := cgen bci.
+	self initializeTemporaries: node then scope.
+	self codeFor: node then statements lastResultOnTos: resultOnTos.
+	node then scope begin: begin end: cgen bci.
+	resultOnTos ifTrue: [
+		flags := flags + genResult
+	].
+
+	"Else branch"
+	node else isNil
+		ifTrue: [
+			resultOnTos
+				ifTrue: [
+					dist := cgen length: [
+						else := cgen jump.
+						flags := flags + elseBranch + elseAdded
+					].
+					cgen label: then.
+					cgen pushLiteral: Delta nilObj.
+					cgen label: else
+				]
+				ifFalse: [ cgen label: then ]
+		]
+		ifFalse: [
+			dist := cgen length: [
+				else := cgen jump.
+				flags := flags + elseBranch
+			].
+			cgen label: then.
+			begin := cgen bci.
+			self initializeTemporaries: node else scope.
+			self codeFor: node else statements lastResultOnTos: resultOnTos.
+			node else scope begin: begin end: cgen bci.
+			cgen label: else
+		].
+
+	"Fix compiler info"
+	cgen at: ifPos fixupFlags: flags jumpInfo: dist!
+
+incomingAsInt: info
+	"
+	Private.
+	Answers the incoming info as an integer -
+	used to compute the methodOop flags.
+	"
+	info = #nil			ifTrue: [ ^ 0 ].
+	info = #self			ifTrue: [ ^ 1 ].
+	info = #param		ifTrue: [ ^ 2 ].
+	info = #context		ifTrue: [ ^ 3 ].
+	self halt!
+
+initializeClass: aClass optimize: aBoolean ifError: aBlock
+	"
+	Private.
+	Initializes compiler. cgen and scope are set/reset via method- and blockNodes.
+	"
+	result := nil.
+	class := aClass.
+	optimize := aBoolean.
+	method := nil.
+	blocks := nil.
+	errorBlock := aBlock.
+	lastEnclosedBlock := nil.!
+
+initializeTemporaries: inlinedScope
+    "
+	Generates code to initialize local temporaries to nil and floats
+	to 0.0. Used to  correctly initialize temporaries of scopes that
+	have been inlined. Answers the receiver.
+	"
+    | tset fset |
+    self assert: [ inlinedScope isInlined ].
+    tset := Set new.
+	fset := Set new.
+    inlinedScope temporaries do: [ :temp |
+    	temp isIntroducedByRewriter ifFalse: [
+			scope
+				map: temp
+				toStack:	[ :loc | self assert: [ loc >= 0 ]. tset add: loc ]
+				toFloat:	[ :fno | self assert: [ fno >= 0 ]. fset add: fno ]
+				toHeap:	[ :level :offset | self error: 'compiler error: should not be called']
+		]
+    ].
+
+    "generate code for ordinary temps"
+    tset size > 0 ifTrue: [
+        cgen pushNil.
+        tset do: [ :loc | cgen storeTemp: loc ].
+        cgen popTos
+    ].
+
+	"generate code for FloatValues"
+	fset size > 0 ifTrue: [
+		cgen pushFloatLiteral: (Delta createLiteral: 0.0).
+		fset do: [ :fno | cgen storeFloat: fno ].
+		cgen popFloat
+	]
+
+    "
+    Note 1: This routine should generate better code - one could introduce a special
+    byte code for the initialization of a sequence of temporaries, or a range of offsets.
+    Note 2: The compiler could give hints to the user where he could speed up code by
+    moving or initializing variables - such hints would have to be turned on/off via a flag.
+    (gri - 15 Jan 95)
+    "!
+
+inlinedBlockNode: node
+	| begin |
+	self assert: [ node isInlinedBlockNode ].
+	begin := cgen bci.
+	self initializeTemporaries: node body scope.
+	self codeFor: node body statements lastResultOnTos: resultOnTos.
+	node body scope begin: begin end: cgen bci.!
+
+instVarNode: node
+    | n |
+    self assert: [ node isInstVarNode ].
+	n := Delta createSymbol: node name.
+
+    loadVar
+        ifTrue: [
+            optimize
+                ifTrue: [
+                    resultOnTos ifTrue: [ cgen pushInstVar: n ]
+                ]
+                ifFalse: [
+                    cgen pushInstVar: n.
+                    resultOnTos ifFalse: [ cgen popTos ]
+                ]
+        ]
+        ifFalse: [
+            resultOnTos
+                ifTrue: [ cgen storeInstVar: n ]
+                ifFalse: [ cgen storeAndPopInstVar: n ]
+        ]!
+
+komment
+	"
+	Compilation of nodes is directed via a few instance variables:
+
+	resultOnTos			indicates that the result of the node should be on tos
+	loadVar				indicates that a variable should be loaded (rather than tos stored in that variable)
+	withinCascade		indicates that a cascaded send is compiled and that the receivers should be pushed twice
+	scope					the current scope
+	blocks					the set of blocks found in the method/block currently beeing compiled
+
+	If any of these instance variables are to change for a new node, its old state has to be saved and
+	restored after generating the code for that particular node. Saveing and restoring this state is
+	performed via the following methods:
+
+	cascadeTo:
+	resultOf:onTos:
+	resultOf:onTos:load
+	codeFor:within:
+	compileMethodOrBlock:
+	"!
+
+literalNode: node
+    | lit |
+    self assert: [node isLiteralNode].
+    lit := Delta createLiteral: node value.
+    optimize
+        ifTrue: [
+            resultOnTos ifTrue: [cgen pushLiteral: lit]
+        ]
+        ifFalse: [
+            cgen pushLiteral: lit.
+            resultOnTos ifFalse: [cgen popTos]
+        ]!
+
+loopNode: node
+	| loopPos loop begin |
+	self assert: [ node isLoopNode ].
+	node prologue isNil ifFalse: [
+		self codeFor: node prologue lastResultOnTos: false
+	].
+
+	"
+	Push nil if the result of the loop is needed. This is
+	done before the loop instead of at the end to please
+	Lars' decoder (an empty stack indicates a statement
+	boundary - and thus a while loop where the result is
+	used would be decoded into two statements instead
+	of one).
+	"
+	resultOnTos ifTrue: [ cgen pushLiteral: Delta nilObj ].
+
+	loopPos := cgen bci.
+	loop := cgen jumpLoop.
+	node body isNil ifFalse: [
+		begin := cgen bci.
+		self initializeTemporaries: node body scope.
+		self codeFor: node body statements lastResultOnTos: false.
+		node body scope begin: begin end: cgen bci
+	].
+	cgen label: loop.
+
+	begin := cgen bci.
+	self initializeTemporaries: node cond scope.
+	self codeFor: node cond statements lastResultOnTos: true.
+	node cond scope begin: begin end: cgen bci.
+	cgen at: loopPos fixupLoopInfo: cgen bci - begin.
+
+	cgen while: node whileTrue jumpTo: loop
+
+	!
+
+messageNode: node
+    | selector |
+    self assert: [node isMessageNode].
+    node args do: [ :arg | self resultOf: arg onTos: true].
+    selector := node selector.
+
+    resultOnTos ifTrue: [
+        "
+        Do these predictions only if the result is used - there are no byte codes for the cases
+        where the result is not used, but these cases are pathological anyway.
+        "
+        selector == #== ifTrue: [cgen sendEqlEql.     ^ self].
+        selector == #~~   ifTrue: [cgen sendNeqNeq. ^ self].
+        (#(+ - * = ~= < <= > >=) includes: selector) ifTrue: [cgen smiSend: selector. ^ self]
+    ].
+
+    cgen normalSend: (Delta createSymbol: selector) nofArgs: node nofArgs pushResult: resultOnTos!
+
+methodNode: node
+    | code info |
+    self assert: [node isMethodNode].
+    self assert: [method isNil].
+    method := node.
+    result := self compileBody: node body selector: node selector.!
+
+normalSendNode: node
+	self assert: [ node isNormalSendNode ].
+	self resultOf: node recv onTos: true.
+	withinCascade ifTrue: [cgen pushTos].
+	self resultOf: node msg onTos: resultOnTos!
+
+parameterNode: node
+	self assert: [ node isParameterNode ].
+	self activationVarNode: node!
+
+poolVarNode: node
+    self assert: [node isPoolVarNode]
+	Transcript show: 'pool variable access - not yet implemented' ; cr.
+	self halt!
+
+predictPrimitiveNode: node
+	self assert: [ node isPredictPrimitiveNode ].
+	cgen predictPrimitive: (Delta createSymbol: node primitive)!
+
+predictSpecialPrimitiveNode: node
+	self assert: [ node isPredictSpecialPrimitiveNode ].
+	cgen predictSpecialPrimitive: node primitive!
+
+primitiveCallNode: node
+	| pos once begin sel |
+	self assert: [ node isPrimitiveCallNode ].
+
+	node receiver isNil ifFalse: [ self resultOf: node receiver onTos: true ].
+	node arguments do: [ :arg | self resultOf: arg onTos: true ].
+
+	sel := Delta createSymbol: node selector.
+	node failureCode isNil
+		ifTrue: [
+			node receiver isNil
+				ifTrue:		[ cgen primitiveSend: sel ]
+				ifFalse:	[ cgen primitiveSendSelf: sel ]
+		]
+		ifFalse: [
+			pos :=
+				node receiver isNil
+					ifTrue:		[ cgen primitiveSendIfFail: sel ]
+					ifFalse:	[ cgen primitiveSendSelfIfFail: sel ].
+
+			"Assign failure code to single parameter"
+			once := true. "used for assertion only"
+			node failureScope parameters do: [ :par |
+				self assert: [ once ].
+				self resultOf: par onTos: false load: false.
+				once := false
+			].
+			begin := cgen bci.
+			self initializeTemporaries: node failureScope.
+			self codeFor: node failureCode lastResultOnTos: true.
+			node failureScope begin: begin end: cgen bci.
+			cgen labelL: pos
+		].
+
+	resultOnTos ifFalse: [ cgen popTos ]!
+
+receiverNode: node
+	self assert: [ node isReceiverNode ].
+	self assert: [ loadVar ].
+	self activationVarNode: node!
+
+refNode: node
+    self assert: [ node isRefNode ].
+    self resultOf: node decl onTos: resultOnTos load: loadVar!
+
+resultOf: node onTos: onTos
+	^ self saveExcursion: [ resultOnTos := onTos. loadVar := true. withinCascade := false. node apply: self ]!
+
+resultOf: node onTos: onTos load: load
+	^ self saveExcursion: [ resultOnTos := onTos. loadVar := load. withinCascade := false. node apply: self ]!
+
+returnInstVarNode: node
+	| n |
+	self assert: [ node isReturnInstVarNode ].
+	n := Delta createSymbol: node var name.
+	cgen returnInstVar: n!
+
+returnStatNode: node
+	self assert: [ node isReturnStatNode ].
+	self resultOf: node expr onTos: true.
+	scope isMethodScope
+		ifTrue: [ cgen return: scope nofParameters zapContext: scope allocatesContext ]
+		ifFalse: [
+			self assert: [ scope incoming = #context ].
+			cgen nonlocalReturn: method scope nofParameters
+		].
+	"
+	Make sure stack is not empty if (statically) a result is expected from this
+	code sequence. This code is never executed anyway and appears infrequently,
+	but is required to preserve the invariant that different pieces of code that are
+	executed either/or do exactly the same stack length change (e.g., the 'then' and
+	'else' branches of inlined ifTrue:ifFalse: sends do the same to the stack, independent
+	of whether one branch contains a return or not - important for static analysis of
+	the byte codes.
+
+	Note: Due to the new (structured) form of the control structures, this might not
+	be necessary anymore. Check this at some point - gri 2/6/96.
+	"
+	resultOnTos ifTrue: [ cgen pushNil ]!
+
+saveExcursion: aBlock
+	| prevResultOnTos prevLoadVar prevWithinCascade |
+	prevResultOnTos := resultOnTos.
+	prevLoadVar := loadVar.
+	prevWithinCascade := withinCascade.
+	^ aBlock ensure: [
+		withinCascade := prevWithinCascade.
+		loadVar := prevLoadVar.
+		resultOnTos := prevResultOnTos
+	]!
+
+selfSendNode: node
+	self assert: [ node isSelfSendNode ].
+	node msg args do: [ :arg | self resultOf: arg onTos: true].
+	cgen selfSend: (Delta createSymbol: node msg selector) pushResult: resultOnTos!
+
+superSendNode: node
+	self assert: [ node isSuperSendNode ].
+	node msg args do: [ :arg | self resultOf: arg onTos: true].
+	cgen superSend: (Delta createSymbol: node msg selector) pushResult: resultOnTos!
+
+temporaryNode: node
+	self assert: [ node isTemporaryNode ].
+	self activationVarNode: node! !
+

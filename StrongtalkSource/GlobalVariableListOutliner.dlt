@@ -1,0 +1,108 @@
+Delta define: #GlobalVariableListOutliner as: (
+(Class subclassOf: 'MirrorListOutliner[GlobalVariableMirror]' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlobalVariableListOutliner) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #GlobalVariableListOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #GlobalVariableListOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'private' !
+
+
+computeWorldList ^ <OrdCltn[GlobalVariableMirror]>
+
+	| result <SortedCollection[GlobalVariableMirror]> ga <GlobalAssociation> |
+
+	result := SortedCollection[GlobalVariableMirror] 
+					sortBlock: [ :m1 <GlobalVariableMirror> :m2 <GlobalVariableMirror> | m1 name <= m2 name ].
+	Smalltalk globalVariablesDo: [ :ga <GlobalAssociation> | 
+																		result add: (GlobalVariableMirror on: ga).
+																		].
+	^result asOrderedCollection!
+
+labelPainter ^<Painter>
+
+	^self globalVariablePainter! !
+
+! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'control' !
+
+
+addNewGlobalVar
+
+	self
+		launchDefinitionDialogWithPainter: self globalVariablePainter
+		title: 'Add new global variable'
+		constructor: [ :name <Symbol> |
+			Smalltalk declareGlobal: name type:  'Object' ]
+!
+
+typecheckAll
+
+self typecheckAction:[
+											self list do:[: m <GlobalVariableMirror> |
+											 					m typecheck.
+																].
+											]
+title: 'Typechecking all global variables'.											
+! !
+
+! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+					name: '&Add new global';
+					action: [ self addNewGlobalVar ] )!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self typecheckingMenu!
+
+menuBarFor: m <GlobalVariableMirror>
+
+	^(super menuBarFor: m)
+		add: (MenuAction new
+						name: 'Re&ferences to global';
+						action: [ self launchReferencesToGlobalName: m name])!
+
+typecheckingMenu ^ <Menu>
+
+^Menu new name: 'Typecheck';
+    add: (MenuAction new
+                  name: 'Typecheck all global variables';
+                  action: [self typecheckAll])
+! !
+
+! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'accessing' !
+
+
+entryName ^ <Str>
+
+	^'global'!
+
+windowTitle ^ <Str>
+
+	^'Globals'! !
+
+! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		(aspect = #addGlobal or: [aspect = #removeGlobal])
+			ifTrue: [	self update ] ]
+! !
+

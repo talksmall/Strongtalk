@@ -1,0 +1,206 @@
+Delta define: #DeltaTupleType as: (
+(Class subclassOf: 'DeltaGenericApplicationType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaTupleType) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #DeltaTupleType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaTupleType)
+comment: 
+'This class represents the type of a read-only n-tuple. It is a predefined type constructor,
+made to look like a generic invocation (it might be possible to write it in a manner analogous
+to literal tuples: #(T1 T2 ... Tn) ; this is arguably more elegant).
+
+This class lazily generates a protocol definition of the appropriate arity if needed.
+When an n-ary tuple protocol is created, it forces the creation of all tuple protocols of
+arity k < n.
+
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaTupleType) classSide methodsFor: 'private' !
+
+
+addAtMessage: n <Int >to: g <GenericProtocolUpdate> ^ <Self>
+    | range <ObjectType>   selector <Str>  msg <MsgSignature>  domain <VarOrdCltn[ObjectType]>   i <Interface>  |
+
+i := g body delta rawPrimaryInterface.
+domain := OrderedCollection[ObjectType]  new.
+
+selector := self atMsgSelector: n.
+range := DeltaTypeId new setId: ('A', n printString) asSymbol; scope: g genericScope.
+msg := DeltaMsgSignature new domain: domain range: range.
+i at: selector  put: msg.!
+
+addCharacteristicMessage: n <Integer> to: g <GenericProtocolUpdate>
+
+self addAtMessage: n to: g!
+
+atMsgSelector: n <Integer> ^ <Symbol>
+
+^('at', n printString) asSymbol.!
+
+createFormals: n <Int > ^ <OrdCltn[TypeFormal]>
+    |
+formals <VarOrdCltn[TypeFormal]> 
+f <TypeFormal> 
+tv <TypeVar> 
+bound <TypeId> 
+|
+
+formals := OrderedCollection[TypeFormal]  new.
+1 to: n do:[:i <Int>  |
+                 bound := DeltaTypeId new setId: #Object; scope: DeltaGlobals.
+                 tv := DeltaTypeVar new name: ('A', i printString) asSymbol bound: bound.
+                 f := DeltaTypeFormal new variance: #covar typeVar: tv.
+                 formals addLast: f
+                 ].
+^formals!
+
+createSuper: n <Integer> ^ <DeltaProtocol>
+
+^n > 1 
+	ifTrue: [self new ]   "Will be completed with actuals later in createTupleType:"
+	ifFalse: [DeltaTypeId new setId: #Object; scope: DeltaGlobals ].!
+
+createTupleBody: n <Int >  ^ <Protocol>
+|
+interface <Interface> 
+delta <Protocol> 
+sp <Protocol> 
+tupleName <Symbol> 
+branded <Boolean> 
+"actuals <OrdCltn[TypeId]>"
+|
+
+
+tupleName := self tupleName: n.
+branded := true.
+interface := (DeltaInterface new initialize).
+
+sp := self createSuper: n.
+delta := DeltaRawProtocol new primaryInterface: interface
+                                                 secondaryInterface: (DeltaInterface new initialize)
+                                                 branded: branded.
+^DeltaProtocolUpdate new name: tupleName
+                                                      superprotocol: sp
+                                                      delta: delta
+                                                      branded: branded
+                                                      subtype: true.!
+
+createTupleType: n <Int > ^ <DeltaGeneric[Protocol]>
+|
+body <Protocol> 
+formals <VarOrdCltn[TypeFormal]> 
+tupleName <Symbol>   
+newGen <GenericProtocolUpdate> 
+|
+
+tupleName := self tupleName: n.
+formals := self createFormals: n.
+body := self createTupleBody: n.
+newGen := DeltaGeneric[Protocol]  new name: tupleName body: body formals: formals.
+self patchSuper: body superprotocol arity: n within: newGen genericScope.
+self addCharacteristicMessage: n to: newGen.
+
+Type addMagicType: newGen.
+^DeltaGlobals at: tupleName put: newGen
+!
+
+patchGenericSuper: sp <GenericApplicationType> arity: n <Integer> within: aScope <Scope>
+
+| actuals <OrdCltn[ObjectType]> |
+
+n > 1 ifTrue: [
+	actuals := OrderedCollection  [ObjectType]  new.
+	1 to: n do:[:i  <Int>   | actuals addLast: (DeltaTypeId new setId:  ('A', i printString) asSymbol; scope: aScope) ].
+	sp
+		apply: (DeltaTypeId new setId: (self publicTupleName: n - 1); scope: DeltaGlobals) 
+		to: (actuals copy removeLast; yourself) ].
+
+!
+
+patchSuper: sp <Protocol> arity: n <Integer> within: aScope <Scope>
+
+self patchGenericSuper: sp arity: n within: aScope!
+
+tupleType: n <Int > ^ <DeltaGeneric>
+
+| tn <Symbol> |
+
+tn := self tupleName: n.
+DeltaGlobals at: tn
+           ifAbsent:[self createTupleType: n].
+^DeltaTypeId new setId: tn; scope: DeltaGlobals.! !
+
+! (Delta mirrorFor: #DeltaTupleType) classSide methodsFor: 'naming' !
+
+
+publicTupleName  ^ <Symbol>
+
+^#Tuple!
+
+publicTupleName: n <Int > ^ <Symbol>
+
+^n = 0 ifTrue:[#Object]
+           ifFalse:[self publicTupleName].!
+
+tupleName: n <Int > ^ <Symbol>
+    ^(n printString, '_argTuple') asSymbol.! !
+
+! (Delta mirrorFor: #DeltaTupleType) methodsFor: 'Unclassified' !
+
+
+apply: tool <DeltaTool > ^ <Self>
+	tool tupleTypeNode: self.!
+
+apply: tid <TypeId >to: tas <OrdCltn[ObjectType] > ^ <Self>
+
+tid name = #Object ifTrue:[^tid].
+super apply: tid to: tas.
+self filteree target: self target.!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a formatted name, which here is the public tuple name and actuals formatted
+		and embedded in brackets"
+		
+	| s <CharOutputStream> |
+	s := String new writeStream.
+	s nextPutAll: self class publicTupleName.
+	s nextPut: $[.
+	self actuals 
+		do: [ :a <ObjectType> | s nextPutAll: (a formattedName: pt) ]
+		andBetweenDo: [ s nextPut: $, ].
+	s nextPut: $].
+	^s contents!
+
+komment
+
+"This class represents the type of a read-only n-tuple. It is a predefined type constructor,
+made to look like a generic invocation (it might be possible to write it in a manner analogous
+to literal tuples: #(T1 T2 ... Tn) ; this is arguably more elegant).
+
+This class lazily generates a protocol definition of the appropriate arity if needed.
+When an n-ary tuple protocol is created, it forces the creation of all tuple protocols of
+arity k < n.
+
+"
+
+!
+
+name ^ <Symbol>
+
+    | argNames <Str>  args <OrdCltn[Type]> |
+
+"We assume a generic type application always has at least one argument."
+
+args := self actuals.
+argNames := ''.
+1 to: args size - 1 do:[ :a <ObjectType>  | argNames := argNames, (args at:a) name, ', '].
+argNames := argNames, args last name.
+^(self class publicTupleName, '[',  argNames, ']') asSymbol!
+
+target ^ <DeltaVar>
+    ^self class tupleType: self actuals size.! !
+

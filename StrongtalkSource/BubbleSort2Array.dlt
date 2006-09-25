@@ -1,0 +1,31 @@
+Delta define: #BubbleSort2Array as: (
+(Class subclassOf: 'Quicksort2Array' instanceVariables: '')) !
+
+(Delta mirrorFor: #BubbleSort2Array) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BubbleSort2Array) group: 'benchmark'!
+
+(Delta mirrorFor: #BubbleSort2Array)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BubbleSort2Array) methodsFor: 'misc' !
+
+
+bubbleSort
+	| j |
+	self size
+		to: 1
+		by: -1
+		do: [:top | 1 to: top - 1 do: [:i | (self at: i)
+					> (self at: i + 1)
+					ifTrue: 
+						[j := self at: i.
+						self at: i put: (self at: i + 1).
+						self at: i + 1 put: j]]]
+!
+
+sort self bubbleSort! !
+

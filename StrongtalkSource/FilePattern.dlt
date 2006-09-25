@@ -1,0 +1,265 @@
+Delta define: #FilePattern as: (
+(Class subclassOf: 'Object' instanceVariables: 'pattern <Str>
+	') abstract) !
+
+(Delta mirrorFor: #FilePattern) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #FilePattern) group: 'base'!
+
+(Delta mirrorFor: #FilePattern)
+comment: 
+'FilePatterns represent a pattern that matches some set of
+files, and are used (along with the subclass FilePath, which
+represents individual files without wildcards) to represent
+all file paths in the system.  For example, (FilePattern for: ''*'')
+is the pattern for all files in the current directory.
+
+The interface for FilePatterns is designed to be
+file-system independent, as well as typesafe. This mostly involves
+an interface that allows you to avoid use of file system dependent
+characters like $/ or $\.  This is done by using operators to
+combine FilePatterns for subpaths, as well as utility creation methods,
+so that you never have to use separators directly. 
+
+For example,  a relative FilePattern that matches ''*.bar'' files in a
+subdirectory ''foo'' can be constructed with 
+	fp  := FilePattern forElements: #(''foo'' ''*.bar'')
+To turn this into an absolute path, you can use the general
+FilePattern concatenation operator '','':
+	FilePath currentDirectory, fp
+
+FilePatterns can be iterated over to examine all matching FilePaths, 
+and have stream operations used to open the files, and other
+methods for deleting, renaming, etc.
+
+Tags:  %User
+ 
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 
+'!
+
+! (Delta mirrorFor: #FilePattern) classSide methodsFor: 'instance creation' !
+
+
+for: pat <Str>  ^<FilePattern>
+
+	^(Platform patternClass patternHasWildcards: pat)
+		ifTrue: [ Platform patternClass new pattern: pat ]
+		ifFalse: [ FilePath for: pat ]!
+
+forAll: patternElements <SeqCltn[FilePattern]>  ^<FilePattern>
+
+	| p <FilePattern> |
+	patternElements do:
+		[ :el <FilePattern> |
+			p isNil
+				ifTrue: [ p := el ]
+				ifFalse: [ p := p, el ]
+		].
+	^p!
+
+forElements: els <SeqCltn[Str]> ^<FilePattern>
+
+	^self forAll: (els collect: 
+						[ :s <Str> | 
+							FilePattern for: s ])! !
+
+! (Delta mirrorFor: #FilePattern) classSide methodsFor: 'restricted' !
+
+
+patternHasWildcards: pat <Str> ^<Boolean>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'accessing' !
+
+
+, extension <FilePattern> ^<EXTENDED>
+	{where EXTENDED is returnType of #extendPattern: message of arg 1}
+
+	"This is how patterns are concatenated.  If both the receiver and the argument
+		are FilePaths, the return type is FilePath, otherwise it is a FilePattern."
+
+	"This guarantee is safe because of the inference clause"
+	^guaranteed <EXTENDED> (extension extendPattern: self)!
+
+baseName ^<FilePattern>
+
+	^self elements last!
+
+containingDirectory ^<FilePattern>
+
+	| e <SeqCltn[FilePattern]> |
+	e := self elements.
+	self assert: [ e size > 1 ].
+	^FilePattern forAll: (e copyFrom: 1 to: e size - 1)!
+
+elements ^<SeqCltn[FilePattern]>
+
+	"Return a collection of the elements that you would get from elementsDo:"
+
+	| els <OrdCltn[FilePattern]> |
+	els := OrderedCollection[FilePattern] new.
+	self elementsDo:
+		[ :el <FilePattern> |
+			els addLast: el. ].
+	^els!
+
+extensions ^<FilePattern>
+	"return a pattern that matches all of the possible existing paths that
+		are one element longer than the receiver.  For a directory filepath,
+		for example, this pattern would match all of the files in the directory"
+
+	self subclassResponsibility!
+
+paths ^<SeqCltn[FilePath]>
+
+	"Return a collection of the elements that you would get from pathsDo:"
+
+	| els <OrdCltn[FilePath]> |
+	els := OrderedCollection[FilePath] new.
+	self pathsDo:
+		[ :el <FilePath> |
+			els addLast: el. ].
+	^els!
+
+pattern ^<Str>
+
+	^pattern! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'restricted-initialization' !
+
+
+pattern: p <Str>
+
+	pattern := p! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'testing' !
+
+
+isAbsolute ^<Boolean>
+
+	self subclassResponsibility!
+
+isPath ^<Boolean>
+	"Returns true if the receive is a FilePath (i.e. contains no wildcards)"
+
+	^false!
+
+isRelative ^<Boolean>
+
+	^self isAbsolute not!
+
+isSyntaxValid ^<Boolean>
+
+	"Make sure the pattern is syntactically valid.
+		Wildcards should not be required"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'iterating' !
+
+
+elementsDo: blk <[FilePattern]>
+	"Evaluate blk with each path element, from the highest to the lowest.
+		For example, on a unix system, a pattern named '/usr/*.txt' would
+		be evaluated with patterns for '/', 'usr', and '*.txt'.  On Win32 platforms,
+		'C:\windows\*.dll' would be: 'C:\', 'windows', and '*.dll'"
+
+	self subclassResponsibility!
+
+pathsDo: blk <[FilePath]>
+
+	"Evaluate blk for each existing path that matches the receiver's pattern.
+		
+		Note: Implicit files for the current directory and/or the
+		containing directory (e.g. '.' and '..') are not listed."
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'restricted-double dispatching' !
+
+
+extendPath: path <FilePath> ^<FilePattern>
+
+	^FilePattern for: (self patternExtending: path)!
+
+extendPattern: pat <FilePattern> ^<FilePattern>
+
+	^FilePattern for: (self patternExtending: pat)! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'control' !
+
+
+delete
+	"This deletes all files and directories that match the specified pattern, with a dynamic failure if
+		unsuccessful."
+
+	self deleteIfFail: [ :err <Symbol> | self error: err ]!
+
+deleteIfFail: blk <[Symbol]>
+	"This deletes all files and directories that match the specified pattern.
+		This should be used with extreme caution.  Directories that are
+		not empty are not deleted.  If any matching files or directories cannot
+		be deleted, blk is evaluated with an error symbol"
+
+	self pathsDo:
+		[ :p <FilePath> |
+			p deletePathIfFail:
+				[ :err <Symbol> |
+					blk value: err.
+					^self		 ] ]!
+
+recursiveDelete
+	"This is a very dangerous method that deletes the files and
+	  directories matching the pattern, and is invoked recursively
+	  on any subfiles or subdirectories.  Be very careful calling this,
+	  as it will destroy arbitrarily large directory trees without confirmation!!
+	  This halts immediately if any error is encountered. "
+
+	self recursiveDeleteIfFail: [ :err <Symbol> | self error: err ]!
+
+recursiveDeleteIfFail: failBlk <[Symbol]>
+	"This is a very dangerous method that deletes the files and
+	  directories matching the pattern, and is invoked recursively
+	  on any subfiles or subdirectories.  Be very careful calling this,
+	  as it will destroy arbitrarily large directory trees without confirmation!!
+	  failBlk is invoked for each file or directory that cannot be deleted"
+
+	self pathsDo:
+		[ :p <FilePath> |
+			p isDirectory
+				ifTrue: [ p extensions pathsDo:
+								[ :sub <FilePath> |
+									sub recursiveDeleteIfFail:
+												[ :err <Symbol> |
+														failBlk value: err ].		].	].
+			p deleteIfFail: [ :err <Symbol> |
+										failBlk value: err  ].		]! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'private' !
+
+
+patternExtending: pat <FilePattern> ^<Str>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'copying-moving' !
+
+
+copyToDir: dirPath <FilePath> ifFail: fail <[ExternalError]>
+
+	self subclassResponsibility!
+
+moveToDir: dirPath <FilePath> ifFail: fail <[ExternalError]>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	super printOn: strm.
+	strm put: $(; print: self pattern; put: $).! !
+

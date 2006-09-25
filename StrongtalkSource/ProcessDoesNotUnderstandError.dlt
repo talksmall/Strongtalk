@@ -1,0 +1,41 @@
+Delta define: #ProcessDoesNotUnderstandError as: (
+(Class subclassOf: 'ProcessError' instanceVariables: 'message <Message>
+	"Message causing lookup error"')) !
+
+(Delta mirrorFor: #ProcessDoesNotUnderstandError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ProcessDoesNotUnderstandError) group: 'base'!
+
+(Delta mirrorFor: #ProcessDoesNotUnderstandError)
+comment: 
+'Process stopped due to lookup error.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProcessDoesNotUnderstandError) classSide methodsFor: 'test' !
+
+
+provoke
+	"A piece of test code provoking this particular error"
+	
+	self thisSelectorIsNotDefined! !
+
+! (Delta mirrorFor: #ProcessDoesNotUnderstandError) methodsFor: 'accessing' !
+
+
+message ^ <Message>
+
+	^message!
+
+message: m <Message>
+
+	message := m!
+
+name ^ <Str>
+
+	^'Lookup error: ', self message selector, ' not understood'!
+
+topFramesIgnored ^ <Int>
+
+	^3! !
+

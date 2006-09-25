@@ -1,0 +1,384 @@
+Delta define: #AddableSequenceableCollection as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'SequenceableCollection[E]' instanceVariables: 'contents <Array[E]>
+startGap <Int>  "number of empty slots at the beginning of contents"
+lastIndex <Int>  "(internal) index of last occupied table entry"
+		') protocols: 'Extensible[E]'; abstract)) !
+
+(Delta mirrorFor: #AddableSequenceableCollection) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #AddableSequenceableCollection) group: 'base'!
+
+(Delta mirrorFor: #AddableSequenceableCollection)
+comment: 
+'AddableSequenceableCollections are SequenceableCollections that support the
+Extensible protocol, and which support indexing in constant time.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) classSide methodsFor: 'constants' !
+
+
+defaultCapacity ^<Int>
+
+	^5! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^self new: self defaultCapacity!
+
+new: capacity <Int> ^<Instance>
+
+	^(super new) initCapacity: capacity!
+
+newWithSize: s <Int> ^<Instance>
+	"create a new instance of size s with all elements undefined (nil).
+		This must be used very carefully, since each element should
+		be set using at:put: before accessing it; failure to do this can
+		lead to hard-to-debug crashes"
+	^(super new) initCapacity: s; size: s!
+
+with: val1 <E> ^<Instance>
+
+	^(self new: 1) add: val1; yourself!
+
+with: val1 <E> with: val2 <E> ^<Instance>
+
+	^(self new: 2) add: val1; add: val2; yourself!
+
+with: val1 <E> with: val2 <E> with: val3 <E> ^<Instance>
+
+	^(self new: 3) add: val1; add: val2; add: val3; yourself!
+
+with: val1 <E> with: val2 <E> with: val3 <E> with: val4 <E> ^<Instance>
+
+	^(self new: 4) add: val1; add: val2; add: val3; add: val4; yourself!
+
+withAll: cltn <Cltn[E]> ^<Instance>
+
+	^(self new: cltn size) addAll: cltn; yourself! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'accessing' !
+
+
+add: e <E> ^<E>
+
+	self subclassResponsibility!
+
+addAll: c <Cltn[E]> ^<Cltn[E]>
+
+	c do: [ :el <E> |
+		self add: el	].
+	^c!
+
+at: i <Int> ^<E>
+
+	| adjusted <Int> |
+	adjusted := i + self startGap.
+	((0 < i) and: [adjusted <= self lastIndex])
+		ifFalse: [ self error: 'invalid index' ].
+	^contents at: adjusted
+!
+
+at: i <Int> ifAbsent: f <[^X def]>  ^<E | X>
+
+	| internal <Int> |
+	internal := i + self startGap.
+	^(self internalIndexIsValid: internal)
+		ifTrue: [ self contents at: internal ]
+		ifFalse: [ f value ]!
+
+includeAll: c <Cltn[E]> ^<Cltn[E]>
+
+	c do: [ :el <E> |
+		self include: el   ].
+	^c!
+
+indexOf: el <Object> ifAbsent: f <[^X def]> ^<Int|X>
+
+	1 to: self size do: [ :i <Int> |
+		(self at: i) = el
+			ifTrue: [ ^i ].	].
+	^f value!
+
+remove: nElements <Int> at: i <Int>
+
+	| el <E> internal <Int> |
+	el := self at: i.
+	internal := self startGap + i.
+	self internalRangeCheck: internal.
+	self internalRangeCheck: (internal + nElements) - 1.
+	internal  to: lastIndex - nElements
+		 do: [ :index <Int> |
+			  self contents at: index put: (self contents at: index + nElements).	].
+	self contents putNilAt: self lastIndex.
+	self lastIndex: self lastIndex - nElements.!
+
+remove: el <E> ifAbsent: f <[^X def]> ^<E|X>
+
+	self removeAt: (self indexOf: el ifAbsent: [^f value]).
+	^el!
+
+removeAll
+
+	self startGap + 1 to: self lastIndex do:
+		[ :i <Int> |
+			self contents putNilAt: i ].
+	self lastIndex: self startGap!
+
+removeAll: c <Cltn[E]> ^<Cltn[E]>
+
+	c do: [ :el <E> |
+		self remove: el   ].
+	^c!
+
+removeAt: index <Int> ^<E>
+
+	| el <E> |
+	el := self at: index.
+	self remove: 1 at: index.
+	^el!
+
+removeEvery: val <E> ^<E>
+
+	^self removeEvery: val startingAt: 1!
+
+removeEvery: val <X def> startingAt: start <Int> ^<X>
+
+	| index <Int> |
+	index := self indexOf: val ifAbsent: [ ^val ].
+	self removeAt: index.
+	^self removeEvery: val startingAt: index!
+
+removeFirst ^<E>
+
+	^self removeAt: 1!
+
+removeLast ^<E>
+
+	^self removeAt: self size!
+
+size ^<Int>
+
+	^self lastIndex - self startGap!
+
+size: s <Int>
+	"Change the size of the ordered collection to s (not the capacity).  This will truncate elements at the end if the current size
+	  is larger.  If the current size is smaller, the added elements will be undefined, in which case it is erroneous to access them until they have been set.
+	  This method should be used very rarely and carefully as a result."
+
+	| delta <Int> newLastIndex <Int> |
+	delta := s - self size.
+	newLastIndex := self lastIndex + delta.
+	delta < 0
+		ifTrue: [ newLastIndex + 1 to: self lastIndex do:
+					[ :i <Int> |
+						self contents putNilAt: i	]].
+	delta > 0
+		ifTrue: [ self needSpaceAtEnd: delta ].
+	self lastIndex: self lastIndex + delta.! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private' !
+
+
+contents ^<Array[E]>
+
+	^contents!
+
+contents: c <Array[E]>
+
+	contents := c!
+
+endGap ^<Int>
+
+	^self contents size - self lastIndex!
+
+firstIndex ^<Int>
+
+	^self startGap + 1!
+
+internalIndexIsValid: index <Int> ^<Boolean>
+
+	^index > self startGap and: [ index <= self lastIndex ]!
+
+internalRangeCheck: index <Int>
+
+	(self internalIndexIsValid: index )
+		ifFalse: [ self error: 'invalid index' ].!
+
+lastIndex ^<Int>
+
+	^lastIndex!
+
+lastIndex: s <Int>
+
+	lastIndex := s!
+
+makeSpace: slots <Int> beforeIndex: i <Int> ^<Int>
+	"assume:  i is a valid internal index.  The index is returned, adjusted
+	 for any resizing of the internal array that may have taken place 
+	 (i.e. the index of the beginning of the created gap is returned)"
+
+	"# before i is (i - startGap) - 1, # after is (lastIndex - i) + 1"
+	^((i - self startGap) - 1) > ((self lastIndex - i) + 1)
+		ifTrue: [ 	"fewer elements after, so move them"
+			      	self needSpaceAtEnd: slots.
+			      	self contents
+					replaceFrom: i + slots
+					to: self lastIndex + slots
+					with: self contents
+					startingAt: i.
+			    	self lastIndex: self lastIndex + slots.
+				i	]
+		ifFalse: [	"fewer elements before, so move them"
+				| newI <Int> |
+				newI := i + (self needSpaceAtStart: slots) - slots.
+				self contents
+					replaceFrom: (self startGap + 1) - slots
+					to:  newI - 1
+					with: self contents
+					startingAt: self startGap + 1.
+				self startGap: self startGap - slots.
+				newI	].!
+
+needSpaceAtEnd: slots <Int>
+
+	slots > self endGap
+		ifTrue: [	self contents:
+							(self contents copyWithSize:
+								self contents size + (slots max: self size)	)]!
+
+needSpaceAtStart: nslots <Int> ^<Int>
+	"Make sure that there are at least nslots of unused capacity at the low
+	 end of contents.  The # of slots added at the beginning is returned."
+
+	^nslots > self startGap
+		ifTrue: [	|	newGap <Int>
+					diff <Int>
+					newContents <AbsoluteArray[E]>
+					sz <Int>
+					newLastIndex <Int> |
+				sz := self size.
+				newGap := nslots max: sz.
+				diff := newGap - self startGap.
+				newLastIndex := newGap + sz.
+				newContents := AbsoluteArray[E] new:
+					self contents size + diff.
+				newContents
+					replaceFrom: newGap + 1
+					to: newLastIndex
+					with: self contents
+					startingAt: self firstIndex.
+				self	startGap: newGap;
+					contents: newContents;
+					lastIndex: newLastIndex.
+				diff	]
+		ifFalse: [ 0 ]!
+
+postCopy
+
+	super postCopy.
+	"We potentially may change the size of the contents array so that this can work for copyWithSize:
+	  as well"
+	self contents: (contents copyWithSize: (contents size max: self lastIndex))!
+
+startGap ^<Int>
+
+	^startGap!
+
+startGap: s <Int>
+
+	startGap := s! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'initialization-private' !
+
+
+initCapacity: c <Int>
+
+	contents := AbsoluteArray[E] new: c.
+	self startGap: 0.
+	self lastIndex: 0.! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'copying' !
+
+
+copyWithSize: s <Int> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	| safeself <SeqCltn[EX]> |
+
+	"This guarantee is safe because the inference clause guarantees
+		that E < EX at each call site"
+	safeself := guaranteed <SeqCltn[EX]> self.
+
+	^(Array[EX] new: s)
+		replaceFrom: 1 to: (s min: self size) with: safeself! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'iterating' !
+
+
+do: f <[E]>
+
+	self startGap + 1 to: self lastIndex do:
+		[ :i <Int> |
+			f value: (self contents at: i)	]! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private-internal accessing' !
+
+
+internalAt: index <Int>  ^<E>
+
+	^self contents at: index!
+
+internalAt: index <Int> put: el <E>  ^<E>
+
+	^self contents at: index put: el!
+
+internalOffset ^<Int>
+
+	^self startGap! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'withable' !
+
+
+with: el <E>
+
+	self subclassResponsibility!
+
+withAll: els <Cltn[E]>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'adding/removing' !
+
+
+include: e <E> ^<E>
+
+	^self include: e ifNew: []!
+
+include: e <E> ifNew: blk <[]> ^<E>
+
+	(self includes: e)
+		ifFalse: [	self add: e.
+						blk value. ].
+	^e!
+
+remove: el <E> ^<E>
+
+	^self remove: el
+		ifAbsent: [ self error: 'element not found' ]!
+
+removeAllSuchThat: test <[E,^Boolean]> 
+
+	| i <Int> |
+	i := 1.
+	[ i <= self size ]
+		whileTrue:
+			[	(test value: (self at: i))
+					ifTrue: [ self removeAt: i ]
+					ifFalse: [ i := i + 1 ]	]! !
+

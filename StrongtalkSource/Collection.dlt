@@ -1,0 +1,323 @@
+Delta define: #Collection as: (
+Generic forAll: '(E covar) ' body: ((Class subclassOf: 'Object' instanceVariables: '') abstract)) !
+
+(Delta mirrorFor: #Collection) revision: '$Revision: 1.12 $'!
+
+(Delta mirrorFor: #Collection) group: 'base'!
+
+(Delta mirrorFor: #Collection)
+comment: 
+'A Collection[E] is an object that represents a group of objects of type E.
+
+The only message that must be implemented by subclasses is the #do: message.
+All other Collection messages are then defined in terms of #do:.
+
+%responsibility size
+    Subclasses usually reimplement the #size message if possible, since the
+	implementation provided in this class is very inefficient.
+%responsibility collect:
+    Subclasses may wish to consider overriding the #collect: (and #select: and #reject:)
+    messages to specialize their return
+    types to match the receiver type more closely.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Collection) methodsFor: 'testing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [ self class = other class
+				and: [ "We have the same class, so we can guarantee other is a collection"
+					  self hasSameElementsAs: (guaranteed <Cltn[Object]> other)   ]]!
+
+hasSameElementsAs: other <Cltn[Object]>  ^<Boolean>
+	"Like =, but doesn't care whether the receiver and other are the same kind of collection or not"
+
+	^self size = other size  and:
+		[ self asBag = other asBag ]!
+
+includes: o <Object> ^<Boolean>
+
+	self do: [ :e <E> | e = o ifTrue: [ ^true ] ].
+	^false!
+
+isEmpty ^<Boolean>
+
+	^self size = 0! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	| count <Int> first <Boolean> |
+	strm	nextPutAll: self class name;
+			nextPut: $(.
+	count := 0.
+	first := true.
+	self printElementsDo:
+		[ :el <Object> |
+			first
+				ifTrue: [ first := false ]
+				ifFalse: [ strm space ].
+			el printOn: strm.
+			count := count + 1.
+			count >= self maxPrintElements
+				ifTrue: [ strm nextPut: $<; print: self size - count; nextPutAll: ' more elements>)'.
+						^self	].	].
+	strm nextPut: $).! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'accessing' !
+
+
+anElement ^<E>
+	"Return an arbitrary element of the collection, or cause an error if the collection is empty.
+	This is almost never called; its most common usage
+	 is to provide a convenient message signature for inference clauses to get the element
+	type of a collection from, statically."
+
+	^self detect: [ :e <E> | true ]!
+
+hash ^<Int>
+
+	| count <Int> |
+	count := 0.
+	^self inject: 0 into:
+		[ :hash <Int> :el <E> |
+			| newHash <Int> |
+			newHash := hash bitXor: el hash.
+			count := count + 1.
+			count > 2
+				ifTrue: [ ^newHash ].
+			newHash ]!
+
+occurrencesOf: o <Object> ^<Int>
+
+	| c <Int> |
+	c := 0.
+	self do: [ :e <E> | e = o ifTrue:[ c := c + 1 ]].
+	^c!
+
+size ^<Integer>
+
+	| c <Int> |
+	c := 0.
+	self do: [ :e <E> | c := c + 1 ].
+	^c!
+
+species ^<Collection[E] class>
+
+	^Set[E]! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'iterating' !
+
+
+collect: map <[E, ^R def]> ^<Cltn[R]>
+
+	^self collectUsingAdd: map!
+
+detect: predicate <[E,^Boolean]> ^<E>
+
+	^self detect: predicate ifNone: [ self error: 'No matching element detected' ]!
+
+detect: predicate <[E,^Boolean]> ifNone: fail <[^X def]> ^<E|X>
+
+	self do: [ :e <E> |
+				(predicate value: e)
+					ifTrue: [ ^e ]	].
+	^fail value!
+
+do: f <[E]>
+
+	self subclassResponsibility!
+
+inject: val <X> into: f <[X def, E,^X]>  ^<X>
+
+	| v <X> |
+	v := val.
+	self do: [ :e <E> |	v := f value: v value: e ].
+	^v!
+
+reduce: reduceFn <[RE def,RE,^RE]>  ^<RE>
+			{where CONSTRAINER <RE> is returnType of #anElement message of receiverType}
+
+	"Like reduce:ifEmpty: except that it is a dynamic error to send this to an empty collection"
+
+	^(guaranteed <Cltn[RE]> self)
+		reduce: reduceFn ifEmpty: [ self error: 'Cannot reduce an empty collection' ]!
+
+reduce: reduceFn <[RE def,RE,^RE]> ifEmpty: onEmpty <[^X def]>  ^<RE | X>
+			{where CONSTRAINER <RE> is returnType of #anElement message of receiverType}
+
+	"Reduce is similar to inject except that the first element is used as the injected
+	  element for the rest of the collection.  It is often handier than inject.  For example:
+		(#(1 2 3 4) reduce: [ :a <Int> :b <Int> |   a + b ]) sums a collection of numbers."
+
+	"esoteric typing %note: We need to ensure that E is a subtype of RE (the argument type for the reduction
+		function), but since that would require a
+		supertype constraint (which neither we nor anyone else support, we accomplish the same
+	    thing indirectly by introducing an unreferenced type 
+		variable CONSTRAINER that is inferred to be E at the call site, and then constraining it with a bound
+		of RE.  This will prevent any call where E > RE from typechecking.  However, since the
+		typesystem doesn't 'know' that, we have to tell it that with a guarantee in the method body.
+		Because of the CONSTRAINER, we know that the guarantee is true for all calls that typecheck.
+		Of course, this is tricky, but at least we can express it, and in a way that hides the guarantee from
+		callers!!"
+
+	| current <RE> |
+	self do:
+		[ :el <E> |
+			| rel <RE> |
+			rel := guaranteed <RE> el.
+			current isNil
+				ifTrue: [ current := rel ]
+				ifFalse: [ current := reduceFn value: current value: rel ]	].
+	^current isNil
+		ifFalse: [ current ]
+		ifTrue: [ onEmpty value ]!
+
+reject: predicate <[E,^Boolean]> ^<SeqCltn[E]>
+
+	^self select: [ :e <E> | (predicate value: e) not ]!
+
+select: predicate <[E,^Boolean]> ^<SeqCltn[E]>
+
+	"%todo: fix this so that for strings, arrays, etc. it returns the original collection type, even if it isn't extensible.
+	  Fix the typing down in Str etc to return more specific types."
+
+	| c <OrdCltn[E]> |
+	"See #newForCollectUsingAdd: for explanation of why the guarantee is safe"
+	"Please replace 'self size' with 'OrderedCollection[E] defaultCapacity'"
+	c :=  guaranteed <OrdCltn[E]> (self newForCollectUsingAdd: self size).
+	self do: [ :e <E> |
+		(predicate value: e)
+			ifTrue: [ c add: e ].	].
+	^c! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'converting' !
+
+
+asArray ^<Array[EX]>
+			{where EX is returnType of #anElement message of receiverType }
+	"Return a new array holding the elements of this collection.  The element type of the array is whatever the
+	 static type of the receiver is at the point of send."
+
+	| a <Array[EX]> i <Int> |
+	a := Array[EX] new: self size.
+	i := 1.
+	(guaranteed <Collection[EX]> self)
+		do: [ :el <EX> |
+					a at: i put: el.
+					i := i + 1. ].
+	^a!
+
+asBag ^<Bag[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+	"Return a new Bag holding the elements of this collection.  The element type of the bag is whatever the
+	 static type of the receiver is at the point of send."
+
+	^Bag[EX] withAll: (guaranteed <Cltn[EX]> self)!
+
+asOrderedCollection ^<OrdCltn[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+	"Return a new OrdCltn holding the elements of this collection.  The element type of the ordered collection
+       is whatever the static type of the receiver is at the point of send."
+
+	^OrderedCollection[EX] withAll: (guaranteed <Cltn[EX]> self)!
+
+asSet ^<Extensible[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+	"Return a new extensible collection holding the elements of this collection.  The element type of the set
+       is whatever the static type of the receiver is at the point of send."
+
+	^Set[EX] withAll: (guaranteed <Cltn[EX]> self)!
+
+asSortedCollection ^<SeqCltn[Object]>
+	"This message is NOT typesafe, and should only be used for compatibility reasons, since there is
+ 	 no way of knowing whether the elements of this collection support #< or not.  You should use
+	 #asSortedCollection: instead, if possible"
+
+	^SortedCollection[Object] withAll: self!
+
+asSortedCollection: sortPredicate <[E,EX, ^Boolean]>	^<SortedCollection[EX]>
+			{ where EX is  arg 1 of #value:value: message of arg 1 }
+
+	"Return a new sorted collection ordered by the given sortPredicate.  Note that Magnitude
+	 supports the defaultSort message for convenience, so that for example if you have a collection
+	 of strings strc, you can say:
+		strc asSortedCollection: String defaultSort
+	"
+
+	"This is typesafe despite the guarantee because the inference clause requires that E = EX at the
+          call site"
+	^(SortedCollection[EX] new: self size sortBlock: (guaranteed <[EX,EX,^Boolean]> sortPredicate))
+		addAll: (guaranteed <Cltn[EX]> self); yourself! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'private' !
+
+
+collectUsingAdd: map <[E, ^R def]> ^<Cltn[R]>
+
+	| c <Extensible[R]> |
+	"See #newForCollect: for explanation of why the guarantee is safe"
+	c := (guaranteed <Extensible[R]> (self newForCollectUsingAdd: self size)).
+	self do: [ :e <E> | c add: (map value: e) ].
+	^c!
+
+maxPrintElements ^<Int>
+
+	^100!
+
+newForCollectUsingAdd: size <Int> ^<OrdCltn[Object]>
+
+	"Return a new extensible collection that is as closely related to the receiver's class as possible.  The
+	 returned collection must be unaliased and empty, so it is safe for the caller to guarantee that the type
+	 variable is of a more specific type"
+
+	^OrderedCollection[Object] new: size!
+
+printElementsDo: f <[Object]>
+	"Evaluate the block with all the elements that should be shown as the contents
+	  in the printstring.  This provides a hook for things like dictionaries, which want
+	  to show their associations, not their values"
+
+	self do: f! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'virtual operations' !
+
+
+virtualCollect: blk <[E, ^X def]> ^<Object>
+
+	^VirtualCollector[X] on: self map: blk!
+
+virtualSelect: blk <[E, ^Boolean]> ^<Object>
+
+	^self virtualSelectorClass on: self filter: blk!
+
+virtualSelectorClass ^ <Object>
+
+	^VirtualSelector[E] ! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'utility' !
+
+
+do: blk <[E]> andBetweenDo: betweenBlk <[]>
+	"Useful when you need to do something 'between' elements (i.e. not before the first one, and not after the last one).
+		blk is evaluated the same way as for #do:, but betweenBlk is evaluated once between each pair of elements."
+
+	| firstTime <Boolean> |
+	firstTime := true.
+	self do:
+		[ :el <E> |
+			firstTime
+				ifTrue: [ firstTime := false ]
+				ifFalse: [	betweenBlk value ].
+			blk value: el.
+		]! !
+

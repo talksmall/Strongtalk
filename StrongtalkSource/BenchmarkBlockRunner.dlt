@@ -1,0 +1,39 @@
+Delta define: #BenchmarkBlockRunner as: (
+(Class subclassOf: 'BenchmarkRunner' instanceVariables: '')) !
+
+(Delta mirrorFor: #BenchmarkBlockRunner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BenchmarkBlockRunner) group: 'benchmark'!
+
+(Delta mirrorFor: #BenchmarkBlockRunner)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BenchmarkBlockRunner) methodsFor: 'evaluate' !
+
+
+evaluate: bm
+	|a b| 
+	self showName: bm name.
+	a := Debug numberOfBlockAllocations.
+	b := Debug numberOfContextAllocations.
+
+	bm value.
+
+	Transcript
+					show:  (Debug numberOfBlockAllocations - a) printString; tab
+				;	show:  (Debug numberOfContextAllocations - b) printString; cr.
+
+	! !
+
+! (Delta mirrorFor: #BenchmarkBlockRunner) methodsFor: 'printing' !
+
+
+format
+	^'#block allocated, #context allocated'!
+
+name
+	^'Block allocation'! !
+

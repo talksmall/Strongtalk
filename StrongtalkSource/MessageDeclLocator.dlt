@@ -1,0 +1,19 @@
+Delta define: #MessageDeclLocator as: (
+(Class subclassOf: 'MethodLocator' instanceVariables: '')) !
+
+(Delta mirrorFor: #MessageDeclLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #MessageDeclLocator) group: 'ast'!
+
+(Delta mirrorFor: #MessageDeclLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MessageDeclLocator) methodsFor: 'accessing' !
+
+
+parseTree  ^ <ParseTree>
+	^DeltaParser new parseMessageDeclaration: self source within: self mirror scope ifError: [self halt].
+	! !
+

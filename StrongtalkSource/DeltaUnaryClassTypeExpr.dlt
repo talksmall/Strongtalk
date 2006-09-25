@@ -1,0 +1,110 @@
+Delta define: #DeltaUnaryClassTypeExpr as: (
+(Class subclassOf: 'DeltaUnaryTypeExpr' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaUnaryClassTypeExpr) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaUnaryClassTypeExpr) group: 'ast'!
+
+(Delta mirrorFor: #DeltaUnaryClassTypeExpr)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaUnaryClassTypeExpr) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^self asSide abstract!
+
+asMixinSide ^ <MixinSide>
+    ^self selector = #class
+    ifTrue:[self target asMixinSide dual]
+    ifFalse:[self target asMixinSide].!
+
+asSide ^ <Side>
+    ^self selector = #class
+    ifTrue:[self target asSide dual]
+    ifFalse:[self target asSide].!
+
+branded ^ <Boolean>
+    ^self asSide branded!
+
+dualClassType ^ <ClassType>
+    ^self selector = #class
+   ifTrue:[self target]
+   ifFalse:[self target dualClassType]!
+
+extensionsAreSubtypes ^ <Boolean>
+    ^self asSide extensionsAreSubtypes!
+
+firstClassRepType  ^ <ObjectType>
+
+   ^self asSide firstClassRepType!
+
+functions ^ <Dict[Symbol,Method|Message]>
+    ^self asSide functions!
+
+heirScope ^ <Scope>
+    ^self asSide heirScope!
+
+implementedPrivateProtocol ^ <Protocol>
+    ^self asSide implementedPrivateProtocol!
+
+localScope ^ <Scope>
+    ^self asSide localScope!
+
+messages ^ <Dict[Symbol,Message]>
+    ^self asSide messages!
+
+methods ^ <Dict[Symbol,Method]>
+    ^self asSide methods!
+
+monotonic ^ <Boolean>
+    ^self asSide monotonic!
+
+privateFunctions ^ <Dict[Symbol,Method|Message]>
+    ^self asSide privateFunctions!
+
+privateMessages ^ <Dict[Symbol,Message]>
+    ^self asSide privateMessages!
+
+privateMethods ^ <Dict[Symbol,Method]>
+    ^self asSide privateMethods!
+
+privateProtocol ^ <Protocol>
+    ^self asSide privateProtocol!
+
+publicFunctions ^ <Dict[Symbol,Method|Message]>
+    ^self asSide publicFunctions!
+
+publicMessages ^ <Dict[Symbol,Message]>
+    ^self asSide publicMessages!
+
+publicMethods ^ <Dict[Symbol,Method]>
+    ^self asSide publicMethods!
+
+selfClassTV ^ <TypeVar>
+    ^self asSide selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self asSide selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self asSide selfPublicTV!
+
+selfTV ^ <TypeVar>
+    ^self asSide selfPublicTV!
+
+subtype ^ <Boolean>
+    ^self asSide subtype!
+
+supportedProtocol ^ <Protocol>
+    ^self asSide supportedProtocol!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+    ^self asSide unimplementedMessages!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+    ^self asSide varDecls! !
+

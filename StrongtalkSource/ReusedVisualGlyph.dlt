@@ -1,0 +1,122 @@
+Delta define: #ReusedVisualGlyph as: (
+(Class subclassOf: 'VisualGlyph' instanceVariables: 'xPosition <Int>
+yPosition <Int>
+		"These are kept in separate ivars for performance reasons"
+	')) !
+
+(Delta mirrorFor: #ReusedVisualGlyph) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ReusedVisualGlyph) group: 'ui'!
+
+(Delta mirrorFor: #ReusedVisualGlyph)
+comment: 
+'This is a visual glyph that is cached and used over and over for different
+glyphs on the fly.  It has special inst vars and protocol for extremely
+rapid switching of the glyph information.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
+
+! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'initialization' !
+
+
+cramGlyph: sub <Glyph>
+id: myd <Int>
+xPosition: x <Int>
+
+	glyph := sub.
+	id := myd.
+	self xPosition: x.!
+
+cramGlyph: sub <Glyph>
+id: myd <Int>
+yPosition: y <Int>
+
+	glyph := sub.
+	id := myd.
+	self yPosition: y.!
+
+cramParent: p <VisualParent>
+
+	parent := p! !
+
+! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'accessing' !
+
+
+layoutStatus ^<Int>
+
+	^self glyph layoutStatus!
+
+noParent
+
+	"We override this because the inherited version nils the parent, which a reused visualglyph
+		doesn't want to do"
+	self glyph noParentFor: self.!
+
+position ^<Point>
+
+	^self xPosition @ self yPosition!
+
+prefsStatus ^<Int>
+
+	^self glyph prefsStatus!
+
+session: s <Session>
+
+	session := s.
+	self glyph session: s.!
+
+setPosition: p <Point>
+
+	self	xPosition: p x;
+			yPosition: p y.
+	super setPosition: p.
+!
+
+xPosition ^<Int>
+
+	^xPosition!
+
+xPosition: x <Int>
+
+	position := nil.
+	xPosition := x.!
+
+yPosition ^<Int>
+
+	^yPosition!
+
+yPosition: y <Int>
+
+	position := nil.
+	yPosition := y.! !
+
+! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'private' !
+
+
+layout
+
+	| pos <Point> |
+
+	"%opt use the inst var value if possible to avoid constructing an extra point"
+	position isNil
+		ifFalse: [ pos := position ]
+		ifTrue: [ pos := self position ].
+	
+	"MUST access the inst var directly below, since the method gets it from the
+		glyph, which is circular"
+	self glyph allocation: allocation at: pos for: self.! !
+
+! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'geometry-local' !
+
+
+allocation: a <Region> at: pos <Point>
+	
+	self setPosition: pos.
+	allocation := a.
+
+	self layout.
+"%remove: why did we put the following in?
+	self layoutStatus ~= Visual valid
+		ifTrue: [ self layout. ]"! !
+

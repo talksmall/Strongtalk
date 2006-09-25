@@ -1,0 +1,415 @@
+Delta define: #VisualWithNativeWindow as: (
+Generic forAll: '(V covar) ' body: ((Class subclassOf: 'CompositeVisual[Visual] delta |> Win32Control' instanceVariables: 'part <V>
+scratchRECT <RECT>
+deferredPaintRegion <Rect>
+haveErased <Boolean>
+			') classVariables: 'Win32ClassName <CString>
+	')) !
+
+(Delta mirrorFor: #VisualWithNativeWindow) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #VisualWithNativeWindow) group: 'ui'!
+
+(Delta mirrorFor: #VisualWithNativeWindow)
+comment: 
+'A visual that has a native window associated with it.
+The visual is assumed to have a single child.
+Subclasses must implement the method #layout to set the child''s allocation.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 
+'!
+
+! (Delta mirrorFor: #VisualWithNativeWindow) classSide methodsFor: 'private' !
+
+
+registerWindowClass
+
+	|	wcls <WNDCLASS>
+		proc <APICallBack> |
+	wcls := WNDCLASS new allocateZeroed.
+
+	"We start with the default window proc and let the creation routine
+ 	  patch in the normal Win32Control window proc"
+	proc := Window defaultWndProc.
+
+	wcls style: (("(						Win32 CS_HREDRAW
+						externalBitOr: Win32 CS_VREDRAW)
+						externalBitOr:" Win32 CS_DBLCLKS)
+						externalBitOr: Win32 CS_OWNDC);
+			lpfnWndProc: proc;
+			cbClsExtra: 0; 
+			cbWndExtra: 0;
+			hInstance: self hInstance;
+			hIcon: Win32 NULL;
+			hCursor: Window defaultWin32Cursor;
+			hbrBackground: Win32 NULL;
+			lpszMenuName: Win32 NULL;
+			lpszClassName: self win32ClassName.
+
+	{{<user ExternalProxy RegisterClassA> class: wcls}} asBoolean
+		ifFalse: [ self error: 'Cannot register window class' ].
+
+	wcls free.!
+
+win32ClassName ^<CString>
+
+	Win32ClassName isNil
+		ifTrue: [ Win32Control critical:
+						[	Win32ClassName isNil
+								ifTrue: [	Win32ClassName := CString for: 'VisualWithNativeWindow'.
+												self registerWindowClass.	] ] ].
+	^Win32ClassName				! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) classSide methodsFor: 'instance creation' !
+
+
+for: v <Visual> ^<Instance>
+
+	^self new part: v! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'private' !
+
+
+beforeSetFocus
+
+	"We don't call the inherited version because it assumes that it must mean that IT is the focus;
+		whereas for us it might be a subvisual that is getting the focus"
+!
+
+buildWin32Handle
+	"Must not be sent before layout because allocation & position (and of parents) must exist"
+
+	| pos <Point> container <Window|Win32Control> |
+
+	pos := self nativePosition.
+	container := self parent nativeWindow.
+	win32Handle := {{<user ExternalProxy CreateWindowExA>
+		extendedStyle: self extendedWin32Style
+		className: self actualClass win32ClassName
+		caption: Win32 NULL
+		style: self win32Style
+		xpos: pos x asInteger
+		ypos: pos y asInteger
+		xsize: self allocation enclosedRect width asInteger
+		ysize: self allocation enclosedRect height asInteger
+		parent: container win32Handle
+        id: self controlId
+		program: container hInstance
+		params: Win32 NULL }}.!
+
+canBeFocusCandidate ^<Boolean>
+
+	^false!
+
+displayVisualIfCanOn: canvas <Canvas>
+
+	self session visualCriticalWouldBlock
+		ifTrue: [ self recordDeferredPaint: canvas clippingRect ]
+		ifFalse: [	self paintOccuring.
+						canvas atOffset: self allocation enclosingRect origin negated
+									do: [ self localDisplayOn: canvas ].
+					 ]!
+
+handleMouseEvent: type <Symbol> at: loc <Point> ^<Boolean>
+
+	^(super handleMouseEvent: type at: loc)
+		or: [	"%hack: Look for a context menu, so that popupmenu handlers work
+							even for native windows"
+				type = #secondaryButtonUp
+					and: [ self displayUpwardPopUpMenuAt: loc ] ]!
+
+haveErased ^<Boolean>
+
+	^haveErased!
+
+haveErased: f <Boolean>
+
+	haveErased := f!
+
+win32Style ^<ExternalData>
+
+	^(super win32Style
+		externalBitOr: Win32 WS_CLIPCHILDREN)
+		externalBitOr: Win32 WS_CLIPSIBLINGS! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'methods copied from Window' !
+
+
+beginPaint: hwnd <HWND>  paintStructure: ps <PAINTSTRUCT>  ^<HDC>
+
+	^{{<user HDC BeginPaint> arg: hwnd arg: ps}}!
+
+deferredPaintRegion ^<Rect>
+
+	^deferredPaintRegion!
+
+deferredPaintRegion: r <Rect>
+
+	deferredPaintRegion := r!
+
+display
+
+	| subs <Cltn[Win32Control]> |
+	self withCanvasDo:
+			[ :can <Canvas> |
+				| paintBlk <[^Object]> |	
+				paintBlk := 
+					[	self paintBackgroundOn: can.
+						self displayVisualIfCanOn: can.
+						can shallowFlush.  ].
+				self showTimes
+					ifTrue: [  Transcript show: 'paint: '; print: paintBlk time; cr. ]
+					ifFalse: [ paintBlk value ].
+				can hasSubwindowsToDisplay
+					ifTrue: [ subs := can takeSubwindowsToDisplay ].
+			].
+	subs notNil
+		ifTrue: [ subs do:
+							[ :sub <Win32Control> |
+								"%hack: the handle test should not be 
+									necessary; something is screwed up"
+								sub hasWin32Handle
+									ifTrue: [	sub sendMessage: Win32 WM_PAINT
+														wparam: 0 lparam: 0.
+												].
+							].
+					 ]!
+
+displayNowIfInvalid
+	"Redraw any invalid areas before proceeded"
+
+	self display!
+
+endPaint: hwnd <HWND>  paintStructure: ps <PAINTSTRUCT>
+
+	^{{<user ExternalProxy EndPaint> arg: hwnd arg: ps}}!
+
+invalidate: r <Region>
+
+	self registerPaintTime.
+	(self layoutStatus = Visual valid and: [ self hasWin32Handle ])
+		ifTrue: [	| rect <Rect> |
+						rect := r enclosingRect relativeTo: self allocation origin.
+						(self scratchRECT)
+							left: rect left asInteger;
+							right: rect right asInteger;
+							top: rect top asInteger;
+							bottom: rect bottom asInteger.
+						{{<user ExternalProxy InvalidateRect>
+							hwnd: self win32Handle
+							RECT: self scratchRECT
+							erase: false asExternalData}}.	]!
+
+paintBackgroundOn: can <Canvas>
+
+	can withPainter: self backgroundPainter do:
+		[ can displayFilledRectangle:
+			(Point origin corner: self allocation enclosingRect extent) ].!
+
+positionInContainingNativeWindowOf: child <Layout> ^<Point>
+
+	"We subtract because the origin is nonpositive"
+	^child position - self allocation enclosingRect origin!
+
+processDeferredPainting
+
+	self deferredPaintRegion notNil
+		ifTrue: [	self invalidate: self deferredPaintRegion.
+						self deferredPaintRegion: nil.		]!
+
+recordDeferredPaint: region <Rect> 
+
+	self deferredPaintRegion:
+		(self deferredPaintRegion isNil
+			ifTrue: [ region ]
+			ifFalse: [ self deferredPaintRegion merge: region ]
+		)!
+
+scratchRECT ^<RECT>
+
+	^scratchRECT! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'modified methods from Window' !
+
+
+currentSize ^<Point>
+
+	^self allocation enclosingRect extent!
+
+eraseBackgroundFor: hwnd <HWND>
+msgCode: msgCode <ExternalData>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	| can <Canvas> |
+	
+	^1.
+	
+	"Don't paint background when a paint is pending to reduce flickering"
+	self paintPending
+		ifTrue: [ ^0 ].
+
+	"Use a critical region because the window's thread might be drawing"
+	self critical:
+		[	can := HDC forProxy: wParam asExternalProxy.
+			can initialize.
+
+			can withPainter: self backgroundPainter do:
+					[ can displayFilledRectangle:
+						(0@0 corner: self allocation enclosingRect extent) ].  ].
+	^1!
+
+popUpMenuIfAbsent: f <[^X def]> ^<Menu | X>
+
+	^self parent popUpMenuIfAbsent: f! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	scratchRECT := RECT new allocate.
+	self haveErased: false.! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'control' !
+
+
+release
+
+	super release.
+	self scratchRECT free.! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'accessing' !
+
+
+backgroundPainter ^<Painter>
+
+	backgroundPainter isNil
+		ifTrue: [  backgroundPainter := self part backgroundPainter ].
+	^backgroundPainter!
+
+gridFor: p <Point> ^<Rect>
+
+	| partpos <Point> |
+
+	partpos := self part position.
+	^(self part gridFor: p - partpos) translatedBy: partpos!
+
+hasPart ^<Boolean>
+
+	^part notNil!
+
+part ^<V>
+
+	^part!
+
+part: p <Visual>
+
+	part == p
+		ifTrue: [ ^self ].
+	self changing.
+	part notNil
+		ifTrue: [ part noParent ].
+	part := p.
+	p parent: self id: 1.!
+
+partAt: childId <Int> ^<Visual>
+
+	self assert: [ childId = 0 ].
+	^self part!
+
+removePart ^<Visual>
+	"Detach and return the part"
+	
+	| p <Visual> |
+	self layoutStatus = Visual valid
+		ifTrue: [ self changing ].
+	p := self part.
+	p noParent.
+	part := nil.
+	^p! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'iterating' !
+
+
+doFromBack: f <[V]>
+
+	part == nil
+		ifFalse: [ f value: self part ]!
+
+doFromFront: f <[V]>
+
+	part == nil
+		ifFalse: [ f value: self part ]!
+
+focusCandidatesDo: blk <[Visual]>
+
+	"We override this to prevent recursing on parts if the control is disabled"
+
+	self enabled
+		ifTrue: [ super focusCandidatesDo: blk ]! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'restricted-win32' !
+
+
+message: msgCode <ExternalData>
+for: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	msgCode @= Win32 WM_PAINT
+		ifTrue: [	self debugTest: msgCode for: hwnd.
+						self display.
+						^0 ].
+
+	msgCode @= Win32 WM_ERASEBKGND
+		ifTrue: [	self debugTest: msgCode for: hwnd.
+						^self eraseBackgroundFor: hwnd msgCode: msgCode wParam: wParam lParam: lParam ].
+
+	^super message: msgCode for: hwnd wParam: wParam lParam: lParam! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'restricted-to parts' !
+
+
+containerBackgroundPainter ^<Painter>
+	"Re-define since the Window mixin blasted the version from Visual"
+
+	^self parent containerBackgroundPainter! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'methods copied from Win32Control' !
+
+
+moveBy: positionDelta <Point>
+
+	"We copy this down because the CompositeVisual mixin shadows the inherited one"
+
+	"We override this since moving a native visual will generate any needed invalidations
+	  automatically."
+
+	self adjustPositionBy: positionDelta!
+
+nativePositionChanged
+
+	"We copy this down because the CompositeVisual mixin shadows the inherited one"
+
+	"DON'T pass this message to super if we have a handle or are not attached,
+		 since our children are native relative to us!!!!
+		(remember that we mixin CompositeVisual, which would try to send this
+		message down to its children).  If we don't have a handle and are attached,
+		and our child is nonLocal, we send it down anyway so that our children can
+		create their windows."
+
+	self checkForNativePositionChanging
+		ifTrue: [	self updateWindowDimensions ]
+		ifFalse: [ (self hasWin32Handle not and: [ self isAttached ])
+							ifTrue: [	self updateWindowDimensions.
+											self part isNonLocal
+												ifTrue: [ self part nativePositionChanged.	]]	].
+! !
+

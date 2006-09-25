@@ -1,0 +1,330 @@
+Delta define: #DeltaGenericApplicationType as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaGenericApplicationType) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #DeltaGenericApplicationType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericApplicationType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericApplicationType) methodsFor: 'Unclassified' !
+
+
+actualForFormalSubstitution ^ <Substitution>
+    ^self generic substitutionOfFormalsWithActuals: self actuals!
+
+actuals ^ <OrdCltn[ObjectType]>
+    ^self filteree actuals virtualCollect:[: a <ObjectType>  | a substitute:  self substitution]!
+
+addRelevantTypeVar: tv <TypeVar>
+
+"Do nothing"!
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^self  withCanonicalRepDo:
+   [:s <Protocol>  | s allSelfClassTVs].!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^self  withCanonicalRepDo:
+   [:s <Protocol>  | s allSelfTVs].!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    | formals <OrdCltn[TypeFormal]>  result <Boolean>  a <ObjectType>  f <TypeFormal>  |
+
+result := true.
+formals := self generic formals.
+self actuals size = formals size ifFalse:[
+	self reportError: (DeltaGenericArityError new id: self target name)].
+
+1 to: (self actuals size min: formals size) do: [ :i <Int> |
+	a := self actuals at: i.
+	f := formals at: i.
+	result := result and:[
+		f variance = #covar
+			ifTrue:[a antimonotonicIn: tv]
+			ifFalse:[f variance = #contra ifTrue:[a monotonicIn: tv]
+				ifFalse:[ f variance = #unrelated ifTrue:[(a monotonicIn: tv) and:[a antimonotonicIn: tv]]]]]].
+^result.
+!
+
+apply: tool <DeltaTool > ^ <Self>
+	tool genericApplicationTypeNode: self.!
+
+apply: tid <TypeId >to: tas <OrdCltn[ObjectType] > ^ <Self>
+    self filter: (BasicGenericApplicationTypeData new apply: tid to: tas)
+       using: DeltaSubstitution new initialize!
+
+asMixinSide
+
+self deltaHack.
+^self canonicalRep asMixinSide!
+
+atomicTypes ^ <IdentitySet[ObjectType]>
+    ^self involvesTypeVariables
+    ifFalse:[self withCanonicalRepDo:
+                  [:s <Protocol>  | s atomicTypes]]
+    ifTrue:[IdentitySet[ObjectType]  new add: self; yourself]!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+
+^self target asGeneric bareAttributes!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+
+    ^self target bareSecondaryAttributes!
+
+basicLocator
+	^self target basicLocator!
+
+branded ^ <Boolean>
+    ^self generic branded!
+
+canonicalDict ^ <Dict[ObjectType,Protocol]>!
+
+canonicalRep ^ <Protocol>
+
+    ^self generic invokeWith: self actuals!
+
+classProtocol ^ <Protocol>
+    ^classProtocol isNil ifTrue:[classProtocol := DeltaUnaryGenApp new dual: self]
+                                ifFalse:[classProtocol].!
+
+declaredSubGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    | formals <OrdCltn[TypeFormal]> 
+"%todo: All temporaries below this line really belong to the block below
+(1 to: formals size do:[...]).
+"
+ variance <Symbol>  sa <ObjectType>  pa <ObjectType>  |
+self generic == p generic ifFalse:[^false].
+self isMeta = p isMeta ifFalse:[^false].
+formals := self generic formals.
+
+self actuals size = formals size ifFalse:[^false].
+p actuals size = formals size ifFalse:[^false].
+
+1 to: (formals size min: (self actuals size min: p actuals size)) do: [ :i <Int> |
+    variance := (formals at: i) variance.
+    sa := self actuals at: i.
+    pa := p actuals at: i.
+    variance == #covar
+      ifTrue:[(sa subtypeOf: pa assuming: trail) ifFalse:[^false]].
+    variance == #contra
+      ifTrue:[(pa subtypeOf: sa assuming: trail) ifFalse:[^false]].
+    variance == #unrelated
+      ifTrue:[(sa equals: pa assuming: trail) ifFalse:[^false]].
+].
+^true!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^p declaredSuperprotocolOfGeneric: self.
+"^self withCanonicalRepDo:[:s <Protocol> | s declaredSubprotocolOf: p]"
+
+"self involvesTypeVariables ifFalse:[self withCanonicalRepDo:[:s <Protocol> | s declaredSubprotocolOf: p]]
+                                       ifTrue:[false]"!
+
+declaredSubprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^(self declaredSubGenAppOf: p assuming: DeltaGlobalTrail)
+   or:[self withCanonicalRepDo:[:s <Protocol>  |
+                                                s declaredSubprotocolOf: p.
+                                                ].
+       ].!
+
+declaredSubprotocolOfNonGeneric: p <DeltaProtocol > ^ <Boolean>
+    ^self withCanonicalRepDo:[:s <Protocol>  | s declaredSubprotocolOf: p]!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^self canonicalRep declaredSuperMixinInvocationOf: m!
+
+declaredSuperprotocolOfGeneric: p <GenericApplicationType > ^ <Boolean>
+    ^p declaredSubprotocolOfGeneric: self!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+^(self target ref declaredSupertypes) collect:[:o <ObjectType> |  o substitute: self actualForFormalSubstitution].
+!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a formatted name, which here is the target and actuals formatted
+		and embedded in brackets"
+		
+	| s <CharOutputStream> |
+	s := String new writeStream.
+	s nextPutAll: (self target formattedName: pt).
+	s nextPut: $[.
+	self actuals 
+		do: [ :a <ObjectType> | s nextPutAll: (a formattedName: pt) ]
+		andBetweenDo: [ s nextPut: $, ].
+	s nextPut: $].
+	^s contents!
+
+generic ^ <GenericDecl>
+	| ref |
+	(ref := self target ref) isError 
+		ifTrue: [^self  reportError: (ref domainSize: self actuals size)].
+	self target isGeneric 
+		ifTrue:[^self target asGeneric]
+		ifFalse:[^self reportError: (DeltaNotAGenericError new id: self target name; domainSize: self actuals size)]!
+
+involvesTypeVariables ^ <Boolean>
+    self actuals detect: [ :a <ObjectType>  | a involvesTypeVariables] ifNone:[^false].
+^true.!
+
+isGenericInvocation ^ <Boolean>
+
+^true!
+
+isMeta ^ <Boolean>
+    ^self generic body isMeta!
+
+isMonotonic ^ <Boolean>
+    self withCanonicalRepDo:[:s <Protocol>  | ^s isMonotonic].!
+
+isObjectType ^ <Boolean>
+    ^self canonicalRep isObjectType!
+
+isProtocol ^ <Boolean>
+    ^self canonicalRep isProtocol!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+
+^self target asGeneric localBareAttributes!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+
+    ^self target localBareSecondaryAttributes!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    | formals <OrdCltn[TypeFormal]>  result <Boolean>  a <ObjectType>  f <TypeFormal>  |
+
+result := true.
+formals := self generic formals.
+self actuals size = formals size ifFalse:[
+	self reportError: (DeltaGenericArityError new id: self target name)].
+
+1 to: (self actuals size min: formals size) do: [ :i <Int> |
+	a := self actuals at: i.
+	f := formals at: i.
+	result := result and:[
+		f variance = #covar
+			ifTrue:[a monotonicIn: tv]
+			ifFalse:[f variance = #contra ifTrue:[a antimonotonicIn: tv]
+				ifFalse:[ f variance = #unrelated ifTrue:[(a monotonicIn: tv) and:[a antimonotonicIn: tv]]]]]].
+^result.!
+
+name ^ <Symbol>
+
+    | argNames <Str>  args <OrdCltn[Type]> |
+
+"We assume a generic type application always has at least one argument."
+
+args := self actuals.
+argNames := ''.
+1 to: args size - 1 do:[ :a <ObjectType>  | argNames := argNames, (args at:a) name, ', '].
+argNames := argNames, args last name.
+^(self target name, '[',  argNames, ']') asSymbol!
+
+postRep: rep <Protocol >ifThere: blk <[^Object] > ^ <Self>
+    "If rep is already recorded, execute blk
+
+(DeltaOpenGenerics includes: rep)
+  ifFalse:[DeltaOpenGenerics add: rep]
+  ifTrue:[blk value]."!
+
+rawPrimaryInterface ^ <Interface>
+    ^self  withCanonicalRepDo:
+   [:s <Protocol>  | s rawPrimaryInterface].!
+
+rawSecondaryInterface ^ <Interface>
+    ^self withCanonicalRepDo:
+   [:s <Protocol>  | s rawSecondaryInterface].!
+
+scope: aScope
+
+self target scope: aScope.
+self actuals do:[:a | a scope: aScope].!
+
+selectMsg: selector <Symbol > ifAbsent: block <[^Object]>  ^ <DeltaMsgSignature>
+
+^super selectMsg: selector ifAbsent: block.
+"^self withCanonicalRepDo:[:s | s selectMsg: selector ifAbsent: block]."
+!
+
+subGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+
+(self declaredSubGenAppOf: p assuming: trail) ifTrue:[^true].
+ ^self subprotocolOf: p assuming: trail.!
+
+subprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self involvesTypeVariables ifFalse:[self withCanonicalRepDo:[:s <Protocol>  | s subprotocolOf: p assuming: trail]]
+                                       ifTrue:[self declaredSubprotocolOf: p]!
+
+substitute: s <Substitution>
+
+| newActuals <OrdCltn[ObjectType]> |
+
+    ^s isEmpty ifTrue:[self]
+                "  ifFalse:[self class new filter: self using: s]."
+                  ifFalse:[
+                                 newActuals :=  self actuals collect:[:a | a substitute: s].
+                                 self class  new apply: self target to: newActuals.
+                                 ].!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t superGenAppOf: self assuming: trail.!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^p subGenAppOf: self assuming: trail!
+
+superprotocol
+
+^self canonicalRep superprotocol!
+
+superprotocolOf: t <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self involvesTypeVariables ifFalse:[self withCanonicalRepDo:[:s <Protocol>  | s superprotocolOf: t assuming: trail.]]
+                                       ifTrue:[t declaredSubprotocolOf: self].!
+
+target ^ <TypeId>
+    ^self filteree target!
+
+unpostRep: rep <Protocol > ^ <Self>
+    "DeltaOpenGenerics remove: rep."!
+
+wellFormed ^ <Boolean>
+    | formals <OrdCltn[TypeFormal]>  result <Boolean>  a <ObjectType>  f <TypeFormal>  |
+
+result := true.
+self actuals do: [:a <ObjectType> | 
+	a wellFormed ifFalse: [result := false]].
+
+self generic isError ifTrue: [^false]. 		"No need to check formals"
+
+formals := self generic formals.
+self actuals size = formals size ifFalse:[
+	result := false.
+	self reportError: (DeltaGenericArityError new id: self target name)].
+
+1 to: (self actuals size min: formals size) do: [ :i <Int> |
+	a := self actuals at: i.
+	f := formals at: i.
+      (a subtypeOf: f typeVar declaredBound assuming: DeltaGlobalTrail) ifFalse:[
+		result := false.
+		self reportError: (DeltaGenericArgsNotSubtypesError new actualName: a name; formalName: f typeVar declaredBound name; argument: i)]].
+"Q: what if bounds are inherited types"
+
+^result!
+
+withCanonicalRepDo: blk <[Protocol,^T] > ^ <T>
+    | result <Boolean>   rep <Protocol>  |
+
+rep := self canonicalRep.
+"here we post rep to global structure. If it is already there, we have an infinite regress"
+self postRep: rep ifThere: [^self reportError: (DeltaInfiniteTypeExpansionError new id: self name)].
+result := blk value: rep.
+"here we will unpost rep from global structure"
+self unpostRep: rep.
+^result.! !
+

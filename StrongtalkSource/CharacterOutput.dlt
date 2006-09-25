@@ -1,0 +1,66 @@
+Delta define: #CharacterOutput as: (
+Mixin superclassType: 'BasicOutputStream[Character]' body: ((Class subclassOf: 'BasicOutputStream[Character]' instanceVariables: '') protocols: 'CharOutputStream'; abstract)) !
+
+(Delta mirrorFor: #CharacterOutput) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #CharacterOutput) group: 'base'!
+
+(Delta mirrorFor: #CharacterOutput)
+comment: 
+'This mixin add character specific messages to an OutputStream class.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #CharacterOutput) methodsFor: 'utility' !
+
+
+cr
+
+	self nextPut: Character cr!
+
+crTab
+
+	self crTab: 1!
+
+crTab: count <Int>
+
+	count timesRepeat:  [
+		self nextPut: Character cr; nextPut: Character tab	]!
+
+nextChunkPut: s <Str>
+
+	| terminator <Character> |
+	terminator := $!!.
+	s do: [ :char <Character> |
+		self nextPut: char.
+		char = terminator 
+			ifTrue: [ self nextPut: terminator ] ].
+	self nextPut: terminator.!
+
+print: o <Object>
+
+	o printOn: self!
+
+showDoIt: s <Str> ^<Str>
+	"hook for transcripts."
+
+	self show: s.
+		^s!
+
+space
+
+	self nextPut: Character space!
+
+tab
+
+	self nextPut: Character tab! !
+
+! (Delta mirrorFor: #CharacterOutput) methodsFor: 'bootstrap-temporary' !
+
+
+deltaNextChunkPut:  s <Str>
+
+	self nextChunkPut: s! !
+

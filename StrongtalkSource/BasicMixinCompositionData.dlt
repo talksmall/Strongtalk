@@ -1,0 +1,25 @@
+Delta define: #BasicMixinCompositionData as: (
+(Class subclassOf: 'BasicTypeData' instanceVariables: 'iMixin oMixin ')) !
+
+(Delta mirrorFor: #BasicMixinCompositionData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicMixinCompositionData) group: 'ast'!
+
+(Delta mirrorFor: #BasicMixinCompositionData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicMixinCompositionData) methodsFor: 'Unclassified' !
+
+
+iMixin ^ <Mixin>
+    ^iMixin!
+
+inputMixin: im <Mixin >outputMixin: om <Mixin > ^ <Self>
+    iMixin := im.
+oMixin := om.!
+
+oMixin ^ <Mixin>
+    ^oMixin! !
+

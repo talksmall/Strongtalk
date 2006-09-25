@@ -1,0 +1,129 @@
+Delta define: #DeltaEncapsulatedProtocol as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: 'body bound ')) !
+
+(Delta mirrorFor: #DeltaEncapsulatedProtocol) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaEncapsulatedProtocol) group: 'ast'!
+
+(Delta mirrorFor: #DeltaEncapsulatedProtocol)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaEncapsulatedProtocol) methodsFor: 'Unclassified' !
+
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self bound antimonotonicIn: tv!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body bareAttributes!
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body bareSecondaryAttributes.!
+
+body ^ <Protocol>
+
+    ^body!
+
+body: b1 <Protocol >bound: b2 <Protocol > ^ <Self>
+    body := b1.
+bound := b2.!
+
+bound ^ <Protocol>
+    ^bound!
+
+canonicalRep ^ <Protocol>
+    ^self!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^self body compositeSubstitute: t!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^self bound declaredSubprotocolOf: p!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^self bound declaredSuperMixinInvocationOf: m!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+| c <OrdCltn[ObjectType]> |
+
+c := OrderedCollection[ObjectType] new.
+c 	add: self bound.
+^c!
+
+isMeta ^ <Boolean>
+
+^self bound ref isMeta!
+
+isMonotonic ^ <Boolean>
+    ^self bound isMonotonic!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body localBareAttributes!
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body localBareSecondaryAttributes.!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^self bound monotonicIn: tv!
+
+myTypeVarSubstitution ^ <Substitution>
+
+" In the special case of the encapsulated protocol, we do not wish to
+ever replace the bound type variables. If the private protocol of
+a class has the form rec Self. G[Self], then the encapsulated protocol 
+represents G[Self].
+"
+^DeltaSubstitution new initialize.
+!
+
+name ^ <Symbol>
+    ^('Self ', self body name)  asSymbol!
+
+rawPrimaryInterface ^ <Interface>
+    ^self body rawPrimaryInterface!
+
+rawSecondaryInterface ^ <Interface>
+    ^self body rawSecondaryInterface.!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+^self body relevantTypeVars!
+
+selfClassTV ^ <TypeVar>
+    ^self body selfClassTV!
+
+selfPublicClassTV ^ <TypeVar>
+    ^self body selfPublicClassTV!
+
+selfPublicTV ^ <TypeVar>
+    ^self body selfTV!
+
+selfTV ^ <TypeVar>
+    ^self body selfTV!
+
+structuralInheritedProtocolOf: p <Protocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self bound structuralInheritedProtocolOf: p assuming: trail.!
+
+structuralSubprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self bound structuralSubprotocolOf: p assuming: trail!
+
+subprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self bound subprotocolOf: p assuming: trail!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self bound subtypeOf: t assuming: trail!
+
+superGenAppOf: p <GenericApplicationType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self bound superGenAppOf: p assuming: trail!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^self bound superprotocolOf: p assuming: trail!
+
+wellFormed ^ <Boolean>
+    ^true! !
+

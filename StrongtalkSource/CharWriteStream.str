@@ -1,0 +1,20 @@
+Delta define: #CharWriteStream as: (
+Protocol superProtocol: '<CharInputStream;(CharOutputStream / WriteStream[Character] )>') !
+
+(Delta mirrorFor: #CharWriteStream) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #CharWriteStream) group: 'base'!
+
+(Delta mirrorFor: #CharWriteStream)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CharWriteStream) methodsFor: 'Unclassified' !
+
+
+contentsWritten  ^<Str>
+
+	"We strengthen this because char write streams must hold only
+		characters so that we can know that we can produce a string"! !
+

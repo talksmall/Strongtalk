@@ -1,0 +1,49 @@
+Delta define: #BasicTypeAliasLocator as: (
+(Class subclassOf: 'DeltaBasicEntryLocator' instanceVariables: '')) !
+
+(Delta mirrorFor: #BasicTypeAliasLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicTypeAliasLocator) group: 'ast'!
+
+(Delta mirrorFor: #BasicTypeAliasLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicTypeAliasLocator) methodsFor: 'accessing' !
+
+
+indexFor: node  <DeltaASTNode> ^ <Integer>
+
+^1!
+
+locatorFor: node  <DeltaASTNode> ^ <Locator[Mirror]>
+
+| astIndex <Integer> myType <ObjectType> loc <Locator[Mirror]>  |
+
+" test the index for all parts of my definition"
+
+astIndex := (loc := TypeAliasLocator ofDefinition: self) indexFor: node.
+astIndex ~= 0 ifTrue:[^loc astIndex: astIndex].
+
+"
+For future use (when we fix generic aliasing)
+myType := Type forTypeAlias: (self mirror reflectee).
+
+myType isGeneric ifFalse:[^0].
+
+myType asGeneric formals 
+	do:	[: tf <TypeFormal> | 
+			astIndex := (loc := TypeArgumentLocator 	onTypeArgument: tf name
+																					ofDefinition: self) indexFor: node.
+			astIndex ~= 0 ifTrue:[^loc astIndex: astIndex].
+			].
+
+"
+
+!
+
+mirror ^ <TypeAliasMirror>
+
+^TypeAliasMirror on: (Smalltalk at: self id)! !
+

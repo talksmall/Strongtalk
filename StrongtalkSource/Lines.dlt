@@ -1,0 +1,1108 @@
+Delta define: #Lines as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'column <GlyphColumn>
+selection <Tuple[Point,Point]>
+			"first element is the selection start, second element is the selection end"
+highlighted <Boolean>
+			"if true, the receiver draws the selection in a highlighted fashion,
+				for example, to indicate the input focus."
+isFocusCandidate <Boolean>
+			"If this is true, then this receiver can be the input focus, and a primary
+				mouse button click will aquire it"
+xAnchor <Int>
+			"Used to keep the cursor from drifting when using the up/down arrow keys"
+selecting <Boolean>
+			"If true, the user is dragging through the selection, we are grabbing
+				events, and the second element of the selection is the anchor"
+
+keyDownHandler <[Symbol,Visual,UIEvent,^Boolean]>
+charHandler <[Character,Visual,UIEvent,^Boolean]>
+doubleClickHandler <[Point, UIEvent,^Boolean]>
+isFocusBlock <[Boolean]>
+			"This block will be evaluated whenever the focus state changes for
+				the receiver, with the new state"
+painter <Painter>
+slackBlock <[^Int]>
+			"Block that returns the cached slack value, which is how much extra space
+				to put at the end of each line when they are growing."
+slack <Int>
+blinkDeferCount <Int>
+			"This is set to 2 when the text is changed, and decremented if > 0 on each blink.  The cursor
+				always is shown when > 0.  Used to keep cursor from disappearing during use"
+		')) !
+
+(Delta mirrorFor: #Lines) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #Lines) group: 'ui'!
+
+(Delta mirrorFor: #Lines)
+comment: 
+'Lines show visuals lain out in rows in a single column.
+Selection functionality is handled here, but keyboard events
+are delegated elsewhere
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.6 $'!
+
+! (Delta mirrorFor: #Lines) methodsFor: 'accessing' !
+
+
+boundaryClosestTo: loc <Point> ^<Point>
+	"return the index of the closest intercharacter boundary to loc."
+
+	| spot <Point> alloc <Rect> el <Visual> line <Row[Glyph]> |
+	spot := self locationOfElementClosestTo: loc.
+	(line := self lineAt: spot y) size > spot x
+		ifFalse: [ ^spot ].
+
+	"Adjust to boundary"
+	el := self elementAt: spot.
+	alloc := (el allocationRelativeTo: self) enclosingRect.
+	^((alloc right - loc x) > (loc x - alloc left) or: [ ((line allocationRelativeTo: self) containsPoint: loc) not ])
+		ifTrue: [ spot ]
+		ifFalse: [ (spot x + 1) @ spot y ]!
+
+boundaryClosestTo: x <Int> onLine: line <Int> ^<Int>
+	"return the index of the closest intercharacter boundary to x on the specified line"
+
+	^( self boundaryClosestTo: x @ ((self lineAt: line) positionRelativeTo: self) y  ) x!
+
+charHandler ^<[Character,Visual,UIEvent,^Boolean]>
+
+	^charHandler!
+
+charHandler: b <[Character,Visual,UIEvent,^Boolean]>
+
+	charHandler := b!
+
+column ^<GlyphColumn>
+
+	^column!
+
+column: l <GlyphColumn>
+
+	column isNil
+		ifFalse: [ self changing ].
+	column := l.
+
+	"We have to wrap the column in something to let it stretch to the right
+	  (i.e. left justify it) because glyphcolumns don't stretch in the minor
+	  dimension, but we need that"
+	super part: (GlyphRow holding: (OrderedCollection[Glyph] with: (Glue xRigid: self leftMargin) with: l)).!
+
+doubleClickHandler ^<[Point, UIEvent,^Boolean]>
+
+	^doubleClickHandler!
+
+doubleClickHandler: h <[Point, UIEvent,^Boolean]>
+
+	doubleClickHandler := h!
+
+elementAt: spot <Point> ^<VisualGlyph>
+
+	"Return the element at the col@line position"
+	^self elementAt: spot ifAbsent: [ self error: 'invalid element location' ]!
+
+elementAt: spot <Point> ifAbsent: blk <[^X def]> ^<VisualGlyph | X>
+
+	"Return the element at the col@line position"
+	^(self lineAt: spot y asInteger ifAbsent: [ ^blk value ]) at: spot x asInteger ifAbsent: blk!
+
+elementBoundsAt: spot <Point> ^<Rect>
+	"Return the bounds of the specified element in the receiver's coordinates"
+
+	^((self elementAt: spot) allocationRelativeTo: self) enclosingRect!
+
+endSpot ^<Point>
+
+	^(self lineAt: self column size) size @ self column size!
+
+glyphAt: spot <Point> ifAbsent: blk <[^X def]> ^<Glyph | X>
+
+	"Return the element at the col@line position"
+	^(self elementAt: spot ifAbsent: [ ^blk value ]) glyph!
+
+gridFor: p <Point> ^<Rect>
+
+	"We override this to skip over our immediate child, which is a left justifier, and
+		use the lines grid"
+	^self column gridFor: p!
+
+highlighted ^<Boolean>
+
+	^self isFocus!
+
+isFocusBlock ^<[Boolean]>
+
+	^isFocusBlock!
+
+isFocusBlock: f <[Boolean]>
+
+	isFocusBlock := f!
+
+isFocusCandidate ^<Boolean>
+
+	^isFocusCandidate!
+
+isFocusCandidate: f <Boolean>
+
+	isFocusCandidate := f!
+
+keyDownHandler ^<[Symbol,Visual,UIEvent,^Boolean]>
+
+	^keyDownHandler!
+
+keyDownHandler: b <[Symbol,Visual,UIEvent,^Boolean]>
+
+	keyDownHandler := b!
+
+lineAt: i <Int> ^<GlyphRow>
+
+	^(guaranteed <GlyphRow> (self column glyphAt: i))!
+
+lineAt: i <Int> ifAbsent: blk <[^X def]> ^<GlyphRow | X>
+
+	^(guaranteed <GlyphRow | X> (self column glyphAt: i ifAbsent: blk))!
+
+linearElementAt: i <Int> ifAbsent: blk <[^X def]> ^<VisualGlyph | X>
+	"return the index of the ith glyph from the 1@1th glyph, counting glyphs in
+	reading order (including 1 for each new line)"
+
+	^self elementAt: (self linearSpotAt: i ifAbsent: [ ^blk value ])!
+
+linearIndexFor: spot <Point> ^<Int>
+	"return the linear index of theglyph at the specified spot."
+
+	| n <Int> |
+	n := 0.
+	1 to: spot y asInteger - 1 do:
+		[ :y <Int> |
+				n := n + (self lineAt: y) size	].
+	^n + spot x asInteger!
+
+linearIndexValid: i <Int> ^<Boolean>
+
+	self linearSpotAt: i ifAbsent: [ ^false ].
+	^true!
+
+linearSpotAt: i <Int> ifAbsent: blk <[^X def]> ^<Point | X>
+	"return the spot for the ith glyph from the 1@1th glyph, counting glyphs in
+	reading order (including 1 for each new line)"
+
+	| n <Int> |
+	n := i max: 1.
+	i < 1
+		ifTrue: [ ^blk value ].
+	1 to: self column size do:
+		[ :row <Int> |
+			| r <GlyphRow> |
+			r := self lineAt: row.
+			n <= r size
+				ifTrue: [ ^n @ row ].
+			n := n - r size.	].
+	^blk value!
+
+locationOfElementClosestTo: loc <Point> ^<Point>
+	"Return a point holding the column@line indices of 
+		the closest element to the specified spatial x@y location.  This includes carriage returns."
+
+	| row <GlyphRow> element <Int> anAlloc <Rect> |
+	row := guaranteed <Row> 
+		((self column
+		 	childIntersecting: (loc relativeTo: (self column positionRelativeTo: self))
+			ifAbsent: [	| alloc <Rect> lastRow <GlyphRow> firstRow <GlyphRow> |
+								alloc := (self column allocationRelativeTo: self) enclosingRect.
+								lastRow := self lineAt: self column size.
+								anAlloc := (lastRow allocationRelativeTo: self) enclosingRect.
+
+								"If below, just use last col & row.  We use the last line since
+									loc may be in extra space past the bottom."
+								loc y >= anAlloc bottom
+									ifTrue: [	^(self lineAt: (self column size)) size @ self column size	].
+
+								"If above top, use first element.  We use the top line alloc because loc may be in
+									extra space above the top"
+								firstRow := self lineAt: 1.
+								anAlloc := (firstRow allocationRelativeTo: self) enclosingRect.
+								loc y < anAlloc top
+									ifTrue: [ ^1@1 ].
+
+								"If to the right of a row, choose the last element on closest row"
+								row := self column glyphAt:
+												(self column indexBounding: loc y
+													ifFail: [ self shouldNotHappen ]).
+								anAlloc := ((row at: (row size)) allocationRelativeTo: self) enclosingRect.
+								loc x >= anAlloc right
+									ifTrue: [	^row size @ row id.		].
+
+								"Must be to the left of a row, so choose the first element in the row"
+								loc x < alloc left ifFalse: [ Platform errorStream print: anAlloc; cr. ].
+								self assert: [ loc x < alloc left ].
+								^1 @ row id.		]
+		) glyph).
+	anAlloc := ((row at: (row size)) allocationRelativeTo: self) enclosingRect.
+	loc x >= anAlloc right		"If past end of row, use last element"
+		ifTrue: [	^row size @ row id.		].
+
+	element := row indexBounding: loc x
+		ifFail: [	"It must be in the stretch at the end of the row"
+					row size ].
+	^element @ row id!
+
+painter ^<Painter>
+
+	^painter!
+
+painter: p <Painter>
+
+	painter := p!
+
+part: p <Visual>
+
+	self error: 'You must send lines: rather than part: to Lines'!
+
+selectionEnd ^<Point>
+	"The selection ends just before the charindex@rowindex element"
+
+	| sel <Tuple[Point,Point]> |
+	sel := self selection.
+	^(sel at2 y > sel at1 y or: [ sel at2 y = sel at1 y and: [ sel at2 x >= sel at1 x ]])
+		ifTrue: [ sel at2 ]
+		ifFalse: [	sel at1 ]!
+
+selectionEndCol ^<Int>
+
+	^self selectionEnd x!
+
+selectionEndLine ^<Int>
+
+	^self selectionEnd y!
+
+selectionShownEdge ^<Point>
+	"The first element of the selection tuple is the end that is kept visible. It may not be the selectionStart, for
+		example when dragging the selection it is the end where the mouse is. "
+
+	^self selection at1!
+
+selectionStart ^<Point>
+	"The selection starts just before the charindex@rowindex element"
+
+	| sel <Tuple[Point,Point]> |
+	sel := self selection.
+	^(sel at2 y > sel at1 y or: [ sel at2 y = sel at1 y and: [ sel at2 x >= sel at1 x ]])
+		ifTrue: [ sel at1 ]
+		ifFalse: [	sel at2 ]!
+
+selectionStartCol ^<Int>
+
+	^self selectionStart x!
+
+selectionStartLine ^<Int>
+
+	^self selectionStart y!
+
+setSelection: sel <Tuple[Point,Point]>
+	"Set the selection to be (startcol@startrow)->(endcol@endrow), without doing
+	  any invalidation."
+
+	self setSelection: sel reanchor: true! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'private' !
+
+
+adaptEndCr
+
+	| lr <GlyphRow> gl <Glyph> |
+	lr := self lineAt: self column size.
+	gl := lr glyphAt: lr size.
+	(CharacterGlyph coerce: gl) painter = self painter
+		ifFalse: [ lr replaceFrom: lr size to: lr size with: (Array[Glyph] with: self newCarriageReturn) ].!
+
+adaptPainter
+	"Try to set the painter based on the selection context.  The current heuristic for this
+		is to try to use the painter of the thing to the left of the selection, if
+		it is a character glyph.  If it is not, try the thing to the right of the selection.  If that is
+		not, leave the painter alone"
+
+	| start <Point> end <Point> index <Int> |
+	self isFocusCandidate
+		ifFalse: [ ^self ].
+	start := self selectionStart.
+	
+	index := start x = 1
+		ifTrue: [ start x ]
+		ifFalse: [ start x - 1 ].
+	self	adaptPainterTo: (self elementAt: index @ start y)
+			ifCannot: [ "don't adapt the painter to the final cr."
+								start = self endSpot
+									ifFalse: [ self adaptPainterTo: (self elementAt: start x @ start y)
+															ifCannot: [ ]
+													].
+							  ]!
+
+adaptPainterTo: v <Visual> ifCannot: blk <[]>
+
+	| chargl <CharacterGlyph> |
+	chargl := CharacterGlyph
+		coerce: (VisualGlyph coerce: v
+							else: [	blk value.
+										^self ]) glyph
+		else: [ blk value.
+					^self ].
+	self painter: chargl painter.!
+
+blinkDeferCount ^<Int>
+
+	^blinkDeferCount!
+
+blinkDeferCount: c <Int>
+
+	blinkDeferCount := c!
+
+continueSelectingAt: loc <Point>
+
+	| spot <Point> |
+
+	spot := self boundaryClosestTo: loc.
+
+	"During selection, we keep the selection anchor as the second element
+		of the selection, so that the free end is kept visible (because
+		it is the first element of the selection)"
+	self selectionWhileSelecting: spot ,, self selection at2.
+	self displayNowIfInvalid.
+!
+
+displaySelectionOn: can <Canvas>
+
+	self highlighted
+		ifTrue: [	"Take the single selection blink state into account"
+						(self selectionIsEmpty not or: [ self blinkState or: [ self blinkDeferCount > 0 ] ])
+							ifTrue: [	self selectionRectsFrom: self selectionStart to: self selectionEnd
+												do: [ :r <Rect> |
+															can invertRectangle: r.	].
+										]
+					]!
+
+emptySelectionDelete  ^<SeqCltn[SeqCltn[Glyph]]>
+	"The selection is empty, so delete the element before it"
+
+	"move the start of the selection back one, and then recursively redelete to use
+		the non-empty algorithm (if not at the very beginning)"
+	self selectionStartCol = 1
+		ifTrue: [	| newStartLine <Int> newStartCol <Int> |
+						self selectionStartLine = 1
+							ifTrue: [ ^Array[SeqCltn[Glyph]] with: Array[Glyph] new ].
+						newStartLine := self selectionStartLine - 1.
+						newStartCol := (self lineAt: newStartLine) size.
+						self setSelection: (newStartCol @ newStartLine) ,, self selectionEnd.	]
+		ifFalse: [	self setSelection:
+							(self selectionStartCol - 1 @ self selectionStartLine) ,, self selectionEnd. ].
+	^self deleteGlyphs!
+
+emptySelectionRectAt: spot <Point> ^<Rect>
+
+	^self emptySelectionRectOver: (self elementBoundsAt: spot)!
+
+emptySelectionRectOver: elAlloc <Rect> ^<Rect>
+
+	^Rectangle
+		origin: elAlloc origin
+		corner: (elAlloc left + self singleSelectionWidth) @ elAlloc bottom!
+
+extendSelectionAt: loc <Point>
+
+	| start <Point> spot <Point> |
+	start := self selectionStart.
+	spot := self boundaryClosestTo: loc.
+	(spot y > start y or: [ spot y = start y and: [ spot x >= start x ]])
+		ifTrue: [	self selection: start ,, spot. ]
+		ifFalse: [	self selection: spot ,, self selectionEnd ]!
+
+finishSelecting
+	
+	self releaseGrab.
+	self selecting: false.!
+
+finishSelectingAt: loc <Point>
+
+	"make sure we do any final moving"
+	self continueSelectingAt: loc.
+
+	self finishSelecting.!
+
+generalReplaceFrom: start <Point>
+to: end <Point>
+withLines: newLines <SeqCltn[SeqCltn[Glyph]]>
+^<SeqCltn[SeqCltn[Glyph]]>
+	"This handles the case of replaceSelectionWith: where either the current or new
+		range spans more than one line"
+
+	|	tmp <OrdCltn[SeqCltn[Glyph]]>
+		pre <OrdCltn[Glyph]>
+		post <OrdCltn[Glyph]>
+		new <OrdCltn[GlyphRow]>
+		next <GlyphRow>
+		endCol <Int>
+		adaptEndCr <Boolean> 
+		|
+	adaptEndCr := end = self endSpot.
+	tmp := self column
+		remove: end y + 1 - start y
+		at: start y.
+	post := tmp last
+			remove: tmp last size + 1 - end x
+			at: end x.
+	pre :=  tmp first remove: start x - 1 at: 1.
+
+	new := OrderedCollection[GlyphRow] new: newLines size.
+	next := GlyphRow new.
+	self setupRow: next.
+	new add: next.
+	next addAll: pre.
+	next addAll: (newLines at: 1).
+	
+	2 to: newLines size do:
+		[ :i <Int> |
+			next := GlyphRow new.
+			self setupRow: next.
+			new add: next.
+			next addAll: (newLines at: i).	].
+	endCol := next size + 1.
+
+	next addAll: post.
+
+	"reinstall new section"	
+	self column insert: new before: start y.
+	
+	adaptEndCr
+		ifTrue: [	self adaptEndCr ].
+
+	self selection: start ,, (endCol @ (start y + new size - 1)).
+
+	^tmp collect:
+		[ :old <GlyphRow> |
+			old remove: old size at: 1	]!
+
+invalidateLinesFrom: startLine <Int> to: stopLine <Int>
+
+	| startAlloc <Rect> endAlloc <Rect> merge <Rect> |
+	"%note that we work in line granularity here so that we will never have kerning refresh bugs"
+	(self layoutValid
+				and: [ self column layoutValid
+				and: [ stopLine <= self column size
+				and: [ startLine <= self column size  ]]])
+		ifFalse: [ ^self ].
+	merge := startAlloc := ((self lineAt: startLine) allocationRelativeTo: self) enclosingRect.
+	startLine = stopLine
+		ifFalse: [	endAlloc := ((self lineAt: stopLine) allocationRelativeTo: self) enclosingRect.
+						merge := startAlloc merge: endAlloc.	].
+	self invalidate: (merge origin corner: self allocation enclosingRect right @ merge bottom).!
+
+invalidateSelection
+
+	| start <Point> end <Point> |
+	start := self selectionStart.
+	end := self selectionEnd.
+	start = end
+		ifTrue: [ self invalidate: (self elementBoundsAt: start) ]
+		ifFalse: [ self invalidateLinesFrom: start y to: end y  ]
+!
+
+jumpScrolling ^<Boolean>
+	"When this is true, the cursor will be scrolled to the middle of the screen
+	   when it goes off the edge because of cursor movement, etc.  If it is
+	   false, scrolling is done line-by-line"
+
+	^false!
+
+layout
+
+	super layout.
+	self reanchor.!
+
+leftMargin ^<Int>
+
+	^2!
+
+makeSelectionVisible
+
+	self session updateLayoutsIfNeeded.
+	self	scrollIfNeededToMakeVisible: self selectionShowBounds
+			relativeTo: self
+			minimizeMotion: (self jumpScrolling not or: [self selecting])!
+
+makeVisibleAsFocus
+
+	self makeSelectionVisible.!
+
+newCarriageReturn ^<CharacterGlyph>
+
+	^self painter charGlyphFor: Character cr!
+
+newLine ^<GlyphRow>
+
+	^self setupRow: (GlyphRow holding: (OrderedCollection[Glyph] with: self newCarriageReturn))!
+
+nonEmptyMultiLineSelectionRectsFrom: start <Point> to: end <Point> do: blk <[Rect]>
+
+	| elAlloc <Rect> lineAlloc <Rect> endMidAlloc <Rect> xhigh <Int> |
+	
+	xhigh := self allocation enclosingRect right.
+	"show the partial part on the first line"
+	elAlloc := self elementBoundsAt: start.
+	lineAlloc := ((self lineAt: start y) allocationRelativeTo: self) enclosingRect.
+	blk value:
+			(elAlloc left @ lineAlloc top
+				corner: xhigh @ lineAlloc bottom).
+
+	"Show the interior part between the first and last lines"
+	end y > (start y + 1)
+		ifTrue: [	endMidAlloc := ((self lineAt: end y - 1) allocationRelativeTo: self) enclosingRect.
+						lineAlloc := ((self lineAt: start y + 1) allocationRelativeTo: self) enclosingRect.
+						blk value:
+							(lineAlloc origin corner: xhigh @ endMidAlloc bottom).	].
+
+	"Show the partial part on the last line (show the empty one if on first element)"
+	elAlloc := self elementBoundsAt: end.
+	end x = 1
+		ifTrue: [	blk value: (self emptySelectionRectOver: elAlloc). ]
+		ifFalse: [	lineAlloc := ((self lineAt: end y) allocationRelativeTo: self) enclosingRect.
+						blk value:
+								(lineAlloc origin corner: elAlloc left @ lineAlloc bottom).		 ].!
+
+nonEmptySingleLineSelectionRectFrom: start <Point> to: end <Point> ^<Rect>
+
+	| lineAlloc <Rect> |
+	lineAlloc := ((self lineAt: start y) allocationRelativeTo: self) enclosingRect.
+	^(self elementBoundsAt: start) left @ lineAlloc top
+		corner: (self elementBoundsAt: end) left @ lineAlloc bottom!
+
+reanchor
+
+	self xAnchor: ((self elementAt: self selectionStart)
+						allocationRelativeTo: self) enclosingRect left.!
+
+selecting ^<Boolean>
+
+	^selecting!
+
+selecting: flag <Boolean>
+
+	selecting := flag!
+
+selectionEndLineBounds ^<Rect>
+
+	^((self lineAt: self selectionEndLine) allocationRelativeTo: self) enclosingRect!
+
+selectionEndVisual ^<Visual>
+
+	^self elementAt: self selectionEnd!
+
+selectionEndVisualBounds ^<Rect>
+
+	^(self selectionEndVisual allocationRelativeTo: self) enclosingRect!
+
+selectionRectsFrom: start <Point> to: end <Point> do: blk <[Rect]>
+	"Evaluate blk with each of the rectangles comprising the regions
+	  the selection would cover if the selection was start->end.  It is
+	  assumed that start is before end"
+
+	| elAlloc <Rect> |
+	start y = end y
+		ifTrue: [ start x = end x
+						ifTrue: [ blk value: (self emptySelectionRectAt: start) ]
+						ifFalse: [ blk value:
+										(self nonEmptySingleLineSelectionRectFrom: start to: end). ].  ]
+		ifFalse: [ self nonEmptyMultiLineSelectionRectsFrom: start to: end do: blk ]!
+
+selectionShowBounds ^<Rect>
+	"Return a rectangle that should be made maximally visible to show the selection"
+
+	| loc <Point> bounds <Rect>  |
+	"We try to show the two elements on either side of the first element of the selection"
+	loc := self selection at1.
+	bounds := self elementBoundsAt: loc.
+
+	"If at end of line, trim the width of the bounds to the cursor width"
+	(self lineAt: loc y) size = loc x
+		ifTrue: [	bounds := bounds origin extent: (self singleSelectionWidth @ bounds height).	].
+
+	"Include the element to the left if not at the start of the line"
+	loc x > 1
+		ifTrue: [ bounds := bounds merge: (self elementBoundsAt: (loc x - 1) @ loc y). ].
+
+	^bounds!
+
+selectionStartLineBounds ^<Rect>
+
+	^((self lineAt: self selectionStartLine) allocationRelativeTo: self) enclosingRect!
+
+selectionStartVisual ^<Visual>
+
+	^self elementAt: self selectionStart!
+
+selectionStartVisualBounds ^<Rect>
+
+	^(self selectionStartVisual allocationRelativeTo: self) enclosingRect!
+
+selectionWhileSelecting: sel <TextSelection>
+	"This is used to set the selection while selecting with the mouse.
+		This is used because the selection: method terminates the selecting
+		 process if called with the selecting flag on (so that clicking on single line
+		 editors can highlight the whole field, rather than starting a selection operation)
+		 "
+	self assert: [ self selecting ].
+	self selecting: false.
+	self selection: sel.
+	self selecting: true.!
+
+setSelection: sel <Tuple[Point,Point]> reanchor: reanchor <Boolean>
+	"Set the selection to be (startcol@startrow)->(endcol@endrow).  These may be
+		in the wrong order; the only difference is that the first one is always the end
+		of the selection that the textview tries to make visible"
+
+	self blinkDeferCount: 2.
+
+	selection = sel
+		ifTrue: [ ^self ].
+
+	selection := sel.
+
+	self	assert: [ sel at1 > Point origin ];
+			assert: [ sel at2 > Point origin ];
+			assert: [ self selectionStartLine <= self column size ];
+			assert: [ self selectionEndLine <= self column size ];
+			assert: [ self selectionStartCol <= (self lineAt: self selectionStartLine) size ];
+			assert: [ self selectionEndCol <= (self lineAt: self selectionEndLine) size ].	
+
+	(self layoutValid "and: [ self lines layoutValid ]")
+		ifTrue: [	self makeSelectionVisible.
+						reanchor
+							ifTrue: [	self reanchor		].  ].
+
+	self adaptPainter.
+!
+
+setupRow: row <GlyphRow> ^<GlyphRow>
+
+	row slackBlock: self slackBlock.
+	row optimizeIncrementalLayout: true.
+	^row!
+
+singleSelectionWidth ^<Int>
+
+	^2!
+
+slack ^<Int>
+
+	slack isNil
+		ifTrue: [	slack := ((self painter charGlyphFor: $a) naturalIn: self column medium) enclosingRect width * 5 ].
+	^slack!
+
+slackBlock ^<[^Int]>
+
+	slackBlock isNil
+		ifTrue: [	slackBlock := [ self slack ] ].
+	^slackBlock!
+
+startSelectingAt: loc <Point>
+
+	| spot <Point> |
+
+	self assert: [ self selecting not ].
+	spot := self boundaryClosestTo: loc.
+	self selecting: true.
+	self selectionWhileSelecting: spot ,, spot.
+	self acquireGrab.!
+
+xAnchor ^<Int>
+
+	^xAnchor!
+
+xAnchor: a <Int>
+
+	xAnchor := a! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self isFocusCandidate: false.
+	self painter: Painter default.
+	self xAnchor: 0.
+	self column: ((GlyphColumn holding: (OrderedCollection[GlyphRow] with: self newLine))
+							alignFirst: true;
+							optimizeIncrementalLayout: false
+						  ).
+
+	self selecting:  false.
+	self selection: (1@1) ,, (1@1).
+	self doubleClickHandler: [ :p <Point> :ev <UIEvent> | false ].
+	self blinkDeferCount: 0.
+	self isFocusBlock: [ :hasFocus <Boolean> | ].! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'selection' !
+
+
+downArrow
+
+	| line <Int> col <Int> |
+	self selectionIsEmpty
+		ifFalse: [ self rightArrow ].
+	line := self selectionEndLine.
+	col := self selectionEndCol.
+	line = self column size
+		ifTrue: [ ^self ].
+	line := line + 1.
+	col := self boundaryClosestTo: self xAnchor onLine: line.
+	self selection: (col@line),,(col@line) reanchor: false.!
+
+leftArrow
+
+	self selectionIsEmpty
+		ifTrue: [	| line <Int> col <Int> |
+						line := self selectionStartLine.
+						col := self selectionStartCol.
+						col = 1
+							ifTrue: [	line = 1
+												ifTrue: [ ^self ].
+											line := line - 1.
+											col := (self lineAt: line) size.		]
+							ifFalse: [	col := col - 1 ].
+						self selection: (col@line),,(col@line).	]
+		ifFalse: [	self selection: self selectionStart ,, self selectionStart	]!
+
+rightArrow
+
+	self selectionIsEmpty
+		ifTrue: [	| line <Int> col <Int> |
+						line := self selectionEndLine.
+						col := self selectionEndCol.
+						col >= ((self lineAt: line) size)
+							ifTrue: [	line = self column size
+												ifTrue: [ ^self ].
+											line := line + 1.
+											col :=1.		]
+							ifFalse: [	col := col + 1 ].
+						self selection: (col@line),,(col@line).	]
+		ifFalse: [	self selection: self selectionEnd ,, self selectionEnd.	]!
+
+selection ^<Tuple[Point,Point]>
+	"Set the selection to be (startcol@startrow)->(endcol@endrow)"
+
+	^selection!
+
+selection: sel <Tuple[Point,Point]>
+
+	self selection: sel reanchor: true.!
+
+selection: sel <Tuple[Point,Point]> reanchor: reanchor <Boolean>
+	"Set the selection to be (startcol@startrow)->(endcol@endrow).  These may be
+		in the wrong order; the only difference is that the first one is always the end
+		of the selection that the textview tries to make visible.
+		If reanchor is true, then the xAnchor is recomputed."
+
+	| oldStart <Point> oldEnd <Point> newStart <Point> newEnd <Point> low <Point> high <Point> merge <Rect>
+		highy <Int> lowy <Int> |
+
+	"If the selection is set while selecting, the selecting operation is canceled first"
+	self selecting
+		ifTrue: [ self finishSelecting ].
+
+	selection = sel
+		ifTrue: [ ^self ].
+
+	(selection notNil and: [ self layoutValid and: [ self column layoutValid ]])
+		ifTrue: [	oldStart := self selectionStart.
+						oldEnd := self selectionEnd.	].
+
+	self setSelection: sel reanchor: reanchor.
+
+	oldStart isNil
+		ifTrue: [ ^self ].
+
+	"compute the areas that need to be invalidated.  If the view has been mutated in between, these
+		areas might be off, but in that case the mutation itself will cause a separate invalidation
+		which will cover the correct areas"
+
+	newStart := self selectionStart.
+	newEnd := self selectionEnd.
+
+	"When either the old or new ones were single selections, we invalidate the merge of the old and new
+		selection, to deal with empty selection past the end trickiness.  Otherwise, we invalidate the
+		changes between the old start and new start, and between the oldend and new end"
+
+	(oldStart = oldEnd or: [ newStart = newEnd ])
+		ifTrue: [	low := oldStart.
+						high := oldEnd.
+						"Make sure everything is in bounds"
+						highy := high y min: self column size.
+						high := (high x min: (self lineAt: highy) size) @ highy.
+						lowy := low y min: self column size.
+						low := (low x min: (self lineAt: lowy) size) @ lowy.
+						self selectionRectsFrom: low to: high
+							do: [ :r <Rect> |
+										merge isNil
+											ifTrue: [ merge := r ]
+											ifFalse: [ merge := merge merge: r ].
+								  ].
+						low := newStart.
+						high := newEnd.
+						"Make sure everything is in bounds"
+						highy := high y min: self column size.
+						high := (high x min: (self lineAt: highy) size) @ highy.
+						lowy := low y min: self column size.
+						low := (low x min: (self lineAt: lowy) size) @ lowy.
+						self selectionRectsFrom: low to: high
+							do: [ :r <Rect> |
+										merge isNil
+											ifTrue: [ merge := r ]
+											ifFalse: [ merge := merge merge: r ].
+								  ].
+						self invalidate: merge.
+						^self			"^^^^^^^^^^^^"
+					].
+
+	oldStart = newStart
+		ifFalse: [ self invalidateLinesFrom: oldStart y to: newStart y.
+						"in single line case, we've already done any work we need to"
+						(oldStart y = oldEnd y and: [ oldEnd y = newStart y and: [ newStart y = newEnd y ]])
+							ifTrue: [ ^self ].	 ].
+	oldEnd = newEnd
+		ifFalse: [ self invalidateLinesFrom: oldEnd y to: newEnd y	].!
+
+selectionIsEmpty ^<Boolean>
+
+	^self selection at1 = self selection at2!
+
+upArrow
+
+	| line <Int> col <Int> |
+	self selectionIsEmpty
+		ifFalse: [ self leftArrow ].
+	line := self selectionStartLine.
+	col := self selectionStartCol.
+	line = 1
+		ifTrue: [ ^self ].
+	line := line - 1.
+	col := self boundaryClosestTo: self xAnchor onLine: line.
+	self selection: (col@line),,(col@line) reanchor: false.! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	super localDisplayOn: can.
+	self displaySelectionOn: can.
+! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'notification' !
+
+
+detaching
+
+	self selecting
+		ifTrue: [ self finishSelecting ].
+	super detaching.!
+
+lostGrab
+
+	super lostGrab.
+	self finishSelecting.! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'event processing' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	self selecting
+		ifTrue: [ ^false ].
+
+	(super character: c focus: focus event: ev)
+		ifTrue: [ ^true ].
+
+	"if we aren't the focus, the event must be for a child"
+	self isFocus ifFalse: [ ^false ].
+
+	^self charHandler value: c value: focus value: ev
+!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	self selecting
+		ifTrue: [ ^false ].
+
+	(super keyDown: key focus: focus event: ev)
+		ifTrue: [ ^true ].
+
+	"if we aren't the focus, the event must be for a child"
+	self isFocus ifFalse: [ ^false ].
+
+	^self keyDownHandler value: key value: focus value: ev
+!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	| spot <Point> |
+
+	(super mouseEvent: type at: loc event: ev)
+		ifTrue: [ ^true ].
+
+	(type = #primaryButtonDown and: [ ev shiftPressed not ])
+		ifTrue: [	self startSelectingAt: loc.
+
+						(self isFocusCandidate and: [ self isFocus not ])
+							ifTrue: [ self becomeFocus ].
+						^true		].
+
+	(type = #mouseMove and: [ self selecting ])
+		ifTrue: [	"If this assertion fails, somehow grab release notification didn't work right"
+						self assert: [ self session primaryMouseButtonPressed ].
+
+						self continueSelectingAt: loc.
+						^true		].
+
+	(type= #primaryButtonUp and: [ self selecting ])
+		ifTrue: [	self finishSelectingAt: loc.
+						^true		].
+
+	(type = #primaryButtonDown and: [ ev shiftPressed ])
+		ifTrue: [	self extendSelectionAt: loc.
+						^true		].
+
+	(type = #primaryButtonDoubleClick)
+		ifTrue: [	^self doubleClickHandler value: loc value: ev ].
+	^false! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'input focus' !
+
+
+isFocus: flag <Boolean>
+
+	super isFocus: flag.
+	self isFocusBlock value: flag.
+	self layoutValid
+		ifTrue: [ self invalidateSelection ].! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'glyph access' !
+
+
+cutGlyphs  ^<SeqCltn[SeqCltn[Glyph]]>
+	"Delete the selection, The glyphs for the section deleted is returned."
+
+	^self replaceSelectionWithGlyphs: (Array[SeqCltn[Glyph]] with: Array[Glyph] new)!
+
+deleteGlyphs  ^<SeqCltn[SeqCltn[Glyph]]>
+	"Delete the selection, or if it is empty, the element before it.  The glyphs for the
+		section deleted are returned."
+
+	|	prev <Painter>
+		result <SeqCltn[SeqCltn[Glyph]]>
+		|
+	"save the painter because we don't want the painter to change"
+	prev := self painter.
+	result := self selectionIsEmpty
+			ifFalse: [	self replaceSelectionWithGlyphs: (Array[SeqCltn[Glyph]] with: (Array[Glyph] new: 0)). ]
+			ifTrue: [ 	self emptySelectionDelete ].
+	self painter: prev.
+	^result!
+
+enterGlyph: g <Glyph>  ^<SeqCltn[SeqCltn[Glyph]]>
+
+	|	prev <Painter>
+		result <SeqCltn[SeqCltn[Glyph]]>
+		|
+	"save the painter because we don't want the painter to change"
+	prev := self painter.
+	result := self replaceSelectionWithGlyphs:
+			(Array[SeqCltn[Glyph]] with: (Array[Glyph] with: g)).
+	self painter: prev.
+	^result!
+
+glyphsFrom: start <Point> to: end <Point>  ^<SeqCltn[SeqCltn[Glyph]]>
+	"Return a collection of lines containing the glyphs in the specified range, where start and end
+		are points specifying col@row.  Carriage returns are included as regular character glyphs at the end
+		of each line."
+
+	|	lines <OrderedCollection[SeqCltn[Glyph]]>
+		row <GlyphRow> |
+	lines := OrderedCollection[SeqCltn[Glyph]] new.
+	row := self lineAt: start y.
+	start y = end y
+		ifTrue: [	"range covers one line only"
+						lines addLast: (row glyphsFrom: start x to: end x - 1).
+						^lines	].
+	"part on first line"
+	lines addLast: (row glyphsFrom: start x to: row size).
+
+	"interior lines"
+	start y + 1 to: end y - 1 do:
+		[ :line <Int> |
+			row := self lineAt: line.
+			lines addLast: (row glyphsFrom: 1 to: row size).	].
+	
+	"part on last line"
+	row := self lineAt: end y.
+	lines addLast: (row glyphsFrom: 1 to: end x - 1).
+
+	^lines!
+
+replaceFrom: start <Point>
+to: end <Point>
+withGlyphs: newLines <SeqCltn[SeqCltn[Glyph]]>
+^<SeqCltn[SeqCltn[Glyph]]>
+	"Replace the specified range with the specified newLines.  newLines is a seqcltn of individual line
+	  collections, which are themselves sequenceable collections of glyphs.  Carriage return glyphs must
+	  already have been inserted at the end of all but the last line.  The selection is left covering the
+	  inserted lines.  The elements removed are returned.
+
+	  Note: this is the central mutation routine that all changes go through."
+
+	| adaptEndCr <Boolean> |
+	adaptEndCr := end = self endSpot.
+	^(start y = end y and: [ newLines size = 1 ])
+		ifTrue: [	"we optimize the case where both the replacement range and new values
+								fit on a single line"
+						|	newEnd <Int>
+							old <SeqCltn[Glyph]> |
+						old := (self lineAt: start y)
+									replaceFrom: start x
+									to: end x - 1
+									with: newLines first.
+						newEnd := start x + newLines first size.
+						adaptEndCr
+							ifTrue: [	self adaptEndCr ].
+
+						self selection: start ,, (newEnd @ end y).
+
+						Array[SeqCltn[Glyph]] with: old	]
+		ifFalse: [	"Call the general algorithm for multi-line replacement"
+							self generalReplaceFrom: start to: end withLines: newLines.	].
+!
+
+replaceSelectionWithGlyphs: newLines <SeqCltn[SeqCltn[Glyph]]>	^<SeqCltn[SeqCltn[Glyph]]>
+	"Replace the selection with the specified newLines.  newLines is a seqcltn of individual line
+	  collections, which are themselves sequenceable collections of glyphs.  Carriage return glyphs must
+	  already have been inserted at the end of all but the last line.  The selection is left covering the
+	  inserted lines.  The elements removed are returned."
+
+	^self replaceFrom: self selectionStart to: self selectionEnd withGlyphs: newLines!
+
+selectionGlyphs ^<SeqCltn[SeqCltn[Glyph]]>
+	"This gets the glyphs for the selection"
+
+	^self glyphsFrom: self selectionStart to: self selectionEnd! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'restricted-to session' !
+
+
+blinkFocus: shown <Boolean>
+
+	self blinkDeferCount > 0
+		ifTrue: [ self blinkDeferCount: self blinkDeferCount - 1 ]
+		ifFalse: [ self selectionIsEmpty
+							ifTrue: [ self invalidateSelection ]
+					 ]! !
+

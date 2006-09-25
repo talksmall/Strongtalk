@@ -1,0 +1,1518 @@
+Delta define: #TextView as: (
+Generic forAll: 'MODEL ' body: ((Class subclassOf: 'View[MODEL]' instanceVariables: 'glyphBuilder <[MODEL, ^SeqCltn[SeqCltn[Glyph]] ]>
+			"A block that takes a model value, and builds a collection
+				of lines of glyphs"
+modelBuilder <[SeqCltn[SeqCltn[Glyph]], ^MODEL]>
+			"A block that takes a collection of lines of glyphs,
+				and builds and returns a model value."
+lines <Lines>
+			"The visual containing the rows of glyphs"
+
+undoBuffer <LinkedList[Entry[VarTuple[TextSelection,MODEL]]]>
+maxUndo <Int>
+			"The undo buffer holds no more than this many entries"
+
+typingSpot <TextSelection>
+			"Is non-nil if last edit was a char or backspace"
+redoBuffer <LinkedList[Entry[VarTuple[TextSelection,MODEL]]]>
+painter <Painter>
+			"This holds the painter until the lines structure is created.  After that,
+				we use the painter stored in the lines (so that we get the adapted painter)"
+isMultiLine <Boolean>
+			"If this is true, then we allow imbedded CRs, and accept must be done with
+				ctrl-CR.  If false, then there is only one line, and accept happens on each character
+				(and CRs are not processed).
+				Escape always means cancel."
+monoPainter <Boolean>
+			"If this is true, all characters displayed should show the same font"
+modelOutOfDate <Boolean>
+			"If true, then the model does not reflect the glyphs, and must be rebuilt
+				on demand.  This is NOT the same as hasBeenChanged, which
+				reflects whether an accept has been done"
+
+prefsModifier <PreferenceModifier>
+desiredRows <Int>
+			"# of rows (based on height of first row) to try to show. If nil, try to show all (at this moment)"
+desiredColumns <Int>
+			"# of desired cols, based on avg char width of font of first char. If nil, try to show all (at this moment)"
+
+oneShotModel <Boolean>
+			"If this is true, then the model is a consumable thing like a stream, in which case we must rebuild
+				it from the glyphs each time it is asked for."
+scrollable <Boolean>
+			"If this is false, then no scrollport or viewport is put around the textview."
+autoIndent <Boolean>
+			"If true, then hitting return in a multiline textview will duplicate any leading whitespace
+				from the line before"
+autoAccept <Boolean>
+			"If this is true, then accept happens on every keystroke (and cr is not processed
+				for single line text editors)"
+		'))) !
+
+(Delta mirrorFor: #TextView) revision: '$Revision: 1.15 $'!
+
+(Delta mirrorFor: #TextView) group: 'ui'!
+
+(Delta mirrorFor: #TextView)
+comment: 
+'Design note:  All mutation of the glyphs held by the Lines structure goes through the methods
+in the ''model access'' category.  Each method that does direct mutation of the glyphs not through
+one of these methods must send (self glyphsChanged).  Any high-level operation that wants to
+preserve undo/redo information should record the edit, and wrap the model access calls with
+a call to #preservingUndoDo:.  The existing methods that record undo information are in the
+''undoable editing'' category.
+
+Tags: %User %UI
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #TextView) classSide methodsFor: 'instance creation' !
+
+
+forCharStream ^<TextView[InputStream[Character]]>
+
+	| inst <TextView[InputStream[Character]]> |
+	inst := TextView[InputStream[Character]] new.
+	inst	monoPainter: true;
+			oneShotModel: true;
+			glyphBuilder: 
+				[ :s <InputStream[Character]> |
+					inst split: s collecting:
+						[ :c <Character> |
+							inst charGlyphFor: c ]	 ];
+			modelBuilder: 
+				[ :gls <SeqCltn[SeqCltn[Glyph]]> |
+					 self streamOver: gls
+							converting: [ :gl <Glyph> |
+													(CharacterGlyph coerce: gl
+																else: [self error: 'non-character glyph encountered in text'])
+														character		]
+				].
+	^inst!
+
+forGlyphs ^<TextView[SeqCltn[Glyph]]>
+
+	| inst <TextView[SeqCltn[Glyph]]> |
+	inst := TextView[SeqCltn[Glyph]] new.
+	inst	glyphBuilder: 
+				[ :s <SeqCltn[Glyph]> |
+					inst split: s collecting: [ :cg <Glyph> |  cg ] ];
+			modelBuilder: 
+				[ :gls <SeqCltn[SeqCltn[Glyph]]> |
+					inst join: gls collecting: [ :gl <Glyph> |  gl	 ] ].
+	^inst!
+
+forString ^<TextView[Str]>
+
+	| inst <TextView[Str]> |
+	inst := TextView[Str] new.
+	inst	monoPainter: true;
+			glyphBuilder: 
+				[ :s <Str> |
+					inst split: s collecting:
+						[ :c <Character> |
+							inst charGlyphFor: c ]	 ];
+			modelBuilder: 
+				[ :gls <SeqCltn[SeqCltn[Glyph]]> |
+					String withAll: 
+						(inst join: gls collecting:
+							[ :gl <Glyph> |
+								(CharacterGlyph coerce: gl else: [self error: 'non-character glyph encountered in text'])
+									character		])	 ].
+		^inst!
+
+forText ^<TextView[CharGlyphs]>
+
+	| inst <TextView[CharGlyphs]> |
+	inst := TextView[CharGlyphs] new.
+	inst	glyphBuilder: 
+				[ :s <CharGlyphs> |
+					inst split: s collecting: [ :cg <CharacterGlyph> |  cg ] ];
+			modelBuilder: 
+				[ :gls <SeqCltn[SeqCltn[Glyph]]> |
+						| text <OrdCltn[CharGlyph]> |
+						text := OrderedCollection[CharGlyph] new: (gls size * 10).		"heuristic"
+						inst glyphsIn: gls do:
+							[ :gl <Glyph> |
+								CharacterGlyph coerce: gl
+									do: [ :cg <CharacterGlyph> |
+												text addLast: cg	]
+							].
+						text
+				].
+	^inst! !
+
+! (Delta mirrorFor: #TextView) classSide methodsFor: 'private' !
+
+
+streamOver: lines <SeqCltn[SeqCltn[Glyph]]>
+converting: convert <[Glyph,^X def]>
+^<InputStream[X]>
+	"build a stream that will lazily convert and return the glyphs in the hierarchy"
+
+	|	lineIndex <Int>
+		glyphIndex <Int>
+		line <SeqCltn[Glyph]>
+		linesSize <Int>
+		lineSize <Int>
+		|
+	glyphIndex := lineIndex := 1.
+	linesSize := lines size.
+
+	lineIndex <= linesSize
+		ifTrue: [	line := lines at: lineIndex.
+						lineSize := line size. ].
+
+	^CustomInputStream[X] new
+		atEndBlock: [ lineIndex >= linesSize and: [ lineIndex > linesSize or: [ lineSize = 0 ] ]		];
+		nextBlock: [	| el <Glyph> |
+							el := line at: glyphIndex.
+							glyphIndex := glyphIndex + 1.
+							glyphIndex > lineSize
+								ifTrue: [	lineIndex := lineIndex + 1.
+												lineIndex <= linesSize
+													ifTrue: [	line := lines at: lineIndex.
+																	glyphIndex := 1.
+																	lineSize := line size. ].	].
+							convert value: el
+						  ]! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'accessing' !
+
+
+autoAccept ^<Boolean>
+
+	autoAccept isNil
+		ifTrue: [ autoAccept := self isMultiLine not ].
+	^autoAccept!
+
+autoAccept: f <Boolean>
+
+	autoAccept := f!
+
+autoIndent ^<Boolean>
+
+	autoIndent isNil
+		ifTrue: [ autoIndent := true ].
+	^autoIndent!
+
+autoIndent: f <Boolean>
+
+	autoIndent := f!
+
+endSpot ^<Point>
+
+	^self lines endSpot!
+
+font: f <Font>
+
+	self painter font: f!
+
+glyphBuilder ^<[MODEL, ^SeqCltn[SeqCltn[Glyph]] ]>
+
+	^glyphBuilder!
+
+glyphBuilder: b <[MODEL, ^SeqCltn[SeqCltn[Glyph]] ]>
+
+	glyphBuilder := b!
+
+infiniteUndo
+	"use an undo buffer that is effectively infinite in size"
+
+	self maxUndo: SmallInteger maxVal!
+
+isMultiLine ^<Boolean>
+
+	^isMultiLine!
+
+isMultiLine: flag <Boolean>
+
+	self assert: [ self hasVisual not ].
+	isMultiLine := flag!
+
+linearGlyphAt: i <Int> ^<Glyph>
+	"return the ith glyph, counting linearly.  Is an error if the index is bad."
+
+	^self lines glyphAt: (self linearSpotAt: i ifAbsent: [ self error: 'bad index' ]) ifAbsent: [ self shouldNotHappen ]!
+
+linearIndexFor: spot <Point> ^<Int>
+
+	^self lines linearIndexFor: spot!
+
+linearSpotAt: i <Int> ifAbsent: blk <[^X def]> ^<Point | X>
+	"return the index of the ith glyph from the 1@1th glyph, counting glyphs in
+	reading order (including 1 for each new line)"
+
+	^self lines linearSpotAt: i ifAbsent: blk!
+
+maxUndo ^<Int>
+
+	^maxUndo!
+
+maxUndo: max <Int>
+
+	maxUndo := max.
+	maxUndo > 0
+		ifTrue: [	undoBuffer := LinkedList[Entry[VarTuple[TextSelection,MODEL]]] new.	].!
+
+model ^<MODEL>
+
+	self modelOutOfDate
+		ifTrue: [ self setModel: self modelFromGlyphs ].
+	self modelOutOfDate: self oneShotModel.
+
+	^super model!
+
+modelBuilder ^<[SeqCltn[SeqCltn[Glyph]], ^MODEL]>
+
+	^modelBuilder!
+
+modelBuilder: b <[SeqCltn[SeqCltn[Glyph]], ^MODEL]>
+
+	modelBuilder := b!
+
+modelOutOfDate ^<Boolean>
+
+	^modelOutOfDate!
+
+modelOutOfDate: f <Boolean>
+
+	modelOutOfDate  := f!
+
+monoPainter ^<Boolean>
+
+	^monoPainter!
+
+monoPainter: f <Boolean>
+
+	monoPainter := f!
+
+oneShotModel ^<Boolean>
+
+	^oneShotModel!
+
+oneShotModel: f <Boolean>
+
+	oneShotModel := f!
+
+paint: p <Paint>
+
+	self painter paint: p!
+
+painter ^<Painter>
+
+	^self hasVisual
+		ifTrue: [ self lines painter ]
+		ifFalse: [ painter ]!
+
+painter: p <Painter>
+
+	self setPainter: p.
+	self hasVisual
+		ifTrue: [	self monoPainter		"then rebuild all the character glyphs"
+							ifTrue: [	| sel <TextSelection> |
+											sel := self selection.
+											self createGlyphsFromModel: self modelFromGlyphs.
+											self selection: sel. ]
+					]!
+
+scrollable ^<Boolean>
+
+	^scrollable!
+
+scrollable: f <Boolean>
+
+	scrollable := f! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'testing' !
+
+
+acceptsTabs ^<Boolean>
+
+	^self isMultiLine!
+
+redoIsPossible ^<Boolean>
+	"returns true if redo is possible"
+
+	^redoBuffer notNil
+		and: [ redoBuffer isEmpty not ]!
+
+undoIsPossible ^<Boolean>
+	"returns true if undo is possible"
+
+	^undoBuffer notNil
+		and: [ undoBuffer isEmpty not ]! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'utility' !
+
+
+charGlyphFor: c <Character> ^<Glyph>
+
+	^self painter charGlyphFor: c!
+
+extractStrFrom: lines <SeqCltn[SeqCltn[Glyph]]> ^<Str>
+	"take a collection of glyph lines and build a string for all character glyphs in it."
+
+	| strm <CharWriteStream> |
+	strm := (String new: (lines size * 20)) writeStream.
+	self glyphsIn: lines do:
+		[ :gl <Glyph> |
+			CharacterGlyph coerce: gl
+				do: [ :cg <CharacterGlyph> |
+							strm put: cg character	]
+		].
+	^strm contentsWritten!
+
+glyphsIn: lines <SeqCltn[SeqCltn[Glyph]]>  do: blk <[Glyph]>
+	"take a collection of glyph lines and iterate over the glyphs from the first to
+		the last."
+
+	lines do:
+		[ :line <SeqCltn[Glyph]> |
+			line do:
+				[ :gl <Glyph> |
+					blk value: gl		]	].!
+
+indexOf: s <Str>
+startingAt: linearIndex <Int>
+caseSensitive: caseSens <Boolean>
+ifAbsent: f <[^X def]>
+^<Int | X>
+
+	^self modelString
+		indexOfStr: s
+		startingAt: linearIndex
+		caseSensitive: caseSens
+		ifAbsent: f!
+
+join: lines <SeqCltn[SeqCltn[Glyph]]>  collecting: f <[Glyph, ^X def]>  ^<SeqCltn[X]>
+	"take a collection of lines and join them into a linear collection of values
+		produced by transforming each glyph using the function f."
+
+	| join <OrdCltn[X]> |
+	join := OrderedCollection[X] new.
+	lines do:
+		[ :line <SeqCltn[Glyph]> |
+			line do:
+				[ :gl <Glyph> |
+					join addLast: (f value: gl)		]	].
+	^join!
+
+linesForString: s <Str> ^<SeqCltn[SeqCltn[Glyph]]>
+	"build and return a line collection of glyphs suitable for #replaceSelectionWith: from the
+	  string, using the current painter"
+	|	strm <InputStream[Character]>
+		lines <OrdCltn[SeqCltn[Glyph]]>
+		next <OrdCltn[Glyph]> |
+
+	strm := s readStream.
+	lines := OrderedCollection[SeqCltn[Glyph]] new.
+	next  := OrderedCollection[Glyph] new.
+	lines addLast: next.
+	[ strm atEnd ]
+		whileFalse:
+			[	| c <Character> |
+				c := strm next.
+				next addLast: (self charGlyphFor: c).
+				c = Character cr
+					ifTrue: [	next := OrderedCollection[Glyph] new.
+									lines addLast: next. ]	].
+	^lines
+
+!
+
+modelString ^<Str>
+	"Returns a string for the entire model (ignoring non-char glyphs)"
+
+	^self extractStrFrom: (self lines glyphsFrom: 1@1 to: self endSpot)!
+
+selectCodeParagraphBackFrom: line <Int>
+	"extend the selection forward to the end of the specified line, and back
+		to the beginning of the nearest preceding line (counting the specified line)
+		that either does not start with whitespace, or that is preceeded by a
+		line that is entirely whitespace.  Used for auto-selecting doit regions."
+		
+	| startLine <Int> |
+	startLine := line.
+	[	(self lineStartsWithWhitespace: startLine)
+			ifFalse: [	^self selectLinesFrom: startLine to: line ].
+		(self lineIsAllWhitespace: startLine)
+			ifTrue: [	^self selectLinesFrom: (startLine + 1 min: line) to: line ].
+		startLine := startLine - 1.
+		startLine = 0
+			ifTrue: [	^self selectLinesFrom: (startLine + 1 min: line) to: line ]
+	] repeat!
+
+split: s <Cltn[X]> collecting: map <[X def, ^Glyph]>  ^<SeqCltn[SeqCltn[Glyph]]>
+	"build a line collection from the values, using f to build a glyph at each point, and
+		breaking at each carriage return character glyph"
+
+	|	lines <OrdCltn[SeqCltn[Glyph]]>
+		cg <Glyph>
+		line <OrdCltn[Glyph]>
+		|
+
+	lines := OrderedCollection[SeqCltn[Glyph]] new.
+	line := OrderedCollection[Glyph] new.
+	lines add: line.
+	s do:
+		[ :el <X> |
+			cg := map value: el.
+			line addLast: cg.
+			(self isCarriageReturnGlyph: cg)
+				ifTrue: [	line := OrderedCollection[Glyph] new.
+								lines add: line.	].	].
+	^lines! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	| clipper <Visual> |
+	self buildLinesIfNeeded.
+	clipper := 
+		self scrollable
+			ifFalse: [ lines ]
+			ifTrue: [ self isMultiLine
+							ifTrue: [	| s <Scroller> |
+											s := Scroller viewportFor: lines.
+											s viewport child cursor: self cursor.
+											s ]
+							ifFalse: [	| v <Viewport> |
+											v := (Viewport for: lines) constrainY: true.
+											v child cursor: self cursor.
+											v
+										 ].
+						].
+
+	self prefsModifier: (PreferenceModifier for: clipper).
+	^self prefsModifier
+			prefsBlock: [ :pm <PreferenceModifier> |
+									self computePrefsFor: pm	]!
+
+changeFontAndColor
+
+	self visual
+		userChangeFontAndPaintFor: self painter copy
+		action: [ :p <Painter> |
+						self painter: p ]!
+
+computePrefsFor: pm <PreferenceModifier>
+
+	| nat <Rect> natx <Int> naty <Int> subnat <Rect> |
+
+	subnat := pm part natural enclosingRect.
+	self desiredColumns isNil
+		ifTrue: [ natx := subnat width ]
+		ifFalse: [	natx := self desiredColumns * 
+							((self painter charGlyphFor: $a) naturalIn: pm medium) enclosingRect width.	].
+	self desiredRows isNil
+		ifTrue: [	naty := subnat height. ]
+		ifFalse: [	naty := self desiredRows *
+								((self lines lineAt: 1) naturalIn: pm medium) enclosingRect height.	].
+
+	nat := subnat left @ subnat top
+				corner: (natx + subnat left) @ (naty + subnat top).
+
+	"make sure these fit with the min size if we don't have a scroller!!"
+	self scrollable
+		ifFalse: [ nat := pm part min enclosingRect merge: nat ].
+
+	pm	natural: nat
+			min: (pm part min enclosingRect intersect: nat)
+			max: (pm part max enclosingRect merge: nat).!
+
+createGlyphsFromModel
+
+	"We use super model so that it doesn't get rebuilt from the glyphs while
+		we are trying to do the inverse operation"
+	self createGlyphsFromModel: super model.
+	self modelOutOfDate: self oneShotModel.
+	self lines selection: (1@1) ,, (1@1).!
+
+createGlyphsFromModel: m <MODEL>
+
+	self replaceFrom: 1@1
+		to: self lines endSpot
+		withModel: m.!
+
+cursor ^<Cursor>
+
+	^Cursor text!
+
+doEnterCharacter: c <Character> ^<MODEL>
+
+	| s <Str> |
+	s := String with: c.
+	(self autoIndent and: [ c = Character cr ])
+		ifTrue: [ s := s, self thisLineLeadingWhiteSpace ].
+
+	^self enterString: s!
+
+eraseHistory
+
+	self noUndo; noRedo.!
+
+fitToTextAndMakeVisible
+
+	self showAllCurrentColumns; showAllCurrentRows.
+	self session updateLayoutsIfNeeded.
+	self visual scrollIfNeededToMakeVisible.!
+
+glyphsChanged
+	"Must be called at least once for any mutation of the glyphs.
+		This erases undo/redo information, so any high level operations
+		that want to preserve undo/redo must evaluate their low level operations
+		in a #preservingUndoDo: call."
+
+	self eraseHistory.
+	self modelOutOfDate: true.!
+
+glyphsForModel: model <MODEL> ^<SeqCltn[SeqCltn[Glyph]]>
+
+	^self glyphBuilder value: model!
+
+handleDoubleClick: ev <UIEvent> at: loc <Point>  ^<Boolean>
+
+	ev ctrlPressed
+			ifTrue: [ self fitToTextAndMakeVisible. ]
+			ifFalse: [ self selectRange ].
+	^true!
+
+hasTypingSpot ^<Boolean>
+
+	^typingSpot notNil!
+
+isCarriageReturnGlyph: gl <Glyph> ^<Boolean>
+
+	^(CharacterGlyph coerce: gl else: [ ^false ])
+		character = Character cr!
+
+isFocus: isFocus <Boolean>
+
+	(isFocus and: [ self isMultiLine not ])
+		ifTrue: [	self selectAll ]!
+
+lineIsAllWhitespace: l <Int>  ^<Boolean>
+
+	| line <GlyphRow> |
+	line := self lines lineAt: l.
+	
+	1 to: line size do:
+		[ :col <Int> |
+			CharacterGlyph coerce: (line glyphAt: col)
+				do: [ :cg <CharacterGlyph> |
+							(			cg character = Character space
+								or: [	cg character = Character tab
+								or: [	cg character = Character cr	]  ]
+							)	ifFalse: [ ^false ].
+						]
+				else: [ ^false ]
+		].
+	^true!
+
+lineStartsWithWhitespace: l <Int>  ^<Boolean>
+
+	| line <GlyphRow> |
+	line := self lines lineAt: l.
+	
+	^CharacterGlyph coerce: (line glyphAt: 1)
+				do: [ :cg <CharacterGlyph> |
+									cg character = Character space
+							or: [	cg character = Character tab
+							or: [	cg character = Character cr	]  ]
+						]
+				else: [ false ]!
+
+lines ^<Lines>
+
+	^lines!
+
+modelForGlyphs: gls <SeqCltn[SeqCltn[Glyph]]>  ^<MODEL>
+
+	^self modelBuilder value: gls!
+
+modelFromGlyphs ^<MODEL>
+        "This builds a model from the glyphs. It does not set the model inst var."
+
+        ^self modelForGlyphs: (self lines glyphsFrom: 1@1 to: self lines endSpot)!
+
+noRedo
+
+	(redoBuffer notNil and: [ redoBuffer isEmpty not ])
+		ifTrue: [ self redoBuffer removeAll ]!
+
+noTypingSpot
+
+	typingSpot := nil!
+
+noUndo
+
+	(undoBuffer notNil and: [ undoBuffer isEmpty not ])
+		ifTrue: [ self undoBuffer removeAll ]!
+
+prefsModifier ^<PreferenceModifier>
+
+	^prefsModifier!
+
+prefsModifier: pm <PreferenceModifier>
+
+	prefsModifier := pm!
+
+preservingUndoDo: blk  <[]>
+
+	|	oldUndo <LinkedList[Entry[VarTuple[TextSelection,MODEL]]]>
+		oldRedo <LinkedList[Entry[VarTuple[TextSelection,MODEL]]]>
+		|
+	oldUndo := undoBuffer.
+	oldRedo := redoBuffer.
+	undoBuffer := redoBuffer := nil.
+	blk value.
+	undoBuffer := oldUndo.
+	redoBuffer := oldRedo.!
+
+recordChange: edit <VarTuple[TextSelection,MODEL]>
+
+	self undoEnabled
+		ifTrue: [	self undoBuffer addLast: 
+							(Entry[VarTuple[TextSelection,MODEL]]  new value: edit).	].
+	self	noTypingSpot.!
+
+redoBuffer ^<LinkedList[Entry[VarTuple[TextSelection,MODEL]]]>
+
+	redoBuffer isNil
+		ifTrue: [ redoBuffer := LinkedList[Entry[VarTuple[TextSelection,MODEL]]] new. ].
+	^redoBuffer!
+
+selectLinesFrom: startLine <Int> to: endLine <Int>
+
+	self selection: (1 @ startLine) ,, ((self lines lineAt: endLine) size @ endLine).
+	self visual displayNowIfInvalid!
+
+setPainter: p <Painter>
+
+	p == painter
+		ifTrue: [ ^self ].
+	painter := p.
+	self hasVisual
+		ifTrue: [ self lines painter: p. ]!
+
+thisLineLeadingWhiteSpace ^<Str>
+
+	| spot <Point> line <GlyphRow> strm <CharReadWriteStream>  |
+	spot := self selection at1.
+	line := self lines lineAt: spot y asInteger.
+
+	strm := String new readWriteStream.
+	1 to: line size do:
+		[ :i <Int> |
+			CharacterGlyph coerce: (line glyphAt: i)
+				do: [ :cg <CharacterGlyph> |
+							(i < spot x
+								and: [ cg character = Character space
+											or: [ cg character = Character tab ]])
+								ifTrue: [ strm put: cg character ]
+								ifFalse: [ ^strm contentsWritten ] .
+						]
+		].
+	self shouldNotHappen!
+
+typingIsUnbroken ^<Boolean>
+	"takes a flag that indicates whether the previous edit was a character insertion just before
+		the spot we are at (and therefore we can merge the last edit with this one))"
+
+	^				self hasTypingSpot
+		and: [	self typingSpot = self selection ]
+!
+
+typingSpot ^<TextSelection>
+
+	^typingSpot!
+
+typingSpot: spot <TextSelection>
+
+	typingSpot := spot!
+
+undoBuffer ^<LinkedList[Entry[VarTuple[TextSelection,MODEL]]]>
+
+	^undoBuffer!
+
+undoEnabled ^<Boolean>
+
+	^self maxUndo > 0! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self setPainter: self defaultPainter.
+	self autoIndent: true.
+	self maxUndo: 0.
+	self isMultiLine: true.
+	self monoPainter: false.
+	self modelOutOfDate: false.
+	self oneShotModel: false.
+	self scrollable: false.! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'event processing' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	self isReadOnly
+		ifTrue: [ ^false ].
+
+	(c isPrintable or: [ self acceptsTabs
+											and: [ c = Character tab
+											and: [ ev ctrlPressed not
+											and: [ ev shiftPressed not ]]]])
+		ifTrue: [	self enterCharacter: c.
+						^true		].
+
+	c = Character cr
+		ifTrue: [	(self isMultiLine and: [ ev ctrlPressed not ])
+							ifTrue: [	self enterCharacter: c.
+											^true ].
+					 ].	
+	^false!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+	"This is called from lines for any keystroke that is for the lines and that is
+	  not for a child visual"
+
+	"---------- non-mutation operations "
+
+	key = #UP
+		ifTrue: [	self lines upArrow.
+						^true ].
+	key = #DOWN
+		ifTrue: [	self lines downArrow.
+						^true ].
+	key = #LEFT
+		ifTrue: [	self lines leftArrow.
+						^true ].
+	key = #RIGHT
+		ifTrue: [	self lines rightArrow.
+						^true ].
+	(ev ctrlPressed and: [ key = #C ])
+		ifTrue: [	self copySelection.
+						^true ].
+	(ev ctrlPressed and: [ key = #X ])
+		ifTrue: [	self cutSelection.
+						^true ].
+	(ev ctrlPressed and: [ key = #V ])
+		ifTrue: [	self pasteSelection.
+						^true ].
+	(ev ctrlPressed and: [ key = #A ])
+		ifTrue: [	self selectAll.
+						^true ].
+
+	"---------- now comes the mutation operations "
+	self isReadOnly
+		ifTrue: [ ^false ].
+
+	key = #ESCAPE
+		ifTrue: [	self cancel.
+						^true ].
+	key = #BACK
+		ifTrue: [	self delete.
+						" any built-up repeat chars so we don't get behind"
+						ev repeatCount: 0.
+
+						"We force a refresh here so that we see where we are"
+						self lines displayNowIfInvalid.
+						^true ].
+	key = #DELETE
+		ifTrue: [	self forwardDelete.
+						" any built-up repeat chars so we don't get behind"
+						ev repeatCount: 0.
+
+						"We force a refresh here so that we see where we are"
+						self lines displayNowIfInvalid.
+						^true ].
+	key = #RETURN
+		ifTrue: [	(ev ctrlPressed or: [ self isMultiLine not and: [ self autoAccept not ] ])
+							ifTrue: [ self accept.
+											^true ].
+						"make sure we absorb this, since we will absorb the character;
+							this is so we don't confuse any containing defaultbuttonwrapper."
+						self isMultiLine
+							ifTrue: [	^true ].
+					 ].
+
+	(key = #E and: [ ev ctrlPressed ])
+		ifTrue: [	self fitToTextAndMakeVisible.
+						^true ].
+	(key = #Z and: [ ev ctrlPressed ])
+		ifTrue: [	self undo.
+						^true ].
+						
+	^false! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'model access' !
+
+
+copySelection
+
+	self selection at1 = self selection at2
+		ifTrue: [ ^self ].
+	Platform clipboardText: self selectionString!
+
+deleteModel  ^<MODEL>
+	"Delete the selection, or if it is empty, the element before it.  The model for the
+		section deleted is returned.
+		This mutates the glyphs directly."
+
+	|	prev <Painter>
+		result <MODEL>
+		|
+	"save the painter because we don't want the painter to change"
+	prev := self painter.
+	result := self modelForGlyphs: self lines deleteGlyphs.
+	self setPainter: prev.
+	self glyphsChanged.
+	^result!
+
+enterString: s <Str> ^<MODEL>
+	"Replace the current selection with a glyph for c using the current painter,
+		and return the model for the previous selection.  This is a convenience method
+		for text editors; it is unsafe if the model does not allow character glyphs in the
+		text (rare).
+		This mutates the glyphs directly."
+
+	|	prev <Painter>
+		result <MODEL>
+		|
+	"save the painter because we don't want the painter to change"
+	prev := self painter.
+	result := self modelForGlyphs:
+		(self lines replaceSelectionWithGlyphs:
+			(self linesForString: s)).
+	self setPainter: prev.
+	self glyphsChanged.
+	^result!
+
+forwardDeleteModel  ^<MODEL>
+	"Delete the selection, or if it is empty, the element following it.  The model for the
+		section deleted is returned.
+		This mutates the glyphs directly."
+
+	^self lines selectionIsEmpty
+		ifFalse: [ self deleteModel ]
+		ifTrue: [ | start <Point> end <Point> |
+						start := self selection at1.
+						self lines rightArrow.
+						end := self selection at1.
+						self selection: start,,end.
+						self lines selectionIsEmpty
+							ifTrue: [ self modelForGlyphs: (Array[SeqCltn[Glyph]] with: Array[Glyph] new) ]
+							ifFalse: [ self forwardDeleteModel	]	]!
+
+model: m <MODEL>
+
+	super model: m.
+	self hasVisual
+		ifTrue: [ self createGlyphsFromModel. ].
+!
+
+replaceFrom: start <Point> to: end <Point> withModel: model <MODEL> ^<MODEL>
+	"This replaces a range of elements using model values.  The previous model values
+			are returned.
+		This mutates the glyphs directly."
+
+	| gls <SeqCltn[SeqCltn[Glyph]]> |
+	gls := self glyphsForModel: model.
+	gls := self lines replaceFrom: start to: end withGlyphs: gls.
+	self glyphsChanged.
+	^self modelForGlyphs: gls!
+
+replaceModelFrom: start <Point> to: end <Point> withGlyphs: lines <SeqCltn[SeqCltn[Glyph]]> ^<MODEL>
+	"This replaces a range of elements using model values.  The previous model values
+			are returned.
+		This mutates the glyphs directly."
+
+	| gls <SeqCltn[SeqCltn[Glyph]]> |
+	gls := self lines replaceFrom: start to: end withGlyphs: lines.
+	self glyphsChanged.
+	^self modelForGlyphs: gls!
+
+replaceSelectionModelWithGlyphs: lines <SeqCltn[SeqCltn[Glyph]]> ^<MODEL>
+	"This replaces the selection with glyphs for the specified model.  The previous model values
+			covered by the selection are returned."
+
+	^self replaceModelFrom: self lines selectionStart to: self lines selectionEnd withGlyphs: lines!
+
+replaceSelectionWithModel: model <MODEL> ^<MODEL>
+	"This replaces the selection with glyphs for the specified model.  The previous model values
+			covered by the selection are returned."
+
+	^self replaceFrom: self lines selectionStart to: self lines selectionEnd withModel: model!
+
+selectionModel ^<MODEL>
+	"This gets the model for the selection"
+
+	^self modelForGlyphs: self lines selectionGlyphs!
+
+selectionString ^<Str>
+	"Heuristically convert the selection glyphs to a string.  Any non-Character
+		glyph is ignored"
+	
+	^self extractStrFrom: self lines selectionGlyphs! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'selection' !
+
+
+linearSelection ^ <Tuple[Int, Int]>
+
+| s <TextSelection> begin <Int> end <Int> |
+
+s := self selection.
+begin := self lines linearIndexFor: s at1.
+end := self lines linearIndexFor: s at2.
+^begin > end
+	ifTrue: [		end ,, begin ]
+	ifFalse: [	begin ,, end ]
+!
+
+linearSelection: s <Tuple[Int, Int]>
+
+	self selection: (self linearSpotAt: s at1 ifAbsent: [self error: 'bad selection' ]) ,, (self linearSpotAt: s at2 ifAbsent: [self error: 'bad selection' ])!
+
+selection ^<TextSelection>
+
+	^self lines selection!
+
+selection: s <TextSelection>
+
+	self lines selection: s!
+
+selectionEnd ^<Point>
+
+	^self lines selectionEnd!
+
+selectionStart ^<Point>
+
+	^self lines selectionStart! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'private-undo buffer' !
+
+
+lastEdit ^<VarTuple[TextSelection,MODEL]>
+
+	^self undoBuffer last value!
+
+recordEdit: edit <VarTuple[TextSelection,MODEL]>
+
+	self recordChange: edit;
+			noRedo.
+	self undoEnabled
+		ifTrue: [ [ self undoBuffer size > self maxUndo ]
+							whileTrue: [ self undoBuffer removeFirst ]	].
+	self changing.!
+
+recordRedo: edit <VarTuple[TextSelection,MODEL]>
+
+	self recordChange: edit.
+	self changing.!
+
+recordUndo: edit <VarTuple[TextSelection,MODEL]>
+
+	self redoBuffer addLast: 
+		(Entry[VarTuple[TextSelection,MODEL]]  new value: edit).
+	self noTypingSpot.
+	self changing.! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'undoable editing' !
+
+
+cutSelection
+
+	Platform clipboardText: (self extractStrFrom: self exciseSelectionGlyphs)!
+
+delete
+
+	| excised <MODEL> |
+
+	"We have use a variable here so that doDelete is done before the selection
+		is fetched"
+	self preservingUndoDo:
+		[ excised := self deleteModel ].
+	self	recordEdit: self selection ,, excised.
+!
+
+enterCharacter: c <Character>
+
+	|	edit <VarTuple[TextSelection,MODEL]>
+		editStart <Point>
+		excised <MODEL>
+		p <Painter>
+		|
+	p := self painter.
+
+	(self undoEnabled
+			and: [ self undoBuffer isEmpty not
+			and: [ self typingIsUnbroken ] ])
+		ifTrue: [	self preservingUndoDo:
+							[ self doEnterCharacter: c ].
+
+						"merge this edit with the last undo buffer edit"
+						edit := self lastEdit.
+						editStart := edit at1 at1.
+						edit at1: editStart ,, self selectionEnd.		]
+		ifFalse: [	self preservingUndoDo:
+							[ excised := self doEnterCharacter: c ].
+
+						"build a new undo buffer entry"
+						edit := self selection ,, excised.
+						self recordEdit: edit.	].
+	self lines rightArrow.
+	self setPainter: p.
+	self typingSpot: self selection.!
+
+exciseSelection ^<MODEL>
+
+	|	edit <VarTuple[TextSelection,MODEL]>
+		editEnd <Point>
+		excised <MODEL>
+		|
+	self preservingUndoDo:
+		[	self glyphsChanged.
+			excised := self modelForGlyphs: self lines cutGlyphs ].
+	self recordEdit: self selection ,, excised.
+	^excised!
+
+exciseSelectionGlyphs ^<SeqCltn[SeqCltn[Glyph]]>
+
+	|	edit <VarTuple[TextSelection,MODEL]>
+		editEnd <Point>
+		glyphs <SeqCltn[SeqCltn[Glyph]]>
+		excised <MODEL>
+		|
+	self preservingUndoDo:
+		[	self glyphsChanged.
+			glyphs := self lines cutGlyphs.
+			excised := self modelForGlyphs: glyphs ].
+	self recordEdit: self selection ,, excised.
+	^glyphs!
+
+forwardDelete
+
+	| excised <MODEL> |
+
+	"We have use a variable here so that doDelete is done before the selection
+		is fetched"
+	self preservingUndoDo:
+		[ excised := self forwardDeleteModel ].
+	self	recordEdit: self selection ,, excised.
+!
+
+pasteSelection
+
+	| s <Str> |
+	s := Platform clipboardTextIfAbsent: [ ^self ].
+	self replaceSelectionWithGlyphs: (self linesForString: s).
+	self lines selectionIsEmpty
+		ifFalse: [ self lines rightArrow ].!
+
+redo
+
+	|	edit <VarTuple[TextSelection,MODEL]>
+		excised <MODEL>
+		redobuf <LinkedList[Entry[VarTuple[TextSelection,MODEL]]]>
+		|
+	self assert: [ self redoIsPossible ].
+	edit := self redoBuffer removeLast value.
+	self selection: edit at1.
+	self preservingUndoDo:
+		[ excised := self replaceSelectionWithModel: edit at2 ].
+
+	self recordRedo: self selection ,, excised.!
+
+replaceSelectionWith: new <MODEL> ^<MODEL>
+
+	|	edit <VarTuple[TextSelection,MODEL]>
+		editEnd <Point>
+		excised <MODEL>
+		|
+	self preservingUndoDo:
+		[ excised := self replaceSelectionWithModel: new ].
+	self recordEdit: self selection ,, excised.
+	^excised!
+
+replaceSelectionWithGlyphs: new <SeqCltn[SeqCltn[Glyph]]> ^<MODEL>
+
+	|	edit <VarTuple[TextSelection,MODEL]>
+		editEnd <Point>
+		excised <MODEL>
+		|
+	self preservingUndoDo:
+		[ excised := self replaceSelectionModelWithGlyphs: new ].
+	self recordEdit: self selection ,, excised.
+	^excised!
+
+undo
+
+	|	edit <VarTuple[TextSelection,MODEL]>
+		excised <MODEL> |
+	self undoIsPossible
+		ifFalse: [ ^self ].
+	edit := self undoBuffer removeLast value.
+	self selection: edit at1.
+	self preservingUndoDo:
+		[ excised := self replaceSelectionWithModel: edit at2 ].
+	self recordUndo: self selection ,, excised.! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'menus' !
+
+
+editMenu ^<Menu>
+
+	| m <Menu> |
+	m := Menu new name: '&Edit'.
+	m add: (MenuAction new
+				name: 'Cu&t';
+				action: [ self cutSelection ]);
+		add: (MenuAction new
+				name: '&Copy';
+				action: [ self copySelection ]);
+		add: (MenuAction new
+				name: '&Paste';
+				action: [ self pasteSelection ]).
+	self undoEnabled
+		ifTrue: [ m
+							addSeparator;
+							add: (MenuAction new
+									name: '&Undo';
+									active: [ self undoIsPossible ];
+									action: [ self undo ] );
+							add: (MenuAction new
+									name: '&Redo';
+									active: [ self redoIsPossible ];
+									action: [ self redo ] ).
+					].
+	^m!
+
+hasMenu ^<Boolean>
+
+	^self isMultiLine!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: self editMenu;
+		add: self propertiesMenu!
+
+popUpMenu ^<Menu>
+
+	^Menu new
+		addAll: self acceptMenu removeAll;
+		addSeparator;
+		add: self editMenu;
+		add: self propertiesMenu!
+
+propertiesMenu ^<Menu>
+
+	^Menu new name: '&Properties';
+		add: (MenuAction new
+					name: '&Change Font and Color...';
+					action: [ self changeFontAndColor ]);
+		add: (MenuAction new
+					name: '&Auto-indent';
+					checked: [ self autoIndent ];
+					action: [ self autoIndent: self autoIndent not ])! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'control' !
+
+
+buildLinesIfNeeded
+
+	lines isNil
+		ifFalse: [ ^self ].
+		
+	lines := Lines new.
+	lines
+		painter: self painter;
+		isFocusCandidate: self isReadOnly not;
+		keyDownHandler:
+			[ :key <Symbol> :focus <Visual> :ev <UIEvent> |
+				self keyDown: key focus: focus event: ev	];
+		charHandler:
+			[ :char <Character> :focus <Visual> :ev <UIEvent> |
+				self character: char focus: focus event: ev	];
+		doubleClickHandler:
+			[ :loc <Point> :ev <UIEvent> |
+				self handleDoubleClick: ev at: loc  ];
+		isFocusBlock: [ :state <Boolean> |		self isFocus: state ].
+
+	self createGlyphsFromModel.
+!
+
+cancelAndOnSuccess: blk <[]>
+
+	(self isMultiLine and: [ self hasBeenChanged ])
+		ifTrue: [ self visual promptYesNo: 'Cancel Changes?'
+							title: self windowTitle
+							type: #exclamation
+							default: 2
+							action: [ :yes <Boolean> |
+											yes ifTrue: [ super cancelAndOnSuccess: blk ] ].
+					]
+		ifFalse: [	"We do the cancel even if there are no changes, in case
+							we want a new, updated model"
+						super cancelAndOnSuccess: blk ]!
+
+changing
+
+	super changing.
+	self autoAccept
+		ifTrue: [	self accept ].
+!
+
+displayNowIfInvalid
+	"Owners should use this to force refreshing, because sending it
+		to the visual won't work if there are scrollports etc."
+
+	self lines displayNowIfInvalid! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'preferences' !
+
+
+desiredColumns ^<Int>
+
+	^desiredColumns!
+
+desiredColumns: c <Int>
+
+	desiredColumns := c.
+	self hasVisual
+		ifTrue: [ self prefsModifier changing ].!
+
+desiredRows ^<Int>
+
+	^desiredRows!
+
+desiredRows: r <Int>
+
+	desiredRows := r.
+	self hasVisual
+		ifTrue: [ self prefsModifier changing ].!
+
+recomputePrefs
+	"Force the preferences to be flushed and recomputed, and relayout to be done
+		on that basis"
+
+	self hasVisual
+		ifTrue: [ self prefsModifier changing ]!
+
+showAllCurrentColumns
+	"Set the preferences to try to show all the currently visible columns"
+
+	desiredColumns := nil.
+	self hasVisual
+		ifTrue: [ self prefsModifier changing ].!
+
+showAllCurrentRows
+	"Set the preferences to try to show all the currently visible rows"
+
+	desiredRows := nil.
+	self hasVisual
+		ifTrue: [ self prefsModifier changing ].! !
+
+! (Delta mirrorFor: #TextView) methodsFor: 'private-range selection' !
+
+
+delimiterDirection: c <Character> ^<Int>
+
+	^(self leftDelimiters includes: c)
+		ifTrue: [ 1 ]
+		ifFalse: [ -1 ]!
+
+findTokenEndFrom: s <Int> inDirection: direction <Int>  ^<Int>
+	"Returns the index of the last character before a separator in the direction specified"
+
+	| end <Int> start <Int> separators <SeqCltn[Character]> last <Int> |
+	start := s.
+	separators := ';''"<>(){}[]^.
+ 	'.
+	last := s.
+
+	self from: s inDirection: direction > 0
+		do: [ :loc <Int> :cg <CharacterGlyph> |
+				| c <Character> |
+				c := cg character.
+				(separators includes: c)
+					ifTrue: [ ^last ].
+				last := loc.
+			  ].
+	^last!
+
+from: loc <Int>
+inDirection: forward <Boolean>
+do: blk <[Int,CharacterGlyph]>
+
+	| i <Int> direction <Int> |
+	direction := forward ifTrue: [ 1 ] ifFalse: [ -1 ].
+	i := loc.
+
+	[	| gl <Glyph> c <Character> |
+		i := i + direction.
+		(self lines linearIndexValid: i)
+			ifFalse: [ ^self ].
+		
+		gl := self linearGlyphAt: i.
+		CharacterGlyph coerce: gl
+			do: [ :cg <CharacterGlyph> |
+						blk value: i value: cg.
+				  ].
+	] repeat.!
+
+isCommentDelimiter: c <Character> ^<Boolean>
+
+	^c = $"!
+
+isDelimiter: c <Character> ^<Boolean>
+
+	^(self leftDelimiters includes: c)
+		or: [ self rightDelimiters includes: c ]!
+
+isDelimiterGlyph: gl <Glyph> ^<Boolean>
+
+	| c <Character> |
+	c := (CharacterGlyph coerce: gl else: [ ^false ]) character.
+	^self isDelimiter: c!
+
+leftDelimiters ^<SeqCltn[Character]>
+
+	^'([{<'!
+
+matchingDelimiterFor: c <Character> ^<Character>
+
+	| i <Int> |
+	i := self leftDelimiters indexOf: c
+			ifAbsent: [ ^self leftDelimiters at: (self rightDelimiters indexOf: c)	].
+	^self rightDelimiters at: i!
+
+oldselectMatching: delim <Character> at: s <Int>
+
+	| direction <Int> matching <Character> nesting <Int> end <Int> inComment <Boolean> start <Int> |
+	direction := self delimiterDirection: delim.
+	matching := self matchingDelimiterFor: delim.
+	nesting := 0.
+	start := s.
+	end := start.
+	inComment := false.
+
+	[	| gl <Glyph> c <Character> |
+		end := end + direction.
+		(self lines linearIndexValid: end)
+			ifFalse: [ ^self ].
+		
+		gl := self linearGlyphAt: end.
+		CharacterGlyph coerce: gl
+			do: [ :cg <CharacterGlyph> |
+						c := cg character.
+						(self isCommentDelimiter: c)
+							ifTrue: [ inComment := inComment not ]
+							ifFalse: [	(c = matching and: [ inComment not ])
+												ifTrue: [	nesting = 0
+																	ifFalse: [ nesting := nesting - 1 ]
+																	ifTrue: [	direction > 0
+																						ifTrue: [ end := end + 1 ]
+																						ifFalse: [ start := start + 1 ].
+																					^self selection:
+																						(self linearSpotAt: start ifAbsent: [ self shouldNotHappen ]) ,,
+																						(self linearSpotAt: end ifAbsent: [ self shouldNotHappen ]).	]
+															]
+												ifFalse: [	(c = delim and: [ inComment not ])
+																	ifTrue: [ nesting := nesting + 1 ]
+															  ]
+										 ]
+				  ].
+	] repeat.!
+
+rightDelimiters ^<SeqCltn[Character]>
+
+	^')]}>'!
+
+selectAll
+
+	self selection: (1@1),,self lines endSpot!
+
+selectMatching: delim <Character> at: s <Int>
+
+	| direction <Int> matching <Character> nesting <Int> end <Int> inComment <Boolean> start <Int> |
+	direction := self delimiterDirection: delim.
+	matching := self matchingDelimiterFor: delim.
+	nesting := 0.
+	start := s.
+	inComment := false.
+
+	self from: s inDirection: direction > 0
+		do: [ :loc <Int> :cg <CharacterGlyph> |
+					| c <Character> end <Int> |
+					c := cg character.
+					(self isCommentDelimiter: c)
+						ifTrue: [ inComment := inComment not ]
+						ifFalse: [	(c = matching and: [ inComment not ])
+											ifTrue: [	nesting = 0
+																ifFalse: [ nesting := nesting - 1 ]
+																ifTrue: [	end := loc.
+																				direction > 0
+																					ifTrue: [ end := end + 1 ]
+																					ifFalse: [ start := start + 1 ].
+																				^self selection:
+																					(self linearSpotAt: start ifAbsent: [ self shouldNotHappen ]) ,,
+																					(self linearSpotAt: end ifAbsent: [ self shouldNotHappen ]).	]
+														]
+											ifFalse: [	(c = delim and: [ inComment not ])
+																ifTrue: [ nesting := nesting + 1 ]
+														  ]
+									 ]
+			  ].
+!
+
+selectRange
+	"select a range of elements around the current selection.  Currently, this behavior means:
+		if the selection is next to a delimiter, select the delimited range. 
+	  If the selection is at the very beginning or end, then select everything.
+	  If the selection is at the end of a line, select back a code paragraph.
+	Otherwise, select the
+		token that the selection is on, delimited by whitespace or separator characters."
+
+	| loc <Int> gl <Glyph> c <Character> |
+
+	(self selection at1 = (1@1) or: [ self selection at1 = self lines endSpot ])
+		ifTrue: [ ^self selectAll ].
+
+	loc := self lines linearIndexFor: self selection at1.
+	"look for a delimiter adjacent"
+	(loc > 1 and: [ self isDelimiterGlyph: (self linearGlyphAt: loc - 1) ])
+		ifTrue: [	loc := loc - 1.
+						c := (CharacterGlyph coerce: (self linearGlyphAt: loc)) character.
+						^self selectMatching: c at: loc.	]
+		ifFalse: [	| gl <Glyph> |
+							gl := self linearGlyphAt: loc.
+							(self isDelimiterGlyph: gl)
+								ifTrue: [	c := (CharacterGlyph coerce: (self linearGlyphAt: loc)) character.
+												^self selectMatching: c at: loc.	]
+					 ].
+	self selection at1 x = (self lines lineAt: self selection at1 y asInteger) size
+		ifTrue: [	self selectCodeParagraphBackFrom: self selection at1 y asInteger ]
+		ifFalse: [ self selectTokenAt: loc. ]!
+
+selectTokenAt: s <Int>
+
+	| end <Int> start <Int> |
+
+	start := self findTokenEndFrom: s inDirection: -1.
+	end := self findTokenEndFrom: s inDirection: 1.
+	self selection:
+			(self linearSpotAt: start ifAbsent: [ self shouldNotHappen ]) ,,
+			(self linearSpotAt: end + 1 ifAbsent: [ self shouldNotHappen ]).
+! !
+

@@ -1,0 +1,284 @@
+Delta define: #DeltaGenericSideUpdate as: (
+(Class subclassOf: 'DeltaGeneric' instanceVariables: 'invocationCaches ')) !
+
+(Delta mirrorFor: #DeltaGenericSideUpdate) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaGenericSideUpdate) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGenericSideUpdate)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGenericSideUpdate) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^self body abstract!
+
+abstract: a<Boolean>
+    self body abstract: a!
+
+addMethod: m <DeltaMethod>
+
+self body addMethod: m!
+
+adjustBoundToTrivialApplication  ^ <Self> 
+
+    self body selfPublicTV declaredBound: self trivialApplication.
+!
+
+asMixinSide ^ <MixinSide>
+
+^self body!
+
+asObjectType ^ <Type>
+    ^self reportError:(DeltaGenericNotATypeError new id: self name)!
+
+attributes ^ <Dict[Symbol,MsgSignature]>
+    ^self body attributes!
+
+branded ^ <Boolean>
+    ^self body branded!
+
+branded: b <Boolean>
+    self body branded: b!
+
+classDecl ^ <DeltaClassUpdate>
+    ^self body classDecl!
+
+classInterface ^ <Interface>
+    ^self body classInterface!
+
+classVarDecls ^ <Dict[Symbol,VarDecl]>
+    ^self body classVarDecls!
+
+clearCaches
+
+super clearCaches.
+self invocationCaches: (DeltaGenericCache new setDimension: self formals size).
+!
+
+delta ^ <Protocol>
+    ^self body delta!
+
+dual ^ <Protocol>
+    ^self body dual!
+
+extensionsAreSubtypes ^ <Boolean>
+    ^self body extensionsAreSubtypes!
+
+extensionsAreSubtypes: e <Boolean>
+    self body extensionsAreSubtypes: e!
+
+firstClassRepType  ^ <ObjectType>
+
+^self asType
+!
+
+functions  ^ <Dict[Symbol,DeltaMethod| DeltaMessage]>
+
+^self body functions!
+
+generifyWithFormals: fs <OrdCltn[TypeFormal]>
+
+"since I am already generic, I just have to update my formals"
+
+self formals do:[:f <TypeFormal>  | self genericScope removeKey: f typeVar name].
+"remove my previous formals from the scope, then change to the new ones, and place them in the scope"
+self formals: fs.
+self formals do:[:f <TypeFormal>  | self genericScope at: f typeVar name put: f typeVar].
+
+
+!
+
+hasMethodsLoaded ^ <Boolean>
+
+^self body hasMethodsLoaded!
+
+heirScope ^ <Scope>
+    ^self body heirScope!
+
+implementedPrivateProtocol ^ <Protocol>
+    ^self body implementedPrivateProtocol!
+
+instVarDecls ^ <Dict[Symbol,VarDecl]>
+    ^self body instVarDecls!
+
+invocationCacheFor: gi  <GenericApplicationClassType> ^ <Dict[ObjectType, ObjectType]>
+
+| key <GenericKey> |
+
+key := DeltaGenericKey new from: gi actuals.
+^self invocationCaches at: key
+                                               ifAbsent: [self newInvocationCache].!
+
+invocationCaches  ^ <Dict[GenericKey, Dict[ObjectType, ObjectType]]>
+
+^invocationCaches
+
+!
+
+invocationCaches: icd    <Dict[GenericKey, Dict[ObjectType, ObjectType]]>
+
+invocationCaches := icd.
+
+!
+
+involvesTypeVariables ^ <Boolean>
+    ^self body involvesTypeVariables!
+
+isMeta ^ <Boolean>
+    ^self body isMetaSide!
+
+isMetaSide ^ <Boolean>
+
+" equivalent to isMeta. Should be eliminated"
+self deltaHack.
+    ^self body isMetaSide!
+
+klass ^ <Class>
+    ^self body klass!
+
+klass: k <Class > ^ <Self>
+    self body klass: k.
+"A generic needs to adjust the bound on its body's type vars. This can only be determined once klass has been set (since the bound depends on whether the side is a metaside or not).
+    self adjustBoundToTrivialApplication.
+To be eliminated in new reflective interface
+"!
+
+localAttributes
+
+^self body localAttributes!
+
+localScope ^ <Scope>
+    ^self body localScope!
+
+messages ^ <Dict[Symbol,Message]>
+
+^self body messages!
+
+messages: ms<Dict[Symbol,Method]>
+
+self body messages: ms!
+
+methods  ^ <Dict[Symbol,Method]>
+
+^self body methods!
+
+methods: ms<Dict[Symbol,Method]>
+
+self body methods: ms!
+
+name
+
+^self body name!
+
+newInvocationCache ^ <Dict[ObjectType, ObjectType]>
+"Private"
+
+^IdentityDictionary[ObjectType, ObjectType] new.!
+
+privateOrPublicFunctions ^ <Dict[Symbol,Method|Message]>
+    ^self body privateOrPublicFunctions!
+
+privateOrPublicMethods ^ <Dict[Symbol,Method]>
+    ^self body privateOrPublicMethods!
+
+privateProtocol ^ <Protocol>
+    ^self body privateProtocol!
+
+rawClassInterface ^ <Interface>
+    ^self body rawClassInterface!
+
+rawInstanceInterface ^ <Interface>
+    ^self body rawInstanceInterface!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+^self body relevantTypeVars.!
+
+selfDualTV ^ <TypeVar>
+    ^self body selfDualTV!
+
+subtype ^ <Boolean>
+    ^self body subtype!
+
+subtype: s <Boolean>
+    self body subtype: s!
+
+superclassType
+
+^self body superclassType.!
+
+superclassType: st
+
+self body superclassType: st.!
+
+supportedProtocol ^ <Protocol>
+    ^self body supportedProtocol!
+
+supportedProtocol: p<Protocol>
+    ^self body supportedProtocol: p!
+
+trivialApplication ^ <Protocol>
+    |
+trivialActuals <OrdCltn[ObjectType]> 
+gen <GenericApplicationType> 
+n <Symbol> 
+|
+
+trivialActuals := self formals collect:[:f <TypeFormal>  | f typeVar].
+n := self isMetaSide
+  ifFalse:[self name] ifTrue:[self dual name].
+
+gen := DeltaGenericApplicationType new apply: (DeltaTypeId new setId: n; scope: DeltaGlobals) to: trivialActuals.
+
+^self isMetaSide
+    ifFalse:[gen]
+    ifTrue:[DeltaUnaryTypeExpr new target: gen selector: #class].!
+
+unimplementedMessages ^ <Set[Symbol]>
+
+    ^self body unimplementedMessages!
+
+vmMixin
+
+^self body vmMixin!
+
+vmMixin: mixin
+
+self body vmMixin: mixin! !
+
+! (Delta mirrorFor: #DeltaGenericSideUpdate) methodsFor: 'typechecking' !
+
+
+typecheckClassVarDecls
+
+self body typecheckClassVarDecls
+!
+
+typecheckInstVarDecls
+
+self errorHandler pushDefinition: self.
+self setupTypeAssumptions.
+self body typecheckInstVarDecls.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckSuperclassType
+
+self errorHandler pushDefinition: self.
+self setupTypeAssumptions.
+self body typecheckSuperclassType.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckSupportedProtocol
+
+self errorHandler pushDefinition: self.
+self setupTypeAssumptions.
+self body typecheckSupportedProtocol.
+self retractTypeAssumptions.
+self errorHandler popDefinition.! !
+

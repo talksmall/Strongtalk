@@ -1,0 +1,128 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>A Tour of the Strongtalk System</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="intro.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="differences2.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">How does Strongtalk relate to Smalltalk-80?</h2>
+
+<ul>
+    <li><p align="left">Strongtalk is a true Smalltalk that also
+        provides an optional static type system. It
+        adheres as closely as possible to modern Smalltalk-80
+        syntax and semantics:</p>
+        <ul>
+            <li><p align="left">The standard method syntax is
+                supported, with some enhancements so that type
+                annotations are also allowed.</p>
+            </li>
+            <li><p align="left">Full block closure semantics are
+                supported, with local variables allowed in any
+                block.</p>
+            </li>
+            <li><p align="left">The only hard-wired messages are
+                the critical Boolean messages, such as
+                ifTrue:..., whileTrue, etc. Other Smalltalks also
+                hard-wire these, as well as others that are not
+                treated specially in Strongtalk.</p>
+            </li>
+            <li><p align="left">The normal mixed-mode arithmetic
+                semantics are supported, as well as infinite
+                precision integer arithmetic.</p>
+            </li>
+            <li><p align="left">The normal class/metaclass
+                semantics are supported. However, inside the VM,
+                all classes are actually constructed from <em>mixins</em>,
+                which adds flexibility.</p>
+            </li>
+            <li><p align="left">Global and class variables are
+                supported, but class <em>instance</em> variables
+                are not (although we had planned to add them).
+                Pools are not supported. Shared variables that
+                would be in Pools in other Smalltalks are just
+                kept in class variables and accessed via class
+                messages in Strongtalk. This does not entail a
+                message-send performance penalty as it would in
+                other Smalltalks, since messages to literal
+                classes (or self) are constant messages and can
+                be inlined away by the Strongtalk compiler.</p>
+            </li>
+            <li><p align="left">Indexed instance variables
+                support is provided for objects, bytes, and
+                double-bytes, although they are not specified as
+                part of the class constructor as in other
+                Smalltalks. Instead, support for them is added to
+                a class by <em>mixing in</em> one of several
+                special system mixins.</p>
+            </li>
+            <li><p align="left">#become: is not supported. The VM
+                represents objects with direct pointers, rather
+                than an object table, and while this increases
+                system performance for most objects, it would
+                make #become: prohibitively slow. So for example
+                Collections that need to grow hold internal
+                Arrays, etc.</p>
+            </li>
+            <li><p align="left">Blocks support #ensure:, to
+                provide important stack-unwind protection.</p>
+            </li>
+        </ul>
+    </li>
+    <li><p align="left">The library interfaces (instance and
+        class interface semantics as well as concrete class
+        names) conform as closely as possible to the Smalltalk-80
+        libraries <em>in areas used by model code</em>. In other
+        words, code that uses the core Collection classes and
+        other basic data structures should be able to run
+        virtually unchanged. User access to processes appears
+        almost the same, with fork, Semaphores, Processor, and
+        SharedQueues all working as expected (the system uses
+        native threads and the libraries are designed to work
+        with preemptive scheduling, but Processes are currently
+        scheduled non-preemptively).</p>
+    </li>
+    <li><p align="left">Although the Strongtalk VM performs many
+        fancy optimizations, it still supports the kind of
+        interactive program creation and modification that helps
+        make Smalltalk so unique. The intention is to make
+        optimizations invisible to users (except for speed, of
+        course!). This requires an enormous amount of
+        sophistication and infrastructure in the VM, because all
+        the different customized and inlined versions of a method
+        must be found and fixed up dynamically as the code
+        changes. The programming environment is bootstrapped in
+        the same image as the user's code, as in other
+        Smalltalks.</p>
+    </li>
+    <li><p align="left">The class hierarchy is structured
+        somewhat differently than in Smalltalk-80. This is for
+        two reasons: 1) the core Strongtalk classes are
+        strongly-typed, which requires more structured
+        inheritance relationships, and 2) Strongtalk supports <em>mixins</em>,
+        so for example strings are able to mix-in Magnitude
+        support, even though they are not subclasses of Magnitude
+        (since not all Collections are Magnitudes). However,
+        concrete class names are the same, so that for example,
+        while Dictionary is a subclass of HashedCollection rather
+        than Set as in Smalltalk-80, Dictionary can still be used
+        the same way it normally would in most user code. The
+        stream instance protocols are pretty much the same,
+        although the stream class names and hierarchy are very
+        different. This should not matter much as most code does
+        not create streams directly from Stream classes, but by
+        asking some lower-level object (a collection, a file,
+        etc) to create the stream instead.</p>
+    </li>
+</ul>
+
+<h3 align="right"><a href="differences2.html"><strong>Comparison
+(cont.) ==&gt;</strong></a></h3>
+</body>
+</html>

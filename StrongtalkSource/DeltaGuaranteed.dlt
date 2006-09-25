@@ -1,0 +1,41 @@
+Delta define: #DeltaGuaranteed as: (
+(Class subclassOf: 'DeltaExpression' instanceVariables: 'type expr ')) !
+
+(Delta mirrorFor: #DeltaGuaranteed) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaGuaranteed) group: 'ast'!
+
+(Delta mirrorFor: #DeltaGuaranteed)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaGuaranteed) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool guaranteedNode: self!
+
+declaredType "^ <Type>"
+
+^type!
+
+declaredType: t "<Type>"
+
+type := t!
+
+expr ^ <Expression>
+    ^expr!
+
+isGuaranteedNode ^ <Boolean>
+    ^true!
+
+type ^ <Type>
+
+self expr type.
+    ^type!
+
+type: t <Type >expr: e <Expression > ^ <Self>
+self declaredType: t.
+expr := e.! !
+

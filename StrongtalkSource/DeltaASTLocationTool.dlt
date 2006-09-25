@@ -1,0 +1,280 @@
+Delta define: #DeltaASTLocationTool as: (
+(Class subclassOf: 'DeltaASTTool' instanceVariables: 'astNode astIndex count toEscape ')) !
+
+(Delta mirrorFor: #DeltaASTLocationTool) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaASTLocationTool) group: 'ast'!
+
+(Delta mirrorFor: #DeltaASTLocationTool)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaASTLocationTool) classSide methodsFor: 'Unclassified' !
+
+
+indexForNode: n <DeltaASTNode > startingFrom: root <DeltaASTNode >  ^ <Int>
+	| tool <DeltaASTLocationTool>  |
+	
+	root isNil ifTrue:[^0].
+	tool := self new astNode: n.
+	tool toEscape: [^tool astIndex].
+	root apply: tool.
+	^0			"Not found"
+!
+
+new ^<Instance>
+	^super new initialize!
+
+nodeForIndex: i <Int >startingFrom: root <DeltaASTNode > ^ <DeltaASTNode>
+	| tool <DeltaASTLocationTool>  |
+	tool := self new astIndex: i.
+	tool toEscape: [^tool astNode].
+	root apply: tool.
+	^nil		"Not found"! !
+
+! (Delta mirrorFor: #DeltaASTLocationTool) methodsFor: 'node traversal' !
+
+
+assignmentNode: node <DeltaMethod > ^ <Self>
+    self check: node.
+    node var apply: self.
+    node expr apply: self.!
+
+astIndex ^ <Int>
+    ^astIndex.!
+
+astIndex: i <Int > ^ <Self>
+    astIndex := i.!
+
+astNode ^ <DeltaASTNode>
+    ^astNode.!
+
+astNode: n <DeltaASTNode > ^ <Self>
+    astNode := n.!
+
+blockApplicationTypeNode: node <BlockApplicationType > ^ <Self>
+
+self genericApplicationTypeNode: node!
+
+blockNode: node <DeltaMethod > ^ <Self>
+    self check: node.
+    node body apply: self.
+!
+
+cascadedSendNode: node <DeltaMethod > ^ <Self>
+    self check: node.
+    node prevSend apply: self.
+    node msg apply: self.!
+
+check: n <DeltaASTNode > ^ <Self>
+
+	self astNode isNil
+		ifTrue: [self astIndex == self count								"Looking for index"
+			ifTrue: [self astNode: n. self toEscape value]]
+		ifFalse: [self astNode == n 											"Looking for node"
+			ifTrue: [self astIndex: self count. self toEscape value]].
+	self count: self count + 1.
+!
+
+classVarNode: node <DeltaClassVar > ^ <Self>
+
+self check: node.
+node declaredType apply: self.
+ 
+   !
+
+codeBodyNode: node <DeltaCodeBody > ^ <Self>
+    self check: node.
+    node parameters do: [ :d <DeltaParameter>  | d apply: self ].
+    node temporaries do: [ :d <DeltaTemporary>  | d apply: self ].
+    node statements do: [ :d <DeltaStatement>  | d apply: self ]!
+
+count ^ <Int>
+    ^count!
+
+count: c <Int > ^ <Self>
+    count := c.!
+
+dllCallNode: node
+    self check: node.
+    node msg apply: self.!
+
+genericApplicationExpressionNode: node <DeltaGenericApplicationExpression > ^ <Self>
+    self check: node.
+    node actuals do: [ :d <DeltaType>  | d apply: self].
+    node target apply: self.!
+
+genericApplicationTypeNode: node <DeltaGenericApplicationType > ^ <Self>
+    self check: node.
+    node actuals do: [ :d <DeltaType>  | d apply: self].
+    node target apply: self.
+
+!
+
+guaranteedNode: node <DeltaMethod > ^ <Self>
+    self check: node.
+    node declaredType apply: self.
+    node expr apply: self.!
+
+initialize
+	self count: 1!
+
+instVarNode: node <DeltaInstVar > ^ <Self>
+
+self check: node.
+node declaredType apply: self.
+ 
+   !
+
+literalNode: node <DeltaLiteral> ^ <Self>
+    self check: node.!
+
+messageNode: node <DeltaStatementList > ^ <Self>
+    self check: node.
+    node args do: [ :s <DeltaExpression>  | s apply: self].!
+
+messagePatternNode: node <MessagePattern>
+
+    self check: node.
+    node type apply: self.
+
+
+!
+
+methodDeclNode: node <DeltaMethod > ^ <Self>
+    self check: node.
+    node filteree apply: self.
+!
+
+methodNode: node <DeltaMethod > ^ <Self>
+    self check: node.
+    node type apply: self.
+    self deltaHack.
+    node body notNil ifTrue: [node body apply: self].
+!
+
+mixinCompositionNode: node <MixinCompositionNode>
+
+self check: node.
+node iMixin apply: self.
+node oMixin apply: self.
+
+
+!
+
+mixinDerivationNode: node
+
+self check: node.
+node klass apply: self.
+
+
+!
+
+mixinInvocationNode: node <MixinInvocationNode>
+
+self check: node.
+node myMixin apply: self.
+node myClass apply: self.
+
+!
+
+msgSignatureNode: node <DeltaMsgSignature > ^ <Self>
+    self check: node.
+    node domain do: [ :d <DeltaType>  | d apply: self].
+    node range apply: self.!
+
+normalSendNode: node <DeltaMethod > ^ <Self>
+    self check: node.
+    node recv apply: self.
+    node msg apply: self.!
+
+parameterNode: node <DeltaParameter > ^ <Self>
+	self check: node.
+	node type apply: self.!
+
+polyMsgSignatureNode: node <PolyMsgSignature > ^ <Self>
+	self check: node.
+	node formals do: [ :d <TypeVar>  | d apply: self].
+	node body apply: self.!
+
+primitiveNode: node <DeltaPrimitive > ^ <Self>
+    self check: node.
+    node recv isNil ifFalse:[node recv apply: self].
+    node msg apply: self.!
+
+protocolMergeNode: node
+	self check: node.
+	node type1 apply: self.
+	node type2 apply: self.!
+
+protocolOverrideNode: node
+	self check: node.
+	node type1 apply: self.
+	node type2 apply: self.!
+
+refNode: node <DeltaRef > ^ <Self>
+    self check: node.
+	"Is this correct ?"!
+
+returnStatNode: node <DeltaReturnStat> ^ <Self>
+    self check: node.
+    node expr apply: self.
+!
+
+statementListNode: node <DeltaStatementList > ^ <Self>
+    self check: node.
+    node code do: [ :s <DeltaStatement>  | s apply: self].!
+
+superSendNode: node <DeltaMethod > ^ <Self>
+    self check: node.
+    node msg apply: self.!
+
+temporaryNode: node <DeltaTemporary > ^ <Self>
+	self check: node.
+	node type apply: self.!
+
+toEscape ^ <[]>
+    ^toEscape!
+
+toEscape: blk <[]>
+	toEscape := blk!
+
+tupleTypeNode: node <TupleType > ^ <Self>
+
+self genericApplicationTypeNode: node!
+
+typeErrorNode: node <DeltaTypeError > ^ <Self>
+    self check: node.!
+
+typeFormalNode: node <TypeFormal>
+
+self check: node.
+node typeVar apply: self.
+
+!
+
+typeIdNode: node <DeltaTypeId > ^ <Self>
+    self check: node.!
+
+typeVarNode: node <DeltaTypeVar > ^ <Self>
+	self check: node.
+	node declaredBound apply: self.
+!
+
+unaryGenAppNode: node <DeltaUnaryGenApp>
+
+self check: node.
+node dual apply: self!
+
+unaryTypeExprNode: node <DeltaMethod > ^ <Self>
+self deltaHack.
+    self check: node.
+    node target apply: self.
+!
+
+unionTypeNode: node <UnionType>
+	self check: node.
+	node type1 apply: self.
+	node type2 apply: self.! !
+

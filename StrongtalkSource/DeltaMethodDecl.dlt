@@ -1,0 +1,69 @@
+Delta define: #DeltaMethodDecl as: (
+(Class subclassOf: 'DeltaFilter' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaMethodDecl) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaMethodDecl) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMethodDecl)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMethodDecl) methodsFor: 'Unclassified' !
+
+
+apply: aTool
+	aTool methodNode: self filteree.!
+
+body
+
+self deltaHack.
+^self filteree body "Wrong"!
+
+name 
+
+^self selector!
+
+scope
+
+self error: 'Internal Inconsistency: This method should not be used'.!
+
+selector
+
+^self filteree selector!
+
+temporaries
+
+^self filteree temporaries virtualCollect:[: t | t substitute: self substitution].!
+
+timeSaved  ^ <Time>
+
+^self filteree timeSaved!
+
+timeTypechecked  ^ <Time>
+
+^self filteree timeTypechecked!
+
+type
+
+^self filteree type substitute: self substitution!
+
+typecheck
+
+self filteree typecheck!
+
+typecheckInterface
+
+self filteree typecheckInterface!
+
+typecheckedSuccessfully  ^ <Boolean>
+
+^self filteree typecheckedSuccessfully!
+
+visibility ^ <Symbol>
+    ^self filteree visibility!
+
+visibility: v <Symbol>
+    ^self filteree visibility: v! !
+

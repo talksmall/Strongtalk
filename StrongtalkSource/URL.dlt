@@ -1,0 +1,244 @@
+Delta define: #URL as: (
+(Class subclassOf: 'ReadString' instanceVariables: 'path <Str>')) !
+
+(Delta mirrorFor: #URL) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #URL) group: 'HTML'!
+
+(Delta mirrorFor: #URL)
+comment: 
+'Beginnings of URL support.  This only supports file types right now, since we don''t have network
+streams yet.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #URL) classSide methodsFor: 'instance creation' !
+
+
+for: path <Str>  ^<Instance>
+
+	^self new path: path!
+
+forFilePath: fp <FilePath>  ^<Instance>
+
+	| pth <Str> |
+	pth := fp isAbsolute
+		ifFalse: [ self pathForRelativeFilePath: fp ]
+		ifTrue: [ self pathForAbsoluteFilePath: fp ].
+	^self for: pth! !
+
+! (Delta mirrorFor: #URL) classSide methodsFor: 'private' !
+
+
+pathForAbsoluteFilePath: fp <FilePath>  ^<Str>
+
+	^'file:///', 
+			(String withAll:
+				(fp name collect:
+						[ : c <Character> |
+							c = $\
+								ifTrue: [ $/ ]
+								ifFalse: [ c ]
+						]
+				 )
+			).!
+
+pathForRelativeFilePath: fp <FilePath>  ^<Str>
+
+	^String withAll:
+			(fp name collect:
+				[ : c <Character> |
+					c = $\
+						ifTrue: [ $/ ]
+						ifFalse: [ c ]
+				]
+			 )! !
+
+! (Delta mirrorFor: #URL) methodsFor: 'accessing' !
+
+
+absoluteURLInContext: context <URL>  ^<URL>
+
+	self isRelative
+		ifFalse: [ ^self ].
+	^URL for: context pathBase,
+			(self path first = $#
+				ifTrue: [	self path ]
+				ifFalse: [ '/',self path ]
+			)!
+
+at: index <Int>  ^<Character>
+
+	^self path at: index!
+
+externalStreamableObjectInContext: context <URL>  ^<ExternalStreamableObject>
+
+	^self isRelative
+			ifTrue: [	(self absoluteURLInContext: context)
+								externalStreamableObjectInContext: context	]
+			ifFalse: [	self externalStreamableObject ]!
+
+filePath^<FilePath>
+
+	self assert: [	self isAbsolute ].
+	^self filePathInContext: self!
+
+filePathInContext: context <URL>  ^<FilePath>
+
+	self assert:
+		[				self  scheme = #file
+			and: [	self isLocal  ]
+		].
+
+	^self isRelative
+			ifTrue: [	(self absoluteURLInContext: context)
+								filePathInContext: context	]
+			ifFalse: [	self absoluteFilePath ]!
+
+path ^<Str>
+
+	^path!
+
+path: p <Str>
+
+	path := p!
+
+pathBase ^<Str>
+	"The pathBase is the 'directory' to use as the prefix for URLs
+		that are relative to the receiver.  In essence, it strips off the filename from the
+		end."
+
+	^self path stringCopyFrom: 1 to: (self path indicesOfSubCollection: '/') last - 1!
+
+scheme ^<Str>
+
+	^(self path readStream upTo: $:) asLowercase!
+
+size ^<Int>
+
+	^self path size!
+
+type ^<Str>
+
+	| dotSpot <Int> |
+	dotSpot := self path findLast: [ :c <Character> | c = $. ].
+	^String withAll: (self path copyFrom: dotSpot + 1 to: self path size)
+! !
+
+! (Delta mirrorFor: #URL) methodsFor: 'loading' !
+
+
+badImageFile ^<FilePath>
+
+	^FilePath for: 'resources/badImage.bmp'!
+
+loadHTML ^<HTMLNode>
+
+	^self loadHTMLIfFail: [ self error: 'error loading html' ]!
+
+loadHTMLIfFail: fail <[^X def]>  ^<HTMLNode | X>
+
+	self assert: [ self isRelative not ].
+
+	"We are absolute, so just use a bogus context, since it will be ignored"
+	^self loadHTMLInContext: self ifFail: fail!
+
+loadHTMLInContext: context <URL> ^<HTMLNode>
+
+	^self loadHTMLInContext: context
+			ifFail: [ self error: 'error loading html' ]!
+
+loadHTMLInContext: context <URL>
+ifFail: fail <[^X def]>
+^<HTMLNode | X>
+
+	| abs <URL> eo <ExternalStreamableObject> type <Str> |
+	abs := self absoluteURLInContext: context.
+	eo := abs externalStreamableObjectInContext: context.
+	type := self type.
+	[ type = #html or: [ type = #htm ] ] verify.
+	^eo
+		charInputStreamDo:
+			[ :in <CharInputStream> |
+				(HTMLParser on: in) parse
+			]
+		ifFail: fail!
+
+loadImageInContext: context <URL> ^<Image>
+
+	| abs <URL> fp <FilePath> |
+	abs := self absoluteURLInContext: context.
+	abs scheme = #file
+		ifFalse: [ ^Image fromFile: self badImageFile ].
+	fp := abs filePathInContext: context.
+	^(self type asLowercase = #bmp)
+			ifTrue: [ fp exists
+								ifFalse: [ Image fromFile: self badImageFile ]
+								ifTrue: [ Image fromFile: fp ]
+						 ]
+			ifFalse: [ Image fromFile: self badImageFile ]! !
+
+! (Delta mirrorFor: #URL) methodsFor: 'private' !
+
+
+absoluteFilePath ^<FilePath>
+
+	| s <CharInputStream> pth <Str> drive <Str> |
+	s := self path readStream.
+	[ (s upTo: $:)  asLowercase = 'file' ] verify.
+	[ (s next: 3) = '///' ] verify.
+	drive := String with: s next with: $:.
+	[ s next = $: ] verify.
+	pth := String withAll: 
+			((s contentsRemaining) collect:
+					[ : c <Character> |
+						c = $/
+							ifTrue: [ $\ ]
+							ifFalse: [ c ]
+					]
+			).
+	^FilePath for: drive, pth!
+
+externalStreamableObject ^<ExternalStreamableObject>
+
+	| s <CharInputStream> pth <Str> drive <Str> |
+	self assert: [ self isRelative not ].
+	s := self path readStream.
+	^self scheme = #file
+			ifTrue: [ self absoluteFilePath ]
+			ifFalse: [ self unimplemented ]! !
+
+! (Delta mirrorFor: #URL) methodsFor: 'testing' !
+
+
+isAbsolute ^<Boolean>
+
+	^self path includes: $:!
+
+isLocal ^<Boolean>
+	"Is the target accessible through the platform file system?
+		This can only be asked of an absolute URL."
+
+	| s <CharInputStream> rest <Str> |
+	self assert: [ self isAbsolute ].
+	s := self path readStream.
+	s  upTo: $: .
+	rest := s contentsRemaining.
+	^rest size >= 3 and: [ (rest copyFrom: 1 to: 3) = '///' ]!
+
+isRelative ^<Boolean>
+
+	^self isAbsolute not! !
+
+! (Delta mirrorFor: #URL) methodsFor: 'converting' !
+
+
+asString ^<String>
+
+	^String withAll: self path!
+
+asSymbol ^<Symbol>
+
+	^self path asSymbol! !
+

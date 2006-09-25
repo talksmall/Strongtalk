@@ -1,0 +1,38 @@
+Delta define: #DeltaInferredTypeArgNotSubtypeError as: (
+(Class subclassOf: 'DeltaPolymorphicSendError' instanceVariables: 'actualName formalName ')) !
+
+(Delta mirrorFor: #DeltaInferredTypeArgNotSubtypeError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaInferredTypeArgNotSubtypeError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInferredTypeArgNotSubtypeError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInferredTypeArgNotSubtypeError) methodsFor: 'Unclassified' !
+
+
+actualName
+	^actualName!
+
+actualName: n
+	actualName := n!
+
+errorMessage
+
+^'Inferred type ', 
+self actualName,
+' is not a subtype of declared bound of formal type argument ',
+self formalName!
+
+formalName
+	^formalName!
+
+formalName: n
+	formalName := n!
+
+isInferenceError  ^ <Boolean>
+
+^true! !
+

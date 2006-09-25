@@ -1,0 +1,47 @@
+Delta define: #CharacterInputOutputConverter as: (
+(Class subclassOf: 'CharacterOutput |> (BasicOutputStream[Character] mixin |> CharacterInputConverter[ReadWriteStream[Int]])' instanceVariables: '')) !
+
+(Delta mirrorFor: #CharacterInputOutputConverter) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #CharacterInputOutputConverter) group: 'base'!
+
+(Delta mirrorFor: #CharacterInputOutputConverter)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CharacterInputOutputConverter) methodsFor: 'control' !
+
+
+externalFlush
+
+	self binaryStream externalFlush.!
+
+flush
+
+	self binaryStream flush.! !
+
+! (Delta mirrorFor: #CharacterInputOutputConverter) methodsFor: 'accessing' !
+
+
+nextPut: c <Character> ^<Character>
+
+	self binaryStream nextPut: c asciiValue.
+	 (Platform usesCrLfConvention and: [ c = Character cr ])
+		ifTrue: [ self binaryStream nextPut: Character lf asciiValue ].
+	^c!
+
+position ^ <Int>
+
+	^self binaryStream position!
+
+position: i <Int>
+
+	self binaryStream position: i.
+	self noPeekVal.
+!
+
+setToEnd
+
+	self binaryStream setToEnd! !
+

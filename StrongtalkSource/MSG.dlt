@@ -1,0 +1,571 @@
+Delta define: #MSG as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: 'primaryMouseButtonPressed <Boolean>
+		secondaryMouseButtonPressed <Boolean>
+		middleMouseButtonPressed <Boolean>
+		shiftPressed <Boolean>
+		altPressed <Boolean>
+		ctrlPressed <Boolean>
+		numLocked <Boolean>
+') classVariables: 'NameMap <Dict[ExternalProxy,Symbol]>
+		InputEvents <Set[ExternalProxy]>
+			"Contains the set of message codes associated with input events, so we can know when to
+			  update the modifier key status"
+		KeyMap <VarDict[Int,Symbol]>
+			"Has entries for all keys that are not internationalizable"
+			') !
+
+(Delta mirrorFor: #MSG) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #MSG) group: 'base'!
+
+(Delta mirrorFor: #MSG)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #MSG) classSide methodsFor: 'utility' !
+
+
+composedNameFor: nm <Symbol> at: code <ExternalProxy> ^<Symbol>
+
+    ^((NameMap at: code ifAbsent: [ ^nm ]) , ' | ', nm ) asSymbol
+
+!
+
+descriptionOf: msgType <ExternalProxy> ^<Str>
+
+	| nm <Symbol> |
+	nm := self nameFor: msgType.
+	^nm = #UnknownMessageCode
+		ifFalse: [ nm ]
+		ifTrue: [	nm,' = ', msgType printString ]!
+
+nameFor: msgType <ExternalProxy>  ^<Symbol>
+
+	^self  nameMap at: msgType
+			ifAbsent: [ #UnknownMessageCode ]!
+
+nameMap ^<Dict[ExternalProxy,Symbo]>
+
+    NameMap == nil
+        ifTrue: [    | count <Int> |
+						count := 0.
+						NameMap := Dictionary[ExternalProxy,Symbol] new.
+                        self nameMappingsDo:
+                            [ :name <Symbol> :code <ExternalData> |
+								| codeProxy <ExternalProxy> |
+								codeProxy := code asExternalProxy.
+                                NameMap at: codeProxy put: (self composedNameFor: name at: codeProxy).
+								count := count + 1.    ].
+							].
+	^NameMap!
+
+nameMappingsDo: fn <[Symbol,ExternalData]>
+
+	fn	value: #WM_NULL	value: Win32 WM_NULL;
+		value: #WM_CREATE	value: Win32 WM_CREATE;
+		value: #WM_DESTROY	value: Win32 WM_DESTROY;
+		value: #WM_MOVE		value: Win32 WM_MOVE;
+		value: #WM_SIZE		value: Win32 WM_SIZE;
+		value: #WM_ACTIVATE	value: Win32 WM_ACTIVATE;
+		value: #WM_SETFOCUS	value: Win32 WM_SETFOCUS;
+		value: #WM_KILLFOCUS	value: Win32 WM_KILLFOCUS;
+		value: #WM_ENABLE	value: Win32 WM_ENABLE;
+		value: #WM_SETREDRAW	value: Win32 WM_SETREDRAW;
+		value: #WM_SETTEXT	value: Win32 WM_SETTEXT;
+		value: #WM_GETTEXT	value: Win32 WM_GETTEXT;
+		value: #WM_GETTEXTLENGTH	value: Win32 WM_GETTEXTLENGTH;
+		value: #WM_PAINT	value: Win32 WM_PAINT;
+		value: #WM_CLOSE	value: Win32 WM_CLOSE;
+		value: #WM_QUERYENDSESSION	value: Win32 WM_QUERYENDSESSION;
+		value: #WM_QUIT	value: Win32 WM_QUIT;
+		value: #WM_QUERYOPEN	value: Win32 WM_QUERYOPEN;
+		value: #WM_ERASEBKGND	value: Win32 WM_ERASEBKGND;
+		value: #WM_SYSCOLORCHANGE	value: Win32 WM_SYSCOLORCHANGE;
+		value: #WM_ENDSESSION	value: Win32 WM_ENDSESSION;
+		value: #WM_SHOWWINDOW	value: Win32 WM_SHOWWINDOW;
+		value: #WM_WININICHANGE	value: Win32 WM_WININICHANGE;
+		value: #WM_SETTINGCHANGE	value: Win32 WM_SETTINGCHANGE;
+		value: #WM_DEVMODECHANGE	value: Win32 WM_DEVMODECHANGE;
+		value: #WM_ACTIVATEAPP	value: Win32 WM_ACTIVATEAPP;
+		value: #WM_FONTCHANGE	value: Win32 WM_FONTCHANGE;
+		value: #WM_TIMECHANGE	value: Win32 WM_TIMECHANGE;
+		value: #WM_CANCELMODE	value: Win32 WM_CANCELMODE;
+		value: #WM_SETCURSOR	value: Win32 WM_SETCURSOR;
+		value: #WM_MOUSEACTIVATE	value: Win32 WM_MOUSEACTIVATE;
+		value: #WM_CHILDACTIVATE	value: Win32 WM_CHILDACTIVATE;
+		value: #WM_QUEUESYNC	value: Win32 WM_QUEUESYNC;
+		value: #WM_GETMINMAXINFO	value: Win32 WM_GETMINMAXINFO;
+		value: #WM_PAINTICON	value: Win32 WM_PAINTICON;
+		value: #WM_ICONERASEBKGND	value: Win32 WM_ICONERASEBKGND;
+		value: #WM_NEXTDLGCTL	value: Win32 WM_NEXTDLGCTL;
+		value: #WM_SPOOLERSTATUS	value: Win32 WM_SPOOLERSTATUS;
+		value: #WM_DRAWITEM	value: Win32 WM_DRAWITEM;
+		value: #WM_MEASUREITEM	value: Win32 WM_MEASUREITEM;
+		value: #WM_DELETEITEM	value: Win32 WM_DELETEITEM;
+		value: #WM_VKEYTOITEM	value: Win32 WM_VKEYTOITEM;
+		value: #WM_CHARTOITEM	value: Win32 WM_CHARTOITEM;
+		value: #WM_SETFONT	value: Win32 WM_SETFONT;
+		value: #WM_GETFONT	value: Win32 WM_GETFONT;
+		value: #WM_SETHOTKEY	value: Win32 WM_SETHOTKEY;
+		value: #WM_GETHOTKEY	value: Win32 WM_GETHOTKEY;
+		value: #WM_QUERYDRAGICON	value: Win32 WM_QUERYDRAGICON;
+		value: #WM_COMPAREITEM	value: Win32 WM_COMPAREITEM;
+		value: #WM_COMPACTING	value: Win32 WM_COMPACTING;
+		value: #WM_COMMNOTIFY	value: Win32 WM_COMMNOTIFY;
+		value: #WM_WINDOWPOSCHANGING	value: Win32 WM_WINDOWPOSCHANGING;
+		value: #WM_WINDOWPOSCHANGED	value: Win32 WM_WINDOWPOSCHANGED;
+		value: #WM_POWER	value: Win32 WM_POWER;
+		value: #WM_COPYDATA	value: Win32 WM_COPYDATA;
+		value: #WM_CANCELJOURNAL	value: Win32 WM_CANCELJOURNAL;
+		value: #WM_NOTIFY	value: Win32 WM_NOTIFY;
+		value: #WM_INPUTLANGCHANGEREQUEST	value: Win32 WM_INPUTLANGCHANGEREQUEST;
+		value: #WM_INPUTLANGCHANGE	value: Win32 WM_INPUTLANGCHANGE;
+		value: #WM_TCARD	value: Win32 WM_TCARD;
+		value: #WM_HELP	value: Win32 WM_HELP;
+		value: #WM_USERCHANGED	value: Win32 WM_USERCHANGED;
+		value: #WM_NOTIFYFORMAT	value: Win32 WM_NOTIFYFORMAT;
+		value: #WM_CONTEXTMENU	value: Win32 WM_CONTEXTMENU;
+		value: #WM_STYLECHANGING	value: Win32 WM_STYLECHANGING;
+		value: #WM_STYLECHANGED	value: Win32 WM_STYLECHANGED;
+		value: #WM_DISPLAYCHANGE	value: Win32 WM_DISPLAYCHANGE;
+		value: #WM_GETICON	value: Win32 WM_GETICON;
+		value: #WM_SETICON	value: Win32 WM_SETICON;
+		value: #WM_NCCREATE	value: Win32 WM_NCCREATE;
+		value: #WM_NCDESTROY	value: Win32 WM_NCDESTROY;
+		value: #WM_NCCALCSIZE	value: Win32 WM_NCCALCSIZE;
+		value: #WM_NCHITTEST	value: Win32 WM_NCHITTEST;
+		value: #WM_NCPAINT	value: Win32 WM_NCPAINT;
+		value: #WM_NCACTIVATE	value: Win32 WM_NCACTIVATE;
+		value: #WM_GETDLGCODE	value: Win32 WM_GETDLGCODE;
+		value: #WM_NCMOUSEMOVE	value: Win32 WM_NCMOUSEMOVE;
+		value: #WM_NCLBUTTONDOWN	value: Win32 WM_NCLBUTTONDOWN;
+		value: #WM_NCLBUTTONUP	value: Win32 WM_NCLBUTTONUP;
+		value: #WM_NCLBUTTONDBLCLK	value: Win32 WM_NCLBUTTONDBLCLK;
+		value: #WM_NCRBUTTONDOWN	value: Win32 WM_NCRBUTTONDOWN;
+		value: #WM_NCRBUTTONUP	value: Win32 WM_NCRBUTTONUP;
+		value: #WM_NCRBUTTONDBLCLK	value: Win32 WM_NCRBUTTONDBLCLK;
+		value: #WM_NCMBUTTONDOWN	value: Win32 WM_NCMBUTTONDOWN;
+		value: #WM_NCMBUTTONUP	value: Win32 WM_NCMBUTTONUP;
+		value: #WM_NCMBUTTONDBLCLK	value: Win32 WM_NCMBUTTONDBLCLK;
+		value: #WM_KEYFIRST	value: Win32 WM_KEYFIRST;
+		value: #WM_KEYDOWN	value: Win32 WM_KEYDOWN;
+		value: #WM_KEYUP	value: Win32 WM_KEYUP;
+		value: #WM_CHAR	value: Win32 WM_CHAR;
+		value: #WM_DEADCHAR	value: Win32 WM_DEADCHAR;
+		value: #WM_SYSKEYDOWN	value: Win32 WM_SYSKEYDOWN;
+		value: #WM_SYSKEYUP	value: Win32 WM_SYSKEYUP;
+		value: #WM_SYSCHAR	value: Win32 WM_SYSCHAR;
+		value: #WM_SYSDEADCHAR	value: Win32 WM_SYSDEADCHAR;
+		value: #WM_KEYLAST	value: Win32 WM_KEYLAST;
+		value: #WM_IME_STARTCOMPOSITION	value: Win32 WM_IME_STARTCOMPOSITION;
+		value: #WM_IME_ENDCOMPOSITION	value: Win32 WM_IME_ENDCOMPOSITION;
+		value: #WM_IME_COMPOSITION	value: Win32 WM_IME_COMPOSITION;
+		value: #WM_IME_KEYLAST	value: Win32 WM_IME_KEYLAST;
+		value: #WM_INITDIALOG	value: Win32 WM_INITDIALOG;
+		value: #WM_COMMAND	value: Win32 WM_COMMAND;
+		value: #WM_SYSCOMMAND	value: Win32 WM_SYSCOMMAND;
+		value: #WM_TIMER	value: Win32 WM_TIMER;
+		value: #WM_HSCROLL	value: Win32 WM_HSCROLL;
+		value: #WM_VSCROLL	value: Win32 WM_VSCROLL;
+		value: #WM_INITMENU	value: Win32 WM_INITMENU;
+		value: #WM_INITMENUPOPUP	value: Win32 WM_INITMENUPOPUP;
+		value: #WM_MENUSELECT	value: Win32 WM_MENUSELECT;
+		value: #WM_MENUCHAR	value: Win32 WM_MENUCHAR;
+		value: #WM_ENTERIDLE	value: Win32 WM_ENTERIDLE;
+		value: #WM_CTLCOLORMSGBOX	value: Win32 WM_CTLCOLORMSGBOX;
+		value: #WM_CTLCOLOREDIT	value: Win32 WM_CTLCOLOREDIT;
+		value: #WM_CTLCOLORLISTBOX	value: Win32 WM_CTLCOLORLISTBOX;
+		value: #WM_CTLCOLORBTN	value: Win32 WM_CTLCOLORBTN;
+		value: #WM_CTLCOLORDLG	value: Win32 WM_CTLCOLORDLG;
+		value: #WM_CTLCOLORSCROLLBAR	value: Win32 WM_CTLCOLORSCROLLBAR;
+		value: #WM_CTLCOLORSTATIC	value: Win32 WM_CTLCOLORSTATIC;
+		value: #WM_MOUSEFIRST	value: Win32 WM_MOUSEFIRST;
+		value: #WM_MOUSEMOVE	value: Win32 WM_MOUSEMOVE;
+		value: #WM_LBUTTONDOWN	value: Win32 WM_LBUTTONDOWN;
+		value: #WM_LBUTTONUP	value: Win32 WM_LBUTTONUP;
+		value: #WM_LBUTTONDBLCLK	value: Win32 WM_LBUTTONDBLCLK;
+		value: #WM_RBUTTONDOWN	value: Win32 WM_RBUTTONDOWN;
+		value: #WM_RBUTTONUP	value: Win32 WM_RBUTTONUP;
+		value: #WM_RBUTTONDBLCLK	value: Win32 WM_RBUTTONDBLCLK;
+		value: #WM_MBUTTONDOWN	value: Win32 WM_MBUTTONDOWN;
+		value: #WM_MBUTTONUP	value: Win32 WM_MBUTTONUP;
+		value: #WM_MBUTTONDBLCLK	value: Win32 WM_MBUTTONDBLCLK;
+		value: #WM_MOUSELAST	value: Win32 WM_MOUSELAST;
+		value: #WM_PARENTNOTIFY	value: Win32 WM_PARENTNOTIFY;
+		value: #WM_ENTERMENULOOP	value: Win32 WM_ENTERMENULOOP;
+		value: #WM_EXITMENULOOP	value: Win32 WM_EXITMENULOOP;
+		value: #WM_NEXTMENU	value: Win32 WM_NEXTMENU;
+		value: #WM_SIZING	value: Win32 WM_SIZING;
+		value: #WM_CAPTURECHANGED	value: Win32 WM_CAPTURECHANGED;
+		value: #WM_MOVING	value: Win32 WM_MOVING;
+		value: #WM_POWERBROADCAST	value: Win32 WM_POWERBROADCAST;
+		value: #WM_DEVICECHANGE	value: Win32 WM_DEVICECHANGE;
+		value: #WM_IME_SETCONTEXT	value: Win32 WM_IME_SETCONTEXT;
+		value: #WM_IME_NOTIFY	value: Win32 WM_IME_NOTIFY;
+		value: #WM_IME_CONTROL	value: Win32 WM_IME_CONTROL;
+		value: #WM_IME_COMPOSITIONFULL	value: Win32 WM_IME_COMPOSITIONFULL;
+		value: #WM_IME_SELECT	value: Win32 WM_IME_SELECT;
+		value: #WM_IME_CHAR	value: Win32 WM_IME_CHAR;
+		value: #WM_IME_KEYDOWN	value: Win32 WM_IME_KEYDOWN;
+		value: #WM_IME_KEYUP	value: Win32 WM_IME_KEYUP;
+		value: #WM_MDICREATE	value: Win32 WM_MDICREATE;
+		value: #WM_MDIDESTROY	value: Win32 WM_MDIDESTROY;
+		value: #WM_MDIACTIVATE	value: Win32 WM_MDIACTIVATE;
+		value: #WM_MDIRESTORE	value: Win32 WM_MDIRESTORE;
+		value: #WM_MDINEXT	value: Win32 WM_MDINEXT;
+		value: #WM_MDIMAXIMIZE	value: Win32 WM_MDIMAXIMIZE;
+		value: #WM_MDITILE	value: Win32 WM_MDITILE;
+		value: #WM_MDICASCADE	value: Win32 WM_MDICASCADE;
+		value: #WM_MDIICONARRANGE	value: Win32 WM_MDIICONARRANGE;
+		value: #WM_MDIGETACTIVE	value: Win32 WM_MDIGETACTIVE;
+		value: #WM_MDISETMENU	value: Win32 WM_MDISETMENU;
+		value: #WM_ENTERSIZEMOVE	value: Win32 WM_ENTERSIZEMOVE;
+		value: #WM_EXITSIZEMOVE	value: Win32 WM_EXITSIZEMOVE;
+		value: #WM_DROPFILES	value: Win32 WM_DROPFILES;
+		value: #WM_MDIREFRESHMENU	value: Win32 WM_MDIREFRESHMENU;
+		value: #WM_CUT	value: Win32 WM_CUT;
+		value: #WM_COPY	value: Win32 WM_COPY;
+		value: #WM_PASTE	value: Win32 WM_PASTE;
+		value: #WM_CLEAR	value: Win32 WM_CLEAR;
+		value: #WM_UNDO	value: Win32 WM_UNDO;
+		value: #WM_RENDERFORMAT	value: Win32 WM_RENDERFORMAT;
+		value: #WM_RENDERALLFORMATS	value: Win32 WM_RENDERALLFORMATS;
+		value: #WM_DESTROYCLIPBOARD	value: Win32 WM_DESTROYCLIPBOARD;
+		value: #WM_DRAWCLIPBOARD	value: Win32 WM_DRAWCLIPBOARD;
+		value: #WM_PAINTCLIPBOARD	value: Win32 WM_PAINTCLIPBOARD;
+		value: #WM_VSCROLLCLIPBOARD	value: Win32 WM_VSCROLLCLIPBOARD;
+		value: #WM_SIZECLIPBOARD	value: Win32 WM_SIZECLIPBOARD;
+		value: #WM_ASKCBFORMATNAME	value: Win32 WM_ASKCBFORMATNAME;
+		value: #WM_CHANGECBCHAIN	value: Win32 WM_CHANGECBCHAIN;
+		value: #WM_HSCROLLCLIPBOARD	value: Win32 WM_HSCROLLCLIPBOARD;
+		value: #WM_QUERYNEWPALETTE	value: Win32 WM_QUERYNEWPALETTE;
+		value: #WM_PALETTEISCHANGING	value: Win32 WM_PALETTEISCHANGING;
+		value: #WM_PALETTECHANGED	value: Win32 WM_PALETTECHANGED;
+		value: #WM_HOTKEY	value: Win32 WM_HOTKEY;
+		value: #WM_PRINT	value: Win32 WM_PRINT;
+		value: #WM_PRINTCLIENT	value: Win32 WM_PRINTCLIENT;
+		value: #WM_HANDHELDFIRST	value: Win32 WM_HANDHELDFIRST;
+		value: #WM_HANDHELDLAST	value: Win32 WM_HANDHELDLAST;
+		value: #WM_AFXFIRST	value: Win32 WM_AFXFIRST;
+		value: #WM_AFXLAST	value: Win32 WM_AFXLAST;
+		value: #WM_PENWINFIRST	value: Win32 WM_PENWINFIRST;
+		value: #WM_PENWINLAST	value: Win32 WM_PENWINLAST;
+		value: #WM_MOUSEWHEEL	value: Win32 WM_MOUSEWHEEL;
+		value: #WM_APP	value: Win32 WM_APP. ! !
+
+! (Delta mirrorFor: #MSG) classSide methodsFor: 'private' !
+
+
+keySymbolsDo: blk <[Symbol,Int]>
+	"Iterate over the mapping of key symbols to Win32 virtual key codes"
+
+    blk
+	value: #CANCEL         value: 16r03;
+	value: #BACK           value: 16r08;
+	value: #TAB            value: 16r09;
+	value: #CLEAR          value: 16r0C;
+	value: #RETURN         value: 16r0D;
+	value: #SHIFT          value: 16r10;
+	value: #CONTROL        value: 16r11;
+	value: #MENU           value: 16r12;
+	value: #PAUSE          value: 16r13;
+	value: #CAPITAL        value: 16r14;
+	value: #ESCAPE         value: 16r1B;
+	value: #SPACE          value: 16r20;
+	value: #PRIOR          value: 16r21;
+	value: #NEXT           value: 16r22;
+	value: #END            value: 16r23;
+	value: #HOME           value: 16r24;
+	value: #LEFT           value: 16r25;
+	value: #UP             value: 16r26;
+	value: #RIGHT          value: 16r27;
+	value: #DOWN           value: 16r28;
+	value: #SELECT         value: 16r29;
+	value: #PRINT          value: 16r2A;
+	value: #EXECUTE        value: 16r2B;
+	value: #SNAPSHOT       value: 16r2C;
+	value: #INSERT         value: 16r2D;
+	value: #DELETE         value: 16r2E;
+	value: #HELP           value: 16r2F;
+
+	value: #ZERO	value: 16r30;
+	value: #ONE	value: 16r31;
+	value: #TWO 	value: 16r32;
+	value: #THREE	value: 16r33;
+	value: #FOUR	value: 16r34;
+	value: #FIVE	value: 16r35;
+	value: #SIX	value: 16r36;
+	value: #SEVEN	value: 16r37;
+	value: #EIGHT	value: 16r38;
+	value: #NINE	value: 16r39;
+
+	value: #A	value: 16r41;
+	value: #B	value: 16r42;
+	value: #C	value: 16r43;
+	value: #D	value: 16r44;
+	value: #E	value: 16r45;
+	value: #F	value: 16r46;
+	value: #G	value: 16r47;
+	value: #H	value: 16r48;
+	value: #I	value: 16r49;
+	value: #J	value: 16r4A;
+	value: #K	value: 16r4B;
+	value: #L	value: 16r4C;
+	value: #M	value: 16r4D;
+	value: #N	value: 16r4E;
+	value: #O	value: 16r4F;
+	value: #P	value: 16r50;
+	value: #Q	value: 16r51;
+	value: #R	value: 16r52;
+	value: #S	value: 16r53;
+	value: #T	value: 16r54;
+	value: #U	value: 16r55;
+	value: #V	value: 16r56;
+	value: #W	value: 16r57;
+	value: #X	value: 16r58;
+	value: #Y	value: 16r59;
+	value: #Z	value: 16r5A;
+
+	value: #LWIN           value: 16r5B;
+	value: #RWIN           value: 16r5C;
+	value: #APPS           value: 16r5D;
+	value: #NUMPAD0        value: 16r60;
+	value: #NUMPAD1        value: 16r61;
+	value: #NUMPAD2        value: 16r62;
+	value: #NUMPAD3        value: 16r63;
+	value: #NUMPAD4        value: 16r64;
+	value: #NUMPAD5        value: 16r65;
+	value: #NUMPAD6        value: 16r66;
+	value: #NUMPAD7        value: 16r67;
+	value: #NUMPAD8        value: 16r68;
+	value: #NUMPAD9        value: 16r69;
+	value: #MULTIPLY       value: 16r6A;
+	value: #ADD            value: 16r6B;
+	value: #SEPARATOR      value: 16r6C;
+	value: #SUBTRACT       value: 16r6D;
+	value: #DECIMAL        value: 16r6E;
+	value: #DIVIDE         value: 16r6F;
+	value: #F1             value: 16r70;
+	value: #F2             value: 16r71;
+	value: #F3             value: 16r72;
+	value: #F4             value: 16r73;
+	value: #F5             value: 16r74;
+	value: #F6             value: 16r75;
+	value: #F7             value: 16r76;
+	value: #F8             value: 16r77;
+	value: #F9             value: 16r78;
+	value: #F10            value: 16r79;
+	value: #F11            value: 16r7A;
+	value: #F12            value: 16r7B;
+	value: #F13            value: 16r7C;
+	value: #F14            value: 16r7D;
+	value: #F15            value: 16r7E;
+	value: #F16            value: 16r7F;
+	value: #F17            value: 16r80;
+	value: #F18            value: 16r81;
+	value: #F19            value: 16r82;
+	value: #F20            value: 16r83;
+	value: #F21            value: 16r84;
+	value: #F22            value: 16r85;
+	value: #F23            value: 16r86;
+	value: #F24            value: 16r87;
+	value: #NUMLOCK        value: 16r90;
+	value: #SCROLL         value: 16r91.
+	! !
+
+! (Delta mirrorFor: #MSG) classSide methodsFor: 'key symbols' !
+
+
+keyValueFor: code <Int> ifAbsent: blk <AbortBlock> ^<Symbol>
+
+	KeyMap isNil
+		ifTrue: [	KeyMap := Dictionary[Int,Symbol] new: 128.
+						self keySymbolsDo:
+							[ :sym <Symbol> :code <Int> |
+								KeyMap at: code put: sym ].	].
+	^KeyMap at: code ifAbsent: blk! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'accessing' !
+
+
+hwnd ^<ExternalProxy>
+
+	^self proxyAt: self hwndOffset!
+
+hwnd: v <ExternalData>
+
+	self externalDataAt: self hwndOffset put: v!
+
+lParam ^<ExternalData>
+
+	^self proxyAt: self lParamOffset!
+
+lParam: v <ExternalData>
+
+	self externalDataAt: self lParamOffset put: v!
+
+message ^<ExternalProxy>
+
+	^self proxyAt: self messageOffset!
+
+message: v <ExternalData>
+
+	self externalDataAt: self messageOffset put: v!
+
+name ^<Symbol>
+
+	^self actualClass printStringFor: self message!
+
+pt ^<Point>
+
+	^(self smallIntegerAt: self pointXOffset)
+		@ (self smallIntegerAt: self pointYOffset)!
+
+pt: p <Point>
+
+	self smallIntegerAt: self pointXOffset put: p x.
+	self smallIntegerAt: self pointYOffset put: p y.!
+
+structureSize ^<Int>
+
+	^28!
+
+time ^<ExternalData>
+
+	^self proxyAt: self timeOffset!
+
+time: v <ExternalData>
+
+	self externalDataAt: self timeOffset put: v!
+
+wParam ^<ExternalData>
+
+	^self proxyAt: self wParamOffset!
+
+wParam: v <ExternalData>
+
+	self externalDataAt: self wParamOffset put: v! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'offsets' !
+
+
+hwndOffset ^<Int>
+
+	^0!
+
+lParamOffset ^<Int>
+
+	^12!
+
+messageOffset ^<Int>
+
+	^4!
+
+pointXOffset ^<Int>
+
+	^20!
+
+pointYOffset ^<Int>
+
+	^24!
+
+timeOffset ^<Int>
+
+	^16!
+
+wParamOffset ^<Int>
+
+	^8! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm putAll: 'MSG('; putAll: (self actualClass descriptionOf: self message asExternalProxy); putAll: ')'! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'private' !
+
+
+pressedStateOf: virtualKey <ExternalData> ^<Boolean>
+	"Return true if the specified key is pressed, false otherwise"
+
+	^(({{<user ExternalProxy GetKeyState> key: virtualKey}}
+			low) bitAnd: 16r8000) ~= 0!
+
+toggleStateOf: virtualKey <ExternalData> ^<Boolean>
+	"Return true if the specified key is toggled on, false otherwise"
+
+	^({{<user ExternalProxy GetKeyState> key: virtualKey}}
+		low bitAnd: 1) @= 1! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'control' !
+
+
+initializeSensorInfo
+
+	| m <Int> l <Int> h <Int> |
+	m := self message asSmallInteger.
+	l := Win32 WM_MOUSEMOVE asSmallInteger.
+	h := Win32 WM_MBUTTONDBLCLK asSmallInteger.
+	(m between: l and: h)
+		ifTrue: [	"Then we can get most of the information from wparam" 
+						primaryMouseButtonPressed := (self wParam externalBitAnd: Win32 MK_LBUTTON) @= Win32 MK_LBUTTON.
+						secondaryMouseButtonPressed := (self wParam externalBitAnd: Win32 MK_RBUTTON) @= Win32 MK_RBUTTON.
+						middleMouseButtonPressed := (self wParam externalBitAnd: Win32 MK_MBUTTON) @= Win32 MK_MBUTTON.
+						shiftPressed := (self wParam externalBitAnd: Win32 MK_SHIFT) @= Win32 MK_SHIFT.
+						ctrlPressed := (self wParam externalBitAnd: Win32 MK_CONTROL) @= Win32 MK_CONTROL.	]
+		ifFalse: [	"We must get the status another way"
+						primaryMouseButtonPressed := self pressedStateOf: Win32 VK_LBUTTON.
+						secondaryMouseButtonPressed := self pressedStateOf: Win32 VK_RBUTTON.
+						middleMouseButtonPressed := self pressedStateOf: Win32 VK_MBUTTON.
+						shiftPressed := self pressedStateOf: Win32 VK_SHIFT.
+						ctrlPressed := self pressedStateOf: Win32 VK_CONTROL.	].
+	altPressed := self pressedStateOf: Win32 VK_MENU.
+	numLocked := self toggleStateOf: Win32 VK_NUMLOCK.
+! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'input device state' !
+
+
+altPressed ^<Boolean>
+
+	^altPressed!
+
+ctrlPressed ^<Boolean>
+
+	^ctrlPressed!
+
+middleMouseButtonPressed ^<Boolean>
+
+	^middleMouseButtonPressed!
+
+mouseButtonPressed: but <Symbol> ^<Boolean>
+	"but must be one of #primary, #secondary, #middle"
+
+	but = #primary
+		ifTrue: [ ^self primaryMouseButtonPressed ].
+	but = #secondary
+		ifTrue: [ ^self secondaryMouseButtonPressed ].
+	but = #middle
+		ifTrue: [ ^self middleMouseButtonPressed ].	"%todo: implement middle button stuff"
+	self shouldNotHappen!
+
+numLocked ^<Boolean>
+
+	^numLocked!
+
+primaryMouseButtonPressed ^<Boolean>
+
+	^primaryMouseButtonPressed!
+
+secondaryMouseButtonPressed ^<Boolean>
+
+	^secondaryMouseButtonPressed!
+
+shiftPressed ^<Boolean>
+
+	^shiftPressed! !
+

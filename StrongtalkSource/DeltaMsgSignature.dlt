@@ -1,0 +1,135 @@
+Delta define: #DeltaMsgSignature as: (
+(Class subclassOf: 'DeltaType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaMsgSignature) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaMsgSignature) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMsgSignature)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMsgSignature) methodsFor: 'Unclassified' !
+
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^(self range antimonotonicIn: tv) and:
+   [self domain inject: true into:
+               [:b <Boolean>  :d <ObjectType>  | b and:[d monotonicIn: tv]]].!
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool msgSignatureNode: self!
+
+domain ^ <OrdCltn[ObjectType]>
+    ^self filteree domain virtualCollect:[:e <ObjectType>  | e substitute: self substitution]!
+
+domain: d <VarOrdCltn[ObjectType] >range: r <ObjectType > ^ <Self>
+    self filter: (BasicMsgSignatureData new domain: d range: r)
+      using: DeltaSubstitution new initialize.!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a colon separated list of formatted domain names and the formatted range name.
+		The range is only included if it was explicitly specified.
+		
+		The resulting string is prefixed with a tag character:
+		
+			$0 if the signature is non-polymorphic
+			$2 if the signature is polymorphic
+			$4 if the signature is polymorphic and has an actual 'where' inference clause present."
+		
+	| s <CharOutputStream> range <ObjectType> rangePos <Tuple[Int,Int]> |
+	s := String new writeStream.
+	s nextPut: $0.
+	self domain do: [ :d <ObjectType> |
+		s nextPutAll: (d formattedName: pt).
+		s nextPut: $: ].
+	range := self range.
+	rangePos := pt positionForNode: range ifAbsent: [ self shouldNotHappen ].
+	rangePos at2 - rangePos at1 > 0
+		ifTrue: [	s nextPutAll: (range formattedName: pt) ].	"An explicit return type was specified"
+	^s contents!
+
+inferTypeFrom: args <OrdCltn[Expression] > ^ <DeltaMsgSignature>
+    ^self!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+    ^(self range monotonicIn: tv) and:
+   [self domain inject: true into:
+               [:b <Boolean>  :d <ObjectType>  | b and:[d antimonotonicIn: tv]]].!
+
+name ^ <Symbol>
+    ^((self domain inject: '[' into:[:s <Str>  :e <ObjectType>  | s, e name, ' ']), ' ^ ', self range name, ']') asSymbol!
+
+range ^ <ObjectType>
+    ^self filteree range substitute: self substitution!
+
+retractTypeAssumptions ^ <Self>
+    "An ordinary message signature introduces no new type assumptions. Consequently, there are none to retract"!
+
+setupTypeAssumptions ^ <Self>
+    "An ordinary message signature introduces no new type assumptions"!
+
+subtypeOf: t <Type >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^t supertypeOfMsgSignature: self assuming: trail!
+
+subtypeOfMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+"
+self domain size = m domain size ifFalse:[self testFailedBecause: 'Number of arguments does not match' toEscape:[^false]].
+
+self domain with: m domain do:
+  [:myType <ObjectType> :otherType <ObjectType> |
+   (otherType subtypeOf: myType assuming: trail) ifFalse:[self testFailedBecause: otherType name , ' is not a subtype of ', myType name toEscape:[^false]]
+  ].
+^(self range subtypeOf: m range assuming: trail)
+    ifTrue:[^true]
+    ifFalse:[
+               self testFailedBecause: self range name, ' is not a subtype of ', m range name
+                       toEscape:[^false].
+               ^false.
+               ].
+"
+
+| myType <ObjectType> otherType <ObjectType> result <Boolean> subtype <Boolean>  |
+
+self domain size = m domain size ifFalse:[
+	self testFailedBecause: DeltaMsgArgumentMismatch new toEscape:[].
+	^false].
+
+result := true.
+1 to: self domain size do: [ :i <Int> |
+	myType := self domain at: i.
+	otherType := m domain at: i.
+	self errorHandler pushSubtypeCheckDepth.
+	subtype := otherType subtypeOf: myType assuming: trail.
+	self errorHandler popSubtypeCheckDepth.
+	subtype ifFalse:[
+		result := false.
+		self testFailedBecause: (DeltaMsgArgumentError new argument: i) toEscape:[^false]]].
+
+self errorHandler pushSubtypeCheckDepth.
+subtype := self range subtypeOf: m range assuming: trail.
+self errorHandler popSubtypeCheckDepth.
+subtype ifFalse: [
+	result := false.
+	self testFailedBecause: DeltaMsgRangeError new toEscape:[^false]].
+
+^result
+!
+
+superprotocolOf: p <DeltaProtocol >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^false!
+
+supertypeOfMsgSignature: m <MsgSignature >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^m subtypeOfMsgSignature: self assuming: trail!
+
+supertypeOfUnion: u <UnionType >assuming: trail <DeltaTrail > ^ <Boolean>
+    ^false!
+
+wellFormed ^ <Boolean>
+    | result <Boolean>  |
+
+result := true.
+self domain do:[:e <ObjectType>  | e wellFormed ifFalse:[result := false].].
+^self range wellFormed and:[result].! !
+

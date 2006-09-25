@@ -1,0 +1,204 @@
+Delta define: #DeltaBlockApplicationType as: (
+(Class subclassOf: 'DeltaGenericApplicationType' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaBlockApplicationType) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #DeltaBlockApplicationType) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBlockApplicationType)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBlockApplicationType) classSide methodsFor: 'Unclassified' !
+
+
+addValueMessage: n <Int >to: g <DeltaGenericProtocol > ^ <Self>
+    | range <ObjectType>   selector <Str>  msg <MsgSignature>  domain <VarOrdCltn[ObjectType]>   i <Interface>  |
+
+i := g body delta rawPrimaryInterface.
+selector := ''.
+domain := OrderedCollection[ObjectType]  new: n.
+1 to: n do:[:j <Int>  |
+               selector := selector, 'value:'.
+               domain addLast: (DeltaTypeId new setId: ('A', j printString) asSymbol;
+                                                                       scope: g genericScope).
+               ].
+n = 0 ifTrue:[selector := 'value'.].
+range := DeltaTypeId new setId: #R; scope: g genericScope.
+msg := DeltaMsgSignature new domain: domain range: range.
+i at: selector asSymbol put: msg.!
+
+blokName: n <Int > ^ <Symbol>
+    ^(n printString, '_argFun') asSymbol.!
+
+blokType: n <Int > ^ <DeltaTypeId>
+
+| bn <Symbol> |
+
+bn := self blokName: n.
+DeltaGlobals at: bn
+           ifAbsent:[self createBlokType: n].
+^DeltaTypeId new setId: bn; scope: DeltaGlobals.!
+
+boolBlokType  ^ <DeltaTypeId>
+
+
+^DeltaTypeId new setId: ('BooleanBlock') asSymbol; scope: DeltaGlobals.!
+
+createBlokBody: n <Int > ^ <Protocol>
+    |
+interface <Interface> 
+delta <Protocol> 
+sp <Protocol> 
+blokName <Symbol> 
+branded <Boolean> 
+|
+
+blokName := self blokName: n.
+branded := true.
+interface := (DeltaInterface new initialize).
+sp := DeltaTypeId new setId: #Object; scope: DeltaGlobals.
+delta := DeltaRawProtocol new primaryInterface: interface
+                                                 secondaryInterface: (DeltaInterface new initialize)
+                                                 branded: branded.
+^DeltaProtocolUpdate new name: blokName
+                                                      superprotocol: sp
+                                                      delta: delta
+                                                      branded: branded
+                                                      subtype: true.!
+
+createBlokType: n <Int > ^ <DeltaGeneric[Protocol]>
+    |
+body <Protocol> 
+formals <VarOrdCltn[TypeFormal]> 
+blokName <Symbol> 
+newGen <DeltaGenericProtocol> 
+|
+
+blokName := self blokName: n.
+formals := self createFormals: n.
+body := self createBlokBody: n.
+newGen := DeltaGeneric[Protocol]  new name: blokName body: body formals: formals.
+self addValueMessage: n to: newGen.
+
+Type addMagicType: newGen.
+^DeltaGlobals at: blokName put: newGen
+!
+
+createFormals: n <Int > ^ <OrdCltn[TypeFormal]>
+    |
+formals <VarOrdCltn[TypeFormal]> 
+f <TypeFormal> 
+tv <TypeVar> 
+bound <TypeId> 
+|
+
+formals := OrderedCollection[TypeFormal]  new.
+1 to: n do:[:i <Int>  |
+                 bound := DeltaTypeId new setId: #Object; scope: DeltaGlobals.
+                 tv := DeltaTypeVar new name: ('A', i printString) asSymbol bound: bound.
+                 f := DeltaTypeFormal new variance: #contra typeVar: tv.
+                 formals addLast: f
+                 ].
+bound := DeltaTypeId new setId: #Object; scope: DeltaGlobals.
+tv := DeltaTypeVar new name: #R bound: bound.
+f := DeltaTypeFormal new variance: #covar typeVar: tv.
+formals addLast: f.
+^formals!
+
+zeroArgBlokType  ^ <DeltaTypeId>
+
+
+^DeltaTypeId new setId: ('ZeroArgumentBlock') asSymbol; scope: DeltaGlobals.! !
+
+! (Delta mirrorFor: #DeltaBlockApplicationType) methodsFor: 'Unclassified' !
+
+
+apply: tool <DeltaTool > ^ <Self>
+	tool blockApplicationTypeNode: self.!
+
+apply: tid <TypeId >to: tas <OrdCltn[ObjectType] > ^ <Self>
+    self filter: (BasicGenericApplicationTypeData new apply: tid to: tas)
+       using: DeltaSubstitution new initialize.
+    self filteree target: self target.!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+^super compositeSubstitute: t
+ !
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^false!
+
+domain ^<OrdCltn[ObjectType]>
+    
+| args  <OrdCltn[ObjectType]> |
+
+args := OrderedCollection[ObjectType] new: self actuals size.
+self actuals do: [:a <ObjectType> | args add: a].
+args removeLast.
+^args!
+
+formattedName: pt <ParseTree[DeltaMethod]> ^ <Str>
+	"Returns a formatted name, which here is the actuals formatted
+		and embedded in brackets"
+		
+	| s <CharOutputStream> domain <OrdCltn[ObjectType]> range <ObjectType> rangePos <Tuple[Int,Int]> |
+	s := String new writeStream.
+	s nextPut: $[.
+	domain := self domain.
+	range := self actuals last.
+	domain 
+		do: [ :a <ObjectType> | s nextPutAll: (a formattedName: pt) ]
+		andBetweenDo: [ s nextPut: $, ].
+	rangePos := pt positionForNode: range ifAbsent: [ self shouldNotHappen ].
+	rangePos at2 - rangePos at1 > 0
+		ifTrue: [	domain isEmpty
+							ifFalse: [ s nextPut: $, ].
+						s nextPut: $^.
+						s nextPutAll: (range formattedName: pt) ].	"An explicit return type was specified"
+	s nextPut: $].
+	^s contents!
+
+name ^ <Symbol>
+    | argNames <Str>  args <OrdCltn[Type]> |
+
+"We assume a block type application always has at least one argument, its return type."
+
+args := self actuals.
+argNames := ''.
+1 to: args size - 1 do:[ :a <ObjectType>  | argNames := argNames, (args at: a) name, ', '].
+argNames := argNames, '^', args last name.
+^('[',  argNames, ']') asSymbol!
+
+range ^ <ObjectType>
+    ^(self selectMsg: (self valueMsgSelector)) range!
+
+target ^ <DeltaVar>
+
+^(self actuals size = 1)
+     ifTrue:[
+                   (self actuals first name = #Boolean) 
+                       ifTrue:[self class boolBlokType]
+                       ifFalse:[self class zeroArgBlokType]
+                  ]
+     ifFalse:[self class blokType: self actuals size - 1].!
+
+target: t <DeltaTypeId>
+
+^self filteree target: t.!
+
+valueMsgSelector ^ <Symbol>
+    | valSel <Str>  n <Int>  |
+
+n := self  actuals size - 1.
+n = 0 ifTrue:[^#value].
+valSel := ''.
+1 to: n do:
+   [: j <Int>  |
+   valSel := valSel, 'value:'.
+   ].
+ ^valSel asSymbol.! !
+

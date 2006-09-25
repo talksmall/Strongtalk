@@ -1,0 +1,119 @@
+Delta define: #Mixin as: (
+(Class subclassOf: 'AbstractMixin' instanceVariables: '')) !
+
+(Delta mirrorFor: #Mixin) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #Mixin) group: 'base'!
+
+(Delta mirrorFor: #Mixin)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Mixin) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^78! !
+
+! (Delta mirrorFor: #Mixin) classSide methodsFor: 'Unclassified' !
+
+
+superclassType: superString  <Str> body: body  <ClassMirror> ^ <MixinDeclMirror> 
+    "Creation of a Delta mixin constructor"
+
+^MixinDeclMirror  superclassType: superString body: body! !
+
+! (Delta mirrorFor: #Mixin) methodsFor: 'file out' !
+
+
+fileOutClassMixin ^<Mixin>
+	^{{primitiveMixinClassMixinOf: self ifFail: [:err | self error: err]}}!
+
+fileOutClassVarsNames ^<Array[Symbol]>
+	^{{primitiveMixin: self classVariablesIfFail: [:err <Symbol> | self error: err]}}!
+
+fileOutHeaderOn: d <Dumper>
+	super	fileOutHeaderOn: d.
+	self		fileOutMethods						fileOutOn: d.
+	self		fileOutInstVars							fileOutOn: d.
+	self		fileOutClassVarsNames			fileOutOn: d.
+	self		fileOutPrimaryInvocation		fileOutOn: d.
+	self		fileOutClassMixin					fileOutOn: d.
+	self		fileOutIsInstalled						fileOutOn: d!
+
+fileOutInstVars ^<Array[Symbol]>
+	^{{primitiveMixin: self  instanceVariablesIfFail: [:err <Symbol> | self error: err]}}!
+
+fileOutIsInstalled ^<Boolean>
+	^{{primitiveMixinIsInstalled: self ifFail: [ :err <Symbol> | self error: err]}}!
+
+fileOutMethods ^<Array[Method]>
+	| size method methods |
+	size := {{primitiveMixinNumberOfMethodsOf: self  ifFail: [:err | self error: err]}}.
+	methods := Array new: size.
+	1 to: size do: [ :index |
+		method  := {{primitiveMixin: self methodAt: index ifFail: [:err | self error: err]}}.
+		methods at: index put: method.
+	].
+	^methods!
+
+fileOutPrimaryInvocation ^<Class>
+	^{{primitiveMixinPrimaryInvocationOf: self ifFail: [ :err <Symbol> | self error: err]}}!
+
+fileOutSignature ^<Integer>
+    ^110! !
+
+! (Delta mirrorFor: #Mixin) methodsFor: 'Unclassified' !
+
+
+classMixin
+	self deltaHack.
+	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+	^(MixinVMMirror on: self) classSide reflectee!
+
+isMeta  ^ <Boolean>
+
+self subclassResponsibility!
+
+komment
+
+"
+This is an abstract superclass for the runtime representatives of mixins.
+These  are the values visible to users for named mixins -
+be they declarations or compositions. These instances have
+virtually no functionality. They can only be used as keys to obtain mirrors
+from Smalltalk. 
+
+Related hierarchies are the AST and mirror hierarchies for these constructs.
+"!
+
+printOn: strm <CharOutputStream>
+
+	strm nextPutAll: self name!
+
+typeInfo
+	self deltaHack.
+	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+	^Type forMixin: self
+!
+
+typeInfo: t
+	self deltaHack.
+	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].
+	Type atMixin: self put: t.
+	t klass: self! !
+
+! (Delta mirrorFor: #Mixin) methodsFor: 'browsing' !
+
+
+methods ^<Array[Method]>
+	| size <Integer> result <Array[Method]> element <Method> |
+	size := {{primitiveMixinNumberOfMethodsOf: self ifFail: [:err <Symbol> | self error: err]}}.
+	result := Array[Method] new: size.
+	1 to: size do: [:index |
+		element := {{primitiveMixin: self methodAt: index ifFail: [:err <Symbol> | self error: err]}}.
+		result at: index put: element.
+	].
+	^result! !
+

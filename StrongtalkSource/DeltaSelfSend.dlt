@@ -1,0 +1,25 @@
+Delta define: #DeltaSelfSend as: (
+(Class subclassOf: 'DeltaSend' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaSelfSend) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaSelfSend) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSelfSend)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSelfSend) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool selfSendNode: self!
+
+isSelfSendNode ^ <Boolean>
+    ^ true!
+
+send: aMsg <DeltaMessage > ^ <Self>
+    self assert: [aMsg isMessageNode].
+    msg := aMsg! !
+

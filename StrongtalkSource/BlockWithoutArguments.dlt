@@ -1,0 +1,161 @@
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+(Delta mirrorFor: #BlockWithoutArguments) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #BlockWithoutArguments) group: 'base'!
+
+(Delta mirrorFor: #BlockWithoutArguments)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+'!
+
+! (Delta mirrorFor: #BlockWithoutArguments) classSide methodsFor: 'testing' !
+
+
+test
+
+	| v <Boolean> |
+	
+	[ v := false ] ensure: [ v := true ].
+	self assert: [ v ].
+
+	[ v := false ] ifCurtailed: [ v := true ].
+	self assert: [ v not ].
+
+	self testForUnwind: [ v := false ] onUnwind: [ v := true ].
+	self assert: [ v ].
+
+	self testForEnsure: [ v := false ] onUnwind: [ v := true ].
+	self assert: [ v ].!
+
+testForEnsure: b <[]> onUnwind: b2 <[]> ^<Object>
+
+	[ ^b value ] ensure: b2!
+
+testForUnwind: b <[]> onUnwind: b2 <[]> ^<Object>
+
+	[ ^b value ] ifCurtailed: b2! !
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+
+
+critical ^<R>
+	"This is used for very short, fast critical regions where the overhead or inconvenience
+	  of a semaphore is not desired.  The argument is evaluated without any process context
+	  switches taking place, so that it can perform atomic operations.  WARNING: the blk MUST
+	  NOT do anything that might cause the process to block, such as any kind of I/O.  This
+	  method is only appropriate for very fast atomic operations that are extremely reliable, since
+	  no other processes will get a chance to run while it is being evaluated, and if it crashes,
+	  it will not be debuggable, since the development & debugger processes will not be able to run."
+
+	"%todo: implement this right.  NOTE: an interesting semantic idea: we could dramatically improve
+	  the usefulnes of this if it was a critical region on the receiver, not on the system as a whole."
+
+	^self value!
+
+ensure: f <[]> ^<R>
+
+	"Use the following impl when vm bug fixed"
+	"[ ^self value ] ifCurtailed: f"
+
+	| result <R> |
+	[ result := self value ] ifCurtailed: f.
+	f value.
+	^result!
+
+fork ^<Process>
+
+	^self forkAt: Processor activePriority!
+
+forkAt: priority <Int> ^<Process>
+
+	^self newProcess priority: priority; resume!
+
+ifCurtailed: protect <[]> ^<R>
+
+	^guaranteed <R>
+		  {{self primitiveUnwindProtect: protect
+				ifFail: [ :err <Symbol> |	self shouldNotHappen ]
+		  }}
+!
+
+newProcess ^<Process>
+
+	^Process for: self!
+
+profile
+
+	Profiler do: self!
+
+repeat ^<BottomType>
+
+	[ true ] whileTrue: [ self value ].
+	self shouldNotHappen.!
+
+time ^<Int>
+
+	^Time millisecondsToRun: self!
+
+userTime ^<Int>
+
+	^Time userMillisecondsToRun: self!
+
+value ^<R>
+
+    ^{{self primitiveValue}}!
+
+valueIfFail: fail <[^X def]>  ^<R | X>
+
+	^self value!
+
+verify
+	"Evaluate the receiver, and generate an error if it does not return true.  This is different than
+	  Object>>#assert: in that 1) it is a boolean block message, and 2) it ALWAYS evaluates, whereas
+	  #assert: does not guarantee that it will evaluate the predicate.
+
+	  Use verify in situations where you must ensure that the test is performed, for example when there
+	  are side-effects that must take place, or if it is testing code that should always be performed.
+
+	  Note that this message is only valid for blocks that return boolean values."
+
+	"Note: we don't use self as the receiver for #error: below because it will currently
+		prevent the block from being optimized away by the inliner"
+	self value
+		ifFalse: [ BlockWithoutArguments[Object] error: 'Assertion failed' ].
+
+	"%hack %todo: remove this when compiler bug fixed"
+	^nil!
+
+whileFalse ^<Object>
+
+	^self whileFalse: []!
+
+whileFalse: blk <[]> ^<Object>
+
+	"We can guarantee that self value is a Boolean in typesafe programs because the typechecker removes this
+		  message from the protocol of blocks that don't return Booleans"
+	(guaranteed <Boolean> (self value))
+		ifFalse: [	blk value.
+					[ (guaranteed <Boolean> (self value)) ]
+						whileFalse: [ blk value ]	].
+	^nil!
+
+whileTrue ^<Object>
+
+	^self whileTrue: []!
+
+whileTrue: blk <[]> ^<Object>
+
+	"We can guarantee that self value is a Boolean in typesafe programs because the typechecker removes this
+		  message from the protocol of blocks that don't return Booleans"
+
+
+	(guaranteed <Boolean> (self value))
+		ifTrue: [	blk value.
+					[ (guaranteed <Boolean> (self value)) ]
+						whileTrue: [ blk value ]	].
+
+	^nil! !
+

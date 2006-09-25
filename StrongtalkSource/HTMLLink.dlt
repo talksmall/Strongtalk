@@ -1,0 +1,55 @@
+Delta define: #HTMLLink as: (
+(Class subclassOf: 'VisualGlyph' instanceVariables: 'app <HTMLView>
+element <ElementA>')) !
+
+(Delta mirrorFor: #HTMLLink) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HTMLLink) group: 'HTML'!
+
+(Delta mirrorFor: #HTMLLink)
+comment: 
+'This is used as a lightweight wrapper for the individual characters of a HTML link
+in the browser.  It handles events directed at the link.
+
+Tags: %HTML %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #HTMLLink) classSide methodsFor: 'instance creation' !
+
+
+for: g <Glyph> app: a <HTMLView> element: el <ElementA>  ^<Instance>
+
+	^(self for: g) initApp: a element: el! !
+
+! (Delta mirrorFor: #HTMLLink) methodsFor: 'private- initialization' !
+
+
+initApp: a <HTMLView> element: el <ElementA>
+
+	app := a.
+	element := el.! !
+
+! (Delta mirrorFor: #HTMLLink) methodsFor: 'accessing' !
+
+
+app ^<HTMLView>
+
+	^app!
+
+element ^<ElementA>
+
+	^element! !
+
+! (Delta mirrorFor: #HTMLLink) methodsFor: 'event handling' !
+
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	type == #primaryButtonUp
+		ifTrue: [ self element activateAt: loc for: self app. 
+						^true ].
+	^false! !
+

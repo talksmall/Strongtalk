@@ -1,0 +1,125 @@
+Delta define: #Frame as: (
+(Class subclassOf: 'VisualWrapper' instanceVariables: 'border <Border>
+backdrop <Painter>
+	')) !
+
+(Delta mirrorFor: #Frame) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Frame) group: 'ui'!
+
+(Delta mirrorFor: #Frame)
+comment: 
+'Frames add visual decoration behind and around a visual.  Instances can
+hold a Border to describe the edge decoration.  A Painter can be
+used to describe how to draw the backdrop behind the visual.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
+'!
+
+! (Delta mirrorFor: #Frame) methodsFor: 'accessing' !
+
+
+backdrop ^<Painter>
+
+	^backdrop!
+
+backdrop: b <Painter>
+
+	backdrop := b!
+
+backdropPaint: p <Paint>
+
+	self backdrop: (Painter new paint: p)!
+
+border ^<Border>
+
+	^border!
+
+border: b <Border>
+
+	self changing.
+	border := b!
+
+containerBackgroundPainter ^<Painter>
+
+	^self hasBackdrop
+		ifTrue: [ self backdrop ]
+		ifFalse: [ super containerBackgroundPainter ]!
+
+hasBackdrop ^<Boolean>
+
+	^backdrop notNil!
+
+hasBorder ^<Boolean>
+
+	^border notNil! !
+
+! (Delta mirrorFor: #Frame) methodsFor: 'geometry-local' !
+
+
+max ^<Region>
+
+	^self hasBorder
+		ifTrue: [ self border maxFor: self part ]
+		ifFalse: [ super max ]!
+
+min ^<Region>
+
+	^self hasBorder
+		ifTrue: [ self border minFor: self part ]
+		ifFalse: [ super min ]!
+
+natural ^<Region>
+
+	^self hasBorder
+		ifTrue: [ self border naturalFor: self part ]
+		ifFalse: [ super natural ]! !
+
+! (Delta mirrorFor: #Frame) methodsFor: 'private' !
+
+
+childIsSameSize ^<Boolean>
+
+	^self hasBorder
+		ifFalse: [ true ]
+		ifTrue: [ false ]!
+
+layoutPart
+
+	self hasBorder
+		ifTrue: [ self border layout: self part given: self allocation ]
+		ifFalse: [ super layoutPart ]!
+
+skipCheckLayout ^<Boolean>
+
+	^false! !
+
+! (Delta mirrorFor: #Frame) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	self hasBackdrop
+		ifTrue: [  can withPainter: self backdrop
+							do: [ can displayFilledRectangle: self allocation enclosedRect ] ].
+
+	(self border isNil or: [ can pruningRegion surelyContainedBy: self part allocation ])
+		ifFalse: [ 	"Then we have to display the border"
+						self border displayOn: can allocation: self allocation.	].
+
+	super localDisplayOn: can! !
+
+! (Delta mirrorFor: #Frame) methodsFor: 'control' !
+
+
+relayoutAndInvalidate
+
+	super relayoutAndInvalidate.
+
+	"We invalidate again because the border may have changed.  The inherited
+		method may invalidate only the child if nothing but the border changed."
+	self invalidate.! !
+

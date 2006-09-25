@@ -1,0 +1,592 @@
+Delta define: #Mandelbrot as: (
+(Class subclassOf: 'Application' instanceVariables: 'image <Image>
+palette <Palette>
+colors <Array[SolidPaint]>
+computing <Boolean>
+computeProcess <Process>
+refreshTimer <Timer>
+mode <Symbol>
+		"one of #(boxed unboxed C)"
+fastCompute <[Float,Float,Int,^Int]>
+maxIters <Int>
+canvas <Canvas>
+profiling <Boolean>
+	')) !
+
+(Delta mirrorFor: #Mandelbrot) revision: '$Revision: 1.6 $'!
+
+(Delta mirrorFor: #Mandelbrot) group: 'ui'!
+
+(Delta mirrorFor: #Mandelbrot)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Mandelbrot) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	image := Image tempWithExtent: self extent in: Screen default.
+	self image renderingCanvas: self image newCanvas.
+	self computing: false.
+	self clear.
+
+	^"(PaletteModifier for:" image asVisual")
+		palette: self palette."!
+
+canvas ^<Canvas>
+
+	canvas isNil
+		ifTrue: [	canvas := self image renderingCanvas.
+						"canvas win32Palette: self palette win32Handle."	].
+	^canvas!
+
+clear
+
+	self imageCritical:
+		[	self canvas withPainter: (Painter new paint: Paint white)
+				do: [	self canvas displayFilledRectangle: (0@0 extent: self extent) ]
+		]!
+
+colors ^<Array[SolidPaint]>
+
+	colors isNil
+		ifTrue: [	|	c <SolidPaint>
+							rincr <Float> gincr <Float> bincr <Float>
+							r <Float> g <Float> b <Float> |
+						rincr := 0.0.
+						gincr := 0.0.
+						bincr := 255.0 / maxIters asFloat.
+						colors := Array[SolidPaint] new: self maxIters.
+						r := g := b := 0.0.
+						self maxIters to: 1 by: -1 do:
+							[ :i <Int> |
+								c := SolidPaint
+											red: r floor
+											green: g floor
+											blue: b floor.
+								colors at: i put: c.
+								r := r + rincr.
+								g := g + gincr.
+								b := 0.0 max: (255.0 min: b + bincr).		].	
+					].
+	^colors!
+
+computeProcess ^<Process>
+
+	^computeProcess!
+
+computeProcess: p <Process>
+
+	computeProcess := p!
+
+computing ^<Boolean>
+
+	^computing!
+
+computing: f <Boolean>
+
+	computing := f!
+
+extent ^<Point>
+
+	^300@300!
+
+image ^<Image>
+
+	^image!
+
+imageCritical: blk <[]>
+
+	self hasVisual
+		ifFalse: [ blk value ]
+		ifTrue: [  self session visualCritical: blk ]!
+
+maxIters ^<Int>
+
+	^maxIters!
+
+palette ^<Palette>
+
+	palette isNil
+		ifTrue: [ palette := Palette for: self colors.	].
+	^palette!
+
+profiling ^<Boolean>
+
+	^profiling!
+
+profiling: f <Boolean>
+
+	profiling := f!
+
+refreshInterval ^<Float>
+
+	^1.0!
+
+refreshTimer ^<Timer>
+
+	^refreshTimer!
+
+refreshTimer: t <Timer>
+
+	refreshTimer := t!
+
+resultAtX: x <Int> y: y <Int> is: n <Int>
+
+	"self imageCritical:
+		["	self canvas pixelAtX: x y: y putPaletteIndex: n	"]"!
+
+startRefreshing
+
+	| t <Timer> |
+	t := self session atIntervals: self refreshInterval
+		do: [	self computing
+					ifTrue: [ self imageCritical: [ self visual invalidate ] ]
+			  ].
+	self refreshTimer: t.!
+
+yieldCheckInterval ^<Int>
+	"how often to check for yield, in iterations"
+
+	^500!
+
+yieldInterval ^<Int>
+	"how often to yield, in milliseconds"
+
+	^100! !
+
+! (Delta mirrorFor: #Mandelbrot) methodsFor: 'computation' !
+
+
+computeImageDraw: draw <Boolean> yield: yield <Boolean>
+	| c <Int> cury <Int> startx <Int> curn <Int> maxx <Int> p <Painter> pens <Array[HPEN]>
+		nextYield <Int> endx <Int> |
+	self clear.
+	self computing: true.
+	c := 0.
+	nextYield := Time millisecondClockValue + self yieldInterval.
+	pens := Array[HPEN] new: self maxIters.
+	1 to: pens size do:
+		[ :i <Int> |
+			pens at: i put: (HPEN unsharedWithPaint: (SolidPaint forPaletteIndex: i) style: #solid).	].
+	maxx := self extent x.
+	p := Painter new.
+[ Transcript print:
+[
+	self canvas
+		withPainter: Painter new
+		do: [	self profiling
+					ifTrue: [ Profiler start ].
+				self
+					mandelbrotFrom: -2.0 @ -1.5
+					to: 1.0 @ 1.5
+					width: maxx
+					height: self extent y
+					steps: self maxIters
+					do: [ :x <Int> :y <Int> :n <Int> |
+							 	draw
+									ifTrue: [	(y == cury and: [ curn == n ])
+														ifFalse: [ cury == nil
+																		 ifFalse: [
+																						y == cury
+																							ifTrue: [ endx := x ]
+																							ifFalse: [ endx := maxx ].
+																						startx + 1 == endx
+																							ifTrue: [ self resultAtX: startx y: cury is: curn ]
+																							ifFalse: [	"self imageCritical:
+																												["	self canvas win32Pen: (pens at: curn + 1).
+																													self canvas
+																														displayLineFrom: startx @ cury
+																														to: endx @ cury.		"]."
+																										 ]
+																						].
+																		cury := y.
+																		startx := x.
+																		curn := n.		].
+												].
+								yield
+									ifTrue: [	c := c + 1.
+													c >= self yieldCheckInterval
+														ifTrue: [	c := 0.
+																		Time millisecondClockValue>= nextYield
+																			ifTrue: [	Processor yield.
+																							nextYield := Time millisecondClockValue + self yieldInterval.
+																							 ].
+																	].
+												].
+						  ].
+				"draw the last segment"
+				draw
+					ifTrue: [	self imageCritical:
+										[	self canvas win32Pen: (pens at: curn + 1).
+												self canvas
+														displayLineFrom: startx @ cury
+													to: (self extent x - 1) @ cury.		].
+								].
+				self profiling
+					ifTrue: [ Profiler stop ].
+				].
+] time; cr.
+] ensure: [ pens do: [ :pen <HPEN> | pen release ] ].
+	self canvas flush.
+	self imageCritical: [ self visual invalidate ].
+	self computing: false.
+	self computeProcess: nil.
+!
+
+iterateAt_re: re <Float> im: im <Float> steps: n <Int> ^<Int>
+	|
+	c_re		<FloatValue>
+	c_im		<FloatValue>
+	z_re		<FloatValue>
+	z_im	<FloatValue>
+	d_re		<FloatValue>
+	d_im	<FloatValue>
+	two		<FloatValue>
+	four		<FloatValue>
+	i
+	end <Int>
+	|
+	end := n - 1.
+	i := 0.
+	z_re := re asFloatValue.
+	c_re := z_re.
+	z_im  := im asFloatValue.
+	c_im := z_im.
+	d_re := z_re squared.
+	d_im := z_im squared.
+
+	two := 2.0 asFloatValue.
+	four := 4.0 asFloatValue.
+
+	[ i < end and: [ d_re + d_im <= four ] ] whileTrue: [
+		z_im := two * z_re * z_im + c_im.
+		z_re := d_re - d_im + c_re.
+		d_re := z_re squared.
+		d_im := z_im squared.
+		i := i + 1
+	].
+	^ i
+!
+
+mandelbrotFrom: a <Point>
+to: b <Point>
+width: width <Int>
+height: height <Int>
+steps: steps <Int>
+do: renderBlock <[Int,Int,Int]>
+	|
+	i <Int>
+	j <Int>
+	x <Float>
+	y <Float>
+	dx <Float>
+	dy <Float>
+	result <Int>
+	|
+	dx := ((b x - a x) / width) asFloat.
+	dy := ((b y - a y) / height) asFloat.
+
+	y := a y asFloat.
+	j := 0.
+	[ j < height ] whileTrue: [
+		x := a x asFloat.
+		i := 0.
+		[ i < width ] whileTrue: [
+			self mode == #unboxed
+				ifTrue: [ result := fastCompute value: x value: y value: steps. ]
+				ifFalse: [ self mode == #C
+								 ifTrue: [ result := {{primitiveMandelbrotAtRe: x
+																	im: y
+																	iterate: steps
+																		ifFail: [ :err <Symbol> | self error: err ]
+															}}.		]
+								 ifFalse: [ result := self slowIterateAt_re: x im: y steps: steps. ]
+							 ].
+			renderBlock value: i value: j value: result.
+			x := x + dx.
+			i := i + 1.
+		].
+		y := y + dy.
+		j := j + 1
+	]
+!
+
+oldcomputeImage: draw <Boolean>
+	| c <Int> |
+	self clear.
+	self computing: true.
+	c := 0.
+Transcript print:
+[
+	self
+		mandelbrotFrom: -2.5 @ -1.25
+		to: 0.5 @ 1.25
+		width: self extent x
+		height: self extent y
+		steps: self maxIters
+		do: [ :x <Int> :y <Int> :n <Int> |
+					draw ifTrue: [ self resultAtX: x y: y is: n. ].
+					c := c + 1.
+					c >= self yieldInterval
+						ifTrue: [	c := 0.
+										Processor yield. ].
+			  ].
+] time; cr.
+	self imageCritical: [ self visual invalidate ].
+	self computing: false.
+	self computeProcess: nil.
+!
+
+oldcomputeImageUsingLines
+	| c <Int> cury <Int> startx <Int> curn <Int> maxx <Int> p <Painter> pens <Array[HPEN]> |
+	self clear.
+	self computing: true.
+	c := 0.
+	pens := Array[HPEN] new: self maxIters.
+	1 to: pens size do:
+		[ :i <Int> |
+			pens at: i put: (HPEN unsharedWithPaint: (SolidPaint forPaletteIndex: i) style: #solid).	].
+	maxx := self extent x.
+	p := Painter new.
+[ Transcript print:
+[
+	self canvas
+		withPainter: p
+		do: [ self
+					mandelbrotFrom: -2.5 @ -1.25
+					to: 0.5 @ 1.25
+					width: maxx
+					height: self extent y
+					steps: self maxIters
+					do: [ :x <Int> :y <Int> :n <Int> |
+								(y == cury and: [ curn == n ])
+									ifFalse: [ cury == nil
+													 ifFalse: [	| endx <Int> |
+																	y == cury
+																		ifTrue: [ endx := x ]
+																		ifFalse: [ endx := maxx ].
+																	startx + 1 == (endx)
+																		ifTrue: [ self resultAtX: startx y: cury is: curn ]
+																		ifFalse: [	self imageCritical:
+																							[	self canvas win32Pen: (pens at: curn + 1).
+																								self canvas
+																									displayLineFrom: startx @ cury
+																									to: endx @ cury.		].
+																					 ]
+																	].
+													cury := y.
+													startx := x.
+													curn := n.		].
+								c := c + 1.
+								c >= self yieldInterval
+									ifTrue: [	c := 0.
+										Processor yield. ].
+						  ].
+				].
+] time; cr.
+] ensure: [ pens do: [ :pen <HPEN> | pen release ] ].
+	self imageCritical: [ self visual invalidate ].
+	self computing: false.
+	self computeProcess: nil.
+!
+
+oldmandelbrotFrom: a <Point>
+to: b <Point>
+width: width <Int>
+height: height <Int>
+steps: steps <Int>
+do: renderBlock <[Int,Int,Int]>
+	|
+	i
+	j
+	x <FloatValue>
+	y <FloatValue>
+	dx <FloatValue>
+	dy <FloatValue>
+	|
+	dx := ((b x - a x) / width) asFloatValue.
+	dy := ((b y - a y) / height) asFloatValue.
+
+	y := a y asFloatValue.
+	j := 0.
+	[ j < height ] whileTrue: [
+		x := a x asFloatValue.
+		i := 0.
+		[ i < width ] whileTrue: [
+			renderBlock value: i value: j value: (self iterateAt_re: x asFloat im: y
+asFloat steps: steps).
+			x := x + dx.
+			i := i + 1
+		].
+		y := y + dy.
+		j := j + 1
+	]
+!
+
+slowIterateAt_re: re <Float> im: im <Float> steps: n <Int> ^<Int>
+	|
+	c_re
+	c_im		
+	z_re		
+	z_im	
+	d_re		
+	d_im	
+	two		
+	four	
+	i
+	end <Int>
+	|
+	end := n - 1.
+	i := 0.
+	z_re := c_re := re.
+	z_im := c_im := im.
+	d_re := z_re * z_re.
+	d_im := z_im * z_im.
+
+	two := 2.0.
+	four := 4.0.
+
+	[ i < end and: [ d_re + d_im <= four ] ] whileTrue: [
+		z_im := two * z_re * z_im + c_im.
+		z_re := d_re - d_im + c_re.
+		d_re := z_re * z_re.
+		d_im := z_im * z_im.
+		i := i + 1
+	].
+	^ i
+! !
+
+! (Delta mirrorFor: #Mandelbrot) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+
+	refreshTimer isNil
+		ifFalse: [ self refreshTimer release ].
+	self computeProcess notNil
+		ifTrue: [ self computeProcess terminate.
+						Processor yield. ].
+	self visual nativeWindow noPalette.
+	self palette release.
+	self image destroy.
+	super closeRequest: toClose.!
+
+runDraw: draw <Boolean> yield: yield <Boolean>
+
+	draw
+		ifTrue: [	self refreshTimer isNil
+							ifTrue: [ self startRefreshing ].
+					]
+		ifFalse: [	self refreshTimer notNil
+							ifTrue: [	self refreshTimer release.
+											refreshTimer := nil.	].
+					 ].
+	self computeProcess notNil
+		ifTrue: [	self computeProcess terminate; waitUntilDead. ].
+	self computeProcess:
+		[	self computeImageDraw: draw yield: yield ] fork.! !
+
+! (Delta mirrorFor: #Mandelbrot) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+			add: (Menu new name: '&Control';
+						add: (MenuAction new
+								name: '&Compute';
+								action: [ self runDraw: true yield: true ]);
+						add: (MenuAction new
+								name: 'Compute (wo/draw,w/yield)';
+								action: [ self runDraw: false yield: true ]);
+						add: (MenuAction new
+								name: 'Compute (wo/draw,wo/yield)';
+								action: [ self runDraw: false yield: false ])
+						);
+		add: (Menu new name: '&Options';
+						add: (MenuAction new
+								name: '&Boxed Floats';
+								checked: [ self mode == #boxed ];
+								action: [ self mode: #boxed ]);
+						add: (MenuAction new
+								name: '&Optimized Floats';
+								checked: [ self mode == #unboxed ];
+								action: [ self mode: #unboxed ]);
+						add: (MenuAction new
+								name: '&Call C';
+								checked: [ self mode == #C ];
+								action: [ self mode: #C ]);
+						addSeparator;
+						add: (MenuAction new
+								name: 'Profiling';
+								checked: [ self profiling ];
+								action: [ self profiling: self profiling not ])
+				);
+		add: (Menu new name: '&Iterations';
+						add: (MenuAction new
+								name: '5';
+								checked: [ self maxIters = 5 ];
+								action: [ self maxIters: 5 ]);
+						add: (MenuAction new
+								name: '25';
+								checked: [ self maxIters = 25 ];
+								action: [ self maxIters: 25 ]);
+						add: (MenuAction new
+								name: '50';
+								checked: [ self maxIters = 50 ];
+								action: [ self maxIters: 50 ]);
+						add: (MenuAction new
+								name: '100';
+								checked: [ self maxIters = 100 ];
+								action: [ self maxIters: 100 ]);
+						add: (MenuAction new
+								name: '200';
+								checked: [ self maxIters = 200 ];
+								action: [ self maxIters: 200 ]);
+						add: (MenuAction new
+								name: '500';
+								checked: [ self maxIters = 500 ];
+								action: [ self maxIters: 500 ]);
+						add: (MenuAction new
+								name: '1000';
+								checked: [ self maxIters = 1000 ];
+								action: [ self maxIters: 1000 ]);
+						add: (MenuAction new
+								name: '2000';
+								checked: [ self maxIters = 2000 ];
+								action: [ self maxIters: 2000 ])
+			)	! !
+
+! (Delta mirrorFor: #Mandelbrot) methodsFor: 'accessing' !
+
+
+maxIters: m <Int>
+
+	maxIters := m!
+
+mode ^<Symbol>
+
+	^mode!
+
+mode: m <Symbol>
+
+	mode := m! !
+
+! (Delta mirrorFor: #Mandelbrot) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self mode: #unboxed.
+	fastCompute := [ :x <Float> :y <Float> :steps <Int> | self iterateAt_re: x im: y steps: steps ].
+	self maxIters: 2000.
+	self profiling: false.! !
+

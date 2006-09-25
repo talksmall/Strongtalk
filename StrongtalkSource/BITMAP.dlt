@@ -1,0 +1,38 @@
+Delta define: #BITMAP as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #BITMAP) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BITMAP) group: 'base'!
+
+(Delta mirrorFor: #BITMAP)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
+
+! (Delta mirrorFor: #BITMAP) methodsFor: 'accessing' !
+
+
+bmHeight ^<Int>
+
+	^self smallIntegerAt: self bmHeightOffset!
+
+bmWidth ^<Int>
+
+	^self smallIntegerAt: self bmWidthOffset!
+
+structureSize ^<Int>
+
+	^28! !
+
+! (Delta mirrorFor: #BITMAP) methodsFor: 'offsets' !
+
+
+bmHeightOffset ^<Int>
+
+	^8!
+
+bmWidthOffset ^<Int>
+
+	^4! !
+

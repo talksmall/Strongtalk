@@ -1,0 +1,237 @@
+Delta define: #SideOutliner as: (
+(Class subclassOf: 'MirrorOutliner[Mirror]' instanceVariables: 'bodyColumn <Column[Visual]>')) !
+
+(Delta mirrorFor: #SideOutliner) revision: '$Revision: 1.11 $'!
+
+(Delta mirrorFor: #SideOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #SideOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'private' !
+
+
+bodyColumn ^ <Column[Visual]>
+
+	^bodyColumn!
+
+bodyColumn: c <Column[Visual]>
+
+	bodyColumn := c!
+
+buildBody ^<Visual>
+
+	| col <Column[Visual]> |
+	col := Column[Visual] new.
+	self removeAllChildren.
+	self mirror sourceInfo categories do: [ :c <Str> |
+		col add: (self addChild: (self categoryOutlinerClass for: self mirror category: c)) imbeddedVisual ].
+	col optimizeIncrementalLayout: false.
+	self bodyColumn: col.
+	^col!
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: (self mirror isMeta ifTrue: ['Class side'] ifFalse: ['Instance side']) painter: self sectionPainter) asVisual
+!
+
+categoryOutlinerClass ^ <CategoryOutliner class>
+
+	^CategoryOutliner!
+
+categoryOutlinerVisualFor: category <Str> ^ <Visual>
+
+	^(self addChild: (self categoryOutlinerClass for: self mirror category: category)) imbeddedVisual
+!
+
+categoryOutlinerWithVisual: v <Visual> ^ <CategoryOutliner>
+
+	self childrenDo: [ :o <OutlinerApp> |
+		o visual == v
+			ifTrue: [ ^self categoryOutlinerClass coerce: o ] ].
+	self shouldNotHappen.
+!
+
+initialOpenState ^ <Boolean>
+
+	^true
+!
+
+initialPacifiedState ^ <Boolean>
+
+	^self mirror sourceInfo categories size = 0!
+
+update
+
+		| 	categories <OrdCltn[Symbol]> 
+		visualIndex <Int> 
+		categoryIndex <Int> 
+		moreCategories <Boolean>
+		moreVisuals <Boolean>
+		currentCategory <Symbol>
+		currentVisual <Visual>
+		currentOutliner <CategoryOutliner>
+		deletedIndices <OrdCltn[Int]> |
+
+	categories := self mirror sourceInfo categories.
+	self pacified: categories size = 0.
+	self hasBeenOpen ifTrue: [
+	
+		"First remove any surplus visuals"
+		deletedIndices := OrderedCollection[Int] new.
+		1 to: self bodyColumn size do: [ :index <Int> |
+			currentVisual := self bodyColumn at: index.
+			currentOutliner := self categoryOutlinerWithVisual: currentVisual.
+			(categories includes: currentOutliner category) 
+				ifFalse:	[	deletedIndices add: index.
+									self removeChild: currentOutliner ifAbsent: [ self shouldNotHappen ] ] ].
+			deletedIndices do: [ :index <Int> |
+			self bodyColumn remove: 1 at: index ].
+	
+		"Now insert new categories"
+		categoryIndex := 1.
+		visualIndex := 1.
+		[ 	categoryIndex <= categories size ]
+			whileTrue: [
+				currentCategory := categories at: categoryIndex.
+				(visualIndex <= self bodyColumn size)
+					ifFalse: [ 
+						"New category added at end of list, add new category outliner at end of column"
+						self bodyColumn add: (self categoryOutlinerVisualFor: currentCategory).
+						visualIndex := visualIndex + 1.
+						categoryIndex := categoryIndex + 1 ]
+					ifTrue: [
+						currentVisual := self bodyColumn at: visualIndex.
+						currentOutliner := self categoryOutlinerWithVisual: currentVisual.
+						currentOutliner category = currentCategory
+							ifTrue: [
+								"Category match visual, do nothing"
+								visualIndex := visualIndex + 1.
+								categoryIndex := categoryIndex + 1 ]
+							ifFalse: [			
+								"New category added, insert new category outliner before current visualIndex"
+								self bodyColumn insert: (Array[Visual] with: (self categoryOutlinerVisualFor: currentCategory)) before: visualIndex.
+								visualIndex := visualIndex + 1.
+								categoryIndex := categoryIndex + 1 ] ] ] ]! !
+
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'New category';
+					action: [ self newCategory ]);
+        addSeparator;
+		addAll: self typeCheckMenu removeAll;
+		addSeparator;
+		add: self viewMenu
+		!
+
+typeCheckMenu ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'Typecheck';
+					action: [self typecheck])
+		! !
+
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'control' !
+
+
+expandInterface
+
+	self open: true.
+	self childrenDo: [ :o <OutlinerApp> |
+		(self categoryOutlinerClass coerce: o) open: true ]
+!
+
+expandPublicInterface
+
+	self open: true.
+	self childrenDo: [ :o <OutlinerApp> |
+		(self categoryOutlinerClass coerce: o) expandIfPublic ]
+!
+
+newCategory
+
+	self open: true.
+	self mirror sourceInfo addCategory: self nextNewCategoryName.
+!
+
+typecheck
+
+	self typecheckAction:[self mirror typecheck]
+		title: 'Typechecking ', self mirror name! !
+
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #categories
+			ifTrue: [	self update ] ]
+! !
+
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'accessing' !
+
+
+defaultNewCategoryName ^ <Str>
+
+	^'a new category'
+!
+
+nextNewCategoryName ^ <Str>
+
+	| name <Str> index <Int> |
+	name := self defaultNewCategoryName.
+	index := 2.
+	[ self mirror sourceInfo categories includes: name ] whileTrue: [	
+		name := self defaultNewCategoryName, ' ', index printString.
+		index := index + 1 ].
+	^name!
+
+openCategory: cat <Str> selector: sel <Symbol> ^ <Visual>
+
+	| co <CategoryOutliner> |
+	self body.			"Ensure body is created"
+	self childrenDo: [ :o <OutlinerApp> |
+		co := self categoryOutlinerClass coerce: o.
+		co category = cat
+			ifTrue: [	self open: true.
+							^co openSelector: sel ] ].
+	^nil!
+
+openOnTypeError: te <TypeError>
+
+	| co <CategoryOutliner> cat <Str> |
+	self body.			"Ensure body is created"
+	cat := self mirror sourceInfo categoryForSelector: te loc selector.
+	self childrenDo: [ :o <OutlinerApp> |
+		co := self categoryOutlinerClass coerce: o.
+		co category = cat
+			ifTrue: [	self open: true.
+							^co openOnTypeError: te] ].
+	^nil
+
+!
+
+outlinerForLocator: loc <DeltaLocator> ^ <MethodOutliner>
+
+	| co <CategoryOutliner> cat <Str> |
+	self body.			"Ensure body is created"
+	cat := self mirror sourceInfo categoryForSelector:  loc selector.
+	self childrenDo: [ :o <OutlinerApp> |
+		co := self categoryOutlinerClass coerce: o.
+		co category = cat
+			ifTrue: [	^co outlinerForLocator: loc] ].
+! !
+

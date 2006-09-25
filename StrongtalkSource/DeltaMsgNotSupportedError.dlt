@@ -1,0 +1,23 @@
+Delta define: #DeltaMsgNotSupportedError as: (
+(Class subclassOf: 'DeltaDoubleLocTypeError' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaMsgNotSupportedError) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaMsgNotSupportedError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMsgNotSupportedError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMsgNotSupportedError) methodsFor: 'Unclassified' !
+
+
+errorMessage  ^ <String>
+    ^'Interface for ', self subtypeLoc definitionName,  ' does not support ', self subtypeLoc selector!
+
+updateExplainerInterface: explainer <DeltaTypeExplainer > ^ <Self>
+
+    explainer setSingleTypeField.
+! !
+

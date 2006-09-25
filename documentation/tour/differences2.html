@@ -1,0 +1,138 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>A Tour of the Strongtalk System</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="differences.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="progenv.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">How Strongtalk relates to Smalltalk-80 (cont.)</h2>
+
+<p align="left">In areas of the library not normally used by
+model code (i.e. user interface, reflection, file reification,
+portability framework, image management, etc), we decided to feel
+completely free to innovate, so these areas are much different:</p>
+
+<ul>
+    <li><p align="left"> <strong>UI</strong>: The user-interface is designed to allow
+        much more finely-grained widgets, with full support for
+        imbedding native widgets. For example, the line of text
+        you are reading is actually a general GlyphRow full of
+        individual CharacterGlyph widgets that draw themselves.
+        Here is a real, live, imbedded MS-Windows button, to show
+        that any widget, including native ones, can be put
+        anywhere: <smappl visual="
+	Button
+			labeled: 'Press Me!'
+			action: [ :b  |	
+							b	promptOk: 'The UI can do native things easily, through a portable interface.'
+								title: 'It works!'
+								type: #info
+								action: [] ]
+"> </p>
+    </li>
+    <li><p align="left"><strong>Reflection</strong>: Reflection is done with <em>mirrors</em>
+        (a concept borrowed from Self), so that the system does
+        not have to go through an object's interface to reflect
+        on it, as in other Smalltalks. This means that objects
+        are free, for example, to override #class so they can
+        closely mimic some other kind of object, and this won't
+        break system code or inspectors, etc, since they don't
+        use those messages.</p>
+    </li>
+    <li><p align="left"><strong>Constructors</strong>: Because of the type system and mixins,
+        Strongtalk must support more top-level constructs and
+        more independent options for their constructors than other Smalltalks. For
+        example, there are also protocols and type aliases. Also,
+        classes and protocols can be generic or non-generic, classes can be
+        abstract or concrete, classes need to be able to
+        declare what protocols they support, and superclasses may 
+        have <em>mixins</em> applied to them. All of this severely
+        strained the 'constructor message to the superclass'
+        approach used by other Smalltalks, so a more flexible
+        declarative constructor framework was devised. It is
+        normally hidden by the programming environment, but it
+        means that the file-out format is different for top-level
+        constructs, although it still uses the same 'chunk'
+        format as other Smalltalks.</p>
+    </li>
+</ul>
+
+<ul>
+    <li><p align="left"><strong>Images</strong>: Image management is very different. This
+        is due to observation of the problems that many new
+        Smalltalk programmers have when they are introduced to
+        images. The first problem is that they try to use images
+        as an actual database for their production application
+        data, which images are completely unsuited for. A
+        second problem is that deploying a program as an image
+        means that you can never quite be sure what
+        history-dependent state got mixed in with your program.
+        So most programmers end up always having to do extra work
+        to build a fresh image before testing and delivery, to be
+        sure that there isn't some state floating around the
+        image they weren't aware of. A third problem is that
+        objects that relate to the outside world (i.e. file
+        editors, open file descriptors, database connections,
+        etc) can easily end up corrupted or in the wrong state,
+        unless complex management code is written to fix them up
+        when an image is restored.<\p> </p>
+        <p>So in practice, images are really only useful as a
+        convenient way for developers to keep the state of their
+        programming environment between sessions. In Strongtalk,
+        we use an external HTML start page that can hold
+        Strongtalk browsers and code, to fulfill this function.
+        The image itself is <em>declarative</em>, meaning that it
+        only contains the program declarations themselves, with
+        no variable state. This way, delivered programs always
+        behave predictably, and start in a state defined solely
+        by the program code.</p>
+    </li>
+    <li><strong>Portability</strong>: The Strongtalk system uses a different approach to
+        portability than some other Smalltalks. Some other
+        Smalltalks use a completely portable image with platform
+        specific code pushed out into the VM. And Squeak, for
+        example, also implements the entire VM in Smalltalk, with
+        a later translation to C before execution. We did neither
+        of these things. At the image level, we wanted to be able
+        to integrate tightly with native user interface
+        facilities, so we designed portable UI interfaces that
+        are implemented in a platform-dependent way in Smalltalk
+        (all UI and I/O code is written purely in Smalltalk). For
+        the VM, we felt it was simply too risky to try to
+        bootstrap our VM in Smalltalk, although the idea was
+        discussed. Strongtalk was not a research project, and we
+        were writing a fancy optimizing compiler that had to be
+        very fast, much more so than existing dynamic
+        translators, in order to not cause significant pauses
+        during compilation. So the VM is implemented in C++
+        (although the bytecode compiler is written in Smalltalk,
+        as in other Smalltalks).</li>
+    <li><strong>Type system</strong>: And of course, Strongtalk includes an incremental,
+        interactive typechecker, which is integrated into the
+        programming environment. The typechecker is completely
+        written in Smalltalk, and does not interact with the VM
+        at all. The libraries are almost completely annotated
+        with types, although the extent to which typechecking of
+        the libraries had been completed at the time development
+        stopped varies considerably. This was primarily due to
+        bootstrapping issues: the typechecker, for example, had
+        to be written before it could be typechecked, and it is
+        much harder to typecheck large bodies of code <em>after</em>
+        they have been written. The core library, including the
+        Blue-Book classes and the UI framework, have been
+        extensively typechecked. The programming environment has
+        been mostly typechecked.</li>
+</ul>
+
+<h3 align="right"><a href="progenv.html"><strong>The Programming
+Environment ==&gt;</strong></a></h3>
+
+<p>&nbsp;</p>
+</body>
+</html>

@@ -1,0 +1,36 @@
+Delta define: #DeltaBasicErrorLocator as: (
+(Class subclassOf: 'DeltaBasicLocator' instanceVariables: 'errorMsg <String> ')) !
+
+(Delta mirrorFor: #DeltaBasicErrorLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaBasicErrorLocator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBasicErrorLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBasicErrorLocator) methodsFor: 'Unclassified' !
+
+
+errorMsg  ^ <String>
+	^errorMsg!
+
+errorMsg: s   <String>
+	errorMsg := s!
+
+isMetaSide: b   <Boolean>!
+
+locationOfMethod: sel <Symbol> ifAbsent: blk <[^X def]>  ^ <DeltaBasicEntryLocator | X>
+	^blk value!
+
+matches: loc <BasicLocator> ignoreSide: b <Boolean> ^ <Boolean>
+	(self class = loc class) ifFalse: [^false].
+	^self errorMsg = (guaranteed <DeltaBasicErrorLocator> loc)  errorMsg!
+
+name  ^ <String>
+	^self errorMsg!
+
+typeInfo   ^ <DeltaTypeError>
+	^DeltaTypeError new! !
+

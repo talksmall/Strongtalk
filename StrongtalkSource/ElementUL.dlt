@@ -1,0 +1,29 @@
+Delta define: #ElementUL as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementUL) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ElementUL) group: 'HTML'!
+
+(Delta mirrorFor: #ElementUL)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementUL) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	builder breakLine.
+	builder indented: self indentWidth
+		do: [ super buildFor: builder ].
+	builder verticalWhitespace.! !
+
+! (Delta mirrorFor: #ElementUL) methodsFor: 'private' !
+
+
+indentWidth ^<Int>
+
+	^30! !
+

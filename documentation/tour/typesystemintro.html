@@ -1,0 +1,93 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>A Two-Page Introduction to the Type System</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="typesystem.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="typesystemintro2.html"><strong>Next ==&gt;</strong></a></h3>
+<h2>A Two-Page Introduction to the Strongtalk Type System</h2>
+
+<h4><strong>David Griswold</strong></h4>
+
+<p>First of all, a clarification: the name Strongtalk, originally
+used in an OOPSLA paper in 1993, referred just to the type
+system, which was originally grafted onto what was then ParcPlace
+Smalltalk. The name was later adopted for a far larger system,
+which includes the optimizing virtual machine, new &quot;Blue
+Book&quot; libraries that have been completely reimplemented to
+accomodate a number of goals in addition to type-safety, a new
+user interface framework, and a programming environment, as well
+as a second-generation implementation of the type system. The two
+are distinguished by referring either to the Strongtalk
+&quot;system&quot;, or the Strongtalk &quot;type system&quot;.</p>
+
+<p>You will see a lot of type annotations as you browse around
+the system. A complete introduction to the type system is far
+beyond the scope of this tour. Right now, I will give you a crude
+two-page summary of the type system. Don't get intimidated; just
+read it and the simple examples should make the basic ideas
+clear. Once you've finished these two pages, you can read just
+about any type annotation in the system and get the basic idea (A
+copy of a somewhat more detailed workshop presentation by Gilad
+on the type system is <a href="../type-system/nwst.html">here</a>).
+There should be some more formal documentation on the type system
+soon.</p>
+
+<p>The main ideas to keep in mind are:</p>
+
+<ul>
+    <li>The type system is based on declared support for <em>protocols</em>.
+        Protocols can either be implicitly defined by a class
+        interface, or explictly defined with a separate name
+        (which is useful for keeping class-side messages out of
+        the protocol, or other kinds of abstraction).</li>
+    <li>All type expressions are delimited by <strong>&lt; &gt;</strong></li>
+    <li>All variables have a type annotation, so that method
+        arguments, local variables, block arguments, etc are each
+        followed by a &lt;...&gt; expression.</li>
+    <li>It supports generic types, using the syntax <strong>SomeProtocol[TypeA,TypeB,...]</strong>
+        This allows you to use types like &lt;<strong>Collection[Str]&gt;</strong>
+        (Str is a declared alias in the the libraries for the the
+        read-only string protocol ReadString, that both Strings
+        and Symbols support. Unmutated strings are so commonly
+        used that Str is a useful shorthand. Note that in the
+        Strongtalk libraries, Symbols can be fully substituted
+        for Strings, if you don't plan on modifying them, which
+        doesn't work in some other Smalltalks). You can define
+        both generic protocols and generic classes.</li>
+    <li>Message or method return types are indicated with a
+        leading <strong>^</strong>, for example <strong>^&lt;Int&gt;</strong>
+        means a message or method returns an integer. I am using
+        the words message and method distinctly because we
+        declare methods in classes (implementations) whereas
+        message just refers to the method's signature, which can
+        also be declared in a protocol without a method body.</li>
+    <li>Block types have their own syntax; for example the block <strong>[3]</strong>
+        has the type <strong>&lt;[^Int]&gt;</strong>, meaning the
+        block produces an integer (Int is a declared alias for
+        Integer). Argument types come before that, separated by
+        commas, so that the block <strong>[ :s &lt;Str&gt; | s
+        size ]</strong> has the type <strong>&lt;[Str,^Int]&gt;</strong>,
+        meaning it takes one Str argument and produces an Int. If
+        you don't care about the value type of the block you can
+        omit it, in which case it is Object by default.</li>
+    <li>Here is a whole method so you can see how types are used:<pre>
+aMessage: aStringBlock &lt;[^Str]&gt; ^&lt;Int&gt;
+    | result &lt;Int&gt; |
+    result := aStringBlock value size.
+    ^result</pre>
+        <p>This is a method that takes (a block that produces a
+        Str), and returns an integer.</p>
+    </li>
+</ul>
+
+<h3 align="right"><a href="typesystemintro2.html"><strong>Type
+System Intro (cont.) ==&gt;</strong></a></h3>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>A Two-Page Introduction to the Type System</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="typesystemintro.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="mixins.html"><strong>Next ==&gt;</strong></a></h3>
+<h2>A Two-Page Introduction to the Type System (cont.)</h2>
+
+<h4>More Advanced Stuff</h4>
+
+<ul>
+    <li>Unions: you can say an object is one of several different
+        types using the type union operator <strong>|</strong>.
+        For example, if a method returns either an Integer or a
+        Str, you could say its return type is <strong>&lt;Int|Str</strong>&gt;.</li>
+    <li>Messages/methods can have type parameters, which are just
+        variables that stand for some type that varies for each
+        send of the message, depending on its actual arguments.
+        You have to indicate how the type system can figure out
+        what the type variable's definition is for the actual
+        send. The simplest way to do that is to use the 'def'
+        keyword in the correct place in the type signature. For
+        example, if we want to define an incredibly simple method
+        that takes one argument and returns it, we can say:<pre>
+justPassingThrough: anObject &lt;X def&gt; ^&lt;X&gt;
+    ^anObject</pre>
+        <p>Each time we send this message, the type system will
+        define X to be the type of whatever you pass in as the
+        argument anObject. This way, the return type will
+        automatically change for each send, to the type of the
+        argument you pass in. This adds a <em>huge</em> amount of
+        flexibility to the type system. </p>
+        <p>Here is a really important example of this construct.
+        Suppose we have a dictionary that maps keys of type K to
+        values of type V; its type would be <strong>&lt;Dictionary[K,V]&gt;</strong>,
+        according to the way the generic class Dictionary is
+        defined. Here is how we could write the signature of the
+        #at:ifAbsent: method:</p>
+        <pre>
+at: key &lt;K&gt; ifAbsent: failBlock &lt;[^FAILVAL def]&gt; ^&lt;V|FAILVAL&gt;</pre>
+        <p>This says the method takes a key of type K, and a fail
+        block that yields some type we will call FAILVAL that can
+        vary depending on the block we pass in, and the method
+        returns either a value of type V <em>or</em> the result
+        of executing the failBlock, which is of type FAILVAL.</p>
+    </li>
+    <li>There is an even more powerful way of telling the system
+        how to figure out what the type variable is for each
+        call. This is called an inference clause, and it comes at
+        the end of the message/method signature, using the syntax
+        <strong>{{...}}</strong>. It is just explicit
+        instructions on how to figure out the definition of the
+        type variable from the actual message send, in situations
+        where the 'def' construct is not powerful enough. Don't
+        get scared by these; just try to read them like english.
+        Here is another way we could write the same #at:ifAbsent:
+        signature above using the more powerful inference clause
+        syntax (although we're not taking advantage of its power
+        here):<pre>
+at: key &lt;K&gt; ifAbsent: failBlock&lt;[^FAILVAL]&gt; ^&lt;V|FAILVAL&gt;
+    {{where FAILVAL is returnType of #value message of arg 1}}</pre>
+        <p>Just read this almost literally: for each send of
+        #at:ifAbsent:, FAILVAL will be defined to be the return
+        type of the #value message of whatever block we pass in
+        for argument 1. That's another way of figuring out what
+        type the block produces. You can do much more
+        sophisticated things with inference clauses. The great
+        thing about them is that although you have to think about
+        them when you write the method, they do all the work
+        automatically when you call the method, and let you write
+        very sophisticated type signatures. Normally users don't
+        pay any attention to them, but they are critical in
+        allowing the libraries to support all the flexible ways
+        Smalltalk methods uses objects.</p>
+    </li>
+    <li>The final little trick that make all this stuff work is
+        that any return statement (^) never produces a value,
+        since it instead makes its containing method return, so
+        such statements have the magic type <strong>&lt;BottomType&gt;</strong>,
+        which is by definition compatible with (a subtype of) all
+        other types (so therefore it is always at the bottom of
+        any subtype hierarchy). This is because its type doesn't
+        matter; it will never get an actual value. This is
+        important because we can usually ignore such types in
+        unions. Consider the method<pre>
+getMasterSize: d &lt;Dictionary[Str,Str]&gt; ^&lt;Int&gt;
+
+    ^(d at: 'master' ifAbsent: [^0]) size</pre>
+        <p>Our #at:ifAbsent: method from before returns either
+        the dictionary value type (<strong>&lt;Str&gt;</strong>),
+        or the return type of the fail block. But the fail block
+        doesn't ever produce a value, because it aborts the
+        expression and make the method directly return 0 (which
+        matches the method return type, so that's ok). So the
+        failblock's return type is <strong>&lt;BottomType&gt;</strong>,
+        so the #at:ifAbsent: message returns <strong>&lt;Str|BottomType&gt;</strong>.
+        The type system ignores the BottomType, so we get <strong>&lt;Str&gt;</strong>,
+        which supports the size message, which returns an <strong>&lt;Int&gt;</strong>,
+        which matches the method return type, so the method is
+        typesafe.</p>
+        <p>This shows all the type system features we've seen
+        working together on the kind of code Smalltalkers write
+        all the time. Note that when you are writing the method
+        above, the typing looks really simple; all the hard part
+        is done in the libraries when defining the signatures for
+        these very powerful methods like #at:ifAbsent:.</p>
+    </li>
+</ul>
+
+<h4>Other Things the Type System can Enforce</h4>
+
+<ul>
+    <li>In other Smalltalks, the private/public distinction is
+        just a category naming convention, with no way to enforce
+        it. Strongtalk can and does enforce privacy
+        specifications. This is currently specified basically the
+        same way it is done in other systems: a method is private
+        if it is in a category whose name contains the substring
+        'private' anywhere.  If you have methods that
+        are only supposed to be used by closely cooperating
+        external code (like the concept of 'friends' in other
+        languages), the libraries use the convention that the
+        category name contains the word 'restricted', but this is
+        just convention, not part of the type system.</li>
+    <li>The type system also understand the concept of abstract
+        and concrete classes, and can ensure that all abstract
+        methods are implemented by concrete classes. An abstract
+        method is defined just the same as in other Smalltalks:
+        you implement a dummy method with the body 'self
+        subclassResponsibility'. The type system looks for these
+        kinds of method bodies, and treats them specially. You
+        will notice that when you enter such a method in a class,
+        a special indicator (<img src="../../resources/abstract.bmp">) will appear in the
+        message header in the browser. When you typecheck any
+        class containing such an abstract method, or if such a
+        method is inherited but not overridden with a real
+        implementation, the typesystem will complain if the class
+        is not abstract.You make a class abstract by using
+        choosing 'Make Abstract' from the context menu for the
+        class header, and henceforth the class header will say
+        'Abstract Class ...'</li>
+</ul>
+<h3 align="right"><a href="mixins.html"><strong>Continue with the Tour ==&gt;</strong></a></h3>
+
+</body>
+</html>

@@ -1,0 +1,77 @@
+Delta define: #DeltaRawProtocol as: (
+(Class subclassOf: 'DeltaProtocol' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaRawProtocol) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaRawProtocol) group: 'ast'!
+
+(Delta mirrorFor: #DeltaRawProtocol)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaRawProtocol) methodsFor: 'Unclassified' !
+
+
+allSelfClassTVs ^ <Collection[TypeVar]>
+    ^OrderedCollection[TypeVar]  new add: self selfClassTV; yourself!
+
+allSelfTVs ^ <Collection[TypeVar]>
+    ^OrderedCollection[TypeVar]  new add: self selfTV; yourself!
+
+antimonotonicIn: tv <TypeVar > ^ <Boolean>
+    ^(self rawPrimaryInterface antimonotonicIn: tv)
+  and:
+  [self rawSecondaryInterface antimonotonicIn: tv]!
+
+bareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self filteree bareAttributes !
+
+bareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self filteree bareSecondaryAttributes!
+
+branded ^ <Boolean>
+    ^false!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^self == p!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^false!
+
+isMonotonic ^ <Boolean>
+    ^(self monotonicIn: self selfPublicTV) and:[self monotonicIn: self selfPublicClassTV].!
+
+localBareAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self filteree localBareAttributes !
+
+localBareSecondaryAttributes ^ <Dict[Symbol,MsgSignature]>
+    ^self filteree localBareSecondaryAttributes!
+
+messages  ^ <Dict[Symbol,Type]>
+
+^self filteree messages!
+
+monotonicIn: tv <TypeVar > ^ <Boolean>
+	| result |
+	(self rawPrimaryInterface monotonicIn: tv) ifFalse: [^false].
+	self errorHandler pushClassSideDefinitions.
+	result := self rawSecondaryInterface monotonicIn: tv.
+	self errorHandler popDefinitions.
+	^result!
+
+name
+
+^'A raw protocol'!
+
+primaryInterface: pi <Interface >secondaryInterface: si <Interface >branded: b <Boolean > ^ <Self>
+    self filter: (BasicProtocolData new primaryInterface: pi  secondaryInterface: si branded: b  typeOfInstances: self)
+      using: DeltaSubstitution new initialize.!
+
+rawPrimaryInterface ^ <Interface>
+    ^self filteree rawPrimaryInterface substitute: self substitution!
+
+rawSecondaryInterface ^ <Interface>
+    ^self filteree rawSecondaryInterface substitute: self substitution! !
+

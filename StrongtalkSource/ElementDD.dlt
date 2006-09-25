@@ -1,0 +1,22 @@
+Delta define: #ElementDD as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementDD) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ElementDD) group: 'HTML'!
+
+(Delta mirrorFor: #ElementDD)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementDD) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	builder breakLine.
+	builder indented: self indentWidth
+		do: [ super buildFor: builder ].
+	builder breakLine.! !
+

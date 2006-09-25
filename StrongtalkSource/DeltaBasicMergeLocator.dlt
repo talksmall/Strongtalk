@@ -1,0 +1,53 @@
+Delta define: #DeltaBasicMergeLocator as: (
+(Class subclassOf: 'DeltaBasicLocator' instanceVariables: 'loc1 <DeltaBasicLocator> loc2 <DeltaBasicLocator>')) !
+
+(Delta mirrorFor: #DeltaBasicMergeLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaBasicMergeLocator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBasicMergeLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBasicMergeLocator) methodsFor: 'Unclassified' !
+
+
+isMetaSide: b   <Boolean>
+	self loc1 isMetaSide: b.
+	self loc2 isMetaSide: b.
+!
+
+loc1 ^ <DeltaBasicLocator>
+	^loc1
+!
+
+loc1: l1 <DeltaBasicLocator> loc2: l2 <DeltaBasicLocator>
+	loc1 := l1.
+	loc2 := l2!
+
+loc2 ^ <DeltaBasicLocator>
+	^loc2
+!
+
+locationOfMethod: sel <Symbol> ifAbsent: blk <[^X def]>  ^ <DeltaBasicEntryLocator | X>
+	^self loc1 locationOfMethod: sel ifAbsent: [self loc2 locationOfMethod: sel ifAbsent: blk]!
+
+matches: loc <BasicLocator> ignoreSide: b <Boolean> ^ <Boolean>
+	(self class = loc class) ifFalse: [^false].
+	^(self loc1 matches: loc loc1 ignoreSide: b) and: [self loc2 matches: loc loc2 ignoreSide: b]
+!
+
+name  ^ <String>
+	^self loc1 name, ';', self loc2 name!
+
+printOn: aStream <WriteStream[Character] > ^ <Self>
+	super printOn: aStream.
+	aStream nextPut: $(.
+	aStream nextPutAll: self name.
+	aStream nextPut: $).
+!
+
+typeInfo   ^ <DeltaProtocol>
+	^DeltaProtocolMerge new type1: self loc1 typeInfo type2: self loc2 typeInfo! !
+

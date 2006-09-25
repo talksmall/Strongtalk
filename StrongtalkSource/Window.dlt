@@ -1,0 +1,1785 @@
+Delta define: #Window as: (
+(Class subclassOf: 'InstanceCritical |> Object' instanceVariables: 'natural <Rect> min <Rect> max <Rect>
+			"These have to be cached for access so that the UI thread doesn''t have to execute
+			  widget code"
+
+win32Handle <HWND>
+medium <Medium>
+session <Session>
+visual <Visual>
+parent <Window>
+			"If parent is non-nil, then this window is owned by another"
+backgroundPainter <Painter>
+
+desiredPosition <Point> "If nil, then use default position"
+extent <Point>
+
+scratchRECT <RECT>
+			"A temporary Win32 RECT structure used for invalidations.  This must be
+		     per window so we don''t have to use critical regions to access it"
+
+mostRecentInputFocus <Visual>
+			"If not nil, points to the most recent input focus, so we can try to restore the
+				input focus to the right spot if the window is inactive and becomes active
+				again without a new focus being chosen.  We have to be careful not to
+				hold onto this too long, since it can cause a memory leak.  To that end,
+				frequent checks are made to see if it is attached; if it is not, this is purged"
+initialInputFocus <Visual>
+			"If not nil, points to a visual that should become the input focus once the window
+				is layed out. This is purged after use to prevent a memory leak."
+menu <Menu>
+			"If not nil, is the menu bar"
+popUpMenu <Menu>
+			"If not nil, then is a popup menu that is currently showing"
+optimizeIncrementalLayout <Boolean>
+ignoreNextFocusSet <Boolean>
+
+refreshInterval <Float>
+			"Time in seconds for the maximum time between refreshes."
+nextPaintTime <Float>
+			"If not nil, then if any paint is needed, it should occur
+				no later than this time"
+paintPending <Boolean>
+useDisplayBuffering <Boolean>
+			"If true, use double buffering for flicker free display"
+toClose <[Window]>
+			"This block is executed with the receiver when the user tries to close the window.  By default,
+				this just destroys the window quietly"
+enabled <Boolean>
+			"Indicates whether the window is enabled/disabled"
+cursor <Cursor>
+deferredPaintRegion <Rect>
+controls <Extensible[Win32Control]>
+palette <Palette>
+haveErased <Boolean>
+		') classVariables: 'DefaultWndProc <ExternalProxy>
+WindowsMessageHandlers  <VarDict[ ExternalData,
+																 [Window, ExternalData, HWND, ExternalData, ExternalData, ^ExternalData] ]>
+			"Dictionary mapping message codes to dispatch blocks"
+BufferingPossible <Boolean>
+			"If false, then all double buffering is disabled"
+		'; protocols: 'VisualParent; RelayoutTarget') !
+
+(Delta mirrorFor: #Window) revision: '$Revision: 1.13 $'!
+
+(Delta mirrorFor: #Window) group: 'ui'!
+
+(Delta mirrorFor: #Window)
+comment: 
+'Native windows, with a fairly machine independent interface
+(except for methods with ''win32'' in their names).
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #Window) classSide methodsFor: 'restricted-win32 functions' !
+
+
+defaultWin32Cursor ^<ExternalProxy>
+
+	^{{<user ExternalProxy LoadCursorA> arg: 0 arg: Win32 IDC_ARROW}}!
+
+defaultWin32Icon ^<ExternalProxy>
+
+	^{{<user ExternalProxy LoadIconA> arg: 0 arg: Win32 IDI_APPLICATION}}!
+
+defaultWndProc ^<ExternalProxy>
+
+	"Don't need a critical region because duplicate inits are no problem"
+	DefaultWndProc isNil
+		ifTrue: [	DefaultWndProc := Platform DLLLookup: 'DefWindowProcA' in: 'user' ].
+	^DefaultWndProc!
+
+parentOf: w <HWND> ^<HWND>
+
+	^{{<user ExternalProxy GetParent> wnd: w}}!
+
+wndProcOf: w <HWND> ^<HWND>
+
+	^{{<user ExternalProxy GetWindowLongA> wnd: w attr: Win32 GWL_WNDPROC}}!
+
+wndProcOf: w <HWND> put: newWinProc <HWND> ^<HWND>
+
+	^{{<user ExternalProxy SetWindowLongA> wnd: w attr: Win32 GWL_WNDPROC value: newWinProc}}! !
+
+! (Delta mirrorFor: #Window) classSide methodsFor: 'custom messages' !
+
+
+LAYOUT ^<ExternalData>
+	"This is by the UI thread to tell a window's session process to layout a window.  This has
+	  to be done through the message queue so that the layout code runs in the window's session
+	  process.  lParam low is width, and lParam high is height."
+
+	^16r400! !
+
+! (Delta mirrorFor: #Window) classSide methodsFor: 'debugging' !
+
+
+bufferingPossible ^<Boolean>
+
+	BufferingPossible isNil
+		ifTrue: [ BufferingPossible := true ].
+	^BufferingPossible!
+
+bufferingPossible: f <Boolean>
+	"If this is set to false, all double buffering will be disabled, usually for debugging
+		purposes."
+
+	BufferingPossible := f! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'accessing' !
+
+
+allocation ^<Region>
+
+	^Point origin corner: self extent!
+
+backgroundPainter ^<Painter>
+	"The paint for the window background.  This can be automatically derived from the
+	 background painter for the visual.  It can also be set explicitly."
+
+	^self hasBackgroundPainter
+		ifTrue: [ backgroundPainter ]
+		ifFalse: [ backgroundPainter := self visual backgroundPainter ]!
+
+backgroundPainter: p <Painter>
+
+	backgroundPainter := p!
+
+cursor ^<Cursor>
+
+	^cursor!
+
+cursor: c <Cursor>
+
+	cursor := c.!
+
+desiredPosition: p <Point>
+
+	desiredPosition := p!
+
+enabled ^<Boolean>
+
+	^enabled!
+
+enabled: flag <Boolean>
+
+	self enabled = flag
+		ifFalse: [	self setEnabled: flag ].!
+
+extent ^<Point>
+
+	^extent!
+
+hasParent ^<Boolean>
+
+	^parent notNil!
+
+hasSession ^<Session>
+
+	^session notNil!
+
+hasWin32Handle ^<Boolean>
+
+	^win32Handle notNil!
+
+initialInputFocus: v <Visual>
+
+	initialInputFocus := v!
+
+max ^<Rect>
+
+	^max!
+
+medium ^<Medium>
+
+	^medium!
+
+menu ^<Menu>
+
+	^menu!
+
+menu: m <Menu>
+
+	menu isNil
+		ifFalse: [ menu release ].
+	menu := m.
+	menu window: self.
+	self hasWin32Handle
+		ifTrue: [ self setNativeMenu ]!
+
+min ^<Rect>
+
+	^min!
+
+mostRecentInputFocus: v  <Visual>
+
+	mostRecentInputFocus := v!
+
+name: nm <Str>
+
+	"By default, do nothing. Subclasses with a title bar can override this"!
+
+natural ^<Rect>
+
+	^natural!
+
+noPalette
+
+	palette := nil!
+
+optimizeIncrementalLayout ^<Boolean>
+^false.
+	^optimizeIncrementalLayout!
+
+optimizeIncrementalLayout: f <Boolean>
+
+	(f ~= optimizeIncrementalLayout and: [ self hasWin32Handle ])
+		ifTrue: [ self changing ].
+	optimizeIncrementalLayout := f.!
+
+palette ^<Palette>
+
+	^palette!
+
+palette: p <Palette>
+
+	p == palette
+		ifTrue: [ ^self ].
+	self assert: [ palette isNil ].
+	palette := p!
+
+parent ^<Window>
+
+	^parent!
+
+parent: p <Window>
+	"This message must be sent before the window handle is created"
+
+	parent := p!
+
+refreshInterval ^<Float>
+
+	^refreshInterval!
+
+refreshInterval: d <Float>
+	"Wait no longer than this amount of time (in seconds) between
+		paint operations, if possible"
+
+	refreshInterval := d!
+
+session ^<Session>
+
+	^session!
+
+setNativeMenu
+
+	{{<user ExternalProxy SetMenu>
+		wnd: self win32Handle
+		menu: self menu win32Handle
+	}} asBoolean
+		ifFalse: [ Win32 handleError ]!
+
+toClose ^<[Window]>
+
+	^toClose!
+
+toClose: blk <[Window]>
+
+	toClose := blk!
+
+useDisplayBuffering ^<Boolean>
+
+	^useDisplayBuffering!
+
+useDisplayBuffering: f <Boolean>
+
+	useDisplayBuffering := f!
+
+visual ^<Visual>
+
+	^visual! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'initialization' !
+
+
+initSession: sess <Session>
+visual: vis <Visual>
+
+	medium := sess medium.
+	session := sess.
+	visual := vis.
+
+	(self visual)
+		parent: self id: 1.
+
+	self showTimes
+		ifTrue: [ Transcript show: 'prefs: '; print: [ self computePreferences ] time; cr. ]
+		ifFalse: [ self computePreferences ].
+
+	scratchRECT := RECT new allocate.
+	self optimizeIncrementalLayout: true.
+	ignoreNextFocusSet := false.
+
+	self refreshInterval: self defaultRefreshInterval.
+	self paintPending: false.
+	self useDisplayBuffering: true.
+
+	self toClose: [ :w <Window> | w close ].
+	self enabled: true.
+	controls := IdentitySet[Win32Control] new.
+	self haveErased: false.! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'private' !
+
+
+activeMenu ^<Menu>
+	"Returns the menu that is currently active, if there is one.  It may either be the top level menu,
+	  or a popup menu over the window"
+
+	^popUpMenu notNil
+		ifTrue: [ popUpMenu ]
+		ifFalse: [ menu ]!
+
+beforeQueuedMessage
+
+	"%remove this and calls to it"!
+
+beforeSetFocus
+
+	ignoreNextFocusSet
+		ifTrue: [	"We requested the focus, and have already recorded it, so
+							ignore this."
+						ignoreNextFocusSet := false.	]
+		ifFalse: [	self visual layoutValid
+							ifTrue: [	"We didn't request this, so windows must be requesting it, so
+												record it"
+											self findInputFocus	]	].!
+
+beginPaint: hwnd <HWND>  paintStructure: ps <PAINTSTRUCT>  ^<HDC>
+
+	^{{<user HDC BeginPaint> arg: hwnd arg: ps}}!
+
+buildWin32Handle
+	"Subclasses must implement to create the appropriate type of window handle &
+	  store it in win32Handle"
+
+	self subclassResponsibility!
+
+callAsyncDefWndProcFor: hwnd <HWND>
+msgCode: msgCode <ExternalData>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+	"like callDefWndProcFor:msgCode:wParam:lParam:
+			but is asynchronous"
+
+	^{{<user ExternalProxy DefWindowProcA async>
+			hwnd: hwnd
+			value: msgCode
+			value: wParam
+			value: lParam
+	  }}!
+
+callDefWndProcFor: hwnd <HWND>
+msgCode: msgCode <ExternalData>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	^{{<user ExternalProxy DefWindowProcA>
+			hwnd: hwnd
+			value: msgCode
+			value: wParam
+			value: lParam
+	  }}!
+
+computePreferences
+
+	natural := Point origin corner: self visual natural enclosingRect extent.
+	min := Point origin corner: self visual min enclosingRect extent.
+	max := Point origin corner: self visual max enclosingRect extent.!
+
+controls ^<Extensible[Win32Control]>
+
+	^controls!
+
+defaultRefreshInterval ^<Float>
+
+	^0.25!
+
+defaultWndProc ^<ExternalProxy>
+
+	^self actualClass defaultWndProc!
+
+deferredPaintRegion ^<Rect>
+
+	^deferredPaintRegion!
+
+deferredPaintRegion: r <Rect>
+
+	deferredPaintRegion := r!
+
+desiredXPos ^<ExternalData>
+
+	^desiredPosition isNil
+		ifFalse: [ desiredPosition x asInteger ]
+		ifTrue: [  Win32 CW_USEDEFAULT ]!
+
+desiredYPos ^<ExternalData>
+
+	^desiredPosition isNil
+		ifFalse: [ desiredPosition y asInteger ]
+		ifTrue: [  Win32 CW_USEDEFAULT ]!
+
+display
+
+	| subs <Cltn[Win32Control]> |
+	self withCanvasDo:
+			[ :can <Canvas> |
+				| paintBlk <[^Object]> |	
+				paintBlk := 
+					[	self paintBackgroundOn: can.
+						self displayVisualIfCanOn: can.
+						can shallowFlush.  ].
+				self showTimes
+					ifTrue: [  Transcript show: 'paint: '; print: paintBlk time; cr. ]
+					ifFalse: [ paintBlk value ].
+				can hasSubwindowsToDisplay
+					ifTrue: [ subs := can takeSubwindowsToDisplay ].
+			].
+	subs notNil
+		ifTrue: [	subs do:
+							[ :sub <Win32Control> |
+								"%hack: the handle test should not be 
+									necessary; something is screwed up"
+								sub hasWin32Handle
+									ifTrue: [	sub sendMessage: Win32 WM_PAINT
+														wparam: 0 lparam: 0.
+												].
+							].
+					 ]!
+
+displayVisualIfCanOn: canvas <Canvas>
+
+	self session visualCriticalWouldBlock
+		ifTrue: [ self recordDeferredPaint: canvas clippingRect ]
+		ifFalse: [	self paintOccuring.
+						self visual displayOn: canvas.	]!
+
+endPaint: hwnd <HWND>  paintStructure: ps <PAINTSTRUCT>
+
+	^{{<user ExternalProxy EndPaint> arg: hwnd arg: ps}}!
+
+extent: e <Point>
+	"Change the window's extent.  This will cause a relayout
+		to happen later, which will record the extent."
+
+	| pos <Point> adjusted <Rect> |
+	adjusted := self fitToMedium: e.
+	pos := self getPosition.
+	{{<user ExternalProxy MoveWindow>
+		hwnd: self win32Handle
+		x: pos x
+		y: pos y
+		width: adjusted x
+		height: adjusted y
+		repaint: true asExternalData
+	}} asBoolean 
+		ifFalse: [ Win32 handleError ].!
+
+findInputFocus
+
+	"find some non-native visual
+	  within us to give the input focus to."
+
+	"If there is already a focus, and it is in this window, then we are in a callback caused
+	  by our own attempt to set the focus, so do nothing."
+	(self session hasInputFocus and: [ self session inputFocus nativeWindow = self ])
+		ifTrue: [ ^self ].
+
+	"If we have a valid memory of what our input focus was last time, use it"
+	self purgeMostRecentFocusIfNeeded.
+	(mostRecentInputFocus notNil and: [ mostRecentInputFocus topWindow = self ])
+		ifTrue: [ "Search to see if the most recent one is still a reachable, valid candidate"
+					 "%todo: we could optimize this by adding another call to the heirarchy called
+						verifyFocusCandidate which sends verifyFocusCandidate:self up the heirarchy,
+						giving pacifiers etc. a chance to deny it the focus.  This would be MUCH faster
+						than the following loop."
+					"Also note that we use session inputFocus: rather than becomeFocus, because this
+						 thing was previously the focus, so we don't want to do things like scroll it"
+					 self visual focusCandidatesDo:
+						[ :cand <Visual> |
+							cand = mostRecentInputFocus
+								ifTrue: [	self session inputFocus: cand.
+
+												^self		"^^^^^^^^^^^^^"		] ]. ].
+
+	"There is no valid previous focus to reuse, so just choose the first one"
+	(self visual firstFocusCandidateIfAbsent: [ ^self ])
+		becomeFocus.
+!
+
+fitToMedium: clientExtent <Point>  ^<Point>
+	"takes a client extent, and returns a window extent adjusted so that it will fit on the screen"
+
+	| normal <Point> withoutCaption <Point> captionHeight <Int> adjClient <Point> |	
+	normal := (self windowSizeForClientAreaSize: clientExtent) min: self medium extent.
+	withoutCaption := (self windowSizeWithoutCaptionForClientAreaSize: clientExtent) min: self medium extent.
+	captionHeight := normal y - withoutCaption y.
+	^self windowSizeForClientAreaSize:
+			 (clientExtent x min: self medium extent x)
+		@ ((clientExtent y + captionHeight min: self medium extent y) - captionHeight).!
+
+getPosition ^<Point>
+
+	{{<user ExternalProxy GetWindowRect>
+		hwnd: self win32Handle
+		rect: self scratchRECT
+	}} asBoolean
+		ifFalse: [ Win32 handleError ].
+	^self scratchRECT left @ self scratchRECT top!
+
+globalFromLocalPosition: p <Point> ^<Point>
+
+	| wp <POINT> result <Point> |
+	wp := POINT new allocate.
+	wp x: p x; y: p y.
+	{{<user ExternalProxy ClientToScreen>
+			handle: self win32Handle
+			point: wp
+	}} asBoolean
+		ifFalse: [ Win32 handleError ].
+	result := wp x @ wp y.
+	wp free.
+	^result!
+
+handleTabEvent: ev <UIEvent>
+
+	ev shiftPressed
+		ifTrue: [ self moveFocusBack ]
+		ifFalse: [ self moveFocusForward ]!
+
+hasBackgroundPainter ^<Boolean>
+
+	^backgroundPainter notNil!
+
+hasMenu ^<Boolean>
+	"Returns the menu that is currently active, if there is one.  It may either be the top level menu,
+	  or a popup menu over the window"
+
+	^popUpMenu notNil or: [ menu notNil ]!
+
+haveErased ^<Boolean>
+
+	^haveErased!
+
+haveErased: f <Boolean>
+
+	haveErased := f!
+
+initWindowsMessageHandlers
+
+	WindowsMessageHandlers
+		at: Win32 WM_CLOSE	put:
+				[ :w <Window> :msg  <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w closeMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_SETCURSOR	put:
+				[ :w <Window> :msg  <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w setCursorMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_PAINT	put:
+				[ :w <Window> :msg  <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w paintMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_ERASEBKGND	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w eraseBackgroundMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_CTLCOLORBTN	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w buttonColorMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_DRAWITEM	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w drawItemMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_KEYDOWN	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w keyDownMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_KEYUP	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w keyUpMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_CHAR	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w characterMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+
+		"mouse events are handled by a common event routine"
+		at: Win32 WM_LBUTTONDOWN put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #primaryButtonDown at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_LBUTTONUP	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #primaryButtonUp at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_LBUTTONDBLCLK	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #primaryButtonDoubleClick at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_MBUTTONDOWN	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #middleButtonDown at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_MBUTTONUP	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #middleButtonUp at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_RBUTTONDOWN put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #secondaryButtonDown at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_RBUTTONUP put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #secondaryButtonUp at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_RBUTTONDBLCLK put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #secondaryButtonDoubleClick at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_MOUSEMOVE put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w handleMouseEvent: #mouseMove at: lParam lowSigned @ lParam highSigned msg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+
+		at: Win32 WM_MEASUREITEM	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w measureItemMsg: msg  hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_SETFOCUS	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w setFocusMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_KILLFOCUS	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w killFocusMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_COMMAND	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w commandMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_GETMINMAXINFO	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w getMinMaxInfoMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_SIZE	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w sizeMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_NCDESTROY	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w ncDestroyMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_DESTROY	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w destroyMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_CAPTURECHANGED	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w captureChangedMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_INITMENUPOPUP	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w initMenuPopupMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_QUERYNEWPALETTE	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w queryPaletteMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+		at: Win32 WM_PALETTECHANGED	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w paletteChangedMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+
+		"---------- Custom messages"
+		at: Window LAYOUT	put:
+				[ :w <Window> :msg <ExternalData> :hwnd <HWND> :wParam <ExternalData> :lParam <ExternalData> |
+					w layoutMsg: msg hwnd: hwnd wParam: wParam lParam: lParam ];
+
+		yourself!
+
+initialInputFocus ^ <Visual>
+
+	^initialInputFocus!
+
+layout: extent <Point>
+
+	| firstLayout <Boolean> |
+
+	firstLayout := self visual layoutStatus = Visual invalid.
+ 	self showTimes
+		ifTrue: [	Transcript show: 'layout: '; print: [ 
+								self visual allocationInParent: (0@0 corner: extent).
+						] time; cr. ]
+		ifFalse: [	self visual allocationInParent: (0@0 corner: extent). ].
+
+	"We have to do this now because we can't set the input focus until layout is
+		complete, since the containing native window must be accessed, etc."
+	firstLayout
+		ifTrue: [	self palette notNil
+							ifTrue: [ self recursiveRealizePaletteForeground: true updateColors: true. ].
+						(self initialInputFocus notNil and: [ self initialInputFocus isFocusCandidate ])
+							ifTrue: [		self initialInputFocus becomeFocus.
+												self initialInputFocus: nil 	"Not needed anymore, prevent memory leak"	]
+							ifFalse: [	self findInputFocus ]
+					  ]!
+
+localFromGlobalPosition: p <Point> ^<Point>
+
+	| wp <POINT> result <Point> |
+	wp := POINT new allocate.
+	wp x: p x; y: p y.
+	{{<user ExternalProxy ScreenToClient>
+			handle: self win32Handle
+			point: wp
+	}} asBoolean
+		ifFalse: [ Win32 handleError ].
+	result := wp x @ wp y.
+	wp free.
+	^result!
+
+menuCommandForItem: id <Int>
+
+	(MenuItem itemFor: id)
+		execute!
+
+moveFocusBack
+
+	(self visual lastFocusCandidateBefore: self session inputFocus)
+		becomeFocus!
+
+moveFocusForward
+
+	(self visual nextFocusCandidateAfter: self session inputFocus)
+		becomeFocus!
+
+nCmdShow ^<ExternalProxy>
+
+	^{{primitiveWindowsNCmdShow}}!
+
+nextPaintTime ^<Float>
+
+	^nextPaintTime!
+
+nextPaintTime: t <Float>
+
+	nextPaintTime := t!
+
+paintBackgroundOn: can <Canvas>
+
+	can withPainter: self backgroundPainter do:
+		[ can displayFilledRectangle:
+			(Point origin corner: self allocation enclosingRect extent) ].!
+
+paintOccuring
+
+	self nextPaintTime: Time clockValue + self refreshInterval.
+	self paintPending: false.
+	self session paintOccuredFor: self.!
+
+parentHandle ^<ExternalData>
+
+	^parent isNil
+		ifFalse: [ parent win32Handle ]
+		ifTrue: [ Win32 NULL ]!
+
+purgeMostRecentFocusIfNeeded
+
+	"%kludge: This should be called occasionally (in user time) to avoid memory leaks caused by
+	  a pointer to a zombie visual"
+	"%todo: this isn't called yet.  Set up a scanner that sends this to all windows every ten seconds or
+	   so."
+	(mostRecentInputFocus notNil and: [ mostRecentInputFocus isAttached not ])
+		ifTrue: [ mostRecentInputFocus := nil ]!
+
+recordDeferredPaint: region <Rect> 
+
+	self deferredPaintRegion:
+		(self deferredPaintRegion isNil
+			ifTrue: [ region ]
+			ifFalse: [ self deferredPaintRegion merge: region ]
+		)!
+
+recordExtent
+
+		self setExtent: self trueClientAreaExtent.!
+
+registerPaintTime
+
+	self paintPending
+		ifFalse: [	self paintPending: true.
+						self nextPaintTime: Time clockValue + self refreshInterval.
+						self session schedulePaintFor: self at: self nextPaintTime.	].!
+
+relayoutIfNeeded
+
+	self relayoutIfNeededForExtent: self extent!
+
+relayoutIfNeededForExtent: e <Point>
+
+	self visual needsRelayout
+		ifTrue: [ self layout: (self visual max enclosingRect extent min: e) ].
+	self invalidate.!
+
+scratchRECT ^<RECT>
+
+	^scratchRECT!
+
+setCursor ^<ExternalData>
+
+	^cursor isNil
+		ifFalse: [	{{<user ExternalProxy SetCursor> handle: cursor win32Handle}}.
+						1 ]
+		ifTrue: [ 0 ]!
+
+setEnabled: flag <Boolean>
+
+	enabled := flag.
+	self hasWin32Handle
+		ifTrue: [	{{<user ExternalProxy EnableWindow async>
+								handle: self win32Handle
+								state: enabled asExternalData}}.	].!
+
+setExtent: e <Point>
+
+	extent := e!
+
+setName: nm <Str>
+
+	self hasWin32Handle
+		ifTrue: [	| title <CString> |
+						title := CString for: nm.
+						[	{{<user ExternalProxy SetWindowTextA>
+											hwnd: self win32Handle
+											title: title
+							}} asBoolean
+								ifFalse: [ Win32 handleError ].
+						] ensure: [ title free ]
+					 ]!
+
+shouldCallDefaultHandlerAsynchronouslyFor: msgCode <ExternalData>  ^<Boolean>
+
+	^msgCode @= Win32 WM_SYSCOMMAND		"so that window moves let other sessions repaint"!
+
+showTimes ^<Boolean>
+	"Report preference, layout, and painting times on the transcript"
+
+	^false!
+
+trueClientAreaExtent ^<Point>
+
+	^self trueClientAreaExtentFor: self win32Handle!
+
+trueClientAreaExtentFor: hwnd <ExternalData> ^<Point>
+
+	| extent <Point> rect <RECT> |
+	rect := RECT new allocate.
+	{{<user RECT GetClientRect> arg: hwnd arg: rect}}.
+	extent := (rect right - rect left) @ (rect bottom - rect top).
+	rect free.
+	^extent!
+
+win32Handle: h <HWND>
+
+	win32Handle := h!
+
+win32Style ^<ExternalData>
+
+	| s <ExternalData> |
+	s := 0.
+	self enabled
+		ifFalse: [ s := s externalBitOr: Win32 WS_DISABLED ].
+	^s
+!
+
+windowSizeForClientAreaSize: extent <Point>  ^<Point>
+	"returns an integral point that is the correct window size for a desired client area size"
+
+	^self windowSizeForClientAreaSize: extent windowStyle: self win32Style!
+
+windowSizeForClientAreaSize: extent <Point> windowStyle: style <ExternalData>  ^<Point>
+	"returns an integral point that is the correct window size for a desired client area size"
+
+	| r <RECT> result <Point> |
+	r := RECT new allocate.
+	r top: 0; left: 0; right: extent x asInteger; bottom: extent y asInteger.
+	{{<user ExternalProxy AdjustWindowRect>
+				 rect: r style: style hasMenu: self hasMenu asExternalData}} asBoolean
+		ifFalse: [ Win32 handleError ].
+	result := (r right - r left) @ (r bottom - r top).
+	r free.
+	^result!
+
+windowSizeWithoutCaptionForClientAreaSize: extent <Point>  ^<Point>
+	"returns an integral point that is the correct window size for a desired client area size"
+
+	^self windowSizeForClientAreaSize: extent
+			windowStyle: (self win32Style externalBitAnd: (Win32 WS_CAPTION asSmallInteger bitInvert))!
+
+windowsMessageHandlers ^<Dict[ ExternalData,
+																 [Window, ExternalData, HWND, ExternalData, ExternalData, ^ExternalData] ]>
+
+	"Don't need critical region since duplicate inits are no problem"
+	WindowsMessageHandlers isNil
+		ifTrue: [	WindowsMessageHandlers :=
+							CustomDictionary[ExternalData,[Window, ExternalData, HWND, ExternalData, ExternalData, ^ExternalData]]
+									withCompareBlock: [ :k1 <ExternalData> :k2 <ExternalData> |    k1 @= k2 ]
+									hashBlock: [ :k <ExternalData> |  k hash ].
+						self initWindowsMessageHandlers.
+						].
+	^WindowsMessageHandlers!
+
+withBufferedCanvasDo: drawing <[Canvas,^X def]> ^<X>
+
+	^self withDirectCanvasDo:
+		[ :directCanvas <Canvas> |
+			| invalid <Rect> oldpal <Win32Handle> |
+			invalid := directCanvas clippingRect.
+
+			self session
+				withBufferCanvasFor: invalid
+				do: [ :bufferCanvas <Canvas> :buffer <HBITMAP> |
+
+						self palette isNil
+							ifFalse: [ oldpal := bufferCanvas win32Palette: self palette win32Handle ].
+
+						"draw on the buffer canvas"
+						drawing value: bufferCanvas.
+						bufferCanvas shallowFlush.
+
+						"Now, copy the buffer bits onto the screen"
+						directCanvas atOffset: invalid origin
+							do: [ bufferCanvas atOffset: invalid origin 
+								do: [	directCanvas
+											bitBlt: bufferCanvas
+											extent: invalid extent
+											op: UI ropCopy.		].	].
+						 oldpal notNil
+								ifTrue: [ 	Palette debugging
+													ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
+												bufferCanvas win32Palette: oldpal ]. 
+						].	
+		]!
+
+withCanvasDo: drawing <[Canvas,^X def]> ^<X>
+
+	^(self useDisplayBuffering and: [ Window bufferingPossible ])
+		ifFalse: [	self withDirectCanvasDo: drawing ]
+		ifTrue: [	self withBufferedCanvasDo: drawing ]!
+
+withDCDo: blk <[HDC]>
+	"With the window's device context do the block (not for painting)"
+
+	| hdc <HDC> |
+	hdc := {{<user HDC GetDC> hwnd: self win32Handle}}.
+	[ blk value: hdc ]
+		ensure: [ hdc releaseDCFor: self win32Handle ]!
+
+withDirectCanvasDo: drawing <[Canvas,^X def]> ^<X>
+
+	|	can <Canvas>
+		ps <PAINTSTRUCT>
+		paintBlk <[^Object]>
+		result <X>
+		oldpal <Win32Handle> |
+
+	"use a critical region to paint, since background painting might reuse the
+	  same device context in the UI thread"
+	^self critical:
+		[	ps := PAINTSTRUCT new allocateZeroed.
+			can := self beginPaint: self win32Handle paintStructure: ps.
+			can isNull
+				ifTrue: [ Win32 handleError ].
+			can	initialize;
+				toRelease: [ :dc <HDC> | "End paint will release the context" ];
+				initClippingRectBeforeTranslation: ps rcPaint asRectangle;
+				window: self.
+			self palette isNil
+				ifFalse: [ oldpal := can win32Palette: self palette win32Handle ].
+
+			Session debugInvalidation
+				ifTrue: [	can withPainter: (Painter new paint: Paint red)
+									do: [ can displayFilledRectangle: ps rcPaint asRectangle; flush. ].
+								Platform errorStream show: self class name, ' rendering: '; print: ps rcPaint asRectangle; cr.	].
+
+			result := drawing value: can.
+			oldpal notNil
+				ifTrue: [ 	Palette debugging
+									ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
+								can win32Palette: oldpal ]. 
+			can release. 
+
+			self endPaint: self win32Handle paintStructure: ps.
+			ps free.
+			result	]!
+
+wndProc ^<APICallback>
+
+	^self session wndProc! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'restricted-win32' !
+
+
+hInstance ^<ExternalProxy>
+
+	^self medium hInstance!
+
+message: msg <MSG>
+	"This is invoked in the UI thread when a new message arrives in the queue."
+
+	"Forward messages to the session, which will execute them in its thread"
+	self session message: msg!
+
+message: msgCode <ExternalData>
+for: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	"This is where all the win32 messages get converted to our semantics.  This
+	  method executes in the window's session's thread for queued messages, and
+	  either the session or UI thread for unqueued messages."
+
+	"%note/%todo: each message below must call beforeQueuedMessage before processing
+	     the message IFF the message is a queued (in session thread) message"
+
+	^(self windowsMessageHandlers at: msgCode
+		ifAbsent: [ ^self handleMiscMsg: msgCode hwnd: hwnd wParam: wParam lParam: lParam ]
+     )	value: self
+		value: msgCode
+		value: hwnd
+		value: wParam
+		value: lParam!
+
+recursiveRealizePaletteForeground: fore <Boolean> updateColors: update <Boolean>
+
+	self palette isNil
+		ifFalse: [	self withDCDo:
+							[ :hdc <HDC> |
+								| oldpal <Win32Handle> |
+								oldpal := Palette select: self palette win32Handle into: hdc background: fore not.
+								self palette unrealize.
+								self palette realizeFor: hdc.
+								Palette debugging
+									ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
+								Palette select: oldpal win32Handle into: hdc background: fore not.
+							 ].
+						self invalidate.
+						].
+	self controls do:
+		[ :c <Win32Control> |
+			c recursiveRealizePaletteForeground: fore updateColors: update ].!
+
+registerControl: c <Win32Control>
+
+	self controls include: c!
+
+releaseCapture
+
+	{{<user ExternalProxy ReleaseCapture> noArgs}}!
+
+sendMessage: msg <ExternalData>
+wparam: wp <ExternalData>
+lparam: lp <ExternalData>
+^<ExternalData>
+
+	^{{<user ExternalProxy SendMessageA>
+			handle: self win32Handle
+			msg: msg
+			wparam: wp
+			lparam: lp}}!
+
+setCapture
+
+	{{<user ExternalProxy SetCapture> hwnd: self win32Handle}}.
+!
+
+setFocus
+
+	 self win32Handle @= {{<user ExternalProxy GetFocus> call}}
+		ifFalse: [  {{<user ExternalProxy SetFocus> hwnd: self win32Handle}} ]!
+
+unregisterControl: c <Win32Control>
+
+	self controls removeEvery: c!
+
+win32Handle ^<HWND>
+
+	win32Handle isNil
+		ifTrue: [	self session creatingWindow: self do:
+							[	self buildWin32Handle; recordExtent. ].  ].
+	^win32Handle! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'control' !
+
+
+close
+	"Close and destroy the window.  This causes release to be sent to the window and its visual"
+
+	self session aboutToDestroyWindow: self.
+	{{<user ExternalProxy DestroyWindow> arg: win32Handle}}.
+!
+
+ignoreNextFocusSet: flag <Boolean>
+
+	ignoreNextFocusSet := flag!
+
+invalidate
+
+	self visual layoutStatus > Visual invalid
+		ifTrue: [ self invalidate: self allocation enclosingRect	].!
+
+invalidate: r <Region>
+
+	| rect <Rect> |
+
+	self registerPaintTime.
+	rect := r enclosingRect.
+	(self scratchRECT)
+		left: rect left asInteger;
+		right: rect right asInteger;
+		top: rect top asInteger;
+		bottom: rect bottom asInteger.
+	{{<user ExternalProxy InvalidateRect>
+		hwnd: self win32Handle
+		RECT: self scratchRECT
+		erase: false asExternalData}}!
+
+makeActive
+	"Make this the active window"
+
+	{{<user ExternalProxy SetForegroundWindow> hwnd: self win32Handle }}.!
+
+release
+
+	scratchRECT free.
+
+	self session unregisterWindow: self.
+
+	visual notNil
+		ifTrue: [	visual detaching; release.
+						visual := nil.	].
+
+	win32Handle := nil.
+
+	self hasMenu
+		ifTrue: [ self menu release ].
+	mostRecentInputFocus := nil.
+	menu := nil.
+	popUpMenu := nil.
+	toClose := nil.
+	controls := nil.
+!
+
+requestClose
+
+	self toClose value: self.!
+
+show
+	"Make the window visible"
+
+	{{<user ExternalProxy ShowWindow>
+			window: self win32Handle
+			nCmdShow: self nCmdShow}}.
+	!
+
+showModal
+	"Make the window visible as a modal window"
+
+	self session addModalWindow: self.
+	self show.
+	! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'VisualParent impl' !
+
+
+addNonLocalCount: delta <Int>
+	
+	!
+
+containerBackgroundPainter ^<Painter>
+
+	^Painter defaultBackground!
+
+containsFocus: flag <Boolean>
+
+	flag
+		ifTrue: [	self session activeWindow: self.
+						self mostRecentInputFocus: session inputFocus.	].
+	"We don't need to remove the active window ifFalse because the session does that"!
+
+displayNowIfInvalid
+	"Redraw any invalid areas before proceeded"
+
+	self display!
+
+displayPopUpMenu: menu <Menu> at: loc <Point> forButton: button <Symbol>
+
+	| gloc <Point> flags <ExternalData> |
+	popUpMenu := menu.
+
+	flags := Win32 TPM_LEFTALIGN.
+	button = #left
+		ifTrue: [ flags := flags externalBitOr: Win32 TPM_LEFTBUTTON ]
+		ifFalse: [ flags := flags externalBitOr: Win32 TPM_RIGHTBUTTON ].
+
+	gloc := self globalFromLocalPosition: loc.
+	{{<user ExternalProxy TrackPopupMenu>
+		handle: menu win32Handle
+		flags: flags
+		x: gloc x
+		y: gloc y
+		reserved: 0
+		window: self win32Handle
+		rect: Win32 NULL
+	}} asBoolean
+		ifFalse: [ Win32 getLastError @= Win32 ERROR_POPUP_ALREADY_ACTIVE
+							ifFalse: [ Win32 handleError ].
+						].
+
+	popUpMenu := nil.
+!
+
+invalidate: r <Region> forChild: child <Visual>
+
+	self invalidate: (r enclosingRect translatedBy: child position)!
+
+isAttached ^<Boolean>
+
+	^true!
+
+nativeWindow ^<Window | Win32Control>
+
+	^self!
+
+parentVisualOfChild ^<Visual>
+
+	self shouldNotHappen!
+
+popUpMenuIfAbsent: f <[^X def]> ^<Menu | X>
+
+	^f value!
+
+positionInContainingNativeWindowOf: child <Visual> ^<Point>
+
+	^child position!
+
+positionInTopWindowOf: child <Visual>
+
+	^child position!
+
+scrollIfNeededToMakeVisible: area <Rect>
+relativeTo: v <Visual>
+minimizeMotion: minimizeMotion <Boolean>
+
+
+	!
+
+scrollMeOrAParentBy: distance <Int> vertical: vertical <Boolean>
+
+	"do nothing"!
+
+topWindow ^<Window>
+
+	^self!
+
+translate: p <Point> fromChild: child <Visual> ^<Point>
+
+	"Translate p from the child's coordinates to ours"
+	^p translatedBy: child position!
+
+translate: p <Point> toChild: child <Visual> ^<Point>
+
+	"Translate p from our coordinates to the child's"
+	^p relativeTo: child position!
+
+translateRect: r <Rect> fromChild: child <Visual> ^<Rect>
+
+	"Translate p from the child's coordinates to ours"
+	^r translatedBy: child position!
+
+translateRect: r <Rect> toChild: child <Visual> ^<Rect>
+
+	"Translate p from the child's coordinates to ours"
+	^r relativeTo: child position! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^(self visual character: c focus: focus event: ev)
+		or: [	c = Character tab
+					onTrue: [ self handleTabEvent: ev ] ]!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	(self visual keyDown: key focus: focus event: ev)
+		ifTrue: [ ^true ].
+		
+	(key = #TAB and: [ ev ctrlPressed ])
+		ifTrue: [ self handleTabEvent: ev.	^true ].
+	key = #F1 ifTrue: [ Profiler start.	^true ].
+	key = #F2 ifTrue: [ Profiler stop.	^true ].
+	^false	!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self visual keyUp: key focus: focus event: ev
+!
+
+mouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
+
+	^self visual layoutStatus = Visual valid
+		and: [ 	| grabGotIt <Boolean> |
+						grabGotIt := self session
+												mouseEvent: type
+												at: loc
+												event: ev.
+						grabGotIt or: [	(self visual renderingRegion inParentContainsPoint: loc)
+												and: [	Sampler notNil
+																ifTrue: [ Sampler in: self visual sampleEvent: type at: loc - self visual position event: ev ].
+															self visual
+																mouseEvent: type
+																at: loc - self visual position
+																event: ev	] ] ]
+! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'restricted-win32 queued message handling' !
+
+
+characterMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self beforeQueuedMessage.
+	^self session handleIfFocusMsg: msg for: self wParam: wParam lParam: lParam
+!
+
+closeMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self requestClose.
+	^0!
+
+commandMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	
+	self beforeQueuedMessage.
+
+	^lParam @~= Win32 NULL
+		ifTrue: [	"Then this is a control window notification, which should be forwarded back to the
+						  smalltalk control object"
+						Win32Control notificationMsg: wParam asExternalProxy high for: (Win32Control controlIdFor: lParam).
+						0 ]
+		ifFalse: [ wParam asExternalProxy high = 0
+							ifTrue: [	self menuCommandForItem: wParam low.
+											0	]
+							ifFalse: [ self handleMiscMsg: msg  hwnd: hwnd wParam: wParam lParam: lParam ]	]!
+
+handleMiscMsg: msgCode <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	"This performs the default window system handling for a message"
+	
+	^(self shouldCallDefaultHandlerAsynchronouslyFor: msgCode)
+		ifTrue: [	"Some messages should be handled asyncronously, so that for
+							example, moving a window allows other sessions to refresh"
+						self callAsyncDefWndProcFor: hwnd
+							msgCode: msgCode
+							wParam:  wParam
+							lParam: lParam ]
+		ifFalse: [	self callDefWndProcFor: hwnd
+								msgCode: msgCode
+								wParam:  wParam
+								lParam: lParam	]!
+
+handleMouseEvent: type <Symbol>
+at: loc <Point>
+msg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	| ev <UIEvent> |
+	self beforeQueuedMessage.
+
+	"%todo: remove the dispatch block for all events; isn't needed anymore"
+	ev := UIEvent
+			forMsg: self session currentMsg
+			dispatch:
+				[ :e <UIEvent> :h <UIEventHandler> |
+					h mouseEvent: type at: loc event: e ].
+	self mouseEvent: type at: loc event: ev.
+
+	"Mouse events are always passed through to the default wnd proc since their may be window system specific things
+	  like bringing the window to the foreground that always have to happen. (I used to pass it through only when it
+	  was a left button down msg, but this is cleaner)"
+	^self handleMiscMsg: msg  hwnd: hwnd wParam: wParam lParam: lParam!
+
+initMenuPopupMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self beforeQueuedMessage.
+	self hasMenu 
+		ifTrue: [ self activeMenu updateMenuWithHandle: wParam ].
+	^0!
+
+keyDownMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self beforeQueuedMessage.
+	^self session handleIfFocusMsg: msg for: self wParam: wParam lParam: lParam
+!
+
+keyUpMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self beforeQueuedMessage.
+	^self session handleIfFocusMsg: msg for: self wParam: wParam lParam: lParam
+!
+
+layoutMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	| ext <Point> |
+	ext := lParam low @ lParam high.
+	(self visual layoutStatus < Visual valid
+			or: [ self visual allocation enclosingRect extent ~= ext ])
+		ifTrue: [ self layout: ext ].
+	^0!
+
+paintMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self display.
+	^0!
+
+setCursorMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	^(cursor notNil
+			and: [	| hitcode <Int> |
+						hitcode := lParam asExternalProxy low.
+						hitcode = 1 or: [ hitcode = 65534 ] "client area or disabled"  ])
+		ifTrue: [ 	self setCursor.
+						1 ]
+		ifFalse: [ self callDefWndProcFor: hwnd
+								msgCode: msg
+								wParam: wParam
+								lParam: lParam ]
+! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'restricted-win32 unqueued message handling' !
+
+
+buttonColorMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	^Win32Control buttonColorMsg: wParam asExternalProxy for: (Win32Control controlIdFor: lParam)!
+
+captureChangedMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self session lostCapture.
+	
+	^self handleMiscMsg: msg  hwnd: hwnd wParam: wParam lParam: lParam!
+
+destroyMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	^0!
+
+drawItemMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	^Win32Control drawItemMsg: (DRAWITEMSTRUCT forProxy: lParam) for: wParam asSmallInteger!
+
+eraseBackgroundMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	| can <Canvas> |
+
+	self haveErased
+		ifTrue: [ ^1 ].
+	self haveErased: true.
+
+	"Don't paint background when a paint is pending to reduce flickering"
+	self paintPending
+		ifTrue: [ ^0 ].
+
+	"Use a critical region because the window's thread might be drawing"
+	self critical:
+		[	can := HDC forProxy: wParam asExternalProxy.
+			can initialize.
+			self paintBackgroundOn: can. 	].
+	^1!
+
+getMinMaxInfoMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	| info <MINMAXINFO> adjmin <Point> adjmax <Point> |
+	info := MINMAXINFO forProxy: lParam asExternalProxy.
+	adjmin := (self fitToMedium: self min extent) max: info ptMinTrackSize asPoint.
+	adjmax := (self fitToMedium: self max extent) min: info ptMaxSize asPoint.
+	info ptMaxSize x: adjmax x; y: adjmax y.
+	info ptMaxTrackSize x: adjmax x; y: adjmax y.
+	info ptMinTrackSize x: adjmin x; y: adjmin y.
+	^0!
+
+killFocusMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	"This window is losing the input focus, which means that some non-native visual
+	  within us probably has the focus, so we have to discard the focus."
+
+	(self session hasInputFocus and: [ self session inputFocus nativeWindow = self ])
+		ifTrue: [ self session noInputFocus ].
+
+	^self handleMiscMsg: msg  hwnd: hwnd wParam: wParam lParam: lParam!
+
+measureItemMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	| data <MEASUREITEMSTRUCT> |
+	data := MEASUREITEMSTRUCT forProxy: lParam.
+	^data CtlType @= Win32 ODT_MENU
+		ifFalse: [ Win32Control measureItemMsg: data for: data CtlID asSmallInteger ]
+		ifTrue: [ self handleMiscMsg: msg  hwnd: hwnd wParam: wParam lParam: lParam ]!
+
+ncDestroyMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self release.
+	^0!
+
+paletteChangedMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	wParam @= self win32Handle
+		ifFalse: [ self recursiveRealizePaletteForeground: false updateColors: true.
+						self palette isNil
+							ifTrue: [ ^self callDefWndProcFor: hwnd
+											msgCode: msg
+											wParam: wParam
+											lParam: lParam	].
+					].
+	^0!
+
+queryPaletteMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self recursiveRealizePaletteForeground: true updateColors: false.
+	self palette isNil
+		ifTrue: [ ^self callDefWndProcFor: hwnd
+						msgCode: msg
+						wParam: wParam
+						lParam: lParam	].
+	^0!
+
+setFocusMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	"This window is getting the input focus, which means that some non-native visual
+	  within us will have to be chosen if possible."
+
+	self beforeSetFocus.
+
+	^self handleMiscMsg: msg  hwnd: hwnd wParam: wParam lParam: lParam!
+
+sizeMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	"%todo: do we need to check the value of wParam first?"
+	self critical:
+		[ wParam @= Win32 SIZE_MINIMIZED
+			ifFalse: [	| m <MSG> |
+								self invalidate.
+								m := MSG new allocate.
+								[ m	hwnd: self win32Handle;
+										message: Window LAYOUT;
+										wParam: 0;
+										lParam: lParam.
+									self recordExtent.
+									self session message: m.
+								] ensure: [ m free ]
+							]
+		 ].
+	^0! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'restricted-to session' !
+
+
+changing
+
+	self session changing: self.
+	self session recordPrefsFor: self.
+	natural := min := max := nil.!
+
+checkLayout: oldPrefs <SeqCltn[Region]>
+
+	| oldNat <Rect> alloc <Rect> nat <Rect> ext <Point> |
+	oldNat := (oldPrefs at: 2) enclosingRect.
+	self computePreferences.
+	nat := self natural enclosingRect.
+	alloc := self allocation enclosingRect.
+
+	"We have to do the relayout eagerly, even before the size message
+			comes back, because the caller assumes that layout is then done."
+
+	((alloc contains: self min enclosingRect)
+			and: [ self max enclosedRect contains: alloc ]
+	)	ifFalse: [	"We definitely have to change our size"
+							self relayoutIfNeededForExtent: nat extent.
+							self extent: nat extent.
+							^self	].
+
+	(self optimizeIncrementalLayout
+			or: [ nat = oldNat
+			or: [	alloc contains: nat ] ])
+		ifTrue: [	self relayoutIfNeededForExtent: self extent.
+						^self ].
+
+	ext := (nat width max: alloc width) @ (nat height max: alloc height).
+	self relayoutIfNeededForExtent: ext.
+	self extent: ext.!
+
+checkPaintTime: t <Float>
+	"If we have reached our refresh time, paint"
+	
+"%todo: figure out how to remove the following %hack
+		this should not be sent after the receiver is released)"	
+visual isNil ifTrue: [ ^self ].
+
+	(self hasWin32Handle and: [ self paintPending ])
+		ifTrue: [ self nextPaintTime <= t
+						ifTrue: [ self display ]
+						ifFalse: [ self session needPaintAtTime: self nextPaintTime ]	 ]!
+
+oldcheckLayout: oldPrefs <SeqCltn[Region]>
+
+	| oldNat <Rect> alloc <Rect> nat <Rect> |
+	oldNat := (oldPrefs at: 2) enclosingRect.
+	self computePreferences.
+	nat := self natural enclosingRect.
+	alloc := self allocation enclosingRect.
+
+	"We have to do the relayout eagerly, even before the size message
+			comes back, because the caller assumes that layout is then done."
+	self relayoutIfNeeded.
+
+	((alloc contains: self min enclosingRect)
+			and: [ (self max enclosedRect contains: alloc)
+			and: [ self optimizeIncrementalLayout
+							or: [ nat = oldNat
+							or: [	alloc contains: nat ] ] ] ]
+	)	ifFalse: [	"We definitely have to change our size"
+						self setExtent: nat extent.	].
+!
+
+prefs ^<SeqCltn[Region]>
+
+	^Array[Region] with: self min with: self natural with: self max!
+
+prefsStatus ^<Int>
+
+	^Visual valid!
+
+prerecordPrefsIfNeeded
+
+	"nothing to do"!
+
+processDeferredPainting
+
+	self deferredPaintRegion notNil
+		ifTrue: [	self invalidate: self deferredPaintRegion.
+						self deferredPaintRegion: nil.		]!
+
+removeParentsFrom: leaves <Set[RelayoutTarget]>
+alreadyChecked: checked <Set[RelayoutTarget]>
+
+	"nothing to do"! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'private-testing' !
+
+
+paintPending ^<Boolean>
+
+	^paintPending!
+
+paintPending: b <Boolean>
+
+	paintPending := b! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream>
+
+Transcript show: self class name, ' extent: '; print: self extent; show: ' hwnd: '; print: self win32Handle; cr.
+	self visual dumpOn: strm indent: 1.! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'testing' !
+
+
+isActive ^<Boolean>
+
+	^self session hasActiveWindow and: [ self session activeWindow = self ]! !
+

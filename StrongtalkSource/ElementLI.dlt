@@ -1,0 +1,37 @@
+Delta define: #ElementLI as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementLI) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ElementLI) group: 'HTML'!
+
+(Delta mirrorFor: #ElementLI)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementLI) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	builder verticalWhitespace.
+	builder indented: -15
+		do: [	self addBulletGlyphTo: builder.
+					builder indented: 15
+						do: [	super buildFor: builder ]
+				].
+	builder verticalWhitespace.! !
+
+! (Delta mirrorFor: #ElementLI) methodsFor: 'private' !
+
+
+addBulletGlyphTo: builder <HTMLBuilder>
+
+		| p <Painter> |
+	p := builder painter copy.
+	p font: (p font newSpec typeface: 'Symbol') font.
+	builder withPainter: p
+		do: [ builder addChar:  (Character value: 183). ].
+	! !
+

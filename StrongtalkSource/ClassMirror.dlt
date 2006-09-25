@@ -1,0 +1,598 @@
+Delta define: #ClassMirror as: (
+(Class subclassOf: 'AbstractClassMirror' instanceVariables: 'mixin ')) !
+
+(Delta mirrorFor: #ClassMirror) revision: '$Revision: 1.18 $'!
+
+(Delta mirrorFor: #ClassMirror) group: 'reflection'!
+
+(Delta mirrorFor: #ClassMirror)
+comment: 
+'This class implements the user-level reflective interface for classes.
+Classes are in fact implemented as mixin invocations. When a ClassMirror
+is created, it creates a mixin for itself. All changes made to a class are implemented
+by asking the mixin to change accordingly.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ClassMirror) classSide methodsFor: 'Unclassified' !
+
+
+delta ^ <Instance>
+    ^self new initializeDelta!
+
+on: class<Class> ^ <Instance> 
+
+^self new reflect: class !
+
+sort: cs <Collection[Class]> ^ <OrdCltn[Class]>
+
+^ClassVMMirror sort: cs!
+
+subclassOf: s <Str> instanceVariables: instVars <Str> ^ <Instance>
+    ^self new initializeSubclassOf: s instanceVariables: instVars! !
+
+! (Delta mirrorFor: #ClassMirror) methodsFor: 'Unclassified' !
+
+
+abstract
+    self mixin abstract!
+
+abstract: a <Boolean>
+
+self mixin abstract: a!
+
+addClassVariable: v  <VarDecl> ifFail: fb <[Str]>
+
+self mixin addClassVariable: v ifFail: fb!
+
+addInstanceVariable: v  <VarDecl> ifFail:  blk <[Str]>
+
+
+self mixin addInstanceVariable: v ifFail: blk!
+
+addMethod: str <Str> visibility: vis  <Symbol> category: cat ifFail: blk <[Str]> ^ <ParseTree>
+
+^self mixin addMethod: str visibility: vis category: cat ifFail: blk!
+
+addPool: name <Str>  ifFail: fb <Str>
+
+self mixin addPool: name ifFail: fb!
+
+basicDefinitionString   ^ <Str>
+| classVarStr protocolStr classProtocolStr stream first |
+
+classVarStr := self mixin classVariableString.
+protocolStr := self mixin supportedProtocolString.
+classProtocolStr := self mixin classSide supportedProtocolString.
+
+stream := (String new: 20) writeStream.
+self superclass isNil
+	ifTrue: [
+		stream nextPutAll: '(Class delta)'.
+		self mixin instanceVariableString isEmpty ifFalse: [
+			stream nextPutAll: ' instanceVariables: '.
+			stream nextPutAll: self mixin instanceVariableString asString printString]]
+	ifFalse: [
+		stream nextPutAll: '(Class subclassOf: '.
+		stream nextPutAll: self mixin superclassTypeString asString printString.
+		stream nextPutAll: ' instanceVariables: '.
+		stream nextPutAll: self mixin instanceVariableString asString printString, ')'].
+
+first := true.
+classVarStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' classVariables: ', classVarStr asString printString].
+protocolStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' protocols: ', protocolStr asString printString].
+classProtocolStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' classProtocols: ', classProtocolStr asString printString].
+self isAbstract ifTrue:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' abstract'].
+self extensionsAreSubtypes ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' extensionsAreNotSubtypes'].
+self isSubtype ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' notSubtype'].
+self isBranded ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' unbranded'].
+
+^stream contents
+!
+
+basicLocator  ^ <BasicMixinLocator> 
+	^self typeInfo basicLocator!
+
+branded: b <Boolean>
+
+self mixin branded: b.
+!
+
+classProtocols: p  <Str>
+
+self mixin classProtocols: p!
+
+classVariableString ^ <Str>
+
+^self mixin classVariableString!
+
+classVariables: cv <Str>
+
+self mixin classVariables: cv!
+
+classVariablesDo: blk   <[VarDecl]>
+    self mixin classVariablesDo: blk!
+
+comment  ^ <Str> 
+
+	^self sourceInfo comment!
+
+comment: c  <Str> 
+
+	self sourceInfo comment: c!
+
+compiledMethodAt: selector <Symbol> ifFail: blk   <[^X def]> ^ <Method | X>
+
+	^self mixin compiledMethodAt: selector ifFail: blk!
+
+compiledMethodsDo: blk  <[Method]>
+
+	self mixin compiledMethodsDo: blk!
+
+convert: m <Mirror> ifFail: fb <[Str]>
+
+m convertToClass: self ifFail: fb.
+
+
+
+!
+
+convert: m <Mirror> toGeneric: g   <GenericMirror> ifFail: fb <[Str]>
+
+self assert: [g body = self].
+m convertToGenericClass: g ifFail: fb!
+
+convertToClass: c   <ClassMirror> ifFail: fb <[Str, ^DoesNotMatter]>
+
+	self superclass isNil
+		ifFalse: [	self superclass reflectee = c superclass reflectee
+								ifFalse: [	| oldsuperclass <AbstractClassMirror> |
+													oldsuperclass := self superclass.
+													self mixin convertToMixin: c mixin changingClass: self to: c ifFail: fb.
+													self typeInfo superclassType: self mixin typeInfo superclassType.
+													self classSide typeInfo superclassType: self mixin classSide typeInfo superclassType.
+													self superclass sourceInfo changedSubclasses.
+													oldsuperclass sourceInfo changedSubclasses.
+												]
+								ifTrue: 	[	self mixin convertToMixin: c mixin ifFail: fb
+												]
+						]
+!
+
+convertToGenericClass: g <ProtocolMirror> ifFail: fb <[Str]>
+
+self convertToClass: g body ifFail: fb.
+self nestInGenericWithTypeArguments: g typeArgumentString.
+self adjustBounds.
+
+
+
+
+
+
+!
+
+convertToGenericProtocol: g <ProtocolMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert a class into a generic protocol'
+
+
+
+
+
+!
+
+createTypeStructure
+
+| 
+classTypeInfo <MixinInvocationSide> 
+classClassTypeInfo <MixinInvocationSide>
+classSide <ClassMirror>
+|
+
+self isMeta ifTrue:[^self instanceSide createTypeStructure].
+self name = #Object ifTrue:[^self createTypeStructureForObject].
+classSide := self classSide.
+self nonAtomic.
+classTypeInfo := Type atClass: self reflectee 
+                                             put:  (DeltaMixinInvocationSide new initialize klass: self reflectee).
+classClassTypeInfo := Type atClass:  classSide reflectee 
+                                                        put: (DeltaMixinInvocationSide new initialize klass: classSide reflectee).
+classTypeInfo  dual: classClassTypeInfo.
+classClassTypeInfo  dual: classTypeInfo.
+
+classTypeInfo mixinType:  (Type forMixin: self mixin  reflectee).
+classClassTypeInfo mixinType:  (Type forMixin:  classSide mixin  reflectee).
+
+" A named class shares its scope with its mixin"
+classTypeInfo scope: self mixin scope.
+classClassTypeInfo scope:  classSide mixin scope.
+
+"Can we share the superclass type nodes with the mixin?"
+classTypeInfo superclassType: (DeltaParser new parseClassOrMixinExpr: self mixin superclassTypeString  
+																									within: self scope superScope) body.
+classClassTypeInfo superclassType: classTypeInfo superclassType dualClassType.
+" (DeltaParser new parseClassOrMixinExpr: classSide mixin superclassTypeString  within: DeltaGlobals) body."!
+
+createTypeStructureForObject
+
+"Private"
+"Special case, when reflectee is Object. Requires special type structure"
+
+| 
+classTypeInfo <MixinInvocationSide> 
+classClassTypeInfo <MixinInvocationSide>
+classSide <ClassMirror>
+|
+
+
+classSide := self classSide.
+self nonAtomic.
+classTypeInfo := Type atClass: self reflectee 
+                                             put:  (DeltaObjectInvocationSide new initialize klass: self reflectee).
+classClassTypeInfo := Type atClass:  classSide reflectee 
+                                                        put: (DeltaObjectClassInvocationSide new initialize klass: classSide reflectee).
+classTypeInfo  dual: classClassTypeInfo.
+classClassTypeInfo  dual: classTypeInfo.
+
+" A named class shares its scope with its mixin"
+classTypeInfo scope: self mixin scope.
+classClassTypeInfo scope:  classSide mixin scope.
+
+classClassTypeInfo mixinType:  (Type forMixin:  classSide mixin  reflectee).
+
+classClassTypeInfo superclassType: (DeltaClassId new setId: #Class; scope: DeltaGlobals).
+!
+
+extensionsAreNotSubtypes
+    self mixin extensionsAreNotSubtypes!
+
+extensionsAreSubtypes ^ <Boolean>
+
+	^self mixin extensionsAreSubtypes!
+
+extensionsAreSubtypes: e <Boolean>
+
+self mixin extensionsAreSubtypes: e!
+
+hasSelector: selector <Symbol> ^ <Boolean>
+
+	^self mixin hasSelector: selector!
+
+initialize
+
+mixin := MixinDeclMirror createNewMixin.!
+
+initializeDelta
+    self initialize!
+
+initializeSubclassOf: s  <Str> instanceVariables: instVars  <Str>
+
+    self initialize.
+    self superclass: s.
+    self instanceVariables: instVars!
+
+installed  ^ <Boolean>
+"Private"
+^self mixin installed!
+
+instanceVariableString ^ <Str>
+
+^self mixin instanceVariableString!
+
+instanceVariables: iv  <Str>
+
+self mixin instanceVariables: iv!
+
+instanceVariablesDo: blk   <[VarDecl]>
+    self mixin instanceVariablesDo: blk!
+
+isAbstract ^ <Boolean>
+
+	^self mixin isAbstract!
+
+isBranded ^ <Boolean>
+
+	^self mixin isBranded
+!
+
+isMixinInvocation  ^ <Boolean>
+
+^false!
+
+isSubtype ^ <Boolean>
+
+	^self mixin isSubtype
+!
+
+komment
+
+"
+This class implements the user-level reflective interface for classes.
+Classes are in fact implemented as mixin invocations. When a ClassMirror
+is created, it creates a mixin for itself. All changes made to a class are implemented
+by asking the mixin to change accordingly.
+"!
+
+methodAt: selector <Symbol> ifFail: blk   <[^X def]> ^ <DeltaMethod | X>
+
+^self mixin methodAt: selector ifFail: blk !
+
+methodsDo: blk   <[DeltaMethod]>
+    self mixin methodsDo: blk!
+
+methodsFor: category <String>
+    ^DefinitionReader for: self category: category
+!
+
+mixin  ^<MixinDeclMirror>
+
+^mixin!
+
+nameExisting: n <Symbol> ifFail: fb <[Str]>
+
+"This method modifies an existing class named n so that it is equivalent to me"
+|  c  <ClassMirror> |
+
+"self verifyNoCyclesFor: n ifFail: fb."
+c :=  Mirror on: (Delta at: n).
+c convertToClass: self ifFail: fb.
+self reflect: (Delta at: n).
+
+
+
+!
+
+nameNew: n <Symbol> ifFail: fb <[Str]>
+"i"
+"This method is used to create a new class
+named n based upon the source code information in this object.
+
+Here we create the canonical invocation, and install it.
+"
+| klass <ClassVMMirror> |
+
+self mixin invocations isEmpty ifFalse: [^fb value: 'internal inconsistency'].
+
+klass := MixinDeclMirror createInvocationOf: self mixin named: n superclass: self superclass ifFail: fb.
+self mixin setName: n ifFail: fb.
+(Type forClass: klass reflectee) superclassType: (Type forMixin: self mixin reflectee) superclassType.
+(Type forClass: klass classSide reflectee)  superclassType: (Type forMixin: self mixin classSide reflectee) superclassType.
+self reflect: klass reflectee.
+Delta at: n put: klass reflectee.
+!
+
+nestInGenericWithTypeArguments: tas  <Str>
+
+self mixin nestInGenericWithTypeArguments: tas.!
+
+notSubtype
+    self mixin notSubtype!
+
+parseMethod: src <Str> ifFail: blk <[Str,Int]> ^ <ParseTree>
+
+	^self mixin parseMethod: src ifFail: blk
+!
+
+pools: p  <Str>
+
+self mixin pools: p!
+
+privateMethodsFor: category <String>
+
+	"For compatability"
+    ^self methodsFor: category
+!
+
+protocols: p  <Str>
+
+self mixin protocols: p!
+
+publicMethodsFor: category <String>
+
+	"For compatability"
+    ^self methodsFor: category
+!
+
+recompileAllMethodsIfFail: blk <[]>
+
+	self mixin recompileAllMethodsIfFail: blk!
+
+recompileMethod: selector <Symbol> ifFail: blk <[Str]>
+
+	self mixin recompileMethod: selector ifFail: blk!
+
+referenceToSelf ^ <DeltaClassId>
+
+^DeltaClassId new 
+                 setId: (self nameIfAbsent:[self error: 'Internal flaw: Use of unnamed superclass']);
+                 scope: DeltaGlobalScope!
+
+referencesToAssociation: assoc <Association> ^ <Cltn[MethodLocator]>
+	^self mixin referencesToAssociation: assoc!
+
+reflect: c <Class>
+
+self reflectee: c.
+mixin := MixinDeclMirror on: (ClassVMMirror on: c) mixin reflectee.
+mixin masterInvocation isNil ifTrue: [self error: 'Internal inconsistency'].
+mixin masterInvocation == c ifFalse: [self error: 'Internal inconsistency']." Verify that c is master invocation"
+
+!
+
+removeClassVariable: name  <Symbol>  ifAbsent: blk  <[]> 
+    self mixin removeClassVariable: name ifAbsent: blk!
+
+removeClassVariable: name  <Symbol>  ifFail: blk  <[Str]> 
+    self mixin removeClassVariable: name ifFail: blk!
+
+removeDefinitionIfFail: blk <[]>
+
+	"Remove entry from system dictionary and source database"
+	
+	"Forwards to the mixin rather than calling super"
+	self isMeta
+		ifTrue: [	^blk value: 'Cannot remove on meta side'  ].
+	self directSubclasses isEmpty
+		ifFalse: [	^blk value: 'Class has subclasses' ].	
+	self actualClass flushSubclassHierarchyCache.
+	^self mixin removeDefinitionIfFail: blk!
+
+removeInstanceVariable: name  <Symbol>  ifAbsent: blk  <[]> 
+    self mixin removeInstanceVariable: name ifAbsent: blk!
+
+removeMethod: selector  <Symbol>  ifAbsent: blk  <[]> 
+    self mixin removeMethod: selector  ifAbsent: blk!
+
+rename: oldId <Symbol> to: newId <Symbol>
+
+self mixin rename: oldId to: newId!
+
+renameGroup: grp <Dict[Symbol, Symbol]> 
+
+self mixin renameGroup: grp!
+
+scope^ <Scope>
+
+	^self mixin scope
+!
+
+scope: s <Scope>
+
+	self mixin scope: s
+!
+
+selectorsFor: cat <Str> ^ <OrdCltn[Symbol]>
+
+	^self mixin selectorsFor: cat!
+
+selectorsMatching: pattern <Str> ^ <Set[Symbol]>
+
+	^self mixin selectorsMatching: pattern
+!
+
+sourceForSelector: sel <Symbol>  ^ <Str>
+
+	^self mixin sourceForSelector: sel
+!
+
+sourceInfo ^ <MixinSourceHandler>
+
+	^self mixin sourceInfo!
+
+subtype ^ <Boolean>
+
+	^self mixin subtype!
+
+subtype: s <Boolean>
+
+	self mixin subtype: s.
+!
+
+superclass: s  <Str>
+
+	self mixin superclassType: s.
+	
+	
+!
+
+supportedProtocol: p <Str>
+
+	self mixin supportedProtocol: p!
+
+supportedProtocolString ^ <Str>
+
+^self mixin supportedProtocolString!
+
+typeArgumentString ^ <Str>
+
+^self mixin typeArgumentString!
+
+typeForNode: n <ASTNode> inMethod: m <Method > ^ <ObjectType>
+
+^self mixin typeForNode: n inMethod: m!
+
+typeNameForNode: n <ASTNode> inMethod: m <Method > ^ <String>
+
+^self mixin typeNameForNode: n inMethod: m!
+
+unbranded
+
+self mixin unbranded!
+
+verifyNoCyclesFor: n <Symbol> ifFail: fb <[Symbol, ^DoesNotMatter]>
+"Private"
+"This method is only called if there already exists an entity with the name 'n' in
+the system dictionary (otherwise, there could not be a cycle, since no
+subclasses could have been created).
+The method is called before my reflectee is actually created and placed in the
+SystemDictionary under its name. That is why we start the check with my
+superclass.
+This code assumes the atomic addition of one class at a time.
+"
+| cs <VarOrdCltn[Symbol]> |
+
+n = #Object ifTrue:[^self].
+cs := OrderedCollection[Symbol] new.
+cs add: n.
+self superclass isNil ifFalse:[self superclass verifyNoCyclesIn: cs ifFail: fb].
+! !
+
+! (Delta mirrorFor: #ClassMirror) methodsFor: 'typechecking' !
+
+
+typecheck
+
+self mixin typecheck!
+
+typecheckClassVars
+
+self mixin typecheckClassVars!
+
+typecheckDeclaration
+
+self mixin typecheckDeclaration!
+
+typecheckInstVars
+
+self mixin typecheckInstVars!
+
+typecheckInterface
+
+self mixin typecheckInterface!
+
+typecheckSelector: aSymbol <Symbol>
+
+self mixin typecheckSelector: aSymbol!
+
+typecheckSelectorInterface: aSymbol <Symbol>
+
+self mixin typecheckSelectorInterface: aSymbol!
+
+typecheckSuperclassClause
+
+self mixin typecheckSuperclassClause!
+
+typecheckSupportedProtocol
+
+self mixin typecheckSupportedProtocol!
+
+typecheckTypeArguments
+
+self mixin typecheckTypeArguments! !
+

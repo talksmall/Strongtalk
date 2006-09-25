@@ -1,0 +1,45 @@
+Delta define: #RBObject as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'DeviceA DeviceB DevicePacketKind HandlerA HandlerB Idler NoTask NoWork Worker WorkPacketKind TheBench') !
+
+(Delta mirrorFor: #RBObject) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #RBObject) group: 'benchmark'!
+
+(Delta mirrorFor: #RBObject)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #RBObject) classSide methodsFor: 'initialize' !
+
+
+initialize: bench
+    "RBObject initialize"
+    DeviceA := 5.
+    DeviceB := 6.
+    DevicePacketKind := 1.
+    HandlerA := 3.
+    HandlerB := 4.
+    Idler := 1.
+    NoWork := nil.
+    NoTask := nil.
+    Worker := 2.
+    WorkPacketKind := 2.
+	TheBench := bench
+! !
+
+! (Delta mirrorFor: #RBObject) methodsFor: 'misc' !
+
+
+append: packet head: queueHead
+    | mouse link |
+    packet link: NoWork.
+    NoWork == queueHead ifTrue: [^packet].
+    mouse := queueHead.
+    [NoWork == (link := mouse link)]
+        whileFalse: [mouse := link].
+    mouse link: packet.
+    ^queueHead
+! !
+

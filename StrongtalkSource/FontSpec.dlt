@@ -1,0 +1,84 @@
+Delta define: #FontSpec as: (
+(Class subclassOf: 'AbstractFont' instanceVariables: '')) !
+
+(Delta mirrorFor: #FontSpec) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #FontSpec) group: 'ui'!
+
+(Delta mirrorFor: #FontSpec)
+comment: 
+'FontSpecs are convenience objects that are used as forms to fill out the specifications
+for a font.  This is convenient because fonts are immutable and they have so many parameters that can be
+specified in abitrary combinations that doing this with many font messages would be a pain.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #FontSpec) classSide methodsFor: 'instance creation' !
+
+
+fromLOGFONT: lf <LOGFONT> in: medium <Medium> ^<Instance>
+
+	^self new setFromLOGFONT: lf in: medium! !
+
+! (Delta mirrorFor: #FontSpec) methodsFor: 'accessing' !
+
+
+boldness: b <Float>
+
+	boldness := b!
+
+family: f <Symbol>
+	"Family must be one of #Swiss, #Roman, #Modern, #Script, #Decorative"
+
+	family := f!
+
+findFont ^<Font>
+
+	^Font forSpec: self!
+
+italic: f <Boolean>
+
+	italic := f!
+
+mediumPoints: p <Int>
+
+	mediumPoints := p!
+
+points: p <Int>
+
+	points := p!
+
+typeface: tf <Str>
+
+	typeface := tf!
+
+underline: f <Boolean>
+
+	underline := f! !
+
+! (Delta mirrorFor: #FontSpec) methodsFor: 'restricted-win32' !
+
+
+setFromLOGFONT: lf <LOGFONT> in: medium <Medium>
+
+	"We don't set the family since the facename is more specific, and because
+		the pitch bits will confuse us (I think)"
+
+	self mediumPoints: lf lfHeight abs.
+	self points: (medium deadjustPoints: self mediumPoints).
+	self boldness: lf lfWeight asFloat / 1000.0.
+	self italic: lf lfItalic ~= 0.
+	self underline: lf lfUnderline ~= 0.
+	self typeface: lf lfFaceName.! !
+
+! (Delta mirrorFor: #FontSpec) methodsFor: 'building' !
+
+
+font ^<Font>
+
+	^Font forSpec: self! !
+

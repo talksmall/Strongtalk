@@ -1,0 +1,63 @@
+Delta define: #CharacterOutputConverter as: (
+(Class subclassOf: 'CharacterOutput |> BasicOutputStream[Character]' instanceVariables: 'binaryStream <OutputStream[Int]>')) !
+
+(Delta mirrorFor: #CharacterOutputConverter) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #CharacterOutputConverter) group: 'base'!
+
+(Delta mirrorFor: #CharacterOutputConverter)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #CharacterOutputConverter) classSide methodsFor: 'instance creation' !
+
+
+on: binaryStrm <OutputStream[Int]> ^<Instance>
+
+	^self new initBinaryStream: binaryStrm! !
+
+! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'control' !
+
+
+close
+
+	self binaryStream close.!
+
+externalFlush
+
+	self binaryStream externalFlush.!
+
+flush
+
+	self binaryStream flush.! !
+
+! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'accessing' !
+
+
+nextPut: c <Character> ^<Character>
+
+	self binaryStream nextPut: c asciiValue.
+	 (Platform usesCrLfConvention and: [ c = Character cr ])
+		ifTrue: [ self binaryStream nextPut: Character lf asciiValue ].
+	^c! !
+
+! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'private' !
+
+
+binaryStream ^<OutputStream[Int]>
+
+	^binaryStream!
+
+binaryStream: b <OutputStream[Int]>
+
+	binaryStream := b! !
+
+! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'initialization' !
+
+
+initBinaryStream: binaryStrm <InputStream[Int]>
+
+	self binaryStream: binaryStrm! !
+

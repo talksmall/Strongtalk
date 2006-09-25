@@ -1,0 +1,182 @@
+Delta define: #SeqCltnReadWriteStream as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'BasicReadWriteStream[E]' instanceVariables: 'buffer <VarSeqCltn[E]>
+		'))) !
+
+(Delta mirrorFor: #SeqCltnReadWriteStream) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #SeqCltnReadWriteStream) group: 'base'!
+
+(Delta mirrorFor: #SeqCltnReadWriteStream)
+comment: 
+'This is the standard concrete class used for creating WriteStreams or ReadWriteStreams on sequenceable collections.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #SeqCltnReadWriteStream) classSide methodsFor: 'instance creation' !
+
+
+on: sc <VarSeqCltn[E]> ^<ReadWriteStream[E]>
+
+	^self over: sc!
+
+on: sc <VarSeqCltn[E]> numElements: n <Int> ^<ReadWriteStream[E]>
+
+	^(self over: sc) size: n!
+
+over: sc <VarSeqCltn[E]> ^<Instance>
+	"This is like on: except it returns type Instance.   on: for streams may return a non-instance type."
+
+	^self new initBuffer: sc! !
+
+! (Delta mirrorFor: #SeqCltnReadWriteStream) classSide methodsFor: 'testing' !
+
+
+test
+	"self test"
+	| strm <CharacterReadWriteStream> s <Str> |
+	self test: (CharacterReadWriteStream on: (String new: 0)) use: 'hello there folks'.
+	self test: (CharacterReadWriteStream on: (String new: 50)) use: 'hello there folks'.
+
+	((CharacterReadWriteStream on: OrderedCollection[Character] new)
+		nextPutAll: 'hello there';
+		cr;
+		nextPut: $.;
+		yourself
+	 ) contentsWritten = 'hello there
+.'.
+
+	strm := CharacterReadWriteStream on: ' 1.0 2.0' asString numElements: 8.
+	[(strm upTo: Character space) = ''] verify.
+	s := strm upTo: Character space.
+	[s = '1.0'] verify.
+	s := strm upTo: Character space.
+	[s = '2.0'] verify.! !
+
+! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'initialization' !
+
+
+initBuffer: sc <VarSeqCltn[E]>
+
+	buffer := sc.! !
+
+! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'private' !
+
+
+accumulateUntil: predicate <[^Boolean]>  ^<SeqCltn[E]>
+
+	| start <Int> |
+
+	start := self position.
+	[ predicate value ]
+		whileFalse: [ self position: self position + 1 ].
+	^self buffer copyFrom: start + 1 to: self position!
+
+actualNext ^<E>
+
+	| pos <Int> |
+	pos := self actualPosition.
+	pos := pos + 1.
+	pos > self size
+		ifTrue: [ self error: 'Attempt to read past the end of a stream' ].
+	self actualPosition: pos.
+	^self buffer at: pos!
+
+buffer ^<VarSeqCltn[E]>
+
+	^buffer!
+
+collection ^<VarSeqCltn[E]>
+
+	^self buffer copyFrom: 1 to: self size!
+
+nextFromPeek ^<E>
+
+	"If this happens, you should have overridden the calling method"
+	self shouldNotHappen!
+
+peekVal ^<E>
+
+	self shouldNotHappen! !
+
+! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'accessing' !
+
+
+at: index <Int> ^<E>
+
+	self assert: [ index <= self size ].
+	^self buffer at: index!
+
+atEnd ^<Boolean>
+
+	"%optimization: we can ensure that atEnd and actualAtEnd are identical, since we reimplement peek to avoid the superclass
+	  peek buffer, because we can look ahead quickly in a seqcltn"
+	^self actualAtEnd!
+
+contents  ^<SeqCltn[E]>
+	"Obsolete: this method is included purely for BlueBook compatibility.  If possible, use 
+	 #contentsRemaining and #contentsWritten, which will work when a ReadWriteStream
+	 is substituted for a ReadStream or a WriteStream, unlike this method"
+
+	^self contentsWritten!
+
+next ^<E>
+
+	"%optimization: we can ensure that next and actualNext are identical, since we reimplement peek to avoid the superclass
+	  peek buffer, since we can look ahead quickly in a seqcltn"
+	^self actualNext!
+
+nextIfAbsent: f <[^X def]> ^<E | X>
+
+	| pos <Int> |
+	pos := self actualPosition.
+	pos := pos + 1.
+	pos > self size
+		ifTrue: [ ^f value ].
+	self actualPosition: pos.
+	^self buffer at: pos!
+
+nextPut: el <E> ^<E>
+
+	| pos <Int> |
+	super nextPut: el.
+	(pos := self position) > self buffer size
+		ifTrue: [ self initBuffer: (self buffer copyWithSize: (self buffer size * 2 max: 8)) ].
+	self buffer at: pos put: el.
+	^el!
+
+peek ^<E>
+
+	| pos <Int> |
+	pos := self position.
+	pos := pos + 1.
+	pos > self size
+		ifTrue: [ self error: 'Attempt to read past the end of a stream' ].
+	^self buffer at: pos!
+
+peekIfAbsent: f <[^X def]>  ^<E | X>
+
+	| pos <Int> |
+	pos := self position.
+	pos := pos + 1.
+	pos > self size
+		ifTrue: [ ^f value ].
+	^self buffer at: pos!
+
+position: p <Int>
+
+	self actualPosition: p.
+	"Don't have to unset the peekVal"! !
+
+! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm nextPutAll: self class name;
+			nextPutAll: '(position='; 	print: self position;
+			nextPutAll: ' buffer=';  print: self buffer;
+			nextPut: $)
+			! !
+

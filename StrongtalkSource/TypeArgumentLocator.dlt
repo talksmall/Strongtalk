@@ -1,0 +1,75 @@
+Delta define: #TypeArgumentLocator as: (
+(Class subclassOf: 'DeltaLocator[ClassMirror | MixinMirror | ProtocolMirror | TypeAliasMirror]' instanceVariables: 'typeArgumentName  <Symbol>')) !
+
+(Delta mirrorFor: #TypeArgumentLocator) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #TypeArgumentLocator) group: 'ast'!
+
+(Delta mirrorFor: #TypeArgumentLocator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TypeArgumentLocator) classSide methodsFor: 'instance creation' !
+
+
+onTypeArgument: ta <Symbol> ofDefinition: d <BasicLocator> ^ <Instance>
+
+^self new typeArgumentName: ta; definition: d.
+
+
+! !
+
+! (Delta mirrorFor: #TypeArgumentLocator) methodsFor: 'accessing' !
+
+
+ast ^ <TypeFormal>
+
+(Type for: (self mirror reflectee)) asGeneric formals 
+	do:	[: tf <TypeFormal> | tf name = self typeArgumentName ifTrue:[^tf]].
+^self error: 'Missing type argument ', self typeArgumentName, 
+														' in ', self mirror name.
+
+
+!
+
+name ^ <Str>
+
+^self definitionName, ' type arguments'!
+
+parseTree  ^ <ParseTree[TypeFormal]>
+
+| tvTrees <OrdCltn[ParseTree[TypeFormal]]> |
+
+	tvTrees := DeltaParser new 	parseTypeArgs: self source 
+															within: DeltaGlobals
+															ifError: [:s <Str> :i <Int> | self error: s].
+	^tvTrees detect: [:pt <ParseTree[TypeFormal]> | pt body name = self typeArgumentName]
+					ifNone:[self error: 'Missing type argument ', self typeArgumentName, 
+														' in ', self mirror name].
+	!
+
+source ^ <Str>
+
+^self mirror typeArgumentString!
+
+typeArgumentName ^ <Symbol>
+
+^typeArgumentName! !
+
+! (Delta mirrorFor: #TypeArgumentLocator) methodsFor: 'locator matching' !
+
+
+matchesLocator: l <DeltaLocator[Mirror]> ^ <Boolean>
+	^l matchesTypeArgLocator: self!
+
+matchesTypeArgLocator: l <TypeArgumentLocator> ^ <Boolean>
+	^self matchesDefinitionLocator: l! !
+
+! (Delta mirrorFor: #TypeArgumentLocator) methodsFor: 'private' !
+
+
+typeArgumentName: ta <Symbol>
+
+typeArgumentName := ta! !
+

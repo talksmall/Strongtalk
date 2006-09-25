@@ -1,0 +1,59 @@
+Delta define: #TaklBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: '')) !
+
+(Delta mirrorFor: #TaklBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #TaklBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #TaklBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TaklBenchmark) methodsFor: 'misc' !
+
+
+factor
+	^2!
+
+listn: n
+	0 = n ifTrue: [ ^ nil ] ifFalse: [ ^ (Cons new car: n) cdr: (self listn: n - 1) ]!
+
+run
+	"TaklBenchmark new run"
+	| r |
+	r := self taklX: (self listn: 18) Y: (self listn: 12) Z: (self listn: 6).
+	(r = (self listn: 7)) ifFalse: [ self error: 'takl results are wrong' ]!
+
+shorterpX: x Y: y
+	^ (nil ~= y) and: [ (nil = x) or: [ self shorterpX: x cdr Y: y cdr ] ]!
+
+taklX: x Y: y Z: z
+	(self shorterpX: y Y: x) ifFalse: [^z]
+		ifTrue: [^self
+				taklX: (self
+						taklX: x cdr
+						Y: y
+						Z: z)
+				Y: (self
+						taklX: y cdr
+						Y: z
+						Z: x)
+				Z: (self
+						taklX: z cdr
+						Y: x
+						Z: y)]! !
+
+! (Delta mirrorFor: #TaklBenchmark) methodsFor: 'times' !
+
+
+digitalkTime
+	^841!
+
+name
+	^#Takl!
+
+parcplaceTime
+	^893! !
+

@@ -1,0 +1,167 @@
+Delta define: #CommentOutliner as: (
+(Class subclassOf: 'MirrorOutliner[Mirror]' instanceVariables: 'codeView <CodeView>')) !
+
+(Delta mirrorFor: #CommentOutliner) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #CommentOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #CommentOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CommentOutliner) methodsFor: 'private' !
+
+
+buildBody ^ <Visual>
+
+| result <Visual> |
+
+	self codeView: (self 	buildCodeViewGetModel: [ self commentAsGlyphs ]
+									setModelOnSuccess: [ :blk <[]> | self storeAndOnSuccess: blk ]).
+	result := self editorBorderFor: self codeView.
+	self addLicenseButton. "Hack!!"
+	^result.
+!
+
+buildClosedHeader ^ <Visual>
+
+	^(StringGlyph for: self closedHeaderTitle painter: self sectionPainter) asVisual!
+
+buildOpenHeader ^ <Visual>
+
+	^(StringGlyph for: self openHeaderTitle painter: self sectionPainter) asVisual!
+
+closedHeaderTitle ^ <Str>
+
+	| s <Str> |
+	s := self comment readStream upTo: Character cr.
+	(s isEmpty or: [ (s includes: $.) not ]) 
+		ifTrue: [ ^self openHeaderTitle ].
+
+	('*copyright*' platformMatch: s)					"Temporary solution for Dave :-)"
+		ifTrue: [ ^self openHeaderTitle ].
+
+	^(s readStream upTo: $.), '.'
+!
+
+codeView ^<CodeView>
+
+	^codeView!
+
+codeView: cv <CodeView>
+
+	codeView := cv!
+
+comment ^ <Str>
+
+	^self mirror comment!
+
+comment: s <Str>
+
+	self mirror comment: s!
+
+commentAsGlyphs ^ <CharGlyphs>
+
+	^self standardTextForString: self mirror comment painter:self codePainter.!
+
+openHeaderTitle ^ <Str>
+
+	^'Comment'!
+
+storeAndOnSuccess: blk <[]>
+
+	self comment: (self charGlyphModelAsString: self codeView).
+	self updateClosedHeader.
+	blk value.
+
+! !
+
+! (Delta mirrorFor: #CommentOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: '&Remove comment';
+					active: [ self comment isEmpty not ];
+					action: [ self removeComment ])! !
+
+! (Delta mirrorFor: #CommentOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #comment
+			ifTrue: [	self updateClosedHeader.
+							self  codeView notNil 
+								ifTrue: [	self codeView model = self commentAsGlyphs
+													ifFalse: [	self codeView model: self commentAsGlyphs ] ] ] ]
+! !
+
+! (Delta mirrorFor: #CommentOutliner) methodsFor: 'control' !
+
+
+removeComment
+
+	| removeBlk <[]> |
+	removeBlk := [ 
+		self comment: ''. 
+		self updateClosedHeader. 
+		self updateBody.
+		self open: false ].
+
+	self codeView isNil 
+		ifTrue: removeBlk
+		ifFalse: [ self codeView closeRequest: removeBlk ]
+! !
+
+! (Delta mirrorFor: #CommentOutliner) methodsFor: 'private-licensing' !
+
+
+addLicenseButton
+
+| glyphs <OrderedCollection[SeqCltn[Glyph]]> i <Integer> j <Integer>  |
+
+('*Sun Microsystems, Inc. ALL RIGHTS RESERVED*' match: self mirror comment)
+  ifFalse:[^self]. "Only insert license link for Sun copyrighted code"
+glyphs := OrderedCollection[SeqCltn[Glyph]] new.
+"Add a cr so the license button is on the last line by itself"
+glyphs add: (OrderedCollection[Glyph] with:
+								(self codeView charGlyphFor: Character cr)).
+glyphs add: (
+  OrderedCollection[Glyph] new 
+     add: self licenseButton;                                               
+     yourself).
+i := self codeView linearIndexFor: self codeView endSpot.
+i = 1 ifTrue:[ j := 1] ifFalse:[ j := i  - 1].
+self codeView linearSelection: j ,, i.
+self codeView replaceSelectionWithGlyphs: glyphs.
+self codeView hasBeenChanged: false.
+self adjustCodeViewFrame.!
+
+adjustCodeViewFrame
+
+| frame <Frame> |
+
+	frame := Frame coerce: self codeView  visual parent else: [ nil ].
+	frame notNil ifTrue: [	frame border: self defaultEditorBorder ]!
+
+licenseButton ^ <Button>
+
+| blk <[]> |
+
+blk := Smalltalk
+		blockToEvaluateFor: 'Smalltalk license'
+		receiver: Smalltalk
+		ifError: [ :err <Str> :pos <Int> |
+			Transcript cr; show: 'Error in CommentOutliner.'; cr.
+			^blk value ].
+^Button labeled: 'View Source License' action: [ :b <Button> | blk fork ].! !
+

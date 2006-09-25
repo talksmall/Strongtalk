@@ -1,0 +1,261 @@
+Delta define: #DeltaInferenceSugarTool as: (
+(Class subclassOf: 'DeltaASTTool' instanceVariables: 'path positionValidityStack formals topScope errorBlock ')) !
+
+(Delta mirrorFor: #DeltaInferenceSugarTool) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #DeltaInferenceSugarTool) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInferenceSugarTool)
+comment: 
+'This tool traverses a message signature, and detects all unary type expressions with
+selector ''def'' in the signature''s domain. It then determines whether the expression is valid or not.
+For each such valid expression, it produces a formal type argument declaration with an
+appropriate  inference clause. The set of declarations produced is available by sending
+the tool the message ''formals'' after it has processed the signature.
+
+For invalid unary ''def'' expressions, the tool reports an error, by invoking its
+errorBlock, which is set when the tool is created.
+
+The tool retains a state variable ''topScope'' that keeps track of the method scope.
+This scope is initially set when creating the tool. Whenever a new type formal is created,
+the superscope of topScope is modified so that the method scope always nests inside
+the last defined type formal.
+
+The tool keeps  a stack of boolean values, ''positionValidityStack'', whose
+top element specifies whether a ''def'' is legal or not at any time. Whenever a construct
+that disallows defs is encountered, we push false onto this stack (this is probably more
+general than necessary; toggling the state would be sufficient).
+
+While traversing the AST, the tool builds a path that represents an inference clause. This path is
+equivalent to the explicit inference clause one would write to get the equivalent of a def clause
+at that point in the signature. 
+
+It follows from the preceding paragraphs that when a def clause is encountered we can 
+determine whether or not it is legal, and, if it is legal the path specifies what inference clause
+corresponds to the def clause.
+
+Upon encountering a def clause, the path is parsed to produce the appropriate formal
+type argument declaration, which is stored in ''formals''.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInferenceSugarTool) classSide methodsFor: 'instance creation' !
+
+
+topScope: aScope <Scope> errorBlock: eBlk <[ASTNode, Str]> ^ <Instance>
+
+^self new initialize topScope: aScope; errorBlock: eBlk! !
+
+! (Delta mirrorFor: #DeltaInferenceSugarTool) methodsFor: 'ASTTool' !
+
+
+blockApplicationTypeNode: node <BlockApplicationType>
+
+| n <Integer>  |
+
+self push: '#', node valueMsgSelector, ' message of '.
+n := 1.
+node domain do:[:a <ObjectType> | 
+                                self push:  'arg ', n printString, ' of '.
+                                 a apply: self.
+                                 self pop.
+                                 n := n + 1.
+                                 ].
+self push: 'returnType of '.
+node actuals last apply: self.
+self pop.
+self pop.!
+
+genericApplicationTypeNode: node <GenericApplicationType>
+
+| n <Integer> |
+
+self push: ' for generic #', node target name, ' of '. 
+"self pushValidity: false."
+n := 1.
+node actuals do:[:a <ObjectType> | 
+									self push: 'typeArg ', n printString.
+									a apply: self.
+									self pop.
+									n := n + 1.
+									].
+self pop.
+"self popValidity."!
+
+messagePatternNode: node <MessagePattern>
+
+self topScope: node scope.
+node type apply: self.
+
+
+!
+
+methodNode: node <DeltaMethod>
+
+self topScope: node scope.
+node type apply: self.!
+
+msgSignatureNode: node <MsgSignature>
+
+| n <Integer> |
+
+n := 1.
+node domain do:[:e <ObjectType> |
+                                 self push: 'arg ', n printString.
+                                 e apply: self.
+                                 self pop.
+                                 n := n + 1.
+                                 ].
+!
+
+polyMsgSignatureNode: node <PolyMsgSignature>
+
+node body apply: self.!
+
+protocolMergeNode: node <ProtocolMerge>
+
+self pushValidity: false.
+node type1 apply: self.
+node type2 apply: self.
+self popValidity.
+!
+
+protocolOverrideNode: node <ProtocolOverride>
+
+self pushValidity: false.
+node type1 apply: self.
+node type2 apply: self.
+self popValidity.
+!
+
+tupleTypeNode: node <TupleType>
+
+| n <Integer>  |
+
+n := 1.
+self push: 'returnType of '.
+node actuals do:[:a <ObjectType> | 
+                                self push:  '#at_', n printString, 'msg  of '.
+                                 a apply: self.
+                                 self pop.
+                                 n := n + 1.
+                                 ].
+self pop.
+!
+
+typeErrorNode: node <DeltaTypeError > ^ <Self>
+
+!
+
+typeIdNode: node <TypeIdNode>
+
+!
+
+unaryTypeExprNode: node <UnaryTypeExpr>
+
+| clause <Str>  tvName <Str>  parser <Parser> |
+
+(self isValidDef: node) ifFalse:[^self errorBlock value: node value: 'Invalid use of def'].
+node selector = #def
+  ifTrue:[
+               "manufacture formal type declaration, based on current path"
+               parser := DeltaParser new.
+               clause := 'where ', node target name , ' is ', (self path reverse inject:'' into: [:p <Str>  :e <Str> | p, e]).
+               self formals add: (parser parseTypeFormalDecl: clause within: self topScope superScope) body.
+               self topScope superScope: parser topScope. 
+               ].!
+
+unionTypeNode: node  <UnionType>
+
+self pushValidity: false.
+node type1 apply: self.
+node type2 apply: self.
+self popValidity.
+
+! !
+
+! (Delta mirrorFor: #DeltaInferenceSugarTool) methodsFor: 'initialization' !
+
+
+initialize
+
+self formals: OrderedCollection[TypeFormal] new.
+self positionValidityStack: OrderedCollection[Boolean] new.
+self pushValidity: true.
+self path: OrderedCollection[Str] new.! !
+
+! (Delta mirrorFor: #DeltaInferenceSugarTool) methodsFor: 'private' !
+
+
+errorBlock ^ <[ASTNode, Str]>
+
+^errorBlock!
+
+errorBlock: eBlk <[ASTNode, Str]>
+
+errorBlock := eBlk.!
+
+formals: fs <OrdCltn[TypeFormal]>
+
+formals := fs.!
+
+isAtValidDefiningPosition  ^ <Boolean>
+
+^self positionValidityStack last.
+
+!
+
+isValidDef: u <UnaryTypeExpr>
+
+^self isAtValidDefiningPosition.!
+
+path
+
+^path!
+
+path: p
+
+path := p.!
+
+pop
+
+self path removeLast.!
+
+popValidity
+
+self positionValidityStack removeLast.
+!
+
+positionValidityStack
+
+^positionValidityStack.!
+
+positionValidityStack: pvs
+
+positionValidityStack := pvs.!
+
+push: s <Str>
+
+self path addLast: s.!
+
+pushValidity: v <Boolean>
+
+self positionValidityStack addLast: v.
+!
+
+topScope ^ <Scope>
+
+^topScope.!
+
+topScope: aScope <Scope>
+
+topScope := aScope.! !
+
+! (Delta mirrorFor: #DeltaInferenceSugarTool) methodsFor: 'accessing' !
+
+
+formals ^ <OrdCltn[TypeFormal]>
+
+^formals! !
+

@@ -1,0 +1,33 @@
+Delta define: #DeltaClassVar as: (
+(Class subclassOf: 'DeltaVar' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaClassVar) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaClassVar) group: 'ast'!
+
+(Delta mirrorFor: #DeltaClassVar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaClassVar) classSide methodsFor: 'Unclassified' !
+
+
+declare: aName of: type inScope: scope ifThere: blk
+
+^self new name: aName type: type! !
+
+! (Delta mirrorFor: #DeltaClassVar) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool classVarNode: self!
+
+isClassVarNode ^ <Boolean>
+    ^ true!
+
+name: aName <Str >type: aType <Type > ^ <Self>
+    aType isNil ifFalse:[aType scope: DeltaGlobals].
+    self filter: (BasicVarDeclData new name: aName type: aType)
+           using: DeltaSubstitution new initialize.! !
+

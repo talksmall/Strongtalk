@@ -1,0 +1,71 @@
+Delta define: #SupportedProtocolOutliner as: (
+(Class subclassOf: 'DefinitionItemOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #SupportedProtocolOutliner) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SupportedProtocolOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #SupportedProtocolOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SupportedProtocolOutliner) methodsFor: 'private' !
+
+
+aspectForUpdate ^ <Symbol>
+
+	^#supportedProtocol
+
+!
+
+header ^ <Str>
+
+	^'Supported protocol'
+!
+
+modelAsCharGlyphs ^ <CharGlyphs>
+
+	| painter <Painter> |
+	painter := self useRichTextForSources 
+		ifTrue: [ 		self typeExpressionPainter ]
+		ifFalse: [	self codePainter ].
+	^self standardTextForString: self mirror supportedProtocolString painter: painter
+!
+
+storeAndOnSuccess: blk <[]>
+
+	"The right way to do this is to have a #supportedProtocol:ifFail: in ClassMirror and MixinDeclMirror
+		that will parse and	update accordingly.
+		
+		In the meantime, we parse an extra time here to check for errors and call #supportedProtocol: afterwards.
+		This should be changed shortly."
+		
+	| sp <Str> eval <Str> constructor <Mirror> |
+	self deltaHack.
+	sp := self charGlyphModelAsString: self codeView.
+	sp isEmpty
+		ifFalse: [	DeltaParser new 
+								parseTypeExpr: sp
+								within: self mirror scope superScope
+								ifError: [ :msg <Str> :pos <Int> | ^self showParseError: msg at: pos in: self codeView ] ].
+	self mirror supportedProtocol: sp.
+	blk value.
+! !
+
+! (Delta mirrorFor: #SupportedProtocolOutliner) methodsFor: 'typechecking' !
+
+
+typecheck
+
+self typecheckAction:[self mirror typecheckSupportedProtocol]
+		title: 'Typechecking ', self mirror name, ' supported protocol'.
+! !
+
+! (Delta mirrorFor: #SupportedProtocolOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <SuperclassClauseLocator>
+
+^SupportedProtocolLocator ofDefinition: self mirror basicLocator! !
+

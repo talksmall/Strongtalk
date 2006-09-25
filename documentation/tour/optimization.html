@@ -1,0 +1,98 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>The Virtual Machine</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+<h3 align="right"><a href="virtualmachine.html">&lt;== Previous</a> |	
+ <a href="toc.html">Contents</a> |
+ <a href="optimization2.html"><strong>Next ==&gt;</strong></a></h3>
+<h2 align="left">How Adaptive Optimization Works</h2>
+
+<p align="left">The basic concepts involved in how the Strongtalk
+VM works have been published or discussed publically in the past,
+and are discussed here. The basic idea is very simple: a
+two-phase execution system is used, with the first phase
+determining which code is frequently executed. The second,
+optimizing phase is invoked only for frequently executed code.</p>
+
+<p align="left">This takes advantage of a well-known property of
+programs: most programs spend the vast majority of their time
+executing a very small portion of their code. By only optimizing
+performance critical code, extensive inlining and optimization
+can be done, which would cause too much overhead in code space
+and compilation time if it were done on the whole program.</p>
+
+<h3 align="left">The first step: Instrumented Interpretation</h3>
+
+<p align="left">Just as in other Smalltalks, source code is
+compiled into a portable byte-code format that is kept in the
+image. When the code is first executed, it is interpreted, as in
+an interpreted Smalltalk. But the similarities end there. The
+interpreted code is <em>instrumented</em> in several ways, to
+determine the execution characteristics of each section of code.
+This is done with two measurement techiques:</p>
+
+<ul>
+    <li><p align="left"><strong>Invocation Counters:</strong>
+        Counters are used to keep track of how many times each
+        method is called, and how many times each loop iterates.
+        This is used to determine how performance-critical each
+        section of code is.</p>
+    </li>
+    <li><p align="left"><strong>Inline-caching:</strong><em><strong>
+        </strong></em>Each message send is instrumented to
+        determine what methods are invoked by that send. There
+        are three important cases that are distinguished:</p>
+        <ul>
+            <li><p align="left"><strong>Monomorphic Sends:</strong><em><strong>
+                </strong></em>A monomorphic send is one that only
+                ever invoked for one receiver class during
+                execution. This does not mean that it can't
+                invoke others in the future- it only means that <em>up
+                to this point</em>, the send has only been
+                invoked with a single receiver class (perhaps
+                many times). The VM keeps track of this class
+                using a standard <em>inline-cache</em>. The vast
+                majority (over 90%) of dynamic sends fall into
+                this category.</p>
+            </li>
+            <li><p align="left"><strong>Slightly Polymorphic
+                Sends:</strong> A slighly polymorphic send is one
+                that invokes one of a very small number of
+                receiver classes, but more than just one. The VM
+                keeps track of the small set of receiver classes
+                using a <em>polymorphic inline-cache</em> (PIC).</p>
+            </li>
+            <li><p align="left"><strong>Megamorphic Sends:</strong>
+                A megamorphic send is one that has many different
+                receiver classes, too many to keep track of. Very
+                few sends fall into this category.</p>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<p align="left">The smaller the number of receiver classes
+invoked by a send (called the <em>arity</em>), the easier it is
+to optimize it using inlining in the second phase. An important
+associated technique called <em>customization</em> is used to
+help reduce the arity of sends, so that more of them can be
+optimized. Customization works by making copies of
+performance-critical methods for each concrete subclass, just as
+if inheritance were treated as a form of code copying. Many sends
+can become monomorphic after customization. For example, a
+self-send in a superclass method would not ordinarily be
+monomorphic, because self can be any one of a number of different
+subclasses. But if a copy of the method is made for every
+subclass, then each copy only ever has one class for self, and
+thus all self sends become monomorphic.</p>
+
+<h3 align="right"><a href="optimization2.html"><strong>How
+Adaptive Optimization Works (cont.) ==&gt;</strong></a></h3>
+</body>
+</html>

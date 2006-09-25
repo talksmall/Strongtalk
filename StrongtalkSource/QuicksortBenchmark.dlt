@@ -1,0 +1,95 @@
+Delta define: #QuicksortBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: 'sortlist biggest littlest') classVariables: 'QSortelements ') !
+
+(Delta mirrorFor: #QuicksortBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #QuicksortBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #QuicksortBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #QuicksortBenchmark) classSide methodsFor: 'constants' !
+
+
+initialize QSortelements := 5000 "QuicksortBenchmark initialize"! !
+
+! (Delta mirrorFor: #QuicksortBenchmark) methodsFor: 'private' !
+
+
+initarr
+	| temp |
+	self initrand.
+	biggest := -1000000.
+	littlest := 1000000.
+	sortlist := Array new: QSortelements. 
+	1 to: QSortelements do: 
+		[:i | 
+		temp := self rand.
+		sortlist at: i put: temp - (temp // 100000 * 100000) - 50000.
+		(sortlist at: i)
+			> biggest ifTrue: [biggest := sortlist at: i].
+		(sortlist at: i)
+			< littlest ifTrue: [littlest := sortlist at: i]]!
+
+quicksortA: a L: l R: r 
+	" quicksort the array A from start to finish"
+
+	| i j x w |
+	i := l.
+	j := r.
+	x := a at: l + r // 2.
+	[i <= j]
+		whileTrue: 
+			[[(a at: i)
+				< x]
+				whileTrue: [i := i + 1].
+			[x < (a at: j)]
+				whileTrue: [j := j - 1].
+			i <= j
+				ifTrue: 
+					[w := a at: i.
+					a at: i put: (a at: j).
+					a at: j put: w.
+					i := i + 1.
+					j := j - 1]].
+	l < j ifTrue: [self
+			quicksortA: a
+			L: l
+			R: j].
+	i < r ifTrue: [self
+			quicksortA: a
+			L: i
+			R: r]! !
+
+! (Delta mirrorFor: #QuicksortBenchmark) methodsFor: 'run' !
+
+
+run
+	self initarr.
+	self
+		quicksortA: sortlist
+		L: 1
+		R: QSortelements.
+	((sortlist at: 1)
+		~= littlest or: [(sortlist at: QSortelements)
+			~= biggest])
+		ifTrue: [self error: ' Error in Quick.']! !
+
+! (Delta mirrorFor: #QuicksortBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^127!
+
+factor
+	^14!
+
+name
+	^#Quicksort!
+
+parcplaceTime
+	^130! !
+

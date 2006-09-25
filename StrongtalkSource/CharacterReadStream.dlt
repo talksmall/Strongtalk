@@ -1,0 +1,31 @@
+Delta define: #CharacterReadStream as: (
+(Class subclassOf: 'CharacterInput |> SeqCltnReadStream[Character]' instanceVariables: '') protocols: 'CharInputStream') !
+
+(Delta mirrorFor: #CharacterReadStream) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #CharacterReadStream) group: 'base'!
+
+(Delta mirrorFor: #CharacterReadStream)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #CharacterReadStream) methodsFor: 'accessing' !
+
+
+copyFrom: start <Int> to: stop <Int> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	| pos <Int> n <Int> result <String> offset <Int> |
+	pos := self position.
+	n := (stop - start) + 1.
+	result := String new: n.
+	offset := start - 1.
+	1 to: n do:
+		[ :i <Int> |
+			"guarantee is safe because of inference clause"
+			result at: i put: (self repositioningAt: offset + i). ].
+	self position: pos.
+	^guaranteed <VarSeqCltn[EX]> result! !
+

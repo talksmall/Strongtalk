@@ -1,0 +1,33 @@
+Delta define: #DeltaTemporary as: (
+(Class subclassOf: 'DeltaActivationVar' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaTemporary) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaTemporary) group: 'ast'!
+
+(Delta mirrorFor: #DeltaTemporary)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaTemporary) classSide methodsFor: 'Unclassified' !
+
+
+declare: aName of: type inScope: scope ifThere: blk
+
+^scope declareTemporary: aName of: type ifThere: blk! !
+
+! (Delta mirrorFor: #DeltaTemporary) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool temporaryNode: self!
+
+isTemporaryNode ^ <Boolean>
+    ^ true!
+
+printOn: strm <CharOutputStream>
+
+	super printOn: strm.
+	strm nextPutAll: '(', self name, ')'! !
+

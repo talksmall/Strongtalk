@@ -1,0 +1,104 @@
+Delta define: #ParametricOutliner as: (
+(Class subclassOf: 'OutlinerApp' instanceVariables: 'header <Visual>
+openLook <Visual>
+closedLook <Visual>
+bodyBlock <[^Visual]>
+indent <Int>
+openSinkBlock <[Boolean]>
+')) !
+
+(Delta mirrorFor: #ParametricOutliner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ParametricOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #ParametricOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ParametricOutliner) classSide methodsFor: 'instance creation' !
+
+
+forHeader: h <Visual> bodyBlock: bblk <[^Visual]> ^<Instance>
+
+	^self new initForHeader: h bodyBlock: bblk!
+
+forHeader: h <Visual>
+bodyBlock: bblk <[^Visual]>
+closedLook: cl <Visual>
+openLook: ol <Visual>
+indent: i <Int>
+^<Instance>
+
+	^self new initForHeader: h bodyBlock: bblk closedLook: cl openLook: ol indent: i! !
+
+! (Delta mirrorFor: #ParametricOutliner) methodsFor: 'accessing' !
+
+
+closedLook ^ <Visual>
+
+	^closedLook!
+
+indent ^ <Int>
+
+	^indent!
+
+openLook ^ <Visual>
+
+	^openLook!
+
+openSink: b <Boolean>
+
+	self openSinkBlock value: b
+!
+
+openSinkBlock ^ <[Boolean]>
+	"Hook for side effects of open/close"
+
+	^openSinkBlock!
+
+openSinkBlock: b <[Boolean]>
+	"Hook for side effects of open/close"
+
+	openSinkBlock := b! !
+
+! (Delta mirrorFor: #ParametricOutliner) methodsFor: 'private' !
+
+
+buildBody ^ <Visual>
+
+	^bodyBlock value!
+
+buildClosedHeader ^ <Visual>
+
+	^header! !
+
+! (Delta mirrorFor: #ParametricOutliner) methodsFor: 'private-initialization' !
+
+
+initForHeader: h <Visual>
+bodyBlock: bblk <[^Visual]>
+
+	header := h.
+	bodyBlock := bblk.
+	closedLook := self defaultClosedGlyph asVisual.
+	openLook := self defaultOpenGlyph asVisual.
+	indent := self defaultIndent.
+	self openSinkBlock: [ :b <Boolean> | ].
+!
+
+initForHeader: h <Visual>
+bodyBlock: bblk <[^Visual]>
+closedLook: cl <Visual>
+openLook: ol <Visual>
+indent: i <Int>
+
+	header := h.
+	bodyBlock := bblk.
+	closedLook := cl.
+	openLook := ol.
+	indent := i.
+	self openSinkBlock: [ :b <Boolean> | ].
+
+! !
+

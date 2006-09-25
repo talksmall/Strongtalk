@@ -1,0 +1,42 @@
+Delta define: #DeltaSingleLocTypeError as: (
+(Class subclassOf: 'DeltaTypeError' instanceVariables: 'loc ')) !
+
+(Delta mirrorFor: #DeltaSingleLocTypeError) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaSingleLocTypeError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSingleLocTypeError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSingleLocTypeError) methodsFor: 'Unclassified' !
+
+
+loc ^ <DeltaSourceLocator>
+
+    ^loc!
+
+loc: l <DeltaSourceLocator>
+
+	loc isNil ifTrue: [loc := l]!
+
+matchesError: e
+	(super matchesError: e) ifFalse: [^false].
+	^e matchesLocator: self loc!
+
+matchesLocator: l
+	^self loc matchesLocator: l!
+
+setLocationFor: node <ASTNode> using: eh <TypeErrorHandler>
+	self loc: (eh subtypeLocFor: node).
+!
+
+subtypeLoc ^ <DeltaSourceLocator>
+
+    ^self loc!
+
+supertypeLoc ^ <DeltaSourceLocator>
+
+    ^self loc! !
+

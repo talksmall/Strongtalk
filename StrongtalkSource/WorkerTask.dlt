@@ -1,0 +1,31 @@
+Delta define: #WorkerTask as: (
+(Class subclassOf: 'TaskControlBlock' instanceVariables: '')) !
+
+(Delta mirrorFor: #WorkerTask) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #WorkerTask) group: 'benchmark'!
+
+(Delta mirrorFor: #WorkerTask)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #WorkerTask) methodsFor: 'scheduling' !
+
+
+doTask: work data: data
+            ^NoWork == work
+                ifTrue: [TheBench wait]
+                ifFalse:
+                    [data destination: (HandlerA = data destination
+                            ifTrue: [HandlerB]
+                            ifFalse: [HandlerA]).
+                    work identity: data destination.
+                    work datum: 1.
+                    1 to: 4 do:
+                        [:i |
+                        data count: data count + 1.
+                        data count > 26 ifTrue: [data count: 1].
+                        work data at: i put: $A asInteger + data count - 1].
+                    TheBench queuePacket: work]! !
+

@@ -1,0 +1,53 @@
+Delta define: #UI as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'def <ExternalProxy> angle <Int> xPos <Int> yPos <Int>') !
+
+(Delta mirrorFor: #UI) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #UI) group: 'ui'!
+
+(Delta mirrorFor: #UI)
+comment: 
+'This is just a stub class used for holding some UI wide constants and the method
+for starting the UI.
+
+Tags: %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #UI) classSide methodsFor: 'testing' !
+
+
+hInstance ^<ExternalProxy>
+
+	| hInstance <ExternalProxy> |
+	hInstance := ExternalProxy new.
+	{{primitiveWindowsHInstance: hInstance
+		ifFail: [ :err <Symbol> | self error: 'Cannot get windows instance' ]}}.
+	^hInstance! !
+
+! (Delta mirrorFor: #UI) classSide methodsFor: 'constants' !
+
+
+huge ^<Dist>
+	"The max size that essentially infinitely stretchy things use"
+
+	^100000!
+
+ropCopy ^<ExternalData>
+
+	^16rCC0020!
+
+ropInvertDestination ^<ExternalData>
+
+	^Win32 DSTINVERT! !
+
+! (Delta mirrorFor: #UI) classSide methodsFor: 'starting' !
+
+
+start
+
+	Bootstrap new registerTmpMenus.
+	Launcher startProgEnv! !
+

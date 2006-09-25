@@ -1,0 +1,48 @@
+Delta define: #MixinDefinitionOutliner as: (
+(Class subclassOf: 'ClassOrMixinDefinitionOutliner[AbstractClassMirror]' instanceVariables: 'superclassTypeOutliner <SuperclassTypeOutliner>')) !
+
+(Delta mirrorFor: #MixinDefinitionOutliner) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #MixinDefinitionOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #MixinDefinitionOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MixinDefinitionOutliner) methodsFor: 'private' !
+
+
+insertSuperDefinition: col <Column[Visual]>
+
+	self superclassTypeOutliner: (SuperclassTypeOutliner for: self mirror).
+	col add: (self addChild: self superclassTypeOutliner) imbeddedVisual .!
+
+superclassTypeOutliner ^ <SuperclassTypeOutliner>
+
+	^superclassTypeOutliner!
+
+superclassTypeOutliner: o <SuperclassTypeOutliner>
+
+	superclassTypeOutliner := o! !
+
+! (Delta mirrorFor: #MixinDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	super update: aspect with: value.
+	self inSessionProcessDo: [
+		aspect = #superclassType
+			ifTrue: [	self updateHeaders ].
+	]! !
+
+! (Delta mirrorFor: #MixinDefinitionOutliner) methodsFor: 'accessing' !
+
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+^SuperclassClauseLocator coerce: loc
+	do:[: l <SuperclassClauseLocator> | self superclassTypeOutliner]
+	else:[super outlinerForLocator: loc]! !
+

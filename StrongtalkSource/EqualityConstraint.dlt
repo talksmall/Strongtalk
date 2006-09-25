@@ -1,0 +1,31 @@
+Delta define: #EqualityConstraint as: (
+(Class subclassOf: 'BinaryConstraint' instanceVariables: '')) !
+
+(Delta mirrorFor: #EqualityConstraint) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #EqualityConstraint) group: 'benchmark'!
+
+(Delta mirrorFor: #EqualityConstraint)
+comment: 
+'I constrain two variables to have the same value: "v1 = v2".
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #EqualityConstraint) classSide methodsFor: 'instance creation' !
+
+
+var: variable1 var: variable2 strength: strengthSymbol
+	"Install a constraint with the given strength equating the given variables."
+
+	^(self new) var: variable1 var: variable2 strength: strengthSymbol! !
+
+! (Delta mirrorFor: #EqualityConstraint) methodsFor: 'execution' !
+
+
+execute
+	"Enforce this constraint. Assume that it is satisfied."
+
+	(direction == #forward)
+		ifTrue: [v2 value: v1 value]
+		ifFalse: [v1 value: v2 value].! !
+

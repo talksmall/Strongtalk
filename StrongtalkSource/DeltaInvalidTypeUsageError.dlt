@@ -1,0 +1,30 @@
+Delta define: #DeltaInvalidTypeUsageError as: (
+(Class subclassOf: 'DeltaBasicTypeError' instanceVariables: 'id ')) !
+
+(Delta mirrorFor: #DeltaInvalidTypeUsageError) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #DeltaInvalidTypeUsageError) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInvalidTypeUsageError)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInvalidTypeUsageError) methodsFor: 'Unclassified' !
+
+
+id
+	^id!
+
+id: aString
+	id := aString.
+	id = '1_argTuple' ifTrue:[self halt]!
+
+matchesError: e
+	^(super matchesError: e) and: [self id = e id]
+!
+
+updateExplainerInterface: explainer <DeltaTypeExplainer > ^ <Self>
+
+    explainer setSingleTypeField.! !
+

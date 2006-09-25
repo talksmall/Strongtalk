@@ -1,0 +1,92 @@
+Delta define: #Magnitude as: (
+Generic forAll: '(M contra) ' body: ((Class subclassOf: 'Object' instanceVariables: '') abstract)) !
+
+(Delta mirrorFor: #Magnitude) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Magnitude) group: 'base'!
+
+(Delta mirrorFor: #Magnitude)
+comment: 
+'A Magnitude[M] is an object that has a linear relationship with objects of type M, such
+that they can be compared using the relational operations <,>,<=,>=.
+
+%note: The derived operations are carefully defined to use <
+    and not = for the following reasons:
+        - speed
+        - use of = may be bad for subclasses with a problematic definition of =,
+          such as floating point numbers.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Magnitude) classSide methodsFor: 'utility' !
+
+
+defaultSort ^<[X,M, ^Boolean]>
+	{where X is returnType of #new message of receiverType}
+	"return a sort predicate suitable for a sorted collection of M"
+
+	"The guarantee is safe because of the inference clause"
+	^guaranteed <[X,M,^Boolean]>
+		[ :m1 <Magnitude[M]> :m2 <M> | m1 <= m2 ]! !
+
+! (Delta mirrorFor: #Magnitude) methodsFor: 'comparing' !
+
+
+< other <M> ^<Boolean>
+
+	self subclassResponsibility!
+
+<= other <M> ^<Boolean>
+
+	"%todo: when using inherited types, use the original definition:
+		^(other < self) not
+	"
+	^self < other or: [ self = other ]!
+
+> other <M> ^<Boolean>
+
+	"%todo: for inherited types use:
+		^other < self
+	"
+	^(self <= other) not!
+
+>= other <M> ^<Boolean>
+
+	^(self < other) not!
+
+between: min <M> and: max <M> ^<Boolean>
+	"test whether the receiver is in the range min -> max, inclusive"
+
+	"test the max case first since end of range overflow is generally more common"
+	^self <= max and: [ self >= min ]!
+
+compare: other <M>  ^<Int>
+	"Returns -1 if self < other, 0 if self = other, or 1 if self > other"
+
+	^self < other
+		ifTrue: [ -1 ]
+		ifFalse: [ self > other
+							ifTrue: [ 1 ] ifFalse: [ 0 ]  ]!
+
+max: other <ARG> ^<Self | ARG>
+		{where X is arg 1 of #< message of receiverType;
+			where ARG <X> is arg 1}
+
+	"The guaranteed is safe because of the inference clause"
+	^self > (guaranteed <M> other)
+		ifTrue: [ self ]
+		ifFalse: [ other ]!
+
+min: other <ARG> ^<Self | ARG>
+		{where X is arg 1 of #< message of receiverType;
+			where ARG <X> is arg 1}
+
+	"The guaranteed is safe because of the inference clause"
+	^self < (guaranteed <M> other)
+		ifTrue: [ self ]
+		ifFalse: [ other ]! !
+

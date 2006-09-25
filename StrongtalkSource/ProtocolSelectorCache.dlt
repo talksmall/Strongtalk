@@ -1,0 +1,70 @@
+Delta define: #ProtocolSelectorCache as: (
+(Class subclassOf: 'Object' instanceVariables: 'dict <VarDict[DeltaProtocol, VarDict[Symbol, MsgSignature]]> ') classVariables: 'Lookups <Int> Misses <Int> ') !
+
+(Delta mirrorFor: #ProtocolSelectorCache) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #ProtocolSelectorCache) group: 'ast'!
+
+(Delta mirrorFor: #ProtocolSelectorCache)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProtocolSelectorCache) classSide methodsFor: 'instance creation' !
+
+
+new ^ <Instance>
+
+^super new initialize! !
+
+! (Delta mirrorFor: #ProtocolSelectorCache) classSide methodsFor: 'hit ratio' !
+
+
+hitRatio ^ <Float>
+
+Lookups = 0 ifTrue: [^0.0].
+"Transcript show: Lookups printString; cr."
+^((Lookups - Misses)/ Lookups) asFloat! !
+
+! (Delta mirrorFor: #ProtocolSelectorCache) methodsFor: 'access' !
+
+
+for: p <DeltaProtocol> ^ <VarDict[Symbol, MsgSignature]>
+
+^self dict 	at: p 
+					ifAbsent:[self dict at: p put: IdentityDictionary[Symbol, MsgSignature] new].!
+
+forProtocol: p <DeltaProtocol> selector: sel <Symbol>  ifAbsent: blk <[^MsgSignature]> ^ <MsgSignature>
+
+| pc <VarDict[Symbol, MsgSignature]> |
+
+Lookups := Lookups + 1.
+pc := self dict 	at: p 
+					ifAbsent:[self dict at: p put: IdentityDictionary[Symbol, MsgSignature] new].
+^pc at: sel ifAbsent: [ Misses := Misses + 1. pc at: sel put: blk value].
+
+
+
+
+! !
+
+! (Delta mirrorFor: #ProtocolSelectorCache) methodsFor: 'private' !
+
+
+dict ^ <VarDict[DeltaProtocol, VarDict[Symbol, MsgSignature]]>
+
+^dict!
+
+dict: d  <VarDict[DeltaProtocol, VarDict[Symbol, MsgSignature]]>
+
+dict := d! !
+
+! (Delta mirrorFor: #ProtocolSelectorCache) methodsFor: 'initialization' !
+
+
+initialize
+
+self dict: IdentityDictionary[DeltaProtocol, VarDict[Symbol, MsgSignature]] new.
+Lookups := 0.
+Misses := 0.! !
+

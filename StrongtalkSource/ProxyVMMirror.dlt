@@ -1,0 +1,23 @@
+Delta define: #ProxyVMMirror as: (
+(Class subclassOf: 'OopsVMMirror' instanceVariables: '')) !
+
+(Delta mirrorFor: #ProxyVMMirror) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ProxyVMMirror) group: 'reflection'!
+
+(Delta mirrorFor: #ProxyVMMirror)
+comment: 
+'Low level mirror on a proxy.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProxyVMMirror) methodsFor: 'iteration' !
+
+
+innerIterateHeader: iterator <ObjectIterator>
+
+	super innerIterateHeader: iterator.
+	iterator name: 'high' hex: self reflectee high.
+	iterator name: 'low' hex: self reflectee low.
+! !
+

@@ -1,0 +1,181 @@
+Delta define: #DeltaMixinInvocationSideBehavior as: (
+(Class subclassOf: 'DeltaSideUpdateBehavior' instanceVariables: '') abstract) !
+
+(Delta mirrorFor: #DeltaMixinInvocationSideBehavior) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaMixinInvocationSideBehavior) group: 'ast'!
+
+(Delta mirrorFor: #DeltaMixinInvocationSideBehavior)
+comment: 
+'I represent the sides of mixin invocations.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaMixinInvocationSideBehavior) methodsFor: 'Unclassified' !
+
+
+addBrand ^ <Self>
+
+self error: 'DeltaMixinInvocationSideBehavior>>addBrand: this method should not be called for invocations'.!
+
+asGeneric
+
+^self myMixin asGeneric!
+
+asMixinSide ^ <MixinSide>
+
+^self myMixin asMixinSide!
+
+brandName ^ <Symbol>
+
+^self myMixin brandName!
+
+classDecl ^ <DeltaClassUpdate>
+    ^self myMixin classDecl!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^((self superprotocol compositeSubstitute: t) 
+  substitute: self myLocalSubstitution)
+substitute: self privateToPublicSubstitution!
+
+compositeSubstitutePrivate: t <Interface> ^ <Interface>
+
+ ^(self superprotocol compositeSubstitute: t) 
+          substitute: self myLocalSubstitution!
+
+firstClassRepType  ^ <ObjectType>
+
+^self isGeneric ifTrue:[self myMixin firstClassRepType]
+                              ifFalse:[self typeOfClass].!
+
+generifyWithFormals: formals
+
+(Type forMixin: self vmMixin) generifyWithFormals: formals!
+
+heirScope ^ <Scope>
+    ^self scope delta!
+
+isGeneric ^<Boolean>
+
+^self myMixin isGeneric!
+
+isType   ^ <Boolean>
+
+^self myMixin isType!
+
+localScope ^ <Scope>
+    ^self heirScope delta!
+
+messages ^ <Dict[Symbol,Message]>
+
+^self mixinType messages
+
+!
+
+methods ^ <Dict[Symbol,Method]>
+    ^self mixinType methods 
+!
+
+myMixin ^<MixinDecl>
+
+"Should be changed to self mixinType.  The type of the mixin I am an invocation of may not be 
+the type of the actual mixin since it may be generic, and I would be an invocation of a generic application."
+^Type forMixin: self vmMixin!
+
+relevantTypeVars  ^ <Set[TypeVar]>
+
+| set   <Set[TypeVar]> |
+
+set := self myMixin relevantTypeVars copy.
+self myLocalSubstitution keys do: [:k <Symbol> | set remove: k ifAbsent:[].].
+^set.!
+
+retractTypeAssumptions ^ <Self>
+	self mixinType retractTypeAssumptions!
+
+secondaryInterface ^ <Interface>
+    ^(Type forClass: self mirror class reflectee) primaryInterface.!
+
+selfClassTV ^ <TypeVar>
+
+^self dual selfTV!
+
+selfDualTV ^ <TypeVar>
+
+^self dual selfTV!
+
+selfPublicClassTV ^ <TypeVar>
+
+^self dual selfPublicTV!
+
+setupTypeAssumptions ^ <Self>
+	self mixinType setupTypeAssumptions!
+
+superclassType ^ <ClassNode>
+
+self subclassResponsibility!
+
+supportedProtocol ^ <Protocol>
+    ^self mixinType supportedProtocol!
+
+supportedProtocol: p<Protocol>
+    ^self myMixin supportedProtocol: p!
+
+type  ^ <Self>
+
+"
+Make sure that this is a valid invocation. This includes verifying that the superclass of this
+invocation has an appropriate class type, and checking that the typing constraints for inheritance 
+are met (i.e., ensuring that he interfaces of the mixin's delta and the superclass are in the subtype
+or inherited type relation, as the case may be).
+"
+
+(self superclass mixinCompatibleWith: self mixin superclassType)
+   ifFalse:[self error: 'Superclass ', self superclass name, ' of ', self name,
+                                        ' is not mixin compatible with ', self mixin superclassType name.]. 
+
+
+
+!
+
+typeOfSelf " ^ <Protocol>"
+
+"This method is called to set the bound on the type Self.
+the effect of calling this version  is the
+assertion: Self <= PublicSelf"
+^super typeOfSelf
+"
+^self selfPublicTV"!
+
+typecheck  ^ <Self>
+
+self error: 'Typechecking should not be called for invocations'.!
+
+typecheckDeclaration  ^ <Self>
+
+self error: 'Typechecking should not be called for invocations'.!
+
+typecheckInterface  ^ <Self>
+
+self error: 'Typechecking should not be called for invocations'.!
+
+typecheckMethod: m <Method > ^ <Self>
+
+self error: 'Typechecking should not be called for invocations'.!
+
+varDecls ^ <Dict[Symbol,VarDecl]>
+    ^self mixinType varDecls !
+
+vmMixin ^<Mixin>
+
+^ self mirror mixin reflectee!
+
+wellTypedAttribute: m <Attribute > ^ <Boolean>
+
+self error: 'Typechecking should not be called for invocations'.!
+
+wellTypedAttributeInterface: m <Attribute > ^ <Boolean>
+
+self error: 'Typechecking should not be called for invocations'.! !
+

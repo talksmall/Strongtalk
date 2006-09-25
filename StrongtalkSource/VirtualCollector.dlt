@@ -1,0 +1,41 @@
+Delta define: #VirtualCollector as: (
+Generic forAll: '(T covar) ' body: ((Class subclassOf: 'Collection[T]' instanceVariables: 'cltn <Cltn[Object]> map <[DoesNotMatter, ^T]>'))) !
+
+(Delta mirrorFor: #VirtualCollector) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #VirtualCollector) group: 'misc'!
+
+(Delta mirrorFor: #VirtualCollector)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VirtualCollector) classSide methodsFor: 'Unclassified' !
+
+
+on: c <Collection[X] >map: b <[X def,^T] > ^ <Instance>
+    ^super new on: c map: b! !
+
+! (Delta mirrorFor: #VirtualCollector) methodsFor: 'Unclassified' !
+
+
+cltn ^ <Collection[X]>
+    ^cltn!
+
+cltnSpecies
+
+^self cltn cltnSpecies!
+
+do: blk <[T,^Object] > ^ <Self>
+    cltn do: [ :e <X>  | blk value: (map value: e) ]!
+
+map ^ <[X,^T]>
+    ^map!
+
+on: c <Collection[X] >map: b <[X def,^T] > ^ <Self>
+    cltn := c.
+    map := b.!
+
+size ^ <Int>
+    ^cltn size! !
+

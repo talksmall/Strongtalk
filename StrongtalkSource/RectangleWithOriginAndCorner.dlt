@@ -1,0 +1,40 @@
+Delta define: #RectangleWithOriginAndCorner as: (
+(Class subclassOf: 'Rectangle' instanceVariables: 'origin <Point>
+corner <Point> ')) !
+
+(Delta mirrorFor: #RectangleWithOriginAndCorner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #RectangleWithOriginAndCorner) group: 'ui'!
+
+(Delta mirrorFor: #RectangleWithOriginAndCorner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #RectangleWithOriginAndCorner) methodsFor: 'accessing' !
+
+
+corner ^<Point>
+
+	^corner!
+
+origin ^<Point>
+
+	^origin! !
+
+! (Delta mirrorFor: #RectangleWithOriginAndCorner) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm put: $(; print: self origin; putAll: ' corner: '; print: self corner; put: $)! !
+
+! (Delta mirrorFor: #RectangleWithOriginAndCorner) methodsFor: 'initialization' !
+
+
+origin: o <Point> corner: c <Point>
+
+	origin := o.
+	corner := c.! !
+

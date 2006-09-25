@@ -1,0 +1,76 @@
+Delta define: #PermBenchmark as: (
+(Class subclassOf: 'AbstractBenchmark' instanceVariables: 'permarray pctr') classVariables: 'Permcount Permrange ') !
+
+(Delta mirrorFor: #PermBenchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #PermBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #PermBenchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #PermBenchmark) classSide methodsFor: 'constants' !
+
+
+initialize Permcount := 5. Permrange := 10 "PermBenchmark initialize"! !
+
+! (Delta mirrorFor: #PermBenchmark) methodsFor: 'running' !
+
+
+run
+	
+	pctr := 0.
+	Permcount
+		timesRepeat: 
+			[self initialize.
+			self permute: 7].
+	pctr ~= (8660 *  Permcount) ifTrue: [self error: 'Error in perm']! !
+
+! (Delta mirrorFor: #PermBenchmark) methodsFor: 'initialization' !
+
+
+initialize
+	permarray := Array new: Permrange.
+	1 to: permarray size do: [:i | permarray at: i put: i - 1]! !
+
+! (Delta mirrorFor: #PermBenchmark) methodsFor: 'private' !
+
+
+permute: n 
+	pctr := pctr + 1.
+	n ~= 1
+		ifTrue: 
+			[self permute: n - 1.
+			n - 1
+				to: 1
+				by: -1
+				do: 
+					[:k | 
+					self swap: n with: k.
+					self permute: n - 1.
+					self swap: n with: k]]
+!
+
+swap: a with: b 
+	| t |
+	t := permarray at: a.
+	permarray at: a put: (permarray at: b).
+	permarray at: b put: t! !
+
+! (Delta mirrorFor: #PermBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^111!
+
+factor
+	^14!
+
+name
+	^#Perm!
+
+parcplaceTime
+	^148! !
+

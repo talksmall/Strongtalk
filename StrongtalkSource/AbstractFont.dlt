@@ -1,0 +1,144 @@
+Delta define: #AbstractFont as: (
+(Class subclassOf: 'Object' instanceVariables: 'family <Symbol>
+points <Int>
+mediumPoints <Int>
+			"We keep this in addition to points if it was the independent param specified, so that
+				we dont lose precision in conversions"
+boldness <Float>
+italic <Boolean>
+underline <Boolean>
+typeface <Str>
+		')) !
+
+(Delta mirrorFor: #AbstractFont) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #AbstractFont) group: 'ui'!
+
+(Delta mirrorFor: #AbstractFont)
+comment: 
+'Defines the common structure and utility operations for Fonts and FontSpecs.
+
+Tags:  %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #AbstractFont) methodsFor: 'accessing' !
+
+
+boldness ^<Float>
+
+	^boldness!
+
+family ^<Symbol>
+
+	^family!
+
+hasBoldness ^<Boolean>
+
+	^boldness notNil!
+
+hasFamily ^<Boolean>
+
+	^family notNil!
+
+hasItalic ^<Boolean>
+
+	^italic notNil!
+
+hasMediumPoints ^<Int>
+
+	^mediumPoints notNil!
+
+hasPoints ^<Boolean>
+
+	^points notNil!
+
+hasTypeface ^<Boolean>
+
+	^typeface notNil!
+
+hasUnderline ^<Boolean>
+
+	^underline notNil!
+
+italic ^<Boolean>
+
+	^italic!
+
+mediumPoints ^<Int>
+
+	^mediumPoints!
+
+mediumPointsFor: m <Medium> ^<Int>
+
+	mediumPoints isNil
+		ifTrue: [ mediumPoints := self medium adjustPoints: self points ].
+	^mediumPoints!
+
+points ^<Int>
+
+	^points!
+
+typeface ^<Str>
+
+	^typeface!
+
+underline ^<Boolean>
+
+	^underline! !
+
+! (Delta mirrorFor: #AbstractFont) methodsFor: 'private' !
+
+
+familyCodeFor: fam <Symbol> ^<ExternalData>
+
+	fam = #Swiss
+		ifTrue: [ ^Win32 FF_SWISS ].
+	fam = #Roman
+		ifTrue: [ ^Win32 FF_ROMAN ].
+	fam = #Modern
+		ifTrue: [ ^Win32 FF_MODERN ].
+	fam = #Script
+		ifTrue: [ ^Win32 FF_SCRIPT ].
+	fam = #Decorative
+		ifTrue: [ ^Win32 FF_DECORATIVE ].
+	self error: 'Unknown font family: ', fam!
+
+sameBoldnessAs: other <AbstractFont> ^<Boolean>
+
+	self boldness = other boldness
+		ifTrue: [ ^true ].
+	self hasBoldness = other hasBoldness
+		ifFalse: [ ^false ].
+	^self boldness isWithin: 0.01 of: other boldness! !
+
+! (Delta mirrorFor: #AbstractFont) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [	self equalsFont: (AbstractFont coerce: other else: [ ^false ]) ]!
+
+equalsFont: other <AbstractFont> ^<Boolean>
+
+	^self family = other family
+		and: [ self points = other points 
+		and: [ (self sameBoldnessAs: other)
+		and: [ self italic = other italic
+		and: [ self underline = other underline
+		and: [ self typeface = other typeface ]	]]]]!
+
+hash ^<Int>
+
+	| hash <Int> |
+	hash := self family hash.
+	hash := hash bitXor: self points hash.
+	hash := hash bitXor: self boldness hash.
+	hash := hash bitXor: self italic hash.
+	hash := hash bitXor: self underline hash.
+	hash := hash bitXor: self typeface hash.
+	^hash! !
+

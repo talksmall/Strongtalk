@@ -1,0 +1,51 @@
+Delta define: #DeltaBasicLocator as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaBasicLocator) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaBasicLocator) group: 'ast'!
+
+(Delta mirrorFor: #DeltaBasicLocator)
+comment: 
+'This hierarchy should be eliminated. Necessary functionality should be
+incorporated into the DeltaLocator hierarchy instead. 
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaBasicLocator) methodsFor: 'Unclassified' !
+
+
+indexFor: node  <DeltaASTNode> ^ <Integer>
+
+^0!
+
+isMetaSide: b <Boolean>
+self subclassResponsibility!
+
+locationOfMethod: sel <Symbol> ifAbsent: blk <[^X def]>  ^ <BasicEntryLocator | X>
+	self subclassResponsibility!
+
+locatorClass ^ <MethodLocator class>
+
+^MethodLocator!
+
+matches: loc <BasicLocator> ignoreSide: b <Boolean> ^ <Boolean>
+	^self subclassResponsibility!
+
+methodLocatorClass ^ <MethodLocator class>
+
+^MethodLocator!
+
+name  ^ <String>
+	self subclassResponsibility!
+
+nodeLocatorClass ^ <MethodLocator class>
+
+^MethodLocator!
+
+selectMethod: sel <Symbol> ifAbsent: blk <[^X def]>  ^ <Method | X>
+	^(self locationOfMethod: sel ifAbsent: [^blk value]) methodAt: sel ifAbsent: blk!
+
+typeInfo ^ <DeltaType>
+self subclassResponsibility! !
+

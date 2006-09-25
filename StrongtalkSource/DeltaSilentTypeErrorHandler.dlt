@@ -1,0 +1,23 @@
+Delta define: #DeltaSilentTypeErrorHandler as: (
+(Class subclassOf: 'DeltaTypeErrorHandler' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaSilentTypeErrorHandler) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaSilentTypeErrorHandler) group: 'ast'!
+
+(Delta mirrorFor: #DeltaSilentTypeErrorHandler)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaSilentTypeErrorHandler) methodsFor: 'Unclassified' !
+
+
+reportError: error <DeltaTypeError> at: node <DeltaASTNode>
+	"Do nothing. All reported errors are discarded"!
+
+reportSubtypingError: error <DeltaTypeError> at: node <DeltaASTNode> toEscape: b <[]>
+	"Simply escape. All reported errors are discarded"
+	b value
+! !
+

@@ -1,0 +1,139 @@
+Delta define: #ExternalStream as: (
+Generic forAll: 'DESCRIPTOR <ExternalStreamDescriptor> ' body: ((Class subclassOf: 'Object' instanceVariables: 'descriptor <DESCRIPTOR>
+buffer <ExternalProxy>
+			"I/O buffer, cached from descriptor for speed (0 indexed)"
+bufferSize <Int>
+			"I/O buffer size, cached from descriptor for speed"
+bufferOrigin <Int>
+			"the offset between position and buffer coordinates"
+nextBufferPosition <Int>
+			"The actual position, in buffer coordinates, of the next element (i.e. position + 1 in buffer coords)"
+bufferNumElements <Int>
+			"The number of valid data bytes in the buffer"
+		') abstract)) !
+
+(Delta mirrorFor: #ExternalStream) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #ExternalStream) group: 'base'!
+
+(Delta mirrorFor: #ExternalStream)
+comment: 
+'This is the abstract superclass for all external stream classes.  It
+provides buffer management for subclasses.   Library users don''t normally directly instantiate ExternalStreams,
+since that exposes you to genericity and raw ExternalDescriptors; instead, more appropriate entry points
+such as readStream/writeStream/readWriteStream are implemented for the various kinds of external objects
+that can be streamed over, such as File.
+
+Invariant: the buffer position is always less than the index of the last buffer element.   This is accomplished by proactively filling/flushing the buffer when the end is reached.
+
+%responsibility #arrangeForFinalization
+    Subclasses should reimplement this appropriately to do any finalization registration
+      to ensure that the stream is closed when it is garbage collected.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #ExternalStream) classSide methodsFor: 'instance creation' !
+
+
+onDescriptor: d <DESCRIPTOR> ^<Instance>
+    ^self new initDescriptor: d! !
+
+! (Delta mirrorFor: #ExternalStream) methodsFor: 'initialization' !
+
+
+initBuffer
+
+	buffer := descriptor buffer.
+	bufferSize := descriptor bufferSize.
+	self arrangeForFinalization.!
+
+initDescriptor: d <DESCRIPTOR> 
+
+	self descriptor: d.
+	self initBuffer.
+
+	self bufferOrigin: 0.
+	self bufferNumElements: 0.
+	self nextBufferPosition: 0.! !
+
+! (Delta mirrorFor: #ExternalStream) methodsFor: 'control' !
+
+
+close
+    self doClose! !
+
+! (Delta mirrorFor: #ExternalStream) methodsFor: 'private' !
+
+
+advanceBuffer
+    "advance the buffer, and fill it if the receiver is readable.  Assumption: the last advanceBuffer completely
+      filled the buffer"
+    self bufferOrigin: self bufferOrigin + self bufferSize.
+    self fillBuffer.
+    self nextBufferPosition: 0.!
+
+arrangeForFinalization
+	"Subclasses should reimplement this appropriately to do any finalization registration
+	  to ensure that the stream is closed when it is garbage collected."
+
+	self subclassResponsibility!
+
+buffer ^<ExternalProxy>
+
+	^buffer!
+
+bufferNumElements ^<Int>
+
+	^bufferNumElements!
+
+bufferNumElements: o <Int>
+
+	bufferNumElements := o!
+
+bufferOrigin ^<Int>
+
+	^bufferOrigin!
+
+bufferOrigin: o <Int>
+
+	bufferOrigin := o!
+
+bufferSize ^<Int>
+    ^bufferSize!
+
+bufferSize: s <Int>
+    bufferSize  := s!
+
+descriptor ^<DESCRIPTOR>
+    ^descriptor!
+
+descriptor: d <DESCRIPTOR>
+
+	descriptor := d!
+
+doClose
+    "This is factored out from close so that subclasses that mixin BasicInputStream can reimplement close to call this"
+    self descriptor close.
+    buffer := nil.!
+
+fillBuffer
+    "fill the buffer if needed (this default implementation works for noninput streams)"
+
+	self bufferNumElements: 0!
+
+nextBufferPosition ^<Int>
+
+	^nextBufferPosition!
+
+nextBufferPosition: o <Int>
+
+	nextBufferPosition := o!
+
+postCopy
+
+	super postCopy.
+	self descriptor: self descriptor copy.
+	self initBuffer.! !
+

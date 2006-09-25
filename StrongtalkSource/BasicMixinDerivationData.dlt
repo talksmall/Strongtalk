@@ -1,0 +1,45 @@
+Delta define: #BasicMixinDerivationData as: (
+(Class subclassOf: 'BasicTypeData' instanceVariables: 'klass selector ')) !
+
+(Delta mirrorFor: #BasicMixinDerivationData) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #BasicMixinDerivationData) group: 'ast'!
+
+(Delta mirrorFor: #BasicMixinDerivationData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicMixinDerivationData) methodsFor: 'Unclassified' !
+
+
+class: c selector: s
+
+self klass: c.
+self selector: s.!
+
+compositeSubstitute: t <Interface> ^ <Interface>
+
+ ^self klass compositeSubstitute: t!
+
+klass
+
+^klass!
+
+klass: k <Class>
+
+
+klass := k.!
+
+mixinSubstitute: t <Interface> ^ <Interface>
+
+^self klass mixinSubstitute: t!
+
+selector  ^ <Symbol>
+
+^selector!
+
+selector: s <Symbol>
+
+selector := s.! !
+

@@ -1,0 +1,246 @@
+Delta define: #OrderedCollection as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'VarSequenceableCollection[E] mixin |> AddableSequenceableCollection[E]' instanceVariables: '') abstract)) !
+
+(Delta mirrorFor: #OrderedCollection) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #OrderedCollection) group: 'base'!
+
+(Delta mirrorFor: #OrderedCollection)
+comment: 
+'OrderedCollections are AddableSequenceableCollections that also support setting
+elements in place (the VarSeqCltn protocol).
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #OrderedCollection) classSide methodsFor: 'testing' !
+
+
+performanceTest
+
+	| d <OrdCltn[Int]> |
+	d := OrderedCollection[Int] new.
+	1 to: 10 do:
+		[ :i <Int> |
+			d add: 1 ].
+	1000000 timesRepeat:
+		[	d at: 2	].!
+
+test
+	"self test"
+
+	"Set behavior of this class is tested by Set test."
+	| oc <OrderedCollection[Int]> |
+	oc := OrderedCollection[Int] new: 3.
+	oc addLast: 3; addLast: 4; addFirst: 2; addFirst: 1; addLast: 5; addLast: 6; addLast: 7.
+	"%todo: Use #(1 2 3 4 5 6 7) as withAll: arg below when literals arrays work"
+	self test: 1 is: [ oc = (OrderedCollection[Int] withAll:
+					((OrderedCollection[Int] new)
+						addLast: 1;
+						addLast: 2;
+						addLast: 3;
+						addLast: 4;
+						addLast: 5;
+						addLast: 6;
+						addLast: 7;
+						yourself )) ].
+	self test: 2 is: [ (oc at: 1) = 1 ].
+	self test: 3 is: [ oc size = 7 ].
+	self test: 4 is: [ (oc at: 7 ifAbsent: [ nil ]) = 7 ].
+	self test: 5 is: [ (oc at: 0 ifAbsent: [ nil ]) = nil ].
+	self test: 6 is: [ (oc at: 8 ifAbsent: [ nil ]) = nil ].
+	self test: 7 is: [ (oc indexOf: 3 ifAbsent: [ nil ]) = 3 ].
+	oc remove: 3; removeAt: 3; removeAt: 5; removeAt: 1; remove: 2.
+	self test: 8 is: [  oc = ((OrderedCollection[Int] new)
+						addLast: 5;
+						addLast: 6;
+						yourself )	].
+	oc addFirst: 4; addLast: 7; removeAt: 2; removeAt: 2.
+	self test: 9 is: [  oc = ((OrderedCollection[Int] new)
+						addLast: 4;
+						addLast: 7;
+						yourself )	].
+	oc removeAt: 1; removeAt: 1.
+	self test: 10 is: [ oc size = 0 ].
+	self test: 11 is: [ (oc remove: 2 ifAbsent: [ nil ]) = nil ].
+	oc add: 2; add: 1; add: 2; add: 2; add: 3; add: 2; removeEvery: 2.
+	self test: 12 is: [  oc = ((OrderedCollection[Int] new)
+						addLast: 1;
+						addLast: 3;
+						yourself )	].! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+
+
+add: e <E> ^<E>
+
+	^self addLast: e!
+
+add: el <E> after: existing <E> ^<E>
+
+	| index <Int> |
+	index := self indexOf: existing.
+	index = self size
+		ifFalse: [ index := self makeSpace: 1
+											beforeIndex: index + self startGap + 1 ]
+		ifTrue: [	self needSpaceAtEnd: 1.
+						index := index + self startGap + 1.	].
+	^self contents at: index put: el.!
+
+add: el <E> afterIndex: i <Int> ^<E>
+
+	^self add: el beforeIndex: i + 1!
+
+add: el <E> before: existing <E> ^<E>
+
+	| index <Int> |
+	index := self indexOf: existing.
+	index := self makeSpace: 1 beforeIndex: index + self startGap.
+	^self contents at: index put: el.!
+
+add: el <E> beforeIndex: i <Int> ^<E>
+
+	| index <Int> |
+	i > self size
+		ifFalse: [	index := self makeSpace: 1 beforeIndex: i + self startGap.	]
+		ifTrue: [	self needSpaceAtEnd: 1.
+						index := i + self startGap. ].
+	^self contents at: index put: el.!
+
+addAllFirst: c <Cltn[E]> ^<Cltn[E]>
+
+	c do: [ :el <E> | 	self addFirst: el ].
+	^c!
+
+addAllLast: c <Cltn[E]> ^<Cltn[E]>
+
+	c do: [ :el <E> | 	self addLast: el ].
+	^c!
+
+addFirst: e <E> ^<E>
+
+	self needSpaceAtStart: 1.
+	self contents at: self startGap put: e.
+	self startGap: self startGap - 1.
+	^e!
+
+addLast: e <E> ^<E>
+
+	self needSpaceAtEnd: 1.
+	self lastIndex: self lastIndex + 1.
+	self contents at: self lastIndex put: e.
+	^e!
+
+at: i <Int> put: el <E> ^<E>
+
+	| adjusted <Int> |
+	adjusted := i + self startGap.
+	((0 < i) and: [adjusted <= self lastIndex])
+		ifFalse: [ self error: 'invalid index' ].
+	^contents at: adjusted put: el
+!
+
+with: el <E> 
+
+	self add: el!
+
+withAll: els <Cltn[E]> ^<Self>
+
+	self addAll: els! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'converting' !
+
+
+asOrderedCollection ^<OrdCltn[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+
+	"the guarantee is safe because of the inference clause"
+	^guaranteed <OrdCltn[EX]> self! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'iterating' !
+
+
+collect: map <[E, ^R def]> ^<OrdCltn[R]>
+
+	^(self collectUsingAdd: map) asOrderedCollection! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'stack operations' !
+
+
+bottomToTopDo: blk <[E]>
+
+	self do: blk!
+
+pop ^<E>
+
+	^self removeLast!
+
+push: el <E>
+
+	self addLast: el!
+
+top ^<E>
+
+	^self last!
+
+topToBottomDo: blk <[E]>
+
+	self reverseDo: blk! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'copying' !
+
+
+copyWithSize: s <Int> ^<OrdCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"Note: this method temporarily mutates the receiver, so it should not be sent to an object that
+		another process might be accessing."
+
+	"We use a trick here: we temporarily fudge the lastIndex to be the value we want to use in the copy,
+	  which will cause postCopy to copy the contents with a different size, and then we restore the old
+	  lastIndex value for this instance.  This lets the normal copy mechanism handle subclass instance
+	  variable copying."
+	| oldLastIndex <Int> safeself <OrdCltn[EX]> copy <OrdCltn[EX]> |
+
+	"This guarantee is safe because the inference clause guarantees
+		that E < EX at each call site"
+	safeself := guaranteed <OrdCltn[EX]> self.
+
+	oldLastIndex := self lastIndex.
+	self lastIndex: s + self startGap.
+	copy := safeself copy.
+	self lastIndex: oldLastIndex.
+
+	^copy! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'restricted' !
+
+
+newCopyOfSize: size <Int>
+thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
+^<OrdCltn[EX | X]>
+		{where X is returnType of #anElement message of arg 2;
+		     where EX is returnType of #anElement message of receiverType}
+
+	^(OrderedCollection[EX | X] new: size) size: size! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'replacing' !
+
+
+replaceFrom: start <Int>
+to: stop <Int>
+with: other <SeqCltn[E]>
+startingAt: repStart <Int>
+
+	"replace the elements of the receiver from start to stop with elements from other,
+	  starting with the element of other with index repStart."
+
+	| otheri <Int> |
+	(start >= 1 and: [ stop <= self size ])
+		ifFalse: [ self error: 'range out of bounds' ].
+
+	self contents replaceFrom: start + self startGap to: stop + self startGap with: other startingAt: repStart! !
+

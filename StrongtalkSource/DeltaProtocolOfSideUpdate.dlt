@@ -1,0 +1,80 @@
+Delta define: #DeltaProtocolOfSideUpdate as: (
+(Class subclassOf: 'DeltaProtocolUpdate' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaProtocolOfSideUpdate) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #DeltaProtocolOfSideUpdate) group: 'ast'!
+
+(Delta mirrorFor: #DeltaProtocolOfSideUpdate)
+comment: 
+'This class is used to create the protocols associated with SideUpdates - in other
+words, ordinary classes or mixins (excepting Object). It differs from ordinary
+protocol updates only in that it is aware of the fact that sides may support a
+protocol, and uses this information when determining the declared subprotocol
+relationship.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaProtocolOfSideUpdate) methodsFor: 'Unclassified' !
+
+
+asMixinSide  ^ <Protocol>
+
+ ^ self filteree asMixinSide!
+
+basicLocator
+	^self filteree basicLocator!
+
+declaredSubprotocolOf: p <DeltaProtocol > ^ <Boolean>
+    ^((self  == p or:
+           [self superprotocol isNil 
+                  ifFalse:[self subtype and:
+                                  [self superprotocol declaredSubprotocolOf: p]
+                                 ] 
+                  ifTrue:[false]
+           ]) or:
+           [self supportedProtocol isNil 
+                  ifFalse:[self supportedProtocol declaredSubprotocolOf: p]
+                  ifTrue:[false]
+           ]) or:[ p isSuperMixinInvocationOf: self]!
+
+declaredSuperMixinInvocationOf: m <MixinInvocationNode> ^<Boolean>
+
+^m declaredSubMixinInvocationOfNonInvocation:  self!
+
+declaredSupertypes ^ <Cltn[ObjectType]>
+
+| c <OrdCltn[ObjectType]> |
+
+c := OrderedCollection[ObjectType] new.
+self supportedProtocol isNil
+	ifFalse:[c 	add: self supportedProtocol].
+c	add: self superprotocol.
+^c!
+
+isMonotonic ^ <Boolean>
+"An experiment to gauge the impact of the structural monotonicity check"
+self deltaHack.
+^true.!
+
+isSuperMixinInvocationOf: p  <ProtocolOfSideUpdate> ^ <Boolean>
+
+^self asMixinSide == p asMixinSide
+  and:[p superprotocol declaredSubprotocolOf: self superprotocol asProtocol]!
+
+komment
+
+"This class is used to create the protocols associated with SideUpdates - in other
+words, ordinary classes or mixins (excepting Object). It differs from ordinary
+protocol updates only in that it is aware of the fact that sides may support a
+protocol, and uses this information when determining the declared subprotocol
+relationship.
+"!
+
+supportedProtocol ^ <DeltaProtocol>
+
+    | fs <DeltaProtocol>  |
+
+^(fs := self filteree supportedProtocol) isNil ifFalse:[fs substitute: self substitution] ifTrue:[nil]! !
+

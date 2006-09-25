@@ -1,0 +1,36 @@
+Delta define: #GlobalVariableSourceHandler as: (
+(Class subclassOf: 'CommonSourceHandler' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlobalVariableSourceHandler) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #GlobalVariableSourceHandler) group: 'reflection'!
+
+(Delta mirrorFor: #GlobalVariableSourceHandler)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #GlobalVariableSourceHandler) methodsFor: 'Unclassified' !
+
+
+declaredTypeString ^ <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler declaredTypeString ].
+	^(self attributeAt: '#declaredTypeString') first
+!
+
+declaredTypeString: s  <Str>
+
+	self isMeta ifTrue: [ ^self dualHandler declaredTypeString: s ].
+	self attributeAt: '#declaredTypeString'  put: (OrderedCollection[Str] with: s)
+!
+
+handlerId ^ <Str>
+
+	^'Global'
+!
+
+hasDualHandler ^ <Boolean>
+
+	^false! !
+

@@ -1,0 +1,75 @@
+Delta define: #HBRUSH as: (
+(Class subclassOf: 'Win32Handle' instanceVariables: 'paint <Paint>
+		') classVariables: 'Brushes <VarDict[Paint,HBRUSH]>
+			"The canonical brushes"
+		') !
+
+(Delta mirrorFor: #HBRUSH) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #HBRUSH) group: 'base'!
+
+(Delta mirrorFor: #HBRUSH)
+comment: 
+'Handle for a Win32 brush
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #HBRUSH) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	Brushes := Dictionary[Paint,HBRUSH] new.! !
+
+! (Delta mirrorFor: #HBRUSH) classSide methodsFor: 'instance creation' !
+
+
+sharedWithPaint: p <Paint>   ^<HBRUSH>
+
+	^self brushes at: p
+		ifAbsent: [ self brushes at: p put: (p buildWin32Brush initPaint: p) ]! !
+
+! (Delta mirrorFor: #HBRUSH) classSide methodsFor: 'private' !
+
+
+brushes ^<VarDict[Paint,HBRUSH]>
+
+	^Brushes! !
+
+! (Delta mirrorFor: #HBRUSH) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [	(self class == other class)		"%todo: use coerce when its fast"
+					and: [	(guaranteed <HBRUSH> other) paint = self paint	] ]!
+
+hash ^<Int>
+
+	^self paint hash! !
+
+! (Delta mirrorFor: #HBRUSH) methodsFor: 'accessing' !
+
+
+paint ^<Paint>
+
+	^paint! !
+
+! (Delta mirrorFor: #HBRUSH) methodsFor: 'initialization' !
+
+
+initPaint: p <Paint>
+
+	paint := p! !
+
+! (Delta mirrorFor: #HBRUSH) methodsFor: 'control' !
+
+
+release
+
+	"This is right only for objects we created, which currently we always do"
+	self win32DeleteObject! !
+

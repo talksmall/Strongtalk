@@ -1,0 +1,229 @@
+Delta define: #Painter as: (
+(Class subclassOf: 'Object' instanceVariables: 'version <Int>
+paint <Paint>
+font <Font>
+
+"edge properties"
+lineWidth <Int>
+lineStyle <Symbol>   "One of #solid, #dash, #dot, #dashdot, or #dashdotdot"
+endStyle <Symbol>
+joinStyle <Symbol>
+
+"win32 specific state derived from above"
+win32Pen <HPEN>
+win32Brush <HBRUSH>
+		') classVariables: 'DefaultPainter <Painter>
+DefaultBackgroundPainter <Painter>
+		') !
+
+(Delta mirrorFor: #Painter) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Painter) group: 'ui'!
+
+(Delta mirrorFor: #Painter)
+comment: 
+'A painter can be thought of as a drawing tool that encodes all the graphics state needed
+for drawing on a Canvas, other than coordinate space or clipping related state.  This includes
+paint, font, line style, pen, brush, etc.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Painter) classSide methodsFor: 'instance creation' !
+
+
+default ^<Painter>
+	"Return a default painter that has standard settings: black paint, linewidth 1, style
+	 #solid, the default font, etc.  Callers MUST NOT change the settings of the
+	 default painter!!"
+
+	^DefaultPainter!
+
+defaultBackground ^<Painter>
+	"Return a default background painter that has standard settings: white paint, linewidth 1, style
+	 #solid, the default font, etc.  Callers MUST NOT change the settings of the
+	 default painter!!"
+
+	^DefaultBackgroundPainter!
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #Painter) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	DefaultPainter := self new freeze.
+	DefaultBackgroundPainter := self new paint: Paint white; freeze.! !
+
+! (Delta mirrorFor: #Painter) methodsFor: 'accessing' !
+
+
+charGlyphFor: c <Character> ^<CharacterGlyph>
+	"Return the Glyph for the specified character using the font and paint of this painter"
+
+	^self font charGlyphFor: c paint: self paint!
+
+endStyle ^<Symbol>
+
+	^endStyle!
+
+endStyle: s <Symbol>
+
+	self stateChanged.	"We check this first to avoid corrupting the painter if it is frozen"
+	endStyle := s.
+	self penStateChanged.!
+
+font ^<Font>
+
+	^font!
+
+font: f <Font>
+
+	self stateChanged.	"We check this first to avoid corrupting the painter if it is frozen"
+	font := f.!
+
+joinStyle ^<Symbol>
+
+	^joinStyle!
+
+joinStyle: s <Symbol>
+
+	self stateChanged.	"We check this first to avoid corrupting the painter if it is frozen"
+	joinStyle := s.
+	self penStateChanged.!
+
+lineStyle ^<Symbol>
+
+	^lineStyle!
+
+lineStyle: s <Symbol>
+
+	self stateChanged.	"We check this first to avoid corrupting the painter if it is frozen"
+	lineStyle := s.
+	self penStateChanged.!
+
+lineWidth ^<Int>
+
+	^lineWidth!
+
+lineWidth: w <Int>
+
+	self stateChanged.	"We check this first to avoid corrupting the painter if it is frozen"
+	lineWidth := w.
+	self penStateChanged.!
+
+notFrozen ^<Boolean>
+
+	^self version ~~ nil!
+
+paint ^<Paint>
+
+	^paint!
+
+paint: p <Paint>
+
+	self stateChanged.	"We check this first to avoid corrupting the painter if it is frozen"
+	paint := p.
+	self penStateChanged; brushStateChanged.! !
+
+! (Delta mirrorFor: #Painter) methodsFor: 'restricted-win32 accessing' !
+
+
+cachedWin32Brush ^<HBRUSH | Nil>
+
+	^win32Brush!
+
+cachedWin32Font ^<ExternalProxy | Nil>
+
+	^self font cachedWin32Font!
+
+cachedWin32Pen ^<HPEN | Nil>
+
+	^win32Pen!
+
+cachedWin32TextColor ^<Int | Nil>
+
+	^self paint win32Color!
+
+version ^<Int>
+
+	^version!
+
+win32Brush ^<HBRUSH>
+
+	win32Brush isNil
+		ifTrue: [	win32Brush := HBRUSH sharedWithPaint: self paint ].
+	^win32Brush!
+
+win32Font ^<ExternalData>
+
+	^self font win32Font!
+
+win32Pen ^<HPEN>
+
+	win32Pen isNil
+		ifTrue: [	win32Pen := self paint
+							sharedWin32PenWithWidth: self lineWidth
+							style: self lineStyle
+							joinStyle: self joinStyle
+							endStyle: self endStyle. ].
+	^win32Pen!
+
+win32TextColor ^<Int | Nil>
+
+	^self paint win32Color! !
+
+! (Delta mirrorFor: #Painter) methodsFor: 'private' !
+
+
+brushStateChanged
+
+	 win32Brush := nil!
+
+penStateChanged
+
+	 win32Pen := nil!
+
+postCopy
+
+	super postCopy.
+
+	"The new copy should be unfrozen"
+	version := 0.!
+
+stateChanged
+
+	"This will crash and burn if the painter is frozen (version = nil), which is what we want"
+	 version := version + 1! !
+
+! (Delta mirrorFor: #Painter) methodsFor: 'initialization' !
+
+
+initialize
+
+		version := 0.
+		paint := Paint default.
+		font := Font default.
+
+		"edge properties"
+		lineWidth := 1.
+		lineStyle := #solid.
+	"	endStyle := 
+		joinStyle <Symbol>
+"! !
+
+! (Delta mirrorFor: #Painter) methodsFor: 'control' !
+
+
+freeze
+	"A frozen painter can never be changed again.  Glyphs, and other things that require
+		a painter whose state will not change use frozen painters."
+
+	version := nil.! !
+

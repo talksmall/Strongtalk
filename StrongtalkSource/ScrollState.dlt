@@ -1,0 +1,384 @@
+Delta define: #ScrollState as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'range <Int>
+scrollPosition <Int>
+shown <Int>
+gridBlock <[Int,^Tuple[Int,Int]]>
+	"The grid block can be set to control the grid of valid scroll positions.  It takes
+	  a position, and returns a tuple of the bracketing grid positions, with the first
+	  element of the tuple being the lower (in magnitude) one."
+redrawImmediately <Boolean>
+	"true if redrawing should be done synchronously when scrolling (used to make smooth
+		scrolling work).  This is not really used right currently."') classVariables: 'SmoothScroll <Boolean>') !
+
+(Delta mirrorFor: #ScrollState) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #ScrollState) group: 'base'!
+
+(Delta mirrorFor: #ScrollState)
+comment: 
+'Defines the state of a scroll, and notifies any dependents (including Scrollers and/or Viewports)
+of any changes.
+
+Tags: %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $
+'!
+
+! (Delta mirrorFor: #ScrollState) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #ScrollState) classSide methodsFor: 'control' !
+
+
+smoothScroll ^<Boolean>
+
+	SmoothScroll isNil
+		ifTrue: [ SmoothScroll := false ].
+	^SmoothScroll!
+
+smoothScroll: f <Boolean>
+
+	SmoothScroll := f! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'initialization' !
+
+
+initialize
+
+	self useContinuousGrid.
+	scrollPosition := shown := range := 0.
+	self redrawImmediately: false.! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'accessing' !
+
+
+gridBlock ^<[Int,^Tuple[Int,Int]]>
+
+	^gridBlock!
+
+gridBlock: b<[Int,^Tuple[Int,Int]]>
+
+	gridBlock := b!
+
+range ^<Int>
+
+	^range!
+
+range: v <Int>
+
+	range := v.
+	self changed: #range with: self.
+	self checkPosition.!
+
+range: v <Int> shown: s <Int>
+
+	range := v.
+	shown := s.
+	self checkPosition.
+	self changed: #range with: self.
+	self changed: #shown with: self.
+	self checkPosition.
+!
+
+redrawImmediately ^<Boolean>
+
+	^redrawImmediately isNil
+			ifTrue: [ false ]
+			ifFalse: [ redrawImmediately ]!
+
+redrawImmediately: b <Boolean>
+
+	redrawImmediately := b!
+
+scrollPosition ^<Int>
+
+	^scrollPosition!
+
+scrollPosition: v <Int>
+
+	self adjustedScrollPosition:
+		(v = 0
+			ifFalse: [  self adjustedPositionFor: v. ]
+			ifTrue: [  v ]	)!
+
+setRange: v <Int>
+	"Set the range without notification"
+
+	range := v.
+!
+
+setShown: v <Int>
+
+	shown := v.!
+
+shown ^<Int>
+
+	^shown!
+
+shown: v <Int>
+
+	shown := v.
+	self changed: #shown with: self.
+	self checkPosition.!
+
+smoothPagingIntervals ^<Int>
+
+	^100!
+
+smoothScroll ^<Boolean>
+
+	^ScrollState smoothScroll!
+
+useContinuousGrid
+
+	self gridBlock: [ :index <Int> |  index ,, (index + 1) ].
+! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'control' !
+
+
+doMinimalScrollToMakeVisible: area <Tuple[Int,Int]>
+
+	| raw <Int> adjusted <Int> delta <Int> |
+	
+	self scrollPosition > area at1
+		ifTrue: [ raw := area at1 ]
+		ifFalse: [ raw := area at2 - self shown ].
+	adjusted := self adjustedPositionFor: raw.
+	(self isMaximallyVisible: area given: adjusted)
+		ifTrue: [ self adjustedScrollPosition: adjusted ]
+		ifFalse: [ self adjustedScrollPosition: (self clippedPositionFor: raw) ].!
+
+doNonMinimalScrollToMakeVisible: area <Tuple[Int,Int]>
+
+	| raw <Int> adjusted <Int> delta <Int> |
+	raw := area at1 - (((self shown - (area at2 - area at1)) // 2) max: 0).
+	adjusted := self adjustedPositionFor: raw.
+	(self isMaximallyVisible: area given: adjusted)
+		ifTrue: [ self adjustedScrollPosition: adjusted ]
+		ifFalse: [ self adjustedScrollPosition: (self clippedPositionFor: raw) ].!
+
+lineBack
+	"scroll back (up or left) one line (one grid position)"
+
+	| raw <Int> |
+	raw := self adjustPosBack: self scrollPosition.
+	"make sure we move more than a few pixels"
+	(self scrollPosition - raw) abs < self minArrowScrollDist
+		ifTrue: [ raw := self adjustedPositionFor: self scrollPosition - self minArrowScrollDist ].
+	self adjustedScrollPosition: raw!
+
+lineForward
+	"scroll forward (down or right) one line (one grid position)"
+
+	| raw <Int> |
+	raw := self adjustPosForward: self scrollPosition.
+	(raw - self scrollPosition) abs < self minArrowScrollDist
+		ifTrue: [ raw := self adjustedPositionFor: self scrollPosition + self minArrowScrollDist ].
+	self adjustedScrollPosition: raw!
+
+notify
+
+	self checkPosition.
+	
+	self changed: #all with: self.
+	"self	changed: #range with: self;
+			changed: #shown with: self;
+			changed: #scrollPosition with: self.
+	"!
+
+pageBack
+	"scroll back (up or left) one page"
+
+	| primary <Int> secondary <Int> tertiary <Int> target <Int> |
+	primary := self nearestForwardFor: (self adjustPosForward: self scrollPosition) - self shown.
+	tertiary := self scrollPosition - self shown.
+	secondary := self nearestForwardFor: tertiary.
+	target :=
+		(self clippedPositionFor:
+			(primary >= self scrollPosition
+				ifFalse: [ primary ]
+				ifTrue: [ secondary >= self scrollPosition
+								ifFalse: [ secondary ]
+								ifTrue: [ tertiary ] ] ) ).
+	self smoothScroll
+		ifTrue: [ self smoothScrollTo: target ]
+		ifFalse: [ self adjustedScrollPosition: target ]!
+
+pageForward
+	"scroll forward (down or right) one page"
+
+	| pos <Int> raw <Int> adjraw <Int> linetoshow <Int> target <Int> |
+	raw := self scrollPosition + self shown.
+	adjraw := (self gridBlock value: raw) at1.
+	linetoshow := self adjustPosBack: adjraw.
+	target :=
+		(self clippedPositionFor:
+			((linetoshow <= self scrollPosition or: [ linetoshow > raw ])
+				ifFalse: [ linetoshow ]
+				ifTrue: [ (adjraw <= self scrollPosition or: [ adjraw > raw ])
+								ifFalse: [ adjraw ]
+								ifTrue: [ raw ] ] ) ).
+	self smoothScroll
+		ifTrue: [ self smoothScrollTo: target ]
+		ifFalse: [ self adjustedScrollPosition: target ]!
+
+scrollIfNeededToMakeVisible: area <Tuple[Int,Int]> minimizeMotion: minimizeMotion <Boolean>
+	"Scroll if needed to make area (low -> high) visible"
+
+	(self isMaximallyVisible: area given: self scrollPosition)
+		ifFalse: [ minimizeMotion
+						ifTrue: [ self doMinimalScrollToMakeVisible: area ]
+						ifFalse: [ self doNonMinimalScrollToMakeVisible:area ] ].!
+
+smoothScrollTo: target <Int>
+	"scroll smoothly to the specified target scrollPosition"
+
+	| oldRedraw <Boolean> timeLimit <Float> timeInterval <Float>
+		nextActionTime <Float> first <Boolean> epsilon <Float>
+		|
+	target = self scrollPosition
+		ifTrue: [ ^self ].
+	timeLimit := Time clockValue + self maxSmoothScrollTime.
+	timeInterval := self maxSmoothScrollTime / self smoothPagingIntervals asFloat.
+	nextActionTime := Time clockValue.
+	oldRedraw := self redrawImmediately.
+	self redrawImmediately: true.
+	first := true.
+	epsilon := timeInterval / 10.0.
+	self scrollPosition to: target intervals: self smoothPagingIntervals
+		do: [ :p <Int> |
+					| now <Float> |
+					first
+						ifTrue: [ first := false ]
+						ifFalse: [	| now <Float> newNextActionTime <Float> |
+											now := Time clockValue.
+											newNextActionTime := nextActionTime + timeInterval.
+											now < timeLimit
+												ifTrue: [	now < nextActionTime
+																	ifTrue: [ (Delay until: nextActionTime) wait.
+																					self scrollPosition: p.	]
+																	ifFalse: [ (now isWithin: epsilon of: nextActionTime)
+																						ifTrue: [ self scrollPosition: p ] 
+																					].
+															 ].
+											nextActionTime := newNextActionTime. ].
+				].
+	self redrawImmediately: oldRedraw.
+	self adjustedScrollPosition: target.! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'private' !
+
+
+adjustPosBack: p <Int> ^<Int>
+	"adjust p to the next (not the bracketing) grid position in the negative direction"
+
+	^self clippedPositionFor: (self gridBlock value: (self gridBlock value: p) at1 - 1) at1!
+
+adjustPosForward: p <Int> ^<Int>
+	"adjust p to the next (not bracketing) grid position in the positive direction"
+
+	| higher <Int> |
+	higher := (self gridBlock value: p) at2 + 1.
+	^self clippedPositionFor: ((self gridBlock value: higher) at1 max: higher)!
+
+adjustedPositionFor: p <Int> ^<Int>
+	"Adjust the position if needed to ensure that it is in the allowed range, and also move it
+		to the nearest grid position in the back direction, unless p is at the maximum, or if such movement
+		would cause p to not be visible."
+
+	| gridpos <Int> |
+	p >= (self range - self shown)
+		ifTrue: [ gridpos := p ]		"At maximum; show the end"
+		ifFalse: [	gridpos := (self gridBlock value: p) at1.
+						"Make sure that p remains visible, at least."
+						p - gridpos > self shown
+							ifTrue: [ gridpos := p ].	 ].
+	^self clippedPositionFor: gridpos!
+
+adjustedScrollPosition: v <Int>
+
+	scrollPosition := v.
+	self changed: #scrollPosition with: self.!
+
+checkPosition
+	"Adjust the position if needed to ensure that it does not show past the end of the last page"
+
+	| validPos <Int> |
+	self scrollPosition = 0
+		ifTrue: [ ^self ].
+	validPos := self adjustedPositionFor: self scrollPosition.
+	self scrollPosition ~= validPos
+		ifTrue: [ self scrollPosition: validPos ]!
+
+clippedPositionFor: p <Int> ^<Int>
+	"Adjust the position if needed to ensure that it is in the allowed range"
+
+	^(p min: self range - self shown) max: 0!
+
+isMaximallyVisible: area <Tuple[Int,Int]> given: scrollPos <Int> ^<Boolean>
+	"Is area as visible as it can be? (It might be not entirely visible because it might
+		be bigger than the shown area, which we can't do anything about."
+
+	^scrollPos = area at1
+		or: [scrollPos <= area at1 and: [ (scrollPos + self shown) >= area at2 ] ]!
+
+maxSmoothScrollTime ^<Float>
+	"Max # of seconds to smooth scroll a page"
+
+	^0.3!
+
+nearestBackFor: pos <Int> ^<Int>
+	"return the nearest grid value for pos in the negative direction"
+
+	| grid <Tuple[Int,Int]> |
+	grid := self gridBlock value: pos.
+	^(pos = grid at1 or: [ pos = grid at2 ])
+		ifTrue: [ pos ]
+		ifFalse: [ grid at1 ]!
+
+nearestForwardFor: pos <Int> ^<Int>
+	"return the nearest grid value for pos in the negative direction"
+
+	| grid <Tuple[Int,Int]> |
+	grid := self gridBlock value: pos.
+	^(pos = grid at1 or: [ pos = grid at2 ])
+		ifTrue: [ pos ]
+		ifFalse: [ grid at2 ]! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	super printOn: strm.
+	strm show: '(pos = '; print: self scrollPosition; show: ' shown = '; print: self shown; 
+			show: ' range = '; print: self range; show: ')'! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'testing' !
+
+
+isFullyVisible ^<Boolean>
+
+	^self shown >= self range! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'constants' !
+
+
+arrowScrollDist ^<Int>
+	"when clicking on the scroll down/up arrow on a scrollbar, this is the
+	 number of pixels the scroll is considered to be)"
+	 
+	 ^10!
+
+minArrowScrollDist ^<Int>
+	"when clicking on the scroll down/up arrow on a scrollbar, we try to move at least
+	  this many pixels, subject to the grid)"
+	 
+	 ^10! !
+

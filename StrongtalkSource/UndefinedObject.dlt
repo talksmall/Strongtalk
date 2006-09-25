@@ -1,0 +1,50 @@
+Delta define: #UndefinedObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #UndefinedObject) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #UndefinedObject) group: 'base'!
+
+(Delta mirrorFor: #UndefinedObject)
+comment: 
+'This class generally has one instance: nil.
+
+Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'testing' !
+
+
+isNil ^<Boolean>
+
+	^true!
+
+notNil ^<Boolean>
+
+	^false! !
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+
+	self messageNotUnderstood:
+		(Message receiver: self selector: #copy arguments: #())! !
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	^other isNil! !
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm putAll: 'nil'! !
+

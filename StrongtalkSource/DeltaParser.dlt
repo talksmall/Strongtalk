@@ -1,0 +1,1617 @@
+Delta define: #DeltaParser as: (
+(Class subclassOf: 'Object' instanceVariables: 'pseudoVars error scanner <DeltaScanner>  token <Symbol>  topScope <Scope> prevTokenBegin <Int> prevTokenEnd <Int> nodePositions defsAllowed <Boolean> ')) !
+
+(Delta mirrorFor: #DeltaParser) revision: '$Revision: 1.15 $'!
+
+(Delta mirrorFor: #DeltaParser) group: 'ast'!
+
+(Delta mirrorFor: #DeltaParser)
+comment: 
+'The Strongtalk parser.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaParser) methodsFor: 'grammar-private' !
+
+
+array ^ <VarOrdCltn[DeltaLiteral]>
+    | a <VarOrdCltn[DeltaLiteral]>  |
+
+    self check: #lparen.
+    a := OrderedCollection[DeltaLiteral]  new.
+    [(token ~= #rparen) and: [token ~= #eos]] whileTrue: [
+        a add: (self literal: false)
+    ].
+    self check: #rparen.
+    ^ a!
+
+assignment ^ <DeltaAssignment>
+    |
+    maybeVar <DeltaVariable | DeltaLiteral> 
+    var <DeltaVariable> 
+    expr <Expression> 
+    |
+    maybeVar := self variable.
+    self check: #becomes.
+    expr := self expression.
+    ^ maybeVar isRefNode
+        ifTrue: [
+            var := guaranteed <DeltaRef>  maybeVar.
+            (var decl isParameterNode)
+                ifTrue: [self error: 'variable must not be a parameter'.]
+                ifFalse: [self node: (DeltaAssignment new to: var assign: expr) beginNode: var endNode: expr]
+        ]
+        ifFalse: [self error: 'left-hand must be a variable'.]!
+
+binaryClassOrMixin
+
+| expr sel |
+
+expr := self unaryClassOrMixin.
+   [self binaryClassOrMixinSel] 
+      whileTrue: [
+                            sel := self get: #binarySel.
+                            expr := sel = #* ifTrue:[self node:(DeltaMixinCompositionNode new inputMixin: expr outputMixin: self unaryClassOrMixin) begin: 0 end: 0]
+                                                          ifFalse:[sel = #|> ifTrue:[self node:(DeltaMixinInvocationNode new mix: expr on: self unaryClassOrMixin) begin: 0 end: 0]
+                                                                                           ifFalse:[self node:(DeltaMixinInvocationNode new mix: self unaryClassOrMixin on: expr) begin: 0 end: 0]
+                                                                        ]
+                            ].
+
+^expr
+       !
+
+binaryClassOrMixinSel ^ <Boolean>
+
+| tokenVal |
+
+tokenVal := scanner tokenVal.
+^token = #binarySel and:[tokenVal = #* or:[tokenVal = '|>' asSymbol or: [tokenVal = '<|' asSymbol]]].
+!
+
+binaryExpr ^ <Expression>
+    | expr <Expression>  msg <Message>  |
+    expr := self unaryExpr.
+    [self binarySel] whileTrue: [
+	   msg := self binaryMsg.
+        expr := self node: (DeltaNormalSend new to: expr send: msg) beginNode: expr endNode: msg
+    ].
+    ^ expr!
+
+binaryMsg ^ <DeltaMessage>
+    |
+    sel <Symbol> 
+    args <VarOrdCltn[Expression]> 
+    start <Int> 
+    |
+    self assert: [self binarySel].
+    sel := scanner tokenVal.
+    start := scanner tokenBeg.
+    self nextToken.
+    args := OrderedCollection[Expression]  new.
+    args add: self unaryExpr.
+    ^self node: (DeltaMessage new send: sel with: args) begin: start endNode: args last
+!
+
+binaryMsgSequence ^ <OrdCltn[DeltaMessage]>
+    | msgs <VarOrdCltn[DeltaMessage]>  |
+
+msgs := OrderedCollection[DeltaMessage]  new.
+msgs addFirst: self binaryMsg.
+[self binarySel] whileTrue:[msgs addLast: self binaryMsg.].
+token = #keyword ifTrue:[msgs addLast: self keywordMsg].
+^msgs!
+
+binarySel ^ <Boolean>
+    ^ (((((token = #binarySel) or: [token = #less]) or: [token = #greater]) or: [token = #vbar]) or: [token = #comma]) or: [token = #slash]!
+
+block ^ <DeltaBlock>
+    |
+    pars
+    blk  <DeltaBlock> 
+    start <Int> 
+    |
+    self check: #lbracket.
+    start := prevTokenBegin.
+    self openCodeScope.
+
+    pars := OrderedCollection new.
+    token = #colon ifTrue: [self parameters: pars].
+
+    blk := DeltaBlock new body: (self body: pars).
+    self closeScope.
+    self check: #rbracket.
+    ^self node: blk begin: start end: prevTokenEnd!
+
+blockType ^ <DeltaBlockApplicationType>
+    |
+    tas <VarOrdCltn[ObjectType]> 
+    start <Int> 
+    tid <DeltaTypeId> 
+    |
+    self check: #lbracket.
+    start := prevTokenEnd.
+    tid := self node: (DeltaTypeId new setId: #Fun; scope: DeltaGlobals) begin: start end: start.
+    tas := token  == #rbracket ifFalse:[self blockTypeArgList]
+                                                       ifTrue:[self defaultBlockTypeArgList].
+    self check: #rbracket.
+    ^self node: (DeltaBlockApplicationType new apply: tid  to: tas) begin: start end: prevTokenEnd!
+
+blockTypeArgList ^ <VarOrdCltn[ObjectType]>
+    |
+    tas <VarOrdCltn[ObjectType]> 
+    first <ObjectType> 
+    |
+    tas := OrderedCollection[ObjectType]  new.
+    token = #arrow
+        ifTrue: [
+            self nextToken.
+            tas addLast: self typeExpr.
+        ]
+    ifFalse: [
+        first :=  self typeExpr.
+        tas :=
+            token = #comma
+                ifTrue: [self nextToken. self blockTypeArgList]
+                ifFalse: [self defaultBlockTypeArgList].
+        tas addFirst: first.
+    ].
+    ^ tas.!
+
+blockTypeArguments ^ <OrdCltn[ObjectType]>
+    | tas <VarOrdCltn[ObjectType]>  |
+
+    self check: #lbracket.
+    tas := self blockTypeArgList.
+    self check: #rbracket.
+    ^tas!
+
+body: pars ^ <DeltaCodeBody>
+    |
+    temps <OrdCltn[Statement]> 
+    stats <OrdCltn[Statement]> 
+    codeBody <DeltaCodeBody> 
+    |
+
+    temps := OrderedCollection new.
+    token = #vbar ifTrue: [self temporaries: temps].
+
+    stats := OrderedCollection new.
+    (token ~= #eos) & (token ~= #rbracket) ifTrue: [self statements: stats].
+
+    topScope parameters: pars.
+    topScope temporaries: temps.
+
+    codeBody :=
+        DeltaCodeBody new
+            parameters: pars
+            temporaries: temps
+            statements: stats
+            scope: topScope.
+
+    stats isEmpty
+        ifTrue: [^self node: codeBody begin: prevTokenEnd end: prevTokenEnd]
+        ifFalse: [^self node: codeBody beginNode: stats first endNode: stats last]
+!
+
+classOrMixin
+
+^self binaryClassOrMixin!
+
+defaultBlockTypeArgList  ^ <VarOrdCltn[ObjectType]> 
+
+^OrderedCollection[ObjectType] new
+   addLast: (self node: (DeltaTypeId new setId: #Object; scope: topScope) 
+                               begin: prevTokenBegin 
+		                     end: prevTokenBegin);
+   yourself!
+
+dllCall ^ <DLLCall>
+    |
+    start <Int> 
+    dllName <Symbol> 
+    proxy <DeltaVariable | DeltaLiteral> 
+    functionName <Symbol> 
+	async
+    msg <Message> 
+    |
+    start := scanner tokenBeg.
+    self check: #less.
+    dllName := self get: #identifier.
+    proxy := self variable.
+    functionName := self get: #identifier.
+	async :=
+		(token = #identifier and: [ scanner tokenVal = #async ])
+			ifTrue: [ self nextToken. true ]
+			ifFalse: [ false ].
+    self check: #greater.
+    msg := self message.
+    ^self node: (DeltaDLLCall new to: dllName send: msg called: functionName return: proxy async: async) begin: start endNode: msg
+!
+
+expr ^ <Expression>
+    |
+    primary <Expression> 
+    sends <OrdCltn[OrdCltn[DeltaMessage]]> 
+    exp <Expression> 
+    initialSend <DeltaSend> 
+    |
+    (token = #identifier and: [scanner tokenVal = #super])
+        ifTrue: [
+            primary := self super.
+            sends := self send.
+        ]
+        ifFalse: [
+            (token = #identifier and: [scanner tokenVal = #guaranteed])
+                ifTrue: [
+                    primary := self guaranteed.
+                    sends := OrderedCollection[OrdCltn[DeltaMessage]]  new
+                ]
+                ifFalse: [
+                    primary := self primary.
+                    sends :=
+                        (token = #identifier or: [self binarySel or: [token = #keyword]])
+                            ifTrue: [self send]
+                            ifFalse: [OrderedCollection[OrdCltn[DeltaMessage]]  new]
+                     ]
+        ].
+
+    exp :=
+        sends isEmpty
+            ifTrue: [primary]
+            ifFalse: [
+                 sends first
+                    inject: primary
+                    into: [ :target <Expression>  :msg <DeltaMessage>  |
+                        initialSend :=
+                            self node: (DeltaNormalSend new to: target send: msg) beginNode: target endNode: msg
+                    ].
+                sends last
+                    inject: initialSend
+                    into: [ :target <DeltaSend>  :msg <DeltaMessage>  |
+                        self node: (DeltaCascadedSend new to: target cascade: msg) beginNode: target endNode: msg 
+                    ]
+            ].
+
+    ^ exp!
+
+expression ^ <Expression>
+    ^ scanner copy token = #becomes
+        ifTrue: [self assignment]
+        ifFalse: [self expr]!
+
+genericTypeArgument  ^ <DeltaTypeFormal>
+
+"
+GenericTypeArgumentClause  -> ((Id [Variance]) | Id) [TypeParamConstraint]
+"
+
+ |
+ tv <DeltaTypeVar>
+ tf <DeltaTypeFormal>
+ start <Integer>
+ tid <Symbol>
+ tpc <TypeParamConstraint> 
+ variance <Symbol>
+ |
+
+start := scanner tokenBeg.
+variance := #unrelated.
+token = #lparen
+  ifTrue:[
+               self get: #lparen.
+               tid :=  self get: #identifier.
+               variance := self variance.
+               self check: #rparen.
+               ]
+  ifFalse:[tid :=  self get: #identifier].
+
+token = #less
+     ifTrue:[tpc := self typeParamConstraint.]
+     ifFalse:[tpc := Association 
+								key:#subtypeOf: 
+								value: (self node: (DeltaTypeId new setId: #Object; scope: DeltaGlobals) begin: prevTokenBegin end: prevTokenBegin)
+                    ].
+
+tv := self node: (DeltaTypeVar new name: tid bound: tpc value; subtype: tpc key = #subtypeOf:) begin: start endNode: tpc value.
+
+^self node: (DeltaTypeFormal new variance: variance typeVar: tv) begin: start endNode: tv
+!
+
+guaranteed ^ <DeltaGuaranteed>
+    |
+    guarantee < DeltaGuaranteed > 
+    start < Integer > 
+    |
+
+    (token = #identifier and: [scanner tokenVal = #guaranteed])
+        ifTrue: [
+            start := scanner tokenBeg.
+            self nextToken.
+            guarantee := self node: (DeltaGuaranteed new type: self type expr: self primary) begin: start end: prevTokenEnd
+        ]
+        ifFalse: [self error:' ''guaranteed'' expected'].
+
+    ^ guarantee.!
+
+ifUnary: unaryBlock <[^Object] >ifBinary: binaryBlock <[^Object] >ifKeyword: keywordBlock <[^Object] >else: elseBlock <[^Object] > ^ <Self>
+    token = #identifier ifTrue: [^ unaryBlock value].
+    self binarySel ifTrue: [^ binaryBlock value].
+    token = #keyword ifTrue: [^ keywordBlock value].
+    ^ elseBlock value!
+
+inferenceClause ^ <ObjectTypeInferenceClause>
+    |
+argIndex <Int> 
+id <Symbol> 
+clause <ObjectTypeInferenceClause> 
+start <Int> 
+target <InferenceClause> 
+ |
+
+start := self scanner tokenBeg.
+id := self get: #identifier.
+(id = #returnType)
+  ifTrue:[
+            clause := self returnTypeInferenceClause
+            ]
+  ifFalse:[id = #arg
+                ifTrue:[
+                         token = #number ifFalse:[self error: 'integer expected'].
+                         argIndex := scanner tokenVal.
+                         self nextToken.
+                         token = #identifier ifTrue:[target := self inferenceClauseTail].
+                         clause := self node: (DeltaArgTypeSelection new target: target arg: argIndex) begin: start end: prevTokenEnd
+                         ]
+    ifFalse:[id = #typeArg ifTrue:[clause := self typeArgInferenceClause]
+	ifFalse:[id = #receiverType ifFalse:[self error: ' ''returnType'', ''arg'' or ''receiverType'' expected']
+                                           ifTrue:[clause := self node: (DeltaReceiverTypeSelection new) begin: start end: prevTokenEnd]]]].
+^clause!
+
+inferenceClauseTail ^ <MsgSignatureInferenceClause>
+    |
+    id <Symbol> 
+    clause <MsgSignatureInferenceClause> 
+    |
+    self scanner tokenBeg.
+    id := self get: #identifier.
+    id = #of
+        ifTrue: [clause := self msgSelector]
+        ifFalse: [self error: ' ''of'' expected'].
+    ^ clause.!
+
+keywordMsg ^ <DeltaMessage>
+    | sel <Str>  args <VarOrdCltn[Expression]>  start <Int>  |
+    token = #keyword ifFalse: [self error: 'keyword expected'].
+    start := scanner tokenBeg.
+    sel := ''.
+    args := OrderedCollection[Expression]  new.
+    [token = #keyword] whileTrue: [
+        sel := sel, scanner tokenVal asString.
+        self nextToken.
+        args add: self binaryExpr
+    ].
+    ^self node: (DeltaMessage new send: sel asSymbol with: args) begin: start end: prevTokenEnd!
+
+literal: withHash <Boolean > ^ <DeltaLiteral>
+    token = #number ifTrue: [^ self literalNumber].
+    token = #character ifTrue: [^ self literalChar].
+    token = #string ifTrue: [^ self literalString].
+    withHash ifTrue: [
+        token = #hash
+            ifTrue: [self nextToken]
+            ifFalse: [self error: 'Primary expected']
+        ].
+    ^ token = #lparen
+        ifTrue: [self literalArray]
+        ifFalse: [self literalSymbol]!
+
+literalArray ^ <DeltaArray>
+    |
+    start <Int> 
+    val <Symbol> 
+    |
+    start := scanner tokenBeg.
+    val := self array.
+    "self nextToken."
+    ^self node: (DeltaArray new value: val) begin: start end: prevTokenEnd!
+
+literalChar ^ <DeltaChar>
+    | start <Int>   val <Symbol>  |
+
+    start := scanner tokenBeg.
+    val := scanner tokenVal.
+    self nextToken.
+    ^self node: (DeltaChar new value: val) begin: start end: prevTokenEnd!
+
+literalNumber ^ <Self>
+    | start <Int>  val <Object>  constructor <DeltaLiteral class>  |
+    start := scanner tokenBeg.
+    val := scanner tokenVal.
+    self nextToken.
+      constructor :=
+        (val isKindOf: SmallInteger)
+              ifTrue: [DeltaSmallInt]
+              ifFalse:[(val isKindOf: Integer) ifTrue: [DeltaInt]
+              ifFalse: [(val isKindOf: Float) ifTrue: [DeltaFloat]
+              ifFalse: [self error: 'Number scanned is not a number']]].
+    ^self node: (constructor new value: val) begin: start end: prevTokenEnd.!
+
+literalString ^ <DeltaString>
+    | start <Int>  val <Symbol>  |
+
+start := scanner tokenBeg.
+val := scanner tokenVal.
+self nextToken.
+ ^self node: (DeltaString new value: val) begin: start end: prevTokenEnd!
+
+literalSymbol ^ <DeltaSymbol>
+    | start <Int>  val <Symbol>  |
+
+start := scanner tokenBeg.
+val := self symbol.
+ ^self node: (DeltaSymbol new value: val) begin: start end: prevTokenEnd!
+
+message ^ <DeltaMessage>
+    ^ self
+        ifUnary: [self unaryMsg]
+        ifBinary: [self binaryMsg]
+        ifKeyword: [self keywordMsg]
+        else: [self error: 'Msg expected'].!
+
+messagePattern  ^ <MsgSignature>
+    |
+    pars  <OrdCltn[DeltaParameter]>
+    pattern <DeltaMessagePattern> 
+    |
+
+    self openNonCodeScope.
+    pars := OrderedCollection new.
+    pattern := self msgPattern: pars isMessage: true.
+    self closeScope.
+    ^ pattern!
+
+method  ^ <DeltaMethod>
+    |
+    pars <OrdCltn[DeltaParameter]>
+    pattern <DeltaMessagePattern> 
+    method <DeltaMethod> 
+    copiedPars  <OrdCltn[DeltaParameter]>
+    |
+
+    self openNonCodeScope. 
+ " method header must not reference scope of method body"
+    pars := OrderedCollection [DeltaParameter]new.
+    pattern := self msgPattern: pars.
+"header done, open code scope for method body"
+    self openCodeScope.
+    self deltaHack.
+    self declare: (DeltaReceiver new name: #self type: (topScope at: #self) type).
+   "#self must be present in method scope because from the compilers viewpoint
+     it is not imported from an outer scope, so we duplicate the declaration."
+  "For the same reason, we duplicate the parameters.
+   Both these hacks will go away when the CodeScopes are factored out of the
+   AST"
+   copiedPars := OrderedCollection  [DeltaParameter] new.
+   pars do: [: p <DeltaParameter> | 
+                   self declare: (p class new  name: p name type: p type).
+                   copiedPars add: (topScope at: p name).
+                   ].
+    method :=
+        DeltaMethod new
+            selector: pattern selector
+            type: pattern type
+            visibility: #public
+            body: (self body: copiedPars).
+    self closeScope.
+    self check: #eos.
+    ^self node: method begin: 1 end: scanner source size + 1!
+
+methodSignature  ^ <MsgSignature>
+    |
+    pars  <OrdCltn[DeltaParameter]>
+    pattern <DeltaMessagePattern> 
+    |
+
+    self openNonCodeScope.
+    pars := OrderedCollection new.
+    pattern := self msgPattern: pars.
+    self closeScope.
+    ^ pattern type!
+
+mixinExpr 
+
+!
+
+msgDeclaration
+
+^self msgPattern:  OrderedCollection[DeltaParameter] new isMessage: true.
+!
+
+msgPattern: pars <OrdCltn[DeltaParameter]>  ^ <DeltaMessagePattern>
+"This message parses a message pattern - the header of a
+Strongtalk method,  or a message declaration"
+
+^self msgPattern: pars isMessage: false.!
+
+msgPattern: pars  <OrdCltn[DeltaParameter]> isMessage: isMsg <Boolean>  ^ <DeltaMessagePattern>
+"This message parses a message pattern - the header of a
+Strongtalk method,  or a message declaration"
+    |
+    sel <Str> 
+    decl
+    domain <VarOrdCltn[ObjectType]> 
+    range <ObjectType> 
+    type <DeltaMsgSignature> 
+    tPat <OrdCltn[InferredTypeVar]> 
+    msgPat <DeltaMessagePattern> 
+    start <Int>  
+    hasType <Boolean>  
+    formals <OrdCltn[TypeFormal]> 
+    variableDeclParser <[DeltaVar class]>
+    msgSigConstructor <MsgSignature class>
+    polyMsgSigConstructor <PolyMsgSignature class>
+    inferenceTool <InferenceSugarTool>
+    |
+
+    isMsg ifTrue:[
+                             variableDeclParser :=  [:dp <DeltaVar class> | self variableDeclForMsgDeclOf: dp parameters: pars].
+                             msgSigConstructor := DeltaProtocolMsgSignature.
+                             polyMsgSigConstructor := DeltaPolyProtocolMsgSignature.
+                             ]
+               ifFalse:[
+                             variableDeclParser := [:dp <DeltaVar class> | self variableDecl: dp].
+                             msgSigConstructor := DeltaMsgSignature.
+                             polyMsgSigConstructor := DeltaPolyMsgSignature.
+                              ].
+    start := scanner tokenBeg.
+"We assume initially that no explicit return type will be given"
+    hasType := false.
+" The header may contain 'def clauses' - references to type arguments
+that should be automatically defined. The syntax for these is only
+acceptable in certain contexts,  so here we explicitly set the necessary
+flag so that such defs are acceptable."
+    self defsAllowed: true.
+"The first (and possibly only) part of a message pattern is a
+selector, with value argument declarations. We parse this.
+We use the block variableDeclParser to parse the formal arguments
+and later check to see if a type argument pattern follows."
+    domain := OrderedCollection[ObjectType]  new.
+    self
+        ifUnary: [
+            sel := scanner tokenVal.
+            self nextToken.
+        ]
+        ifBinary: [
+            sel := scanner tokenVal.
+            self nextToken.
+            decl := variableDeclParser value: DeltaParameter.
+            pars add: decl.
+            domain add: decl declaredType.
+        ]
+        ifKeyword: [
+            sel := ''.
+            [token = #keyword] whileTrue: [
+                sel := sel, scanner tokenVal asString.
+                self nextToken.
+                decl := variableDeclParser value: DeltaParameter.
+                pars add: decl.
+                domain add: decl declaredType.
+            ]
+        ]
+        else: [self error: 'MsgPattern expected'].
+
+"Having parsed the first part of the message pattern, we must
+disallow further 'def clauses'"
+    self defsAllowed: false.
+"Now we check to see if a return type is explicitly declared.
+We must see a '^' followed by a '<' marking the beginning of a type.
+Otherwise, the '^' might be a return expression in a method body.
+"
+    ((token = #arrow) and: [scanner copy token = #less])
+        ifTrue: [
+            "accept ^ only if followed by a type."
+			hasType := true. "note that an explicit return type was provided"
+            self nextToken.
+            range := self type.
+        ]
+        ifFalse: [
+            range := self node: (DeltaTypeId new setId: #Self; scope: topScope) begin: prevTokenEnd end: prevTokenEnd "Self"
+        ].
+
+"Initially, we create a message signature node for the pattern just parsed"
+    type := self
+		node: (msgSigConstructor new domain: domain range: range)
+		beginNode: (domain isEmpty ifTrue: [range] ifFalse: [domain first])
+		endNode: range.
+
+ "At this point,  we must determine whether any formal type arguments were
+introduced by means of 'def clauses'. 
+We use InferenceSugarTool to process type and collect such formals.
+If there are none, formals will be set to an empty collection."
+
+    inferenceTool :=
+		DeltaInferenceSugarTool
+			topScope: self topScope 
+			errorBlock:
+				[ :n <ASTNode> :s <Str> |
+					error value:s value: (self nodeBeginFor: n)
+				].
+	type apply: inferenceTool.
+	formals := inferenceTool formals.
+
+"Explicitly declared formals may now follow. This is marked by the use '{{'.
+These formals are parsed using the typePattern routine, and added to formals."
+(token = #lbrace and: [scanner copy token ~= #lbrace])
+         ifTrue: [
+	     hasType := true.
+             tPat := self typePattern.
+             tPat do:[:tf <InferredTypeVar> | formals add: tf]].
+
+"If any formal type arguments were declared, either using 'def clauses' or
+explicitly or both, they will be stored in formals.  If formals is empty, we are
+sure that there are none. If there are formals, the type of the message/method
+must be a PolyMsgSignature, using the  formals defined, whose body is the
+msg signature created earlier. Otherwise, the type created previously is
+the type of the method/message.
+"
+     formals isEmpty ifFalse: [
+             type := self
+				node: (polyMsgSigConstructor new formals: formals body: type)
+				beginNode: type
+				endNode: (tPat isNil ifTrue: [type] ifFalse: [tPat last])
+            ].
+
+  isMsg ifTrue:[ type selector: sel asSymbol ].
+  
+"At this point, type is set correctly to be the type of the method/message, and the
+pattern as a whole can be represented by a node using the parsed selector and type."
+	msgPat := DeltaMessagePattern new selector: sel asSymbol type: type.
+
+"?"
+	^hasType
+		ifTrue: [self node: msgPat begin: start endNode: type]
+		ifFalse: [self node: msgPat begin: start end: prevTokenEnd]!
+
+msgSelector ^ <MsgSignatureInferenceClause>
+    |
+    id <Symbol> 
+    sel <Symbol> 
+    start <Int> 
+    |
+
+    start := self scanner tokenBeg.
+    sel := self symbolLiteral.
+    id := self get: #identifier.
+    id = #message ifFalse:[^self error: '''message'' expected'].
+    id := self get: #identifier.
+    id = #of ifFalse:[^self error: '''of'' expected'].
+    ^self 
+		node: (DeltaMsgTypeSelection new target: self inferenceClause selector: sel) 
+		begin: start 
+		end: prevTokenEnd!
+
+msgSequence ^ <OrdCltn[DeltaMessage]>
+    | seq <OrdCltn[DeltaMessage]>  |
+
+    ^ token = #identifier
+        ifTrue: [self  unaryMsgSequence]
+        ifFalse: [
+            self binarySel
+                ifTrue: [self binaryMsgSequence]
+                ifFalse: [OrderedCollection[DeltaMessage]  new add: self keywordMsg; yourself]
+        ]!
+
+optionalTypeExpr ^ <TypeExpr>
+
+^(token = #identifier or:[token = #lbracket or:[token = #lparen]]) 
+	 ifTrue:[self typeExpr]
+	 ifFalse:[DeltaNoTypeSpecifiedError new]!
+
+parameters: pars  ^ <Self>
+    | start <Int>   |
+
+    [token = #colon] whileTrue: [
+        start := scanner tokenBeg.
+        self nextToken.
+        pars add: (self variableDecl: DeltaParameter).
+    ].
+    self check: #vbar!
+
+parseTreeFor: node <ASTNode>  ^ <ParseTree>
+
+	^DeltaParseTree new 
+			body: node 
+			source: self scanner source
+			nodePositions: nodePositions 
+			commentPositions: 
+			self scanner commentPositions
+			
+	
+!
+
+primary ^ <Expression>
+    | expr <Expression>  tas <OrdCltn[ObjectType]>  varNode <DeltaRef | DeltaLiteral>  idNode <DeltaVariable>  |
+    token = #identifier
+        ifTrue: [
+                  expr := varNode := self variable.
+                  token = #lbracket
+                    ifTrue: [
+                               varNode isRefNode ifTrue:[idNode := guaranteed <DeltaVariable>  varNode.
+
+                              tas := self typeArguments.
+                               expr := self
+							node: (DeltaGenericApplicationExpression new apply: idNode to: tas)
+							beginNode: idNode
+							end: prevTokenEnd
+                               ]]
+        ]
+        ifFalse: [
+            token = #lparen
+                ifTrue: [
+                    self nextToken.
+                    expr := self expression.
+                    self check: #rparen
+                ]
+                ifFalse: [
+                    token = #lbracket
+                        ifTrue: [expr := self block]
+                        ifFalse: [
+                            token = #dlbrace
+                                ifTrue: [expr := self primitive]
+                                ifFalse: [expr := self literal: true]
+                        ]
+                ]
+        ].
+    ^ expr!
+
+primaryClassOrMixin ^ <ClassOrMixin>
+
+| 
+name <Symbol>  
+tid <DeltaTypeId> 
+tas <OrdCltn[ObjectType]>  
+start <Int>   
+constructor <GenericApplicationType class>  
+tf <GenericApplicationType>  
+cm <ClassOrMixin> 
+|
+
+
+   token = #lparen 
+           ifTrue:[
+                        self nextToken.
+                        cm := self classOrMixin.
+                        self check: #rparen.
+                        ^cm
+                        ].
+    name := guaranteed <Symbol>  ( self get: #identifier).
+    tf := tid := self node:(DeltaClassId new setId: name asSymbol;
+                                       scope: topScope) 
+                                       begin: (start := prevTokenBegin)
+                                       end: prevTokenEnd .
+    token = #lbracket
+      ifTrue: [
+                   constructor := DeltaGenericApplicationClassType.
+                   tas := self typeArguments.
+ 
+                   tf := self node: (constructor new apply: tid  to: tas)
+                                                   begin: start
+                                                   end: prevTokenEnd.
+                   ].
+    ^tf.
+!
+
+primitive ^ <DeltaPrimitive|DeltaDLLCall>
+    |  call <DeltaPrimitive | DeltaDLLCall>  |
+    self check: #dlbrace.
+    call :=
+        token = #less
+           ifTrue: [self dllCall]
+           ifFalse: [self primitiveCall].
+    self check: #drbrace.
+    ^ call!
+
+primitiveCall ^ <DeltaPrimitive>
+    | start <Int>  recv <DeltaVariable>  msg <Message>  |
+    start := scanner tokenBeg.
+    ((token = #identifier) and: [scanner tokenVal == #self])
+        ifTrue: [recv := guaranteed <DeltaVariable>  (self variable)]
+        ifFalse: [recv := nil].
+    msg := self message.
+    ^self node: (DeltaPrimitive new to: recv send: msg) begin: start endNode: msg
+!
+
+returnTypeInferenceClause ^ <DeltaReturnTypeSelection>
+    |  target <InferenceClause>  clause <DeltaReturnTypeSelection>  start <Int>  |
+
+start := prevTokenBegin.
+              (token = #identifier and:[
+              scanner tokenVal = #of]) ifFalse:[self error: '''of'' expected'.].
+self nextToken.
+target :=self msgSelector.
+clause := self node: (DeltaReturnTypeSelection new target: target) begin: start endNode: target.
+^clause.!
+
+send ^ <OrdCltn[OrdCltn[DeltaMessage]]>
+    | msgs < VarOrdCltn[OrdCltn[DeltaMessage]]>  cascadedMsgs <VarOrdCltn[DeltaMessage]>  |
+
+    msgs := OrderedCollection[OrdCltn[DeltaMessage]]  new.
+    cascadedMsgs := OrderedCollection[DeltaMessage]  new.
+    msgs addFirst: self msgSequence.
+    [token = #semicolon] whileTrue: [
+        self nextToken.
+        cascadedMsgs addLast: self message
+    ].
+    msgs addLast: cascadedMsgs.
+   ^msgs.!
+
+statement ^ <Statement>
+    | stat <Statement>  start <Int>  |
+        ^token = #arrow
+        ifTrue: [
+            start := scanner tokenBeg.
+            self nextToken.
+            topScope doesReturn.
+            self node: (DeltaReturnStat new return: self expression; scope: topScope) begin: start end: prevTokenEnd
+        ]
+        ifFalse: [self expression]!
+
+statements: stats  ^ <OrdCltn[Statement]>
+    |
+    t <Symbol> 
+    |
+    stats add: self statement.
+    [(token = #period) and: [((t := scanner copy token) ~= #rbracket) and: [t ~= #eos]]] whileTrue: [
+        self check: #period.
+        stats add: self statement
+    ].
+    token = #period ifTrue: [self nextToken]!
+
+super
+    | s "<DeltaVariable>" |
+
+    topScope accessSelf.
+    s := self node: (DeltaRef new decl: (topScope at: #super)) begin: scanner tokenBeg end: scanner tokenEnd.
+    self  get: #identifier.
+    ^ s!
+
+symbol ^ <Symbol>
+    | sym <Symbol>   pos <Int>  |
+    self
+        ifUnary: [sym := scanner tokenVal. self nextToken]
+        ifBinary: [sym := scanner tokenVal. self nextToken]
+        ifKeyword: [
+            sym := '' asSymbol.
+            pos := scanner tokenBeg.
+            [(token = #keyword) and: [pos = scanner tokenBeg]] whileTrue: [
+                sym := sym, scanner tokenVal asString.
+                pos := scanner tokenEnd.
+                self nextToken
+            ].
+            sym := sym asSymbol
+        ]
+        else: [
+            token = #string
+                ifTrue: [sym := scanner tokenVal asSymbol. self nextToken]
+                ifFalse: [self error: 'symbol expected']
+        ].
+    ^ sym!
+
+symbolLiteral ^ <Symbol>
+    self check: #hash.
+    ^ self symbol.!
+
+temporaries: temps  ^ <Self>
+    self check: #vbar.
+    [token = #identifier] whileTrue: [
+        temps add: (self variableDecl: DeltaTemporary)
+    ].
+    self check: #vbar
+!
+
+type ^ <TypeExpr>
+    | type <TypeExpr>  |
+
+    self check: #less.
+    type := self typeExpr.
+    self check: #greater.
+    ^type!
+
+typeArgInferenceClause ^ <ObjectTypeInferenceClause>
+"‘TypeArgInferenceClause = typeArg’ int ‘for generic’ SymbolLiteral ‘of’ InferenceClause"
+
+| typeArgIndex <Integer> id <Symbol> gid <Symbol> start <Int> |
+
+start :=  prevTokenBegin.
+token = #number ifFalse:[self error: 'integer expected'].
+typeArgIndex := scanner tokenVal.
+self nextToken.
+id := self get: #identifier.
+id = #for ifFalse:[self error: '''for'' expected'].
+id := self get: #identifier.
+id = #generic ifFalse:[self error: '''generic'' expected'].
+gid := self symbolLiteral.
+id := self get: #identifier.
+id = #of ifFalse:[^self error: '''of'' expected'].
+
+^self 	node: (GenericFormalInferenceClause 	target: self inferenceClause
+																	arg: typeArgIndex
+																	id: gid)
+			begin: start  end: prevTokenEnd
+!
+
+typeArguments ^ <OrdCltn[ObjectType]>
+    | tas <VarOrdCltn[ObjectType]>  |
+
+    self check: #lbracket.
+    tas := OrderedCollection[ObjectType]  new.
+    tas addFirst: self typeExpr.
+    [token = #comma] whileTrue: [
+        self nextToken.
+        tas addLast: self typeExpr.
+    ].
+    self check: #rbracket.
+    ^tas!
+
+typeBoundQualifier ^ <Symbol>
+    | id <Str>  |
+
+"TypeBoundQualifier = 'subtypeOf:' | 'inheritedTypeOf:'"
+
+id := self get: #keyword.
+(id = #subtypeOf:) ifTrue:[^ id].
+(id = #inheritedTypeOf:) ifFalse:[self error: '''subtypeOf:'' or ''inheritedTypeOf:'' expected'].
+"id := self get: #identifier.
+id = #types ifFalse:[self error: '''types'' expected']."
+^#inheritedTypeOf:!
+
+typeExpr ^ <TypeExpr>
+    |
+constructor <DeltaUnionType class | DeltaProtocolMerge class | DeltaProtocolOverride class> 
+te <TypeExpr> 
+t2 <TypeTerm> 
+	|
+
+    te := self typeTerm.
+    [(token = #vbar) | (token = #semicolon) | (token = #slash)]
+      whileTrue: [
+                       constructor := self constructorFor: token.
+                       self nextToken.
+                       t2 :=   self typeTerm.
+                       te := self node: (constructor new type1: te type2: t2) beginNode: te endNode: t2
+                       ].
+    ^te!
+
+typeFactor ^ <TypeFactor>
+    | name <Symbol>  tid <DeltaTypeId>  tas <OrdCltn[ObjectType]>  start <Int>   constructor <GenericApplicationType class>  tf <GenericApplicationType>  |
+
+    token = #lbracket ifTrue:[^self blockType].
+    token = #lparen ifTrue:[
+        self nextToken.
+            tf := self typeExpr.
+            self check: #rparen.
+            ^tf.
+             ].
+    name := guaranteed <Symbol>  ( self get: #identifier).
+    tf := tid := self 
+		node: (DeltaTypeId new setId: name asSymbol; scope: topScope)
+		begin: prevTokenBegin
+		end: prevTokenEnd.
+    token = #lbracket
+      ifTrue: [
+                 constructor := DeltaGenericApplicationType.
+                 tas := tid name asSymbol = #Fun
+                             ifFalse:[
+                                       tid name asSymbol = #Tuple 
+                                               ifTrue:[constructor := DeltaTupleType]
+                                               ifFalse:[tid name asSymbol = #VarTuple ifTrue:[constructor := DeltaVarTupleType]].
+                                       self typeArguments]
+                             ifTrue:[
+                                       constructor := DeltaBlockApplicationType.
+                                       self blockTypeArguments
+                                       ].
+                 tf := self node: (constructor new apply: tid to: tas) beginNode: tid end: prevTokenEnd.
+                 ].
+    ^tf.!
+
+typeFormalDecl ^ <InferredTypeVar>
+    |  tid <Symbol>  id <Symbol>   tpc <TypeParamConstraint>  ic <InferenceClause>   |
+
+id := self get: #identifier.
+id = #where
+  ifTrue:[
+            tid := id := self get: #identifier.
+            token = #less
+                ifTrue:[tpc := self typeParamConstraint.]
+                ifFalse:[tpc := Association key:#subtypeOf: value:(self node: (DeltaTypeId new setId: #Object; scope: DeltaGlobals) begin: prevTokenBegin end: prevTokenBegin)].
+            id := self get: #identifier.
+            id = #is
+               ifTrue:[
+                         ic := self inferenceClause.
+                         ]
+               ifFalse:[self error: ' ''is'' expected'].
+            ]
+  ifFalse:[self error: '''where'' expected'].
+" The newly declared type formal must exist in a scope of its own. This is
+because:
+1. Each type formal must see the preceding type formals,
+but not itself.
+2. The type formals must be visible in the method scope, but not visible in the
+    surrounding class.
+"
+self validatePolyTypeArg: tid in: topScope.
+self openTypeArgScope.
+^topScope at: tid put: (self node: (DeltaInferredTypeVar new name: tid bound: tpc value inferenceClause: ic subtype: tpc key = #subtypeOf:) begin: 0 end: 0).!
+
+typeParamConstraint ^ <TypeParamConstraint>
+    | tbq <Symbol>  te <TypeExpr>  |
+
+self check: #less.
+tbq := #subtypeOf:.
+token = #keyword
+  ifTrue:[tbq := self typeBoundQualifier].
+te := self typeExpr.
+self check: #greater.
+^Association key: tbq value: te!
+
+typePattern ^ <OrdCltn[InferredTypeVar]>
+    | tfs <VarOrdCltn[InferredTypeVar]>   savedScope <Scope> |
+
+self check: #lbrace.
+tfs := OrderedCollection [InferredTypeVar]  new.
+savedScope := self topScope.
+"The type formals should not be parsed in the scope of the method,
+but in the scope surrounding it. Then, each new type formal will introduce
+a new scope. The innermost type formal scope is should be the superscope
+of the method scope.
+Consequently, we adjust topScope here, and readjust at the end"
+self topScope: self topScope superScope.
+tfs addFirst: self typeFormalDecl.
+
+[token = #semicolon]
+  whileTrue:[
+                  self nextToken.
+                  tfs addLast: self typeFormalDecl.
+                  ].
+
+self check: #rbrace.
+savedScope superScope: self topScope.
+self topScope: savedScope.
+^tfs!
+
+typeTerm ^ <TypeTerm>
+    |
+    tTerm  <TypeTerm> 
+    unarySel <Symbol> 
+    stop <Int> 
+    |
+    tTerm := self typeFactor.
+    [token = #identifier] whileTrue: [
+        stop := scanner tokenEnd.
+        unarySel := self get: #identifier.
+        defsAllowed ifFalse:[unarySel = #def ifTrue:[self error: 'Type variable defs not allowed here'].].
+        tTerm := self
+			node: (DeltaUnaryTypeExpr new target: tTerm selector: unarySel)
+			beginNode: tTerm 
+			end: stop
+    ].
+    ^tTerm!
+
+unaryClassOrMixin ^ <ClassOrMixin>
+
+| expr sel <Str> |
+
+expr := self primaryClassOrMixin.
+token = #identifier ifTrue:[
+                                   sel := scanner tokenVal.
+                                   (sel = #mixin  or:[sel = #delta])
+                                      ifTrue:[
+                                                   self get: #identifier.
+                                                    expr := self node:(DeltaMixinDerivationNode new class: expr selector: sel asSymbol) begin: 0 end: 0
+                                                    ].
+                                   ].
+^expr
+       !
+
+unaryExpr ^ <Expression>
+    | expr <Expression>  msg <Message>  |
+    expr := (token = #identifier and:[scanner tokenVal = #super])
+                           ifTrue:[self super] ifFalse:[self primary.].
+
+    [token = #identifier] whileTrue: [
+		msg := self unaryMsg.
+        expr := self node: (DeltaNormalSend new to: expr send: msg) beginNode: expr endNode: msg.
+    ].
+    ^ expr!
+
+unaryMsg ^ <DeltaMessage>
+    | msg <DeltaMessage>  |
+    token = #identifier ifFalse: [self halt].
+    msg := self
+		node: (DeltaMessage new send: scanner tokenVal with: OrderedCollection[Expression]  new)
+		begin: scanner tokenBeg 
+		end: scanner tokenEnd.
+    self nextToken.
+    ^ msg!
+
+unaryMsgSequence ^ <OrdCltn[DeltaMessage]>
+    | msgs <VarOrdCltn[DeltaMessage]>  |
+
+    msgs := OrderedCollection[DeltaMessage]  new.
+    msgs addFirst: self unaryMsg.
+    [token = #identifier] whileTrue:[msgs addLast: self unaryMsg.].
+    [self binarySel] whileTrue: [msgs addLast: self binaryMsg.].
+    token = #keyword ifTrue: [msgs addLast: self keywordMsg].
+    ^ msgs!
+
+validatePolyTypeArg: ptn <Symbol> in: s <Scope>
+" 
+This method is designed to check if the type argument named ptn is already
+defined in the current parametrically polymorphic method or message,
+and to generate an error if this is the case. It recurses up the scope chain until
+it reaches a scope that is not a polyArgScope - in other words, a scope that does 
+not house polymorphic type arguments.
+"
+s isPolyArgScope ifFalse:[^self].
+(s includesIndexLocally: ptn) ifTrue:[self error: ptn , ' already defined']
+                                                       ifFalse:[self validatePolyTypeArg: ptn in: s superScope].!
+
+variable ^ <DeltaRef|DeltaLiteral>
+    |
+    name <Symbol> 
+    var <DeltaVarDecl> 
+    |
+    name := self get: #identifier.
+
+    "Check if pseudo variable:"
+    name == #super ifTrue: [^self error: 'super is not a valid primary expression'].
+    name == #nil ifTrue: [^self node: (DeltaNil new value: nil) begin: prevTokenBegin end: prevTokenEnd].
+    name == #true ifTrue: [^self node: (DeltaBool new value: true) begin: prevTokenBegin end: prevTokenEnd].
+    name == #false ifTrue: [^self node: (DeltaBool new value: false) begin: prevTokenBegin end: prevTokenEnd].
+
+    "Do lookup:"
+    var :=
+        topScope
+            at: name
+            ifAbsent: (self undeclaredVariableHandler: name).
+
+    ((var isReceiverNode) or: [var isInstVarNode]) ifTrue: [topScope accessSelf].
+    ^self node: (DeltaRef new decl: var) begin: prevTokenBegin end: prevTokenEnd
+!
+
+variableDecl: classOfVar <DeltaVar class > ^ <DeltaLocalVar>
+    | name <Symbol>  type <ObjectType>  vdec <DeltaLocalVar>  start <Int>  |
+    start := scanner tokenBeg.
+    name := self get: #identifier.
+    token = #less ifTrue: [type := self type]
+                           ifFalse:[type := self node: (DeltaNoTypeSpecifiedError new) begin: start end: start + name size].
+    (pseudoVars includes: name)
+        ifTrue: [self error: 'predeclared pseudo variable']
+        ifFalse: [
+            vdec := classOfVar new name: name type: type.
+            self declare: vdec
+        ].
+    ^self node: vdec begin: start end: prevTokenEnd.
+!
+
+variableDeclForMsgDeclOf: classOfVar <DeltaVar class > parameters: p  <OrdCltn[DeltaParameter]> ^ <DeltaLocalVar>
+
+"We take the parameter collection as an argument so we can tell what number of parameter we are
+declaring. This is used to give the parameter a default name. Ugh"
+    | name <Symbol>  type <ObjectType>  vdec <DeltaLocalVar>  start <Int>  |
+    start := scanner tokenBeg.
+    token = #identifier
+        ifTrue: [name := self get: #identifier]
+        ifFalse: [name :=  (p size + 1) printString asSymbol].     "Unique and invalid parameter name"
+    token = #less ifTrue: [type := self type]
+                           ifFalse:[type := self node: DeltaNoTypeSpecifiedError new begin: start end: start + name size].
+    (pseudoVars includes: name)
+        ifTrue: [self error: 'predeclared pseudo variable']
+        ifFalse: [
+            vdec := classOfVar new name: name type: type.
+            self declare: vdec ].
+	^self node: vdec begin: start end: prevTokenEnd
+!
+
+variableDeclForMsgDeclaration: classOfVar <DeltaVar class > ^ <DeltaLocalVar>
+    | name <Symbol>  type <ObjectType>  vdec <DeltaLocalVar>  start <Int>  |
+    start := scanner tokenBeg.
+    token = #identifier
+        ifTrue: [name := self get: #identifier]
+        ifFalse: [name := topScope nofParameters printString asSymbol].     "Unique and invalid parameter name"
+    token = #less ifTrue: [type := self type]
+                           ifFalse:[type := self node: DeltaNoTypeSpecifiedError new begin: start end: start + name size].
+    (pseudoVars includes: name)
+        ifTrue: [self error: 'predeclared pseudo variable']
+        ifFalse: [
+            vdec := classOfVar new name: name type: type.
+            self declare: vdec ].
+	^self node: vdec begin: start end: prevTokenEnd
+!
+
+variance  ^ <Symbol>
+| sym |
+token = #identifier
+  ifFalse:[^#covar]
+  ifTrue:[
+               sym := self get: #identifier.
+               sym = #covariant ifTrue:[^#covar].
+                sym = #covar ifTrue:[^#covar].
+               sym = #contravariant ifTrue:[^#contra].
+                sym = #contra ifTrue:[^#contra].
+               sym = #unrelated ifTrue:[^#unrelated].
+               self error: ' covar, contra or unrelated expected'.
+               ].! !
+
+! (Delta mirrorFor: #DeltaParser) methodsFor: 'parsing' !
+
+
+parseClassOrMixinExpr: s <Str>  within: aScope <DeltaScope >  ^ <ParseTree[ClassId | GenericApplicationClassType]>
+
+	^self parseClassOrMixinExpr: s within: aScope ifError: [ :msg <Str> :pos <Int> | Transcript show: msg; cr. self halt].
+!
+
+parseClassOrMixinExpr: s <Str>  within: aScope <DeltaScope > ifError: blk <[Str,Int]> ^ <ParseTree[ClassId | GenericApplicationClassType]>
+
+    | expr <Expression>    errorBlock <[Str, Int, ^BottomType]>  |
+
+   self open: (DeltaScanner new open: s ifError: blk)
+            within: aScope
+            ifError: blk.
+expr := self classOrMixin.
+ token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].
+^self parseTreeFor: expr
+!
+
+parseClassVarList: s <Str >   within: aScope <Scope>  ^ <OrdCltn[ParseTree[DeltaLocalVar]]>
+
+    ^self parseClassVarList: s within: aScope ifError: [ :msg <Str>  :pos <Int>  | Transcript show: msg; cr. self halt]!
+
+parseClassVarList: s <Str > within: aScope <Scope> ifError: blk <[Str,Int]> ^ <OrdCltn[ParseTree[DeltaLocalVar]]>
+
+     | vars <VarOrdCltn[DeltaVar]> |
+    self open: (DeltaScanner new open: s ifError: blk)  within: aScope ifError: blk.
+    vars := OrderedCollection[DeltaVarDecl]  new.
+    [token = #identifier] whileTrue: [vars addLast: (self parseTreeFor: (self variableDecl: DeltaClassVar))].
+    token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].
+    ^ vars !
+
+parseDoitExpr: src <Str> within: scope <Scope> ifError: blk <[Str,Int]> ^ <ParseTree[DeltaMethod]>
+	"Parse a doit expression <expr> within a dummy method: doit [ <expr> ].
+		The new scope used below shouldn't really be necessary, 	but currently 
+		the compiler requires #self to be present in the method scope.
+		This is accomplished by copying the declaration from the outer scope."
+		
+	|
+	method <DeltaMethod>
+	newScope <DeltaScope>
+	prefix <Str>
+	suffix <Str>
+	errorBlk <[Str,Int]>
+	|
+	newScope := scope.
+	(newScope includesIndex: #self)
+		ifFalse: [	newScope := DeltaScope new initialize: newScope.
+							newScope at: #self put: (DeltaReceiver new name: #self type: nil) ].
+	prefix := 'doit ['.
+	suffix := ']'.
+	errorBlk := [ :msg <Str> :pos <Int> | ^blk value: msg value: pos - prefix size ].
+	self open: (DeltaScanner new open: (prefix, src, suffix) ifError: errorBlk) within: newScope ifError: errorBlk.
+	method  := self method.
+	token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].
+	^self parseTreeFor: method
+!
+
+parseIdList: s <Str >   within: aScope <Scope>  ^ <OrdCltn[ParseTree[DeltaLocalVar]]>
+    |
+    vars <VarOrdCltn[DeltaRef]> 
+    errorBlock <[Str, Int, ^BottomType]> 
+    |
+    errorBlock := [ :msg <Str>  :pos <Int>  | Transcript show: msg; cr. self halt].
+    self open: (DeltaScanner new open: s ifError: errorBlock) within: aScope  ifError: errorBlock.
+    vars := OrderedCollection[DeltaVarDecl]  new.
+    [token = #identifier] whileTrue: [vars addLast: (self parseTreeFor: self variable)].
+    ^ vars !
+
+parseInstVarList: s <Str >  within: aScope <Scope>  ^ <OrdCltn[ParseTree[DeltaLocalVar]]>
+
+    ^self parseInstVarList: s within: aScope ifError: [ :msg <Str>  :pos <Int>  | Transcript show: msg; cr. self halt]!
+
+parseInstVarList: s <Str >  within: aScope <Scope> ifError: blk <[Str,Int]> ^ <OrdCltn[ParseTree[DeltaLocalVar]]>
+    | i
+    vars <VarOrdCltn[DeltaVar]> 
+    errorBlock <[Str, Int, ^BottomType]> 
+    |
+    self open: (DeltaScanner new open: s ifError: blk) within: aScope ifError: blk.
+    vars := OrderedCollection[DeltaVarDecl]  new.
+self deltaHack. "remove ordinal num when constructors are used"
+    i := 1.
+    [token = #identifier] whileTrue: [vars addLast: (self parseTreeFor: ((self variableDecl: DeltaInstVar) ordinalNumber: i)).
+i := i + 1].
+    token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].    
+    ^ vars !
+
+parseMessageDeclaration: s   <Str>  within: aScope <DeltaScope> ifError: blk <[Str,Int]> ^ <ParseTree[DeltaMessagePattern]>
+
+	| mPattern <DeltaMessagePattern> | 
+    self open: (DeltaScanner new open: s ifError: blk) within: aScope ifError: blk.
+	mPattern := self messagePattern.
+    token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].
+	^self parseTreeFor: mPattern
+!
+
+parseMethod: s  <Str>  within: aScope <DeltaScope> ifError: blk <[Str,Int]> ^ <ParseTree[DeltaMethod]>
+
+    | method <DeltaMethod> |
+    self open: (DeltaScanner new open: s ifError: blk) within: aScope ifError: blk.
+    method  := self method.
+    token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].
+	^self parseTreeFor: method!
+
+parseMethodHeader: s   <Str>  within: aScope <DeltaScope> ifError: blk <[Str,Int]> ^ <ParseTree[DeltaMethod]>
+	| mPattern <DeltaMessagePattern> mtd <DeltaMethod> codeBody <DeltaCodeBody> | 
+
+    self open: (DeltaScanner new open: s ifError: blk) within: aScope ifError: blk.
+	mPattern := self messagePattern.
+	    codeBody :=
+        DeltaCodeBody new
+            parameters: OrderedCollection[DeltaVar] new
+            temporaries: OrderedCollection[DeltaVar] new
+            statements: OrderedCollection[DeltaStatement] new
+            scope: topScope.
+    mtd :=  DeltaMethod new
+    				  selector: mPattern selector
+    				  type: mPattern type
+    				  visibility: #public.				
+	^self parseTreeFor: mtd
+!
+
+parseMethodSignature: s  <DeltaMethod>  within: aScope <DeltaScope> ifError: blk <[Str,Int]> ^ <ParseTree[MsgSignature]>
+
+    |
+    sig <MsgSignature>
+    |
+
+    self open: (DeltaScanner new open: s ifError: blk) within: aScope ifError: blk.
+    sig  := self methodSignature.
+	^self parseTreeFor: sig!
+
+parseMixinExpr: s <Str>  within: aScope <DeltaScope >  ^ <ParseTree[ClassId | GenericApplicationClassType]>
+
+    | expr <Expression>    errorBlock <[Str, Int, ^BottomType]>  |
+
+  errorBlock := [ :msg <Str> :pos <Int> | Transcript show: msg; cr. self halt].
+   self open: (DeltaScanner new open: s ifError: errorBlock)
+            within: aScope
+            ifError: errorBlock.
+expr := self classOrMixin.
+ token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].
+^self parseTreeFor: expr
+!
+
+parseOptionalTypeExpr: s <Str >within: scope <DeltaScope >  ifError: blk <[Str,Int]> ^ <ParseTree[TypeExpr]>
+
+	self open: (DeltaScanner new open: s ifError: blk)
+		within: scope
+		ifError: blk.
+	^self parseTreeFor: self optionalTypeExpr
+!
+
+parseRefList: s <Str >   within: aScope <Scope>  ^ <OrdCltn[ParseTree[DeltaLocalVar]]>
+    |
+    vars <VarOrdCltn[DeltaRef]> 
+    errorBlock <[Str, Int, ^BottomType]> 
+    |
+    errorBlock := [ :msg <Str>  :pos <Int>  | Transcript show: msg; cr. self halt].
+    self open: (DeltaScanner new open: s ifError: errorBlock) within: aScope  ifError: errorBlock.
+    vars := OrderedCollection[DeltaVarDecl]  new.
+    [token = #identifier] whileTrue: [vars addLast: (self parseTreeFor: self variable)].
+    ^ vars !
+
+parseType: s <Str > within: aScope <DeltaScope > ifError: blk <[Str, Int]>   ^ <ParseTree[DeltaType]>
+
+| pt <ParseTree[DeltaType]> |
+
+	self open: (DeltaScanner new open: s ifError: blk) within: aScope ifError: blk.
+	pt := self parseTreeFor: self type.
+	token = #eos ifFalse:[blk value: 'unrecognized tokens at end of input' value: prevTokenEnd].
+	^pt
+!
+
+parseTypeArgs: s <Str >  within: aScope <DeltaScope >   ^ <OrdCltn[ParseTree[DeltaTypeFormal]]>
+    |
+    tas <OrdCltn[DeltaTypeFormal]>
+    errorBlock <[Str, Int, ^BottomType]> 
+    |
+
+    errorBlock := [ :msg <Str>  :pos <Int>  | Transcript show: msg; cr. self halt].
+    self open: (DeltaScanner new open: s ifError: errorBlock) within: aScope ifError: errorBlock.
+    tas := OrderedCollection[DeltaTypeFormal]  new.
+    tas addFirst: (self parseTreeFor: self genericTypeArgument).
+    [token = #comma] whileTrue: [
+        self nextToken.
+        tas addLast: (self parseTreeFor: self genericTypeArgument).
+    ].
+    token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].
+    ^ tas !
+
+parseTypeArgs: s <Str >  
+within: aScope <DeltaScope >  
+ifError: eb  <[Str,Int]> ^ <OrdCltn[ParseTree[DeltaTypeFormal]]>
+    |
+    tas <OrdCltn[ParseTree[DeltaTypeFormal]]>
+    |
+
+    self open: (DeltaScanner new open: s ifError: eb) within: aScope ifError: eb.
+    tas := OrderedCollection[ParseTree[DeltaTypeFormal]]  new.
+    tas addFirst: (self parseTreeFor: self genericTypeArgument).
+    [token = #comma] whileTrue: [
+        self nextToken.
+        tas addLast: (self parseTreeFor: self genericTypeArgument).
+    ].
+    token = #eos ifFalse:[self error: 'unrecognized tokens at end of input'].
+    ^ tas !
+
+parseTypeExpr: s <Str > within: scope <DeltaScope > ^ <ParseTree[TypeExpr]>
+
+	^self parseTypeExpr: s within: scope ifError: [ :msg <Str>  :pos <Int>  | Transcript show: msg; cr. self halt].
+!
+
+parseTypeExpr: s <Str >within: scope <DeltaScope >  ifError: blk <[Str,Int]> ^ <ParseTree[TypeExpr]>
+
+	self open: (DeltaScanner new open: s ifError: blk)
+		within: scope
+		ifError: blk.
+	^self parseTreeFor: self typeExpr
+!
+
+parseTypeFormalDecl: s <Str >  within: aScope <DeltaScope >   ^ <ParseTree[DeltaTypeFormal]>
+    |
+    tas <VarOrdCltn[DeltaTypeFormal]> 
+    errorBlock <[Str, Int, ^BottomType]> 
+    |
+
+    errorBlock := [ :msg <Str>  :pos <Int>  | Transcript show: msg; cr. self halt].
+    self open: (DeltaScanner new open: s ifError: errorBlock) within: aScope ifError: errorBlock.
+    ^self  parseTreeFor: self typeFormalDecl.
+ ! !
+
+! (Delta mirrorFor: #DeltaParser) methodsFor: 'private' !
+
+
+check: aToken <Symbol > ^ <Self>
+    token = aToken ifFalse: [self error: aToken asString, ' expected'].
+    self nextToken!
+
+closeScope ^ <Self>
+    topScope := topScope superScope!
+
+constructorFor: operator <Symbol > ^ <DeltaUnionTypeclass|DeltaProtocolMergeclass|DeltaProtocolOverrideclass>
+    operator = #vbar ifTrue: [^ DeltaUnionType].
+    operator = #semicolon ifTrue: [^ DeltaProtocolMerge].
+    operator = #slash
+        ifTrue: [^ DeltaProtocolOverride]
+        ifFalse: [^ self error: 'parser bug'].!
+
+convertToDeclRef: node ^ <Ref | GenericApplicationClassType>
+
+^self 
+	node: (node isRefNode
+		ifTrue: [ DeltaClassId new setId: node name; scope: DeltaGlobals ]
+		ifFalse: [ DeltaGenericApplicationClassType new apply: (self convertToDeclRef: node target) to: node actuals ])
+	beginNode: node 
+	endNode: node	
+!
+
+declare: var
+    topScope at: var name put: var ifThere: [self error: 'variable declared twice']!
+
+defsAllowed ^ <Boolean>
+
+^defsAllowed!
+
+defsAllowed: d <Boolean>
+
+defsAllowed := d.!
+
+error: aString <Str > ^ <BottomType>
+    error isNil
+        ifTrue: [super error: aString]
+        ifFalse: [error value: aString value: scanner tokenBeg - 1]!
+
+get: aToken <Symbol > ^ <Symbol>
+    | val <Symbol>  |
+    token = aToken
+        ifTrue: [val := scanner tokenVal. self nextToken. ^ val]
+        ifFalse: [self error: aToken asString, ' expected'. " ^ nil - this should never get executed - it would cause a crash"]!
+
+nextToken ^ <Self>
+    prevTokenBegin := scanner tokenBeg.
+    prevTokenEnd := scanner tokenEnd.
+    token := scanner token!
+
+open: aScanner <DeltaScanner >ifError: aBlock <[Str,Int,^BottomType] > ^ <Self>
+    self open: aScanner within: nil ifError: aBlock!
+
+open: aScanner <DeltaScanner >within: aScope <DeltaScope >ifError: aBlock <[Str,Int,^BottomType] > ^ <Self>
+    pseudoVars := #(self super nil true false).
+    scanner := aScanner.
+    error := aBlock.
+    topScope := aScope.
+    nodePositions := IdentityDictionary new.
+    self defsAllowed: false.
+    self nextToken!
+
+openCodeScope ^ <Self>
+    topScope := DeltaCodeScope within: topScope!
+
+openNonCodeScope ^ <Self>
+    topScope := DeltaScope within: topScope!
+
+openScope ^ <Self>
+    topScope := DeltaCodeScope within: topScope!
+
+openTypeArgScope ^ <Self>
+    topScope := DeltaPolyArgScope within: topScope!
+
+scanner ^ <DeltaScanner>
+    ^scanner!
+
+topScope
+
+^topScope!
+
+topScope: ts
+
+topScope := ts.!
+
+undeclaredVariableHandler: name <Symbol>  ^ <[^BottomType]>
+
+^ [(name at: 1) isLowercase
+            ifTrue: [self error: 'undeclared variable ', name.]
+            ifFalse: [ 
+"
+                            Transcript show: name asString, ' registered as undefined.' ; cr.
+                            Delta installPlaceHolderNamed: name.
+                            DeltaGlobals at: name.
+"
+                            Transcript show: 'Global ', name asString, ' is used but not defined so it has been added.' ; cr.
+                            Delta declareGlobal: name type: '' initialValue: Delta nilObj.
+                            DeltaGlobals at: name.
+                            ]
+    ].
+! !
+
+! (Delta mirrorFor: #DeltaParser) methodsFor: 'node location - private' !
+
+
+node: n <ASTNode> begin: b <Int> end: e <Int> ^<ASTNode>
+
+	self assert: [(nodePositions includesKey: n) not].
+	nodePositions at: n put: (b ,, e).
+	^n!
+
+node: n <ASTNode> begin: b <Int> endNode: en <ASTNode> ^<ASTNode>
+
+	^self node: n begin: b end: ((nodePositions at: en) at2)!
+
+node: n <ASTNode> beginNode: bn <ASTNode> end: e  <Int> ^<ASTNode>
+
+	^self node: n begin: ((nodePositions at: bn) at1) end: e!
+
+node: n <ASTNode> beginNode: bn <ASTNode> endNode: en <ASTNode> ^<ASTNode>
+
+	^self node: n begin: ((nodePositions at: bn) at1) end: ((nodePositions at: en) at2)!
+
+nodeBeginFor: n <ASTNode>  ^<Integer>
+
+	self assert: [(nodePositions includesKey: n)].
+	^(nodePositions at: n) at1
+!
+
+nodeEndFor: n <ASTNode>  ^<Integer>
+
+	self assert: [(nodePositions includesKey: n)].
+	^(nodePositions at: n) at2
+! !
+

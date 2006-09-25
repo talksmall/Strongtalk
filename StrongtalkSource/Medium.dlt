@@ -1,0 +1,68 @@
+Delta define: #Medium as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #Medium) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #Medium) group: 'ui'!
+
+(Delta mirrorFor: #Medium)
+comment: 
+'A Medium is a surface on which UI visuals may be displayed. 
+
+As a convenience, a medium can be used as a dummy parent for a visual if the visual is to be created
+and drawn on demand without recourse to notification of its parent, etc.  This gives the visual
+just enough information to allow it to determine its layout, and to display itself when requested, etc.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #Medium) methodsFor: 'accessing' !
+
+
+extent ^<Point>
+
+	self subclassResponsibility!
+
+newCanvas ^<Canvas>
+	"Create a new canvas that can write to the entire medium"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Medium) methodsFor: 'restricted-win32 accessing' !
+
+
+adjustPoints: p <Int> ^<Int>
+	"Adjust a font's point size for this medium"
+
+	self subclassResponsibility!
+
+deadjustPoints: p <Int> ^<Int>
+
+	self subclassResponsibility!
+
+hInstance ^<ExternalProxy>
+
+	^{{<kernel ExternalProxy GetModuleHandleA> handle: Win32 NULL}}! !
+
+! (Delta mirrorFor: #Medium) methodsFor: 'window creation' !
+
+
+newStandardWindow: name <Str>
+session: sess <Session>
+for: vis <Visual>
+^<StandardWindow>
+	"Create a standard top-level window.  This is normally done only by sessions; see
+		Session for programmer-level window creation protocol."
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #Medium) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream>
+
+	self subclassResponsibility! !
+

@@ -1,0 +1,38 @@
+Delta define: #DeltaFloatBinaryOp as: (
+(Class subclassOf: 'DeltaFloatExpression' instanceVariables: 'x f y ')) !
+
+(Delta mirrorFor: #DeltaFloatBinaryOp) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaFloatBinaryOp) group: 'ast'!
+
+(Delta mirrorFor: #DeltaFloatBinaryOp)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaFloatBinaryOp) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+    aTool floatBinaryOpNode: self!
+
+f
+	^ f!
+
+isFloatBinaryOpNode
+	^ true!
+
+x
+	^ x!
+
+x: arg1 f: op y: arg2
+	self assert: [ EnableFloatValues ].
+	self assert: [ arg1 isFloatExpressionNode ].
+	self assert: [ arg2 isFloatExpressionNode ].
+	x := arg1.
+	f := op.
+	y := arg2!
+
+y
+	^ y! !
+

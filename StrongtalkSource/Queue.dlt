@@ -1,0 +1,203 @@
+Delta define: #Queue as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'BasicInputStream[E] mixin |> (BasicOutputStream[E] mixin |> VarSequenceableCollection[E])' instanceVariables: 'head <DoubleLink[E]>
+tail <DoubleLink[E]>
+actualSize <Int>
+	'))) !
+
+(Delta mirrorFor: #Queue) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #Queue) group: 'base'!
+
+(Delta mirrorFor: #Queue)
+comment: 
+'Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+! (Delta mirrorFor: #Queue) classSide methodsFor: 'testing' !
+
+
+test
+
+	| q <Queue[Int]> |
+	q := Queue[Int] new.
+	q nextPut: 1; checkValidity; nextPut: 2; checkValidity; nextPut: 3; checkValidity; nextPut: 4; checkValidity.
+	[ #(1 2 3 4) hasSameElementsAndOrderAs: q ] verify.
+	
+	q remove: 2; checkValidity.
+	[ #(1 3 4) hasSameElementsAndOrderAs: q ] verify.
+
+	q remove: 4; checkValidity.
+	[ #(1 3) hasSameElementsAndOrderAs: q ] verify.
+
+	q remove: 1; checkValidity.
+	[ #(3) hasSameElementsAndOrderAs: q ] verify.
+
+	q remove: 3; checkValidity.
+	[ #() hasSameElementsAndOrderAs: q ] verify.! !
+
+! (Delta mirrorFor: #Queue) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+
+	^self head isNil!
+
+actualNext ^<E>
+
+	| l <DoubleLink[E]> |
+	l := self head.
+	self head: l next.
+	self head isNil
+		ifTrue: [ self tail: self head ].
+	self actualSize: self actualSize - 1.
+	^l value!
+
+actualSize ^<Int>
+
+	^actualSize!
+
+actualSize: s <Int>
+
+	actualSize := s!
+
+head ^<DoubleLink[E]>
+
+	^head!
+
+head: l <DoubleLink[E]>
+
+	head := l!
+
+linkAt: index <Int> ^<DoubleLink[E]>
+
+	| i <Int> next <DoubleLink[E]> |
+	i := 1.
+	next := self head.
+	[ i < index ]
+		whileTrue: [ next := next next.
+								i := i + 1. ].
+	^next!
+
+linkHolding: el <E> ^<DoubleLink[E]>
+	"return the link holding el.  Note that an element can be in the peek buffer as well as in 
+		a link, so this can't be done for all queue elements"
+
+	| next <DoubleLink[E]> |
+	next := self head.
+	[ next value = el ]
+		whileFalse: [ next := next next ].
+	^next!
+
+removeLink: l <DoubleLink[E]>
+	"remove the link holding el.  Note that an element can be in the peek buffer as well as in 
+		a link, so this can't be done for all queue elements"
+
+	l == self head
+		ifTrue: [ self head: l next ]
+		ifFalse: [ l prev next: l next ].
+	l == self tail
+		ifTrue: [ self tail: l prev ]
+		ifFalse: [ l next prev: l prev ].
+	self actualSize: self actualSize - 1.!
+
+tail ^<DoubleLink[E]>
+
+	^tail!
+
+tail: l <DoubleLink[E]>
+
+	tail := l! !
+
+! (Delta mirrorFor: #Queue) methodsFor: 'accessing' !
+
+
+at: index <Int> ^<E>
+
+	^self havePeeked
+		ifFalse: [ (self linkAt: index) value ]
+		ifTrue: [ index = 1
+						ifFalse: [ (self linkAt: index - 1) value ]
+						ifTrue: [ self peekVal ]
+					]!
+
+at: index <Int> put: el <E>  ^<E>
+
+	self havePeeked
+		ifFalse: [ (self linkAt: index) value: el ]
+		ifTrue: [ index = 1
+						ifFalse: [ (self linkAt: index - 1) value: el ]
+						ifTrue: [ self peekVal: el ]
+					].
+	^el!
+
+nextPut: el <E> ^<E>
+
+	| l <DoubleLink[E]> |
+	l := DoubleLink[E] new value: el.
+	tail isNil
+		ifFalse: [	self tail next: l.
+						l prev: self tail.	]
+		ifTrue: [ self head: l ].
+	self tail: l.
+	self actualSize: self actualSize + 1.
+	^el!
+
+size ^<Int>
+
+	^self havePeeked
+		ifFalse: [ self actualSize ]
+		ifTrue: [ self actualSize + 1 ]! !
+
+! (Delta mirrorFor: #Queue) methodsFor: 'copying' !
+
+
+copyWithSize: s <Int> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is safe because of the inference clause"
+	^(Array[EX] new: s) replaceFrom: 1 to: (self size min: s) with: (guaranteed <SeqCltn[EX]> self)! !
+
+! (Delta mirrorFor: #Queue) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self actualSize: 0.! !
+
+! (Delta mirrorFor: #Queue) methodsFor: 'removing' !
+
+
+remove: el <E> ^<E>
+
+	(self havePeeked and: [ self peekVal = el ])
+		ifTrue: [	self next.	]
+		ifFalse: [ self removeLink: (self linkHolding: el) ].
+	^el! !
+
+! (Delta mirrorFor: #Queue) methodsFor: 'consistency checking' !
+
+
+checkValidity
+
+	| c <Int> l <DoubleLink[E]> peekCount <Int> |
+	peekCount := self havePeeked ifTrue: [ 1 ] ifFalse: [ 0 ].
+	l := self head.
+	l isNil
+		ifTrue: [ [ self size = peekCount and: [ self tail isNil ] ] verify.
+						^self ].
+	[ l prev isNil ] verify.
+
+	c := 1.
+	[ l next notNil ]
+		whileTrue: [	| next <DoubleLink[E]> |
+								next := l next.
+								self assert: [ next prev == l ].
+								l := next.
+								c := c + 1 ].
+	[ self tail == l ] verify.
+	[ (c + peekCount) = self size ] verify.! !
+

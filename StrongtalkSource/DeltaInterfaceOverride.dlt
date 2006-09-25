@@ -1,0 +1,57 @@
+Delta define: #DeltaInterfaceOverride as: (
+(Class subclassOf: 'DeltaInterface' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaInterfaceOverride) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaInterfaceOverride) group: 'ast'!
+
+(Delta mirrorFor: #DeltaInterfaceOverride)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaInterfaceOverride) methodsFor: 'Unclassified' !
+
+
+associationsDo: b <[Assoc[Symbol,Type],^Object] > ^ <Self>
+	self delta associationsDo: b.
+	self base associationsDo:[:a <Assoc[Symbol, Type]>  |
+		(self delta includesIndex: a key) ifFalse: [b value: a]
+	]
+!
+
+at: k <Symbol >put: t <Type > ^ <Type>
+    ^self delta at: k put: t!
+
+attributes ^ <Dict[Symbol,Type]>
+    ^self delta attributes override: self base attributes!
+
+base ^ <Interface>
+    ^self type1!
+
+base: t1 <Interface >delta: t2 <Interface > ^ <Self>
+    self filter: (DeltaOverrideData[Interface]  new base: t1 delta: t2)
+      using: DeltaSubstitution new initialize!
+
+delta ^ <Interface>
+    ^self type2!
+
+do: b <[Type,^Object] > ^ <Self>
+	self delta do: b.
+	self base associationsDo:[:a <Assoc[Symbol, Type]>  |
+		(self delta includesIndex: a key) ifFalse:[b value: a value]
+	]
+!
+
+includesIndex: i <Symbol > ^ <Boolean>
+    ^(self type1 includesIndex: i) or: [self type2 includesIndex: i]!
+
+removeKey: k <Symbol >ifAbsent: b <[^Type] > ^ <Type>
+    ^self delta removeKey: k ifAbsent: b!
+
+type1 ^ <Interface>
+    ^self filteree type1 substitute: self substitution!
+
+type2 ^ <Interface>
+    ^self filteree type2 substitute: self substitution! !
+

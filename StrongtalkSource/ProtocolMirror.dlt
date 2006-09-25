@@ -1,0 +1,547 @@
+Delta define: #ProtocolMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee sourceInfo ')) !
+
+(Delta mirrorFor: #ProtocolMirror) revision: '$Revision: 1.15 $'!
+
+(Delta mirrorFor: #ProtocolMirror) group: 'reflection'!
+
+(Delta mirrorFor: #ProtocolMirror)
+comment: 
+'This class represents a mirror on a protocol declaration.
+
+The mirror is on the run-time representation of a protocol,
+of class Protocol, that only retains its name.
+
+The protocol is used as a key to look up source code and type information.
+The mirror allows certain manipulations of these.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ProtocolMirror) classSide methodsFor: 'Unclassified' !
+
+
+on: protocol <Protocol> ^ <Instance> 
+
+	^self new reflectee: protocol!
+
+superProtocol: name <Str> subtype: b <Boolean> ^ <Instance>
+
+    ^(self on: Protocol new) initializeSuperProtocol: name subtype: b branded: true! !
+
+! (Delta mirrorFor: #ProtocolMirror) methodsFor: 'Unclassified' !
+
+
+addMessage: src <Str> category: cat <Str> ifFail: aBlock ^ <ParseTree>
+
+	|  pt <ParseTree> mp <MessagePattern> | 
+
+	pt := self addMessage: src  ifFail: aBlock.
+	mp := pt body.
+	self sourceInfo source: src category: cat visibility: #public typeFormat: (mp type formattedName: pt) forSelector: mp selector.
+	^pt!
+
+addMessage: src <Str>  ifFail: aBlock ^ <ParseTree>
+	"Private"
+	|  pt <ParseTree> mp <MessagePattern> |
+
+	pt := self parseMessage: src ifFail: aBlock.
+	mp := pt body.
+	self messages at: mp selector put: mp type.
+	^pt
+!
+
+addMethod: str <Str> visibility: v <Symbol> category: cat <Str> ifFail: blk ^ <ParseTree>
+
+	^self addMessage: str category: cat ifFail: blk
+!
+
+adjustBounds
+"Private"
+
+self typeInfo  asGeneric adjustBoundToTrivialApplication.		"Update name of target in trivial application"
+!
+
+asProtocol
+	^self typeInfo asProtocol!
+
+basicDefinitionString  ^ <Str>
+
+^'Protocol superProtocol: ', self superprotocolString asString printString,  
+(self isSubtype ifFalse:['; notSubtype '] ifTrue:['']),
+(self isBranded ifFalse:['; unbranded '] ifTrue:[''])
+!
+
+basicLocator  ^ <BasicMixinLocator> 
+	^self typeInfo basicLocator!
+
+branded ^ <Boolean>
+
+self deltaHack.
+^true
+"^self typeInfo branded"!
+
+branded: b <Boolean>
+"Private"
+self deltaHack.
+"
+^self typeInfo branded: b"!
+
+classSide ^ <ProtocolMirror>
+
+^self actualClass on: self reflectee classProtocol!
+
+comment: c  <Str> 
+
+c isNil
+	ifTrue: [	Transcript show: 'Protocol ', self name, ' has comment set to nil, change this to an empty string'; cr.
+					self sourceInfo comment: '' ]
+	ifFalse: [	self sourceInfo comment: c ]
+!
+
+convert: m <Mirror> ifFail: fb <[Str]>
+
+m convertToProtocol: self ifFail: fb.
+!
+
+convert: m <Mirror> toGeneric: g   <GenericMirror> ifFail: fb <[Str]>
+
+self assert: [g body = self].
+m convertToGenericProtocol: g ifFail: fb!
+
+convertToGenericClass: g <ProtocolMirror> ifFail: fb <[Str]>
+
+fb value: 'Cannot convert a protocol into a generic class'
+!
+
+convertToGenericProtocol: g <ProtocolMirror> ifFail: fb <[Str]>
+
+self convertToProtocol: g body ifFail: fb.
+self nestInGenericWithTypeArguments: g typeArgumentString.
+self adjustBounds.
+!
+
+convertToProtocol: p <ProtocolMirror> ifFail: fb <[Str]>
+
+self superProtocol: p superprotocolString.
+self subtype: p subtype.
+self branded: p isBranded.
+!
+
+createMessageTypeStructure
+
+self sourceInfo selectorsDo: 
+[: m <Symbol> | 
+    self addMessage: (self sourceForSelector: m )
+             ifFail: [self error: 'Internal failure: Source database has syntax errors'].
+].
+                                                       !
+
+createTypeStructure
+    
+| tas <VarOrdCltn[TypeFormal]> genericTypeInfo <GenericProtocolUpdate> |
+
+self nonAtomic.
+ReportTypeLoading
+	ifTrue:[Platform errorStream show: 'Loading type info for Protocol ', self name; cr].
+self setupInitialTypeInfo.
+self setSuperProtocol: self superprotocolString.
+self typeInfo subtype: self isSubtype.
+"self branded: self isBranded."
+
+self isGeneric
+     ifTrue:[
+                  tas := (DeltaParser new parseTypeArgs: self typeArgumentString
+                                                                 within:  DeltaGlobals
+                                                                 ifError:[:m <Str> : i <Integer> | self error: 'Source database contains invalid code'])
+                                collect: [ :pt <ParseTree> | pt body].
+                 genericTypeInfo := (DeltaGenericProtocolUpdate new name: self name  body: self typeInfo formals: tas).
+                Type atProtocol: self reflectee 
+                           put: genericTypeInfo.            
+                  ].
+
+Type atProtocol: self classSide  reflectee  put: self typeInfo classProtocol.  
+self createMessageTypeStructure.
+
+!
+
+fileNameExtension  ^<Str>
+	^'.str'!
+
+hasSelector: selector <Symbol> ^ <Boolean>
+
+	^self sourceInfo hasSelector: selector!
+
+initializeSuperProtocol: n  <Str> subtype: st  <Boolean> branded: b  <Boolean>
+
+	self setupInitialTypeInfo.
+	self superProtocol: n.
+	self subtype: st.
+	b ifFalse: [self unbranded].!
+
+instanceSide ^ <ProtocolMirror>
+
+	^self actualClass on: self reflectee instanceProtocol!
+
+isAssociationOop
+	self deltaHack.
+	^false!
+
+isBranded ^ <Boolean>
+
+^(self sourceInfo brandedString = #false) not!
+
+isMarkOop
+  ^false!
+
+isMemOop
+    ^ false!
+
+isMeta ^ <Boolean>
+
+^self reflectee isMeta!
+
+isMetaSide
+	^false!
+
+isMethodOop
+    ^ false!
+
+isMixin
+    ^false!
+
+isProtocol
+  ^true!
+
+isSmiOop
+    ^ false!
+
+isSubtype ^ <Boolean>
+
+^(self sourceInfo subtypeString  = #false) not!
+
+isSymbolOop
+    ^ false!
+
+komment
+
+"This class represents a mirror on a protocol declaration.
+
+The mirror is on the run-time representation of a protocol,
+of class Protocol, that only retains its name.
+
+The protocol is used as a key to look up source code and type information.
+The mirror allows certain manipulations of these.
+"!
+
+localPrimaryInterface
+"Private "
+"Should probably be eliminated"
+self halt. "See if this is this called anymore?"
+self deltaHack.
+	^self typeInfo localPrimaryInterface!
+
+localSecondaryInterface
+"Private"
+"Should probably be eliminated"
+self deltaHack.
+	^self typeInfo localSecondaryInterface!
+
+messageAt: selector <Symbol> ifFail: aBlock <[^X def]> ^ <Message | X> 
+    ^self messages at: selector ifAbsent: aBlock
+!
+
+messages  ^ <Dict[Symbol,Type]>
+
+^self typeInfo messages
+!
+
+methodAt: selector <Symbol> ifFail: aBlock <[^X def]> ^ <Message | X> 
+    ^self messageAt: selector ifAbsent: aBlock
+!
+
+methodsDo: blk <[Message]>
+
+	self messages do: blk
+!
+
+methodsFor: category <String>
+    ^DefinitionReader for: self category: category!
+
+nameExisting: n <Symbol> ifFail: fb <[Str]>
+
+"This method modifies an existing protocol named n so that it is equivalent to me"
+
+|  p  <ProtocolMirror> |
+p :=  Mirror on: (Delta at: n).
+p convertToProtocol: self ifFail: fb.
+!
+
+nameNew: n <Symbol> ifFail: fb <[Str]>
+
+"This method is used to create a new protocol
+named n based upon the source code information in this object.
+"
+self reflectee name: n.
+self typeInfo name: n.
+self sourceInfo setName: n.
+Delta at: n put: self reflectee.
+
+!
+
+nestInGenericWithTypeArguments: tas  <Str>
+
+| formals <OrdCltn[TypeFormal]> |
+
+formals :=  (DeltaParser new parseTypeArgs: tas within: DeltaGlobals) collect: [ :pt | pt body].
+self typeInfo generifyWithFormals: formals.
+self sourceInfo typeArgumentString: tas; isGeneric: true.
+!
+
+notSubtype
+
+    	self subtype: false!
+
+parseMessage: src <Str> ifFail: blk <[Str,Int]> ^ <ParseTree>
+
+	^DeltaParser new parseMessageDeclaration: src within: self scope ifError: blk
+!
+
+parseMethod: src <Str> ifFail: blk <[Str,Int]> ^ <ParseTree>
+
+	^self parseMessage: src  ifFail: blk 
+!
+
+privateMethodsFor: category <String>
+
+	"For compatability"
+    ^self methodsFor: category
+!
+
+publicMethodsFor: category <String>
+
+	"For compatability"
+    ^self methodsFor: category
+!
+
+reflectee   ^ <Protocol>
+"Private"
+
+^reflectee!
+
+reflectee: r   <Protocol>
+"Private"
+
+reflectee := r.
+!
+
+removeMethod: selector <Symbol> ifAbsent: blk <[]>
+    self messages removeKey: selector ifAbsent: blk.
+    self sourceInfo removeSelector: selector ifAbsent: blk!
+
+rename: oldId <Symbol> to: newId <Symbol>
+| s <ReadString> src <ReadString>  |
+
+
+"rename in all messages" 
+self methodsDo:[: m <Message> |
+									src := self sourceForSelector: m selector.
+									s := self rename: oldId to: newId in: src.
+									s == src
+										ifFalse:[self addMessage: s
+																category: (self sourceInfo categoryForSelector: m selector)
+																ifFail:[:msg <Str>  :i <Int>  | self error: 'Renamed code uparseable: ', msg].
+														].
+								].
+self isMeta
+	ifFalse:[
+					"rename in super protocol"
+					s := self rename: oldId to: newId in: (src := self superprotocolString).
+					s == src ifFalse:[self superProtocol: s].
+					"rename in all type arguments, if any"
+					s := self rename: oldId to: newId in: (src := self typeArgumentString).
+					s == src ifFalse:[self nestInGenericWithTypeArguments: s].
+					self classSide rename: oldId to: newId.
+				].!
+
+renameGroup: grp <Dict[Symbo,Symbol]> 
+| s <ReadString> src <ReadString>  |
+
+"rename in all messages" 
+self methodsDo:[: m <Message> |
+									src := self sourceForSelector: m selector.
+									s := self renameGroup: grp in: src.
+									s == src
+										ifFalse:[self addMessage: s
+																category: (self sourceInfo categoryForSelector: m selector)
+																ifFail:[:msg <Str>  :i <Int>  | self error: 'Renamed code uparseable: ', msg].
+														].
+								].
+self isMeta
+	ifFalse:[
+					"rename in super protocol"
+					s := self renameGroup: grp in: (src := self superprotocolString).
+					s == src ifFalse:[self superProtocol: s].
+					"rename in all type arguments, if any"
+					s := self renameGroup: grp in: (src := self typeArgumentString).
+					s == src ifFalse:[self nestInGenericWithTypeArguments: s].
+					self classSide renameGroup: grp.
+					].!
+
+scope ^ <Scope>
+	^self typeInfo scope!
+
+scope: s <Scope>
+
+self typeInfo scope: s
+
+!
+
+selectorsFor: cat <Str> ^ <OrdCltn[Symbol]>
+	
+	^self sourceInfo selectorsFor: cat!
+
+selectorsMatching: pattern <Str> ^ <Set[Symbol]>
+
+	| result <Set[Symbol]> |
+	result := Set[Symbol] new.
+	self sourceInfo selectorsDo: [ :selector <Symbol> | 		
+		(pattern platformMatch: selector) 
+			ifTrue: [	result add: selector ] ].
+	^result!
+
+setSuperProtocol: sp  <Str>
+
+| superprotocol <Protocol> |
+
+superprotocol :=  sp isEmpty 
+                                     ifTrue:[ DeltaTypeId new setId: #Object; scope: DeltaGlobals]
+                                     ifFalse:[(DeltaParser new parseType: sp 
+                                     													within: DeltaGlobals
+                                     													ifError: [: e <Str> : i <Int> | self error: e]) body.].
+superprotocol isProtocol ifFalse:[self error:  sp, ' is not a protocol'].
+superprotocol scope: self scope.
+
+self typeInfo superprotocol: superprotocol.
+!
+
+setupInitialTypeInfo
+"Private"
+| rawProtocol  <RawProtocol>  |
+
+rawProtocol := DeltaRawProtocol new.
+rawProtocol	 primaryInterface:  (DeltaInterface new initialize)
+				      secondaryInterface: (DeltaInterface new initialize)
+				      branded: true.
+
+Type atProtocol: self reflectee
+           put: (DeltaDeclaredProtocolUpdate new
+			            value: self reflectee
+			            superprotocol: nil
+			            delta: rawProtocol
+			            branded: true
+			            subtype: true)
+
+
+!
+
+sourceForSelector: sel <Symbol>  ^ <Str>
+
+	^self sourceInfo sourceForSelector: sel
+!
+
+sourceInfo ^<ProtocolSourceHandler>
+
+	sourceInfo isNil 
+		ifTrue: [ sourceInfo := ProtocolSourceHandler for: self ].
+	^sourceInfo!
+
+subtype  ^ <Boolean>
+
+^self typeInfo subtype!
+
+subtype: st  <Boolean>
+
+self typeInfo subtype: st.
+self sourceInfo subtype: st.!
+
+superProtocol  ^ <ProtocolMirror>
+
+^ProtocolMirror on: (self typeInfo superprotocol protocolObj)!
+
+superProtocol: sp  <Str>
+
+self assert: [ sp isString ].
+self sourceInfo superprotocolString: sp.
+self setSuperProtocol: sp.!
+
+superprotocolString  ^ <Str>
+
+^self sourceInfo superprotocolString!
+
+typeArgumentString ^ <Str>
+
+^self sourceInfo typeArgumentString!
+
+typeInfo ^ <ProtocolUpdate>
+
+"Private"
+
+^(Type forProtocol: self reflectee).!
+
+unbranded
+
+self branded: false! !
+
+! (Delta mirrorFor: #ProtocolMirror) methodsFor: 'accessing' !
+
+
+shortDescription ^ <Str>
+
+	"Returns a short desciption of this protocol"
+
+	| header <String> |
+	header := ''.
+	self isGeneric
+		ifTrue: [ 		header := header, 'generic ' ].
+	self isSubtype
+		ifFalse: [ 	header := header, 'non-subtype ' ].
+	header := header, 'subprotocol of ', self superprotocolString.
+	^header at: 1 put: (header at: 1) asUppercase; yourself! !
+
+! (Delta mirrorFor: #ProtocolMirror) methodsFor: 'typechecking' !
+
+
+typecheck
+
+	self typeInfo typecheck
+!
+
+typecheckDeclaration
+
+	self typeInfo typecheckDeclaration
+!
+
+typecheckInterface
+
+	self typeInfo typecheckInterface
+!
+
+typecheckSelector: sel <Symbol> 
+
+    self typeInfo setupTypeAssumptions.
+	self typeInfo errorHandler pushDefinition: self typeInfo.
+	self typeInfo typecheckMessage: (self messageAt: sel ifFail:[self error: 'message not found']).
+	self typeInfo errorHandler popDefinition.
+    self typeInfo retractTypeAssumptions.
+	
+!
+
+typecheckSuperprotocol
+
+self typeInfo typecheckSuperprotocol!
+
+typecheckTypeArguments
+
+self typeInfo typecheckTypeArgs. ! !
+

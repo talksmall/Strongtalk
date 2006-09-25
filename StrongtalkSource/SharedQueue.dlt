@@ -1,0 +1,129 @@
+Delta define: #SharedQueue as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'Queue[E]' instanceVariables: 'writeEndChanged <Semaphore>
+monitor <Semaphore>
+closed <Boolean>
+			"If true, then the reading end has detected that the
+				writing end has been closed"
+		'))) !
+
+(Delta mirrorFor: #SharedQueue) revision: '$Revision: 1.5 $'!
+
+(Delta mirrorFor: #SharedQueue) group: 'base'!
+
+(Delta mirrorFor: #SharedQueue)
+comment: 
+'SharedQueues are Queues that can be read and written from different processes safely.
+
+Unlike in other Smalltalks, in this system SharedQueues support the full Queue
+protocol (including input/output stream and seqcltn protocols).   However, to use many of the InputStream
+messages safely, care must be taken that there are not multiple processes reading from the
+same queue, to avoid unpredictable results.
+If there are, then a separate mutual exclusion mechanism must be used to control who is
+reading at any one time.
+
+Tags: %BlueBook %User
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+! (Delta mirrorFor: #SharedQueue) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #SharedQueue) classSide methodsFor: 'testing' !
+
+
+test
+
+	| q <SharedQueue[Int]> c <SeqCltn[Int]> |
+	c := #(3 4 5 6 7 8 9 10).
+	q := SharedQueue[Int] new.
+	[	Processor yield.
+		q putAll: #(1 2).
+		Processor yield.
+		c do:
+			[ :i <Int> |
+				q put: i.
+				Processor yield.	].
+		q close.
+	] fork.
+
+	[ q next = 1 ] verify.
+	[ q next = 2 ] verify.
+	[ q contentsRemaining hasSameElementsAndOrderAs: c ] verify.! !
+
+! (Delta mirrorFor: #SharedQueue) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+
+	closed
+		ifTrue: [ ^true ].
+	 super actualAtEnd
+		ifFalse: [ ^false ].
+	self writeEndChanged wait.
+	self closed: super actualAtEnd.
+	"We absorbed the signal just to find out if it was empty, so we need to
+		put back the signal for the read"
+	self closed
+		ifFalse: [ self writeEndChanged signal. ].
+	^self closed!
+
+actualNext ^<E>
+
+	self writeEndChanged wait.
+	super actualAtEnd
+		ifTrue: [ self error: '#next sent to a closed SharedQueue' ].
+	^self monitor critical:
+		[ super actualNext ]!
+
+closed ^<Boolean>
+
+	^closed!
+
+closed: flag <Boolean>
+
+	closed := flag!
+
+monitor ^<Semaphore>
+
+
+	^monitor!
+
+writeEndChanged ^<Semaphore>
+
+
+	^writeEndChanged! !
+
+! (Delta mirrorFor: #SharedQueue) methodsFor: 'accessing' !
+
+
+nextPut: e <E> ^<E>
+
+	self monitor critical:
+		[ super nextPut: e ].
+	self writeEndChanged signal.
+	^e! !
+
+! (Delta mirrorFor: #SharedQueue) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	writeEndChanged := Semaphore new.
+	monitor := Semaphore forMutualExclusion.
+	self closed: false.! !
+
+! (Delta mirrorFor: #SharedQueue) methodsFor: 'control' !
+
+
+close
+
+	super close.
+	self writeEndChanged signal.! !
+

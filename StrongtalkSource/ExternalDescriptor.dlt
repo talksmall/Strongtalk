@@ -1,0 +1,126 @@
+Delta define: #ExternalDescriptor as: (
+Generic forAll: 'EOBJ <ExternalObject> ' body: ((Class subclassOf: 'Object' instanceVariables: 'externalObject <EOBJ>
+			"is nil if closed"
+handle <ExternalProxy>
+		') classVariables: 'OpenDescriptors <IdentitySet[ExternalDescriptor]>
+			"Registry of open descriptors. %todo: this must hold weak references, with entries being
+			 closed on finalization"
+		'; abstract)) !
+
+(Delta mirrorFor: #ExternalDescriptor) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #ExternalDescriptor) group: 'base'!
+
+(Delta mirrorFor: #ExternalDescriptor)
+comment: 
+'ExternalDescriptors represent ''handles'' to transient operating system objects such as open file descriptors, semaphores, etc.
+This class keeps track of the state of such descriptors, and attempts to ''reopen'' them if possible after image restarts.
+
+Instances must be closed using finalization if they are garbage collected while open.  This
+can be handled automatically by sending the message #register to an instance.  This may not
+be appropriate in all cases, since sometimes the finalization should be handled by a higher-level
+object so that buffer flushing or other operations can be performed before closing.
+
+These objects are not generally handled directly by programmers- they are generally wrapped in a higher-level abstraction such as a stream.
+
+Subclass
+    %responsibility flushIfFail:
+        Subclasses for which flushing has meaning must reimplement flushIfFail:
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+! (Delta mirrorFor: #ExternalDescriptor) classSide methodsFor: 'class initialization' !
+
+
+initialize
+
+	OpenDescriptors := IdentitySet[ExternalDescriptor] new.! !
+
+! (Delta mirrorFor: #ExternalDescriptor) classSide methodsFor: 'control' !
+
+
+reopenAll
+	"Should be sent when the image starts up to reopen any external descriptors"
+
+	OpenDescriptors do: [ :d <ExternalDescriptor> |
+		d reopen	].!
+
+restartAll
+	"Should be sent when the image starts up to reopen any external descriptors"
+
+	OpenDescriptors do: [ :d <ExternalDescriptor> |
+		d restart	].!
+
+severAllExternalConnections
+	"Should be sent before the image saves to clean up external resource connections"
+
+	OpenDescriptors do: [ :d <ExternalDescriptor> |
+		d severExternalConnections	].! !
+
+! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'private' !
+
+
+handle ^<ExternalProxy>
+
+	^handle!
+
+handle: h <ExternalProxy>
+
+	handle := h.!
+
+postCopy
+
+	super postCopy.
+	self reopen.!
+
+register
+    OpenDescriptors include: self!
+
+severExternalConnections
+	"Subclasses should implement to release any external resources.  Called either when an image
+	  exits, or when the file is closed"
+
+	self subclassResponsibility!
+
+unregister
+    OpenDescriptors removeEvery: self! !
+
+! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'initialization' !
+
+
+externalObject ^<EOBJ>
+
+	^externalObject!
+
+externalObject: o <EOBJ>
+
+	externalObject := o! !
+
+! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'control' !
+
+
+close
+
+	self severExternalConnections.
+	externalObject := nil.!
+
+openIfFail: err <[ExternalError]>
+	"Subclasses should implement to open a handle, restore its state, and store it using #handle:"
+
+	self subclassResponsibility!
+
+reopen
+	"Sent on image startup to restablish any open descriptors. Can't be used to reopen a closed connection"
+
+	self isClosed
+		ifFalse: [ self openIfFail: [ ^self ] ]! !
+
+! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'testing' !
+
+
+isClosed ^<Boolean>
+
+	^externalObject isNil! !
+

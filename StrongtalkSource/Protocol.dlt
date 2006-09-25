@@ -1,0 +1,55 @@
+Delta define: #Protocol as: (
+(Class subclassOf: 'AbstractProtocol' instanceVariables: 'classProtocol <MetaProtocol>
+name <Symbol>')) !
+
+(Delta mirrorFor: #Protocol) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #Protocol) group: 'reflection'!
+
+(Delta mirrorFor: #Protocol)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #Protocol) classSide methodsFor: 'Unclassified' !
+
+
+superProtocol: name <Str>  ^ <ProtocolMirror>
+    "Creation of a Delta protocol constructor"
+    ^self superProtocol: name subtype: true!
+
+superProtocol: name <Str> subtype: b <Boolean> ^ <ProtocolMirror>
+    "Creation of a Delta protocol constructor"
+    ^ProtocolMirror superProtocol: name subtype: b! !
+
+! (Delta mirrorFor: #Protocol) methodsFor: 'Unclassified' !
+
+
+classProtocol ^ <MetaProtocol>
+
+	classProtocol isNil ifTrue: [
+		| type <DeltaProtocol> |
+		type := Type forProtocol: self.
+		classProtocol := MetaProtocol new.
+		classProtocol name: type classProtocol name.
+		classProtocol instanceProtocol: self ].
+	^classProtocol!
+
+instanceProtocol ^ <Protocol>
+
+	^self
+!
+
+isMeta ^ <Boolean>
+
+	^false!
+
+name^  <Symbol>
+
+    ^name!
+
+name: n  <Symbol>
+
+	name := n.
+! !
+

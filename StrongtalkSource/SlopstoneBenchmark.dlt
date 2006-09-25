@@ -1,0 +1,330 @@
+Delta define: #SlopstoneBenchmark as: (
+(Class subclassOf: 'Benchmark' instanceVariables: 'testParams testBlocks')) !
+
+(Delta mirrorFor: #SlopstoneBenchmark) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #SlopstoneBenchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #SlopstoneBenchmark)
+comment: 
+'NAME            STones80
+        AUTHOR          bruce@utafll.uta.edu (Bruce Samuelson)
+        FUNCTION        low and medium level benchmarks for ST80 and ST/V
+        ST-VERSIONS     all versions of ST80; portable to ST/V
+        PREREQUISITES   need floating point hardware or emulation
+        CONFLICTS       none
+        DISTRIBUTION    world
+        VERSION         1.0
+        DATE            April 16, 1993
+
+SUMMARY The filein includes two classes: Slopstones (Smalltalk Low level
+OPeration Stones) and Smopstones (Smalltalk Medium level OPeration Stones).
+Each includes seven cpu intensive benchmarks. They work equally well with
+16-bit and 32-bit implementations and are designed to be portable to all
+Smalltalk versions from ParcPlace and Digitalk. They are normalized to the
+author''s 486/33 Windows 3.1 machine running ParcPlace VisualWorks 1.0.
+Results have been posted to the Usenet group comp.lang.smalltalk and form the
+basis of an article that is scheduled to be published in the June issue of The
+Smalltalk Report.
+
+The only difference between the ST80 (STones80) and ST/V (STonesV) filein is
+in the messages that define the classes in the first few lines of code. The
+ST80 messages specify the class category and message protocol, which are not
+used in ST/V.
+
+Bruce Samuelson'!
+
+! (Delta mirrorFor: #SlopstoneBenchmark) methodsFor: 'benchmarking' !
+
+
+execute
+
+| n nTests iters times speeds stones scale printA printB printC param
+count speed0 expln block time iter speed stone geoMean gm power |
+
+n := 16000. "Number of times each test block will be evaluated."
+n > 16383 ifTrue: [self halt: 'Count exceeded max small int for ST/V-DOS.'].
+
+Transcript cr; cr; show: 'Starting benchmarks with repetition count = '
+           , n printString , '.'.
+
+nTests := testParams size.
+nTests  = testBlocks size ifFalse: [self halt: 'Inconsistent test count.'].
+
+iters  := OrderedCollection new.
+times  := OrderedCollection new.
+speeds := OrderedCollection new.
+stones := OrderedCollection new.
+scale  := 1000. "So iterations can be reported as 1000s of iterations"
+
+"The following blocks are restricted to two args by ST/V-DOS."
+
+printA :=
+  [:iter1 :time1 |
+  Transcript cr.
+  Transcript nextPutAll: (iter1 / scale) rounded printString.
+  Transcript nextPutAll: '     '.
+  Transcript nextPutAll: time1 printString.
+  Transcript nextPutAll: '     '].
+printB :=
+  [:speed1 :slop1 |
+  Transcript nextPutAll: (speed1 / scale) rounded printString.
+  Transcript nextPutAll: '     '.
+  Transcript nextPutAll: slop1 printString.
+  Transcript nextPutAll: '     '].
+printC :=
+  [:expln1 |
+  Transcript show: expln1].
+
+Transcript show: '
+
+1000s    time    1000s of
+itera-   sec-    iterations   slop-
+tions    onds    per sec      stones   explanation
+'.
+
+1 to: nTests do:
+  [:i |
+  param  := testParams at: i.
+  count  := param at: 1.           "repetitions of a test inside its block"
+  speed0 := (param at: 2) * scale. "iters/sec for a one-slopstone machine"
+  expln  := param at: 3.
+  block  := testBlocks at: i.
+  time   := Time millisecondsToRun: [n timesRepeat: block].
+  time   := (time max: 1) / 1000.0. "time is now in seconds"
+  iter   := count * n.
+  speed  := iter / time.
+  stone  := speed / speed0.
+  iters  add: iter.
+  times  add: time.
+  speeds add: speed.
+  stones add: stone.
+  printA value: iter value: time.
+  printB value: speed value: stone.
+  printC value: expln.
+  Bootstrap checkNotification.
+].
+
+"
+geoMean :=
+  [:numbers |
+  gm := 1.
+  power := 1 / nTests.
+  numbers do: [:number | gm := gm * (number raisedTo: power)].
+  gm].
+Transcript cr.
+printA value: (geoMean value: iters) value: (geoMean value: times).
+printB value: (geoMean value: speeds) value: (geoMean value: stones).
+printC value: 'geometric mean'.
+"
+
+Transcript cr; cr; show: 'Benchmarks complete.'; cr!
+
+execute: id
+
+| n nTests iters times speeds stones scale printA printB printC param
+count speed0 expln block time iter speed stone geoMean gm power |
+
+n := 16000. "Number of times each test block will be evaluated."
+n > 16383 ifTrue: [self halt: 'Count exceeded max small int for ST/V-DOS.'].
+
+nTests := testParams size.
+nTests  = testBlocks size ifFalse: [self halt: 'Inconsistent test count.'].
+
+iters  := OrderedCollection new.
+times  := OrderedCollection new.
+speeds := OrderedCollection new.
+stones := OrderedCollection new.
+scale  := 1000. "So iterations can be reported as 1000s of iterations"
+
+"The following blocks are restricted to two args by ST/V-DOS."
+
+printA :=
+  [:iter1 :time1 |
+  Transcript cr.
+  Transcript nextPutAll: (iter1 / scale) rounded printString.
+  Transcript nextPutAll: '     '.
+  Transcript nextPutAll: time1 printString.
+  Transcript nextPutAll: '     '].
+printB :=
+  [:speed1 :slop1 |
+  Transcript nextPutAll: (speed1 / scale) rounded printString.
+  Transcript nextPutAll: '     '.
+  Transcript nextPutAll: slop1 printString.
+  Transcript nextPutAll: '     '].
+printC :=
+  [:expln1 |
+  Transcript show: expln1].
+
+  [:i |
+  param  := testParams at: i.
+  count  := param at: 1.           "repetitions of a test inside its block"
+  speed0 := (param at: 2) * scale. "iters/sec for a one-slopstone machine"
+  expln  := param at: 3.
+  block  := testBlocks at: i.
+  time   := Time millisecondsToRun: [n timesRepeat: block].
+  time   := (time max: 1) / 1000.0. "time is now in seconds"
+  iter   := count * n.
+  speed  := iter / time.
+  stone  := speed / speed0.
+  iters  add: iter.
+  times  add: time.
+  speeds add: speed.
+  stones add: stone.
+  printA value: iter value: time.
+  printB value: speed value: stone.
+  printC value: expln.
+  Bootstrap checkNotification.
+] value: id.
+Transcript cr.!
+
+readme
+
+"INTRODUCTION
+
+Slopstone: Smalltalk Low level OPeration Stones
+Portable Low Level Benchmarks for ST80 and ST/V (using 16-bit SmallIntegers)
+Placed in public domain January 1993  (c) Bruce Samuelson
+Permission is given to place this in public Smalltalk archives
+
+Use monospaced fonts if possible to view the methods in this class.
+
+(1) Collect garbage if supported (2) do 'SlopstoneBenchmark new runBenchmark'.
+Results are printed in the Transcript window.
+Post results for your machines to comp.lang.smalltalk or
+mail them to bruce@ling.uta.edu or bruce@utafll.uta.edu.
+
+DISCUSSION
+
+This readme method would normally be in the class comment for ST80. ST/V-DOS
+doesn't support class comments.
+
+The benchmarks test strictly low level operations. They do not test higher
+level operations such as forming sets, sorting, or streaming, nor do they test
+applications. They also do not test user interface operations because of the
+non-portability of this area of Smalltalk and its sensitivity to the
+performance of the video subsystem. The tests are cpu bound. They do not
+access files and should not cause disk paging.
+
+The benchmarks use loop counts of 16000 because SmallIntegers cannot exceed
+16383 for ST/V-DOS. 16-bit implementions would perform worse with large loop
+counts. The benchmarks are also suitable for testing 32-bit versions of
+Smalltalk.
+
+DEFINITION OF REFERENCE MACHINE (ONE SLOPSTONE)
+
+The following machine is the one on which I developed these benchmarks. By
+convention it is defined to operate at one slopstone. It's a mid range
+performer for current ParcPlace versions of Smalltalk.
+
+Hardware: Amax 486DX/33 (includes internal floating point processor and
+internal 8K cache), 256K external cache, 16MB RAM.
+
+Software: ParcPlace VisualWorks 1.0, Windows 3.1, DOS 5.0 (plain vanilla
+setup).
+
+COMPARISON TO XEROX DORADO
+
+For reference, the machine runs at 649% of a Dorado on ParcPlace benchmarks
+for ST80 4.1. Its fast video card helps on these PPS benchmarks. I didn't run
+them for VisualWorks 1.0. It would be somewhat slower because there are vastly
+more classes.
+
+EXAMPLE RESULTS FOR REFERENCE MACHINE
+
+1000s    time    1000s of
+itera-   sec-    iterations   slop-
+tions    onds    per sec      stones   explanation
+
+3808     0.577   6600         1.0      add integers
+ 544     2.262    240         1.0      add floats
+ 960     1.088    882         1.0      access strings
+ 320     0.908    352         1.0      create objects
+ 160     1.49     107         1.0      copy objects
+ 480     1.129    425         1.0      perform selectors
+ 896     1.237    724         1.0      evaluate blocks
+
+ 640     1.151    555         1.0      geometric mean"!
+
+runBenchmark
+       "SlopstoneBenchmark new runBenchmark"
+
+        self setup.
+        self execute!
+
+setup
+
+"Numbers in testParams represent the following:
+
+Column 1   number of internal repetitions for each test inside its block
+Column 2   thousands of iterations per second for a one-slopstone machine."
+
+testParams := OrderedCollection new.
+
+testParams
+  add: #(238 6600 'add integers');
+  add: #( 34  240 'add floats');
+  add: #( 60  882 'access strings');
+  add: #( 20  352 'create objects');
+  add: #( 10  107 'copy objects');
+  add: #( 30  425 'perform selectors');
+  add: #( 56  724 'evaluate blocks').
+
+testBlocks := OrderedCollection new.
+
+"In the integer addition test, I originally had 340 internal repetitions.
+This caused the Digitalk compiler to blow up. The ParcPlace compiler compiled
+it ok but interestingly addition performed at slightly more than 50% of the
+performance with an internal count of 238. Perhaps something magical happens
+at 256."
+
+testBlocks
+  add: [1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+
+        1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+
+        1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+
+        1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+
+        1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+
+        1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+
+        1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1];
+
+  add: [1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+
+        1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0+1.0];
+
+  add: ['a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1];
+
+  add: [Object new. Object new. Object new. Object new. Object new.
+        Object new. Object new. Object new. Object new. Object new.
+        Object new. Object new. Object new. Object new. Object new.
+        Object new. Object new. Object new. Object new. Object new];
+
+  add: [Object new copy copy copy copy copy copy copy copy copy copy];
+
+  add: [0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself.
+        0 perform: #yourself. 0 perform: #yourself. 0 perform: #yourself];
+
+  add: [[] value. [] value. [] value. [] value. [] value. [] value. [] value.
+        [] value. [] value. [] value. [] value. [] value. [] value. [] value.
+        [] value. [] value. [] value. [] value. [] value. [] value. [] value.
+        [] value. [] value. [] value. [] value. [] value. [] value. [] value.
+        [] value. [] value. [] value. [] value. [] value. [] value. [] value.
+        [] value. [] value. [] value. [] value. [] value. [] value. [] value.
+        [] value. [] value. [] value. [] value. [] value. [] value. [] value.
+        [] value. [] value. [] value. [] value. [] value. [] value. [] value]! !
+

@@ -1,0 +1,385 @@
+Delta define: #CategoryOutliner as: (
+(Class subclassOf: 'MirrorOutliner[Mirror]' instanceVariables: 'category <Str>
+textView <TextView[Str]>
+bodyColumn <Column[Visual]>
+lastCategoryMove <Str>
+')) !
+
+(Delta mirrorFor: #CategoryOutliner) revision: '$Revision: 1.11 $'!
+
+(Delta mirrorFor: #CategoryOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #CategoryOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #CategoryOutliner) classSide methodsFor: 'instance creation' !
+
+
+for: mirror <Mirror> category: cat <Str> ^ <Instance>
+
+	^(self for: mirror) category: cat
+! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'accessing' !
+
+
+category ^ <Str>
+
+	^category!
+
+lastCategoryMove ^ <Str>
+
+	^lastCategoryMove!
+
+lastCategoryMove: s <Str>
+
+	lastCategoryMove := s!
+
+openOnTypeError: te <TypeError> ^ <Visual>
+
+	| mo <MessageDeclarationOutliner> |
+	self body.			"Ensure body is created"
+	self childrenDo: [ :o <OutlinerApp> |
+		mo := MessageDeclarationOutliner coerce: o.
+		mo selector = te loc selector
+			ifTrue: [	self open: true.
+							^mo openOnTypeError: te ] ].
+	^nil
+!
+
+openSelector: sel <Symbol> ^ <Visual>
+
+	| mo <MessageDeclarationOutliner> |
+	self body.			"Ensure body is created"
+	self childrenDo: [ :o <OutlinerApp> |
+		mo := MessageDeclarationOutliner coerce: o.
+		mo selector = sel
+			ifTrue: [	self open: true.
+							^mo openWithFocus ] ].
+	^nil!
+
+outlinerForLocator: loc <DeltaLocator> ^ <MessageDeclarationOutliner>
+
+	| mo <MethodOutliner> |
+	self body.			"Ensure body is created"
+	self childrenDo: [ :o <OutlinerApp> |
+		mo := MessageDeclarationOutliner coerce: o.
+		mo selector =  loc selector
+			ifTrue: [^mo]].
+! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'private' !
+
+
+bodyColumn ^ <Column[Visual]>
+
+	^bodyColumn!
+
+bodyColumn: c <Column[Visual]>
+
+	bodyColumn := c!
+
+buildBody ^<Visual>
+
+	| col <Column[Visual]> contents <OrdCltn[Visual]> |
+	self removeAllChildren.
+	contents := OrderedCollection[Visual] new.
+	self categorySelectors do: [ :sel <Symbol> |
+		contents addLast: (self methodOutlinerVisualFor: sel) ].
+	col := Column[Visual] holding: contents.
+	col optimizeIncrementalLayout: false.
+	self bodyColumn: col.
+	^col
+!
+
+buildClosedHeader ^ <Visual>
+
+	self textView: 
+		(self 	buildSingleLineTextViewWithPainter: self categoryPainter
+				getModel: [ self category ]
+				setModelOnSuccess: [ :blk <[]> | self storeAndOnSuccess: blk ]).
+	self textView autoAccept: false.
+	^self textView imbeddedVisual
+!
+
+category: c <Str>
+
+	category := c!
+
+categorySelectors ^ <OrdCltn[Symbol]>
+
+	^(self mirror selectorsFor: self category) asSortedCollection!
+
+compare: m1 <MessageDeclarationOutliner> with: m2 <MessageDeclarationOutliner> ^<Boolean>
+
+	^m1 hasSelector
+		ifTrue: [	m2 hasSelector
+							ifTrue: [	m1 selector <= m2 selector ]
+							ifFalse: [	false ] ]
+		ifFalse: [	true ]!
+
+enforceSortedBody
+
+	"Ensure that the method outliners in the body are sorted by selector. 
+	This will normally be the case, and will only fail if a new method has been
+	saved or an existing method saved with a different selector."
+
+	"The code below assumes that only one method is out of order"
+
+	| current <MethodOutliner> next <MethodOutliner> out <MethodOutliner> index <Int> |
+
+	self bodyColumn size > 1 ifFalse: 	[	^self ].
+
+	next := self methodOutlinerWithVisual: (self bodyColumn at: 1).
+	index := 2.
+	[ index <= self bodyColumn size ] whileTrue: [
+		current := next.
+		next := self methodOutlinerWithVisual: (self bodyColumn at: index).
+		(self compare: current with: next)
+			ifTrue: [	out isNil
+								ifFalse: [	(self compare: out with: next)
+														ifTrue: [	self bodyColumn insert: (Array[Visual] with: out visual) before: index.
+																		next := out.
+																		out := nil ] ].
+							index := index + 1 ]
+			ifFalse: [	out isNil
+								ifTrue: [	out := current.
+												self bodyColumn remove: 1 at: index - 1 ]
+								ifFalse: [	self error: 'More than one out of order - not treated' ] ] ].
+	out notNil
+		ifTrue: [	self bodyColumn add: out visual ].
+!
+
+entryName ^ <Str>
+
+	^'message'!
+
+initialPacifiedState ^ <Boolean>
+
+	^(self mirror selectorsFor: self category) size = 0!
+
+messageDeclarationOutlinerClass ^ <MessageDeclarationOutliner class>
+
+	^MessageDeclarationOutliner
+!
+
+methodOutlinerVisualFor: selector <Symbol> ^ <Visual>
+
+	^(self addChild: (self messageDeclarationOutlinerClass for: self mirror selector: selector category: self category)) imbeddedVisual!
+
+methodOutlinerWithVisual: v <Visual> ^ <MessageDeclarationOutliner>
+
+	self childrenDo: [ :o <OutlinerApp> |
+		o visual == v
+			ifTrue: [ ^MessageDeclarationOutliner coerce: o ] ].
+	self shouldNotHappen.
+!
+
+storeAndOnSuccess: blk <[]>
+
+	| newCategoryName <Str> |
+	newCategoryName := self textView model.
+
+	(newCategoryName isEmpty not and: [ self category ~= newCategoryName ])
+		ifTrue: [	 self category = 'a new category'
+						ifTrue: [		self mirror sourceInfo renameCategory: self category to: newCategoryName.
+										blk value	]
+						ifFalse: [ self visual
+										promptOkCancel: 'Are you sure you want to rename category ''',
+																		self category, ''' to ''', newCategoryName, '''?'
+										title: 'Confirm Category Rename'
+										type: #exclamation
+										default: 2
+										action: [ :ok <Boolean> |
+														ok
+															ifTrue: [	self mirror sourceInfo renameCategory: self category to: newCategoryName.
+																		blk value ]
+															ifFalse: [	self textView model: self category ]	].	]	]
+		ifFalse: [ self textView model: self category ]!
+
+textView ^<TextView[Str]>
+
+	^textView!
+
+textView: tv <TextView[Str]>
+
+	textView := tv!
+
+update
+
+	| 	selectors <OrdCltn[Symbol]> 
+		visualIndex <Int> 
+		selectorIndex <Int> 
+		moreSelectors <Boolean>
+		moreVisuals <Boolean>
+		currentSelector <Symbol>
+		currentVisual <Visual>
+		currentOutliner <MethodOutliner> |
+
+		selectors := self categorySelectors.
+		self pacified: selectors size = 0.
+		self hasBeenOpen ifTrue: [
+			self enforceSortedBody.
+			selectorIndex := 1.
+			visualIndex := 1.
+			[ 	moreSelectors := selectorIndex <= selectors size. 
+				moreVisuals := visualIndex <= self bodyColumn size.
+				moreSelectors | moreVisuals ]
+				whileTrue: [
+					moreSelectors 
+						ifTrue: [ currentSelector := selectors at: selectorIndex ].
+					moreVisuals
+						ifTrue: [ currentVisual := self bodyColumn at: visualIndex ].
+					moreVisuals
+						ifFalse: [ 
+							"New selector added at end of category, add new method outliner at end of column"
+							self bodyColumn add: (self methodOutlinerVisualFor: currentSelector).
+							visualIndex := visualIndex + 1.
+							selectorIndex := selectorIndex + 1 ]
+						ifTrue: [
+							currentOutliner := self methodOutlinerWithVisual: currentVisual.
+							currentOutliner hasSelector
+								ifTrue: [
+									moreSelectors
+										ifFalse: [
+											"Done with category, remove extra method outliner at the end" 
+											self bodyColumn remove: 1 at: visualIndex.
+											self removeChild: currentOutliner ifAbsent: [ self shouldNotHappen ] ]
+										ifTrue: [
+											"In middle of category"
+											currentOutliner selector = currentSelector
+												ifTrue: [
+													"Method match visual, do nothing"
+													visualIndex := visualIndex + 1.
+													selectorIndex := selectorIndex + 1 ].
+											currentOutliner selector < currentSelector
+												ifTrue: [
+													"Method removed, remove method outliner at current visual index" 
+													self bodyColumn remove: 1 at: visualIndex.
+													self removeChild: currentOutliner ifAbsent: [ self shouldNotHappen ] ].
+											currentOutliner selector > currentSelector
+												ifTrue: [
+													"New method added, insert new method outliner before current visualIndex"
+													self bodyColumn insert: (Array[Visual] with: (self methodOutlinerVisualFor: currentSelector)) before: visualIndex.
+													visualIndex := visualIndex + 1.
+													selectorIndex := selectorIndex + 1 ] 
+										] 
+									]
+								ifFalse: [
+									"Skip new methods not yet accepted"
+									visualIndex := visualIndex + 1] 
+							] 
+					]
+			]! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		(aspect = #category and: [ value = self category ])
+			ifTrue: [	self update ] ]
+! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	(self textView notNil and: [ self textView hasBeenChanged ]) 
+		ifTrue: [	^self textView popUpMenu ].
+	
+	^Menu new
+			add: (MenuAction new
+					name: 'New ', self entryName;
+					action: [ self newMessage ]);    
+			add: (MenuAction new
+					name: 'Remove category';
+					action: [ self removeCategory ]);
+        	addSeparator;
+			addAll: self typeCheckMenu removeAll;
+			addSeparator;
+			add: self viewMenu
+!
+
+typeCheckMenu ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'Typecheck';
+					action: [self typecheck])
+		! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'control' !
+
+
+expandIfPublic
+
+	self open: (self mirror sourceInfo visibilityForCategory: self category) = #public
+	!
+
+newMessage
+
+	| mo <MessageDeclarationOutliner> |
+	self open: true.		"Open outliner and force body to be built"
+	mo := self messageDeclarationOutlinerClass newFor: self mirror category: self category.
+	self addChild: mo.
+	self bodyColumn insert: (Array[Visual] with: mo imbeddedVisual) before: 1.
+	self session updateLayoutsIfNeeded.
+	mo becomeFocusAndSelectAll
+!
+
+removeCategory
+
+	| selectors <Cltn[Symbol]> |
+	selectors := self mirror selectorsFor: self category.
+	selectors isEmpty
+		ifFalse: [	self visual 
+							promptOkCancel: 'Remove category ''', self category, ''' with contents'
+							title: 'Please Confirm'
+							type: #question
+							default: 2
+							action: [ :b <Boolean> | b ifFalse: [ ^self ] ] ].
+	selectors do: [:sel <Symbol> | mirror removeMethod: sel ifAbsent: [ self shouldNotHappen ]].
+	mirror sourceInfo removeCategory: category ifFail: [ self shouldNotHappen ].
+!
+
+typecheck
+
+	self typecheckAction: [
+											self categorySelectors 
+												do:[: sel <Symbol> | self mirror typecheckSelector: sel].
+											]
+		title: 'Typechecking ', self mirror name, ' category: ',self category.
+
+! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'restricted-to parts' !
+
+
+removeMethodOutliner: o <MethodOutliner> ifAbsent: blk <[^X def]> ^ <Self | X>
+
+	| position <Int> |
+	1 to: self bodyColumn size do: [ :index <Int> | 
+		(self bodyColumn at: index) == o visual 
+			ifTrue: [ 	position := index ] ].
+	position isNil 
+		ifTrue: 	[ 	^blk value ].
+	self removeChild: o ifAbsent: [ ^blk value ].
+	self bodyColumn remove: 1 at: position
+! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	self lastCategoryMove: ''! !
+

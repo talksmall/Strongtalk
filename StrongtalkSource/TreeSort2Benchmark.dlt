@@ -1,0 +1,39 @@
+Delta define: #TreeSort2Benchmark as: (
+(Class subclassOf: 'Quicksort2Benchmark' instanceVariables: '')) !
+
+(Delta mirrorFor: #TreeSort2Benchmark) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #TreeSort2Benchmark) group: 'benchmark'!
+
+(Delta mirrorFor: #TreeSort2Benchmark)
+comment: 
+'No comment
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TreeSort2Benchmark) methodsFor: 'misc' !
+
+
+run
+	| tree |
+	self initarr.
+	tree := TreeSort2Node new contents: (sortlist at: 1).
+	2 to: self n do: [:i | tree insert: (sortlist at: i)].
+	tree checkTree or: [self error: 'error'].
+	"TreeSort2Benchmark new run"! !
+
+! (Delta mirrorFor: #TreeSort2Benchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^91!
+
+factor
+	^25!
+
+name
+	^#TreeSort2!
+
+parcplaceTime
+	^159! !
+

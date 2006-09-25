@@ -1,0 +1,60 @@
+Delta define: #VirtualDictCollector as: (
+Generic forAll: '(K covar) , (V covar) ' body: ((Class subclassOf: 'VirtualCollector[V]' instanceVariables: ''))) !
+
+(Delta mirrorFor: #VirtualDictCollector) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #VirtualDictCollector) group: 'misc'!
+
+(Delta mirrorFor: #VirtualDictCollector)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VirtualDictCollector) methodsFor: 'Unclassified' !
+
+
+associationsDo: blk <[T,^Object] > ^ <Self>
+	cltn associationsDo: [ :a | blk value: (Association key: a key value: (map value: a value)) ]
+
+!
+
+at: key <K > ^ <V>
+    ^self at: key ifAbsent:[self error: 'Element ', key printString, ' not found'].!
+
+at: key <K >ifAbsent: blk <[^V] > ^ <V>
+    | e <V>  |
+
+e := cltn at: key ifAbsent:[^blk value].
+
+^(self map value: e).!
+
+includesIndex: index <Object>
+
+^self cltn includesIndex: index.!
+
+includesKey: key <Object>
+
+^self cltn includesKey: key.!
+
+keys ^ <Set[K]>
+    ^cltn keys!
+
+merge: d <Dict[K,V] > ^ <Dict[K,V]>
+    ^DictionaryMerge[K,V]  new dict1: self dict2: d!
+
+override: d <Dict[K,V] > ^ <Dict[K,V]>
+    ^DictionaryOverride[K,V]  new dict1: self dict2: d!
+
+values ^ <Set[K]>
+    ^cltn values virtualCollect: self map! !
+
+! (Delta mirrorFor: #VirtualDictCollector) methodsFor: 'virtual operations' !
+
+
+virtualCollect: blk <[E, ^X def]> ^<VirtualCollector[X]>
+
+	^ VirtualDictCollector[K, X] on: self map: blk!
+
+virtualSelectorClass ^ <VirtualDictSelector[K,V] class>
+    ^VirtualDictSelector[K,V]! !
+

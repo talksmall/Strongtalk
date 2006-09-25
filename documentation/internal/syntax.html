@@ -1,0 +1,127 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Strongtalk Syntax</title>
+</head>
+
+<body>
+
+<h1 align="center">Strongtalk Syntax (Smalltalk + Type Syntax)</h1>
+
+<p align="center">&nbsp;</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Method
+= MsgPattern Body.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">MsgPattern
+= (UnaryPattern | BinaryPattern | KeywordPattern) [&#145;^&#146;
+Type].</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">KeywordPattern
+= keyword VariableDecl {keyword VariableDecl}).</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">BinaryPattern
+= binarySel VariableDecl.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">UnaryPattern
+= identifier.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">&nbsp;</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Body
+= [Temporaries] [Statements].</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Temporaries
+= &#145;|&#146; {VariableDecl} &#145;|&#146;.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">VariableDecl
+= Variable [Type].</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">&nbsp;</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Statements
+= Statement {&#145;.&#146; Statement} [&#145;.&#146;].</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Statement
+= [&#145;^&#146;] Expression.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">&nbsp;</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Expression
+= {Variable &#145;:=&#146;} KeywordExpr {&#145;;&#146; Message}.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">KeywordExpr
+= BinaryExpr [KeywordMsg].</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">BinaryExpr
+= UnaryExpr {BinaryMsg}.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">UnaryExpr
+= Primary {UnaryMsg}.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">&nbsp;</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Message
+= UnaryMsg | BinaryMsg | KeywordMsg.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">KeywordMsg
+= keyword BinaryExpr {keyword BinaryExpr}.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">BinaryMsg
+= binarySel UnaryExpr.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">UnaryMsg
+= identifier.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">&nbsp;</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Primary
+= Variable [TypeArguments] | &#145;(&#146; Expression &#145;)&#146;
+| Block | Literal | Primitive.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Block
+= &#145;[&#146; [Parameters] Body &#145;]&#146;.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Parameters
+= {&#145;:&#146; VariableDecl} &#145;|&#146;.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Literal
+= number | character | string | &#145;#&#146; (Symbol | Array).</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Symbol
+= identifier | binarySel | keyword {keyword}.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Array
+= &#145;(&#146; {number | character | string | Symbol | Array}
+&#145;)&#146;.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Primitive
+= &#145;{&#146; Message &#145;}&#146;.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">&nbsp;</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Variable
+= identifier.</p>
+
+<p class="MsoNormal"
+style="margin-right:.2pt;text-indent:1.0in;line-height:12.0pt">&nbsp;</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">Type
+= &#145;&lt;&#146; TypeExpr &#145;&gt;&#146;.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">TypeExpr
+= TypeTerm {(&#145;|&#146; | &#145;;&#146;) TypeTerm}.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">TypeTerm
+= TypeFactor {identifier}.</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">TypeFactor
+= identifier [TypeArguments].</p>
+
+<p class="MsoNormal" style="margin-right:.2pt;line-height:12.0pt">TypeArguments
+= &#145;[&#146; Type {&#145;,&#146; Type} &#145;]&#146;.</p>
+</body>
+</html>

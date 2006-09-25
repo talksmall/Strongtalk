@@ -1,0 +1,75 @@
+Delta define: #NotifyingObject as: (
+(Class subclassOf: 'Object' instanceVariables: 'dependents <Extensible[Object]>
+		')) !
+
+(Delta mirrorFor: #NotifyingObject) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #NotifyingObject) group: 'base'!
+
+(Delta mirrorFor: #NotifyingObject)
+comment: 
+'Instances of this class support tracking a set of dependents that can be notified of changes to this object''s state.
+This implements the BlueBook dependency mechanism.
+
+Tags:  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #NotifyingObject) methodsFor: 'accessing' !
+
+
+addDependent: o <Object>
+
+	self dependents include: o!
+
+removeDependent: o <Object>
+
+	self dependents remove: o! !
+
+! (Delta mirrorFor: #NotifyingObject) methodsFor: 'private' !
+
+
+broadcast: selector <"Symbol"BottomType>
+	"Send the specified selector to all dependents.  This is NOT typesafe!!"
+
+	self dependentsDo: [ :dependent <Object> |
+		dependent perform: selector	].!
+
+broadcast: selector <Symbol> with: anObject <BottomType>
+	"Send the specified selector to all dependents.  This is NOT typesafe!!"
+
+	self dependentsDo: [ :dependent <Object> |
+		dependent perform: selector with: anObject	].!
+
+changed
+
+	self changed: self!
+
+changed: attribute <Object>
+
+	self changed: attribute with: nil!
+
+changed: attribute <Object> with: value <Object>
+
+	self dependentsDo: [ :dependent <Object> |
+		dependent update: attribute with: value	].!
+
+dependents ^<Extensible[Object]>
+
+	dependents isNil
+		ifTrue: [ "%todo: use a WeakSet when have finalization"
+			      dependents := Set[Object] new.	].
+	^dependents!
+
+dependentsDo: f <[Object]> 
+
+	dependents isNil
+		ifFalse: [	dependents do: f ]!
+
+postCopy
+
+	super postCopy.
+	dependents := nil.! !
+

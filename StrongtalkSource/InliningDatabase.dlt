@@ -1,0 +1,168 @@
+Delta define: #InliningDatabase as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'LookupTableBuilt <Boolean>
+		') !
+
+(Delta mirrorFor: #InliningDatabase) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #InliningDatabase) group: 'misc'!
+
+(Delta mirrorFor: #InliningDatabase)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'file in' !
+
+
+buildLookupTable
+	"build lookup table in vm for all entries in the inlining database"
+
+	| ms <Integer> |						
+	ms := Time millisecondsToRun: [
+		self classPathsDo: [ :cp <FilePath> | self buildLookupTableForClassPath: cp ]
+		].
+	Transcript show: 'Compile took ', ms printString, ' ms.'; cr.!
+
+buildLookupTableForClassPath: cp <FilePath>
+
+	| class <Behavior> |
+	class := self classFromName: cp elements last pattern ifAbsent: [^self].
+	self  filesIn: cp do: [ :fp <FilePath> |
+		self buildLookupTableForMethod:  fp elements last pattern class: class.
+	]
+!
+
+buildLookupTableForMethod: name <String>  class: class <Behavior>
+
+	| selector <Symbol> |
+	selector := self selectorFromFileName: name.
+	{{primitiveInliningDatabaseAddLookupEntryClass: class selector: selector ifFail: [:err | self error: err]}}!
+
+checkLookupTable
+
+	self lookupTableBuilt
+		ifFalse: [	self buildLookupTable.
+							LookupTableBuilt := true.
+						].!
+
+compileClassPath: cp <FilePath>
+	(cp, (FilePattern for: '*')) pathsDo: [ :fp <FilePath> | | base <String> |
+		base := fp elements last pattern.
+		('*.txt' match: base) ifTrue: [
+			self compileFile: fp
+		]
+	]!
+
+compileFile: fp <FilePath>
+
+{{primitiveInliningDatabaseCompile: fp name ifFail: [:err  <Symbol> | self error: err]}}
+! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'private' !
+
+
+classFromName: name <String> ifAbsent: blk <[]>
+
+	| dename <String> |
+	dename := (self demangle: name) asString.
+	('* class' match: dename) ifTrue: [
+		dename := String withAll: (dename copyFrom: 1 to: dename size - 6).
+	].
+	^Smalltalk at: dename asSymbol  ifAbsent: [^blk value]!
+
+demangle: str <String>
+  ^{{primitiveInliningDatabaseCompileDemangled: str ifFail: [ :err | self error: err]}}!
+
+directory ^<FilePath>
+	| dir |
+	dir := {{primitiveInliningDatabaseDirectory}}.
+	^FilePath for: dir asString!
+
+directory: fp <FilePath>
+	{{primitiveInliningDatabaseSetDirectory: fp pattern ifFail: [:err | self error: err]}}!
+
+lookupTableBuilt ^<Boolean>
+
+	LookupTableBuilt isNil
+		ifTrue: [ LookupTableBuilt := false. ].
+	^LookupTableBuilt!
+
+selectorFromFileName: name <String> ^<Symbol>
+	"demangle the name and and return a symbol"
+	| dename <String> |
+	dename := (self demangle: name) asString.
+	^(String withAll: (dename copyFrom: 1 to: dename size - 4)) asSymbol.
+! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'file out' !
+
+
+dump
+
+{{primitiveInliningDatabaseFileOutAllIfFail: [ :err | self error: err]}}! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'iterating' !
+
+
+classPathsDo: blk <[FilePath]>
+
+	self filesIn: self directory do: blk
+!
+
+filesIn: directory <FilePath> do: blk <[FilePath]>
+
+	(directory, (FilePattern for: '*')) pathsDo: [ :fp <FilePath> | | base <String> |
+		base := fp elements last pattern.
+		(base ~= '.' and: [ base ~= '..' ]) ifTrue: [ blk value: fp ]
+	]! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'accessing' !
+
+
+activate
+
+VM booleanAt: #UseInliningDatabase put: true!
+
+deactivate
+
+VM booleanAt: #UseInliningDatabase put: false! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'compile' !
+
+
+compileAll
+	"file in all and compile all entries in the inlining database"
+	| ms <Integer> |
+	ms := Time millisecondsToRun:
+		[	[self compileNextMethod] whileTrue	].
+	Transcript show: 'Compile took ', ms printString, ' ms.'; cr.
+!
+
+compileInBackground
+
+	| action <[]> startTime<Float> |
+	startTime := Time clockValue.
+	action :=
+		[	self compileNextMethod
+				ifFalse: [ IdleProcess unregister: action.
+									Transcript putAll: 'Done compiling Inlining DB ',
+												'(elapsed time= ';
+											print: (Time clockValue - startTime) asInteger;
+											putAll: ' sec).';
+											cr. ].
+		].
+	IdleProcess register: action!
+
+compileNextMethod ^<Boolean>
+	"Compiles a entry in the inlining database"
+	
+	^{{primitiveInliningDatabaseCompile}}! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	VM useInliningDatabase
+		ifTrue: [ self compileInBackground ]! !
+

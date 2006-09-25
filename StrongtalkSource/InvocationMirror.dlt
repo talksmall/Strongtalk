@@ -1,0 +1,88 @@
+Delta define: #InvocationMirror as: (
+(Class subclassOf: 'AbstractClassMirror' instanceVariables: 'sourceInfo ')) !
+
+(Delta mirrorFor: #InvocationMirror) revision: '$Revision: 1.3 $'!
+
+(Delta mirrorFor: #InvocationMirror) group: 'reflection'!
+
+(Delta mirrorFor: #InvocationMirror)
+comment: 
+'I mirror a mixin invocation that is not the primary invocation of its mixin.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #InvocationMirror) classSide methodsFor: 'Unclassified' !
+
+
+on: anInvocation <Class>
+
+^self new reflect: anInvocation! !
+
+! (Delta mirrorFor: #InvocationMirror) methodsFor: 'Unclassified' !
+
+
+basicDefinitionString ^ <Str>
+
+^self sourceInfo definitionString!
+
+basicLocator  ^ <BasicMixinLocator> 
+	^self typeInfo basicLocator!
+
+createTypeStructure
+
+| 
+classTypeInfo <MixinInvocationSide> 
+classClassTypeInfo <MixinInvocationSide>
+classSide <ClassMirror>
+invNode <MixinInvocatioNode>
+|
+
+self isMeta ifTrue:[^self instanceSide createTypeStructure].
+classSide := self classSide.
+self nonAtomic.
+classTypeInfo := Type atClass: self reflectee 
+                                             put:  (DeltaMixinInvocationSide new initialize klass: self reflectee).
+classClassTypeInfo := Type atClass:  classSide reflectee 
+                                                        put: (DeltaMixinInvocationSide new initialize klass: classSide reflectee).
+classTypeInfo  dual: classClassTypeInfo.
+classClassTypeInfo  dual: classTypeInfo.
+
+invNode :=  (DeltaParser new parseClassOrMixinExpr: self definitionString  within: DeltaGlobals) body.
+classTypeInfo superclassType: invNode myClass.
+classClassTypeInfo superclassType:  invNode myClass classProtocol.
+
+classTypeInfo mixinType: invNode myMixin.
+classClassTypeInfo mixinType:  invNode myMixin classProtocol.
+
+!
+
+isMixinInvocation  ^ <Boolean>
+
+^true!
+
+mixin ^ <MixinMirror>
+
+
+^MixinMirror on: (ClassVMMirror on: self reflectee) mixin reflectee
+!
+
+referenceToSelf ^ <DeltaClassId>
+
+^DeltaClassId new 
+                 setId: (self nameIfAbsent:[self error: 'Internal flaw: Use of unnamed superclass']);
+                 scope: DeltaGlobalScope!
+
+reflect: r <Class>
+
+super reflectee: r!
+
+rename: oldId <Symbol> to: newId <Symbol>
+| s <ReadString> |
+"rename in class and in mixin"!
+
+sourceInfo ^ <InvocationSourceHandler>
+
+	sourceInfo isNil 
+		ifTrue: [ sourceInfo := InvocationSourceHandler for: self ].
+	^sourceInfo! !
+

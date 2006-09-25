@@ -1,0 +1,70 @@
+Delta define: #SuperprotocolOutliner as: (
+(Class subclassOf: 'DefinitionItemOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #SuperprotocolOutliner) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #SuperprotocolOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #SuperprotocolOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #SuperprotocolOutliner) methodsFor: 'private' !
+
+
+aspectForUpdate ^ <Symbol>
+
+	^#superProtocol
+!
+
+header ^ <Str>
+
+	^'Superprotocol'
+!
+
+modelAsCharGlyphs ^ <CharGlyphs>
+
+	| painter <Painter> |
+	painter := self useRichTextForSources 
+		ifTrue: [ 		self typeExpressionPainter ]
+		ifFalse: [	self codePainter ].
+	^self standardTextForString: self mirror superprotocolString painter: painter
+
+!
+
+storeAndOnSuccess: blk <[]>
+
+	"The right way to do this is to have a #superprotocol:ifFail: in ProtocolMirror that will parse and
+		update type information accordingly.
+		
+		In the meantime, we parse an extra time here to check for errors and call #superProtocol: afterwards.
+		This should be changed shortly."
+		
+	| sp <Str> eval <Str> constructor <Mirror> |
+	self deltaHack.
+	sp := self charGlyphModelAsString: self codeView.
+	DeltaParser new 
+		parseType: sp
+		within: DeltaGlobals
+		ifError: [ :msg <Str> :pos <Int> | ^self showParseError: msg at: pos in: self codeView ].
+	self mirror superProtocol: sp.
+	blk value.
+! !
+
+! (Delta mirrorFor: #SuperprotocolOutliner) methodsFor: 'typechecking' !
+
+
+typecheck
+
+self typecheckAction:[self mirror typecheckSuperprotocol]
+		title: 'Typechecking ', self mirror name, ' superprotocol clause'.
+! !
+
+! (Delta mirrorFor: #SuperprotocolOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <SuperclassClauseLocator>
+
+^SuperprotocolLocator ofDefinition: self mirror basicLocator! !
+

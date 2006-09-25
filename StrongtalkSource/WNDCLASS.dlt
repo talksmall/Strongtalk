@@ -1,0 +1,103 @@
+Delta define: #WNDCLASS as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #WNDCLASS) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #WNDCLASS) group: 'base'!
+
+(Delta mirrorFor: #WNDCLASS)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #WNDCLASS) methodsFor: 'accessing' !
+
+
+cbClsExtra: val <Int>
+
+	self smallIntegerAt: self cbClsExtraOffset put: val!
+
+cbWndExtra: val <Int>
+
+	self smallIntegerAt: self cbWndExtraOffset put: val!
+
+hCursor: val <ExternalData>
+
+	self externalDataAt: self hCursorOffset put: val!
+
+hIcon: val <ExternalData>
+
+	self externalDataAt: self hIconOffset put: val!
+
+hInstance: val <ExternalData>
+
+	self externalDataAt: self hInstanceOffset put: val!
+
+hbrBackground: val <ExternalData>
+
+	self externalDataAt: self hbrBackgroundOffset put: val!
+
+lpfnWndProc: val <ExternalData>
+
+	self externalDataAt: self lpfnWndProcOffset put: val!
+
+lpszClassName: val <ExternalData>
+
+	self externalDataAt: self lpszClassNameOffset put: val!
+
+lpszMenuName: val <ExternalData>
+
+	self externalDataAt: self lpszMenuNameOffset put: val!
+
+structureSize ^<Int>
+
+	^40!
+
+style: style <Int>
+
+	self smallIntegerAt: self styleOffset put: style! !
+
+! (Delta mirrorFor: #WNDCLASS) methodsFor: 'offsets' !
+
+
+cbClsExtraOffset ^<Int>
+
+	^8!
+
+cbWndExtraOffset ^<Int>
+
+	^12!
+
+hCursorOffset ^<Int>
+
+	^24!
+
+hIconOffset ^<Int>
+
+	^20!
+
+hInstanceOffset ^<Int>
+
+	^16!
+
+hbrBackgroundOffset ^<Int>
+
+	^28!
+
+lpfnWndProcOffset ^<Int>
+
+	^4!
+
+lpszClassNameOffset ^<Int>
+
+	^36!
+
+lpszMenuNameOffset ^<Int>
+
+	^32!
+
+styleOffset ^<Int>
+
+	^0! !
+

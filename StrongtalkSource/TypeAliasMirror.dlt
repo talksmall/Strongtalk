@@ -1,0 +1,149 @@
+Delta define: #TypeAliasMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee sourceInfo ')) !
+
+(Delta mirrorFor: #TypeAliasMirror) revision: '$Revision: 1.7 $'!
+
+(Delta mirrorFor: #TypeAliasMirror) group: 'reflection'!
+
+(Delta mirrorFor: #TypeAliasMirror)
+comment: 
+'This class represents a mirror on a type alias.
+
+The treatment of aliases is incomplete, for now we just
+stick a type in the system dictionary. This is sufficient
+for type checking, but too simple for aliases in general.
+
+This mirror class  thus just contains the minimal stuff
+needed for browsers to work.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #TypeAliasMirror) classSide methodsFor: 'instance creation' !
+
+
+on: t <Type> ^ <Instance> 
+
+^self new reflectee: t! !
+
+! (Delta mirrorFor: #TypeAliasMirror) methodsFor: 'Unclassified' !
+
+
+alias: as <Str>
+
+Type atAlias: self reflectee put: (DeltaParser new parseTypeExpr: as within: DeltaGlobals) body.
+self aliasString: as.!
+
+alias: as <Str> ifFail: fb <[Str, Int]>
+
+Type atAlias: self reflectee put: (DeltaParser new parseTypeExpr: as within: DeltaGlobals ifError: fb) body.
+self aliasString: as.!
+
+aliasString ^ <Str>
+
+^self sourceInfo aliasString!
+
+aliasString:  a <Str>
+
+self sourceInfo aliasString: a!
+
+basicDefinitionString   ^ <Str>
+
+	^self sourceInfo aliasString asString printString
+!
+
+basicLocator ^ <BasicTypeAliasLocator>
+
+^TypeAliasLocator new id: self name!
+
+classSide
+"Does nothing at this time"
+self deltaHack.
+!
+
+createTypeStructure
+
+Type atAlias: self reflectee
+          put: (DeltaParser new parseTypeExpr: self aliasString within: DeltaGlobals) body!
+
+definitionString ^ <Str>
+"Should be removed once we handle generic type aliases"
+^self basicDefinitionString!
+
+definitionWriterClass ^ <TypeAliasWriter class>
+
+^TypeAliasWriter!
+
+fileNameExtension  ^<Str>
+	^'.str'!
+
+isMeta ^ <Boolean>
+
+^false!
+
+komment
+
+"
+This class represents a mirror on a type alias.
+
+The treatment of aliases is incomplete, for now we just
+stick a type in the system dictionary. This is sufficient
+for type checking, but too simple for aliases in general.
+
+This mirror class  thus just contains the minimal stuff
+needed for browsers to work.
+"
+!
+
+reflectee ^ <Type>
+	^reflectee!
+
+reflectee: t <Type>
+	reflectee := t!
+
+rename: oldId <Symbol> to: newId <Symbol>
+| s <ReadString> src <ReadString> |
+"rename in alias string"
+s := self rename: oldId to: newId in: (src := self aliasString).
+s == src ifFalse:[self alias: s ifFail:[:msg <Str>  :i <Int>  | self error: 'Renamed code uparseable: ', msg].].!
+
+renameGroup: grp <Dict[Symbol,Symbol]>
+| s <ReadString> src <ReadString> |
+"rename in alias string"
+s := self renameGroup: grp  in: (src := self aliasString).
+s == src ifFalse:[self alias: s ifFail:[:msg <Str>  :i <Int>  | self error: 'Renamed code uparseable: ', msg].].!
+
+sourceInfo ^ <TypeAliasSourceHandler>
+
+sourceInfo isNil 
+		ifTrue: [ sourceInfo := TypeAliasSourceHandler for: self ].
+	^sourceInfo!
+
+typeArgumentString ^ <Str>
+
+^self sourceInfo typeArgumentString!
+
+typeInfo ^<Type>
+"Private"
+
+^(Type forTypeAlias: self reflectee)! !
+
+! (Delta mirrorFor: #TypeAliasMirror) methodsFor: 'typechecking' !
+
+
+typecheck
+
+| ti <ObjectType> |
+
+ti := self typeInfo.
+ti errorHandler pushDefinition: self.
+ti wellFormed.
+ti errorHandler popDefinition.
+!
+
+typecheckTypeArguments
+
+self typeInfo typecheckTypeArgs. 
+
+! !
+

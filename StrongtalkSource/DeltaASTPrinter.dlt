@@ -1,0 +1,310 @@
+Delta define: #DeltaASTPrinter as: (
+(Class subclassOf: 'DeltaASTTool' instanceVariables: 'stream indent prec ')) !
+
+(Delta mirrorFor: #DeltaASTPrinter) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaASTPrinter) group: 'ast'!
+
+(Delta mirrorFor: #DeltaASTPrinter)
+comment: 
+'Instance variables:
+
+	stream		output stream
+
+	indent		current indentation level, starting with 0 (no indentation)
+
+	prec			current precedence level (of enclosing expression),
+					starting with 0 (lowest precedence):
+
+					0	precedence of keyword messages
+					1	precedence of binary messages
+					2	precedence of unary messages
+	
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaASTPrinter) classSide methodsFor: 'Unclassified' !
+
+
+new
+	^ super new initialize! !
+
+! (Delta mirrorFor: #DeltaASTPrinter) methodsFor: 'Unclassified' !
+
+
+andOrNode: node
+	| op |
+	self assert: [ node isAndOrNode ].
+	node isAnd
+		ifTrue: [ op := ' and: ' ]
+		ifFalse: [ op := ' or: ' ].
+	self print: node recv.
+	self write: op.
+	self write: '[ '.
+	self print: node arg.
+	self write: ' ]'!
+
+assignmentNode: node
+	self assert: [ node isAssignmentNode ].
+	self print: node var.
+	self write: ' := '.
+	self print: node expr!
+
+blockNode: node
+	| pars |
+	self assert: [ node isBlockNode ].
+	self write: '[] '.
+	pars := node parameters.
+	pars size > 0 ifTrue: [
+		pars do: [ :par |
+			self write: ':'.
+			self write: par name.
+			self write: ' '
+		].
+		self write: '| '
+	].
+	self print: node body.
+	self write: ' []'!
+
+cascadedSendNode: node
+	self assert: [ node isCascadedSendNode ].
+	self print: node prevSend.
+	self write: ' ; '.
+	self print: node msg!
+
+classVarNode: node
+	self assert: [ node isClassVarNode ].
+	self write: node name!
+
+codeBodyNode: node
+    | t first |
+    self assert: [ node isCodeBodyNode ].
+
+    "temporaries"
+    t := node temporaries.
+    t size > 0 ifTrue: [
+        self write: '| '.
+        t do: [ :var | self write: var name, ' '].
+        self write: '|'.
+        self ln
+    ].
+
+    "statements"
+	first := true.
+	node statements do: [ :stat |
+		first
+			ifTrue: [first := false]
+			ifFalse: [
+				self write: '.'.
+				self ln
+			].
+		self print: stat
+	]!
+
+ifNode: node
+	| t e |
+	self assert: [node isIfNode].
+	node ifTrue
+		ifTrue: [ t := ' ifTrue: '. e := ' ifFalse: ' ]
+		ifFalse: [ e := ' ifTrue: '. t := ' ifFalse: ' ].
+	node cond apply: self.
+	self write: t.
+	self write: '[ '.
+	self indent: [
+		self ln.
+		self print: node then
+	].
+	self ln.
+	self write: ' ]'.
+	node else isNil ifFalse: [
+		self write: e.
+		self write: '[ '.
+		self indent: [
+			self ln.
+			self print: node else
+		].
+		self ln.
+		self write: ' ]'
+	]!
+
+indent: block
+	indent := indent + 1.
+	block value.
+	indent := indent - 1!
+
+initialize
+	stream := Transcript.	"default stream"
+	indent := 0.
+	prec := 0!
+
+inlinedBlockNode: node
+	self assert: [ node isInlinedBlockNode ].
+	self write: '[ '.
+	self print: node body.
+	self write: ' ] value'!
+
+intersperse: sel with: args
+	| nofArgs keys first |
+	nofArgs := args size.
+
+	"unary message"
+	nofArgs = 0 ifTrue: [
+		self write: sel.
+		^ self
+	].
+
+	"binary message or keyword message with 1 argument"
+	nofArgs = 1 ifTrue: [
+		self write: sel.
+		self write: ' '.
+		((sel at: sel size) = $:)
+			ifTrue: [self print: (args at: 1) within: 2]
+			ifFalse: [self print: (args at: 1) within: 1].
+		^ self
+	].
+
+	"keyword message"
+	first := true.
+	keys := sel asArrayOfSubstringsSeparatedBy: $:.
+	1 to: args size do: [ :i |
+		first
+			ifTrue: [first := false]
+			ifFalse: [self write: ' '].
+		self write: (keys at: i).
+		self write: ': '.
+		self print: (args at: i) within: 2
+	]!
+
+komment
+	"
+	Instance variables:
+
+	stream		output stream
+
+	indent		current indentation level, starting with 0 (no indentation)
+
+	prec			current precedence level (of enclosing expression),
+					starting with 0 (lowest precedence):
+
+					0	precedence of keyword messages
+					1	precedence of binary messages
+					2	precedence of unary messages
+	"!
+
+literalNode: node
+	self assert: [ node isLiteralNode ].
+	node isCharNode ifTrue: [ self write: '$' ].
+	self write: node value printString!
+
+ln
+	| i |
+	stream cr.
+	i := indent.
+	[ i > 0 ] whileTrue: [ stream tab. i := i - 1 ]!
+
+loopNode: node
+	self assert: [ node isLoopNode ].
+	node prologue isNil ifFalse: [
+		self print: node prologue.
+		self write: '.'.
+		self ln
+	].
+	self write: '[ '.
+	self print: node cond.
+	self write: ' ]'.
+	node whileTrue
+		ifTrue: [ self write: ' whileTrue' ]
+		ifFalse: [ self write: ' whileFalse' ].
+	node body isNil ifFalse: [
+		self write: ': ['.
+		self indent: [
+			self ln.
+			self print: node body
+		].
+		self ln.
+		self write: ']'
+	]
+	!
+
+messageNode: node
+	self assert: [ node isMessageNode ].
+	self intersperse: node selector with: node arguments!
+
+methodNode: node <DeltaMethod > ^ <Self>
+	self assert: [ node isMethodNode ].
+	self intersperse: node selector with: node body parameters.
+	self indent: [
+		self ln.
+		self print: node body
+	].
+	self ln!
+
+normalSendNode: node
+	self assert: [ node isNormalSendNode ].
+	self print: node recv.
+	self write: ' '.
+	self print: node msg!
+
+parameterNode: node
+	self assert: [ node isParameterNode ].	
+	self write: node name!
+
+predictPrimitiveNode: node
+	self assert: [ node isPredictPrimitiveNode ].
+	self write: '"predict ', node primitive, '"'!
+
+primitiveCallNode: node
+	self assert: [ node isPrimitiveCallNode ].
+	self write: node selector!
+
+print: node
+	node apply: self!
+
+print: node on: aStream
+	stream := aStream.
+	self print: node!
+
+print: node within: p
+	| prevPrec |
+	prevPrec := prec.
+	prec := p.
+	node apply: self.
+	prec := prevPrec!
+
+receiverNode: node
+	self assert: [ node isReceiverNode ].	
+	self write: node name!
+
+refNode: node
+	self assert: [ node isRefNode ].
+	self write: node decl name!
+
+returnStatNode: node
+	self assert: [ node isReturnStatNode ].
+	self write: '^ '.
+	self print: node expr!
+
+selfSendNode: node
+	self assert: [ node isSelfSendNode ].
+	self write: 'self '.
+	self print: node msg!
+
+superSendNode: node
+	self assert: [ node isSuperSendNode ].
+	self write: 'super '.
+	self print: node msg!
+
+superVarNode: node
+	self assert: [ node isSuperVarNode ].
+	self write: node name!
+
+temporaryNode: node
+	self assert: [ node isTemporaryNode ].	
+	self write: node name!
+
+typeVarNode: node
+	self write: node name!
+
+write: s
+	stream nextPutAll: s! !
+

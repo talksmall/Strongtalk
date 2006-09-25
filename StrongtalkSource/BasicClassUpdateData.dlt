@@ -1,0 +1,59 @@
+Delta define: #BasicClassUpdateData as: (
+(Class subclassOf: 'BasicDeclData' instanceVariables: 'abstract subtype monotonic branded instanceSide ')) !
+
+(Delta mirrorFor: #BasicClassUpdateData) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #BasicClassUpdateData) group: 'ast'!
+
+(Delta mirrorFor: #BasicClassUpdateData)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #BasicClassUpdateData) methodsFor: 'Unclassified' !
+
+
+abstract ^ <Boolean>
+    ^abstract!
+
+abstract: a <Boolean > ^ <Self>
+    abstract := a.!
+
+abstract: a <Boolean >branded: b <Boolean >subtype: s <Boolean >monotonic: m <Boolean >protocols: p <Protocol >classProtocols: cp <Protocol > ^ <Self>
+    abstract := a.
+branded := b.
+subtype := s.
+monotonic := m.
+self instanceSide: DeltaSideUpdate new supportedProtocol: p.!
+
+branded ^ <Boolean>
+    ^branded!
+
+branded: b <Boolean > ^ <Self>
+    branded := b.!
+
+extensionsAreSubtypes ^ <Boolean>
+    ^self monotonic!
+
+extensionsAreSubtypes: e <Boolean > ^ <Self>
+    self monotonic: e!
+
+instanceSide ^ <Side>
+    ^instanceSide!
+
+instanceSide: i <Side > ^ <Self>
+    i classDecl: self.
+instanceSide := i!
+
+monotonic ^ <Boolean>
+    ^monotonic!
+
+monotonic: m <Boolean > ^ <Self>
+    monotonic := m!
+
+subtype ^ <Boolean>
+    ^subtype!
+
+subtype: s <Boolean > ^ <Self>
+    subtype := s.! !
+

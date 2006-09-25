@@ -1,0 +1,41 @@
+Delta define: #MenuSeparator as: (
+(Class subclassOf: 'MenuItem' instanceVariables: '')) !
+
+(Delta mirrorFor: #MenuSeparator) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #MenuSeparator) group: 'base'!
+
+(Delta mirrorFor: #MenuSeparator)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #MenuSeparator) methodsFor: 'control' !
+
+
+buildFor: menu <Menu> at: index <Int>
+
+	self parent appendWithFlags: Win32 MF_SEPARATOR item: self id content: Win32 NULL.
+!
+
+newbuildFor: menu <Menu> at: index <Int>
+"%todo: use when whole world win32"
+	| info <MENUITEMINFO> cname <ExternalProxy> mask <ExternalData> |
+	info := MENUITEMINFO new allocate.
+	mask := Win32 MIIM_TYPE.
+
+	info	fMask: mask;
+			fType: Win32 MFT_SEPARATOR.
+
+	self parent insertWithInfo: info at: index.
+
+	info free.
+! !
+
+! (Delta mirrorFor: #MenuSeparator) methodsFor: 'restricted-win32' !
+
+
+mergeInto: menu <Menu>
+
+	menu add: self! !
+

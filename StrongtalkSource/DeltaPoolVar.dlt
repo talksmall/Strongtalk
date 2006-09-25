@@ -1,0 +1,26 @@
+Delta define: #DeltaPoolVar as: (
+(Class subclassOf: 'DeltaVar' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaPoolVar) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #DeltaPoolVar) group: 'ast'!
+
+(Delta mirrorFor: #DeltaPoolVar)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #DeltaPoolVar) methodsFor: 'Unclassified' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool poolVarNode: self!
+
+isDeltaPoolVarNode ^ <Boolean>
+    ^ true!
+
+name: aName <Str >type: aType <Type > ^ <Self>
+    aType isNil ifFalse:[aType scope: DeltaGlobals].
+    self filter: (BasicVarDeclData new name: aName type: aType)
+           using: DeltaSubstitution new initialize.! !
+

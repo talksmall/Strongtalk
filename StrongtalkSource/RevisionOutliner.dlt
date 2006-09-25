@@ -1,0 +1,46 @@
+Delta define: #RevisionOutliner as: (
+(Class subclassOf: 'DefinitionItemOutliner' instanceVariables: '')) !
+
+(Delta mirrorFor: #RevisionOutliner) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #RevisionOutliner) group: 'outliner'!
+
+(Delta mirrorFor: #RevisionOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #RevisionOutliner) methodsFor: 'private' !
+
+
+aspectForUpdate ^ <Symbol>
+
+	^#revision
+!
+
+header ^ <Str>
+
+	^'Source file revision'
+
+!
+
+initialOpenState ^ <Boolean>
+
+	^false
+
+!
+
+modelAsCharGlyphs ^ <CharGlyphs>
+
+	^self standardTextForString: self mirror revision painter: self codePainter
+!
+
+storeAndOnSuccess: blk <[]>
+		
+	| revision <Str> |
+	revision := self charGlyphModelAsString: self codeView.
+	self mirror revision: revision.
+	blk value.
+
+! !
+

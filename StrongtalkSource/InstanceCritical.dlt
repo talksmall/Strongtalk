@@ -1,0 +1,31 @@
+Delta define: #InstanceCritical as: (
+Mixin superclassType: 'Object' body: ((Class subclassOf: 'Object' instanceVariables: 'monitor <Semaphore>
+	'))) !
+
+(Delta mirrorFor: #InstanceCritical) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #InstanceCritical) group: 'base'!
+
+(Delta mirrorFor: #InstanceCritical)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #InstanceCritical) methodsFor: 'restricted' !
+
+
+critical: blk <[^X def]>  ^<X>
+
+	^self monitor critical: blk!
+
+monitor ^<Semaphore>
+
+	"Check before entering critical region as an optimization"
+	monitor == nil
+		ifTrue: [	Processor uninterruptablyDo:
+							[ monitor == nil
+								ifTrue: [ monitor := Semaphore forMutualExclusion ].
+							].
+					 ].
+	^monitor! !
+

@@ -1,0 +1,26 @@
+Delta define: #ElementEM as: (
+(Class subclassOf: 'HTMLElement' instanceVariables: '')) !
+
+(Delta mirrorFor: #ElementEM) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #ElementEM) group: 'HTML'!
+
+(Delta mirrorFor: #ElementEM)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #ElementEM) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	| p <Painter> |
+	p := builder painter copy.
+	p font: (p font newSpec italic: true) font.
+	builder withPainter: p
+		do: [ self for: builder withColorsFromAttributesDo:
+					[	super buildFor: builder ].
+				]
+! !
+
