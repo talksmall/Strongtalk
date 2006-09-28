@@ -37,8 +37,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 class smiOopDesc: public oopDesc {
  public:
   // constructors
-  friend smiOop as_smiOop(smi value) {
-    return smiOop((value << Tag_Size) + Int_Tag); }
+  friend smiOop as_smiOop(smi value);
 
   // accessors
   // %note: value() depends on an arithmetic shift to preserve sign.
@@ -60,3 +59,5 @@ class smiOopDesc: public oopDesc {
 
   smi byte_count() const { return smi(this) - Int_Tag;   }
 };
+
+

@@ -63,29 +63,9 @@ class NativeCall: public NativeInstruction {
   void  print();
   
   // Creation
-  friend NativeCall* nativeCall_at(char* address) {
-    NativeCall* call = (NativeCall*)(address - instruction_offset);
-    #ifdef ASSERT
-      call->verify();
-    #endif
-    return call;
-  }
-
-  friend NativeCall* nativeCall_from_return_address(char* return_address) {
-    NativeCall* call = (NativeCall*)(return_address - return_address_offset);
-    #ifdef ASSERT
-      call->verify();
-    #endif
-    return call;
-  }
-
-  friend NativeCall* nativeCall_from_relocInfo(char* displacement_address) {
-    NativeCall* call = (NativeCall*)(displacement_address - displacement_offset);
-    #ifdef ASSERT
-      call->verify();
-    #endif
-    return call;
-  }
+  friend NativeCall* nativeCall_at(char* address);
+  friend NativeCall* nativeCall_from_return_address(char* return_address);
+  friend NativeCall* nativeCall_from_relocInfo(char* displacement_address);
 };
 
 
@@ -112,14 +92,9 @@ class NativeMov: public NativeInstruction {
   void  print();
   
   // Creation
-  friend NativeMov* nativeMov_at(char* address) {
-    NativeMov* test = (NativeMov*)(address - instruction_offset);
-    #ifdef ASSERT
-      test->verify();
-    #endif
-    return test;
-  }
+  friend NativeMov* nativeMov_at(char* address);
 };
+
 
 
 // An abstraction for accessing/manipulating native test eax, imm32 instructions.
@@ -144,13 +119,8 @@ class NativeTest: public NativeInstruction {
   void  print();
   
   // Creation
-  friend NativeTest* nativeTest_at(char* address) {
-    NativeTest* test = (NativeTest*)(address - instruction_offset);
-    #ifdef ASSERT
-      test->verify();
-    #endif
-    return test;
-  }
+  friend NativeTest* nativeTest_at(char* address);
+
 };
 
 
@@ -169,7 +139,7 @@ class IC_Info: public NativeTest {
   void  set_flags(int flags)			{ set_data((data() & ~flags_mask) | (flags & flags_mask)); }
 
   // Creation
-  friend IC_Info* ic_info_at(char* address) {
-    return (IC_Info*)nativeTest_at(address);
-  }
+  friend IC_Info* ic_info_at(char* address);
 };
+
+

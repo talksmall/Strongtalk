@@ -45,7 +45,7 @@ class RecompilationPolicy : public ResourceObj {
    Recompilee* findRecompilee(); 	// determine what to recompile
    void cleanupStaleInlineCaches();	// clean up inline caches of top methods
 
-   static needRecompileCounter(Compiler* c);  // does this compilation (nmethod) need an invocation counter?
+   static bool needRecompileCounter(Compiler* c);  // does this compilation (nmethod) need an invocation counter?
    static bool shouldRecompileAfterUncommonTrap(nmethod* nm);  
 	  // nm encountered an uncommon case; should it be recompiled?
    static bool shouldRecompileUncommonNMethod(nmethod* nm);  

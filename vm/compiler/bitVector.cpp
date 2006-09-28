@@ -34,7 +34,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
     for (int i = indexFromNumber(other->length-1); i >= 0; i--) {
       int old = bits[i];
       bits[i] |= other->bits[i];
-      changed |= old != bits[i];
+      changed |= (old != bits[i]);
     }
     return changed;
   }
@@ -44,7 +44,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
     for (int i = indexFromNumber(min(length, other->length)-1); i >= 0; i--) {
       int old = bits[i];
       bits[i] &= other->bits[i];
-      changed |= old != bits[i];
+      changed |= (old != bits[i]);
     }
     return changed;
   }

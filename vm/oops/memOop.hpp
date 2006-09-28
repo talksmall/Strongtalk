@@ -44,9 +44,7 @@ class memOopDesc: public oopDesc {
   static int klass_byte_offset()	{ return (1 * oopSize) - Mem_Tag; }
 
   // coercions
-  friend memOop as_memOop(void* p) { 
-    assert((int(p) & Tag_Mask) == 0, "not an aligned C pointer");
-    return memOop(int(p) + Mem_Tag); }
+  friend memOop as_memOop(void* p);
 
   // conversion from memOop to memOopDesc*
   memOopDesc* addr() const		{ return (memOopDesc*) (int(this) - Mem_Tag); }
@@ -186,4 +184,5 @@ class memOopDesc: public oopDesc {
   
   friend memOopKlass;
 };
+
 

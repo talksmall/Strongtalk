@@ -221,7 +221,7 @@ bool byteArrayOopDesc::is_unary() const {
 }
 
 bool byteArrayOopDesc::is_binary() const {
-  return ispunct(byte_at(1));
+	return ispunct(byte_at(1)) ? true : false;
 }
 
 bool byteArrayOopDesc::is_keyword() const {
@@ -230,3 +230,9 @@ bool byteArrayOopDesc::is_keyword() const {
     if (byte_at(index) == ':') return true;
   return false;
 }
+
+byteArrayOop as_byteArrayOop(void* p)
+{
+    return byteArrayOop(as_memOop(p));
+}
+

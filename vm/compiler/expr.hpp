@@ -33,7 +33,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
  protected:								      \
     static const int CONC(name,Bit);					      \
  prot	    								      \
-  bool CONC(is,name)() const { return flags & CONC(name,Bit); }		      \
+ bool CONC(is,name)() const { return flags & CONC(name,Bit) ? true : false; }		      \
   void CONC(set,name)(bool b) {						      \
     if (b) flags |= CONC(name,Bit); else flags &= ~CONC(name,Bit); }	      \
 

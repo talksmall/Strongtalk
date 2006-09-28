@@ -757,3 +757,8 @@ bool InterpretedIC_Iterator::is_super_send() const {
 void InterpretedIC_Iterator::print() {
   std->print_cr("InterpretedIC_Iterator %#x for ic %#x (%s)", this, _ic, selector()->as_string());
 }
+
+  InterpretedIC* as_InterpretedIC(char* address_of_next_instr) {
+    return (InterpretedIC*)(address_of_next_instr - InterpretedIC::size);
+  }
+

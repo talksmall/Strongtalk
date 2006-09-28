@@ -736,7 +736,7 @@ void InliningDatabase::oops_do(void f(oop*)) {
   }
 }
 
-bool InliningDatabase::file_out_all() {
+int InliningDatabase::file_out_all() {
   ResourceMark rm;
 
   // The lookup table is used to create the index file.

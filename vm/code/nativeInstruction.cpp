@@ -37,6 +37,29 @@ void NativeCall::print() {
   std->print_cr("0x%x: call 0x%x", instruction_address(), destination());
 }
 
+  NativeCall* nativeCall_at(char* address) {
+    NativeCall* call = (NativeCall*)(address - NativeCall::instruction_offset);
+    #ifdef ASSERT
+      call->verify();
+    #endif
+    return call;
+  }
+
+  NativeCall* nativeCall_from_return_address(char* return_address) {
+    NativeCall* call = (NativeCall*)(return_address - NativeCall::return_address_offset);
+    #ifdef ASSERT
+      call->verify();
+    #endif
+    return call;
+  }
+
+  NativeCall* nativeCall_from_relocInfo(char* displacement_address) {
+    NativeCall* call = (NativeCall*)(displacement_address - NativeCall::displacement_offset);
+    #ifdef ASSERT
+      call->verify();
+    #endif
+    return call;
+  }
 
 // Implementation of NativeMov
 void NativeMov::verify() {
@@ -49,6 +72,15 @@ void NativeMov::print() {
   std->print_cr("0x%x: mov reg, 0x%x", instruction_address(), data());
 }
 
+  NativeMov* nativeMov_at(char* address) {
+    NativeMov* test = (NativeMov*)(address - NativeMov::instruction_offset);
+    #ifdef ASSERT
+      test->verify();
+    #endif
+    return test;
+  }
+
+
 
 // Implementation of NativeTest
 void NativeTest::verify() {
@@ -59,4 +91,18 @@ void NativeTest::verify() {
 
 void NativeTest::print() {
   std->print_cr("0x%x: test eax, 0x%x", instruction_address(), data());
+}
+
+NativeTest* nativeTest_at(char* address)
+{
+    NativeTest* test = (NativeTest*)(address - NativeTest::instruction_offset);
+    #ifdef ASSERT
+      test->verify();
+    #endif
+    return test;
+}
+
+IC_Info* ic_info_at(char* address)
+{
+    return (IC_Info*)nativeTest_at(address);
 }

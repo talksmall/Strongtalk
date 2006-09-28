@@ -55,9 +55,7 @@ class InterpretedIC: ValueObj {
   } InterpretedICConstants;
 
   // Conversion (Bytecode* -> InterpretedIC*)
-  friend InterpretedIC* as_InterpretedIC(char* address_of_next_instr) {
-    return (InterpretedIC*)(address_of_next_instr - size);
-  }
+  friend InterpretedIC* as_InterpretedIC(char* address_of_next_instr);
 
   // find send bytecode, given address of selector; return NULL/IllegalBCI if not in a send
   static u_char* findStartOfSend(u_char* selector_addr);

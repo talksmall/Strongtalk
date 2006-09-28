@@ -35,8 +35,7 @@ class Integer;
 class byteArrayOopDesc: public memOopDesc {
   public:
   // constructor
-  friend byteArrayOop as_byteArrayOop(void* p) {
-    return byteArrayOop(as_memOop(p)); }
+  friend byteArrayOop as_byteArrayOop(void* p);
 
   void bootstrap_object(bootstrap* st);
 
@@ -133,4 +132,6 @@ class byteArrayOopDesc: public memOopDesc {
 
   friend byteArrayKlass;
 };
+
+
 

@@ -189,3 +189,15 @@ void DLLs::exit_async_call(DeltaProcess** addr) {
 void DLLs::exit_sync_call(DeltaProcess** addr) {
   // nothing to do here for now
 }
+
+  CompiledDLL_Cache* compiledDLL_Cache_from_return_address(char* return_address) {
+    CompiledDLL_Cache* cache = (CompiledDLL_Cache*)(nativeCall_from_return_address(return_address));
+    #ifdef ASSERT
+      cache->verify();
+    #endif
+    return cache;
+  }
+
+  CompiledDLL_Cache* compiledDLL_Cache_from_relocInfo(char* displacement_address) {
+    return (CompiledDLL_Cache*)nativeCall_from_relocInfo(displacement_address);
+  }

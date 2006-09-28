@@ -173,3 +173,9 @@ void memOopDesc::print_id_on(outputStream* st) {
   else
     st->print("%d",id);
 }
+
+memOop as_memOop(void* p)
+{
+    assert((int(p) & Tag_Mask) == 0, "not an aligned C pointer");
+    return memOop(int(p) + Mem_Tag);
+}

@@ -280,10 +280,7 @@ class nmethod : public OopNCode {
   friend nmethod* findNMethod(void* start);
   friend nmethod* findNMethod_maybe(void* start);
   
-  friend nmethod* nmethod_from_insts(char* insts) {	// for efficiency
-    nmethod* nm = (nmethod*) insts - 1;
-    return findNMethod(nm);
-  }
+  friend nmethod* nmethod_from_insts(char* insts);
 
  public:
   // Counting & Timing
@@ -307,5 +304,6 @@ class nmethod : public OopNCode {
    // Restores the nmethod 
    void restore_from_patch(nmethod_patch* data);
 };
+
 
 #endif

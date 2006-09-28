@@ -31,7 +31,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 class bootstrap;
 
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(_MSC_VER)
   // GNU predefines bool
   enum {false, true};
   typedef int bool;

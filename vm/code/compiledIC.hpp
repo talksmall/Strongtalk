@@ -94,13 +94,8 @@ class CompiledIC: public AbstractCompiledIC {
   static char* superLookupRoutine();
 
   // conversion (machine PC to CompiledIC*)
-  friend CompiledIC* CompiledIC_from_return_addr(char* return_addr) { 
-    return (CompiledIC*)nativeCall_from_return_address(return_addr);
-  }
-
-  friend CompiledIC* CompiledIC_from_relocInfo(char* displacement_address) {
-    return (CompiledIC*)nativeCall_from_relocInfo(displacement_address);
-  }
+  friend CompiledIC* CompiledIC_from_return_addr(char* return_addr);
+  friend CompiledIC* CompiledIC_from_relocInfo(char* displacement_address);
 
   // Accessors
 
@@ -172,20 +167,14 @@ class CompiledIC: public AbstractCompiledIC {
   void print();
 };
 
-
 class PrimitiveIC: public AbstractCompiledIC {
  public:
   // returns the primitive descriptor (based on the destination of the call).
   primitive_desc* primitive();
 
   // conversion (machine PC to PrimitiveIC*)
-  friend PrimitiveIC* PrimitiveIC_from_return_addr(char* return_addr) { 
-    return (PrimitiveIC*)nativeCall_from_return_address(return_addr);
-  }
-
-  friend PrimitiveIC* PrimitiveIC_from_relocInfo(char* displacement_address) {
-    return (PrimitiveIC*)nativeCall_from_relocInfo(displacement_address);
-  }
+  friend PrimitiveIC* PrimitiveIC_from_return_addr(char* return_addr);
+  friend PrimitiveIC* PrimitiveIC_from_relocInfo(char* displacement_address);
 
   // returns the first address after this primitive ic.
   char* end_addr();

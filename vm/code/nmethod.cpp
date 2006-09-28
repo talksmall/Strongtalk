@@ -955,5 +955,10 @@ void nmethod_init() {
   assert(sizeof(nmFlags) <= 4, "nmFlags occupies more than a word");
 }
 
+  nmethod* nmethod_from_insts(char* insts) {	// for efficiency
+    nmethod* nm = (nmethod*) insts - 1;
+    return findNMethod(nm);
+  }
+
 
 # endif

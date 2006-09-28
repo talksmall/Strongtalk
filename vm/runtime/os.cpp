@@ -60,11 +60,11 @@ int os::getenv(char* name,char* buffer,int len) {
 }
 
 bool os::move_file(char* from, char* to) {
-  return MoveFileEx(from, to, MOVEFILE_REPLACE_EXISTING);
+	return MoveFileEx(from, to, MOVEFILE_REPLACE_EXISTING) ? true : false;
 }
 
 bool os::check_directory(char* dir_name) {
-  bool result = CreateDirectory(dir_name, NULL);
+	bool result = CreateDirectory(dir_name, NULL) ? true : false;
   if (!result) {
     int error = GetLastError();
     if (error == ERROR_ALREADY_EXISTS) return true;
@@ -203,7 +203,7 @@ DLL* os::dll_load(char* name) {
 }
 
 bool os::dll_unload(DLL* library) {
-  return FreeLibrary((HINSTANCE) library);
+	return FreeLibrary((HINSTANCE) library) ? true : false;
 }
 
 char* exception_name(int code) {
@@ -317,16 +317,16 @@ bool os::commit_memory(char* addr, int size) {
 }
 
 bool os::uncommit_memory(char* addr, int size) {
-  return VirtualFree(addr, size, MEM_DECOMMIT);
+	return VirtualFree(addr, size, MEM_DECOMMIT) ? true : false;
 }
 
 bool os::release_memory(char* addr, int size) {
-  return VirtualFree(addr, 0, MEM_RELEASE);
+	return VirtualFree(addr, 0, MEM_RELEASE) ? true : false;
 }
 
 bool os::guard_memory(char* addr, int size) {
   DWORD old_status;
-  return VirtualProtect(addr, size, PAGE_READWRITE | PAGE_GUARD, &old_status);
+  return VirtualProtect(addr, size, PAGE_READWRITE | PAGE_GUARD, &old_status) ? true : false;
 }
 
 void os::transfer(Thread* from_thread, Event* from_event, Thread* to_thread, Event* to_event) {
