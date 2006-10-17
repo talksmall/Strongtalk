@@ -27,9 +27,11 @@ categoryName: cat  <Str> ^ <Str>
 
 fileOutBodyOn: stream <WriteStream> ^ <Int>
 
-	| pos <Int> |
+	| pos <Int> sortedCategories <Cltn[Str]> |
 	pos := stream position.
-	self mirror sourceInfo categories do: [ :cat <Str> | 
+	sortedCategories := self mirror sourceInfo categories asSortedCollection: 
+			[ :s <Str> :s2 <Str> | s  <= s2  ].
+	sortedCategories do: [ :cat <Str> | 
 		self fileOutCategory: cat on: stream ].
 	^pos!
 
