@@ -123,28 +123,28 @@ c:
 	return_error	_first_argument_has_wrong_type
 ENDM
 
-PUBLIC _double_subtract
-_double_subtract proc near
+PUBLIC _double_subtract@8
+_double_subtract@8 proc near
 	doubleOperation fsub
 endp
 
-PUBLIC _double_add
-_double_add proc near
+PUBLIC _double_add@8
+_double_add@8 proc near
 	doubleOperation fadd
 endp
 
-PUBLIC _double_multiply
-_double_multiply proc near
+PUBLIC _double_multiply@8
+_double_multiply@8 proc near
 	doubleOperation fmul
 endp
 
-PUBLIC _double_divide
-_double_divide proc near
+PUBLIC _double_divide@8
+_double_divide@8 proc near
 	doubleOperation fdiv
 endp
 
-PUBLIC _double_from_smi
-_double_from_smi proc near
+PUBLIC _double_from_smi@4
+_double_from_smi@4 proc near
 	; allocate_double
 	mov		eax, [eden_top]
 	add		eax, 4 * oopSize

@@ -55,8 +55,8 @@ division_by_zero:
 	return_error _division_by_zero
 
 
-PUBLIC  _smiOopPrimitives_multiply
-_smiOopPrimitives_multiply proc	near
+PUBLIC  _smiOopPrimitives_multiply@8
+_smiOopPrimitives_multiply@8 proc	near
  	mov	EDX, argument
  	mov	EAX, receiver
  	test	DL, 03H
@@ -67,8 +67,8 @@ _smiOopPrimitives_multiply proc	near
         ret	8
 endp
 
-PUBLIC _smiOopPrimitives_add
-_smiOopPrimitives_add proc near
+PUBLIC _smiOopPrimitives_add@8
+_smiOopPrimitives_add@8 proc near
 	mov	EAX, receiver
 	add	EAX, argument
 	jo	SHORT @98
@@ -81,8 +81,8 @@ _smiOopPrimitives_add proc near
 	jmp	SHORT overflow
 endp
 
-PUBLIC _smiOopPrimitives_subtract
-_smiOopPrimitives_subtract proc	near
+PUBLIC _smiOopPrimitives_subtract@8
+_smiOopPrimitives_subtract@8 proc	near
 	mov	EAX, receiver
 	sub	EAX, argument
 	jo	SHORT @99
@@ -96,7 +96,7 @@ _smiOopPrimitives_subtract proc	near
 endp
 
 
-PUBLIC _smiOopPrimitives_mod
+PUBLIC _smiOopPrimitives_mod@8
 
 ; Intel definition of mod delivers:
 ;   0 <= |x%y| < |y|
@@ -116,7 +116,7 @@ PUBLIC _smiOopPrimitives_mod
 ;     x mod y = x%y + y
 ;
 
-_smiOopPrimitives_mod proc near
+_smiOopPrimitives_mod@8 proc near
  	mov	EAX, receiver	    ; x
  	mov	ECX, argument	    ; y
  	test	ECX, ECX	    ; if (y == 0)
@@ -151,7 +151,7 @@ overflow_1:
 division_by_zero_1:
 	return_error _division_by_zero
 
-PUBLIC _smiOopPrimitives_div
+PUBLIC _smiOopPrimitives_div@8
 
 ; Intel definition of div delivers:
 ;   x = (x/y)*y + (x%y)
@@ -168,7 +168,7 @@ PUBLIC _smiOopPrimitives_div
 ;     x div y = x/y-1
 ;
 
-_smiOopPrimitives_div proc	near
+_smiOopPrimitives_div@8 proc	near
  	mov	ECX, argument	    ; y
  	mov	EAX, receiver	    ; x
  	test	ECX, ECX	    ; if (y == 0)
@@ -206,8 +206,8 @@ division_by_zero_2:
 
 
 
-PUBLIC _smiOopPrimitives_remainder
-_smiOopPrimitives_remainder proc	near
+PUBLIC _smiOopPrimitives_remainder@8
+_smiOopPrimitives_remainder@8 proc	near
  	mov	ECX, argument
  	mov	EAX, receiver
  	test	ECX, ECX
@@ -224,8 +224,8 @@ _smiOopPrimitives_remainder proc	near
 	ret	8
 endp
 
-PUBLIC _smiOopPrimitives_quo
-_smiOopPrimitives_quo proc	near
+PUBLIC _smiOopPrimitives_quo@8
+_smiOopPrimitives_quo@8 proc	near
  	mov	ECX, argument
  	mov	EAX, receiver
  	test	ECX, ECX

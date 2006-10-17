@@ -145,7 +145,7 @@ class smiOopPrimitives : AllStatic {
 //              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
 //              name  = 'smiOopPrimitives_add' }
 //%
-extern "C" oop smiOopPrimitives_add(oop receiver, oop argument);
+extern "C" oop PRIM_API smiOopPrimitives_add(oop receiver, oop argument);
 
 //%prim
 // <SmallInteger> primitiveSubtract: aNumber   <SmallInteger>
@@ -154,7 +154,7 @@ extern "C" oop smiOopPrimitives_add(oop receiver, oop argument);
 //              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
 //              name  = 'smiOopPrimitives_subtract' }
 //%
-extern "C" oop smiOopPrimitives_subtract(oop receiver, oop argument);
+extern "C" oop PRIM_API smiOopPrimitives_subtract(oop receiver, oop argument);
 
 //%prim
 // <SmallInteger> primitiveMultiply: aNumber   <SmallInteger>
@@ -163,7 +163,7 @@ extern "C" oop smiOopPrimitives_subtract(oop receiver, oop argument);
 //              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
 //              name  = 'smiOopPrimitives_multiply' }
 //%
-extern "C" oop smiOopPrimitives_multiply(oop receiver, oop argument);
+extern "C" oop PRIM_API smiOopPrimitives_multiply(oop receiver, oop argument);
 
 //%prim
 // <SmallInteger> primitiveMod: aNumber   <SmallInteger>
@@ -172,7 +172,7 @@ extern "C" oop smiOopPrimitives_multiply(oop receiver, oop argument);
 //              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
 //              name  = 'smiOopPrimitives_mod' }
 //%
-extern "C" oop smiOopPrimitives_mod(oop receiver, oop argument);
+extern "C" oop PRIM_API smiOopPrimitives_mod(oop receiver, oop argument);
 
 //%prim
 // <SmallInteger> primitiveDiv: aNumber   <SmallInteger>
@@ -181,7 +181,7 @@ extern "C" oop smiOopPrimitives_mod(oop receiver, oop argument);
 //              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
 //              name  = 'smiOopPrimitives_div' }
 //%
-extern "C" oop smiOopPrimitives_div(oop receiver, oop argument);
+extern "C" oop PRIM_API smiOopPrimitives_div(oop receiver, oop argument);
 
 //%prim
 // <SmallInteger> primitiveQuo: aNumber   <SmallInteger>
@@ -190,7 +190,7 @@ extern "C" oop smiOopPrimitives_div(oop receiver, oop argument);
 //            flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
 //              name  = 'smiOopPrimitives_quo' }
 //%
-extern "C" oop smiOopPrimitives_quo(oop receiver, oop argument);
+extern "C" oop PRIM_API smiOopPrimitives_quo(oop receiver, oop argument);
 
 //%prim
 // <SmallInteger> primitiveRemainder: aNumber   <SmallInteger>
@@ -199,11 +199,11 @@ extern "C" oop smiOopPrimitives_quo(oop receiver, oop argument);
 //              flags = #(Pure SmiArith LastDeltaFrameNotNeeded)
 //              name  = 'smiOopPrimitives_remainder' }
 //%
-extern "C" oop smiOopPrimitives_remainder(oop receiver, oop argument);
+extern "C" oop PRIM_API smiOopPrimitives_remainder(oop receiver, oop argument);
 
  //%prim
 // <SmallInteger> primitiveAsFloat ^<Float> =
 //   Internal { flags = #(Pure SmiArith)
 //              name  = 'double_from_smi' }
 //%
-extern "C" oop double_from_smi(oop receiver);
+extern "C" oop PRIM_API double_from_smi(oop receiver);

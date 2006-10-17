@@ -165,7 +165,7 @@ void VirtualSpaces::remove(VirtualSpace* sp) {
     head = sp->next;
   else {
     for(VirtualSpace* p = head; p->next; p = p->next)
-      if (p->next = sp)
+      if (p->next == sp)
         p->next = sp->next;
   }
 }

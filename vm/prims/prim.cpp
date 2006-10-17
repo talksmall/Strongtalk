@@ -33,16 +33,16 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 // the typedefs below are necessary to ensure that args are passed correctly when calling a primitive
 // through a function pointer
 // NB: there's no general n-argument primitive because some calling conventions can't handle vararg functions
-typedef  oop (*prim_fntype0)();
-typedef  oop (*prim_fntype1)(oop);
-typedef  oop (*prim_fntype2)(oop, oop);
-typedef  oop (*prim_fntype3)(oop, oop, oop);
-typedef  oop (*prim_fntype4)(oop, oop, oop, oop);
-typedef  oop (*prim_fntype5)(oop, oop, oop, oop, oop);
-typedef  oop (*prim_fntype6)(oop, oop, oop, oop, oop, oop);
-typedef  oop (*prim_fntype7)(oop, oop, oop, oop, oop, oop, oop);
-typedef  oop (*prim_fntype8)(oop, oop, oop, oop, oop, oop, oop, oop);
-typedef  oop (*prim_fntype9)(oop, oop, oop, oop, oop, oop, oop, oop, oop);
+typedef  oop (PRIM_API *prim_fntype0)();
+typedef  oop (PRIM_API *prim_fntype1)(oop);
+typedef  oop (PRIM_API *prim_fntype2)(oop, oop);
+typedef  oop (PRIM_API *prim_fntype3)(oop, oop, oop);
+typedef  oop (PRIM_API *prim_fntype4)(oop, oop, oop, oop);
+typedef  oop (PRIM_API *prim_fntype5)(oop, oop, oop, oop, oop);
+typedef  oop (PRIM_API *prim_fntype6)(oop, oop, oop, oop, oop, oop);
+typedef  oop (PRIM_API *prim_fntype7)(oop, oop, oop, oop, oop, oop, oop);
+typedef  oop (PRIM_API *prim_fntype8)(oop, oop, oop, oop, oop, oop, oop, oop);
+typedef  oop (PRIM_API *prim_fntype9)(oop, oop, oop, oop, oop, oop, oop, oop, oop);
 
 
 oop primitive_desc::eval(oop* a) {

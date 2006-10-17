@@ -361,7 +361,7 @@ class doubleOopPrimitives : AllStatic {
 //              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
 //              name  = 'double_subtract' }
 //%
-extern "C" oop double_subtract(oop receiver, oop argument);
+extern "C" oop PRIM_API double_subtract(oop receiver, oop argument);
 
 //%prim
 // <Float> primitiveFloatDivide: aNumber   <Float>
@@ -370,7 +370,7 @@ extern "C" oop double_subtract(oop receiver, oop argument);
 //              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
 //              name  = 'double_divide' } 
 //%
-extern "C" oop double_divide(oop receiver, oop argument);
+extern "C" oop PRIM_API double_divide(oop receiver, oop argument);
   
 //%prim
 // <Float> primitiveFloatAdd: aNumber   <Float>
@@ -379,7 +379,7 @@ extern "C" oop double_divide(oop receiver, oop argument);
 //              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
 //              name  = 'double_add' }
 //%
-extern "C" oop double_add(oop receiver, oop argument);
+extern "C" oop PRIM_API double_add(oop receiver, oop argument);
     
 //%prim
 // <Float> primitiveFloatMultiply: aNumber   <Float>
@@ -388,5 +388,5 @@ extern "C" oop double_add(oop receiver, oop argument);
 //              flags = #(Pure DoubleArith LastDeltaFrameNotNeeded)
 //              name  = 'double_multiply' }
 //%
-extern "C" oop double_multiply(oop receiver, oop argument);
+extern "C" oop PRIM_API double_multiply(oop receiver, oop argument);
   
