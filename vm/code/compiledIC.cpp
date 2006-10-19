@@ -607,14 +607,6 @@ bool CompiledIC::wasNeverExecuted() const {
   return is_empty() && !isDirty();
 }
 
-  CompiledIC* CompiledIC_from_return_addr(char* return_addr) {
-    return (CompiledIC*)nativeCall_from_return_address(return_addr);
-  }
-
-  CompiledIC* CompiledIC_from_relocInfo(char* displacement_address) {
-    return (CompiledIC*)nativeCall_from_relocInfo(displacement_address);
-  }
-
 primitive_desc* PrimitiveIC::primitive() {
   return primitives::lookup((fntype) destination());
 }
@@ -635,14 +627,6 @@ void PrimitiveIC::print() {
     lprintf("\t- NLR testcode: 0x%x\n", NLR_testcode());
   }
 }
-
-  PrimitiveIC* PrimitiveIC_from_return_addr(char* return_addr) {
-    return (PrimitiveIC*)nativeCall_from_return_address(return_addr);
-  }
-
-  PrimitiveIC* PrimitiveIC_from_relocInfo(char* displacement_address) {
-    return (PrimitiveIC*)nativeCall_from_relocInfo(displacement_address);
-  }
 
 #else
 

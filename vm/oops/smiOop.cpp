@@ -29,8 +29,3 @@ void smiOopDesc::print_on(outputStream* st) {
   st->print("%ld", (long) value());
 }
 
-smiOop as_smiOop(smi value)
-{
-    return smiOop((value << Tag_Size) + Int_Tag);
-}
-

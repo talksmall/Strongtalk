@@ -77,8 +77,24 @@ class CompiledDLL_Cache: public NativeCall {
 
   // Creation
   friend CompiledDLL_Cache* compiledDLL_Cache_from_return_address(char* return_address);
+
   friend CompiledDLL_Cache* compiledDLL_Cache_from_relocInfo(char* displacement_address);
+
 };
+
+inline CompiledDLL_Cache* compiledDLL_Cache_from_return_address(char* return_address)
+{
+    CompiledDLL_Cache* cache = (CompiledDLL_Cache*)(nativeCall_from_return_address(return_address));
+    #ifdef ASSERT
+      cache->verify();
+    #endif
+    return cache;
+}
+
+inline CompiledDLL_Cache* compiledDLL_Cache_from_relocInfo(char* displacement_address)
+{
+    return (CompiledDLL_Cache*)nativeCall_from_relocInfo(displacement_address);
+}
 
 class DLLs: AllStatic {
  public:

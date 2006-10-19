@@ -201,7 +201,9 @@ void primitive_desc::verify() {
 int primitive_desc::compare(char* str, int len) {
   int src_len = strlen(name());
   int sign = strncmp(name(), str, min(src_len, len));
-  if (sign != 0 || src_len == len) return sign;
+  // if (sign != 0 || src_len == len) return sign;
+  if (sign != 0) return sign < 0 ? -1 : 1;
+  if (src_len == len) return 0;
   return src_len < len ? -1 : 1;
 }
 

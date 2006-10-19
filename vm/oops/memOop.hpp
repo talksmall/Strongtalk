@@ -185,4 +185,8 @@ class memOopDesc: public oopDesc {
   friend memOopKlass;
 };
 
-
+inline memOop as_memOop(void* p)
+{ 
+    assert((int(p) & Tag_Mask) == 0, "not an aligned C pointer");
+    return memOop(int(p) + Mem_Tag);
+}

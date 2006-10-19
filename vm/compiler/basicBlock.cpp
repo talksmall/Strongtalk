@@ -612,7 +612,7 @@ void BB::apply(NodeVisitor* v) {
     // just checking...
     assert(nnodes == 0, "nnodes should be 0");
     Node* end = last->next();
-    for (Node* n = first; n != end; n = n->next) {
+    for (Node* n = first; n != end; n = n->next()) {
       assert(n->deleted, "basic block is not empty even though nnodes == 0!");
     }
   #endif

@@ -54,8 +54,8 @@ static const int max_nof_floats	= 256;
 bool  Interpreter::_is_initialized  = false;
 char* Interpreter::_code_begin_addr = NULL;
 char* Interpreter::_code_end_addr   = NULL;
-extern "C" interpreter_loop_counter;		// see interpreter_asm.asm
-extern "C" interpreter_loop_counter_limit;	// see interpreter_asm.asm
+extern "C" int interpreter_loop_counter;		// see interpreter_asm.asm
+extern "C" int interpreter_loop_counter_limit;	// see interpreter_asm.asm
 
 
 // Boundaries of assembled interpreter code

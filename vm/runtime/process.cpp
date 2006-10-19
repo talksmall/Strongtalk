@@ -249,7 +249,7 @@ VM_Operation* VMProcess::_vm_operation = NULL;
 
 // ======= DeltaProcess ========
 
-Process*      DeltaProcess::_current_process             = NULL;
+Process*           Process::_current_process             = NULL;
 DeltaProcess* DeltaProcess::_active_delta_process        = NULL;
 DeltaProcess* DeltaProcess::_scheduler_process           = NULL;
 bool          DeltaProcess::_is_idle                     = false;

@@ -62,7 +62,7 @@ class InliningDatabase : AllStatic {
 
   // Writes the inlining structure for all compiled code.
   // Returns the number of written inlining structures. 
-  static int file_out_all();
+  static bool file_out_all();
 
   // Writes the inlining structure for compiled method.
   // Returns whether the information was written.

@@ -58,7 +58,7 @@ class Klass : ValueObj {
   mixinOop      _mixin;
 
  public:
-  friend klassOop as_klassOop(void* p) { return klassOop(as_memOop(p)); }
+  friend klassOop as_klassOop(void* p);
 
   // Returns the enclosing klassOop
   klassOop as_klassOop() const {
@@ -263,3 +263,8 @@ class Klass : ValueObj {
 
   friend klassKlass;
 };
+
+inline klassOop as_klassOop(void* p)
+{ 
+	return klassOop(as_memOop(p)); 
+}

@@ -64,10 +64,39 @@ class NativeCall: public NativeInstruction {
   
   // Creation
   friend NativeCall* nativeCall_at(char* address);
+
   friend NativeCall* nativeCall_from_return_address(char* return_address);
+
   friend NativeCall* nativeCall_from_relocInfo(char* displacement_address);
+
 };
 
+inline NativeCall* nativeCall_at(char* address)
+{
+	NativeCall* call = (NativeCall*)(address - NativeCall::instruction_offset);
+    #ifdef ASSERT
+      call->verify();
+    #endif
+    return call;
+}
+
+inline NativeCall* nativeCall_from_return_address(char* return_address)
+{
+	NativeCall* call = (NativeCall*)(return_address - NativeCall::return_address_offset);
+    #ifdef ASSERT
+      call->verify();
+    #endif
+    return call;
+}
+
+inline NativeCall* nativeCall_from_relocInfo(char* displacement_address)
+{
+	NativeCall* call = (NativeCall*)(displacement_address - NativeCall::displacement_offset);
+    #ifdef ASSERT
+      call->verify();
+    #endif
+    return call;
+}
 
 // An abstraction for accessing/manipulating native mov reg, imm32 instructions.
 // (used to manipulate inlined 32bit data dll calls, etc.)
@@ -93,8 +122,17 @@ class NativeMov: public NativeInstruction {
   
   // Creation
   friend NativeMov* nativeMov_at(char* address);
+
 };
 
+inline NativeMov* nativeMov_at(char* address)
+{
+	NativeMov* test = (NativeMov*)(address - NativeMov::instruction_offset);
+    #ifdef ASSERT
+      test->verify();
+    #endif
+    return test;
+}
 
 
 // An abstraction for accessing/manipulating native test eax, imm32 instructions.
@@ -123,6 +161,15 @@ class NativeTest: public NativeInstruction {
 
 };
 
+inline NativeTest* nativeTest_at(char* address)
+{
+	NativeTest* test = (NativeTest*)(address - NativeTest::instruction_offset);
+    #ifdef ASSERT
+      test->verify();
+    #endif
+    return test;
+ }
+
 
 // An abstraction for accessing/manipulating native test eax, imm32 instructions that serve as IC info.
 
@@ -140,6 +187,10 @@ class IC_Info: public NativeTest {
 
   // Creation
   friend IC_Info* ic_info_at(char* address);
+
 };
 
-
+inline IC_Info* ic_info_at(char* address)
+{
+    return (IC_Info*)nativeTest_at(address);
+}

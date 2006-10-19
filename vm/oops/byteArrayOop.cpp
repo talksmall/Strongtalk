@@ -230,9 +230,3 @@ bool byteArrayOopDesc::is_keyword() const {
     if (byte_at(index) == ':') return true;
   return false;
 }
-
-byteArrayOop as_byteArrayOop(void* p)
-{
-    return byteArrayOop(as_memOop(p));
-}
-

@@ -60,4 +60,7 @@ class smiOopDesc: public oopDesc {
   smi byte_count() const { return smi(this) - Int_Tag;   }
 };
 
-
+inline smiOop as_smiOop(smi value)
+{
+    return smiOop((value << Tag_Size) + Int_Tag);
+}

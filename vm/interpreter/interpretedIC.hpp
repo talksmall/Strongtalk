@@ -107,6 +107,10 @@ class InterpretedIC: ValueObj {
   static void trace_inline_cache_miss(InterpretedIC* ic, klassOop klass, LookupResult result);
 };
 
+inline InterpretedIC* as_InterpretedIC(char* address_of_next_instr)
+{
+	return (InterpretedIC*)(address_of_next_instr - InterpretedIC::size);
+}
 
 // Interpreter_PICs handles the allocation and deallocation of interpreter PICs.
 

@@ -29,8 +29,8 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 //    [klass_field ]
 //    [pointer     ]
 
-const pointer_no     = sizeof(memOopDesc)/oopSize;
-const pointer_offset = sizeof(memOopDesc) - Mem_Tag;
+const int pointer_no     = sizeof(memOopDesc)/oopSize;
+const int pointer_offset = sizeof(memOopDesc) - Mem_Tag;
 
 class proxyOopDesc: public memOopDesc {
  private:

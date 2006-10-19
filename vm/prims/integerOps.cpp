@@ -912,7 +912,7 @@ void IntegerOps::double_to_Integer(double x, Integer& z) {
   d[n-1] |= mask;
 
   // shift right to the right
-  const right_shift_count = logB - length_in_bits%logB;
+  const int right_shift_count = logB - length_in_bits%logB;
   shift_right(d, n, right_shift_count);
   
   // copy most significant digits into z & fill with zeros

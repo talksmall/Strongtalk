@@ -133,5 +133,7 @@ class byteArrayOopDesc: public memOopDesc {
   friend byteArrayKlass;
 };
 
-
-
+inline byteArrayOop as_byteArrayOop(void* p)
+{
+    return byteArrayOop(as_memOop(p));
+}

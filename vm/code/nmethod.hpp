@@ -305,5 +305,10 @@ class nmethod : public OopNCode {
    void restore_from_patch(nmethod_patch* data);
 };
 
+inline nmethod* nmethod_from_insts(char* insts)
+{	// for efficiency
+    nmethod* nm = (nmethod*) insts - 1;
+    return findNMethod(nm);
+}
 
 #endif
