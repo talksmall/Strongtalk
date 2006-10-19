@@ -40,7 +40,7 @@ void NativeCall::print() {
 // Implementation of NativeMov
 void NativeMov::verify() {
   // make sure code pattern is actually a mov reg, imm32 instruction
-  if (*(u_char*)instruction_address() & !register_mask != instruction_code) fatal("not a mov reg, imm32");
+  if ((*(u_char*)instruction_address() & !register_mask) != instruction_code) fatal("not a mov reg, imm32");
 }
 
 

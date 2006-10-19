@@ -42,7 +42,7 @@ void lprintf_exit() {
   if (logFile) {
     fclose(logFile);
     logFile = NULL;
-    unlink(fname);
+    _unlink(fname);
   }
 }
 

@@ -349,7 +349,7 @@ Digit IntegerOps::power(Digit x, int n) {
   int   i = n;
   while (i > 0) {
     // p * f^i = x^n
-    if (i & 1 == 1) {
+    if ((i & 1) == 1) {
       // i is odd
       p *= f;
     }

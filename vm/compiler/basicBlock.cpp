@@ -212,7 +212,8 @@ void BB::localCopyPropagate() {
     }
     SListElem<Use*>* u = dui->uses.head();
     SListElem<Def*>* nextd;
-    for (SListElem<Def*>* d = dui->defs.head(); d && u; d = nextd) {
+    SListElem<Def*>* d;
+    for (d = dui->defs.head(); d && u; d = nextd) {
       // try to find a use of the def at d
       nextd = d->next();
       const Def* def = d->data();
@@ -247,7 +248,7 @@ void BB::localCopyPropagate() {
       // current PReg or the source PReg that defines it
       int stop_id = nextd ? nextd->data()->node->num() : BIG;
       if (srcDefs) {
-	for (SListElem<Def*>* d = srcDefs->head(); 
+	for (d = srcDefs->head(); 
 	     d && d->data()->node->num() < u_id; 
 	     d = d->next()) ;
 	if (d) stop_id = min(stop_id, d->data()->node->num());
