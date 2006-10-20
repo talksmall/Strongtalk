@@ -70,29 +70,29 @@ template<class E> class GrowableArray : public GenericGrowableArray {
 
   void append(const E elem) {
     if (len == max) grow(len);
-    data[len++] = (void*) elem;
+    data[len++] = (void *) (elem);
   }
 
   E at(int i) const {
     assert(0 <= i && i < len, "illegal index");
-    return (E) data[i];
+    return reinterpret_cast<E> (data[i]);
   }
 
   E first() const {
     assert(len > 0, "empty list");
-    return (E) data[0];
+    return reinterpret_cast<E> (data[0]);
   }
 
   E last() const {                                                  
     assert(len > 0, "empty list");
-    return (E) data[len-1];
+    return reinterpret_cast<E> (data[len-1]);
   }
 
   void push(const E elem) { append(elem); }
 
   E pop() {
     assert(len > 0, "empty list");
-    return (E) data[--len];
+    return reinterpret_cast<E> (data[--len]);
   }
 
   E top() const { return last(); }
@@ -104,7 +104,7 @@ template<class E> class GrowableArray : public GenericGrowableArray {
 
   E at_grow(int i) {
     assert(0 <= i, "negative index");
-    return (E) raw_at_grow(i, NULL);
+    return reinterpret_cast<E> (raw_at_grow(i, NULL));
   }
 
   void at_put_grow(int i, const E elem) {
