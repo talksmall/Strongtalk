@@ -20,6 +20,11 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 
 */
+
+
+/************* This file is not currently used and should not be in the build */
+
+
 # ifdef COMPILER
 
   // various Compiler functionality associated with splitting
