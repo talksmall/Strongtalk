@@ -31,11 +31,10 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 class bootstrap;
 
-#if !defined( __GNUC__ ) && !defined(_MSC_VER)
-  // GNU predefines bool
-  enum {false, true};
-  typedef int bool;
-#endif
+// most portable way of dealing with bools is to treat them as ints;
+// the new basic bool type isn't goodness.
+typedef int _bool_type_;
+#define bool _bool_type_
 
 typedef int smi;
 
