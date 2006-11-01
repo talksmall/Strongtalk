@@ -28,6 +28,7 @@
 
 DB1 = ..\vm\deps\includeDB
 DB2 = ..\vm\deps\includeDB2
+PLATFORM = makedeps-platform.txt
 
 CP    = cmd /c copy
 MKDIR = cmd /c mkdir
@@ -35,16 +36,11 @@ MV    = cmd /c move
 RM    = cmd /c del
 RMDIR = cmd /c rmdir
 
-update: $(DB1) $(DB2)
-	@$(CP) $(DB1) +$(DB2) includeDB.all
-	@..\tools\makedeps includeDB.current includeDB.all
-	@$(MV) includeDB.all includeDB.current
-
 lists: $(DB1) $(DB2)
 	-@$(RMDIR) /s/q incls
 	@$(MKDIR) incls
 	@$(CP) $(DB1) +$(DB2) includeDB.all
-	@..\tools\makedeps includeDB.all
+	@..\tools\makedeps $(PLATFORM) includeDB.all 
 	@$(MV) includeDB.all includeDB.current
 
 # numbers:
