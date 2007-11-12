@@ -224,7 +224,7 @@ class compiledVFrame: public deltaVFrame {
 
   // Returns the contextOop for this interpreter frame
   // NULL is returned is no context exists.
-  contextOop compiledVFrame::compiled_context() const;
+  contextOop compiled_context() const;
 
   // Rewind the bci one step
   void rewind_bci(); 

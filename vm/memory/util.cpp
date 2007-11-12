@@ -57,7 +57,6 @@ void printIndent() {
 # define DO_UP(from) LOOP_UNROLL(count, *to++ = from)
 # define DO_DOWN(from) LOOP_UNROLL(count, *--to = from)
 
-/*
 void copy_oops_up(oop* from, oop* to, int count) {
   assert(maskBits(int(from), Tag_Size) == 0, "not word aligned");
   assert(maskBits(int(to), Tag_Size) == 0, "not word aligned");
@@ -87,7 +86,7 @@ void copy_oops_up(oop* from, oop* to, int count) {
     }
   }
 }
-*/
+
 void copy_oops_down(oop* from, oop* to, int count) {
   assert(maskBits(int(from), Tag_Size) == 0, "not word aligned");
   assert(maskBits(int(to), Tag_Size) == 0, "not word aligned");
@@ -95,7 +94,7 @@ void copy_oops_down(oop* from, oop* to, int count) {
   DO_DOWN(*--from)
   }
 
-/*
+
 void set_oops(oop* to, int count, oop value) {
   assert(maskBits(int(to), Tag_Size) == 0, "not word aligned");
   assert(count >= 0, "negative count");
@@ -121,7 +120,7 @@ void set_oops(oop* to, int count, oop value) {
     }
   }
 }
-*/
+
 char* copy_string(char* s) {
   int len = strlen(s) + 1;
   char* str = NEW_RESOURCE_ARRAY( char, len);

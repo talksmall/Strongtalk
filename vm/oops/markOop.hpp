@@ -147,4 +147,5 @@ class markOopDesc: public oopDesc {
 
 // tells whether p is a root to an oop or a markOop
 // used during pointer reversal during GC.
-inline bool is_oop_root(oop* p) { return !markOop(p)->has_sentinel(); }
+//inline bool is_oop_root(oop* p) { return !markOop(p)->has_sentinel(); }
+inline bool is_oop_root(oop* p) { return !markOop(p)->is_mark(); }

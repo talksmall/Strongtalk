@@ -42,7 +42,7 @@ class bootstrap: CHeapObj {
   // File
   char* file_name;
   FILE* stream;
-  int   file_size;
+//  int   file_size;
   char get_char();
   int  get_integer();
 

@@ -24,11 +24,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 // Macros for the primitive definitions.
 // NB: Borland C++ requires reversed arguments.
 
-#ifdef __GNUC__
-#define PRIM_API 
-#else
 #define PRIM_API __stdcall
-#endif
 
 #define PRIM_DECL_0(name)                                           oop PRIM_API name()
 #define PRIM_DECL_1(name, a1)                                       oop PRIM_API name( a1)

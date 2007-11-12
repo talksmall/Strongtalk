@@ -222,7 +222,7 @@ PRIM_DECL_1(doubleOopPrimitives::floor, oop receiver) {
 }
 
 PRIM_DECL_1(doubleOopPrimitives::smi_floor, oop receiver) {
-  PROLOGUE_1("floor", receiver);
+  PROLOGUE_1("smi_floor", receiver);
   ASSERT_RECEIVER;
   double result = ::floor(doubleOop(receiver)->value());
   if (result < 0.0) {
@@ -389,3 +389,11 @@ PRIM_DECL_3(doubleOopPrimitives::mandelbrot, oop re, oop im, oop n) {
 
   return as_smiOop(i);
 }
+
+static void trap() { assert(false, "This primitive should be patched"); };
+
+extern "C" oop PRIM_API double_subtract(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API double_divide(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API double_add(oop receiver, oop argument) 		{ trap(); return NULL; };
+extern "C" oop PRIM_API double_multiply(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API double_from_smi(oop receiver) 			{ trap(); return NULL; };

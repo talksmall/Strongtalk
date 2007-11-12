@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -89,14 +89,14 @@ class ScopeDesc : public PrintableResourceObj {		// abstract
  public:
   void iterate    (NameDescClosure* blk);	// info for given pc()
   void iterate_all(NameDescClosure* blk);	// info for all pc's
-  
+
   NameDesc* nameDescAt(int& offset) const;
   int       valueAt(int& offset) const;
 
   ScopeDesc(const nmethodScopes* scopes, int offset, char* pc);
 
   int   offset() const 				{ return int(_offset); }
-  char* pc()     const				{ return _pc; } 
+  char* pc()     const				{ return _pc; }
 
   bool is_equal(ScopeDesc* s) const {
     return    _scopes == s->_scopes
@@ -125,14 +125,14 @@ class ScopeDesc : public PrintableResourceObj {		// abstract
   // the parent is located in another compilation unit (nmethod).
   virtual ScopeDesc* parent(bool cross_nmethod_boundary = false) const = 0;
   ScopeDesc* home(bool cross_nmethod_boundary = false) const;
-  
+
   // Returns the bci of the calling method if this scopeDesc is inlined.
   // For a root scopeDesc IllegalBCI is returned.
   int senderBCI() const {
     assert(_senderByteCodeIndex != IllegalBCI,
 	   "need to ask calling byte code");
     return _senderByteCodeIndex; }
-  
+
   // Root scope?
   bool isTop() const 				{ return _senderScopeOffset == 0; }
 
@@ -142,20 +142,20 @@ class ScopeDesc : public PrintableResourceObj {		// abstract
   // scope equivalence -- for compiler
   virtual bool s_equivalent(ScopeDesc* s) const;
   virtual bool l_equivalent(LookupKey* s) const;
-  
+
   // types test operations
   virtual bool isMethodScope() const 		{ return false; }
   virtual bool isBlockScope() const		{ return false; }
   virtual bool isTopLevelBlockScope() const	{ return false; }
   virtual bool isNonInlinedBlockScope() const	{ return false; }
 
-  virtual NameDesc* self() const		= NULL;
+  virtual NameDesc* self() const		= 0;
   NameDesc* temporary	    (int index, bool canFail = false);
   NameDesc* contextTemporary(int index, bool canFail = false);
   NameDesc* exprStackElem   (int bci, bool includeTrivial = true);
 
  public:
-  int next_offset() const 			{ return _next; } 
+  int next_offset() const 			{ return _next; }
   int sender_scope_offset() const		{ return _offset - _senderScopeOffset; }
 
   bool verify();
@@ -174,8 +174,8 @@ class ScopeDesc : public PrintableResourceObj {		// abstract
  public:
   Expr* selfExpr(PReg* p) const;		// Type information for the optimizing compiler
 
-  friend nmethodScopes;
-  friend NonInlinedBlockScopeDesc;
+  friend class nmethodScopes;
+  friend class NonInlinedBlockScopeDesc;
 };
 
 
@@ -186,7 +186,7 @@ class MethodScopeDesc : public ScopeDesc {
   NameDesc* _self_name;
 
  public:
-  MethodScopeDesc(const nmethodScopes* scopes, int offset, char* pc); 
+  MethodScopeDesc(const nmethodScopes* scopes, int offset, char* pc);
   bool s_equivalent(ScopeDesc* s) const;
   bool l_equivalent(LookupKey* s) const;
 
@@ -197,7 +197,7 @@ class MethodScopeDesc : public ScopeDesc {
   klassOop selfKlass() const			{ return _key.klass(); }
 
   ScopeDesc* parent(bool cross_nmethod_boundary = false) const { return NULL; }
-  
+
   // printing support
   void printName();
   void printSelf();
@@ -212,18 +212,18 @@ class BlockScopeDesc : public ScopeDesc {
 
  public:
   BlockScopeDesc(const nmethodScopes* scopes, int offset, char* pc);
- 
+
   // NB: the next three operations may return NULL (no context)
-  klassOop   selfKlass() const;		
+  klassOop   selfKlass() const;
   NameDesc*  self() const;
   ScopeDesc* parent(bool cross_nmethod_boundary = false) const;
 
   LookupKey* key() const;
-  
+
   bool s_equivalent(ScopeDesc* s) const;
 
   bool isBlockScope() const 			{ return true; }
-  
+
   // print operations
   void printSelf();
   void printName();
@@ -247,11 +247,11 @@ class TopLevelBlockScopeDesc : public ScopeDesc {
 
   klassOop selfKlass() const 			{ return _self_klass; }
   NameDesc* self() const 			{ return _self_name; }
-  // NB: parent() may return NULL for clean blocks 
-  ScopeDesc* parent(bool cross_nmethod_boundary = false) const;	
+  // NB: parent() may return NULL for clean blocks
+  ScopeDesc* parent(bool cross_nmethod_boundary = false) const;
 
   LookupKey* key() const;
-  
+
   bool s_equivalent(ScopeDesc* s) const;
 
   // print operations
@@ -270,7 +270,7 @@ class NonInlinedBlockScopeDesc : public PrintableResourceObj {
   // Cached information
   methodOop _method;
   int       _parentScopeOffset;
-  
+
  public:
   NonInlinedBlockScopeDesc(const nmethodScopes* scopes, int offset);
 

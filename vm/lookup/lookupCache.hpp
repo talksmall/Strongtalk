@@ -78,6 +78,9 @@ class LookupResult: ValueObj {
 const unsigned int primary_cache_size   = 16 * K;
 const unsigned int secondary_cache_size =  2 * K;
 
+extern LookupResult interpreter_normal_lookup(klassOop receiver_klass, symbolOop selector);
+extern LookupResult interpreter_super_lookup(symbolOop selector);
+
 class lookupCache : AllStatic {
  private:
   static int primary_cache_address();

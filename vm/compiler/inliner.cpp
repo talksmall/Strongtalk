@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -44,12 +44,12 @@ bool InliningPolicy::shouldNotInline() const {
   const symbolOop sel = method->selector();
   return (sel == vmSymbols::error() ||
       	  sel == vmSymbols::error_() ||
-      	  sel == vmSymbols::subclassResponsibility()); 
+      	  sel == vmSymbols::subclassResponsibility());
 }
 
 bool InliningPolicy::isCriticalSmiSelector(const symbolOop sel) {
   // true if performance-critical smi method in standard library
-  // could also handle these by putting a bit in the methodOops 
+  // could also handle these by putting a bit in the methodOops
   return  sel == vmSymbols::plus() ||
       	  sel == vmSymbols::minus() ||
       	  sel == vmSymbols::multiply() ||
@@ -63,12 +63,12 @@ bool InliningPolicy::isCriticalSmiSelector(const symbolOop sel) {
       	  sel == vmSymbols::greater_than() ||
       	  sel == vmSymbols::greater_than_or_equal() ||
       	  sel == vmSymbols::double_equal() ||
-      	  sel == vmSymbols::bitAnd_() || 
-      	  sel == vmSymbols::bitOr_() || 
-      	  sel == vmSymbols::bitXor_() || 
-      	  sel == vmSymbols::bitShift_() || 
+      	  sel == vmSymbols::bitAnd_() ||
+      	  sel == vmSymbols::bitOr_() ||
+      	  sel == vmSymbols::bitXor_() ||
+      	  sel == vmSymbols::bitShift_() ||
       	  sel == vmSymbols::bitInvert();
-} 
+}
 
 bool InliningPolicy::isCriticalArraySelector(const symbolOop sel) {
   return  sel == vmSymbols::at() ||
@@ -79,12 +79,12 @@ bool InliningPolicy::isCriticalArraySelector(const symbolOop sel) {
 bool InliningPolicy::isCriticalBoolSelector(const symbolOop sel) {
   return  sel == vmSymbols::and_() ||
       	  sel == vmSymbols::or_() ||
-      	  sel == vmSymbols::and() ||
-      	  sel == vmSymbols::or() ||
+      	  sel == vmSymbols::_and() ||
+      	  sel == vmSymbols::_or() ||
       	  sel == vmSymbols::and1() ||
       	  sel == vmSymbols::or1() ||
-      	  sel == vmSymbols::and() ||
-      	  sel == vmSymbols::not() ||
+      	  sel == vmSymbols::_and() ||
+      	  sel == vmSymbols::_not() ||
       	  sel == vmSymbols::xor_() ||
       	  sel == vmSymbols::eqv_();
 }
@@ -104,7 +104,7 @@ bool InliningPolicy::isPredictedBoolSelector(const symbolOop sel) {
 
 bool InliningPolicy::isInterpreterPredictedSmiSelector(const symbolOop sel) {
   // true if performance-critical smi method in standard library
-  // could also handle these by putting a bit in the methodOops 
+  // could also handle these by putting a bit in the methodOops
   return  sel == vmSymbols::plus() ||
       	  sel == vmSymbols::minus() ||
       	  sel == vmSymbols::multiply() ||
@@ -117,7 +117,7 @@ bool InliningPolicy::isInterpreterPredictedSmiSelector(const symbolOop sel) {
       	  sel == vmSymbols::less_than_or_equal() ||
       	  sel == vmSymbols::greater_than() ||
       	  sel == vmSymbols::greater_than_or_equal();
-} 
+}
 
 bool InliningPolicy::isInterpreterPredictedArraySelector(const symbolOop sel) {
   return false;
@@ -131,14 +131,14 @@ bool InliningPolicy::isInterpreterPredictedBoolSelector(const symbolOop sel) {
 
 bool InliningPolicy::isBuiltinMethod() const {
   // true if performance-critical method in standard library
-  // could also handle these by putting a bit in the methodOops 
+  // could also handle these by putting a bit in the methodOops
   if (method->method_inlining_info() == methodOopDesc::always_inline) return true;
   const symbolOop sel = method->selector();
   const klassOop klass = receiverKlass();
   const bool isNum = klass == Universe::smiKlassObj() || klass == Universe::doubleKlassObj();
   if  (isNum && isCriticalSmiSelector(sel)) return true;
 
-  const bool isArr = klass == Universe::objArrayKlassObj()  || 
+  const bool isArr = klass == Universe::objArrayKlassObj()  ||
   		     klass == Universe::byteArrayKlassObj() ||
   		     klass == Universe::symbolKlassObj()    ||
   		     false;	// probably should add doubleByteArray et al
@@ -192,7 +192,7 @@ char* InliningPolicy::basic_shouldInline(methodOop method) {
     int parentCost = method->parent()->estimated_inline_cost(receiverKlass());
     assert(parentCost > calleeCost, "must be higher");
     if (float(parentCost - calleeCost) / parentCost * 100.0 < MinBlockCostFraction) return NULL;
-  } 
+  }
 
   // compute the cost limit based on the provided arguments
   int cost_limit = method->is_blockMethod() ? MaxBlockInlineCost : MaxFnInlineCost;
@@ -214,8 +214,8 @@ klassOop CompilerInliningPolicy::nthArgKlass(int i) const {
 klassOop CompilerInliningPolicy::receiverKlass() const 		{ return rcvr->klass(); }
 
 klassOop RecompilerInliningPolicy::nthArgKlass(int i) const 	{ return _vf ? _vf->argument_at(i)->klass() : NULL; }
-klassOop RecompilerInliningPolicy::receiverKlass() const { 
-  return _vf ? theRecompilation->receiverOf(_vf)->klass() : NULL; 
+klassOop RecompilerInliningPolicy::receiverKlass() const {
+  return _vf ? theRecompilation->receiverOf(_vf)->klass() : NULL;
 }
 
 char* RecompilerInliningPolicy::shouldInline(RFrame* rf) {
@@ -311,7 +311,7 @@ Expr* Inliner::inlineSend() {
     // don't do any inlining
     _info->needRealSend = true;
   } else if (gen->is_in_dead_code()) {
-    // don't waste time inlining dead code 
+    // don't waste time inlining dead code
     res = new NoResultExpr;
     gen->abort();   // the rest of this method is dead code, too
     if (CompilerDebug) cout(PrintInlining)->print("%*s*skipping %s (dead code)\n", depth, "", _info->sel->as_string());
@@ -338,16 +338,16 @@ Expr* Inliner::inlineSend() {
 
 Expr* Inliner::genRealSend() {
   const int nofArgs = _info->sel->number_of_arguments();
-  bool uninlinable = theCompiler->registerUninlinable(this); 
+  bool uninlinable = theCompiler->registerUninlinable(this);
   if (CompilerDebug) {
     cout(PrintInlining)->print("%*s*sending %s %s%s\n", depth, "", _info->sel->as_string(),
       uninlinable ? "(unlinlinable) " : "",
       _info->counting ? "(counting) " : "");
   }
   switch(kind) {
-    case NormalSend: 	gen->gen_normal_send(_info, nofArgs, resultPR); break; 
-    case SelfSend: 	gen->gen_self_send  (_info, nofArgs, resultPR); break; 
-    case SuperSend: 	gen->gen_super_send (_info, nofArgs, resultPR); break; 
+    case NormalSend: 	gen->gen_normal_send(_info, nofArgs, resultPR); break;
+    case SelfSend: 	gen->gen_self_send  (_info, nofArgs, resultPR); break;
+    case SuperSend: 	gen->gen_super_send (_info, nofArgs, resultPR); break;
     default:		fatal1("illegal SendKind %d", kind);
   }
   return new UnknownExpr(resultPR, gen->current());
@@ -370,7 +370,7 @@ void Inliner::tryInlineSend() {
   if (TypePredict && !usingInliningDB && u && !u->isUnlikely() && !_info->uninlinable) {
     _info->rcvr = typePredict();
   }
-      
+
   if (_info->rcvr->really_hasKlass(sender)) {
     // single klass - try to inline this send
     callee = tryLookup(_info->rcvr);
@@ -423,7 +423,7 @@ Expr* Inliner::inlineMerge(SendInfo* info) {
   merge = NodeFactory::new_MergeNode(sender->bci());		// where all cases merge again
   Expr* res = NULL;							// final (merged) result
   assert(info->rcvr->isMergeExpr(), "must be a merge");
-  MergeExpr* r = (MergeExpr*)info->rcvr;				// receiver type	
+  MergeExpr* r = (MergeExpr*)info->rcvr;				// receiver type
   symbolOop sel = info->sel;
 
   int nexprs = r->exprs->length();
@@ -435,7 +435,7 @@ Expr* Inliner::inlineMerge(SendInfo* info) {
     if (CompilerDebug) cout(PrintInlining)->print("%*s*not type-casing %s (%ld > MaxTypeCaseSize)\n",
 						       depth, "", sel->as_string(), ncases);
     return res;
-  }  
+  }
 
   // build list of cases to inline
   // (add only immediate klasses (currently only smis) at first, collect others in ...2 lists
@@ -448,12 +448,12 @@ Expr* Inliner::inlineMerge(SendInfo* info) {
   GrowableArray<klassOop>* 	klasses2= new GrowableArray<klassOop>(nexprs);
   const bool containsUnknown = r->containsUnknown();
 
-  for (int i = 0; i < nexprs; i++) {    
+  for (int i = 0; i < nexprs; i++) {
     Expr* nth = r->exprs->at(i)->shallowCopy(r->preg(), NULL);
     assert(!nth->isConstantExpr() || nth->next == NULL ||
 	   nth->constant() == nth->next->constant(),
 	   "shouldn't happen: merged consts - convert to klass");
-    // NB: be sure to generalize constants to klasses before inlining, so that values 
+    // NB: be sure to generalize constants to klasses before inlining, so that values
     // from an unknown source are dispatched to the optimized code
     // also, right now the TypeTestNode only tests for klasses, not constants
     if (containsUnknown && nth->isConstantExpr()) {
@@ -481,7 +481,7 @@ Expr* Inliner::inlineMerge(SendInfo* info) {
 	// self error: 'should not happen'. ^ self)
 	if (others->isEmpty()) {
 	  others->append(new UnknownExpr(nth->preg(), NULL, theCompiler->useUncommonTraps));
-	} 
+	}
       } else {
 	others->append(nth);
       }
@@ -510,7 +510,7 @@ Expr* Inliner::inlineMerge(SendInfo* info) {
   Node* fallThrough = NULL;
   if (scopes->length() > 0) {
     //memoizeBlocks(sel);
-      
+
     if (CompilerDebug) {
       char* s = NEW_RESOURCE_ARRAY(char, 200);
       sprintf(s, "begin type-case of %s (ends at node N%ld)",
@@ -536,7 +536,7 @@ Expr* Inliner::inlineMerge(SendInfo* info) {
       if (e->isNoResultExpr()) {
 	if (!res) res = e;	// must return non-NULL result (otherwise sender thinks no inlining happened)
       } else {
-        assert(e->preg()->scope()->isSenderOf(inliner->callee), 
+        assert(e->preg()->scope()->isSenderOf(inliner->callee),
                "result register must be from caller scope");
 	gen->append(NodeFactory::new_NopNode());
 	e = e->shallowCopy(info->resReg, gen->current());
@@ -565,11 +565,11 @@ Expr* Inliner::inlineMerge(SendInfo* info) {
     // typecase cannot fail
     gen->append_exit(NodeFactory::new_FixedCodeNode(FixedCodeNode::dead_end));
   }
-  
+
   return res;
 }
 
-  
+
 Expr* Inliner::makeResult(Expr* r) {
   Expr* res;
   // massage the result expression so it fulfills all constraints
@@ -592,7 +592,7 @@ Expr* Inliner::makeResult(Expr* r) {
   }
   return res;
 }
-  
+
 Expr* Inliner::doInline(Node* start) {
   // callee scope should be inlined; do it
 // HACK -- fix
@@ -640,17 +640,17 @@ Expr* Inliner::picPredict() {
 
   // check special cases: never executed or uninlinable/megamorphic
   if (l->length() == 1) {
-    if (l->first()->isUntakenScope()) { 
+    if (l->first()->isUntakenScope()) {
       // send was never executed
       return picPredictUnlikely(_info, (RUntakenScope*)l->first());
     } else if (l->first()->isUninlinableScope()) {
-      if (CompilerDebug) 
+      if (CompilerDebug)
 	cout(PrintInlining)->print("%*s*PIC-predicting %s as uninlinable/megamorphic\n", depth, "", _info->sel->as_string());
       _info->uninlinable = true;	// prevent static type prediction
       return _info->rcvr;
     }
-  } 
-  
+  }
+
   // check special case: perfect information (from dataflow information)
   if (!_info->rcvr->containsUnknown()) {
     return _info->rcvr;	// already know type exactly, don't use PIC
@@ -683,7 +683,7 @@ Expr* Inliner::picPredict() {
       if (e->isUnknownExpr()) continue;
       if (!allKlasses->findKlass(e->klass())) {
 	if (PrintInlining) {
-	  std->print("%*s*discarding static type info for send %s (not found in PIC): ", 
+	  std->print("%*s*discarding static type info for send %s (not found in PIC): ",
 	             depth, "", _info->sel->as_string());
 	  e->print();
 	}
@@ -693,8 +693,8 @@ Expr* Inliner::picPredict() {
     _info->rcvr = newRcvr;
   }
 
-  if (CompilerDebug) 
-    cout(PrintInlining)->print("%*s*PIC-type-predicting %s (%ld klasses): ", depth, "", 
+  if (CompilerDebug)
+    cout(PrintInlining)->print("%*s*PIC-type-predicting %s (%ld klasses): ", depth, "",
 			        _info->sel->as_string(), npic);
 
   // iterate through PIC _info and add it to the receiver type (_info->rcvr)
@@ -733,7 +733,7 @@ Expr* Inliner::picPredict() {
 	  _info->rcvr = _info->rcvr->mergeWith(t, NULL);
 	}
       }
-    } 
+    }
   } // for
   if (CompilerDebug) cout(PrintInlining)->print("\n");
 
@@ -743,14 +743,14 @@ Expr* Inliner::picPredict() {
   if (u && canBeUnlikely && !rscope->isNotUncommonAt(bci)) {
     _info->rcvr = _info->rcvr->makeUnknownUnlikely(sender);
   }
-     
+
   assert(_info->rcvr->preg(), "should have a preg");
   return _info->rcvr;
 }
 
 Expr* Inliner::picPredictUnlikely(SendInfo* info, RUntakenScope* uscope) {
   if (!theCompiler->useUncommonTraps) return info->rcvr;
-  
+
   bool makeUncommon = uscope->isUnlikely();
   if (!makeUncommon && info->inPrimFailure) {
     // this send was never executed in the recompilee
@@ -779,8 +779,8 @@ Expr* Inliner::typePredict() {
   // NB: all non-predicted cases exit this function early
   Expr* r = _info->rcvr;
   if (!(r->isUnknownExpr() ||
-        r->isMergeExpr() && 
-        ((MergeExpr*)r)->exprs->length() == 1 && 
+        r->isMergeExpr() &&
+        ((MergeExpr*)r)->exprs->length() == 1 &&
         ((MergeExpr*)r)->exprs->at(0)->isUnknownExpr())) {
     // r already has a type (e.g. something predicted via PICs)
     // trust that information more than the static type prediction
@@ -817,7 +817,7 @@ Expr* Inliner::typePredict() {
 extern bool SuperSendsAreAlwaysInlined = true;	// remove when removing super hack
 
 InlinedScope* Inliner::tryLookup(Expr* rcvr) {
-  // try to lookup the send to receiver rcvr and determine if it should be inlined; 
+  // try to lookup the send to receiver rcvr and determine if it should be inlined;
   // return new InlinedScope if ok, NULL if lookup error or non-inlinable
   // NB: _info->rcvr is the overall receiver (e.g. a merge expr), rcvr is the particular branch
   // we're looking at right now
@@ -831,8 +831,8 @@ InlinedScope* Inliner::tryLookup(Expr* rcvr) {
   }
 
   const symbolOop selector = _info->sel;
-  const methodOop method = (kind == SuperSend) ? 
-  	lookupCache::compile_time_super_lookup (klass, selector) : 
+  const methodOop method = (kind == SuperSend) ?
+  	lookupCache::compile_time_super_lookup (klass, selector) :
   	lookupCache::compile_time_normal_lookup(klass, selector);
   lastLookupFailed = method == NULL;
 
@@ -840,8 +840,8 @@ InlinedScope* Inliner::tryLookup(Expr* rcvr) {
     // nothing found statically (i.e., lookup error)
     _info->uninlinable = true;		// fix this -- probably wrong for merge exprs.
     return notify("lookup failed");
-  } 
-  
+  }
+
   // Construct a lookup key
   LookupKey* key = kind == SuperSend
                  ? LookupKey::allocate(rcvr->klass(), method)
@@ -983,7 +983,7 @@ InlinedScope* Inliner::makeScope(const Expr* rcvr, const klassOop klass, const L
   SendInfo* calleeInfo = new SendInfo(*_info);
   calleeInfo->key = (LookupKey*) key;
   const klassOop methodHolder = klass->klass_part()->lookup_method_holder_for(method);
-  
+
   if (method->is_blockMethod()) {
     RScope* rs = makeBlockRScope(rcvr, calleeInfo->key, method);
 # ifdef ASSERT
@@ -1013,7 +1013,7 @@ InlinedScope* Inliner::makeScope(const Expr* rcvr, const klassOop klass, const L
 
 InlinedScope* Inliner::notify(const char* msg) {
   if (CompilerDebug) {
-    cout(PrintInlining)->print("%*s*cannot inline %s, cost = %ld (%s)\n", depth, "", _info->sel->as_string(), 
+    cout(PrintInlining)->print("%*s*cannot inline %s, cost = %ld (%s)\n", depth, "", _info->sel->as_string(),
 				    inliningPolicy.calleeCost, msg);
   }
   _msg = (char*)msg;
@@ -1036,7 +1036,7 @@ Expr* Inliner::inlineBlockInvocation(SendInfo* info) {
 
   // Construct a fake lookupKey
   LookupKey* key = LookupKey::allocate(parent->selfKlass(), method);
-  
+
   makeScope(blockExpr, parent->selfKlass(), key, method);
   if (callee) {
     Expr* r = doInline(sender->current());

@@ -21,7 +21,8 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 */
 
-#define DEBUG_EXCEPTION _asm { int 3 }
+//#define DEBUG_EXCEPTION _asm { int 3 }
+#define DEBUG_EXCEPTION breakpoint();
 
 
 #ifdef PRODUCT

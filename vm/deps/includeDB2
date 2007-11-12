@@ -56,11 +56,12 @@ bitVector.hpp			top.hpp
 
 codeGenerator.cpp		block_prims.hpp
 codeGenerator.cpp		codeGenerator.hpp
-codeGenerator.cpp		disassembler.hpp
 codeGenerator.cpp		compiledIC.hpp
+codeGenerator.cpp		disassembler.hpp
 codeGenerator.cpp		loopOpt.hpp
 codeGenerator.cpp		nmethod.hpp
 codeGenerator.cpp		node.hpp
+codeGenerator.cpp		objArrayOop.hpp
 codeGenerator.cpp		oop.hpp
 codeGenerator.cpp		oop.inline.hpp
 codeGenerator.cpp		pregMapping.hpp
@@ -70,10 +71,10 @@ codeGenerator.cpp		recompiler.hpp
 codeGenerator.cpp		regAlloc.hpp
 codeGenerator.cpp		scopeDescRecorder.hpp
 codeGenerator.cpp		stubRoutines.hpp
-codeGenerator.cpp		x86_mapping.hpp
-codeGenerator.cpp		vmOperations.hpp
-codeGenerator.cpp		zone.hpp
 codeGenerator.cpp		uncommonBranch.hpp
+codeGenerator.cpp		vmOperations.hpp
+codeGenerator.cpp		x86_mapping.hpp
+codeGenerator.cpp		zone.hpp
 
 codeGenerator.hpp		assembler.hpp
 codeGenerator.hpp		basicBlock.hpp
@@ -89,17 +90,18 @@ codeTable.hpp			types.hpp
 codeTable.hpp			allocation.hpp
 
 compiledIC.cpp			codeIterator.hpp
-compiledIC.cpp			evaluator.hpp
-compiledIC.cpp			growableArray.hpp
 compiledIC.cpp			compiledIC.hpp
+compiledIC.cpp			compiledPIC.hpp
 compiledIC.cpp			compiler.hpp
 compiledIC.cpp			delta.hpp
+compiledIC.cpp			evaluator.hpp
+compiledIC.cpp			growableArray.hpp
 compiledIC.cpp			interpreter.hpp
 compiledIC.cpp			lookupCache.hpp
 compiledIC.cpp			methodOop.hpp
 compiledIC.cpp			oop.inline.hpp
+compiledIC.cpp			oopFactory.hpp
 compiledIC.cpp			pcDesc.hpp
-compiledIC.cpp			compiledPIC.hpp
 compiledIC.cpp			prim.hpp
 compiledIC.cpp			recompile.hpp
 compiledIC.cpp			registerMask.hpp
@@ -117,10 +119,10 @@ compiledIC.hpp  		runtime.hpp
 
 
 compiledPIC.cpp     		allocation.hpp
+compiledPIC.cpp     		compiledPIC.hpp
 compiledPIC.cpp			disassembler.hpp
 compiledPIC.cpp     		growableArray.hpp
 compiledPIC.cpp			klassOop.hpp
-compiledPIC.cpp     		compiledPIC.hpp
 compiledPIC.cpp     		nmethod.hpp
 compiledPIC.cpp			stubRoutines.hpp
 compiledPIC.cpp     		zone.hpp
@@ -128,6 +130,7 @@ compiledPIC.cpp     		zoneHeap.hpp
 
 compiledPIC.hpp     		codeBuffer.hpp
 compiledPIC.hpp			ic_iterator.hpp
+compiledPIC.hpp     		lookupCache.hpp
 compiledPIC.hpp     		ncode.hpp
 compiledPIC.hpp     		relocInfo.hpp
 compiledPIC.hpp     		zoneHeap.hpp
@@ -235,6 +238,10 @@ expr.hpp			growableArray.hpp
 expr.hpp			klassOop.hpp
 expr.hpp			process.hpp
 
+iCache.cpp			iCache.hpp
+
+iCache.hpp			top.hpp
+
 
 inline.cpp			blockKlass.hpp
 inline.cpp			methodKlass.hpp
@@ -278,13 +285,21 @@ inliner.hpp			types.hpp
 inliningdb.hpp			top.hpp
 
 inliningdb.cpp			inliningdb.hpp
+inliningdb.cpp			klassOop.hpp
+inliningdb.cpp			oopFactory.hpp
+inliningdb.cpp			os.hpp
 inliningdb.cpp			rscope.hpp
 inliningdb.cpp			timer.hpp
 
 
-iCache.cpp			iCache.hpp
+intervalInfo.cpp		intervalInfo.hpp
+intervalInfo.cpp		methodIterator.hpp
+intervalInfo.cpp		node.hpp
+intervalInfo.cpp		scope.hpp
 
-iCache.hpp			top.hpp
+intervalInfo.hpp		allocation.hpp
+intervalInfo.hpp		methodIterator.hpp
+intervalInfo.hpp		types.hpp
 
 
 jumpTable.hpp			allocation.hpp
@@ -318,15 +333,11 @@ loopOpt.cpp			loopOpt.hpp
 loopOpt.cpp			node.hpp
 loopOpt.cpp			scope.hpp
 
+loopOpt.hpp			opcode.hpp
 loopOpt.hpp			types.hpp
 
-intervalInfo.cpp		intervalInfo.hpp
-intervalInfo.cpp		methodIterator.hpp
-intervalInfo.cpp		node.hpp
-intervalInfo.cpp		scope.hpp
-
-intervalInfo.hpp		types.hpp
-
+mapConformance.hpp		allocation.hpp
+mapConformance.hpp		growableArray.hpp
 mapConformance.hpp		types.hpp
 
 mapConformance.cpp		mapConformance.hpp
@@ -334,6 +345,8 @@ mapConformance.cpp		mapConformance.hpp
 nameDesc.cpp			codeBuffer.hpp
 nameDesc.cpp			blockOop.inline.hpp
 nameDesc.cpp			nameDesc.hpp
+nameDesc.cpp			oopFactory.hpp
+nameDesc.cpp			scopeDesc.hpp
 nameDesc.cpp			stackChunk.hpp
 nameDesc.cpp			vframe.hpp
 
@@ -462,6 +475,7 @@ nodeBuilder.cpp			loopOpt.hpp
 nodeBuilder.cpp			nodeBuilder.hpp
 nodeBuilder.cpp 		node.hpp
 nodeBuilder.cpp 		oop.inline.hpp
+nodeBuilder.cpp 		oopFactory.hpp
 nodeBuilder.cpp 		preg.hpp
 nodeBuilder.cpp			prim.hpp
 nodeBuilder.cpp			primInliner.hpp
@@ -483,6 +497,7 @@ oldCodeGenerator.cpp		interpreter.hpp
 oldCodeGenerator.cpp		loopOpt.hpp
 oldCodeGenerator.cpp		nmethod.hpp
 oldCodeGenerator.cpp		node.hpp
+oldCodeGenerator.cpp		objArrayOop.hpp
 oldCodeGenerator.cpp		oldCodeGenerator.hpp
 oldCodeGenerator.cpp		oop.hpp
 oldCodeGenerator.cpp		oop.inline.hpp
@@ -593,6 +608,7 @@ recompile.cpp			vframe.hpp
 
 recompile.hpp			allocation.hpp
 recompile.hpp			growableArray.hpp
+recompile.hpp			nmethod.hpp
 recompile.hpp			vmOperations.hpp
 
 recompiler.cpp			codeIterator.hpp
@@ -782,6 +798,7 @@ x86_mapping.cpp			x86_mapping.hpp
 
 
 zone.cpp			abort.hpp
+zone.cpp			blockOop.hpp
 zone.cpp			compiledPIC.hpp
 zone.cpp			codeTable.hpp
 zone.cpp			debug.hpp

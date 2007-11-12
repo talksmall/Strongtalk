@@ -59,7 +59,7 @@ class SystemAverageTask : public PeriodicTask {
   SystemAverageTask() : PeriodicTask(10) { }
 
   void task() {
-    char type;
+    char type = '\0';
     if (last_Delta_fp) {
       if (theCompiler) { 
         type = SlidingSystemAverage::in_compiler;

@@ -406,6 +406,7 @@ bool evaluator::process_line() {
 
 
 void evaluator::read_eval_loop() {
+  ResourceMark rm;
   do {
     std->print("Eval> ");
   } while (process_line());

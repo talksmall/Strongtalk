@@ -332,6 +332,7 @@ class BlockScavenge {
  private:
   static int counter;
  public:
+  static int* counter_addr() { return &counter; }
   static bool is_blocked() { return counter > 0; }
 
   BlockScavenge()  { counter++; }

@@ -92,10 +92,8 @@ bool frame::is_compiled_frame() const {
 #endif
 }
 
-extern "C" void unpack_unoptimized_frames();
-
 bool frame::is_deoptimized_frame()  const {
-  return pc() == (char*) &unpack_unoptimized_frames;
+  return pc() == StubRoutines::unpack_unoptimized_frames();
 }
 
 IC_Iterator* frame::sender_ic_iterator() const {
@@ -145,10 +143,8 @@ CompiledIC* frame::current_compiledIC() const {
        : NULL;
 }
 
-extern "C" void return_from_Delta();
-
 bool frame::is_entry_frame() const {
-  return pc() == (char*) &return_from_Delta;
+  return pc() == StubRoutines::return_from_Delta();
 }
 
 bool frame::has_next_Delta_fp() const {
@@ -356,7 +352,8 @@ void frame::oop_iterate(OopClosure* blk) {
   if (is_entry_frame()) {
     // All oops are [sp..fp[
     for (oop* p = sp(); p < (oop*)fp(); p++) {
-      blk->do_oop(p);
+      // %hack
+     // blk->do_oop(p); 
     }
     return;
   }
@@ -424,7 +421,10 @@ void frame::follow_roots() {
   }
     
   if (is_entry_frame()) {
-    for (oop* p = sp(); p < (oop*)fp(); p++) MarkSweep::follow_root(p);
+    for (oop* p = sp(); p < (oop*)fp(); p++) {
+      // %hack
+   //   MarkSweep::follow_root(p);
+    }
     return;
   }
 

@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -44,42 +44,60 @@ typedef  oop (PRIM_API *prim_fntype7)(oop, oop, oop, oop, oop, oop, oop);
 typedef  oop (PRIM_API *prim_fntype8)(oop, oop, oop, oop, oop, oop, oop, oop);
 typedef  oop (PRIM_API *prim_fntype9)(oop, oop, oop, oop, oop, oop, oop, oop, oop);
 
-
 oop primitive_desc::eval(oop* a) {
   const bool reverseArgs = true;	// change this when changing primitive calling convention
   oop res;
+  int ebx_on_stack;
+
+  // %hack: see below
+#ifndef __GNUC__
+  __asm mov ebx_on_stack, ebx
+#endif
   if (reverseArgs) {
     switch (number_of_parameters()) {
-      case  0: res = ((prim_fntype0)_fn)(); break;
-      case  1: res = ((prim_fntype1)_fn)(a[0]); break;
-      case  2: res = ((prim_fntype2)_fn)(a[1], a[0]); break;
-      case  3: res = ((prim_fntype3)_fn)(a[2], a[1], a[0]); break;
-      case  4: res = ((prim_fntype4)_fn)(a[3], a[2], a[1], a[0]); break;
-      case  5: res = ((prim_fntype5)_fn)(a[4], a[3], a[2], a[1], a[0]); break;
-      case  6: res = ((prim_fntype6)_fn)(a[5], a[4], a[3], a[2], a[1], a[0]); break;
-      case  7: res = ((prim_fntype7)_fn)(a[6], a[5], a[4], a[3], a[2], a[1], a[0]); break;
-      case  8: res = ((prim_fntype8)_fn)(a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0]); break;
-      case  9: res = ((prim_fntype9)_fn)(a[8], a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0]); break;
-      default: ShouldNotReachHere();
+    case  0: res = ((prim_fntype0)_fn)(); break;
+    case  1: res = ((prim_fntype1)_fn)(a[0]); break;
+    case  2: res = ((prim_fntype2)_fn)(a[1], a[0]); break;
+    case  3: res = ((prim_fntype3)_fn)(a[2], a[1], a[0]); break;
+    case  4: res = ((prim_fntype4)_fn)(a[3], a[2], a[1], a[0]); break;
+    case  5: res = ((prim_fntype5)_fn)(a[4], a[3], a[2], a[1], a[0]); break;
+    case  6: res = ((prim_fntype6)_fn)(a[5], a[4], a[3], a[2], a[1], a[0]); break;
+    case  7: res = ((prim_fntype7)_fn)(a[6], a[5], a[4], a[3], a[2], a[1], a[0]); break;
+    case  8: res = ((prim_fntype8)_fn)(a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0]); break;
+    case  9: res = ((prim_fntype9)_fn)(a[8], a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0]); break;
+    default: ShouldNotReachHere();
     }
   } else {
     switch (number_of_parameters()) {
-      case  0: res = ((prim_fntype0)_fn)(); break;
-      case  1: res = ((prim_fntype1)_fn)(a[0]); break;
-      case  2: res = ((prim_fntype2)_fn)(a[0], a[1]); break;
-      case  3: res = ((prim_fntype3)_fn)(a[0], a[1], a[2]); break;
-      case  4: res = ((prim_fntype4)_fn)(a[0], a[1], a[2], a[3]); break;
-      case  5: res = ((prim_fntype5)_fn)(a[0], a[1], a[2], a[3], a[4]); break;
-      case  6: res = ((prim_fntype6)_fn)(a[0], a[1], a[2], a[3], a[4], a[5]); break;
-      case  7: res = ((prim_fntype7)_fn)(a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
-      case  8: res = ((prim_fntype8)_fn)(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]); break;
-      case  9: res = ((prim_fntype9)_fn)(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]); break;
-      default: ShouldNotReachHere();
+    case  0: res = ((prim_fntype0)_fn)(); break;
+    case  1: res = ((prim_fntype1)_fn)(a[0]); break;
+    case  2: res = ((prim_fntype2)_fn)(a[0], a[1]); break;
+    case  3: res = ((prim_fntype3)_fn)(a[0], a[1], a[2]); break;
+    case  4: res = ((prim_fntype4)_fn)(a[0], a[1], a[2], a[3]); break;
+    case  5: res = ((prim_fntype5)_fn)(a[0], a[1], a[2], a[3], a[4]); break;
+    case  6: res = ((prim_fntype6)_fn)(a[0], a[1], a[2], a[3], a[4], a[5]); break;
+    case  7: res = ((prim_fntype7)_fn)(a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
+    case  8: res = ((prim_fntype8)_fn)(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]); break;
+    case  9: res = ((prim_fntype9)_fn)(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]); break;
+    default: ShouldNotReachHere();
     }
   }
+
+  // %hack: some primitives alter EBX and crash the compiler's constant propagation
+  int ebx_now;
+#ifndef __GNUC__
+  __asm mov ebx_now, ebx
+  __asm mov ebx, ebx_on_stack
+#endif
+
+  if (ebx_now != ebx_on_stack)
+  {
+    std->print_cr("ebx changed (%X -> %X) in :", ebx_on_stack, ebx_now);
+    print();
+  }
+
   return res;
 }
-
 
 void primitives::print_table() {
   std->print_cr("Primitive table:");
@@ -109,7 +127,7 @@ symbolOop primitive_desc::selector() const {
 
 void primitive_desc::print() {
   std->print("%48s %d %s%s%s%s%s%s%s%s%s",
-             name(), 
+             name(),
              number_of_parameters(),
 	     has_receiver()           ? "R" : "_",
              can_fail()               ? "F" : "_",
@@ -142,7 +160,7 @@ char* primitive_desc::parameter_type(int index) const {
 }
 
 
-char* primitive_desc::return_type() const { 
+char* primitive_desc::return_type() const {
   return _types[0];
 }
 
@@ -273,7 +291,7 @@ void primitives::lookup_and_patch() {
 }
 
 
-void prim_init() { 
+void prim_init() {
   primitives::initialize();
   primitive_desc* prev = NULL;
   for (int index = 0; index < size_of_primitive_table; index++) {
@@ -448,7 +466,7 @@ primitive_desc* primitives::verified_lookup(char* selector) {
   if (result == NULL) {
     err->print_cr("Verified primitive lookup failed");
     err->print_cr(" selector = %s", selector);
-    fatal("aborted"); 
+    fatal("aborted");
   }
   return result;
 }
@@ -476,4 +494,11 @@ void primitives::initialize() {
   _context_allocate0 = verified_lookup("primitiveCompiledContextAllocate0");
   _context_allocate1 = verified_lookup("primitiveCompiledContextAllocate1");
   _context_allocate2 = verified_lookup("primitiveCompiledContextAllocate2");
+
+}
+
+void primitives::patch(char* name, char* entry_point) {
+  assert(entry_point, "just checking");
+  primitive_desc* pdesc = verified_lookup(name);
+  pdesc->_fn = (fntype)entry_point;
 }

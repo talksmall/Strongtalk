@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -33,12 +33,16 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 //
 
 extern "C" void illegal();
-extern "C" void single_step_stub();
+//extern "C" void single_step_stub();
 
 #define L(num) interpreter_case_##num
 #define M(num) &interpreter_case_##num
 #define D(num) extern "C" void L(num)##();
-#define _(num) extern "C" void L(num)##() { illegal(); }
+#define _(num) extern "C" void L(num)##() { Interpreter::illegal(); }
+
+#define TEST_GENERATION_
+
+#if(!defined(TEST_GENERATION_))
 
 //0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
 _(0)   _(1)   _(2)   _(3)   _(4)   _(5)   _(6)   _(7)   _(8)   _(9)   _(10)  _(11)  _(12)  _(13)  _(14)  _(15)  // 0
@@ -58,6 +62,31 @@ _(208) _(209) _(210) _(211) _(212) _(213) _(214) _(215) _(216) _(217) _(218) _(2
 _(224) _(225) _(226) _(227) _(228) _(229) _(230) _(231) _(232) _(233) _(234) _(235) _(236) _(237) D(238) D(239) // E
 _(240) _(241) _(242) _(243) _(244) _(245) _(246) _(247) _(248) _(249) _(250) _(251) _(252) _(253) _(254) _(255) // F
 
+#else
+
+#ifdef JUNK // we don't need it anymore anyway
+
+//0      1      2      3      4      5      6      7      8      9      A      B      C      _      E      F
+_(0)   _(1)   _(2)   _(3)   _(4)   _(5)   _(6)   _(7)   _(8)   _(9)   _(10)  _(11)  _(12)  _(13)  _(14)  _(15)  // 0
+_(16)  _(17)  _(18)  _(19)  _(20)  _(21)  _(22)  _(23)  _(24)  _(25)  _(26)  _(27)  _(28)  _(29)  _(30)  _(31)  // 1
+_(32)  _(33)  _(34)  _(35)  _(36)  _(37)  _(38)  _(39)  _(40)  _(41)  _(42)  _(43)  _(44)  _(45)  _(46)  _(47)  // 2
+_(48)  _(49)  _(50)  _(51)  _(52)  _(53)  _(54)  _(55)  _(56)  _(57)  _(58)  _(59)  _(60)  _(61)  _(62)  _(63)  // 3
+_(64)  _(65)  _(66)  _(67)  _(68)  _(69)  _(70)  _(71)  _(72)  _(73)  _(74)  _(75)  _(76)  _(77)  _(78)  _(79)  // 4
+_(80)  _(81)  _(82)  _(83)  _(84)  _(85)  _(86)  _(87)  _(88)  _(89)  _(90)  _(91)  _(92)  _(93)  _(94)  _(95)  // 5
+_(96)  _(97)  _(98)  _(99)  _(100) _(101) _(102) _(103) _(104) _(105) _(106) _(107) _(108) _(109) _(110) _(111) // 6
+_(112) _(113) _(114) _(115) _(116) _(117) _(118) _(119) _(120) _(121) _(122) _(123) _(124) _(125) _(126) _(127) // 7
+_(128) _(129) _(130) _(131) _(132) _(133) _(134) _(135) _(136) _(137) _(138) _(139) _(140) _(141) _(142) _(143) // 8
+_(144) _(145) _(146) _(147) _(148) _(149) _(150) _(151) _(152) _(153) _(154) _(155) _(156) _(157) _(158) _(159) // 9
+_(160) _(161) _(162) _(163) _(164) _(165) _(166) _(167) _(168) _(169) _(170) _(171) _(172) _(173) _(174) _(175) // A
+_(176) _(177) _(178) _(179) _(180) _(181) _(182) _(183) _(184) _(185) _(186) _(187) _(188) _(189) _(190) _(191) // B
+_(192) _(193) _(194) _(195) _(196) _(197) _(198) _(199) _(200) _(201) _(202) _(203) _(204) _(205) _(206) _(207) // C
+_(208) _(209) _(210) _(211) _(212) _(213) _(214) _(215) _(216) _(217) _(218) _(219) _(220) _(221) _(222) _(223) // _
+_(224) _(225) _(226) _(227) _(228) _(229) _(230) _(231) _(232) _(233) _(234) _(235) _(236) _(237) _(238) _(239) // E
+_(240) _(241) _(242) _(243) _(244) _(245) _(246) _(247) _(248) _(249) _(250) _(251) _(252) _(253) _(254) _(255) // F
+
+#endif
+
+#endif // TEST_GENERATION
 
 // The dispatch table holds the dispatch addresses currently used (i.e., individual entries might be
 // patched with a stub-routine, etc.). The original table holds the untouched original entry points.
@@ -69,7 +98,11 @@ extern "C" doFn dispatch_table[Bytecodes::number_of_codes];
 extern "C" doFn original_table[Bytecodes::number_of_codes];
 
 doFn dispatch_table[Bytecodes::number_of_codes];
-doFn original_table[Bytecodes::number_of_codes] = {
+doFn original_table[Bytecodes::number_of_codes];
+
+#ifdef JUNK
+
+ = {
   M(0),  M(1),  M(2),  M(3),  M(4),  M(5),  M(6),  M(7),  M(8),  M(9),  M(10), M(11), M(12), M(13), M(14), M(15),  // 0
   M(16), M(17), M(18), M(19), M(20), M(21), M(22), M(23), M(24), M(25), M(26), M(27), M(28), M(29), M(30), M(31),  // 1
   M(32), M(33), M(34), M(35), M(36), M(37), M(38), M(39), M(40), M(41), M(42), M(43), M(44), M(45), M(46), M(47),  // 2
@@ -88,6 +121,7 @@ doFn original_table[Bytecodes::number_of_codes] = {
   M(240),M(241),M(242),M(243),M(244),M(245),M(246),M(247),M(248),M(249),M(250),M(251),M(252),M(253),M(254),M(255)  // F
 };
 
+#endif
 
 extern "C" int* frame_breakpoint = (int*) -1;
 
@@ -110,7 +144,7 @@ void dispatchTable::reset() {
 void dispatchTable::patch_with_sst_stub() {
   for (int index = 0; index < Bytecodes::number_of_codes; index++) {
     if (Bytecodes::single_step(Bytecodes::Code(index))) {
-      dispatch_table[index] = &single_step_stub;
+      dispatch_table[index] = (doFn)StubRoutines::single_step_stub();
     } else {
       dispatch_table[index] = original_table[index];
     }
@@ -162,7 +196,7 @@ void dispatchTable::intercept_for_return(int* fr)  {
     for (int index = 0; index < return_codes_size; index++) {
       Bytecodes::Code code = return_codes[index];
       if (Bytecodes::single_step(code)) {
-        dispatch_table[code] = &single_step_stub;
+        dispatch_table[code] = (doFn)StubRoutines::single_step_stub();
       } else {
         dispatch_table[index] = original_table[index];
       }

@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -52,11 +52,11 @@ class Displacement : public ValueObj {
     info_size	=  IC_Info::number_of_flags,
     type_size	=  2,
     next_size	= 32 - (type_size + info_size),
-    
+
     info_pos	= 0,
     type_pos	= info_pos + info_size,
     next_pos	= type_pos + type_size,
-    
+
     info_mask	= (1 << info_size) - 1,
     type_mask	= (1 << type_size) - 1,
     next_mask	= (1 << next_size) - 1,
@@ -87,7 +87,7 @@ class Displacement : public ValueObj {
   Type type() const		{ return Type((_data >> type_pos) & type_mask); }
   void next(Label & L) const	{ int n    = ((_data >> next_pos) & next_mask); n > 0 ? L.link_to(n) : L.unuse(); }
   void link_to(Label& L)	{ init(L, type(), info()); }
-    
+
   Displacement(int data)	{ _data = data; }
 
   Displacement(Label& L, Type type, int info) {
@@ -361,13 +361,13 @@ void Assembler::pushl(int imm32) {
   emit_long(imm32);
 }
 
-  
+
 void Assembler::pushl(oop obj) {
   emit_byte(0x68);
   emit_data((int)obj, relocInfo::oop_type);
 }
 
-  
+
 void Assembler::pushl(Register src) {
   emit_byte(0x50 | src.number());
 }
@@ -391,7 +391,7 @@ void Assembler::popl(Address dst) {
 
 
 void Assembler::movb(Register dst, Address src) {
-  guarantee(dst.hasByteRegister(), "must have byte register"); 
+  guarantee(dst.hasByteRegister(), "must have byte register");
   emit_byte(0x8A);
   emit_operand(dst, src);
 }
@@ -405,12 +405,12 @@ void Assembler::movb(Address dst, int imm8) {
 
 
 void Assembler::movb(Address dst, Register src) {
-  guarantee(src.hasByteRegister(), "must have byte register"); 
+  guarantee(src.hasByteRegister(), "must have byte register");
   emit_byte(0x88);
   emit_operand(src, dst);
 }
 
-  
+
 void Assembler::movw(Register dst, Address src) {
   emit_byte(0x66);
   emit_byte(0x8B);
@@ -477,7 +477,7 @@ void Assembler::movsxb(Register dst, Address src) {
 
 
 void Assembler::movsxb(Register dst, Register src) {
-  guarantee(src.hasByteRegister(), "must have byte register"); 
+  guarantee(src.hasByteRegister(), "must have byte register");
   emit_byte(0x0F);
   emit_byte(0xBE);
   emit_byte(0xC0 | (dst.number() << 3) | src.number());
@@ -490,7 +490,7 @@ void Assembler::movsxw(Register dst, Address src) {
   emit_operand(dst, src);
 }
 
-  
+
 void Assembler::movsxw(Register dst, Register src) {
   emit_byte(0x0F);
   emit_byte(0xBF);
@@ -517,7 +517,7 @@ void Assembler::cmovccl(Condition cc, Register dst, Address src) {
   Unimplemented();
 }
 
-  
+
 void Assembler::adcl(Register dst, int imm32) {
   emit_arith(0x81, 0xD0, dst, imm32);
 }
@@ -542,6 +542,11 @@ void Assembler::addl(Register dst, int imm32) {
 
 void Assembler::addl(Register dst, Register src) {
   emit_arith(0x03, 0xC0, dst, src);
+}
+
+void Assembler::addl(Register dst, Address  src) {
+  emit_byte(0x03);
+  emit_operand(dst, src);
 }
 
 
@@ -591,7 +596,7 @@ void Assembler::cmpl(Register dst, Address  src) {
 
 
 void Assembler::decb(Register dst) {
-  guarantee(dst.hasByteRegister(), "must have byte register"); 
+  guarantee(dst.hasByteRegister(), "must have byte register");
   emit_byte(0xFE);
   emit_byte(0xC8 | dst.number());
 }
@@ -601,12 +606,20 @@ void Assembler::decl(Register dst) {
   emit_byte(0x48 | dst.number());
 }
 
+void Assembler::decl(Address dst) {
+  emit_byte(0xFF);
+  emit_operand(ecx, dst);
+}
 
 void Assembler::idivl(Register src) {
   emit_byte(0xF7);
   emit_byte(0xF8 | src.number());
 }
 
+void Assembler::imull(Register src) {
+  emit_byte(0xF7);
+  emit_byte(0xE8 | src.number());
+}
 
 void Assembler::imull(Register dst, Register src) {
   emit_byte(0x0F);
@@ -768,7 +781,7 @@ void Assembler::shrl(Register dst) {
   emit_byte(0xE8 | dst.number());
 }
 
-  
+
 void Assembler::subl(Register dst, int imm32) {
   emit_arith(0x81, 0xE8, dst, imm32);
 }
@@ -778,9 +791,14 @@ void Assembler::subl(Register dst, Register src) {
   emit_arith(0x2B, 0xC0, dst, src);
 }
 
+void Assembler::subl(Register dst, Address src) {
+  emit_byte(0x2B);
+  emit_operand(dst, src);
+}
+
 
 void Assembler::testb(Register dst, int imm8) {
-  guarantee(dst.hasByteRegister(), "must have byte register"); 
+  guarantee(dst.hasByteRegister(), "must have byte register");
   emit_arith_b(0xF6, 0xC0, dst, imm8);
 }
 
@@ -813,6 +831,9 @@ void Assembler::xorl(Register dst, Register src) {
   emit_arith(0x33, 0xC0, dst, src);
 }
 
+void Assembler::cdq() {
+  emit_byte(0x99);
+}
 
 void Assembler::hlt() {
   emit_byte(0xF4);
@@ -1193,6 +1214,25 @@ void Assembler::fchs() {
   emit_byte(0xE0);
 }
 
+void Assembler::fadd_d(Address adr) {
+  emit_byte(0xDC);
+  emit_operand(eax, adr);
+}
+
+void Assembler::fsub_d(Address adr) {
+  emit_byte(0xDC);
+  emit_operand(esp, adr);
+}
+
+void Assembler::fmul_d(Address adr) {
+  emit_byte(0xDC);
+  emit_operand(ecx, adr);
+}
+
+void Assembler::fdiv_d(Address adr) {
+  emit_byte(0xDC);
+  emit_operand(esi, adr);
+}
 
 void Assembler::fadd(int i) {
   emit_farith(0xDC, 0xC0, i);
@@ -1213,7 +1253,7 @@ void Assembler::fdiv(int i) {
   emit_farith(0xDC, 0xF8, i);
 }
 
-  
+
 void Assembler::faddp(int i) {
   emit_farith(0xDE, 0xC0, i);
 }
@@ -1560,7 +1600,7 @@ void MacroAssembler::inspect(char* title) {
     call(entry, relocInfo::runtime_call_type);			// call stub invoking the inspector
     testl(eax, int(title));					// additional info for inspector
   } else {
-    char* s = (title == NULL) ? "" : title;
+    const char* s = (title == NULL) ? "" : title;
     std->print_cr("cannot call inspector for \"%s\" - no entry point yet", s);
   }
 }

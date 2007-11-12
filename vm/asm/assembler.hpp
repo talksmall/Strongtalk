@@ -254,6 +254,7 @@ class Assembler: public ResourceObj {
   void addl(Address dst, int imm32);
   void addl(Register dst, int imm32);
   void addl(Register dst, Register src);
+  void addl(Register dst, Address src);
 
   void andl(Register dst, int imm32);
   void andl(Register dst, Register src);
@@ -267,9 +268,11 @@ class Assembler: public ResourceObj {
 
   void decb(Register dst);
   void decl(Register dst);
+  void decl(Address dst);
 
   void idivl(Register src);
 
+  void imull(Register src);
   void imull(Register dst, Register src);
   void imull(Register dst, Register src, int value);
 
@@ -308,6 +311,7 @@ class Assembler: public ResourceObj {
 
   void subl(Register dst, int imm32);
   void subl(Register dst, Register src);
+  void subl(Register dst, Address src);
 
   void testb(Register dst, int imm8);
   void testl(Register dst, int imm32);
@@ -317,10 +321,11 @@ class Assembler: public ResourceObj {
   void xorl(Register dst, Register src);
 
   // Miscellaneous
+  void cdq();
   void hlt();
   void int3();
   void nop();
-  void ret(int imm16);
+  void ret(int imm16 = 0);
 
   // Labels
 
@@ -366,6 +371,7 @@ class Assembler: public ResourceObj {
   void fld1();
   void fldz();
 
+  // %note: _s 32 bits, _d 64 bits
   void fld_s(Address adr);
   void fld_d(Address adr);
 
@@ -380,7 +386,12 @@ class Assembler: public ResourceObj {
 
   void fabs();
   void fchs();
-
+  
+  void fadd_d(Address adr);
+  void fsub_d(Address adr);
+  void fmul_d(Address adr);
+  void fdiv_d(Address adr);
+  
   void fadd(int i);
   void fsub(int i);
   void fmul(int i);

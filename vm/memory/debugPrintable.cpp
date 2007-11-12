@@ -109,9 +109,6 @@ void pr(void* m) {
 }
 
 void ps() { // print stack
-  // Retrieve the frame pointer of the current frame 
-  int* fp;
-  __asm { mov fp, ebp }
   {
     Command c("ps");
     // Prints the stack of the current Delta process
@@ -126,7 +123,7 @@ void ps() { // print stack
       p->trace_stack();
     } else {
       // fp point to the frame of the ps stub routine
-      frame f(NULL, fp, NULL);
+      frame f = p->profile_top_frame();
       f = f.sender();
       p->trace_stack_from(vframe::new_vframe(&f));
     }
@@ -141,8 +138,6 @@ void pss() { // print all stack
 
 void pd() { // print stack
   // Retrieve the frame pointer of the current frame 
-  int* fp;
-  __asm { mov fp, ebp }
   {
     Command c("pd");
     // Prints the stack of the current Delta process
@@ -157,7 +152,7 @@ void pd() { // print stack
       p->trace_stack_for_deoptimization();
     } else {
       // fp point to the frame of the ps stub routine
-      frame f(NULL, fp, NULL);
+      frame f = p->profile_top_frame();
       f = f.sender();
       p->trace_stack_for_deoptimization(&f);
     }

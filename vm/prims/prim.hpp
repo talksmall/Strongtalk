@@ -150,6 +150,7 @@ class primitives : AllStatic {
   static void print_counters();
 
   static void initialize();
+  static void patch(char* name, char* entry_point);
 
  private:
   static primitive_desc* lookup(char* selector, int len);

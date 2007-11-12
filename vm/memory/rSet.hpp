@@ -41,7 +41,8 @@ class rSet: public CHeapObj {
   char     byte_map[1];  	// size is a lie
   
   // friend void oldSpace::switch_pointers_by_card(oop, oop);
-  char* byte_for(void *p) const { return (char*)&byte_map[int((char*)p - low_boundary) >> card_shift]; }
+  char* byte_for(void *p) const { return (char*)&byte_map[(((unsigned long)p) >> card_shift) - (((unsigned long)low_boundary) >> card_shift)]; }
+//  char* byte_for(void *p) const { return (char*)&byte_map[int((char*)p - low_boundary) >> card_shift]; }
   oop*  oop_for(char* p) const 	{ return (oop*)(low_boundary  +  ((p - byte_map) <<  card_shift)); }
 
   friend oop*  card_for(oop* p) { return (oop*)(int(p) & ~(card_size - 1)); }

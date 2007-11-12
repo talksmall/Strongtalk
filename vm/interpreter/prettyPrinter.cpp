@@ -151,7 +151,7 @@ class PrintParams : public TempDecoder {
     elements = new GrowableArray<astNode*>(10);
     TempDecoder::decode(method);
  }
- void PrintParams::parameter(byteArrayOop name, int index);
+ void parameter(byteArrayOop name, int index);
 };
 
 
@@ -430,6 +430,8 @@ class scopeNode : public astNode {
     output->newline();
 
     print_method_header(output);    // print method header first (in case something crashes later)
+
+    output->newline();
 
     if (ActivationShowBCI) {
       // Print current bci

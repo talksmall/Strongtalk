@@ -33,5 +33,6 @@ class SavedRegisters : AllStatic {
  public:
   static oop  fetch(int register_number, int* frame_pointer);
   static void clear();
-  static void save_registers();
+//  static void save_registers();
+  static void generate_save_registers(MacroAssembler* masm);
 };

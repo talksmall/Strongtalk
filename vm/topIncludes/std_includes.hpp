@@ -26,3 +26,29 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+
+
+
+#if defined(_MSC_VER)
+
+  #define int64_t __int64
+
+#elif defined(__GNUC__)
+
+  #ifndef _WIN32 // mingw 
+    #define _isnan(n) isnan(n)
+    #define _finite(n) finite(n)
+  #endif
+
+  #define _vsnprintf   vsnprintf
+
+  #define __stdcall __attribute__ ((stdcall))
+  #define std _std
+
+  #define int64_t long long
+
+#else
+
+  #error Unrecognized compiler
+
+#endif

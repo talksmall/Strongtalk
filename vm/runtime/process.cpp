@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -35,7 +35,7 @@ extern "C" oop  nlr_result;
 unwindInfo::unwindInfo() {
    assert(have_nlr_through_C, "you must have have_nlr_through_C before using unwindInfo");
 
-   // Save NLR state 
+   // Save NLR state
    _nlr_home    = ::nlr_home;
    _nlr_home_id = ::nlr_home_id;
    _nlr_result  = ::nlr_result;
@@ -86,38 +86,38 @@ int* last_Delta_fp = NULL;
 oop* last_Delta_sp = NULL;
 
 // last_Delta_fp
-int* DeltaProcess::last_Delta_fp() const { 
-  return this == _active_delta_process ? ::last_Delta_fp : _last_Delta_fp; 
+int* DeltaProcess::last_Delta_fp() const {
+  return this == _active_delta_process ? ::last_Delta_fp : _last_Delta_fp;
 }
 
-void DeltaProcess::set_last_Delta_fp(int* fp) { 
+void DeltaProcess::set_last_Delta_fp(int* fp) {
   if (this == _active_delta_process) {
     ::last_Delta_fp = fp;
   } else {
-    _last_Delta_fp = fp;   
+    _last_Delta_fp = fp;
   }
 }
 
 // last_Delta_sp
-oop* DeltaProcess::last_Delta_sp() const { 
-  return this == _active_delta_process ? ::last_Delta_sp : _last_Delta_sp; 
+oop* DeltaProcess::last_Delta_sp() const {
+  return this == _active_delta_process ? ::last_Delta_sp : _last_Delta_sp;
 }
 
-void DeltaProcess::set_last_Delta_sp(oop* sp) { 
+void DeltaProcess::set_last_Delta_sp(oop* sp) {
   if (this == _active_delta_process) {
     ::last_Delta_sp = sp;
   } else {
-    _last_Delta_sp = sp;   
+    _last_Delta_sp = sp;
   }
 }
 
 // last_Delta_pc
-char* DeltaProcess::last_Delta_pc() const { 
-  return _last_Delta_pc; 
+char* DeltaProcess::last_Delta_pc() const {
+  return _last_Delta_pc;
 }
 
-void DeltaProcess::set_last_Delta_pc(char* pc) { 
-  _last_Delta_pc = pc;   
+void DeltaProcess::set_last_Delta_pc(char* pc) {
+  _last_Delta_pc = pc;
 }
 
 int CurrentHash = 23;
@@ -158,7 +158,7 @@ void VMProcess::transfer_to(DeltaProcess* target) {
     ThreadCritical tc;
 
     // restore state
-    ::last_Delta_fp = target->_last_Delta_fp;	// *don't* use accessors! 
+    ::last_Delta_fp = target->_last_Delta_fp;	// *don't* use accessors!
     ::last_Delta_sp = target->_last_Delta_sp;
     DeltaProcess::set_active(target);
     DeltaProcess::set_current(target);
@@ -274,7 +274,7 @@ void DeltaProcess::transfer(ProcessState reason, DeltaProcess* target) {
     set_state(reason);
 
     // restore state
-    ::last_Delta_fp = target->_last_Delta_fp;	// *don't* use accessors! 
+    ::last_Delta_fp = target->_last_Delta_fp;	// *don't* use accessors!
     ::last_Delta_sp = target->_last_Delta_sp;
     set_current(target);
     set_active(target);
@@ -289,7 +289,7 @@ void DeltaProcess::suspend(ProcessState reason) {
   assert(!in_vm_operation(), "must not be in VM operation");
 
   transfer(reason, scheduler());
-  if (is_terminating()) 
+  if (is_terminating())
     ErrorHandler::abort_current_process();
 }
 
@@ -343,7 +343,7 @@ void DeltaProcess::transfer_and_continue() {
 
 
     // restore state
-    ::last_Delta_fp = scheduler()->_last_Delta_fp;	// *don't* use accessors! 
+    ::last_Delta_fp = scheduler()->_last_Delta_fp;	// *don't* use accessors!
     ::last_Delta_sp = scheduler()->_last_Delta_sp;
     set_current(scheduler());
     set_active(scheduler());
@@ -393,7 +393,7 @@ void DeltaProcess::wait_for_control() {
   set_state(yielded_after_async_dll);
   async_dll_call_completed();
   os::wait_for_event(_event);
-  if (is_terminating()) 
+  if (is_terminating())
     ErrorHandler::abort_current_process();
 }
 
@@ -489,7 +489,7 @@ void DeltaProcess::print() {
 
 void DeltaProcess::frame_iterate(FrameClosure* blk) {
   blk->begin_process(this);
-  
+
   if (has_stack()) {
     frame v = last_frame();
     do {
@@ -632,7 +632,8 @@ void DeltaProcess::deoptimize_redo_last_send() {
 }
 
 // Interpreter entry point for redoing a send.
-extern "C" void redo_bytecode_after_deoptimization();
+//extern "C" void redo_bytecode_after_deoptimization();
+//extern "C" char redo_bytecode_after_deoptimization;
 
 extern "C" bool       nlr_through_unpacking = false;
 extern "C" oop        result_through_unpacking = NULL;
@@ -709,7 +710,7 @@ extern "C" void unpack_frame_array() {
         current.set_hp(c.next_hp());
       } else if (redo_the_send) {
         // Deoptimizing uncommon trap
-        current_pc = (char*) redo_bytecode_after_deoptimization;
+        current_pc = Interpreter::redo_bytecode_after_deoptimization();
         current.set_hp(c.next_hp());
 	redo_send_offset = c.next_hp() - c.hp();
         redo_the_send = false;
@@ -717,9 +718,9 @@ extern "C" void unpack_frame_array() {
         // Normal case
         current_pc = c.interpreter_return_point(true);
         current.set_hp(c.next_hp());
- 
+
         if (c.is_message_send()) {
-	  number_of_arguments_through_unpacking = c.ic()->nof_arguments();	  
+	  number_of_arguments_through_unpacking = c.ic()->nof_arguments();
         } else if (c.is_primitive_call()) {
           number_of_arguments_through_unpacking = c.prim_cache()->number_of_parameters();
 	} else if (c.is_dll_call()) {
@@ -736,7 +737,7 @@ extern "C" void unpack_frame_array() {
 
     current.patch_pc(current_pc);
     current.patch_fp(current.fp());
-    
+
     // Revive the contexts
     if (!method->is_blockMethod() && method->activation_has_context()) {
       contextOop con = contextOop(current.temp(0));
@@ -786,10 +787,6 @@ extern "C" void verify_at_end_of_deoptimization() {
   }
 }
 
-// Called when returning to an unoptimized frame
-// Implemented in assembly (see interpreter_asm.asm)
-extern "C" void unpack_unoptimized_frames();
-
 void DeltaProcess::deoptimize_stretch(frame* first_frame, frame* last_frame) {
   if (TraceDeoptimization) {
     std->print_cr("[Deoptimizing]");
@@ -806,15 +803,15 @@ void DeltaProcess::deoptimize_stretch(frame* first_frame, frame* last_frame) {
   vframe* vf = vframe::new_vframe(first_frame);
   assert(vf->is_compiled_frame(), "must be Delta frame");
 
-  for (deltaVFrame* current = (deltaVFrame*) vf; 
-       current && (current->fr().fp() <= last_frame->fp()); 
+  for (deltaVFrame* current = (deltaVFrame*) vf;
+       current && (current->fr().fp() <= last_frame->fp());
        current = (deltaVFrame*) current->sender()) {
     packer.append(current);
   }
 
   // Patch frame
   // - patch the pc first to convert the frame into a deoptimized_frame
-  first_frame->patch_pc((char*) &unpack_unoptimized_frames); 
+  first_frame->patch_pc(StubRoutines::unpack_unoptimized_frames());
   first_frame->set_return_addr(last_frame->return_addr());
   first_frame->set_real_sender_sp(last_frame->sender_sp());
   first_frame->set_frame_array(packer.as_objArray());
@@ -930,7 +927,7 @@ double DeltaProcess::user_time() {
   return _thread
        ? os:: user_time_for(_thread)
        : 0.0;
-}   
+}
 
 double DeltaProcess::system_time() {
   return _thread
@@ -956,7 +953,7 @@ void Processes::add(DeltaProcess* p) {
 #define ALL_PROCESSES(X) for (DeltaProcess* X = processList; X; X = X->next())
 
 DeltaProcess* Processes::find_from_thread_id(int id) {
-  ALL_PROCESSES(p) 
+  ALL_PROCESSES(p)
     if (p->thread_id() == id)
       return p;
   return NULL;
@@ -997,9 +994,9 @@ void Processes::print() {
 
 void Processes::remove(DeltaProcess* p) {
   assert(includes(p), "p must be present");
-  DeltaProcess* current = processList; 
+  DeltaProcess* current = processList;
   DeltaProcess* prev    = NULL;
-  
+
   while (current != p) {
     prev    = current;
     current = current->next();
@@ -1049,7 +1046,7 @@ void Processes::scavenge_contents() {
 void Processes::follow_roots() {
   ALL_PROCESSES(p) p->follow_roots();
 }
-   
+
 class ConvertHCodePointersClosure : public FrameClosure {
   void do_frame(frame* f) {
     if (f->is_interpreted_frame()) {

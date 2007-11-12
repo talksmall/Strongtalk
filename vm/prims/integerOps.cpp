@@ -263,6 +263,8 @@ inline Digit IntegerOps::xpy(Digit x, Digit y, Digit& carry) {
   Digit c = carry;	// make sure that carry is used below and not &carry
   Digit r;
   assert(c <= 1, "wrong carry");
+
+  /*
   __asm {
     //push eax		// save eax
     mov eax, x		// eax = x
@@ -274,6 +276,16 @@ inline Digit IntegerOps::xpy(Digit x, Digit y, Digit& carry) {
     mov c, eax		// save carry
     //pop eax		// restore eax
   }
+  */
+  
+  // 1836311903+2971215073
+
+  r = x + y + c;
+  if (x == -1 || y == -1) {
+    c = (x==-1) ? (y+c)>0 : (x+c)>0;
+  } else {
+    c = ((x>>1)+(y>>1)) > 0x80000000;
+  }
   carry = c;
   return r;
 }
@@ -284,6 +296,7 @@ inline Digit IntegerOps::xmy(Digit x, Digit y, Digit& carry) {
   Digit c = carry;	// make sure that carry is used below and not &carry
   Digit r;
   assert(c <= 1, "wrong carry");
+  /*
   __asm {
     //push eax		// save eax
     mov eax, x		// eax = x
@@ -295,6 +308,20 @@ inline Digit IntegerOps::xmy(Digit x, Digit y, Digit& carry) {
     mov c, eax		// save carry
     //pop eax		// restore eax
   }
+  */
+
+  if (x==1836311903 || y==1836311903) {
+    assert(true, "");
+  }
+
+  // 1836311903+2971215073-2971215073
+
+  r = x - (y + c);
+  if (y == -1) {
+    // propagate carry ~
+  } else {
+    c = x < (y+c);
+  }
   carry = c;
   return r;
 }
@@ -304,6 +331,7 @@ inline Digit IntegerOps::axpy(Digit a, Digit x, Digit y, Digit& carry) {
   // returns (a*x + y + c) mod B; sets carry = (a*x + y + c) div B
   Digit c = carry;	// make sure that carry is used below and not &carry
   Digit r;
+  /*
   __asm {
     //push eax		// save eax
     //push edx		// save edx
@@ -318,7 +346,25 @@ inline Digit IntegerOps::axpy(Digit a, Digit x, Digit y, Digit& carry) {
     //pop edx		// restore edx
     //pop eax		// restore eax
   }
-  carry = c;
+  */
+  
+  Digit la = a & 0xFFFF;
+  Digit lx = x & 0xFFFF;
+  Digit ha = a >> 16;
+  Digit hx = x >> 16;
+  Digit cross = (lx*ha + la*hx);
+  Digit m1 = la*lx + (cross<<16);
+  Digit m2 = ha*hx + (cross>>16);
+ // r = m1 + y + c;
+  Digit _c = 0;
+  m1 = xpy(m1, y, _c);
+  m2 = xpy(m2, 0, _c);
+  _c = 0;
+  m1 = xpy(m1, c, _c);
+  m2 = xpy(m2, 0, _c);
+
+  r = m1;
+  carry = m2;
   return r;
 }
 
@@ -327,6 +373,8 @@ inline Digit IntegerOps::xdy(Digit x, Digit y, Digit& carry) {
   // returns (carry*B + x) div y; sets carry = (carry*B + x) mod y
   Digit c = carry;	// make sure that carry is used below and not &carry
   Digit r;
+  
+  /*
   __asm {
     //push eax		// save eax
     //push edx		// save edx
@@ -338,6 +386,33 @@ inline Digit IntegerOps::xdy(Digit x, Digit y, Digit& carry) {
     //pop edx		// restore edx
     //pop eax		// restore eax
   }
+  */
+
+  // long division using 16-32 bit arithmetic
+  // %hack: this code is incomplete, but enough to extract digits in small bases
+  assert((y>>16) == 0, "only works with small divisors") 
+
+  Digit xx[4] = { carry >> 16, carry & 0xFFFF, x >> 16, x & 0xFFFF };
+  Digit rr[4];
+
+  rr[0] = (xx[0] / y);
+  xx[0] -= rr[0] * y;
+
+  rr[1] = ((xx[0]<<16) + xx[1])/y;
+  xx[0] -= (rr[1]*y) >>16;
+  xx[1] -= (rr[1]*y) & 0xFFFF;
+  
+  rr[2] = ((xx[1]<<16) + xx[2])/y;
+  xx[1] -= (rr[2]*y) >>16;
+  xx[2] -= (rr[2]*y) & 0xFFFF;
+  
+  rr[3] = ((xx[2]<<16) + xx[3])/y;
+  xx[2] -= (rr[3]*y) >>16;
+  xx[3] -= (rr[3]*y) & 0xFFFF;
+  
+  r = (rr[2]<<16) + rr[3];
+  c = (xx[2]<<16) + xx[3];
+
   carry = c;
   return r;
 }

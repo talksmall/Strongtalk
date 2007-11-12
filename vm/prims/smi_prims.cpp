@@ -159,3 +159,13 @@ PRIM_DECL_1(smiOopPrimitives::printCharacter, oop receiver) {
   lprintf("%c", smiOop(receiver)->value());
   return receiver;
 }
+
+static void trap() { assert(false, "This primitive should be patched"); };
+
+extern "C" oop PRIM_API smiOopPrimitives_add(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API smiOopPrimitives_subtract(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API smiOopPrimitives_multiply(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API smiOopPrimitives_mod(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API smiOopPrimitives_div(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API smiOopPrimitives_quo(oop receiver, oop argument) 	{ trap(); return NULL; };
+extern "C" oop PRIM_API smiOopPrimitives_remainder(oop receiver, oop argument) 	{ trap(); return NULL; };

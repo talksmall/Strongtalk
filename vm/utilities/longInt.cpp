@@ -40,6 +40,7 @@ long_int::long_int(double value) {
 long_int long_int::operator +(long_int arg) {
   long_int receiver = *this;
   long_int result;
+  /*
   __asm {
     mov eax, receiver.low
     mov edx, receiver.high
@@ -48,39 +49,53 @@ long_int long_int::operator +(long_int arg) {
     mov result.low,  eax
     mov result.high, edx
   }
+  */
+  *(int64_t*)&result = *(int64_t*)&receiver + *(int64_t*)&arg;
   return result;
 }
 
 long_int long_int::operator -(long_int arg) {
   long_int receiver = *this;
   long_int result;
-  __asm {
+/*  __asm {
     mov eax, receiver.low
     mov edx, receiver.high
     sub eax, arg.low
     sbb edx, arg.high
     mov result.low,  eax
     mov result.high, edx
-  }
+  }*/
+  *(int64_t*)&result = *(int64_t*)&receiver - *(int64_t*)&arg;
   return result;
 }
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4244 ) // conversion between __int64/double, possible loss of data
+#endif
 
 double long_int::as_double() {
   long_int receiver = *this;  
   double result;
-  __asm {
+/*  __asm {
     fild receiver
     fstp result
   }
+*/
+  result = *(int64_t*)&receiver;
   return result;
 }
 
 long_int long_int::double_conversion(double value) {
   register long_int result;
-  __asm {
+/*  __asm {
     fld   value
     fistp result
-  }
+  }*/
+  *(int64_t*)&result = value; // %note: will use C rounding, not equivalent to the assembly
   return result;
 }
 
+#ifdef _MSC_VER
+#pragma warning( pop ) 
+#endif

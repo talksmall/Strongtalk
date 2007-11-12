@@ -35,6 +35,8 @@ class os {
   static void initialize_system_info();
   friend void os_init();
  public:
+  static int    argc();
+  static char** argv();
   static int    getenv(char* name,char* buffer,int len);
 
   // We must call updateTimes before calling userTime or currentTime.
@@ -107,6 +109,9 @@ class os {
   static dll_func dll_lookup(char* name, DLL* library);
   static DLL*     dll_load(char* name);
   static bool     dll_unload(DLL* library);
+
+  // Platform
+  static char*	  platform_class_name();
 };
 
 // A critial region for controling thread transfer at

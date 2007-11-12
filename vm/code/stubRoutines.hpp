@@ -36,7 +36,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 class StubRoutines: AllStatic {
  private:
-  enum { _code_size = 2000 };			// simply increase if too small (assembler will crash if too small)
+  enum { _code_size = 3000 };			// simply increase if too small (assembler will crash if too small)
   static bool _is_initialized;			// true if StubRoutines has been initialized
   static char _code[_code_size];		// the code buffer for the stub routines
 
@@ -59,6 +59,16 @@ class StubRoutines: AllStatic {
   static char* _deoptimize_block_entry;
   static char* _call_inspector_entry;
 
+  static char* _call_delta;
+  static char* _return_from_Delta;
+  static char* _single_step_stub;
+  static char* _unpack_unoptimized_frames;
+  static char* _provoke_nlr_at;
+  static char* _continue_nlr_in_delta;
+  static char* _handle_pascal_callback_stub;
+  static char* _handle_C_callback_stub;
+  static char* _oopify_float;
+
   static char* _PIC_stub_entries[];
   static char* _allocate_entries[];
 
@@ -74,25 +84,36 @@ class StubRoutines: AllStatic {
   static char* generate_call_DLL(MacroAssembler* masm, bool async);
   static char* generate_lookup_DLL(MacroAssembler* masm, bool async);
   
-  static char* generate_ic_normal_lookup	(MacroAssembler* masm);
-  static char* generate_ic_super_lookup		(MacroAssembler* masm);
-  static char* generate_zombie_nmethod		(MacroAssembler* masm);
-  static char* generate_zombie_block_nmethod	(MacroAssembler* masm);
-  static char* generate_megamorphic_ic		(MacroAssembler* masm);
-  static char* generate_compile_block		(MacroAssembler* masm);
-  static char* generate_continue_NLR		(MacroAssembler* masm);
-  static char* generate_call_sync_DLL		(MacroAssembler* masm)	{ return generate_call_DLL  (masm, false); }
-  static char* generate_call_async_DLL		(MacroAssembler* masm)	{ return generate_call_DLL  (masm, true ); }
-  static char* generate_lookup_sync_DLL		(MacroAssembler* masm)	{ return generate_lookup_DLL(masm, false); }
-  static char* generate_lookup_async_DLL	(MacroAssembler* masm)	{ return generate_lookup_DLL(masm, true ); }
-  static char* generate_recompile_stub		(MacroAssembler* masm);
-  static char* generate_uncommon_trap		(MacroAssembler* masm);
-  static char* generate_verify_context_chain	(MacroAssembler* masm);
-  static char* generate_deoptimize_block	(MacroAssembler* masm);
-  static char* generate_call_inspector		(MacroAssembler* masm);
+  static char* generate_ic_normal_lookup		(MacroAssembler* masm);
+  static char* generate_ic_super_lookup			(MacroAssembler* masm);
+  static char* generate_zombie_nmethod	    		(MacroAssembler* masm);
+  static char* generate_zombie_block_nmethod		(MacroAssembler* masm);
+  static char* generate_megamorphic_ic			(MacroAssembler* masm);
+  static char* generate_compile_block			(MacroAssembler* masm);
+  static char* generate_continue_NLR			(MacroAssembler* masm);
+  static char* generate_call_sync_DLL			(MacroAssembler* masm)	{ return generate_call_DLL  (masm, false); }
+  static char* generate_call_async_DLL			(MacroAssembler* masm)	{ return generate_call_DLL  (masm, true ); }
+  static char* generate_lookup_sync_DLL			(MacroAssembler* masm)	{ return generate_lookup_DLL(masm, false); }
+  static char* generate_lookup_async_DLL		(MacroAssembler* masm)	{ return generate_lookup_DLL(masm, true ); }
+  static char* generate_recompile_stub			(MacroAssembler* masm);
+  static char* generate_uncommon_trap			(MacroAssembler* masm);
+  static char* generate_verify_context_chain		(MacroAssembler* masm);
+  static char* generate_deoptimize_block		(MacroAssembler* masm);
+  static char* generate_call_inspector			(MacroAssembler* masm);
 
-  static char* generate_PIC_stub		(MacroAssembler* masm, int pic_size	);
-  static char* generate_allocate		(MacroAssembler* masm, int size		);
+  static char* generate_nlr_return_from_Delta		(MacroAssembler* masm);
+  static char* generate_call_delta			(MacroAssembler* masm);
+  // generate_call_delta assigns _return_from_Delta
+  static char* generate_single_step_stub		(MacroAssembler* masm);
+  static char* generate_unpack_unoptimized_frames	(MacroAssembler* masm);
+  static char* generate_provoke_nlr_at			(MacroAssembler* masm);
+  static char* generate_continue_nlr_in_delta		(MacroAssembler* masm);
+  static char* generate_handle_pascal_callback_stub	(MacroAssembler* masm);
+  static char* generate_handle_C_callback_stub		(MacroAssembler* masm);
+  static char* generate_oopify_float			(MacroAssembler* masm);
+  
+  static char* generate_PIC_stub			(MacroAssembler* masm, int pic_size	);
+  static char* generate_allocate			(MacroAssembler* masm, int size		);
 
 
   // helpers for generation
@@ -117,6 +138,16 @@ class StubRoutines: AllStatic {
   static char* deoptimize_block_entry()		{ return _deoptimize_block_entry; }
   static char* call_inspector_entry()		{ return _call_inspector_entry; }
 
+  static char* call_delta()			{ return _call_delta; }
+  static char* return_from_Delta()		{ return _return_from_Delta; }
+  static char* single_step_stub()		{ return _single_step_stub; }
+  static char* unpack_unoptimized_frames()	{ return _unpack_unoptimized_frames; }
+  static char* provoke_nlr_at()			{ return _provoke_nlr_at; }
+  static char* continue_nlr_in_delta()		{ return _continue_nlr_in_delta; }
+  static char* handle_pascal_callback_stub()	{ return _handle_pascal_callback_stub; }
+  static char* handle_C_callback_stub()		{ return _handle_C_callback_stub; }
+  static char* oopify_float()			{ return _oopify_float; }
+  
   static char* PIC_stub_entry(int pic_size);	// PIC interpreter stubs: pic_size is the number of entries
   static char* allocate_entry(int size);	// allocation of memOops: size is words in addition to header
 

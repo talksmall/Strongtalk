@@ -50,7 +50,6 @@ struct nmFlags {
 //  4) mapping from block_closure_index to NonInlinedBlockScope offset
 //  5) debugging information
 //  6) dependency information
-
 class nmethod : public OopNCode {
  protected:
   uint16 _special_handler_call_offset;	// offset (in bytes) of call to special handler (*) (see comment below)

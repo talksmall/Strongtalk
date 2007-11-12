@@ -23,7 +23,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 // Primitives for blocks
 
-// The following 3 primitives are implemented in the interpreter
+// The following 9 primitives are implemented in the interpreter
 // but we still need the interface!
 
 //%prim

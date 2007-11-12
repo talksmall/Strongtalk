@@ -51,12 +51,49 @@ void DeltaCallCache::clearAll() {
   }
 }
 
+#ifdef JUNK
+
+/*
+extern "C" oop call_delta(void* method, oop receiver, int nofArgs, oop* args);	// see interpreter_asm.asm
+/*
+extern "C" oop _call_delta(void* method, oop receiver, int nofArgs, oop* args) {
+//  call_delta_func* __call_delta = (call_delta_func*)call_delta;
+  call_delta_func* __call_delta = (call_delta_func*)StubRoutines::call_delta();
+//  return __call_delta(method, receiver, nofArgs, args);
+  __asm {
+  //  mov         esi,esp
+    mov         eax,dword ptr [ebp+14h]
+    push        eax
+    mov         ecx,dword ptr [ebp+10h]
+    push        ecx
+    mov         edx,dword ptr [ebp+0Ch]
+    push        edx
+    mov         eax,dword ptr [ebp+8]
+    push        eax
+    call        dword ptr [ebp-4]
+    add         esp,10h
+   // cmp         esi,esp
+   // call        __chkesp (00615470)
+  }
+}*/
+/*
+extern "C" oop _call_delta(void* method, oop receiver, int nofArgs, oop* args) {
+ call_delta_func* __call_delta = (call_delta_func*)StubRoutines::call_delta();
+ return __call_delta(method, receiver, nofArgs, args);
+}*/
+
+//#define _call_delta call_delta
+
+#endif
 
 // Implementation of Delta
 
-extern "C" oop call_delta(void* method, oop receiver, int nofArgs, oop* args);	// see interpreter_asm.asm
+typedef oop (call_delta_func)(void* method, oop receiver, int nofArgs, oop* args);
 
 oop Delta::call_generic(DeltaCallCache* ic, oop receiver, oop selector, int nofArgs, oop* args) {
+  call_delta_func* _call_delta = (call_delta_func*)StubRoutines::call_delta();
+//  call_delta_func* _call_delta = call_delta;
+
   if (ic->match(receiver->klass(), symbolOop(selector))) {
     // use ic entry - but first make sure it's not a zombie nmethod
     jumpTableEntry* entry = ic->result().entry();
@@ -64,9 +101,9 @@ oop Delta::call_generic(DeltaCallCache* ic, oop receiver, oop selector, int nofA
       // is a zombie nmethod => do a new lookup
       LookupResult result = ic->lookup(receiver->klass(), symbolOop(selector));
       if (result.is_empty()) fatal("lookup failure - not treated");
-      return call_delta(result.value(), receiver, nofArgs, args);
+      return _call_delta(result.value(), receiver, nofArgs, args);
     }
-    return call_delta(ic->result().value(), receiver, nofArgs, args);
+    return _call_delta(ic->result().value(), receiver, nofArgs, args);
   }
 
   if (!selector->is_symbol())
@@ -74,7 +111,7 @@ oop Delta::call_generic(DeltaCallCache* ic, oop receiver, oop selector, int nofA
 
   LookupResult result = ic->lookup(receiver->klass(), symbolOop(selector));
   if (result.is_empty()) fatal("lookup failure - not treated");
-  return call_delta(result.value(), receiver, nofArgs, args);
+  return _call_delta(result.value(), receiver, nofArgs, args);
 }
 
 oop Delta::call(oop receiver, oop selector) {

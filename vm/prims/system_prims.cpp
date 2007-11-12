@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -145,8 +145,16 @@ PRIM_DECL_0(systemPrimitives::breakpoint) {
 
 PRIM_DECL_0(systemPrimitives::halt) {
   PROLOGUE_0("halt")
-  __asm hlt
-  return trueObj;
+
+  // i think this is obsolete, hlt is a priviligied instruciton, and Object>>halt uses
+  // Processor stopWithError: ProcessHaltError new.
+  // removed because inline assembly isn't portable -Marc 04/07
+
+  Unimplemented();
+  PRIM_NOT_IMPLEMENTED
+
+//  __asm hlt
+//  return trueObj;
 }
 
 static oop fake_time() {
@@ -156,7 +164,7 @@ static oop fake_time() {
 
 PRIM_DECL_0(systemPrimitives::userTime) {
   PROLOGUE_0("userTime")
-  if (UseTimers) { 
+  if (UseTimers) {
     os::updateTimes();
     return oopFactory::new_double(os::userTime());
   } else {
@@ -166,7 +174,7 @@ PRIM_DECL_0(systemPrimitives::userTime) {
 
 PRIM_DECL_0(systemPrimitives::systemTime) {
   PROLOGUE_0("systemTime")
-  if (UseTimers) { 
+  if (UseTimers) {
     os::updateTimes();
     return oopFactory::new_double(os::systemTime());
   } else {
@@ -176,7 +184,7 @@ PRIM_DECL_0(systemPrimitives::systemTime) {
 
 PRIM_DECL_0(systemPrimitives::elapsedTime) {
   PROLOGUE_0("elapsedTime")
-  if (UseTimers) { 
+  if (UseTimers) {
     return oopFactory::new_double(os::elapsedTime());
   } else {
     return fake_time();
@@ -314,7 +322,7 @@ PRIM_DECL_1(systemPrimitives::defWindowProc, oop resultProxy) {
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
   std->print_cr("Please use the new Platform DLLLookup system to retrieve DefWindowProcA");
   dll_func func = DLLs::lookup(oopFactory::new_symbol("user"), oopFactory::new_symbol("DefWindowProcA"));
-  proxyOop(resultProxy)->set_pointer(func);
+  proxyOop(resultProxy)->set_pointer((void*)func);
   return resultProxy;
 }
 
@@ -345,7 +353,7 @@ PRIM_DECL_1(systemPrimitives::characterFor, oop value) {
   // check value type
   if (!value->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
-  
+
   if ((unsigned int) smiOop(value)->value() < 256)
     // return the n+1'th element in asciiCharacter
     return Universe::asciiCharacters()->obj_at(smiOop(value)->value() + 1);
@@ -411,7 +419,7 @@ PRIM_DECL_1(systemPrimitives::notificationQueuePut, oop value) {
 
 PRIM_DECL_1(systemPrimitives::hadNearDeathExperience, oop value) {
   PROLOGUE_1("hadNearDeathExperience", value);
-  return (value->is_mem() && memOop(value)->mark()->is_near_death()) 
+  return (value->is_mem() && memOop(value)->mark()->is_near_death())
          ? trueObj : falseObj;
 }
 
@@ -443,7 +451,7 @@ PRIM_DECL_3(systemPrimitives::dll_lookup, oop name, oop library, oop result) {
 
   dll_func res = DLLs::lookup(symbolOop(name), (DLL*) proxyOop(library)->get_pointer());
   if (res) {
-    proxyOop(result)->set_pointer(res);
+    proxyOop(result)->set_pointer((void*)res);
     return result;
   } else {
     return markSymbol(vmSymbols::not_found());
@@ -570,7 +578,7 @@ PRIM_DECL_0(systemPrimitives::inlining_database_compile_next) {
     return falseObj;
   }
 
-  bool end_of_table; 
+  bool end_of_table;
   RScope* rs = InliningDatabase::select_and_remove(&end_of_table);
   if (rs) {
     VM_OptimizeRScope op(rs);
@@ -601,7 +609,7 @@ PRIM_DECL_1(systemPrimitives::inlining_database_mangle, oop name) {
   return oopFactory::new_byteArray(InliningDatabase::mangle_name(str));
 }
 
-  
+
 PRIM_DECL_1(systemPrimitives::inlining_database_demangle, oop name) {
   PROLOGUE_1("inlining_database_demangle", name);
   // Check type on argument
@@ -637,7 +645,7 @@ PRIM_DECL_2(systemPrimitives::inlining_database_add_entry, oop receiver_class, o
 PRIM_DECL_0(systemPrimitives::sliding_system_average) {
   PROLOGUE_0("system_sliding_average");
 
-  if (!UseSlidingSystemAverage) 
+  if (!UseSlidingSystemAverage)
     return markSymbol(vmSymbols::not_active());
 
   unsigned int* array = SlidingSystemAverage::update();
@@ -651,7 +659,7 @@ PRIM_DECL_0(systemPrimitives::sliding_system_average) {
 }
 
 // Enumeration primitives
-// - it is important to exclude contextOops since they should be invisible to the Smalltalk level. 
+// - it is important to exclude contextOops since they should be invisible to the Smalltalk level.
 
 class InstancesOfClosure: public ObjectClosure {
  public:
@@ -663,8 +671,8 @@ class InstancesOfClosure: public ObjectClosure {
 
   int                 limit;
   klassOop            target;
-  GrowableArray<oop>* result; 
- 
+  GrowableArray<oop>* result;
+
   void do_object(memOop obj) {
     if (obj->klass() == target) {
       if (result->length() < limit && !obj->is_context()) {
@@ -709,7 +717,7 @@ class HasReferenceClosure : public OopClosure {
   HasReferenceClosure(oop target) {
     this->target = target;
     this->result = false;
-  }  
+  }
   void do_oop(oop* o) {
     if (*o == target) result = true;
   }
@@ -726,8 +734,8 @@ class ReferencesToClosure: public ObjectClosure {
 
   int                 limit;
   oop                 target;
-  GrowableArray<oop>* result; 
- 
+  GrowableArray<oop>* result;
+
   bool has_reference(memOop obj) {
     HasReferenceClosure blk(target);
     obj->oop_iterate(&blk);
@@ -770,7 +778,7 @@ class HasInstanceReferenceClosure : public OopClosure {
   HasInstanceReferenceClosure(klassOop target) {
     this->target = target;
     this->result = false;
-  }  
+  }
   void do_oop(oop* o) {
     if ((*o)->klass() == target) result = true;
   }
@@ -787,8 +795,8 @@ class ReferencesToInstancesOfClosure: public ObjectClosure {
 
   int                 limit;
   klassOop            target;
-  GrowableArray<oop>* result; 
- 
+  GrowableArray<oop>* result;
+
   bool has_reference(memOop obj) {
     HasInstanceReferenceClosure blk(target);
     obj->oop_iterate(&blk);
@@ -835,8 +843,8 @@ class AllObjectsClosure: public ObjectClosure {
   }
 
   int                 limit;
-  GrowableArray<oop>* result; 
- 
+  GrowableArray<oop>* result;
+
   void do_object(memOop obj) {
     if (result->length() < limit && !obj->is_context()) {
       result->append(obj);
@@ -875,4 +883,17 @@ PRIM_DECL_0(systemPrimitives::flush_dead_code) {
   PROLOGUE_0("flush_dead_code");
   Universe::code->flushZombies();
   return trueObj;
+}
+
+PRIM_DECL_0(systemPrimitives::command_line_args) {
+  PROLOGUE_0("command_line_args");
+  int argc = os::argc();
+  char** argv = os::argv();
+  objArrayOop result = oopFactory::new_objArray(argc);
+  result->set_length(argc);
+  for (int index = 0; index < argc; index++) {
+    byteArrayOop arg = oopFactory::new_byteArray(argv[index]);
+    result->obj_at_put(index + 1, arg);
+  }
+  return result;
 }

@@ -128,6 +128,24 @@ verify
 	"%hack %todo: remove this when compiler bug fixed"
 	^nil!
 
+verify: message
+	"Evaluate the receiver, and generate an error if it does not return true.  This is different than
+	  Object>>#assert: in that 1) it is a boolean block message, and 2) it ALWAYS evaluates, whereas
+	  #assert: does not guarantee that it will evaluate the predicate.
+
+	  Use verify in situations where you must ensure that the test is performed, for example when there
+	  are side-effects that must take place, or if it is testing code that should always be performed.
+
+	  Note that this message is only valid for blocks that return boolean values."
+
+	"Note: we don't use self as the receiver for #error: below because it will currently
+		prevent the block from being optimized away by the inliner"
+	self value
+		ifFalse: [ BlockWithoutArguments[Object] error: 'Assertion failed: ', message ].
+
+	"%hack %todo: remove this when compiler bug fixed"
+	^nil!
+
 whileFalse ^<Object>
 
 	^self whileFalse: []!

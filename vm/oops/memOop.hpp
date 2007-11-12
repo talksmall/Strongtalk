@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -25,7 +25,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 // aren't immediates like smis)
 
 // Again (see oop.hpp), memOops are tagged (ST oops) but memOopDesc*s are
-// untagged C pointers.  
+// untagged C pointers.
 
 // should clean up order of member functions  -Urs
 
@@ -34,7 +34,7 @@ class memOopDesc: public oopDesc {
   // instance variable
   // markOop _mark;			// see comment in oop.hpp
   klassOop _klass_field;		// the receiver's class
-  
+
  public:
   // returns the header size of a memOop
   static int header_size()		{ return sizeof(memOopDesc)/oopSize; }
@@ -48,7 +48,7 @@ class memOopDesc: public oopDesc {
 
   // conversion from memOop to memOopDesc*
   memOopDesc* addr() const		{ return (memOopDesc*) (int(this) - Mem_Tag); }
-  
+
   // space operations, is_old/new work w/o conversion to memOopDesc*
   // since oop > pointer (Mem_Tag >= 0)!
   bool is_old() const			{ return (char*)this >= Universe::old_gen.low_boundary;  }
@@ -78,16 +78,16 @@ class memOopDesc: public oopDesc {
   }
 
   // mark operations
-  
+
   // use this after a copy to get a new mark
-  void init_mark() { 
+  void init_mark() {
     set_mark(markOopDesc::tagged_prototype());
   }
   void init_untagged_contents_mark() {
     set_mark(markOopDesc::untagged_prototype());
   }
 
-  void mark_as_dying() { 
+  void mark_as_dying() {
     set_mark(mark()->set_near_death());
   }
 
@@ -147,9 +147,10 @@ class memOopDesc: public oopDesc {
     set_mark(p);
   }
   memOop forwardee()			{ return memOop(mark()); }
-  
+
   // marking operations
-  bool is_gc_marked()			{ return !mark()->has_sentinel(); } // Changed from mark()->is_smi(), Lars
+  bool is_gc_marked()     { return !(mark()->is_mark() && mark()->has_sentinel()); } // Changed from mark()->is_smi(), Lars
+  //bool is_gc_marked()			{ return !mark()->has_sentinel(); } // Changed from mark()->is_smi(), Lars
 
   // GC operations (see discussion in universe_more.cpp for rational)
   void gc_store_size();			// Store object size in age field and remembered set
@@ -157,22 +158,22 @@ class memOopDesc: public oopDesc {
 
   // accessors
   oop* oops(int which = 0)		{ return &((oop*) addr())[which]; }
-  
+
   oop raw_at(int which)			{ return *oops(which); }
   inline void raw_at_put(int which, oop contents, bool cs = true);
 
-  // accessing instance variables 
+  // accessing instance variables
   bool is_within_instVar_bounds(int index);
   oop instVarAt(int index);
   oop instVarAtPut(int index, oop value);
-  
+
   // iterators
-  void oop_iterate(OopClosure* blk);   
+  void oop_iterate(OopClosure* blk);
   void layout_iterate(ObjectLayoutClosure* blk);
 
   // Returns the oop size of this object
   int size() const;
-  
+
   // printing operation
   void print_id_on(outputStream* st);
   void print_on(outputStream* st);
@@ -181,12 +182,12 @@ class memOopDesc: public oopDesc {
   void bootstrap_object(bootstrap* st);
   void bootstrap_header(bootstrap* st);
   void bootstrap_body(bootstrap* st, int h_size);
-  
-  friend memOopKlass;
+
+  friend class memOopKlass;
 };
 
 inline memOop as_memOop(void* p)
-{ 
+{
     assert((int(p) & Tag_Mask) == 0, "not an aligned C pointer");
     return memOop(int(p) + Mem_Tag);
 }

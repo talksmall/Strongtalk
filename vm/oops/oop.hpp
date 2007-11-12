@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -46,13 +46,13 @@ class oopDesc {
  public:
   // Called during bootstrapping for computing vtbl values see (create_*Klass)
   oopDesc();
-  
+
   // tag checks
   int tag() const 		{ return maskBits(int(this), Tag_Mask); }
   bool is_smi() const   { return tag() == Int_Tag; }
   bool is_mem() const   { return tag() == Mem_Tag; }
   bool is_mark() const  { return tag() == Mark_Tag; }
-    
+
   // tag dispatchers (inlined in oop.inline.h)
   inline Klass*   blueprint() const;
   inline klassOop klass() const;
@@ -60,14 +60,14 @@ class oopDesc {
   inline smi identity_hash();
 
   // memory management
-  inline oop scavenge();      
+  inline oop scavenge();
   inline oop relocate();
 
   // generation testers (inlined in oop.inline.h)
   inline bool is_old() const;
   inline bool is_new() const;
   inline generation* my_generation();
-  
+
   // type test operations (inlined in oop.inline.h)
   inline bool is_double()           const;
   inline bool is_block()            const;
@@ -93,17 +93,17 @@ class oopDesc {
   // Primitives
   inline oop primitive_allocate();
   inline oop primitive_allocate_size(int size);
- 
+
   inline oop shallow_copy(bool tenured);
- 
+
   inline bool verify();
 
   // FIX LATER
   oop gc_mark()   { return this; }
-  oop gc_unmark() { return this; } 
+  oop gc_unmark() { return this; }
 
   // printing functions for VM debugging
-  void print_on(outputStream* st);        // First level print 
+  void print_on(outputStream* st);        // First level print
   void print_value_on(outputStream* st);  // Prints oop as <ClassName>(<objectID>).
 
   // printing on default output stream
@@ -114,5 +114,5 @@ class oopDesc {
   char* print_string();
   char* print_value_string();
 
-  friend memOopKlass;
+  friend class memOopKlass;
 };

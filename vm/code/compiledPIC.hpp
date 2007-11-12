@@ -78,6 +78,7 @@ class PIC {
 
   // Deallocates this pic from the pic heap
   void operator delete (void* p);
+  void operator delete (void* p, int) {};
 
   // Allocates and returns a new ready to execute pic.
   static PIC*	allocate(CompiledIC* ic, klassOop klass, LookupResult result);

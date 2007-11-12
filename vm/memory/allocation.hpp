@@ -278,7 +278,7 @@ class ResourceObj {
     return on_C_heap ? (char*) malloc(size) : allocateResource(size);
   }
 
-  void  operator delete(void* p) {} // use explicit free() to deallocate heap-allocated objects
+  void  operator delete(void* p, int) {} // use explicit free() to deallocate heap-allocated objects
 };
 
 // Base class for objects allocated in the resource area

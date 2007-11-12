@@ -24,14 +24,15 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_precompiled.incl"
 # include "incls/_bootstrap.cpp.incl"
 
-#include <io.h>
+//#include <io.h>
 
 bootstrap::bootstrap(char* name) {
   file_name = name;
   _has_error = false;
   open_file();
   if (!has_error()) {
-    initialize_tables(file_size > 0 ? (file_size / 32) : (10 * K));
+//    initialize_tables(file_size > 0 ? (file_size / 32) : (10 * K));
+    initialize_tables(64 * K);
     parse_file();
     close_file();
     Universe  ::cleanup_after_bootstrap();
@@ -77,8 +78,8 @@ void bootstrap::open_file() {
     lprintf("\nCould not open file (%s) for reading!\n", file_name);
     exit(-1);
   }
-  int no    = _fileno(stream);
-  file_size = _filelength(no);
+//  int no    = _fileno(stream);
+//  file_size = _filelength(no);
 }
 
 char bootstrap::get_char() {
@@ -142,6 +143,12 @@ void bootstrap::parse_file() {
   contextKlassObj                        = klassOop(get_object());
   Universe::_asciiCharacters             = objArrayOop(get_object());
   Universe::_vframeKlassObj              = HasActivationClass ? klassOop(get_object()) : klassOop(nilObj);
+
+  klassOop platform_klass = klassOop(Universe::find_global(os::platform_class_name()));
+  associationOop assoc = Universe::find_global_association("Platform");
+  if (platform_klass != NULL && assoc != NULL) {
+      assoc->set_value(platform_klass);
+  }
 }
 
 void bootstrap::insert_symbol(memOop obj) {

@@ -30,22 +30,26 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 // The INIT_DO macro defines the initialization sequence; you need not
 // add a corresponding entry to EXIT_DO if you don't need finalization.
 
-# define INIT_DO(template)		\
-  template(ostream_init)		\
-  template(os_init)		    	\
-  template(prim_init)			\
-  template(eventlog_init)		\
-  template(integerOps_init)		\
-  template(bytecodes_init)		\
-  template(stubRoutines_init)		\
-  template(interpreter_init)		\
-  template(dispatchTable_init)		\
-  template(disclaimer_init)		\
-  template(universe_init)		\
-  template(costModel_init)		\
-  template(sweeper_init)		\
-  template(fprofiler_init)		\
-  template(systemAverage_init)		\
+# define INIT_DO(template)				\
+  template(ostream_init)				\
+  template(os_init)					\
+  template(prim_init)					\
+  template(eventlog_init)				\
+  template(integerOps_init)				\
+  template(bytecodes_init)				\
+ /* template(stubRoutines_init)	*/			\
+  template(generatedPrimitives_init_before_interpreter)	\
+  template(interpreter_init)				\
+  template(dispatchTable_init)				\
+  template(disclaimer_init)				\
+  template(universe_init)				\
+  template(costModel_init)				\
+  template(sweeper_init)				\
+  template(fprofiler_init)				\
+  template(systemAverage_init)				\
+  template(generatedPrimitives_init_after_interpreter)	\
+
+  
 
 # define COMPILER_INIT_DO(template)	\
   template(compiler_init)		\

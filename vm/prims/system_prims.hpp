@@ -523,4 +523,11 @@ class systemPrimitives : AllStatic {
   //              name   = 'systemPrimitives::flush_dead_code' }
   //%
   static PRIM_DECL_0(flush_dead_code);
+
+  //%prim
+  // <NoReceiver> primitiveCommandLineArgs ^<Array[String]> =
+  //   Internal { doc    = 'Retrieves the command line arguments as an array of strings.'
+  //              name   = 'systemPrimitives::command_line_args' }
+  //%
+  static PRIM_DECL_0(command_line_args);
 };

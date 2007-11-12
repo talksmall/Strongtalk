@@ -114,27 +114,6 @@ InterpretedPrim_Cache* CodeIterator::prim_cache() {
   return (InterpretedPrim_Cache*) current;
 }
 
-extern "C" void deoptimized_return_from_send_without_receiver();
-extern "C" void deoptimized_return_from_send_without_receiver_restore();
-
-extern "C" void deoptimized_return_from_send_without_receiver_pop();
-extern "C" void deoptimized_return_from_send_without_receiver_pop_restore();
-
-extern "C" void deoptimized_return_from_send_with_receiver();
-extern "C" void deoptimized_return_from_send_with_receiver_restore();
-
-extern "C" void deoptimized_return_from_send_with_receiver_pop();
-extern "C" void deoptimized_return_from_send_with_receiver_pop_restore();
-
-extern "C" void deoptimized_return_from_primitive_call_without_failure_block();
-extern "C" void deoptimized_return_from_primitive_call_without_failure_block_restore();
-
-extern "C" void deoptimized_return_from_primitive_call_with_failure_block();
-extern "C" void deoptimized_return_from_primitive_call_with_failure_block_restore();
-
-extern "C" void deoptimized_return_from_dll_call();
-extern "C" void deoptimized_return_from_dll_call_restore();
-
 char* CodeIterator::interpreter_return_point(bool restore_value) const {
   // The return is only valid if we are in a send/primtive call/dll call.
 
@@ -146,19 +125,19 @@ char* CodeIterator::interpreter_return_point(bool restore_value) const {
       case Bytecodes::recv_n_args:
         return pop_result()
 	     ? (restore_value
-	        ? (char*) deoptimized_return_from_send_with_receiver_pop_restore
-		: (char*) deoptimized_return_from_send_with_receiver_pop)
+	        ? Interpreter::deoptimized_return_from_send_with_receiver_pop_restore()
+		: Interpreter::deoptimized_return_from_send_with_receiver_pop())
              : (restore_value
-                ? (char*) deoptimized_return_from_send_with_receiver_restore
-		: (char*) deoptimized_return_from_send_with_receiver);
+                ? Interpreter::deoptimized_return_from_send_with_receiver_restore()
+		: Interpreter::deoptimized_return_from_send_with_receiver());
       case Bytecodes::args_only:
         return pop_result()
 	     ? (restore_value
-	        ? (char*) deoptimized_return_from_send_without_receiver_pop_restore
-		: (char*) deoptimized_return_from_send_without_receiver_pop)
+	        ? Interpreter::deoptimized_return_from_send_without_receiver_pop_restore()
+		: Interpreter::deoptimized_return_from_send_without_receiver_pop())
              : (restore_value
-                ? (char*) deoptimized_return_from_send_without_receiver_restore
-		: (char*) deoptimized_return_from_send_without_receiver);
+                ? Interpreter::deoptimized_return_from_send_without_receiver_restore()
+		: Interpreter::deoptimized_return_from_send_without_receiver());
       default: ShouldNotReachHere();
     }
   }
@@ -170,23 +149,23 @@ char* CodeIterator::interpreter_return_point(bool restore_value) const {
       case Bytecodes::prim_call_self:
       case Bytecodes::prim_call_self_lookup:
 	return restore_value
-             ? (char*) deoptimized_return_from_primitive_call_without_failure_block_restore
-             : (char*) deoptimized_return_from_primitive_call_without_failure_block;
+             ? Interpreter::deoptimized_return_from_primitive_call_without_failure_block_restore()
+             : Interpreter::deoptimized_return_from_primitive_call_without_failure_block();
       case Bytecodes::prim_call_failure:
       case Bytecodes::prim_call_failure_lookup:
       case Bytecodes::prim_call_self_failure:
       case Bytecodes::prim_call_self_failure_lookup:
 	return  restore_value
-             ? (char*) deoptimized_return_from_primitive_call_with_failure_block_restore
-             : (char*) deoptimized_return_from_primitive_call_with_failure_block;
+             ? Interpreter::deoptimized_return_from_primitive_call_with_failure_block_restore()
+             : Interpreter::deoptimized_return_from_primitive_call_with_failure_block();
       default: ShouldNotReachHere();
     }
   }
 
   if (is_dll_call()) {
     return restore_value
-         ? (char*) deoptimized_return_from_dll_call_restore
-         : (char*) deoptimized_return_from_dll_call;
+         ? Interpreter::deoptimized_return_from_dll_call_restore()
+         : Interpreter::deoptimized_return_from_dll_call();
   }
 
   ShouldNotReachHere();

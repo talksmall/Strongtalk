@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -51,13 +51,13 @@ class methodOopDesc : public memOopDesc {
   static int counters_byte_offset()		{ return int(&(((methodOopDesc*)NULL)->_counters)) - Mem_Tag; }
   static int codes_byte_offset()		{ return sizeof(methodOopDesc) - Mem_Tag; }
 
-  smiOop size_and_flags() const { return addr()->_size_and_flags; }	
+  smiOop size_and_flags() const { return addr()->_size_and_flags; }
   void set_size_and_flags(int size, int nofArgs, int flags) {
     addr()->_size_and_flags = (smiOop)
       ((flags << method_flags_mask_bitno) + (nofArgs << method_args_mask_bitno) + (size << method_size_mask_bitno));
   }
 
-  int flags() const { 
+  int flags() const {
     return get_unsigned_bitfield((int)size_and_flags(), method_flags_mask_bitno, method_flags_mask_size);
   }
 
@@ -124,7 +124,7 @@ class methodOopDesc : public memOopDesc {
   void set_invocation_count(int value)	{ set_counters(value, sharing_count()); }
 
   void decay_invocation_count(double decay_factor);
-  
+
   // Sharing counter (number of callers)
   int sharing_count() const		{ return get_unsigned_bitfield(counters(), _sharing_count_offset, _sharing_count_width); }
   void set_sharing_count(int value)	{ set_counters(invocation_count(), value); }
@@ -134,7 +134,7 @@ class methodOopDesc : public memOopDesc {
   bool was_never_executed();		// was method never executed? (count = 0, empty inline caches)
 
   int size_of_codes() const {		// size of byte codes in words
-    return get_unsigned_bitfield((int) size_and_flags(), method_size_mask_bitno, method_size_mask_size); 
+    return get_unsigned_bitfield((int) size_and_flags(), method_size_mask_bitno, method_size_mask_size);
   }
 
   void set_size_of_code(int size) {
@@ -150,7 +150,7 @@ class methodOopDesc : public memOopDesc {
      return codes() + size_of_codes() * oopSize;
   }
 
-  // find methodOop given an hcode pointer 
+  // find methodOop given an hcode pointer
   static methodOop methodOop_from_hcode(u_char* hp);
 
   u_char byte_at(int offset) const		{ return *codes(offset); }
@@ -227,7 +227,8 @@ class methodOopDesc : public memOopDesc {
     never_inline  = 0,
     normal_inline = 1,
     always_inline = 2,
-  } method_inlining_info() const;
+  };
+  Method_Inlining_Info method_inlining_info() const;
 
   void set_method_inlining_info(Method_Inlining_Info info);
 
@@ -236,10 +237,11 @@ class methodOopDesc : public memOopDesc {
     expects_self	= 1, 			// 'copying' block
     expects_parameter	= 2,			// 'copying' block
     expects_context	= 3			// 'full' block
-  } block_info() const;
+  };
+  Block_Info block_info() const;
 
   // Tells if an activation of this method has a context stored as temp 0.
-  bool activation_has_context() const { 
+  bool activation_has_context() const {
     return allocatesInterpretedContext()
         || (is_blockMethod() && expectsContext());
   }
@@ -260,7 +262,7 @@ class methodOopDesc : public memOopDesc {
   bool has_instVar_access() const		{ return true; } // for now - conservative - FIX THIS
   bool has_classVar_access() const		{ return true; } // for now - conservative - FIX THIS
   bool has_inlineCache() const			{ return true; } // for now - conservative - FIX THIS
-  bool is_customized() const		        { return isSet(flags(), isCustomizedFlag); }			
+  bool is_customized() const		        { return isSet(flags(), isCustomizedFlag); }
   bool should_be_customized() const             { return has_instVar_access() || has_classVar_access() || has_inlineCache(); }
 
   // Returns a deep copy of the methodOop
@@ -283,7 +285,7 @@ class methodOopDesc : public memOopDesc {
   // Cleanup all inline caches
   void cleanup_inline_caches();
 
-  // Computes the estimated cost of a method by summing 
+  // Computes the estimated cost of a method by summing
   // cost of all byte codes (see code_cost in methodOop.cpp).
   int estimated_inline_cost(klassOop receiverKlass);
 
@@ -330,5 +332,5 @@ class methodOopDesc : public memOopDesc {
   objArrayOop referenced_global_names() const;
   objArrayOop senders() const;
 
-  friend methodKlass;
+  friend class methodKlass;
 };

@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -36,11 +36,11 @@ class     NopNode;			// generates no code (place holders etc)
 class     CommentNode;			// for compiler debugging
 class     FixedCodeNode;		// fixed code pattern for compiler debugging, instrumentation, etc.
 class     LoopHeaderNode;		// loop header (contains type tests moved out of loop)
-    
+
 class   NonTrivialNode;			// non-trivial node, may have defs/uses and generate code
 
 class     PrologueNode;			// entire method prologue
-  
+
 class     LoadNode;			// abstract
 class       LoadIntNode;		// load vm constant
 class       LoadOffsetNode;		// load slot of some object
@@ -52,7 +52,7 @@ class       StoreOffsetNode;		// store into slot of object
 class       StoreUplevelNode;		// store up-level accessed variable
 
 class     AbstractReturnNode;
-class       ReturnNode;			// method return 
+class       ReturnNode;			// method return
 class       NLRSetupNode;		// setup NLR leaving this compiled method
 class       InlinedReturnNode;		// inlined method return (old backend only)
 class       NLRContinuationNode;	// continue NLR going through this method
@@ -94,7 +94,7 @@ void initNodes();			// to be called before each compilation
 class PRegMapping;
 
 class BasicNode: public PrintableResourceObj {
- protected:	
+ protected:
   BB*		_bb;			// basic block to which I belong
   int16		_id;			// unique node id for debugging
   int16		_num;			// node number within basic block
@@ -102,7 +102,7 @@ class BasicNode: public PrintableResourceObj {
   int16		_bci;			// bci within that scope
   PRegMapping*	_mapping;		// the mapping at that node, if any (will be modified during code generation)
 
- public:	
+ public:
   Label		label;	    	    	// for jumps to this node -- SHOULD BE MOVED TO BB -- fix this
   bool		dontEliminate;	    	// for special cases: must not elim. this node
   bool		deleted;		// node has been deleted
@@ -159,7 +159,7 @@ class BasicNode: public PrintableResourceObj {
   void genPcDesc();
  public:
   // for splitting: rough estimate of space cost of node (in bytes)
-  virtual int  cost() const 			{ return oopSize; }	
+  virtual int  cost() const 			{ return oopSize; }
   virtual bool hasDest() const 			{ return false; }
   virtual bool canCopyPropagate() const 	{ return false; }
   	// canCopyPropagate: can node replace a use with copy-propagated PReg?
@@ -167,7 +167,7 @@ class BasicNode: public PrintableResourceObj {
           bool canCopyPropagate(Node* fromNode) const; // can copy-propagate from fromNode to receiver?
   virtual bool copyPropagate(BB* bb, Use* u, PReg* d, bool replace = false) = 0;
   virtual bool canCopyPropagateOop() const 	{ return false; }
-  	// canCopyPropagateOop: can node replace a use with a copy-propagated 
+  	// canCopyPropagateOop: can node replace a use with a copy-propagated
     	// oop?  if true, must handle ConstPRegs; implies canCopyPropagate
   virtual bool isAssignmentLike() const 	{ return false; }
     	// isAssignmentLike: node copies src to dest (implies hasSrc/Dest)
@@ -196,7 +196,7 @@ class BasicNode: public PrintableResourceObj {
   virtual Node* uncommonSuccessor() const = 0;	// code path taken only in uncommon situations
   void removeUpToMerge();			// remove all nodes from this to next merge
   Node* copy(PReg* from, PReg* to) const;	// make a copy, substituting 'to' wherever 'from' is used
-  
+
   // for type test / loop optimization
   // If a node includes one or more type tests of its argument(s), it should return true for doesTypeTests
   // and implement the other four methods in this group.  It can then benefit from type test optimizations
@@ -271,7 +271,7 @@ class Node: public BasicNode {
   virtual void removePrev(Node* n);
 
  public:
-  virtual void removeNext(Node* n);			// cut the next link between this and n 
+  virtual void removeNext(Node* n);			// cut the next link between this and n
   Node* append(Node* p)					{ setNext(p);  p->setPrev(this); return p; }
   Node* append1(Node* p)				{ setNext1(p); p->setPrev(this); return p; }
   Node* append(int i, Node* p)				{ setNext(i, p);  p->setPrev(this); return p; }
@@ -458,7 +458,7 @@ class StoreNode: public NonTrivialNode {
   bool canCopyPropagateOop() const 	{ return true; }
   bool hasSrc() const			{ return true; }
   virtual bool needsStoreCheck() const	{ return false; }
-  virtual char* action() const		= NULL;		// for debugging messages
+  virtual char* action() const		= 0;		// for debugging messages
   virtual void setStoreCheck(bool ncs)	{}
   void assert_preg_type(PReg* r, GrowableArray<klassOop>* klasses, LoopHeaderNode* n);
   void makeUses(BB* bb);
@@ -541,7 +541,7 @@ class StoreUplevelNode: public StoreNode {
 
   friend class NodeFactory;
 };
-  
+
 
 class AssignNode : public StoreNode {
   // _src may be a ConstPReg*
@@ -559,7 +559,7 @@ class AssignNode : public StoreNode {
   bool  shouldCopyWhenSplitting() const { return true; }
   bool	canBeEliminated() const;
   oop	constantSrc() const;
-  char* action() const			{ return _dest->isSAPReg() ? 
+  char* action() const			{ return _dest->isSAPReg() ?
 						  "passed as an argument" : "assigned to a local"; }
   Node*	clone(PReg* from, PReg* to) const;
   void	makeUses(BB* bb);
@@ -575,7 +575,7 @@ class AssignNode : public StoreNode {
 
   friend class NodeFactory;
 };
-  
+
 
 class AbstractReturnNode: public NonTrivialNode {
  protected:
@@ -755,7 +755,7 @@ class MergeNode : public AbstractMergeNode {
  protected:
   MergeNode(int bci);
   MergeNode(Node* prev1, Node* prev2);
-  
+
  public:
   bool	isLoopStart;			// does this node start a loop?
   bool	isLoopEnd;			// does this node end a loop? (i.e., first node after loop)
@@ -773,7 +773,7 @@ class MergeNode : public AbstractMergeNode {
 
   friend class NodeFactory;
 };
-    
+
 
 class ArithNode : public NonTrivialNode {	// abstract
   // NB: ArithNodes are not used for tagged int arithmetic -- see TArithNode
@@ -848,7 +848,7 @@ class FloatArithRRNode : public ArithRRNode {  // for untagged float operations
 };
 
 
-class FloatUnaryArithNode : public ArithNode {	
+class FloatUnaryArithNode : public ArithNode {
   // unary untagged float operation; src is an untagged float, dest is either another
   // untagged float or a floatOop
   FloatUnaryArithNode(ArithOpCode op, PReg* src, PReg* dst) : ArithNode(op, src, dst) {}
@@ -891,7 +891,7 @@ class ArithRCNode : public ArithNode {  // reg op const => reg
 class AbstractBranchNode : public NonTrivialNode {
   // next() is the fall-through case, next1() the taken branch
  public:
-  virtual bool	canFail() const = NULL;		// does node have a failure branch?
+  virtual bool	canFail() const = 0;		// does node have a failure branch?
   virtual Node*	failureBranch() const		{ return next1(); }
   bool		endsBB() const 			{ return true; }
  protected:
@@ -926,7 +926,7 @@ class AbstractBranchNode : public NonTrivialNode {
   bool isSuccessor(const Node* n) const;
 };
 
-class TArithRRNode : public AbstractBranchNode {  
+class TArithRRNode : public AbstractBranchNode {
   // tagged arithmetic operation; next() is sucess case, next1()
   // is failure (leaving ORed operands in Temp1 for tag test)
  protected:
@@ -981,7 +981,7 @@ class CallNode : public AbstractBranchNode {
   // dest() is the return value
  protected:
   CallNode(MergeNode* n, GrowableArray<PReg*>* args, GrowableArray<PReg*>* exprs);
-  
+
  public:
   GrowableArray<PReg*>*	exprStack;   	// current expr. stack for debugging info (NULL if not needed)
   GrowableArray<Use*>*	argUses;	// uses for args and receiver
@@ -991,12 +991,12 @@ class CallNode : public AbstractBranchNode {
   GrowableArray<Def*>*	uplevelDefs;	// defs for uplevel-written names
   GrowableArray<PReg*>*	args;		// args including receiver (at index 0, followed by first arg), or NULL
   int			nblocks;	// number of possibly live blocks at this point (for uplevel access computation)
-  	
+
   bool hasDest() const  	    	{ return true; }
   bool isCallNode() const  	    	{ return true; }
   bool canChangeDest() const		{ return false; }
   bool canBeEliminated() const 		{ return false; }
-  virtual bool canInvokeDelta() const = NULL;	// can call invoke Delta code?
+  virtual bool canInvokeDelta() const = 0;	// can call invoke Delta code?
   MergeNode* nlrTestPoint() const;
   Node* likelySuccessor() const;
   Node* uncommonSuccessor() const;
@@ -1181,7 +1181,7 @@ class BlockCreateNode : public PrimNode {
   // src is NULL (but non-NULL for subclass instances)
  protected:
   PReg*				_context;	// context or parameter/self that's copied into the block (or NULL)
-  Use*				_contextUse;	// use of _context 
+  Use*				_contextUse;	// use of _context
 
   void materialize();				// generates code to materialize the block
   void copyIntoContexts(Register val, Register t1, Register t2);    // helper for above
@@ -1196,7 +1196,7 @@ class BlockCreateNode : public PrimNode {
   bool	isMemoized() const		{ return block()->isMemoized(); }
   bool	hasConstantSrc() const 		{ return false; }
   bool	hasSrc() const 			{ return false; }
-  int	cost() const 			{ return 2*oopSize; }    // hope it's memoized 
+  int	cost() const 			{ return 2*oopSize; }    // hope it's memoized
   Node*	clone(PReg* from, PReg* to) const;
   bool	canBeEliminated() const 	{ return !dontEliminate; }
   void	makeUses(BB* bb);
@@ -1307,7 +1307,7 @@ class ContextInitNode: public NonTrivialNode {
   bool		hasNoContext() const			{ return _src == NULL; }
 
   void		initialize(int no, Expr* expr);		// to copy something into the context right after creation
-  int		positionOfContextTemp(int i) const;	// position of ith context temp in compiled context 
+  int		positionOfContextTemp(int i) const;	// position of ith context temp in compiled context
   Node*		clone(PReg* from, PReg* to) const;
   void		makeUses(BB* bb);
   void		removeUses(BB* bb);
@@ -1330,7 +1330,7 @@ class ContextZapNode: public NonTrivialNode {
 // placeholder for context zap code; zapping is only needed if the node isActive().
  private:
   ContextZapNode(PReg* context)			{ _src = context; assert(_src, "src is NULL"); }
-  
+
  public:
   bool	isActive() const			{ return scope()->needsContextZapping(); }
   bool	isContextZapNode() const		{ return true; }
@@ -1407,7 +1407,7 @@ class BranchNode : public AbstractBranchNode {
   void		gen();
   void		apply(NodeVisitor* v)		{ v->aBranchNode(this); }
   char*		print_string(char* buf, bool printAddr = true) const;
-  void		verify()			{ AbstractBranchNode::verify(false); }  
+  void		verify()			{ AbstractBranchNode::verify(false); }
 
   friend class NodeFactory;
 };
@@ -1485,7 +1485,7 @@ class AbstractArrayAtNode : public AbstractBranchNode {
  public:
   bool	hasSrc() const 			{ return true; }
   bool	hasDest() const 		{ return _dest != NULL; }
-  bool  canFail() const = NULL;
+  bool  canFail() const = 0;
   int	cost() const	     		{ return 20 + (_intArg ? 0 : 12); } // fix this
   bool	canCopyPropagate() const	{ return true; }
   int   sizeOffset() const		{ return _sizeOffset; }
@@ -1570,7 +1570,7 @@ class AbstractArrayAtPutNode : public AbstractArrayAtNode {
 
   friend class NodeFactory;
 };
- 
+
 
 class ArrayAtPutNode : public AbstractArrayAtPutNode {
  public:
@@ -1684,14 +1684,14 @@ class InlinedPrimitiveNode : public AbstractBranchNode {
   void		apply(NodeVisitor* v)		{ v->anInlinedPrimitiveNode(this); }
   void		verify() const;
   char*		print_string(char* buf, bool printAddr = true) const;
-  
+
   friend class NodeFactory;
 };
 
 
 class UncommonNode : public NonTrivialNode {
   GrowableArray<PReg*>* exprStack;
- 
+
  protected:
   UncommonNode(GrowableArray<PReg*>* e, int bci);
 
@@ -1751,7 +1751,7 @@ class NopNode : public TrivialNode {
 class CommentNode : public TrivialNode {
  protected:
   CommentNode(char* s);
-  
+
  public:
   char*	comment;
   bool	isCommentNode() const		{ return true; }
@@ -1776,7 +1776,7 @@ class NodeFactory : AllStatic {
   static LoadOffsetNode*	new_LoadOffsetNode	(PReg* dst, PReg* base, int offs, bool isArray);
   static LoadUplevelNode*	new_LoadUplevelNode	(PReg* dst, PReg* context0, int nofLevels, int offset, symbolOop name);
   static LoadIntNode*		new_LoadIntNode		(PReg* dst, int value);
-  
+
   static StoreOffsetNode*	new_StoreOffsetNode	(PReg* src, PReg* base, int offs, bool needStoreCheck);
   static StoreUplevelNode*	new_StoreUplevelNode	(PReg* src, PReg* context0, int nofLevels, int offset, symbolOop name, bool needStoreCheck);
   static AssignNode*		new_AssignNode		(PReg* src, PReg* dst);
@@ -1797,7 +1797,7 @@ class NodeFactory : AllStatic {
   static MergeNode*		new_MergeNode		(int bci);
 
   static SendNode*		new_SendNode		(LookupKey* key, MergeNode* nlrTestPoint,
-  							 GrowableArray<PReg*>* args, GrowableArray<PReg*>* expr_stack, 
+  							 GrowableArray<PReg*>* args, GrowableArray<PReg*>* expr_stack,
 							 bool superSend, SendInfo* info);
   static PrimNode*		new_PrimNode		(primitive_desc* pdesc, MergeNode* nlrTestPoint,
   							 GrowableArray<PReg*>* args, GrowableArray<PReg*>* expr_stack);
@@ -1806,7 +1806,7 @@ class NodeFactory : AllStatic {
 
   static InterruptCheckNode*	new_InterruptCheckNode	(GrowableArray<PReg*>* expr_stack);
   static LoopHeaderNode*	new_LoopHeaderNode	();
-  
+
   static BlockCreateNode*	new_BlockCreateNode	(BlockPReg* b, GrowableArray<PReg*>* expr_stack);
   static BlockMaterializeNode*	new_BlockMaterializeNode(BlockPReg* b, GrowableArray<PReg*>* expr_stack);
 
@@ -1826,7 +1826,7 @@ class NodeFactory : AllStatic {
   static ArrayAtPutNode*	new_ArrayAtPutNode	(ArrayAtPutNode::AccessType access_type, PReg* array, PReg* index, bool smi_index,
 							 PReg* element, bool smi_element, PReg* result, PReg* error, int data_offset, int length_offset,
 							 bool needs_store_check);
-  
+
   static InlinedPrimitiveNode*  new_InlinedPrimitiveNode(InlinedPrimitiveNode::Operation op, PReg* result, PReg* error = NULL,
                                                          PReg* recv = NULL,
                                                          PReg* arg1 = NULL, bool arg1_is_smi = false,

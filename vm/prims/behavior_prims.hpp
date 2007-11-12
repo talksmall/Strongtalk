@@ -158,6 +158,14 @@ class behaviorPrimitives : AllStatic {
   static PRIM_DECL_2(is_class_of, oop receiver, oop obj);
 };
 
+class behaviorPrimitivesGenerator : StackObj {
+
+public:
+  behaviorPrimitivesGenerator(MacroAssembler* masm);
+  
+  char* generate_primitiveNew(int i);
+};
+
 //%prim
 // <Behavior> primitiveNew0 ^<Object> = 
 //   Internal { flags = #(Internal Allocate LastDeltaFrameNotNeeded)

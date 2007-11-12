@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -38,11 +38,11 @@ methodOop LookupResult::method() const {
 methodOop LookupResult::method_or_null() const {
   if (is_empty())  return NULL;
   if (is_method()) return methodOop(_result);
-  return get_nmethod()->method();  
+  return get_nmethod()->method();
 }
 
 jumpTableEntry* LookupResult::entry() const {
-  assert(!is_empty(), "cannot be empty");  
+  assert(!is_empty(), "cannot be empty");
   return is_entry() ? (jumpTableEntry*) _result : NULL;
 }
 
@@ -53,7 +53,7 @@ nmethod* LookupResult::get_nmethod() const {
 
 bool LookupResult::matches(methodOop m) const {
   if (is_empty()) return false;
-  return is_method() ? method() == m : false; 
+  return is_method() ? method() == m : false;
 }
 
 bool LookupResult::matches(nmethod* nm) const {
@@ -78,7 +78,7 @@ void LookupResult::print_short_on(outputStream* st) const {
   }
 }
 
-class cacheElement : ValueObj {
+class cacheElement { // : ValueObj {
  public:
   LookupKey    key;
   LookupResult result;
@@ -87,6 +87,10 @@ class cacheElement : ValueObj {
   cacheElement() : key(), result() {}
 
   void verify() {
+    assert(sizeof(cacheElement) == 16, 		"checking structure layout");
+    assert((int)&this->key-(int)this == 0,  	"checking structure layout");
+    assert((int)&this->result-(int)this == 8,  	"checking structure layout");
+
     if (key.klass() || key.selector_or_method()) {
       if (result.is_empty()) {
          std->print("Verify failed in lookupCache: ");
@@ -97,7 +101,7 @@ class cacheElement : ValueObj {
          key.selector_or_method()->print_value_on(std);
          std->print(")");
          std->cr();
-	 std->print("  result = ("); 
+	 std->print("  result = (");
          result.print_on(std);
          std->print_cr(")");
 	 fatal("lookupCache verify failed");
@@ -157,7 +161,7 @@ void lookupCache::flush(LookupKey* key) {
     // promoted the secondary entry
     primary[primary_index] = secondary[secondary_index];
     secondary[secondary_index].clear();
-    return; 
+    return;
   }
 
   if (secondary[secondary_index].key.equal(key)) {
@@ -176,8 +180,8 @@ void lookupCache::verify() {
 }
 
 inline unsigned int lookupCache::hash_value(LookupKey* key) {
-  return 
-    ((unsigned int) key->klass() ^ (unsigned int) key->selector_or_method()) 
+  return
+    ((unsigned int) key->klass() ^ (unsigned int) key->selector_or_method())
     / sizeof(cacheElement);
 }
 
@@ -294,7 +298,7 @@ LookupResult lookupCache::cache_miss_lookup(LookupKey* key, bool compile) {
       }
     }
   }
- 
+
   // Check the code table
   nmethod* nm = Universe::code->lookup(key);
   if (nm) {
@@ -303,7 +307,7 @@ LookupResult lookupCache::cache_miss_lookup(LookupKey* key, bool compile) {
   }
 
   // Last resort is searching class for the method
-  methodOop method = key->is_normal_type() 
+  methodOop method = key->is_normal_type()
                    ? key->klass()->klass_part()->lookup(key->selector())
                    : key->method();
 

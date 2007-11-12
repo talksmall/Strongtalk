@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -43,7 +43,7 @@ class Interpreter_PICs : AllStatic {
 
     objArrayOop result = objArrayOop(first);
     assert(result->is_objArray(),        "must be object array");
-    assert(result->is_old(),             "must be tenures");
+    assert(result->is_old(),             "must be tenured");
     assert(result->length() == size * 2, "checking size");
     return result;
   }
@@ -232,7 +232,7 @@ void InterpretedIC::cleanup() {
     case Bytecodes::primitive_send:   // fall through
     case Bytecodes::predicted_send:   // fall through
     case Bytecodes::interpreted_send:
-      { // check if the interpreted send should be replaced by a compiled send	 
+      { // check if the interpreted send should be replaced by a compiled send
         klassOop receiver_klass = klassOop(second_word());
         assert(receiver_klass->is_klass(), "receiver klass must be a klass");
         methodOop method = methodOop(first_word());
@@ -294,7 +294,7 @@ void InterpretedIC::cleanup() {
 	//     (compiled    -> interpreted)
 	//     (interpreted -> compiled)
         //   in case of a super send we do not have to cleanup because
-	//   no nmethods are compiled for super sends. 
+	//   no nmethods are compiled for super sends.
 	if (!Bytecodes::is_super_send(send_code())) {
           objArrayOop pic = pic_array();
           for (int index = pic->length(); index > 0; index -= 2) {
@@ -361,7 +361,7 @@ void InterpretedIC::replace(nmethod* nm) {
 	  if (receiver_klass == nm->key.klass()) {
             pic->obj_at_put(index-1, entry_point);
 	    return;
-	  } 
+	  }
         }
       }
       // did not find klass
@@ -397,7 +397,7 @@ void InterpretedIC::print() {
 
 objArrayOop InterpretedIC::pic_array() {
   assert(send_type() == Bytecodes::polymorphic_send, "Must be a polymorphic send site");
-  objArrayOop result = objArrayOop(second_word());  
+  objArrayOop result = objArrayOop(second_word());
   assert(result->is_objArray(), "interpreter pic must be object array");
   assert(result->length() >= 4, "pic should contain at least two entries");
   return result;
@@ -452,7 +452,7 @@ void InterpretedIC::update_inline_cache(InterpretedIC* ic, frame* f, Bytecodes::
           // primitive method found ==> switch to primitive send
 	  new_send_code = Bytecodes::primitive_send_code_for(send_code);
           Unimplemented(); // take this out when all primitive send bytecodes implemented
-	
+
         } else {
           // normal interpreted send ==> do not change
 	  new_send_code = send_code;
@@ -553,6 +553,7 @@ void InterpretedIC::does_not_understand(oop receiver, InterpretedIC* ic, frame* 
     }
     ShouldNotReachHere();
   }
+
   // return marked result of doesNotUnderstand: message
   oop result = Delta::call(receiver, sel, msg);
 
@@ -582,7 +583,7 @@ void InterpretedIC::trace_inline_cache_miss(InterpretedIC* ic, klassOop klass, L
 // that it corresponds to the inline cache contents.
 
 void InterpretedIC::inline_cache_miss() {
-  NoGCVerifier noGC;  
+  NoGCVerifier noGC;
 
   // get ic info
   frame           f         = DeltaProcess::active()->last_frame();
@@ -600,12 +601,13 @@ void InterpretedIC::inline_cache_miss() {
                       : interpreter_normal_lookup(klass, ic->selector());
 
   // tracing
-  if (TraceMessageSend) std->print_cr("inline cache miss");
-  if (TraceLookup)      trace_inline_cache_miss(ic, klass, result);
+  if (TraceInlineCacheMiss) {
+    std->print("IC miss, ");  trace_inline_cache_miss(ic, klass, result);
+  }
 
   // handle the lookup result
-  if (!result.is_empty()) 
-    update_inline_cache(ic, &f, send_code, klass, result);
+  if (!result.is_empty())
+    update_inline_cache(ic, &f, ic->send_code(), klass, result);
   else {
     does_not_understand(receiver, ic, &f);
     // If the program continues we'll redo the inline_cache_miss
@@ -659,7 +661,7 @@ void InterpretedIC_Iterator::init_iteration() {
 	set_method(_ic->first_word());
       }
       break;
-    case Bytecodes::compiled_send   : 
+    case Bytecodes::compiled_send   :
       _number_of_targets = 1;
       _info = monomorphic;
       set_klass(_ic->second_word());
@@ -711,7 +713,7 @@ void InterpretedIC_Iterator::advance() {
   _index++;
   if (! at_end()) {
     if (_pic != NULL) {
-      // polymorphic inline cache 
+      // polymorphic inline cache
       int index = _index + 1; 	// array is 1-origin
       set_klass (_pic->obj_at(2 * index));
       set_method(_pic->obj_at(2 * index - 1));
@@ -725,27 +727,27 @@ void InterpretedIC_Iterator::advance() {
 }
 
 
-methodOop InterpretedIC_Iterator::interpreted_method() const { 
+methodOop InterpretedIC_Iterator::interpreted_method() const {
   if (is_interpreted()) {
     methodOop m = (methodOop)_method;
 #ifdef ASSERT
     assert(m->is_old(), "methods must be old");
     m->verify();
 #endif
-    return m; 
+    return m;
   } else {
     return compiled_method()->method();
   }
 }
 
 
-nmethod* InterpretedIC_Iterator::compiled_method() const { 
-  if (!is_compiled()) return NULL;  
-#ifdef ASSERT 
+nmethod* InterpretedIC_Iterator::compiled_method() const {
+  if (!is_compiled()) return NULL;
+#ifdef ASSERT
   if (!_nm->isNMethod()) fatal("not an nmethod"); // cheap test
   // _nm->verify();	// very slow
 #endif
-  return _nm; 
+  return _nm;
 }
 
 

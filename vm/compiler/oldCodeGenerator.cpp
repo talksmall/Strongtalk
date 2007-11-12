@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -153,7 +153,7 @@ static void call_C(char* dest, relocInfo::relocType relocType, bool needsDeltaFP
 static int callDepth = 0;	// to indent tracing messages
 static int numberOfCalls = 0;	// # of traced calls since start
 
-static void indent() { 
+static void indent() {
   const int maxIndent = 30;
   if (callDepth < maxIndent) {
     lprintf("%*s", callDepth, " ");
@@ -193,7 +193,7 @@ static void verifyOopCode(Register reg) {
 
 extern "C" void verifyContext(oop obj) {
   // verify entire context chain
-  contextOop ctx = contextOop(obj); 
+  contextOop ctx = contextOop(obj);
   while (1) {
     if (ctx->is_mark()) error("context should never be mark");
     if (!Universe::is_heap((oop*)ctx)) error("context outside of heap");
@@ -201,7 +201,7 @@ extern "C" void verifyContext(oop obj) {
     if (ctx->unoptimized_context() != NULL) {
       error("context has been deoptimized -- shouldn't use in compiled code");
     }
-    if (!ctx->has_outer_context()) break; 
+    if (!ctx->has_outer_context()) break;
     ctx = ctx->outer_context();
   }
 }
@@ -261,7 +261,7 @@ extern "C" void verifyReturn(oop obj) {
   if (TraceCalls) {
     ResourceMark rm;
     callDepth--;
-    indent(); lprintf("return %s from %s\n", obj->print_value_string(), nmethodName()); 
+    indent(); lprintf("return %s from %s\n", obj->print_value_string(), nmethodName());
   }
 }
 
@@ -287,7 +287,7 @@ extern "C" void verifyNLR(char* fp, char* nlrFrame, int nlrScopeID, oop nlrResul
   if (TraceCalls) {
     ResourceMark rm;
     callDepth--;
-    indent(); lprintf("NLR %s from/thru %s\n", nlrResult->print_value_string(), nmethodName()); 
+    indent(); lprintf("NLR %s from/thru %s\n", nlrResult->print_value_string(), nmethodName());
   }
 }
 
@@ -346,9 +346,9 @@ static void verifyObjCode(Register reg) {
 extern "C" void verifyArguments(oop recv, int ebp, int nofArgs) {
   ResourceMark rm;
   numberOfCalls++;
-  if (TraceCalls) { 
+  if (TraceCalls) {
     callDepth++;
-    indent(); 
+    indent();
     lprintf("calling %s %s ", nmethodName(), recv->print_value_string());
   }
   verifyObj(recv);
@@ -362,7 +362,7 @@ extern "C" void verifyArguments(oop recv, int ebp, int nofArgs) {
       lprintf("%s, ", (*arg)->print_value_string());
     }
   }
-  if (VerifyDebugInfo) { 
+  if (VerifyDebugInfo) {
     deltaVFrame* f = DeltaProcess::active()->last_delta_vframe();
     while (f != NULL) {
       f->verify_debug_info();
@@ -505,7 +505,7 @@ static void set_floats_base(Node* node, Register base, bool enforce = false) {
     // already set => no extra code necessary
   } else {
     theMacroAssm->movl(base, ebp);
-    theMacroAssm->andl(base, -floatSize); 
+    theMacroAssm->andl(base, -floatSize);
   }
 }
 
@@ -534,9 +534,9 @@ static Register uplevelBase(PReg* startContext, int nofLevels, Register temp) {
   // Compute uplevel base; nofLevels is number of indirections (0 = in this context)
   Register b = nofLevels > 0 ? temp : answerPRegReg(startContext, temp);
   load(startContext, b);
-  while (nofLevels-- > 0) { 
+  while (nofLevels-- > 0) {
    if (VerifyCode) verifyContextCode(b);
-   theMacroAssm->Load(b, contextOopDesc::parent_byte_offset(), b); 
+   theMacroAssm->Load(b, contextOopDesc::parent_byte_offset(), b);
   }
   return b;
 }
@@ -581,9 +581,9 @@ static Assembler::Condition mapToCC(BranchOpCode op) {
 
 static void primitiveCall(InlinedScope* scope, primitive_desc* pdesc) {
   if (pdesc->can_perform_NLR()) {
-    call_C((char*)(&pdesc->fn()), relocInfo::prim_type, pdesc->needs_delta_fp_code(), scope->nlrTestPoint()->label);
+    call_C((char*)(pdesc->fn()), relocInfo::prim_type, pdesc->needs_delta_fp_code(), scope->nlrTestPoint()->label);
   } else {
-    call_C((char*)(&pdesc->fn()), relocInfo::prim_type, pdesc->needs_delta_fp_code());
+    call_C((char*)(pdesc->fn()), relocInfo::prim_type, pdesc->needs_delta_fp_code());
   }
 }
 
@@ -1141,14 +1141,13 @@ static Address doubleKlass_addr() {
   return Address((int)&doubleKlassObj, relocInfo::external_word_type);
 }
 
-
+/*
 static oop oopify_float() {
   double x;
   __asm fstp x							// get top of FPU stack
-  BlockScavenge bs;						// because all registers are saved on the stack
+    BlockScavenge bs;						// because all registers are saved on the stack
   return oopFactory::new_double(x);				// box the FloatValue
-}
-
+}*/
 
 static void floatArithROp(ArithOpCode op, Register reg, Register temp) {
   assert(reg != temp, "registers must be different");
@@ -1159,7 +1158,9 @@ static void floatArithROp(ArithOpCode op, Register reg, Register temp) {
     case f2OopArithOp  :
       { theMacroAssm->pushl(reg);				// reserve space for the result
         theMacroAssm->pushad();					// make sure no register is destroyed (no scavenge)
-        theMacroAssm->call((char*)oopify_float, relocInfo::runtime_call_type);
+//	theMacroAssm->int3();
+        theMacroAssm->call(StubRoutines::oopify_float(), relocInfo::runtime_call_type);
+  //      theMacroAssm->call((char*)oopify_float, relocInfo::runtime_call_type);
 	theMacroAssm->movl(Address(esp, nofRegisters * oopSize), eax);	// store result at reserved stack location
 	theMacroAssm->popad();					// restore register contents
 	theMacroAssm->popl(reg);				// get result
@@ -1422,7 +1423,7 @@ static void testForSingleKlass(Register obj, klassOop klass, Register klassReg, 
 }
 
 
-static bool testForBoolKlasses(Register obj, klassOop klass1, klassOop klass2, Register klassReg, 
+static bool testForBoolKlasses(Register obj, klassOop klass1, klassOop klass2, Register klassReg,
 			       bool hasUnknown, Label& success1, Label& success2, Label& failure) {
   oop bool1  = Universe::trueObj();
   oop bool2  = Universe::falseObj();
@@ -1611,7 +1612,7 @@ void TypeTestNode::gen() {
 	bb_needs_jump = false;			// no jump necessary at end of basic block
         return;
       }
-    } 
+    }
 
   // handle general case
   Node* smi_case = NULL;		// smi case if there
@@ -1686,7 +1687,7 @@ void BlockCreateNode::copyIntoContexts(Register val, Register t1, Register t2) {
   // registers t1 and t2 can be used as scratch registers.
   // The BlockPReg has a list of all contexts containing the block.  It should
   // be stored into those that are allocated (weren't eliminated) and are in
-  // a sender scope.  
+  // a sender scope.
   // Why not copy into contexts in a sibling scope?  There are two cases:
   //   (1) The sibling scope never created the block(s) that uplevel-access this
   //       block.  The context location still contains 0 but that doesn't matter
@@ -1801,7 +1802,7 @@ void LoopHeaderNode::gen() {
   // the loop header node performs all checks hoisted out of the loop:
   // for general loops:
   //   - do all type tests in the list, uncommon branch if they fail
-  //     (common case: true/false tests, single-klass tests) 
+  //     (common case: true/false tests, single-klass tests)
   // additionally for integer loops:
   //   - test lowerBound (may be NULL), upperBound, loopVar for smi-ness (the first two may be ConstPRegs)
   //   - if upperBound is NULL, upperLoad is load of the array size
@@ -1828,11 +1829,11 @@ void LoopHeaderNode::generateTypeTests(Label& cont, Label& failure) {
   const int len = _tests->length() - 1;
   int last;						// last case that generates a test
   for (last = len; last >= 0 && _tests->at(last)->testedPR->loc == unAllocated; last--) ;
-  if (last < 0) return;					// no tests at all   
+  if (last < 0) return;					// no tests at all
   for (int i = 0; i <= last; i++) {
     HoistedTypeTest* t = _tests->at(i);
     if (t->testedPR->loc == unAllocated) continue;	// optimized away, or ConstPReg
-    if (t->testedPR->isConstPReg()) { 
+    if (t->testedPR->isConstPReg()) {
       guarantee(t->testedPR->loc == unAllocated, "code assumes ConstPRegs are unallocated");
       handleConstantTypeTest((ConstPReg*)t->testedPR, t->klasses);
     } else {
@@ -1842,7 +1843,7 @@ void LoopHeaderNode::generateTypeTests(Label& cont, Label& failure) {
       if (t->klasses->length() == 1) {
 	testForSingleKlass(obj, t->klasses->at(0), klassReg, *ok, failure);
       } else if (t->klasses->length() == 2 &&
-		 testForBoolKlasses(obj, t->klasses->at(0), t->klasses->at(1), klassReg, true, 
+		 testForBoolKlasses(obj, t->klasses->at(0), t->klasses->at(1), klassReg, true,
 		 *ok, *ok, failure)) {
 	// ok, was a bool test
       } else {
@@ -2209,7 +2210,7 @@ void InlinedPrimitiveNode::gen() {
       { bool const_val = _arg2->isConstPReg();
         Register proxy = temp1; load(_src,  proxy);			// proxy is modified
         Register index = temp2; load(_arg1, index);			// index is modified
-	Register value; 
+	Register value;
 	if (const_val) {
 	  // value doesn't have to be loaded -> do nothing here
 	  if (!_arg2_is_smi) fatal("proxy_byte_at_put: should not happen - internal error");

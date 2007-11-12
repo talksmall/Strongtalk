@@ -39,9 +39,6 @@ static char* store_long(char* chunk, long l) {
   return chunk + sizeof(long);
 }
 
-extern "C" int handlePascalCallBackStub();
-extern "C" int handleCCallBackStub();
-
 void* callBack::registerPascalCall(int index, int nofArgs) {
   void* result = malloc(15);
   char* chunk = (char*) result;
@@ -56,7 +53,7 @@ void* callBack::registerPascalCall(int index, int nofArgs) {
 
   // JMP _handleCCallStub
   chunk = store_byte(chunk, '\xE9');
-  chunk = store_long(chunk, ((long) &handlePascalCallBackStub) - (4 + (long) chunk));
+  chunk = store_long(chunk, ((long)StubRoutines::handle_pascal_callback_stub()) - (4 + (long) chunk));
 
   return result;
 }
@@ -71,7 +68,7 @@ void* callBack::registerCCall(int index) {
 
   // JMP _handleCCallStub
   chunk = store_byte(chunk, '\xE9');
-  chunk = store_long(chunk, ((long) &handleCCallBackStub) - (4 + (long) chunk));
+  chunk = store_long(chunk, ((long)StubRoutines::handle_C_callback_stub()) - (4 + (long) chunk));
 
   return result;
 }

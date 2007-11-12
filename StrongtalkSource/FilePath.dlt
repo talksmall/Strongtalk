@@ -38,24 +38,24 @@ test
 	[ f exists not ] verify.
 
 	f createDirectoryIfFail: [ :err <Symbol> | Win32 handleError ].
-	[ f exists ] verify.
-	[ f isDirectory ] verify.
-	[ f isWriteable ] verify.
+	[ f exists ] verify: 'tmpDir exists'.
+	[ f isDirectory ] verify: 'tmpDir isDirectory'.
+	[ f isWriteable ] verify: 'tmpDir isWriteable'.
 
 	f2 := f , (FilePath for: 'sub').
-	[ f2 exists not ] verify.
+	[ f2 exists not ] verify: 'tmpDir/sub exists not'.
 
 	f2 createDirectoryIfFail: [ :err <Symbol> | Win32 handleError ].
-	[ f2 exists ] verify.
-	[ f isDirectory ] verify.
-	[ f isWriteable ] verify.
+	[ f2 exists ] verify: 'tmpDir/sub exists'.
+	[ f isDirectory ] verify: 'tmpDir/sub isDirectory'.
+	[ f isWriteable ] verify: 'tmpDir/sub isWriteable'.
 
-	[ (self tryToDeleteTestDir: f) not ] verify.
-	[ self tryToDeleteTestDir: f2 ] verify.
-	[ self tryToDeleteTestDir: f ] verify.
+	[ (self tryToDeleteTestDir: f) not ] verify: 'delete tmpDir should fail'.
+	[ self tryToDeleteTestDir: f2 ] verify: 'delete tmpDir/sub'.
+	[ self tryToDeleteTestDir: f ] verify: 'delete tmpDir'.
 
-	[ f2 exists not ] verify.
-	[ f exists not ] verify.
+	[ f2 exists not ] verify: 'tmpDir/sub should not exist'.
+	[ f exists not ] verify: 'tmpDir should not exist'.
 !
 
 tryToDeleteTestDir: dir <FilePath> ^<Boolean>
@@ -92,35 +92,6 @@ type ^<Str>
 	
 	self subclassResponsibility! !
 
-! (Delta mirrorFor: #FilePath) methodsFor: 'restricted' !
-
-
-openInternalFor: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalProxy | X>
-
-	self subclassResponsibility! !
-
-! (Delta mirrorFor: #FilePath) methodsFor: 'opening' !
-
-
-open: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<FileDescriptor | X>
-	"Modes: #read, #write, #readWrite"
-
-	^(self fileDescriptorClass for: self mode: mode)
-		openIfFail: [ :e <ExternalError> | 
-			^err value: e ]! !
-
-! (Delta mirrorFor: #FilePath) methodsFor: 'private' !
-
-
-fileDescriptorClass ^<FileDescriptor class>
-
-	self subclassResponsibility!
-
-nameProxy ^<CString>
-	"Returns a proxy for the name, which must be freed"
-
-	^CString for: self name! !
-
 ! (Delta mirrorFor: #FilePath) methodsFor: 'byte streaming' !
 
 
@@ -148,64 +119,6 @@ readWriteStream ^<ExternalReadWriteStream>
 writeStream ^<ExternalReadWriteStream>
     ^ExternalReadWriteStream onDescriptor: (self open: #write ifFail: [ :err <ExternalError> | self error: err ])! !
 
-! (Delta mirrorFor: #FilePath) methodsFor: 'testing' !
-
-
-exists ^<Boolean>
-
-	self unimplemented!
-
-isDirectory ^<Boolean>
-
-	self subclassResponsibility!
-
-isPath ^<Boolean>
-
-	^true!
-
-isReadOnly ^<Boolean>
-
-	self unimplemented!
-
-isWriteable ^<Boolean>
-
-	^self isReadOnly not! !
-
-! (Delta mirrorFor: #FilePath) methodsFor: 'iterating' !
-
-
-pathsDo: blk <[FilePath]>
-
-	self exists
-		ifTrue: [  blk value: self ]! !
-
-! (Delta mirrorFor: #FilePath) methodsFor: 'restricted-double dispatching' !
-
-
-deletePathIfFail: blk <[Symbol]>
-	"This is how the #delete operation is implemented.  API level users should
-		use #delete instead"
-
-	self subclassResponsibility! !
-
-! (Delta mirrorFor: #FilePath) methodsFor: 'control' !
-
-
-createDirectoryIfFail: fail <[Symbol]>
-	"Create the directory with the given name, if it does not exist.
-		If the directory can not be created and did not previously exist,
-		the fail block is evaluated with an error symbol"
-
-	self subclassResponsibility! !
-
-! (Delta mirrorFor: #FilePath) methodsFor: 'restricted-initialization' !
-
-
-pattern: p <Str>
-
-	super pattern: p.
-	self assert: [ (self actualClass patternHasWildcards: p) not ].! !
-
 ! (Delta mirrorFor: #FilePath) methodsFor: 'character streaming' !
 
 
@@ -229,6 +142,16 @@ ifFail: fail <[^Y def]>
 charOutputStream ^<CharOutputStream>
 
 	^CharacterInputOutputConverter on: self writeStream! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'control' !
+
+
+createDirectoryIfFail: fail <[Symbol]>
+	"Create the directory with the given name, if it does not exist.
+		If the directory can not be created and did not previously exist,
+		the fail block is evaluated with an error symbol"
+
+	self subclassResponsibility! !
 
 ! (Delta mirrorFor: #FilePath) methodsFor: 'copying-moving' !
 
@@ -286,4 +209,81 @@ rename: name <Str> ifFail: fail <[ExternalError]> ^<FilePath>
 		ifFail: [ :err <Symbol> |
 						self error: err	].
 	^newPath! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'iterating' !
+
+
+pathsDo: blk <[FilePath]>
+
+	self exists
+		ifTrue: [  blk value: self ]! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'opening' !
+
+
+open: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<FileDescriptor | X>
+	"Modes: #read, #write, #readWrite"
+
+	^(self fileDescriptorClass for: self mode: mode)
+		openIfFail: [ :e <ExternalError> | 
+			^err value: e ]! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'private' !
+
+
+fileDescriptorClass ^<FileDescriptor class>
+
+	self subclassResponsibility!
+
+nameProxy ^<CString>
+	"Returns a proxy for the name, which must be freed"
+
+	^CString for: self name! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'restricted' !
+
+
+openInternalFor: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalProxy | X>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'restricted-double dispatching' !
+
+
+deletePathIfFail: blk <[Symbol]>
+	"This is how the #delete operation is implemented.  API level users should
+		use #delete instead"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'restricted-initialization' !
+
+
+pattern: p <Str>
+
+	super pattern: p.
+	self assert: [ (self actualClass patternHasWildcards: p) not ].! !
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'testing' !
+
+
+exists ^<Boolean>
+
+	self unimplemented!
+
+isDirectory ^<Boolean>
+
+	self subclassResponsibility!
+
+isPath ^<Boolean>
+
+	^true!
+
+isReadOnly ^<Boolean>
+
+	self unimplemented!
+
+isWriteable ^<Boolean>
+
+	^self isReadOnly not! !
 

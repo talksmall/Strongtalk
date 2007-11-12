@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -25,7 +25,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 //  1: language level class object (method dictionary etc.)
 //  2: provide vm dispatch behavior for the object
 // Both functions are combined into one C++ class. The toplevel class "Klass"
-// implements purpose 1 whereas all subclasses provide extra virtual functions 
+// implements purpose 1 whereas all subclasses provide extra virtual functions
 // for purpose 2.
 
 // One reason for the oop/klass dichotomy in the implementation is
@@ -37,11 +37,11 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 // ALL FUNCTIONS IMPLEMENTING THIS DISPATCH ARE PREFIXED WITH "oop_"!
 
 // Microsoft C++ 2.0 always forces the vtbl at offset 0.
-const int vtbl_position = 0; 
+const int vtbl_position = 0;
 
 //  Klass layout:
 //    [vtbl                 ]
-//    [non_indexable_size   ]  
+//    [non_indexable_size   ]
 //    [has_untagged_contents]  can be avoided if prototype is stored.
 //    [classVars            ]  class variables copied from mixin
 //    [methods              ]  customized methods from the mixin
@@ -79,7 +79,7 @@ class Klass : ValueObj {
 
   objArrayOop methods()         const { return _methods;  }
   void set_methods(objArrayOop m)     { STORE_OOP(&_methods, m); }
- 
+
   klassOop superKlass() const         { return _superKlass;  }
   void set_superKlass(klassOop super) { STORE_OOP(&_superKlass, super); }
 
@@ -89,13 +89,13 @@ class Klass : ValueObj {
   // Tells whether here is a super class
   bool has_superKlass() const { return oop(superKlass()) != nilObj; }
 
- public:  
-  int            number_of_methods()   const;        // Returns the number of methods in this class. 
+ public:
+  int            number_of_methods()   const;        // Returns the number of methods in this class.
   methodOop      method_at(int index)  const;        // Returns the method at index.
   void           add_method(methodOop method);       // Adds or overwrites with method.
   methodOop      remove_method_at(int index);        // Removes method at index and returns the removed method.
 
-  int            number_of_classVars()   const;      // Returns the number of class variables. 
+  int            number_of_classVars()   const;      // Returns the number of class variables.
   associationOop classVar_at(int index)  const;      // Returns the class variable at index.
   void           add_classVar(associationOop assoc); // Adds or overwrites class variable.
   associationOop remove_classVar_at(int index);      // Removes class variable at index and returns the removed association.
@@ -110,7 +110,7 @@ class Klass : ValueObj {
   void bootstrap_klass_part_one(bootstrap* bs);
   void bootstrap_klass_part_two(bootstrap* bs);
 
- public:  
+ public:
    // After reading the snapshot the klass has to be fixed e.g. vtbl initialized!
   void fixup_after_snapshot_read();  // must not be virtual; vtbl not fixed yet
 
@@ -130,7 +130,7 @@ class Klass : ValueObj {
 
   // allocation operations
   int size() const {  return sizeof(Klass)/sizeof(oop); }
- 
+
   virtual oop allocateObject();
   virtual oop allocateObjectSize(int size);
 
@@ -246,7 +246,7 @@ class Klass : ValueObj {
   virtual bool oop_is_context()          const { return false; }
   virtual bool oop_is_message()          const { return false; }
   virtual bool oop_is_indexable()        const { return false; }
-  
+
   // Dispatched primitives
   virtual oop oop_primitive_allocate(oop obj);
   virtual oop oop_primitive_allocate_size(oop obj, int size);
@@ -256,15 +256,15 @@ class Klass : ValueObj {
   virtual void oop_print_on      (oop obj, outputStream* st);
   virtual void oop_short_print_on(oop obj, outputStream* st);
   virtual void oop_print_value_on(oop obj, outputStream* st);
-  
+
   // iterators
   virtual void oop_oop_iterate(oop obj, OopClosure* blk);
-  virtual void oop_layout_iterate(oop obj, ObjectLayoutClosure* blk); 
+  virtual void oop_layout_iterate(oop obj, ObjectLayoutClosure* blk);
 
-  friend klassKlass;
+  friend class klassKlass;
 };
 
 inline klassOop as_klassOop(void* p)
-{ 
-	return klassOop(as_memOop(p)); 
+{
+	return klassOop(as_memOop(p));
 }

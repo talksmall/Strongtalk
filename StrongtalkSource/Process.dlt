@@ -18,6 +18,12 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
+! (Delta mirrorFor: #Process) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^80! !
+
 ! (Delta mirrorFor: #Process) classSide methodsFor: 'instance creation' !
 
 
@@ -31,28 +37,9 @@ for: block <[]> ^<Instance>
 				ifFail: [ :err <Symbol> | self error: err ]
 		}}
 	  ) initFor: block.
-	^i! !
+	^i!
 
-! (Delta mirrorFor: #Process) classSide methodsFor: 'file out' !
-
-
-fileOutSignature ^<Integer>
-    ^80! !
-
-! (Delta mirrorFor: #Process) methodsFor: 'private-initialization' !
-
-
-initFor: block <[]>
-
-	body := block.
-
-	self register.
-	
-!
-
-recordId
-
-	win32Handle := {{<kernel Win32Handle GetCurrentThreadId> call}}! !
+primitiveCreate: block! !
 
 ! (Delta mirrorFor: #Process) methodsFor: 'accessing' !
 
@@ -90,27 +77,6 @@ status ^<Symbol>
 
 	^{{self primitiveProcessStatus}}! !
 
-! (Delta mirrorFor: #Process) methodsFor: 'testing' !
-
-
-running ^<Boolean>
-	"Not suspended, dying, or dead. (This includes processes blocked in async dll calls)"
-
-	^Processor isRunning: self!
-
-suspended ^<Boolean>
-	"Not on the running list, but can be resumed"
-
-	| s <Symbol> |
-	self running
-		ifTrue: [ ^false ].
-	s := self status.
-	^s == #Yielded
-		or: [ s == #InAsyncDLL
-		or: [ s == #Initialized
-		or: [ s == #Preempted
-		or: [ s == #Stopped ]   ]]]! !
-
 ! (Delta mirrorFor: #Process) methodsFor: 'control' !
 
 
@@ -138,6 +104,38 @@ waitUntilDead
 	
 	[ self running ]
 		whileTrue: [ Processor yield ]! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^112! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'private' !
+
+
+register
+
+	Processor register: self.!
+
+vmTerminate
+
+	{{self primitiveProcessTerminateIfFail: [ :err <Symbol> | self error: err ]}}! !
+
+! (Delta mirrorFor: #Process) methodsFor: 'private-initialization' !
+
+
+initFor: block <[]>
+
+	body := block.
+
+	self register.
+	
+!
+
+recordId
+
+	win32Handle := {{<kernel Win32Handle GetCurrentThreadId> call}}! !
 
 ! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
 
@@ -168,20 +166,24 @@ win32Handle ^<Win32Handle>
 yield
 	{{primitiveProcessYield}}! !
 
-! (Delta mirrorFor: #Process) methodsFor: 'file out' !
+! (Delta mirrorFor: #Process) methodsFor: 'testing' !
 
 
-fileOutSignature ^<Integer>
-    ^112! !
+running ^<Boolean>
+	"Not suspended, dying, or dead. (This includes processes blocked in async dll calls)"
 
-! (Delta mirrorFor: #Process) methodsFor: 'private' !
+	^Processor isRunning: self!
 
+suspended ^<Boolean>
+	"Not on the running list, but can be resumed"
 
-register
-
-	Processor register: self.!
-
-vmTerminate
-
-	{{self primitiveProcessTerminateIfFail: [ :err <Symbol> | self error: err ]}}! !
+	| s <Symbol> |
+	self running
+		ifTrue: [ ^false ].
+	s := self status.
+	^s == #Yielded
+		or: [ s == #InAsyncDLL
+		or: [ s == #Initialized
+		or: [ s == #Preempted
+		or: [ s == #Stopped ]   ]]]! !
 

@@ -137,6 +137,7 @@ class debugFlags {
   develop(TraceDLLCalls                      , false, "Trace DLL function calls"                                                    ) \
   product(TraceGC                            , true , "Trace Garbage Collection"                                                    ) \
   develop(TraceMessageSend                   , false, "Trace all message sends"                                                     ) \
+  develop(TraceInlineCacheMiss               , false, "Trace inline cache misses"                                                     ) \
   develop(TraceProcessEvents                 , false, "Trace all process events"                                                    ) \
   develop(TraceDeoptimization                , false, "Trace deoptimizion"                                                          ) \
   develop(TraceZombieCreation                , false, "Trace nmethod zombie creation"                                               ) \
@@ -244,7 +245,7 @@ class debugFlags {
 /*        name                               default  documentation */                                                                \
                                                                                                                                       \
   develop(EventLogLength                     ,  1000, "Length of internal event log"                                                ) \
-  develop(StackPrintLimit                    ,   100, "Number of stack frames to print in VM-level stack dump"                      ) \
+  develop(StackPrintLimit                    ,    20, "Number of stack frames to print in VM-level stack dump"                      ) \
   develop(MaxElementPrintSize                ,    10, "Maximum number of elements to print"                                         ) \
                                                                                                                                       \
 /* allocation parameters */                                                                                                           \
@@ -292,6 +293,7 @@ class debugFlags {
                                                                                                                                       \
 /* interpreter debugging */                                                                                                           \
   develop(StopInterpreterAt                  ,     0, "Stops interpreter execution at specified bytecode number"                    ) \
+  develop(TraceInterpreterFramesAt           ,     0, "Trace interpreter frames at specified bytecode number"                       ) \
                                                                                                                                       \
 /* interpreter statistics */                                                                                                          \
   develop(NumberOfContextAllocations         ,     0, "Number of allocated block contexts"                                          ) \

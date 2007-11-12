@@ -77,9 +77,7 @@ class CompiledDLL_Cache: public NativeCall {
 
   // Creation
   friend CompiledDLL_Cache* compiledDLL_Cache_from_return_address(char* return_address);
-
   friend CompiledDLL_Cache* compiledDLL_Cache_from_relocInfo(char* displacement_address);
-
 };
 
 inline CompiledDLL_Cache* compiledDLL_Cache_from_return_address(char* return_address)

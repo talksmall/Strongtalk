@@ -31,7 +31,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 class MethodPrinterClosure: public MethodClosure {
  private:
    outputStream*  st;
-   void MethodPrinterClosure::print_sendtype(Bytecodes::SendType type);
+   void print_sendtype(Bytecodes::SendType type);
    void show(char* str);
    void indent();
  public:

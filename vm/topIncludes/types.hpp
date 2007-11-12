@@ -221,6 +221,7 @@ class outputStream;
   class PRegBBIndex;
   class DUInfo;
   class BitVector;
+  class LongRegisterMask;
   class CPInfo;
   class RegCandidate;
   class RegisterEqClass;

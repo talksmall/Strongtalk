@@ -2,37 +2,32 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
 */
 
-#ifndef __GNUC__
-
-#ifdef MICROSOFT
-#include <windows.h>
-#include <signal.h>
-#endif
-
-#ifdef BORLAND
-#include <winbase.h>
-#endif
+#ifdef WIN32
 
 # include "incls/_os.cpp.incl"
+
+#include <windows.h>
+#include <signal.h>
+
 
 static HANDLE main_process;
 static HANDLE main_thread;
@@ -49,7 +44,7 @@ extern void intercept_for_single_step();
 static inline double fileTimeAsDouble(FILETIME* time) {
   const double high  = (double) ((unsigned int) ~0);
   const double split = 10000000.0;
-  double result = (time->dwLowDateTime / split) + 
+  double result = (time->dwLowDateTime / split) +
                    time->dwHighDateTime * (high/split);
   return result;
 }
@@ -126,7 +121,7 @@ double os::user_time_for(Thread* thread) {
   FILETIME kernel_time;
   if (GetThreadTimes(main_process, &creation_time, &exit_time, &kernel_time, &user_time)) {
     return fileTimeAsDouble(&user_time);
-  } 
+  }
   return 0.0;
 }
 
@@ -137,7 +132,7 @@ double os::system_time_for(Thread* thread) {
   FILETIME kernel_time;
   if (GetThreadTimes(main_process, &creation_time, &exit_time, &kernel_time, &user_time)) {
     return fileTimeAsDouble(&kernel_time);
-  } 
+  }
   return 0.0;
 }
 
@@ -146,7 +141,7 @@ static long_int initial_performance_count(0,0);
 static long_int performance_frequency(0,0);
 
 long_int os::elapsed_counter() {
-  LARGE_INTEGER count;  
+  LARGE_INTEGER count;
   QueryPerformanceCounter(&count);
   long_int current(count.LowPart, count.HighPart);
   return current;
@@ -170,9 +165,9 @@ static void initialze_performance_counter() {
 
 double os::elapsedTime() {
   if (!has_performance_count) return 0.0;
-  LARGE_INTEGER current_count;  
+  LARGE_INTEGER current_count;
   QueryPerformanceCounter(&current_count);
- 
+
   long_int current(current_count.LowPart, current_count.HighPart);
   double count = (current - initial_performance_count).as_double();
   double freq  = performance_frequency.as_double();
@@ -239,9 +234,9 @@ void suspend_process_at_stack_overflow(int *sp, int* fp, char* pc);
 LONG WINAPI topLevelExceptionFilter(struct _EXCEPTION_POINTERS* exceptionInfo) {
   int code = exceptionInfo->ExceptionRecord->ExceptionCode;
 
-  if (code == EXCEPTION_BREAKPOINT) {    
+  if (code == EXCEPTION_BREAKPOINT) {
     // This exception is called when an assertion fails (__asm { int 3} is executed).
-    // It is therefore imperative we continue the search hereby enabling 
+    // It is therefore imperative we continue the search hereby enabling
     // spawning of a Just-in-time debugger.
     return EXCEPTION_CONTINUE_SEARCH;
   }
@@ -257,14 +252,14 @@ LONG WINAPI topLevelExceptionFilter(struct _EXCEPTION_POINTERS* exceptionInfo) {
       (char*) exceptionInfo->ContextRecord->Eip);
     lprintf("  Coutinue execution ??????????????\n");
   } else {
-    // Do not report vm state when getting stack overflow 
+    // Do not report vm state when getting stack overflow
     report_vm_state();
   }
 
   if (os::message_box("Exception caught", "Do you want a stack trace?")) {
     trace_stack_at_exception((int*)    exceptionInfo->ContextRecord->Esp,
                              (int*)    exceptionInfo->ContextRecord->Ebp,
-			     (char*)   exceptionInfo->ContextRecord->Eip);  
+			     (char*)   exceptionInfo->ContextRecord->Eip);
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -273,11 +268,20 @@ HINSTANCE hInstance     = NULL;
 HINSTANCE hPrevInstance = NULL;
 int       nCmdShow      = 0;
 
-#ifdef _WINDOWS
+extern int vm_main(int argc, char* argv[]);
+
 extern int    __argc;
 extern char** __argv;
 
-extern int my_main(int argc, char* argv[]);
+int os::argc() {
+  return __argc;
+}
+
+char** os::argv() {
+  return __argv;
+}
+
+#ifdef _WINDOWS
 
 int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdLine, int cmdShow) {
   // Save all parameters
@@ -285,6 +289,10 @@ int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdLine, int cm
   hPrevInstance = hPrevInst;
   nCmdShow      = cmdShow;
   return my_main(__argc, __argv);
+}
+#else
+int main(int argc, char**argv) {
+    return vm_main(argc, argv);
 }
 #endif
 
@@ -306,7 +314,7 @@ void os::timerPrintBuffer() {}
 char* os::reserve_memory(int size) {
   return (char*) VirtualAlloc(NULL, size, MEM_RESERVE, PAGE_READWRITE);
 }
-  
+
 bool os::commit_memory(char* addr, int size) {
   bool result = VirtualAlloc(addr, size, MEM_COMMIT, PAGE_READWRITE) != NULL;
   if (!result) {
@@ -365,7 +373,7 @@ void os::fetch_top_frame(Thread* thread, int** sp, int** fp, char** pc) {
     *pc = NULL;
   }
 }
-  
+
 int os::current_thread_id() {
   return GetCurrentThreadId();
 }
@@ -397,14 +405,15 @@ BOOL WINAPI HandlerRoutine(DWORD dwCtrlType) {
     lprintf("\n{receiving break}\n");
     intercept_for_single_step();
   } else {
-    if (number_of_ctrl_c == 0) {
+   // if (number_of_ctrl_c < 10) {
       lprintf("\n{reading .breakrc}");
       process_settings_file(".breakrc", false);
-    } else {
+   /* } else {
       lprintf("\n{aborting}\n");
-      _asm { int 3 }
+   //   _asm { int 3 }
+   breakpoint();
     }
-    number_of_ctrl_c++;
+    number_of_ctrl_c++;*/
   }
   return TRUE;
 }
@@ -433,16 +442,20 @@ void os::initialize_system_info() {
 }
 
 int os::message_box(char* title, char* message) {
-  int result = MessageBox(NULL, message, title,
+/*  int result = MessageBox(NULL, message, title,
                           MB_YESNO | MB_ICONERROR | MB_SYSTEMMODAL | MB_DEFAULT_DESKTOP_ONLY);
+			  */
+    int result = IDYES; // ugly hack to reduce DLL depends
   return result == IDYES;
 }
 
+char*	  os::platform_class_name() { return "Win32Platform"; }
+
 extern "C" bool EnableTasks;
 
-LARGE_INTEGER counter;  
+LARGE_INTEGER counter;
 
-CRITICAL_SECTION ThreadSection; 
+CRITICAL_SECTION ThreadSection;
 
 void ThreadCritical::intialize() { InitializeCriticalSection(&ThreadSection); }
 void ThreadCritical::release()   { DeleteCriticalSection(&ThreadSection);     }
@@ -458,7 +471,7 @@ ThreadCritical::~ThreadCritical() {
 void os_init() {
   ThreadCritical::intialize();
 
-  if (hInstance == NULL) { 
+  if (hInstance == NULL) {
     hInstance = GetModuleHandle(NULL);
     nCmdShow  = SW_SHOWNORMAL;
   }
@@ -491,4 +504,4 @@ void os_exit() {
   ThreadCritical::release();
 }
 
-#endif /* __GNUC__ */
+#endif /* _WIN32 */

@@ -2,20 +2,20 @@
 /* Copyright (c) 2006, Sun Microsystems, Inc.
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 following conditions are met:
 
     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
 	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived
 	  from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
-NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
-THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
@@ -238,7 +238,7 @@ objArrayOop methodOopDesc::fileout_body() {
   BlockScavenge bs;
   ResourceMark rm;
   methodStream out;
-  
+
   CodeIterator c(this);
   do {
     if (Bytecodes::send_type(c.code()) != Bytecodes::no_send) {
@@ -285,7 +285,7 @@ objArrayOop methodOopDesc::fileout_body() {
       switch(c.format()) {
         case Bytecodes::B:
 	  break;
-        case Bytecodes::BB: 
+        case Bytecodes::BB:
 	  out.put_byte(c.byte_at(1));
           break;
         case Bytecodes::BBB:
@@ -532,7 +532,7 @@ int methodOopDesc::find_bci_from(int nbci) const {
   CodeIterator c(methodOop(this));
   int prev_bci = 1;
   do {
-    if (c.bci() == nbci) return prev_bci; 
+    if (c.bci() == nbci) return prev_bci;
     prev_bci = c.bci();
   } while (c.advance());
   return -1;
@@ -584,7 +584,7 @@ class ExpressionStackMapper : public MethodClosure {
   }
 
   void push_self()				{ map_push(); }
-  void push_tos()				{ map_push(); }  
+  void push_tos()				{ map_push(); }
   void push_literal(oop obj)			{ map_push(); }
   void push_argument(int no)			{ map_push(); }
   void push_temporary(int no)			{ map_push(); }
@@ -609,7 +609,7 @@ class ExpressionStackMapper : public MethodClosure {
   void nonlocal_return(int nofArgs)		{ map_pop(); }
 
   void allocate_closure(AllocationType type, int nofArgs, methodOop meth) {
-    if (type == tos_as_scope) map_pop(); 
+    if (type == tos_as_scope) map_pop();
     map_push();
   }
 
@@ -629,7 +629,7 @@ class ExpressionStackMapper : public MethodClosure {
   void store_classVar(associationOop assoc)                        {}
   void store_classVar_name(symbolOop name)                         {}
 
-  void store_global(associationOop obj)                            {} 
+  void store_global(associationOop obj)                            {}
   void allocate_context(int nofTemps, bool forMethod = false)      {}
   void set_self_via_context()                                      {}
   void copy_self_into_context()                                    {}
@@ -856,7 +856,7 @@ class ContextMethodIterator : public SpecializedMethodClosure {
   }
 
   void copy_self_into_context() {
-    _self_in_context = true; 
+    _self_in_context = true;
   }
 };
 
@@ -870,7 +870,8 @@ int methodOopDesc::number_of_context_temporaries(bool* self_in_context) {
 }
 
 void methodOopDesc::customize_for(klassOop klass, mixinOop mixin) {
-  assert(!is_customized() ||  klass != mixin->primary_invocation(), "should not recustomize to the same class"); 
+  assert(!is_customized() ||  klass != mixin->primary_invocation(), "should not recustomize to the same class");
+
   CodeIterator c(this);
   do {
     InterpretedIC* ic = c.ic();
@@ -891,14 +892,14 @@ void methodOopDesc::customize_for(klassOop klass, mixinOop mixin) {
 
       case Bytecodes::push_instVar_name:
       case Bytecodes::store_instVar_pop_name:
-      case Bytecodes::store_instVar_name: 
+      case Bytecodes::store_instVar_name:
       case Bytecodes::return_instVar_name:
 	c.customize_inst_var_code(klass);
         break;
 
       case Bytecodes::push_instVar:
       case Bytecodes::store_instVar_pop:
-      case Bytecodes::store_instVar: 
+      case Bytecodes::store_instVar:
       case Bytecodes::return_instVar:
 	c.recustomize_inst_var_code(mixin->primary_invocation(), klass);
 	break;
@@ -949,7 +950,7 @@ void methodOopDesc::uncustomize_for(mixinOop mixin) {
 
       case Bytecodes::push_instVar:
       case Bytecodes::store_instVar_pop:
-      case Bytecodes::store_instVar: 
+      case Bytecodes::store_instVar:
       case Bytecodes::return_instVar:
 	c.uncustomize_inst_var_code(mixin->primary_invocation());
 	break;
@@ -1044,9 +1045,9 @@ class TransitiveMethodClosure: public MethodClosure {
   void while_node(WhileNode* node);
   void primitive_call_node(PrimitiveCallNode* node);
   void dll_call_node(DLLCallNode* node);
- 
+
  public:
-  virtual void inlined_send(symbolOop selector) {} 
+  virtual void inlined_send(symbolOop selector) {}
 
  public:
   void allocate_temporaries(int nofTemps)					{}
@@ -1156,7 +1157,7 @@ class ReferencedInstVarNamesClosure: public TransitiveMethodClosure {
     this->result = new GrowableArray<oop>(size);
     this->mixin  = mixin;
   }
-  GrowableArray<oop>* result; 
+  GrowableArray<oop>* result;
 };
 
 objArrayOop methodOopDesc::referenced_instance_variable_names(mixinOop mixin) const {
@@ -1180,7 +1181,7 @@ class ReferencedClassVarNamesClosure: public TransitiveMethodClosure {
   ReferencedClassVarNamesClosure(int size) {
     result = new GrowableArray<oop>(size);
   }
-  GrowableArray<oop>* result; 
+  GrowableArray<oop>* result;
 };
 
 objArrayOop methodOopDesc::referenced_class_variable_names() const {
@@ -1201,7 +1202,7 @@ class ReferencedGlobalsClosure: public TransitiveMethodClosure {
   ReferencedGlobalsClosure(int size) {
     result = new GrowableArray<oop>(size);
   }
-  GrowableArray<oop>* result; 
+  GrowableArray<oop>* result;
 };
 
 objArrayOop methodOopDesc::referenced_global_names() const {
@@ -1239,7 +1240,7 @@ class SendersClosure: public TransitiveMethodClosure {
   SendersClosure(int size) {
     result = new GrowableArray<oop>(size);
   }
-  GrowableArray<oop>* result; 
+  GrowableArray<oop>* result;
 };
 
 objArrayOop methodOopDesc::senders() const {
