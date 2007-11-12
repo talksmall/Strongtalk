@@ -1,0 +1,163 @@
+Delta define: #UnixFileDescriptor as: (
+(Class subclassOf: 'FileDescriptor' instanceVariables: 'ioCount <ExternalProxy>
+            "Used to hold the count of bytes read/written, & other temporary results, for speed"
+        ')) !
+
+(Delta mirrorFor: #UnixFileDescriptor) revision: '$Revision: 1.2 $'!
+
+(Delta mirrorFor: #UnixFileDescriptor) group: 'base'!
+
+(Delta mirrorFor: #UnixFileDescriptor)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+'!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'accessing' !
+
+
+blockSize ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := StatBuffer new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy __fxstat>
+    					version: statBuffer version
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [4096]
+		ifFalse: [ statBuffer blockSize ]]
+		ensure: [ statBuffer free]!
+
+getBufferSize ^<Int>
+
+    "Use the block size"
+    ^self blockSize * 8!
+
+sectorSize ^<Int>
+    "Use the sector size"
+    | junk <ExternalProxy> bytesPerSector <ExternalProxy> status <ExternalProxy> result <Int> |
+    junk := ExternalProxy new malloc: Platform wordSize.
+    bytesPerSector := ExternalProxy new malloc: Platform wordSize.
+    status := {{<kernel ExternalProxy GetDiskFreeSpaceA>
+            rootPath: 0
+            sectorsPerCluster: junk
+            bytesPerSector: bytesPerSector
+            freeClusters: junk
+            clusters: junk    }}.
+    status isNull
+        ifTrue: [ self error: 'Cannot get disk sector size' ]
+        ifFalse: [ result := bytesPerSector smallIntegerAt: 0 ].
+    junk free.
+    bytesPerSector free.
+    ^result!
+
+size ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := StatBuffer new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy __fxstat>
+    					version: statBuffer version
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [0]
+		ifFalse: [ statBuffer fileSize ]]
+		ensure: [ statBuffer free]! !
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'control' !
+
+
+flushIfFail: errf <[ExternalError]>
+
+    | result <ExternalProxy> |
+    "%todo: uncomment"
+    "result := {<kernel ExternalProxy FlushFileBuffers async>
+        handle: self handle }."
+    result isNull
+        ifTrue: [ errf value: 'I/O Error flushing file information' ].!
+
+openIfFail: err <[ExternalError]>
+    super openIfFail: err.
+    self ioCount malloc: Platform wordSize.!
+
+severExternalConnections
+    | result <ExternalProxy> |
+    
+    super severExternalConnections.
+    self ioCount free.
+    result := {{<libc ExternalProxy close>
+        handle: self handle }}.
+    result asSmallInteger == -1
+        ifTrue: [ self error: 'Error closing file handle' ].! !
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'i/o' !
+
+
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    self knowAtEnd
+        ifTrue: [ count := 0 ]
+        ifFalse: [ count := {{<libc ExternalProxy read>
+        				                fd: self handle
+                        				buffer: self buffer
+                        				count: self bufferSize }} asSmallInteger ].
+    self setPosition: self position + count.
+    ^count!
+
+write: nBytes <Int> at: pos <Int> ifFail: errf <[ExternalError]>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    count := {{<libc ExternalProxy write>
+                        fd: self handle
+                        buffer: self buffer
+                        count: nBytes    }} asSmallInteger.
+    self setPosition: self position + count! !
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'initialization' !
+
+
+mode: m <Symbol>
+    super mode: m.
+    self initializeIOCount.! !
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+
+
+SEEK_SET
+
+	^0!
+
+initializeIOCount
+    ioCount := ExternalProxy new.
+    ioCount malloc: 4.!
+
+ioCount ^<ExternalProxy>
+
+    ^ioCount!
+
+postCopy
+    super postCopy.
+    self initializeIOCount.!
+
+printLastError
+    | result |
+    "Dump the error message for the last windows call"
+    "%temporary"
+    result := {{<kernel ExternalProxy GetLastError>geterror}}.
+    Platform errorStream show: 'Last error from windows: ', result asSmallInteger printString; cr!
+
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    {{<libc ExternalProxy lseek>
+        fd: self handle
+        offset: p
+        whence: self SEEK_SET }}    "FILE_BEGIN"! !
+

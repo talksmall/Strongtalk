@@ -1,0 +1,249 @@
+Delta define: #UnixPlatform as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'ErrorStream <CharOutputStream>') !
+
+(Delta mirrorFor: #UnixPlatform) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #UnixPlatform) group: 'base'!
+
+(Delta mirrorFor: #UnixPlatform)
+comment: 
+'The class side holds platform dependent constants and utilities.  Is also used
+to get command line args, and other things like that.
+
+Keywords: %machdep  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+'!
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'Dynamic Linked Libraries' !
+
+
+DLLInitialize
+    DLLDict := Dictionary new.
+    {{primitiveDLLSetupLookup: self selector: #DLLLookup:in: ifFail: [:err | self error: err]}}!
+
+DLLLibrary: name
+    ^DLLDict at: name ifAbsent: [
+        DLLDict at: name put: (self DLLLoad: name)
+    ]!
+
+DLLLoad: name
+    | r n |
+    r := ExternalProxy new.
+    n := (self DLLMapName: name) asSymbol.
+    ^{{primitiveDLLLoad: n result: r ifFail: [ :err | self error: err]}}!
+
+DLLLookup: name <Str> in: library <Str>
+    "Convert library into proxy"
+    | p r |
+    p := self DLLLibrary: library.
+    r := ExternalProxy new.
+    {{primitiveDLLLookup: name asSymbol in: p result: r ifFail: [:err | self error: err]}}.
+    ^r!
+
+DLLMapName: name <Str> ^<Str>
+    name = 'user'       ifTrue: [^'USER32.DLL'].
+    name = 'gdi'            ifTrue: [^'GDI32.DLL'].
+    name = 'kernel'     ifTrue: [^'KERNEL32.DLL'].
+    name = 'comdlg'     ifTrue: [^'COMDLG32.DLL'].
+    self error: 'Mapping ', name, ' not found'! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'clipboard access' !
+
+
+clipboardText: str <Str>
+
+    self openClipboard.
+    [   | glob <HGLOBAL> strm <ReadWriteStream[Character]> xstr <Str> |
+        self emptyClipboard.
+
+        "transform string into a form with lfs inserted"
+        strm := (String new: str size) readWriteStream.
+        str do:
+            [ :c <Character> |
+                strm put: c.
+                c = Character cr
+                    ifTrue: [ strm put: Character lf ].
+            ].
+        xstr := String withAll: strm contentsWritten.
+
+        glob := HGLOBAL new
+                        allocate: xstr size + 1
+                        attributes: (Win32 GMEM_MOVEABLE
+                                            externalBitOr: Win32 GMEM_DDESHARE).
+        glob withPointer: CString new
+                do: [ :cs <CString> |
+                            cs value: xstr   ].
+
+        {{<user ExternalProxy SetClipboardData>
+                format: Win32 CF_TEXT
+                data: glob
+        }} isNull
+            ifTrue: [ Win32 handleError ].
+    ] ensure:
+        [ self closeClipboard ]!
+
+clipboardTextIfAbsent: blk <[^X def]> ^<Str | X>
+
+    self openClipboard.
+    [   | glob <HGLOBAL> strm <CharWriteStream> |
+
+        {{<user ExternalProxy IsClipboardFormatAvailable> format: Win32 CF_TEXT}} asBoolean
+            ifFalse: [ ^blk value ].
+        glob := {{<user HGLOBAL GetClipboardData> format: Win32 CF_TEXT}}.
+        glob isNull
+            ifTrue: [ Win32 handleError ].
+        strm := (String new: 100) writeStream.
+        glob withPointer: CString new
+                do: [ :cs <CString> |
+                            cs asString do:
+                                [ :c <Character> |
+                                    c = Character lf
+                                        ifFalse: [ strm put: c ]
+                                ].
+                            ^strm contentsWritten
+                      ].
+    ] ensure:
+        [ self closeClipboard ]! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'command line' !
+
+
+commandLine ^<Str>
+   ^self getCommandLine!
+
+commandLineTokens ^<InputStream[Str]>
+    "a stream of the input line tokens.  Tokens are sequences separated by whitespace; whitespace can be 
+        included in a token by double quoting the arg.  (quotes can be imbedded by doubling, as with Smalltalk strings;
+        the returned token has delimiting quotes removed and internal quotes undoubled. "
+
+    | cstrm <CharInputStream> |
+    cstrm := self commandLine readStream.
+    self skipSpacesIn: cstrm.
+    ^CustomInputStream[Str] new
+            nextBlock: [    self parseArgFrom: cstrm ];
+            atEndBlock: [ cstrm atEnd ].!
+
+getArguments ^<OrdCltn[Str]>
+
+    ^ {{ primitiveCommandLineArgs }} asOrderedCollection
+    	collect: [:bytes| bytes asString]!
+
+getCommandLine
+    | stream |
+    stream := CharacterReadWriteStream on: ''.
+    self getArguments do: [:arg| stream nextPutAll: arg; space].
+    stream isEmpty ifTrue: [^''].
+    ^stream copyFrom: 1 to: stream size - 1! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'constants' !
+
+
+multipleMatchWildcardCharacter ^<Character>
+
+    ^$*!
+
+singleMatchWildcardCharacter ^<Character>
+
+    ^$?!
+
+wordSize ^<Int>
+    ^4! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'environment' !
+
+
+environmentVariableAt: key <Str> ifAbsent: blk <[^X def]> ^ <Str | X>
+
+    | cKey <CString> cValue <CString> size <Int> cSize <ExternalProxy> result <Str> done <Boolean> found <Boolean> |
+    size := 1024.
+    cKey := CString for: key.
+    done := false.
+    [ done ] whileFalse: [
+        cValue := CString for: (String new: size).
+        cSize := {{<kernel ExternalProxy GetEnvironmentVariableA> key: cKey buffer: cValue bufSize: size}}.
+        cSize asSmallInteger > size
+            ifTrue: [   cValue free.                                                    "Buffer size too small for value of variable"
+                            size := cSize asSmallInteger ]
+            ifFalse: [  done := true.                                                   "Buffer size ok, check if variable was found"
+                            (found := cSize asSmallInteger ~= 0)
+                                ifTrue: [ result := cValue asString ] ] ].
+    cKey free. 
+    cValue free.
+    ^found
+        ifTrue: [ result ]
+        ifFalse: blk ! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+    self DLLInitialize! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'os streams' !
+
+
+errorStream ^<CharOutputStream>
+
+    ErrorStream isNil
+        ifTrue: [   ErrorStream := TempTranscript new ].
+    ^ErrorStream! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'platform classes' !
+
+
+pathClass ^<FilePath class>
+
+    ^Win32FilePath!
+
+patternClass ^<FilePattern class>
+
+    ^Win32FilePattern!
+
+processClass
+
+	^UnixProcess! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'private' !
+
+
+parseArgFrom: strm <CharInputStream>  ^<Str>
+
+    ^strm peek = $"
+        ifTrue: [       strm next.
+                        strm upTo: $"   ]
+        ifFalse: [  strm upTo: Character space ]!
+
+skipSpacesIn: strm <CharInputStream>
+
+    [ strm atEnd not and: [ strm peekFor: Character space] ] whileTrue.
+! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'private-clipboard access' !
+
+
+closeClipboard
+
+    {{<user ExternalProxy CloseClipboard> call}}!
+
+emptyClipboard
+
+    {{<user ExternalProxy EmptyClipboard> call}} asBoolean
+        ifFalse: [ Win32 handleError ].
+!
+
+openClipboard
+
+    {{<user ExternalProxy OpenClipboard> hnd: Win32 NULL}} asBoolean
+        ifFalse: [ Win32 handleError ].
+! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'testing' !
+
+
+usesCrLfConvention ^<Boolean>
+
+    ^true! !
+

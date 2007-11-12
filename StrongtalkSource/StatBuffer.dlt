@@ -1,0 +1,66 @@
+Delta define: #StatBuffer as: (
+(Class subclassOf: 'CStructure' instanceVariables: '')) !
+
+(Delta mirrorFor: #StatBuffer) revision: '$Revision:$'!
+
+(Delta mirrorFor: #StatBuffer) group: 'Unclassified'!
+
+(Delta mirrorFor: #StatBuffer)
+comment: 
+'Represents the buffer in which stat
+returns file attributes'!
+
+! (Delta mirrorFor: #StatBuffer) methodsFor: 'accessing' !
+
+
+blockSize
+
+	^self smallIntegerAt: self blockSizeOffset!
+
+fileSize
+
+	^self smallIntegerAt: self fileSizeOffset!
+
+gid
+
+	^self smallIntegerAt: self gidOffset!
+
+mode
+
+	^self smallIntegerAt: self modeOffset!
+
+structureSize
+
+	^88!
+
+uid
+
+	^self smallIntegerAt: self uidOffset!
+
+version
+
+	^3! !
+
+! (Delta mirrorFor: #StatBuffer) methodsFor: 'offsets' !
+
+
+blockSizeOffset
+
+	^48!
+
+fileSizeOffset
+
+	^44!
+
+gidOffset
+
+	^28!
+
+modeOffset
+
+	^16!
+
+uidOffset
+
+	^24! !
+

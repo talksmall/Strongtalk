@@ -1,0 +1,347 @@
+Delta define: #UnixFilePath as: (
+(Class subclassOf: 'FilePath mixin |>(ExternalStreamableObject mixin |>(ExternalObject mixin |>UnixFilePattern))' instanceVariables: '')) !
+
+(Delta mirrorFor: #UnixFilePath) revision: '$Revision: 1.4 $'!
+
+(Delta mirrorFor: #UnixFilePath) group: 'base'!
+
+(Delta mirrorFor: #UnixFilePath)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+
+
+currentDirectory ^<FilePath>
+
+    | buf <CString> buflen <Int> |
+    buflen := 1000.
+    buf := CString new malloc: buflen.
+    ^[      {{<kernel ExternalProxy GetCurrentDirectoryA>
+                size: buflen
+                buf: buf
+            }} isNull
+                ifTrue: [ Win32 handleError ]
+                ifFalse: [ self new pattern: buf asString ]
+      ] ensure: [ buf free ]! !
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'accessing' !
+
+
+type ^<Str>
+    "The file type (on most platforms this is the part after the $. at the end)"
+
+    | indices <SeqCltn[Int]> |
+    indices := self name indicesOfSubCollection: '.'.
+    indices isEmpty
+        ifTrue: [ ^'' ].
+    ^self name
+            copyFrom: indices last + 1
+            to: self name size! !
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'control' !
+
+
+createDirectoryIfFail: fail <[Symbol]>
+
+    | name <CString> |
+    name := CString for: self name.
+
+    [{{<libc ExternalProxy mkdir>
+            name: name
+            mode: 8r777
+        }} asSmallInteger == -1
+            ifTrue: [  fail value: #CannotCreateFile ]
+    ] ensure: [ name free ]! !
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'copying-moving' !
+
+
+copyAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+
+    | csrc <CString> cdest <CString> |
+    csrc := CString for: self name.
+    cdest := CString for: newPath name.
+    [   {{<kernel ExternalProxy CopyFileA>
+                source: csrc
+                dest: cdest
+                failIfExists: false asExternalData
+        }} asBoolean
+            ifFalse: [  fail value:
+                                ('Error copying file: ', Win32 getLastError printString) asSymbol ]
+    ] ensure:
+        [   csrc free.
+            cdest free  ]!
+
+moveAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+
+    | csrc <CString> cdest <CString> |
+    csrc := CString for: self name.
+    cdest := CString for: newPath name.
+    [   {{<kernel ExternalProxy MoveFileA>
+                source: csrc
+                dest: cdest
+        }} asBoolean
+            ifFalse: [  | err <ExternalData> |
+                            err := Win32 getLastError.
+                            err @= Win32 ERROR_ALREADY_EXISTS
+                                ifTrue: [   fail value: #AlreadyExists.
+                                                 ^self.  ].
+                            err @= Win32 ERROR_SHARING_VIOLATION
+                                ifTrue: [   fail value: #SharingViolation.
+                                                 ^self.  ].
+                            fail value:
+                                ('Error moving file: ', Win32 getLastError printString) asSymbol ]
+    ] ensure:
+        [   csrc free.
+            cdest free  ]! !
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+
+
+O_CREAT
+
+	^8r100!
+
+O_RDONLY
+
+	^0!
+
+O_RDWR
+
+	^2!
+
+O_TRUNC
+
+	^8r1000!
+
+O_WRONLY
+
+	^1!
+
+S_IFDIR
+
+	^8r40000!
+
+S_IRGRP
+
+	^8r400!
+
+S_IROTH
+
+	^8r40!
+
+S_IRUSR
+
+	^8r4000!
+
+S_IWGRP
+
+	^8r200!
+
+S_IWOTH
+
+	^8r20!
+
+S_IWUSR
+
+	^8r2000!
+
+S_IXGRP
+
+	^8r100!
+
+S_IXOTH
+
+	^8r10!
+
+S_IXUSR
+
+	^8r1000!
+
+createValueFor: mode <Symbol>  ^<ExternalData>
+
+    mode = #read
+        ifTrue: [ ^3        "OPEN_EXISTING" ].
+    mode = #write
+        ifTrue: [ ^2        "CREATE_ALWAYS" ].
+    mode = #readWrite
+        ifTrue: [ ^4        "OPEN_ALWAYS" ].
+    self shouldNotHappen!
+
+deleteDirectoryIfFail: blk <[Symbol]>
+
+    | name <CString> |
+    name := CString for: self name.
+    [ {{<libc ExternalProxy rmdir>
+             name: name
+        }} asSmallInteger == -1
+            ifTrue: [ blk value: #ErrorDeletingDirectory ]
+    ] ensure: [ name free ]!
+
+deleteFileIfFail: blk <[Symbol]>
+
+    | name <CString> |
+    name := CString for: self name.
+    [   {{<libc ExternalProxy unlink>
+                name: name
+        }} asSmallInteger == -1
+            ifTrue: [ blk value: #ErrorDeletingFile ]
+    ] ensure: [ name free ]!
+
+fileAttributesFor: mode <Symbol>  ^<ExternalData>
+    
+    mode = #read
+        ifTrue: [ ^ExternalProxy new
+                    setHigh:    16r0800        "FILE_FLAG_SEQUENTIAL_SCAN"
+                    low:            16r80        "FILE_ATTRIBUTE_NORMAL"    ].
+    (mode = #write)
+        ifTrue: [ ^ExternalProxy new
+                    setHigh:    16r0000
+                    low:            16r80        "FILE_ATTRIBUTE_NORMAL"    ].
+    (mode = #readWrite)
+        ifTrue: [ ^ExternalProxy new
+                    setHigh:    16r0000    
+                    low:            16r80        "FILE_ATTRIBUTE_NORMAL"    ].
+    self shouldNotHappen.!
+
+fileDescriptorClass ^<FileDescriptor class>
+
+    ^UnixFileDescriptor!
+
+getegid
+
+	^{{<libc ExternalProxy getegid> call}} asSmallInteger!
+
+geteuid
+
+	^{{<libc ExternalProxy geteuid> call}} asSmallInteger!
+
+modeFor: mode <Symbol> ^<SmallInt>
+
+    mode = #read
+        ifTrue: [ ^self O_RDONLY ].
+    mode = #write
+        ifTrue: [ ^(self O_WRONLY bitOr: self O_CREAT) bitOr: self O_TRUNC ].
+    mode = #readWrite
+        ifTrue: [ ^self O_RDWR bitOr: self O_CREAT ].
+    self error: 'Unrecognised mode: ' , mode!
+
+modeProxyFor: mode <Symbol> ^<SmallInt>
+
+    mode = #read
+        ifTrue: [ ^0 ].
+    mode = #write
+        ifTrue: [ ^1 ].
+    mode = #readWrite
+        ifTrue: [ ^2 ]!
+
+sharingValueFor: mode <Symbol> ^<ExternalData>
+
+    mode = #read
+        ifTrue: [ ^1    "FILE_SHARE_WRITE" ].
+    "in all other cases"
+    ^0 "no sharing"!
+
+stat: testBlock ifFail: failBlock
+
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy>
+    	name <CString> |
+    statBuffer := StatBuffer new.
+    statBuffer allocate.
+    name := CString for: self name.
+    [ status := {{<libc ExternalProxy __xstat>
+    					version: statBuffer version
+            			name: name
+            			buffer: statBuffer    }}.
+	status asSmallInteger == -1
+		ifTrue: [ failBlock value ]
+		ifFalse: [ ^testBlock value: statBuffer ]]
+		ensure: [ statBuffer free.
+						name free]!
+
+win32FileAttributesIfFail: blk <[^X def]> ^<ExternalProxy | X>
+
+    | name <CString> |
+    self halt.
+    name := CString for: self name.
+    ^[  | result <ExternalProxy> |
+        result := {{<kernel ExternalProxy GetFileAttributesA>
+                            name: name
+                        }}.
+        result @= (ExternalProxy forHigh: 16rFFFF low: 16rFFFF)
+            ifTrue: [ blk value ]
+            ifFalse: [ result ]
+     ] ensure: [ name free ]! !
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted' !
+
+
+openInternalFor: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalProxy | X>
+
+    |   dname <ExternalProxy>
+        dmode <SmallInt>
+        proxy <ExternalProxy> |
+    dname := self nameProxy.
+
+    [ dmode := self modeFor: mode.
+    	proxy := {{<libc ExternalProxy open>
+    					name: dname
+    					flags: dmode
+    					create: 8r777 }} ]
+    		ensure: [ dname free ].
+
+    ^proxy isAllOnes
+        ifFalse: [ proxy ]
+        ifTrue: [ err value: #cannotOpenFile ]! !
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted-double dispatching' !
+
+
+deletePathIfFail: blk <[Symbol]>
+
+    self exists
+        ifFalse: [  blk value: #NoSuchFileOrDirectory.
+                        ^self       ].
+    self isDirectory
+        ifTrue: [ self deleteDirectoryIfFail: blk ]
+        ifFalse: [ self deleteFileIfFail: blk ]! !
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'testing' !
+
+
+exists ^<Boolean>
+	| name result |
+	name := self nameProxy.
+    [ result := {{<libc ExternalProxy open>
+   	 					name: name
+    					flags: 0}}.
+     	^result asSmallInteger >= 0]
+     	ensure: [ name free.
+     				{{<libc ExternalProxy close>
+   	 					fd: result}} ]!
+
+isDirectory ^<Boolean>
+
+    ^self stat: [:stat| (stat mode bitAnd: self S_IFDIR) == self S_IFDIR]
+    	ifFail: [ self error: 'could not stat file' ]!
+
+isReadOnly ^<Boolean>
+
+    ^self isWriteable not!
+
+isSyntaxValid ^<Boolean>
+
+    "Extend inherited version to ensure no wildcard characters"
+    ^super isSyntaxValid and: [ self unimplemented ]!
+
+isWriteable
+
+    ^self stat: [:stat| 
+    				(stat uid == self geteuid and: [(stat mode bitAnd: self S_IWUSR) == self S_IWUSR])
+    					or: [(stat gid == self getegid and: [(stat mode bitAnd: self S_IWGRP) == self S_IWGRP])
+    					or: [(stat mode bitAnd: self S_IWOTH) == self S_IWOTH]]]
+    	ifFail: [ self error: 'could not stat file' ]! !
+
