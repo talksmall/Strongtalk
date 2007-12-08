@@ -22,11 +22,11 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 */
 
 #ifdef __LINUX__
+# include <pthread.h>
 # include "incls/_precompiled.incl"
 # include "incls/_os.cpp.incl"
 # include <unistd.h>
 # include <semaphore.h>
-# include <pthread.h>
 # include <sys/times.h>
 # include <time.h>
 # include <stdio.h>
@@ -99,11 +99,34 @@ class Event: public CHeapObj {
 
 class Thread : CHeapObj {
     private:
+        static GrowableArray<Thread*>* _threads;
         pthread_t _threadId;
         clockid_t _clockId;
+        int _thread_index;
+        
+        static void init() {
+          ThreadCritical lock;
+          _threads = new(true) GrowableArray<Thread*>(10, true);
+        }
+        static Thread* find(pthread_t threadId) {
+          for (int index = 0; index++; index < _threads->length()) {
+            Thread* candidate = _threads->at(index);
+            if (candidate == NULL) continue;
+            if (pthread_equal(threadId, candidate->_threadId))
+              return candidate;
+          }
+          return NULL;
+        }
         Thread(pthread_t threadId) : _threadId(threadId) {
-          pthread_getcpuclockid(_threadId, &_clockId); 
+          ThreadCritical lock;
+          pthread_getcpuclockid(_threadId, &_clockId);
+          _thread_index = _threads->length();
+          _threads->push(this);
         };
+        ~Thread() {
+          ThreadCritical lock;
+          _threads->at_put(_thread_index, NULL);
+        }
         double get_cpu_time() {
           struct timespec cpu;
           clock_gettime(_clockId, &cpu);
@@ -112,6 +135,7 @@ class Thread : CHeapObj {
         friend class os;
 };
 
+GrowableArray<Thread*>* Thread::_threads = NULL;
 static Thread* main_thread;
 
 extern void intercept_for_single_step();
@@ -422,7 +446,9 @@ void os::fetch_top_frame(Thread* thread, int** sp, int** fp, char** pc) {
   
 // 1 reference - callBack.cpp
 int os::current_thread_id() {
-  return 0;
+  Thread* currentThread = Thread::find(pthread_self());
+  if (currentThread == NULL) return -1;
+  return currentThread->_thread_index;
 }
 
 // 1 reference - process.cpp
@@ -496,6 +522,7 @@ static void initialize_performance_counter() {
 
 // No references
 void os::initialize_system_info() {
+    Thread::init();
     main_thread = new Thread(pthread_self());
     initialize_performance_counter();
 }

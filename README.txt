@@ -69,6 +69,10 @@ The differences between them are:
   the non-debug runtime libraries, and turns on more extensive C++ 
   optimizations.  This is the version that should be used for benchmarking.
 
+Note: the code is formatted for a tab-width of 8, so the default of 4 must be changed when
+using Visual Studio.   Go to Tools/Options/Text Editor/All Languages/Tabs.
+
+
 Execute instructions
 --------------------
 
