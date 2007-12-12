@@ -109,7 +109,7 @@ class Thread : CHeapObj {
           _threads = new(true) GrowableArray<Thread*>(10, true);
         }
         static Thread* find(pthread_t threadId) {
-          for (int index = 0; index++; index < _threads->length()) {
+          for (int index = 0; index < _threads->length(); index++) {
             Thread* candidate = _threads->at(index);
             if (candidate == NULL) continue;
             if (pthread_equal(threadId, candidate->_threadId))
@@ -161,6 +161,7 @@ void os::breakpoint() {
 
 // 1 reference process.cpp
 Thread* os::starting_thread(int* id_addr) {
+  *id_addr = main_thread->_thread_index;
   return main_thread;
 }
 
@@ -187,7 +188,9 @@ Thread* os::create_thread(int threadStart(void* parameter), void* parameter, int
   if (status != 0) {
     fatal("Unable to create thread");
   }
-  return new Thread(threadId);
+  Thread* thread = new Thread(threadId);
+  *id_addr = thread->_thread_index;
+  return thread;
 }
 
 // 1 reference process.cpp

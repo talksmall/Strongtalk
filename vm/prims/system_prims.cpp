@@ -897,3 +897,8 @@ PRIM_DECL_0(systemPrimitives::command_line_args) {
   }
   return result;
 }
+
+PRIM_DECL_0(systemPrimitives::current_thread_id) {
+  PROLOGUE_0("current_thread_id");
+  return as_smiOop(os::current_thread_id());
+}

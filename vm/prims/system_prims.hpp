@@ -530,4 +530,11 @@ class systemPrimitives : AllStatic {
   //              name   = 'systemPrimitives::command_line_args' }
   //%
   static PRIM_DECL_0(command_line_args);
+
+  //%prim
+  // <NoReceiver> primitiveCurrentThreadId ^<SmallInteger> =
+  //   Internal { doc    = 'Retrieves an identifier for the currently executing thread.'
+  //              name   = 'systemPrimitives::current_thread_id' }
+  //%
+  static PRIM_DECL_0(current_thread_id);
 };

@@ -1,0 +1,7 @@
+|callback result|
+callback := CCallBack register: [:msg| Transcript show: msg asString;cr. 22]
+	parameters: (OrderedCollection with: CString).
+
+result := {{<libcallback ExternalProxy callback>
+							callback: callback}}.
+Transcript cr; show: result asSmallInteger printString !

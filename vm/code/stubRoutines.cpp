@@ -1193,7 +1193,7 @@ char* StubRoutines::generate_handle_C_callback_stub(MacroAssembler* masm) {
 
    // compute parameter start
    masm->movl(edx, esp);
-   masm->addl(edx, 8); //  (fp, return address)
+   masm->addl(edx, 20); //  (esi, edi, ebx, fp, return address)
 
    // eax = handleCallBack(index, &params)
    masm->pushl(edx); // &params
