@@ -27,7 +27,7 @@ $(VM_SRC_DIR)/utilities
 default: dependencies objects link
 
 link:
-	g++ -v -o $(EXECUTABLE) -L/usr/lib $(VM_SRC_DIR)/*/*.o -lpthread -ldl -lrt
+	g++ -v $(OPT) -o $(EXECUTABLE) -L/usr/lib $(VM_SRC_DIR)/*/*.o -lpthread -ldl -lrt
 
 objects:
 	for i in $(DIRECTORIES);\

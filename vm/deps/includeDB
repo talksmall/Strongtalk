@@ -170,12 +170,10 @@ blockOop.cpp			vframe.hpp
 blockOop.hpp			frame.hpp
 blockOop.hpp			memOop.hpp
 blockOop.hpp			methodOop.hpp
+blockOop.hpp			memOop.inline.hpp
 
 blockOop.inline.hpp		blockKlass.hpp
 blockOop.inline.hpp		blockOop.hpp
-
-
-bootstrap.hpp			memOop.hpp
 
 bootstrap.cpp			associationKlass.hpp
 bootstrap.cpp			blockKlass.hpp
@@ -197,24 +195,26 @@ bootstrap.cpp			smiKlass.hpp
 bootstrap.cpp			symbolKlass.hpp
 bootstrap.cpp			symbolTable.hpp
 bootstrap.cpp			weakArrayKlass.hpp
+
+bootstrap.hpp			memOop.hpp
+
 bootstrap.cpp			vframeKlass.hpp
 
-
-bytecodes.hpp			allocation.hpp
 bytecodes.cpp			bytecodes.hpp
 bytecodes.cpp			disclaimer.hpp
 bytecodes.cpp			floats.hpp
 
-
-byteArray_prims.hpp		prim_def.hpp
+bytecodes.hpp			allocation.hpp
 
 byteArray_prims.cpp		byteArray_prims.hpp
-byteArray_prims.cpp		prim_impl.hpp
 byteArray_prims.cpp		byteArrayOop.hpp
 byteArray_prims.cpp		integerOps.hpp
-byteArray_prims.cpp		symbolTable.hpp
+byteArray_prims.cpp		memOop.inline.hpp
 byteArray_prims.cpp		objArrayOop.hpp
+byteArray_prims.cpp		prim_impl.hpp
+byteArray_prims.cpp		symbolTable.hpp
 
+byteArray_prims.hpp		prim_def.hpp
 
 byteArrayKlass.cpp		byteArrayKlass.hpp
 byteArrayKlass.cpp		smiOop.hpp
@@ -225,7 +225,6 @@ byteArrayKlass.cpp		memOop.inline.hpp
 
 byteArrayKlass.hpp		byteArrayOop.hpp
 byteArrayKlass.hpp		memOopKlass.hpp
-
 
 byteArrayOop.cpp		abort.hpp
 byteArrayOop.cpp		ageTable.hpp
@@ -243,7 +242,6 @@ byteArrayOop.cpp		oop.inline.hpp
 byteArrayOop.hpp		memOop.hpp
 byteArrayOop.hpp		klass.hpp
 
-
 callBack.hpp			oop.hpp
 
 callBack.cpp			abort.hpp
@@ -258,7 +256,6 @@ callBack.cpp			proxyOop.hpp
 callBack.cpp			os.hpp
 callBack.cpp			oop.inline.hpp
 callBack.cpp			stubRoutines.hpp
-
 
 callBack_prims.hpp		prim_def.hpp
 
@@ -277,27 +274,27 @@ codeBuffer.cpp			symbolOop.hpp
 codeBuffer.hpp			relocInfo.hpp
 codeBuffer.hpp         		allocation.hpp
 
+codeIterator.cpp		associationOop.hpp
 codeIterator.cpp		codeIterator.hpp   
 codeIterator.cpp		dispatchTable.hpp
-codeIterator.cpp		methodOop.hpp
 codeIterator.cpp		interpretedIC.hpp
 codeIterator.cpp		interpreter.hpp
-codeIterator.cpp		associationOop.hpp
+codeIterator.cpp		methodOop.hpp
+codeIterator.cpp		oop.inline.hpp
 
 codeIterator.hpp		allocation.hpp
 codeIterator.hpp		bytecodes.hpp
 codeIterator.hpp		dll.hpp
 codeIterator.hpp		top.hpp
 
-
 dByteArray_prims.hpp		prim_def.hpp
 
 dByteArray_prims.cpp		dByteArray_prims.hpp
-dByteArray_prims.cpp		prim_impl.hpp
 dByteArray_prims.cpp		dByteArrayOop.hpp
-dByteArray_prims.cpp		symbolTable.hpp
+dByteArray_prims.cpp		memOop.inline.hpp
 dByteArray_prims.cpp		objArrayOop.hpp
-
+dByteArray_prims.cpp		prim_impl.hpp
+dByteArray_prims.cpp		symbolTable.hpp
 
 dByteArrayKlass.cpp		dByteArrayKlass.hpp
 dByteArrayKlass.cpp		smiOop.hpp
@@ -309,27 +306,27 @@ dByteArrayKlass.hpp		dByteArrayOop.hpp
 dByteArrayKlass.hpp		oop.inline.hpp
 dByteArrayKlass.hpp		memOopKlass.hpp
 
-
 dByteArrayOop.cpp		abort.hpp
 dByteArrayOop.cpp		ageTable.hpp
+dByteArrayOop.cpp		bootstrap.hpp
 dByteArrayOop.cpp		dByteArrayKlass.hpp
 dByteArrayOop.cpp		dByteArrayOop.hpp
 dByteArrayOop.cpp		debug.hpp
+dByteArrayOop.cpp		memOop.inline.hpp
 dByteArrayOop.cpp		shell.hpp
 dByteArrayOop.cpp		symbolKlass.hpp
 dByteArrayOop.cpp		symbolOop.hpp
 dByteArrayOop.cpp		util.hpp
-dByteArrayOop.cpp		bootstrap.hpp
-
-
-dValueArray_prims.hpp		prim_def.hpp
-
-dValueArray_prims.cpp		dValueArray_prims.hpp
-dValueArray_prims.cpp		prim_impl.hpp
-dValueArray_prims.cpp		dValueArrayOop.hpp
 
 dByteArrayOop.hpp		memOop.hpp
 dByteArrayOop.hpp		klass.hpp
+
+dValueArray_prims.cpp		dValueArray_prims.hpp
+dValueArray_prims.cpp		dValueArrayOop.hpp
+dValueArray_prims.cpp		memOop.inline.hpp
+dValueArray_prims.cpp		prim_impl.hpp
+
+dValueArray_prims.hpp		prim_def.hpp
 
 dValueArrayKlass.cpp		dValueArrayKlass.hpp
 dValueArrayKlass.cpp		iterator.hpp
@@ -339,12 +336,13 @@ dValueArrayKlass.hpp		dValueArrayOop.hpp
 dValueArrayKlass.hpp		oop.inline.hpp
 dValueArrayKlass.hpp		memOopKlass.hpp
 
+dValueArrayOop.cpp		bootstrap.hpp
 dValueArrayOop.cpp		dValueArrayKlass.hpp
 dValueArrayOop.cpp		dValueArrayOop.hpp
-dValueArrayOop.cpp		bootstrap.hpp
+dValueArrayOop.cpp		memOop.inline.hpp
 
-dValueArrayOop.hpp		memOop.hpp
 dValueArrayOop.hpp		klass.hpp
+dValueArrayOop.hpp		memOop.hpp
 
 debug.cpp			abort.hpp
 debug.cpp			debug.hpp
@@ -352,7 +350,6 @@ debug.cpp			klassOop.hpp
 
 debug.hpp			eventLog.hpp
 debug.hpp			top.hpp
-
 
 debugPrintable.cpp		compiler.hpp
 debugPrintable.cpp		debugPrintable.hpp
@@ -383,22 +380,21 @@ debug_prims.cpp			os.hpp
 debug_prims.cpp			iterator.hpp
 debug_prims.cpp			memOop.inline.hpp
 
-delta.hpp			allocation.hpp
-delta.hpp			lookupCache.hpp
-delta.hpp			objArrayOop.hpp
-delta.hpp			symbolOop.hpp
-
 delta.cpp			delta.hpp
 delta.cpp			objArrayOop.hpp
 delta.cpp			oop.inline.hpp
 delta.cpp			stubRoutines.hpp
 delta.cpp			vmSymbols.hpp
 
+delta.hpp			allocation.hpp
+delta.hpp			lookupCache.hpp
+delta.hpp			objArrayOop.hpp
+delta.hpp			symbolOop.hpp
 
 disclaimer.cpp			disclaimer.hpp
+
 disclaimer.hpp			allocation.hpp
 disclaimer.hpp			ostream.hpp
-
 
 dispatchTable.hpp		allocation.hpp
 
@@ -407,18 +403,18 @@ dispatchTable.cpp		dispatchTable.hpp
 dispatchTable.cpp		interpreter.hpp
 dispatchTable.cpp		stubRoutines.hpp
 
-
 dll.hpp				nativeInstruction.hpp
 dll.hpp				os.hpp
 dll.hpp				types.hpp
 
 dll.cpp				codeIterator.hpp
+dll.cpp				delta.hpp
 dll.cpp				dll.hpp
+dll.cpp				oop.inline.hpp
+dll.cpp				proxyOop.hpp
+dll.cpp				stubRoutines.hpp
 dll.cpp				symbolOop.hpp
 dll.cpp				vmOperations.hpp
-dll.cpp				delta.hpp
-dll.cpp				stubRoutines.hpp
-dll.cpp				proxyOop.hpp
 
 double_prims.hpp		prim_def.hpp
 
@@ -597,13 +593,6 @@ interpretedIC.cpp		universe.hpp
 interpretedIC.cpp		universe.store.hpp
 interpretedIC.cpp		objArrayKlass.hpp
 
-
-interpreter.hpp			allocation.hpp
-interpreter.hpp			assembler.hpp
-interpreter.hpp			associationOop.hpp
-interpreter.hpp			codeIterator.hpp
-interpreter.hpp			dispatchTable.hpp
-interpreter.hpp			frame.hpp
 interpreter.cpp			blockOop.hpp
 interpreter.cpp			disassembler.hpp
 interpreter.cpp			disclaimer.hpp
@@ -614,6 +603,7 @@ interpreter.cpp			interpretedIC.hpp
 interpreter.cpp			interpreter.hpp
 interpreter.cpp			generatedPrimitives.hpp
 interpreter.cpp			objArrayOop.hpp
+interpreter.cpp			oop.inline.hpp
 interpreter.cpp			oopFactory.hpp
 interpreter.cpp			prim.hpp
 interpreter.cpp			proxyOop.hpp
@@ -621,7 +611,12 @@ interpreter.cpp			recompile.hpp
 interpreter.cpp			rSet.hpp
 interpreter.cpp			stubRoutines.hpp
 
-
+interpreter.hpp			allocation.hpp
+interpreter.hpp			assembler.hpp
+interpreter.hpp			associationOop.hpp
+interpreter.hpp			codeIterator.hpp
+interpreter.hpp			dispatchTable.hpp
+interpreter.hpp			frame.hpp
 
 interpreterStatistics.hpp	allocation.hpp
 interpreterStatistics.hpp	bytecodes.hpp
@@ -805,30 +800,29 @@ methodIterator.cpp		prim.hpp
 methodOop.hpp			bytecodes.hpp
 methodOop.hpp			frame.hpp
 methodOop.hpp			memOop.hpp
+methodOop.hpp			oop.inline.hpp
 methodOop.hpp			symbolOop.hpp
 
-methodOop.cpp			methodOop.hpp
+methodOop.cpp			associationOop.hpp
+methodOop.cpp			blockKlass.hpp
 methodOop.cpp			bootstrap.hpp
 methodOop.cpp			byteArrayOop.hpp
-methodOop.cpp			blockKlass.hpp
+methodOop.cpp			codeIterator.hpp
 methodOop.cpp			costModel.hpp
+methodOop.cpp			dispatchTable.hpp
+methodOop.cpp			dll.hpp
 methodOop.cpp			interpretedIC.hpp
+methodOop.cpp			memOop.inline.hpp
+methodOop.cpp			methodIterator.hpp
+methodOop.cpp			methodKlass.hpp
+methodOop.cpp			methodOop.hpp
 methodOop.cpp			methodPrinter.hpp
+methodOop.cpp			mixinOop.hpp
 methodOop.cpp			objArrayOop.hpp
+methodOop.cpp			oopFactory.hpp
+methodOop.cpp			oop.inline.hpp
 methodOop.cpp			prettyPrinter.hpp
 methodOop.cpp			vmSymbols.hpp
-methodOop.cpp			oopFactory.hpp
-methodOop.cpp			methodKlass.hpp
-methodOop.cpp			codeIterator.hpp
-methodOop.cpp			dll.hpp
-methodOop.cpp			oop.inline.hpp
-methodOop.cpp			dispatchTable.hpp
-methodOop.cpp			methodIterator.hpp
-methodOop.cpp			associationOop.hpp
-methodOop.cpp			mixinOop.hpp
-
-methodKlass.hpp			memOopKlass.hpp
-methodKlass.hpp			methodOop.hpp
 
 methodKlass.cpp			methodKlass.hpp
 methodKlass.cpp			iterator.hpp
@@ -839,6 +833,8 @@ methodKlass.cpp			codeIterator.hpp
 methodKlass.cpp			memOop.inline.hpp
 methodKlass.cpp			oop.inline.hpp
 
+methodKlass.hpp			memOopKlass.hpp
+methodKlass.hpp			methodOop.hpp
 
 methodPrinter.hpp		methodIterator.hpp
 methodPrinter.hpp		prim.hpp
@@ -872,31 +868,27 @@ mixinKlass.cpp			mixinOop.hpp
 mixinKlass.cpp			oop.inline.hpp
 mixinKlass.cpp			oopFactory.hpp
 
-
 mixinOop.hpp			memOop.hpp
 
-mixinOop.cpp			mixinOop.hpp
+mixinOop.cpp			associationOop.hpp
 mixinOop.cpp			bootstrap.hpp
 mixinOop.cpp			objArrayOop.hpp
-mixinOop.cpp			oopFactory.hpp
 mixinOop.cpp			methodOop.hpp
-mixinOop.cpp			associationOop.hpp
+mixinOop.cpp			mixinOop.hpp
 mixinOop.cpp			oop.inline.hpp
-
-
+mixinOop.cpp			oopFactory.hpp
 
 nativeInstruction.hpp		allocation.hpp
 nativeInstruction.cpp		nativeInstruction.hpp
 nativeInstruction.cpp		ostream.hpp
 
-
 objArray_prims.hpp		prim_def.hpp
 
-objArray_prims.cpp		objArray_prims.hpp
-objArray_prims.cpp		prim_impl.hpp
-objArray_prims.cpp		objArrayOop.hpp
 objArray_prims.cpp		handle.hpp
-
+objArray_prims.cpp		memOop.inline.hpp
+objArray_prims.cpp		objArray_prims.hpp
+objArray_prims.cpp		objArrayOop.hpp
+objArray_prims.cpp		prim_impl.hpp
 
 objArrayKlass.cpp		objArrayKlass.hpp
 objArrayKlass.cpp		vmSymbols.hpp
@@ -1160,8 +1152,10 @@ reflection.cpp			dByteArrayOop.hpp
 reflection.cpp			dValueArrayOop.hpp
 reflection.cpp			evaluator.hpp
 reflection.cpp			mixinOop.hpp
+reflection.cpp			memOop.inline.hpp
 reflection.cpp			objArrayOop.hpp
 reflection.cpp			oopFactory.hpp
+reflection.cpp			oop.inline.hpp
 reflection.cpp			proxyOop.hpp
 reflection.cpp			processOop.hpp
 reflection.cpp			reflection.hpp
@@ -1266,14 +1260,12 @@ stackChunk.cpp			oopFactory.hpp
 stackChunk.cpp			oop.inline.hpp
 stackChunk.cpp			objArrayOop.hpp
 
-
-stubRoutines.hpp		allocation.hpp
-stubRoutines.hpp		assembler.hpp
-stubRoutines.hpp		dll.hpp
 stubRoutines.cpp		blockOop.hpp
+stubRoutines.cpp		blockOop.inline.hpp
 stubRoutines.cpp		compiledPIC.hpp
 stubRoutines.cpp		disclaimer.hpp
 stubRoutines.cpp		interpreter.hpp
+stubRoutines.cpp		oop.inline.hpp
 stubRoutines.cpp		oopFactory.hpp
 stubRoutines.cpp		proxyOop.hpp
 stubRoutines.cpp		recompile.hpp
@@ -1281,6 +1273,9 @@ stubRoutines.cpp		stubRoutines.hpp
 stubRoutines.cpp		savedRegisters.hpp
 stubRoutines.cpp		uncommonBranch.hpp
 
+stubRoutines.hpp		allocation.hpp
+stubRoutines.hpp		assembler.hpp
+stubRoutines.hpp		dll.hpp
 
 sweeper.hpp			oop.hpp
 sweeper.hpp			timer.hpp
@@ -1291,6 +1286,7 @@ sweeper.cpp			methodOop.hpp
 sweeper.cpp			mixinOop.hpp
 sweeper.cpp			nmethod.hpp
 sweeper.cpp			objArrayOop.hpp
+sweeper.cpp			oop.inline.hpp
 sweeper.cpp			sweeper.hpp
 sweeper.cpp			task.hpp
 sweeper.cpp			zone.hpp
