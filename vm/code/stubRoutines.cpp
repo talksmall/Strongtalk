@@ -964,6 +964,7 @@ char* StubRoutines::generate_single_step_stub(MacroAssembler* masm) {
 
   char* entry_point = masm->pc();
 
+//  masm->int3();
   masm->cmpl(ebp, Address((int)&frame_breakpoint, relocInfo::external_word_type));
   masm->jcc(Assembler::greaterEqual, is_break);	
   masm->jmp(Address(noreg, ebx, Address::times_4, (int)original_table));

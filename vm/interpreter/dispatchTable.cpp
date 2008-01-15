@@ -156,7 +156,11 @@ void dispatchTable::intercept_for_step() {
   if (!in_step_mode()) {
     patch_with_sst_stub();
     mode = step_mode;
-    frame_breakpoint = (int*) -1;
+//slr mod - the original value depends on the memory addresses of method bytecodes 
+//    being < 0x80000000 as in 32 bit Windows
+//    frame_breakpoint = (int*) -1;
+    frame_breakpoint = (int*) 0x80000000;
+//end slr mod
   }
 }
 
