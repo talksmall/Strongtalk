@@ -176,10 +176,21 @@ void Recompilation::doit() {
     if (r) {
       recompile(r);
     } 
+    
+    //slr debugging
+  if (false && _nm) {
+    std->cr();
+    _nm->print_value_on(std);
+    std->cr();
+    _method->print_value_on(std);
+    std->cr();
+    std->print_cr("uncommon? %d", _nm->isUncommonRecompiled());
+  }
+    //slr debugging
   
     if (true || !_recompiledTrigger) {	  // fix this
       // reset the trigger's counter
-      if (isCompiled() && !_nm->isUncommonRecompiled()) {
+      if (isCompiled() /*&& !_nm->isUncommonRecompiled()*/) {
 	// don't 
 	_nm->set_invocation_count(1);
       } else {

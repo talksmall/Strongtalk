@@ -32,41 +32,24 @@ long_int::long_int(unsigned int low, unsigned int high) {
 }
 
 long_int::long_int(double value) {
-  long_int result = double_conversion(value);
-  low  = result.low;
-  high = result.high;
+  *(int64_t*)&low  = value;
 }
 
 long_int long_int::operator +(long_int arg) {
-  long_int receiver = *this;
-  long_int result;
-  /*
-  __asm {
-    mov eax, receiver.low
-    mov edx, receiver.high
-    add eax, arg.low
-    adc edx, arg.high
-    mov result.low,  eax
-    mov result.high, edx
-  }
-  */
-  *(int64_t*)&result = *(int64_t*)&receiver + *(int64_t*)&arg;
-  return result;
+  return long_int(*(int64_t*)&low + *(int64_t*)&arg.low);
 }
 
 long_int long_int::operator -(long_int arg) {
-  long_int receiver = *this;
-  long_int result;
-/*  __asm {
-    mov eax, receiver.low
-    mov edx, receiver.high
-    sub eax, arg.low
-    sbb edx, arg.high
-    mov result.low,  eax
-    mov result.high, edx
-  }*/
-  *(int64_t*)&result = *(int64_t*)&receiver - *(int64_t*)&arg;
+  long_int result = *(int64_t*)&low - *(int64_t*)&arg.low;
   return result;
+}
+
+bool long_int::operator ==(long_int arg) {
+  return *(int64_t*)&low == *(int64_t*)&arg.low;
+}
+
+bool long_int::operator !=(long_int arg) {
+  return *(int64_t*)&low != *(int64_t*)&arg.low;
 }
 
 #ifdef _MSC_VER
@@ -75,25 +58,7 @@ long_int long_int::operator -(long_int arg) {
 #endif
 
 double long_int::as_double() {
-  long_int receiver = *this;  
-  double result;
-/*  __asm {
-    fild receiver
-    fstp result
-  }
-*/
-  result = *(int64_t*)&receiver;
-  return result;
-}
-
-long_int long_int::double_conversion(double value) {
-  register long_int result;
-/*  __asm {
-    fld   value
-    fistp result
-  }*/
-  *(int64_t*)&result = value; // %note: will use C rounding, not equivalent to the assembly
-  return result;
+  return double(*(int64_t*)&low);
 }
 
 #ifdef _MSC_VER

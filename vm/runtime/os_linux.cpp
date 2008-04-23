@@ -20,7 +20,8 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 
 */
-
+#ifndef __OS_LINUX__
+#define __OS_LINUX__
 #ifdef __LINUX__
 # include <pthread.h>
 # include "incls/_precompiled.incl"
@@ -31,6 +32,26 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include <time.h>
 # include <stdio.h>
 # include <dlfcn.h>
+# include <signal.h>
+# include <ucontext.h>
+
+void os_dump_context2(ucontext_t *context) {
+    mcontext_t mcontext = context->uc_mcontext;
+    printf("\nEAX: %x", mcontext.gregs[REG_EAX]);
+    printf("\nEBX: %x", mcontext.gregs[REG_EBX]);
+    printf("\nECX: %x", mcontext.gregs[REG_ECX]);
+    printf("\nEDX: %x", mcontext.gregs[REG_EDX]);
+    printf("\nEIP: %x", mcontext.gregs[REG_EIP]);
+    printf("\nESP: %x", mcontext.gregs[REG_ESP]);
+    printf("\nEBP: %x", mcontext.gregs[REG_EBP]);
+    printf("\nEDI: %x", mcontext.gregs[REG_EDI]);
+    printf("\nESI: %x", mcontext.gregs[REG_ESI]);
+}
+void os_dump_context() {
+	ucontext_t context;
+	getcontext(&context);
+	os_dump_context2(&context);
+}
 
 static int    main_thread_id;
 class Lock {
@@ -57,12 +78,9 @@ char** os::argv() {
   return _argv;
 }
 
-extern int vm_main(int argc, char* argv[]);
-
-int main(int argc, char* argv[]) {
+void os::set_args(int argc, char* argv[]) {
     _argc = argc;
     _argv = argv;
-    return vm_main(argc, argv);
 }
 
 class Event: public CHeapObj {
@@ -98,16 +116,7 @@ class Event: public CHeapObj {
 };
 
 class Thread : CHeapObj {
-    private:
-        static GrowableArray<Thread*>* _threads;
-        pthread_t _threadId;
-        clockid_t _clockId;
-        int _thread_index;
-        
-        static void init() {
-          ThreadCritical lock;
-          _threads = new(true) GrowableArray<Thread*>(10, true);
-        }
+	public:
         static Thread* find(pthread_t threadId) {
           for (int index = 0; index < _threads->length(); index++) {
             Thread* candidate = _threads->at(index);
@@ -117,7 +126,25 @@ class Thread : CHeapObj {
           }
           return NULL;
         }
-        Thread(pthread_t threadId) : _threadId(threadId) {
+        void suspend() {
+        	suspendEvent.waitFor();
+        }
+        void resume() {
+        	suspendEvent.signal();
+        }
+    private:
+        Event suspendEvent;
+        static GrowableArray<Thread*>* _threads;
+        pthread_t _threadId;
+        clockid_t _clockId;
+        int _thread_index;
+        
+        static void init() {
+          ThreadCritical lock;
+          _threads = new(true) GrowableArray<Thread*>(10, true);
+          
+        }
+        Thread(pthread_t threadId) : _threadId(threadId), suspendEvent(false) {
           ThreadCritical lock;
           pthread_getcpuclockid(_threadId, &_clockId);
           _thread_index = _threads->length();
@@ -328,9 +355,9 @@ class Allocations {
     char** allocations;
     char** reallocBoundary;
     char** next;
+    bool released;
     
     void checkCapacity() {
-      assert(next <= reallocBoundary, "next is outside expected range");
       if (next == reallocBoundary) {
         reallocate();
       }
@@ -345,13 +372,6 @@ class Allocations {
         reallocBoundary = allocations + allocationSize;
         free(oldAllocations);
     }
-  public:
-    Allocations() {
-      initialize();
-    }
-    ~Allocations() {
-      release();
-    }
     void initialize() {
       allocationSize = 10;
       allocations = (char**)malloc(sizeof(char*) * allocationSize);
@@ -359,10 +379,22 @@ class Allocations {
       next = allocations;
     }
     void release() {
-      assert(allocations == next, "allocations should be empty");
+      if (released) return;
+      for (char** current = allocations; current < next; current++)
+        free(*current);
       free(allocations);
+      allocations = next = reallocBoundary = NULL;
+      released = true;
+    }
+  public:
+    Allocations() {
+      initialize();
+    }
+    ~Allocations() {
+      release();
     }
     void remove(char* allocation) {
+      if (released) return;
       for (char** current = allocations; current < next; current++)
         if (*current == allocation) {
           for (char** to_move = current; to_move < next; to_move++)
@@ -372,11 +404,13 @@ class Allocations {
         }
     }
     void add(char* allocation) {
+      if (released) return;
+      checkCapacity();
       *next = allocation;
       next++;
-      checkCapacity();
     }
     bool contains(char* allocation) {
+      if (released) return false;
       for (char** current = allocations; current < (allocations + allocationSize); current++)
         if (*current == allocation) return true;
       return false;
@@ -433,10 +467,18 @@ void os::transfer_and_continue(Thread* from_thread, Event* from_event, Thread* t
 
 // 1 reference - process.cpp
 void os::suspend_thread(Thread* thread) {
+	os_dump_context();
+	pthread_kill(thread->_threadId, SIGUSR1);
 }
 
+void suspendHandler(int signum) {
+	Thread* current = Thread::find(pthread_self());
+	assert(current, "Suspended thread not found!");
+	current->suspend();
+}
 // 1 reference - process.cpp
 void os::resume_thread(Thread* thread) {
+	thread->resume();
 }
 
 // No references
@@ -565,8 +607,50 @@ void* watcherMain(void* ignored) {
   return 0;
 }
 
+void segv_repeated(int signum, siginfo_t* info, void* context) {
+	printf("SEGV during signal handling. Aborting.");
+	exit(-2);
+}
+
+void install_dummy_handler() {
+	  struct sigaction sa;
+
+	  sigemptyset(&sa.sa_mask);
+	  sa.sa_flags = SA_RESTART |SA_SIGINFO;
+	  sa.sa_sigaction = segv_repeated;
+	  if (sigaction(SIGSEGV, &sa, NULL) == -1)
+	      /* Handle error */;
+}
+
+void trace_stack(int thread_id);
+
+static void handler(int signum, siginfo_t* info, void* context) {
+//	install_dummy_handler();
+//	trace_stack(os::current_thread_id());
+    printf("\nsignal: %d\ninfo: %x\ncontext: %x", signum, (int) info, (int) context);
+	os_dump_context2((ucontext_t*) context);
+    exit(-1);
+}
+
+void install_signal_handlers() {
+	  struct sigaction sa;
+
+	  sigemptyset(&sa.sa_mask);
+	  sa.sa_flags = SA_RESTART; /* Restart functions if
+	                               interrupted by handler */
+	  sa.sa_handler = suspendHandler;
+	  if (sigaction(SIGUSR1, &sa, NULL) == -1)
+	      /* Handle error */;
+	  sa.sa_flags |= SA_SIGINFO;
+	  sa.sa_sigaction = handler;
+	  if (sigaction(SIGSEGV, &sa, NULL) == -1)
+	      /* Handle error */;
+}
+
 void os_init() {
   ThreadCritical::intialize();
+
+  install_signal_handlers();
   os::initialize_system_info();
   
   if (EnableTasks) {
@@ -582,3 +666,4 @@ void os_exit() {
   ThreadCritical::release();
 }
 #endif /* __GNUC__ */
+#endif

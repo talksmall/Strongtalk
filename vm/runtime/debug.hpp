@@ -21,6 +21,8 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 */
 
+# include <string.h>
+
 // Debug flags control various aspects of the VM and are
 // accessible by Delta programs.
 
@@ -62,6 +64,9 @@ class debugFlags {
 #define APPLY_TO_BOOLEAN_FLAGS(develop,product)                                                                                       \
 /*        name                               default  documentation */                                                                \
                                                                                                                                       \
+  develop(PrintUnwind                        , false, "Print a message every 100 unwinds"                                           ) \
+  develop(FlagsInitialized                   , true,  "Not to be set directly - used to indicate that flags have been initialized"  ) \
+  develop(AllowGlobalNew                     , true,  "Allow allocations on the 'C' heap - use for testing"                         ) \
   develop(ZapResourceArea                    , false, "Zap the resource area when deallocated"                                      ) \
   develop(PrintResourceAllocation            , false, "Print each resource area allocation"                                         ) \
   develop(PrintResourceChunkAllocation       , false, "Print each resource area chunk allocation"                                   ) \

@@ -66,10 +66,20 @@ class outputStream : public ResourceObj {
 };
 
 // Standard output
-extern outputStream* std;
+extern outputStream* _std;
+
+outputStream* getErr();
+outputStream* getStd();
+
+#ifdef std
+#undef std
+#endif
+
+#define std getStd()
+//#define err getErr()
 
 // Standard error
-extern outputStream* err;
+extern outputStream* _err;
 
 class stringStream : public outputStream {
  protected:

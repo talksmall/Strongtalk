@@ -823,12 +823,14 @@ void Reflection::convert(oop* p) {
     return;
 
   if (memOop(obj)->is_forwarded()) {
-    Universe::store(p, memOop(obj)->forwardee());
+	  // slr mod: only update the memory card if reference is in object memory
+    Universe::store(p, memOop(obj)->forwardee(), Universe::is_heap(p));
     return;
   }
 
   if (memOop(obj)->klass()->klass_part()->is_marked_for_schema_change()) {
-    Universe::store(p, convert_object(memOop(obj)));
+	  // slr mod: only update the memory card if reference is in object memory
+    Universe::store(p, convert_object(memOop(obj)), Universe::is_heap(p));
   }
 }
 

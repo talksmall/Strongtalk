@@ -1476,8 +1476,8 @@ class AbstractArrayAtNode : public AbstractBranchNode {
   int	_dataOffset;	    	// where start of array is (oop offset)
   int	_sizeOffset;	    	// where size of array is (oop offset)
 
-   AbstractArrayAtNode(PReg* r, PReg* idx, bool ia, PReg* res, PReg* err, int dataOffset, int sizeOffset) {
-     _src = r; _arg = idx; _intArg = ia; _dest = res; _error = err;
+   AbstractArrayAtNode(PReg* r, PReg* idx, bool ia, PReg* res, PReg* _err, int dataOffset, int sizeOffset) {
+     _src = r; _arg = idx; _intArg = ia; _dest = res; _error = _err;
      _dataOffset = dataOffset; _sizeOffset = sizeOffset;
      dontEliminate = true; _needBoundsCheck = true;
    }
@@ -1558,8 +1558,8 @@ class AbstractArrayAtPutNode : public AbstractArrayAtNode {
   PReg* elem;
   Use* elemUse;
 
-   AbstractArrayAtPutNode(PReg* arr, PReg* idx, bool ia, PReg* el, PReg* res, PReg* err, int doff, int soff)
-    : AbstractArrayAtNode(arr, idx, ia, res, err, doff, soff) { elem = el; }
+   AbstractArrayAtPutNode(PReg* arr, PReg* idx, bool ia, PReg* el, PReg* res, PReg* _err, int doff, int soff)
+    : AbstractArrayAtNode(arr, idx, ia, res, _err, doff, soff) { elem = el; }
 
  public:
   bool copyPropagate(BB* bb, Use* u, PReg* d, bool replace = false);

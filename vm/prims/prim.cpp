@@ -52,6 +52,8 @@ oop primitive_desc::eval(oop* a) {
   // %hack: see below
 #ifndef __GNUC__
   __asm mov ebx_on_stack, ebx
+#else
+  asm("movl %%ebx, %0" : "=b"(ebx_on_stack));
 #endif
   if (reverseArgs) {
     switch (number_of_parameters()) {
@@ -88,6 +90,8 @@ oop primitive_desc::eval(oop* a) {
 #ifndef __GNUC__
   __asm mov ebx_now, ebx
   __asm mov ebx, ebx_on_stack
+#else
+  asm("movl %%ebx, %0; movl %1, %%ebx;" : "=b"(ebx_now) : "b"(ebx_on_stack));
 #endif
 
   if (ebx_now != ebx_on_stack)
@@ -464,8 +468,8 @@ primitive_desc* primitives::_context_allocate2;
 primitive_desc* primitives::verified_lookup(char* selector) {
   primitive_desc* result = lookup(selector);
   if (result == NULL) {
-    err->print_cr("Verified primitive lookup failed");
-    err->print_cr(" selector = %s", selector);
+    getErr()->print_cr("Verified primitive lookup failed");
+    getErr()->print_cr(" selector = %s", selector);
     fatal("aborted");
   }
   return result;

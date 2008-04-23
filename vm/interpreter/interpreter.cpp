@@ -3561,7 +3561,7 @@ void interpreter_init() {
 
   if (!Disclaimer::is_product() && PrintInterpreter) {
     std->print("%d bytes generated for the interpreter\n", code->code_size());
-    exit(0);
+//    exit(0);
   }
 
   Interpreter::init();

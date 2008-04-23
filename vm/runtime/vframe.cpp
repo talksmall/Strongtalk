@@ -35,7 +35,7 @@ bool vframe::equal(const vframe* f) const {
 }
 
 oop vframe::callee_argument_at(int index) const {
-  err->print_cr("vframe::callee_argument_at should be specialized for all vframes calling deltaVFrames");
+  getErr()->print_cr("vframe::callee_argument_at should be specialized for all vframes calling deltaVFrames");
   fatal("aborting");
   return NULL;
 }

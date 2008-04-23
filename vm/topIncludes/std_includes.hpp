@@ -45,7 +45,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
   #define __stdcall __attribute__ ((stdcall))
   #define std _std
 
-  #define int64_t long long
+  #define int64_t signed long long int
 
 #else
 

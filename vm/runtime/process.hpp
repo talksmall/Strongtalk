@@ -478,3 +478,4 @@ enum InterpreterErrorConstants {
   float_expected		 = 13 + start_of_runtime_system_errors,
 };
 
+void trace_stack(int thread_id);

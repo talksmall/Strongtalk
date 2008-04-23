@@ -34,8 +34,8 @@ class long_int {
 
   long_int operator -(long_int arg);
   long_int operator +(long_int arg);
+  bool operator ==(long_int arg);
+  bool operator !=(long_int arg);
 
   double as_double();
-
-  static long_int double_conversion(double value);
 };

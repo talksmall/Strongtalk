@@ -8,10 +8,15 @@
 include makefile-macros.incl
 
 LIB_DIR = $(BIN_DIR)/asm_objs/COFF/converted
-TEST_DIRECTORIES	= $(TEST_SRC_DIR)/runtime
+TEST_DIRECTORIES	= $(TEST_SRC_DIR)/utilities \
+$(TEST_SRC_DIR)/main
 SCRIPT_EXECUTABLE = strongtalk_script
+TEST-EXECUTABLE = strongtalk-test
+TEST_SHARED_LIB = strongtalk-test.so
 EXECUTABLE = strongtalk
-DIRECTORIES	= $(VM_SRC_DIR)/asm \
+SHARED_LIB = strongtalk.so
+DIRECTORIES	= $(TEST_DIRECTORIES) \
+$(VM_SRC_DIR)/asm \
 $(VM_SRC_DIR)/code \
 $(VM_SRC_DIR)/compiler \
 $(VM_SRC_DIR)/disasm \
@@ -23,11 +28,20 @@ $(VM_SRC_DIR)/prims \
 $(VM_SRC_DIR)/recompiler \
 $(VM_SRC_DIR)/runtime \
 $(VM_SRC_DIR)/utilities
+WRK=$(shell pwd)
 
-default: dependencies objects link
+default: dependencies objects link test
+
+test:
+	export LD_LIBRARY_PATH=$(WRK)
+	./$(TEST-EXECUTABLE)
 
 link:
-	g++ -v $(OPT) -o $(EXECUTABLE) -L/usr/lib $(VM_SRC_DIR)/*/*.o -lpthread -ldl -lrt
+#	g++ -v $(OPT) -o $(EXECUTABLE) -L/usr/lib $(VM_SRC_DIR)/*/*.o -lpthread -ldl -lrt
+	g++ -v $(OPT) -shared -o $(SHARED_LIB) -L/usr/lib `find $(VM_SRC_DIR) -name *.o|grep -v main.o` -lpthread -ldl -lrt
+	g++ -v $(OPT) -o $(EXECUTABLE) -L/usr/lib $(VM_SRC_DIR)/*/main.o $(SHARED_LIB)
+	g++ -v $(OPT) -shared -o $(TEST_SHARED_LIB) -L/usr/lib `find $(TEST_SRC_DIR) -name *.o|grep -v main.o` -leasyunit
+	g++ -v $(OPT) -o $(TEST-EXECUTABLE) $(TEST_SHARED_LIB) $(SHARED_LIB) $(TEST_SRC_DIR)/main/main.o
 
 objects:
 	for i in $(DIRECTORIES);\

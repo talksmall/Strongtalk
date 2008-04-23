@@ -142,8 +142,8 @@ symbolOop methodOopDesc::enclosing_method_selector() const {
 void methodOopDesc::print_value_for(klassOop receiver_klass, outputStream* st) {
   outputStream* s = st ? st : std;
   if (is_blockMethod()) {
-    st->print("[] in ");
-    enclosing_method_selector()->print_symbol_on(st);
+    s->print("[] in ");
+    enclosing_method_selector()->print_symbol_on(s);
   } else {
     selector()->print_symbol_on(s);
   }

@@ -832,6 +832,9 @@ void DeltaProcess::deoptimized_wrt_marked_nmethods() {
 
 frame DeltaProcess::last_frame() {
   assert(last_Delta_fp(), "must have last_Delta_fp() when suspended");
+  if (last_Delta_fp() == NULL) {
+	  trace_stack();
+  }
   if (last_Delta_pc() == NULL) {
     frame c(last_Delta_sp(), last_Delta_fp());
     return c;
@@ -1207,4 +1210,11 @@ void suspend_process_at_stack_overflow(int *sp, int* fp, char* pc) {
     proc->suspend(stack_overflow);
     proc->set_terminating();
   }
+}
+
+void trace_stack(int thread_id) {
+	ResourceMark rm;
+	Process* process = Processes::find_from_thread_id(thread_id);
+	if (process->is_deltaProcess())
+		((DeltaProcess*)process)->trace_stack();
 }

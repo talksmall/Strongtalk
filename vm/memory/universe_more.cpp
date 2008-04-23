@@ -71,7 +71,11 @@ bool Universe::needs_garbage_collection() {
   return old_gen.free() < new_gen.to()->capacity();
 }
 
+void os_dump_context();
+
 void Universe::scavenge(oop* p) {
+  // slr: debugging
+//  os_dump_context();
   // %note
   //   the symbol_table can be ignored during scavenge since all
   //   all symbols are tenured.
@@ -132,6 +136,8 @@ void Universe::scavenge(oop* p) {
     // do this at end so an overflow during a scavenge doesnt cause another one
     NeedScavenge = false;
   }
+  // slr: debugging
+//  os_dump_context();
 }
 
 space* Universe::spaceFor(void* p) {

@@ -121,9 +121,9 @@ void stringStream::put(char c) {
 }
 
 char* stringStream::as_string() {
-  buffer[buffer_pos] = '\0';
   char* copy = NEW_RESOURCE_ARRAY(char, buffer_pos + 1);
-  strcpy(copy, buffer);
+  memcpy(copy, buffer, buffer_pos);
+  copy[buffer_pos] = '\0';
   return copy;
 }
 
@@ -149,12 +149,25 @@ fileStream::~fileStream() {
   _file = NULL;
 }
 
-outputStream* std;
-outputStream* err;
+#ifdef std
+#undef std
+#endif
+
+outputStream* _std;
+outputStream* _err;
 
 void ostream_init() {
-  std = new(true) outputStream();   // NB: this stream is allocated on the C heap
-  err = std;
+  if (_std) return;
+  _std = new(true) outputStream();   // NB: this stream is allocated on the C heap
+  _err = _std;
 }
 
+outputStream* getErr() {
+	ostream_init();
+	return _err;
+}
 
+outputStream* getStd() {
+	ostream_init();
+	return _std;
+}

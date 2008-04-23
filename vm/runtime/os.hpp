@@ -37,6 +37,7 @@ class os {
  public:
   static int    argc();
   static char** argv();
+  static void   set_args(int argc, char* argv[]);
   static int    getenv(char* name,char* buffer,int len);
 
   // We must call updateTimes before calling userTime or currentTime.
