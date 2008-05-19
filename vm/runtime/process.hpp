@@ -166,7 +166,7 @@ class DeltaProcess: public Process {
   oop*          _last_Delta_sp;
   char*         _last_Delta_pc;      // For now only used for stack overflow
 
-  bool          _is_terminating;
+  volatile bool _is_terminating;
 
   int           _time_stamp;
 
@@ -375,8 +375,8 @@ class DeltaProcess: public Process {
   }
 
  private: 
-  static bool         _process_has_terminated;
-  static ProcessState _state_of_terminated_process;
+  static volatile bool _process_has_terminated;
+  static ProcessState  _state_of_terminated_process;
 
  public:
   // Called whenever a async dll call completes
@@ -389,6 +389,7 @@ class DeltaProcess: public Process {
   // Event for waking up the process scheduler when a
   // async dll completes
   static Event* _async_dll_completion_event;
+  friend class VMProcess; // to allow access to _process_has_terminated
 };
 
 

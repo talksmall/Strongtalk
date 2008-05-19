@@ -211,13 +211,14 @@ void VMProcess::loop() {
   while (true) {
     assert(vm_operation(), "A VM_Operation should be present");
     vm_operation()->evaluate();
-    DeltaProcess* p = vm_operation()->calling_process();
+    // if the process's thread is dead then the stack may already be released
+    // in which case the vm_operation is no longer valid, so check for a
+    // terminated process first. Can't use accessor as it resets the flag!
+    DeltaProcess* p = DeltaProcess::_process_has_terminated
+      ? DeltaProcess::scheduler() 
+      : vm_operation()->calling_process();
     _vm_operation = NULL;
-    if (p) {
-      transfer_to(p);
-    } else {
-      transfer_to(DeltaProcess::scheduler());
-    }
+    transfer_to(p);
   }
 }
 
@@ -254,7 +255,7 @@ DeltaProcess* DeltaProcess::_active_delta_process        = NULL;
 DeltaProcess* DeltaProcess::_scheduler_process           = NULL;
 bool          DeltaProcess::_is_idle                     = false;
 
-bool          DeltaProcess::_process_has_terminated      = false;
+volatile bool DeltaProcess::_process_has_terminated      = false;
 ProcessState  DeltaProcess::_state_of_terminated_process = initialized;
 
 Event*        DeltaProcess::_async_dll_completion_event  = NULL;
@@ -1205,7 +1206,7 @@ void suspend_process_at_stack_overflow(int *sp, int* fp, char* pc) {
   last_Delta_sp = (oop*) sp;
 
   if (proc->is_scheduler()) {
-    std->print_cr("Stack overflow happend in scheduler");
+    std->print_cr("Stack overflow happened in scheduler");
   } else {
     proc->suspend(stack_overflow);
     proc->set_terminating();

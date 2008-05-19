@@ -22,6 +22,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 */
 
 // MarkSweep takes care of garbage collection
+class OopRelocations;
 class MarkSweep : AllStatic {
  public:
   static oop collect(oop p = NULL);
@@ -40,6 +41,8 @@ class MarkSweep : AllStatic {
   // and retrieved after the garbage collection.
   static GrowableArray<int>* hcode_offsets;
   static int                 hcode_pos;
+  // resource area for non-aligned oops requiring relocation (eg. in nmethods)
+  static OopRelocations*     oopRelocations;
 
  private:
   static void mark_sweep_phase1(oop* p);

@@ -23,10 +23,84 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 # include "incls/_precompiled.incl"
 # include "incls/_markSweep.cpp.incl"
+typedef struct {
+  oop anOop;
+  oop* oopPointer;
+} oopAssoc;
+
+class OopChunk : public ResourceObj {
+private:
+  oopAssoc oop_start[1000];
+  const oopAssoc* oop_end;;
+  oopAssoc* next;
+
+public:
+  OopChunk() {
+    oop_end = oop_start + 1000 - 1;// account for pre-increment in append
+    next = oop_start - 1;
+  }
+
+  bool isFull() {
+    return next >= oop_end;
+  }
+
+  oop* append(oop* anOop) {
+    assert(!isFull(), "Cannot append to full OopChunk");
+    assert((*anOop)->is_mem(), "Must be a mem oop");
+    next++;
+    next->anOop = *anOop;
+    next->oopPointer = anOop;
+    return &next->anOop;
+  }
+
+  void fixupOops() {
+    oopAssoc* current = next;
+    while (current >= oop_start) {
+      assert(current->anOop->is_mem(), "Fixed up oop should be memOop");
+      *(current->oopPointer) = current->anOop;
+      current--;
+    }
+  }
+};
+
+class OopRelocations : public ResourceObj {
+private:
+  GrowableArray<OopChunk*>* chunks;
+  OopChunk* current;
+
+  void newChunk() {
+      current = new OopChunk();
+      chunks->append(current);
+  }
+
+public:
+  OopRelocations() {
+    chunks = new GrowableArray<OopChunk*>(10);
+    newChunk();
+  }
+
+  oop* relocate(oop* toMove) {
+    if (current->isFull()) {
+      newChunk();
+    }
+    return current->append(toMove);
+  }
+
+  void fixupOops() {
+    while(chunks->nonEmpty())
+      chunks->pop()->fixupOops();
+  }
+};
 
 GrowableArray<memOop>* MarkSweep::stack;
 GrowableArray<int>*    MarkSweep::hcode_offsets;
 int                    MarkSweep::hcode_pos;
+OopRelocations*        MarkSweep::oopRelocations;
+
+
+void oopVerify(oop* p) {
+  (*p)->verify();
+}
 
 oop MarkSweep::collect(oop p) {
   FlagSetting  fl(GCInProgress, true);
@@ -57,7 +131,10 @@ oop MarkSweep::collect(oop p) {
 
   lookupCache::flush();
 
-  if (VerifyAfterScavenge || VerifyAfterGC) Universe::verify();
+  if (VerifyAfterScavenge || VerifyAfterGC) {
+    Universe::verify();
+    Universe::code->oops_do(&oopVerify);
+  }
 
   if (PrintGC) {
     std->print(" %.1fM -> %.1fM",
@@ -72,6 +149,7 @@ void MarkSweep::allocate() {
   stack         = new GrowableArray<memOop>(200);
   hcode_offsets = new GrowableArray<int>(100);
   hcode_pos     = 0;
+  oopRelocations = new OopRelocations();
 }
 
 void MarkSweep::deallocate() {
@@ -89,6 +167,9 @@ memOop MarkSweep::reverse(oop* p) {
 
   // Return NULL if non memOop
   if (!obj->is_mem()) return NULL;
+  if (!oop(p)->is_smi()) {
+    p = oopRelocations->relocate(p);
+  }
   
   if (memOop(obj)->is_gc_marked()) {
     // Reverse pointer
@@ -184,7 +265,11 @@ void MarkSweep::mark_sweep_phase3() {
   Universe::old_gen.compact(&mark);
   Universe::new_gen.compact(&mark);
 
+  // update non-oop-aligned oop locations
+  oopRelocations->fixupOops();
+
   // All hcode pointers can now be restored. Remember
   // we converted these pointers in phase1.
   Processes::restore_hcode_pointers();
 }
+

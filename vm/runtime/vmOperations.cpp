@@ -67,9 +67,12 @@ void VM_DeoptimizeStacks::doit() {
 }
 
 void VM_TerminateProcess::doit() {
-  VMProcess::terminate(target);
-  delete calling_process();
+  DeltaProcess* caller = calling_process();
+  // must reset calling process in case stack does not get freed,
+  // but before terminate in case stack does get freed
   set_calling_process(NULL);
+  VMProcess::terminate(target);
+  delete caller;
 }
 
 # ifdef DELTA_COMPILER
