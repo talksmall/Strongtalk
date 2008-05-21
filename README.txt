@@ -15,15 +15,9 @@ In order to run the Strongtalk VM, the following is required:
 In order to build the Strongtalk VM from scratch, additionally the following
 software is required:
 
-3) MS VisualStudio 2005 or VisualStudio 2005 Express
+3) MS VisualStudio 2008 or VisualStudio 2008 Express
 
-2) Assembler .obj files are included in the packaged source release, but if 
-   you wish to reassemble them,
-   you will need Borland Turbo Assembler version 4.0. 
-   We don't know if things work properly with a newer version.
-   An installed version of the assembler should be placed in
-   the tools\tasm directory - extra installation may only be required
-   if there's a problem with the current setup.
+2) The assembler files no longer need to be built, instead this code is generated on startup using the macro assembler built into strongtalk.
 
 Build instructions
 ------------------
@@ -39,12 +33,17 @@ We will call the root strongtalk directory $STRTLK.
    cd into the $STRTLK\bin directory.  Run 'nmake -f Makefile.win32 lists'.
 
 3) From Windows Explorer, start the VisualStudio project for Strongtalk by 
-   opening $(STRTLK)\bin\strongtalk.vcproj.
+   opening $(STRTLK)\build.win32\strongtalk.sln.
 
 4) In the VisualStudio IDE, choose Build -> Batch Build.
    Select the project configurations you want to build from the choices of
    Debug, Fast, and Product (ignore Release, that is spurious right now)
-   and press Rebuild All.
+   and press Rebuild All. For now, I suggest using Debug until the VM is more stable.
+   
+   If running the app withing the IDE you may need to set some paths in the 
+   properties configurations. For some reason these seemed to get lost in the
+   checkin. Must be stored in the large binary files (which obviously I did
+   not checkin!)
 
 5) Remove intermediate files if desired from the command file in $STRTLK\bin:
    nmake -f Makefile.win32 clean
@@ -97,22 +96,11 @@ Execute instructions
 Special situations
 __________________
 
-If you do have access to TASM, you should be able to get by by using the object
-files that are generated from the assembly code. If you are using  MS VC++ 4.0,
-you should probably be able do place the object files found in strongtalk\bin\asm_objs\OMF
-in the build subdirectories (debug, fast, product) and doing an incremental build. 
-
-If you don't have an old version of MS VC++, you will either have to wait until
-we provide a version of the code that builds under a newer C++ compiler, or try
-and convert the code yourself. 
-
-Issues: if you get the C++ code to compile, you
-will find that VisualStudio 2005 will not link with the object files produced by TASM, which are in OMF format.  
-You can substitute these with the COFF versions
-found in strongtalk\bin\asm_objs\COFF and repeat the link phase. This should work
-(it worked for us). 
+The assembler link instructions are now redundant (as are the assembler files and COFF binaries).
 
 If you want to build on a non-windows machine, we're all for it, but you have non-trivial work to do.
+
+See the Wiki for Linux build instructions.
 
 Problems we have encountered
 ----------------------------
