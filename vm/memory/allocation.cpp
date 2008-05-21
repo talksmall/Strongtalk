@@ -307,8 +307,6 @@ void FreeHeap(void* p) {
 // a memory leak.  Use CHeapObj as the base class of such objects to make it explicit
 // that they're allocated on the C heap.
 void* operator new(size_t size) {
-  if (!AllowGlobalNew) {
-    fatal("should not call global (default) operator new");
-  }
+  fatal("should not call global (default) operator new");
   return (void *) AllocateHeap(size, "global operator new");
 }

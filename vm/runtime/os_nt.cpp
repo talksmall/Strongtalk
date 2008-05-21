@@ -270,6 +270,9 @@ int       nCmdShow      = 0;
 
 extern int vm_main(int argc, char* argv[]);
 
+void os::set_args(int argc, char* argv[]) {
+}
+
 extern int    __argc;
 extern char** __argv;
 
@@ -291,9 +294,9 @@ int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdLine, int cm
   return my_main(__argc, __argv);
 }
 #else
-int main(int argc, char**argv) {
-    return vm_main(argc, argv);
-}
+//int main(int argc, char**argv) {
+//    return vm_main(argc, argv);
+//}
 #endif
 
 void* os::get_hInstance()    { return (void*) hInstance;     }
@@ -477,6 +480,17 @@ void os_init() {
   }
 
   os::initialize_system_info();
+
+  ULONG systemMask;
+  ULONG processMask;
+  GetProcessAffinityMask(GetCurrentProcess(), &processMask, &systemMask);
+
+  ULONG processorId = 1;
+  while (!(processMask & processorId) && processorId < processMask)
+    processorId >>= 1;
+  std->print_cr("processor: %ld", processorId);
+  if (!SetProcessAffinityMask(GetCurrentProcess(), processorId))
+    std->print_cr("error code: %d", GetLastError());
 
   SetConsoleCtrlHandler(&HandlerRoutine, TRUE);
 

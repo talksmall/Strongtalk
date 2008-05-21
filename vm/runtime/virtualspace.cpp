@@ -46,7 +46,7 @@ ReservedSpace ReservedSpace::last_part(int  partition_size) {
 
 int ReservedSpace::page_align_size(int size) {
   int alignment = os::vm_page_size();
-  int adjust    = alignment - (size%alignment) % alignment;
+  int adjust    = size == 0 ? alignment : (alignment - (size%alignment)) % alignment;
   return size + adjust;
 }
 
