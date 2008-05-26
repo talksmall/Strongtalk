@@ -25,13 +25,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_precompiled.incl"
 # include "incls/_shell.cpp.incl"
 
-
- 
-int vm_main(int argc, char* argv[]) {
-  parse_arguments(argc, argv);		// overrides default flag settings
-  init_globals();
-
-  {
+extern "C" void load_image()   {
     ResourceMark rm;
     stringStream st;
     st.print("Reading in %s", boot_filename);
@@ -39,7 +33,14 @@ int vm_main(int argc, char* argv[]) {
     bootstrap b(boot_filename);
     vmSymbols::initialize();
     bootstrapping = false;
-  }
+}
+
+ 
+int vm_main(int argc, char* argv[]) {
+  parse_arguments(argc, argv);		// overrides default flag settings
+  init_globals();
+
+  load_image();
 
   if (UseInliningDatabase)
     InliningDatabase::load_index_file();

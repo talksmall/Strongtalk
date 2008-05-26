@@ -167,7 +167,7 @@ memOop MarkSweep::reverse(oop* p) {
 
   // Return NULL if non memOop
   if (!obj->is_mem()) return NULL;
-  if (!oop(p)->is_smi()) {
+  if (!oop(p)->is_smi()) {// ie. not word aligned
     p = oopRelocations->relocate(p);
   }
   

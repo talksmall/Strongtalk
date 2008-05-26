@@ -28,9 +28,52 @@ TRACE_FUNC(TraceOopPrims, "oop")
 
 int oopPrimitives::number_of_calls;
 
+//void swapPointers(oop* p) {
+//  oop object = *p;
+//  if (object == becomeTarget) {
+//    *p = becomeReplacement;
+//  } else if (object == becomeReplacement) {
+//    *p = becomeTarget;
+//  }
+//}
+
+class TwoWayBecomeClosure: public ObjectClosure, public OopClosure {
+private:
+  oop target;
+  oop replacement;
+public:
+  TwoWayBecomeClosure(oop target, oop replacement)
+      :target(target), replacement(replacement) {}
+  void do_object(memOop obj) {
+    obj->oop_iterate(this);
+  }
+  void do_oop(oop* p) {
+    oop object = *p;
+    if (object == target) {
+      Universe::store(p, replacement, Universe::is_heap(p));
+    } else if (object == replacement) {
+      Universe::store(p, target, Universe::is_heap(p));
+    }
+  }
+};
+
 PRIM_DECL_2(oopPrimitives::become, oop receiver, oop argument){
   PROLOGUE_2("become", receiver, argument)
-  PRIM_NOT_IMPLEMENTED
+    if (receiver->is_smi())
+      return markSymbol(vmSymbols::first_argument_has_wrong_type());
+    if (argument->is_smi())
+      return markSymbol(vmSymbols::second_argument_has_wrong_type());
+    {
+      ResourceMark mark;
+      Processes::deoptimize_all();
+    }
+    Universe::code->clear();
+    TwoWayBecomeClosure closure(receiver, argument);
+    Universe::new_gen.object_iterate(&closure);
+    Universe::old_gen.object_iterate(&closure);
+    Universe::root_iterate(&closure);
+    Processes::oop_iterate(&closure);
+    return receiver;
 }
 
 PRIM_DECL_2(oopPrimitives::instVarAt, oop receiver, oop index) {
