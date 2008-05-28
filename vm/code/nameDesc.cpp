@@ -91,7 +91,7 @@ bool IllegalNameDesc::equal(NameDesc* other) const {
   return other->isIllegal();
 }
 
-extern "C" oop allocateBlock(smiOop nofArgs);
+extern "C" blockClosureOop allocateBlock(smiOop nofArgs);
 
 oop BlockValueNameDesc::value(const frame* fr) const {
   // create a block closure

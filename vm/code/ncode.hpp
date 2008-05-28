@@ -50,7 +50,7 @@ class NCodeBase : public PrintableCHeapObj {
   virtual void relocate() {};
   virtual void verify() = 0;
  protected:
-  void verify2(char* name);
+  void verify2(const char* name);
 };
 
 

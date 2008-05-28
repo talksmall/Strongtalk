@@ -29,7 +29,7 @@ class outputStream : public ResourceObj {
    int  _width;		    // width of the page
    int  _position;	    // position on the current line
 
-   void basic_print(char* str);
+   void basic_print(const char* str);
 
  public:
    // creation
@@ -48,13 +48,13 @@ class outputStream : public ResourceObj {
    int position() const { return _position; }
 
    // printing
-   void print(char* format, ...);
-   void print_cr(char* format, ...);
+   void print(const char* format, ...);
+   void print_cr(const char* format, ...);
 
    void vprint(const char *format, va_list argptr);
    void vprint_cr(const char* format, va_list argptr);
 
-   void print_raw(char* str) { basic_print(str); }
+   void print_raw(const char* str) { basic_print(str); }
    void out_hex(int addr);
 
    virtual void put(char c);

@@ -376,6 +376,9 @@ LookupResult lookupCache::ic_super_lookup(klassOop receiver_klass, klassOop supe
 
 LookupResult interpreter_normal_lookup(klassOop receiver_klass, symbolOop selector) {
   LookupKey key(receiver_klass, selector);
+  if (!strncmp("foo", selector->chars(), 3)) {
+    os::breakpoint();
+  }
   return lookupCache::lookup(&key, true);
 }
 

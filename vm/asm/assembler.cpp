@@ -120,10 +120,10 @@ class Displacement : public ValueObj {
 				}
 
 // Implementation of Register
-char* registerNames[nofRegisters] = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
+const char* registerNames[nofRegisters] = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
 
 char* Register::name() const {
-  return isValid() ? registerNames[_number] : "noreg";
+  return (char*) (isValid() ? registerNames[_number] : "noreg");
 }
 
 

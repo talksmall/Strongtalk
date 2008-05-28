@@ -35,6 +35,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 
 #ifdef ASSERT
+extern "C" void breakpoint();
 #define assert(b,msg)                                            \
   if (!(b)) {                                                    \
     report_assertion_failure(XSTR(b),FILE_INFO, LINE_INFO, msg); \

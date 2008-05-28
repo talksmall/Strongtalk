@@ -369,7 +369,7 @@ class CollectContextInfoClosure : public NameDescClosure {
   }
 };
 
-extern "C" contextOop allocateContext(int nofVars);
+extern "C" contextOop allocateContext(smiOop nofVars);
 
 contextOop compiledVFrame::compiled_context() const {
   if (!method()->activation_has_context()) return NULL;

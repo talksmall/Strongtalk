@@ -30,14 +30,14 @@ outputStream::outputStream(int width) {
   _indentation = 0;
 }
 
-void outputStream::basic_print(char* str) {
+void outputStream::basic_print(const char* str) {
   int len = strlen(str);
   for (int i = 0; i < len; i++) put(str[i]);
 }
 
 #define BUFLEN 2000   /* max size of output of individual print() methods */
 
-void outputStream::print(char* format, ...) {
+void outputStream::print(const char* format, ...) {
   char buffer[BUFLEN];
   va_list ap;
   va_start(ap, format);
@@ -49,7 +49,7 @@ void outputStream::print(char* format, ...) {
   basic_print(buffer);
 }
 
-void outputStream::print_cr(char* format, ...) {
+void outputStream::print_cr(const char* format, ...) {
   char buffer[BUFLEN];
   va_list ap;
   va_start(ap, format);

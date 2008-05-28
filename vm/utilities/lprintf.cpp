@@ -55,7 +55,7 @@ static void check_log_file() {
 }
 
 
-extern "C" void lprintf(char* m, ...) {
+extern "C" void lprintf(const char* m, ...) {
   char buf[1024];
   va_list ap;
   va_start(ap, m);

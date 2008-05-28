@@ -26,7 +26,7 @@ by Barthelemy Dagenais.
 
 #ifndef SIMPLE_STRING
 #define SIMPLE_STRING
-#include "alloc.h"
+#include "alloceasy.h"
 #include <stdlib.h>
 
 #define NEW_BUFFER(size) (char*) malloc(sizeof(char) * (size))

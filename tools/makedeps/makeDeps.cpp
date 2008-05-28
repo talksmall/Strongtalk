@@ -399,7 +399,7 @@ class UnixPlatform: public AbstractPlatform {
  public:
   void setupFileTemplates() {
     InclFileTemplate = new FileName( "incls/", "_", "",                     ".incl", "", "");
-      GIFileTemplate = new FileName( "incls/", "",  "", "", "", "");
+      GIFileTemplate = new FileName( "incls/", "",  "_precompiled", ".incl", "", "");
       GDFileTemplate = new FileName( "", "",  "Dependencies.hh",      "",      "", "");
   }
       
@@ -415,7 +415,8 @@ class UnixPlatform: public AbstractPlatform {
   void abort()     { ::abort(); }
   // Do not change this; unless you fix things so precompiled header files
   // get translated into make dependencies. - Ungar
-  int defaultGrandIncludeThreshold() { return 1 << 30; }
+//  int defaultGrandIncludeThreshold() { return 1 << 30; }
+  int defaultGrandIncludeThreshold() { return 10; }
 
   // For Unix make, include the dependencies for precompiled header files.
   Bool includeGIDependencies() { return True; }
@@ -589,19 +590,19 @@ class macro_definitions {
       if (r == 0  ||  r == EOF) {}  // empty line
       else if (strcmp(tok1, "//") == 0) {} // comment
       else {
-	      r = sscanf(line, " %s = %s", tok1, tok2);
-	      if (r != 2) {
-	        char err[BUFSIZ];
-	        sprintf( err, 
-	                 "line %d of file %s:" \
-	                 "expected \"macroName = value\"" \
-	                 " but found:\n %s\n",
-	                 nmacros,
-	                 fileName,
-	                 line);
-	        Plat.fatal(err);
-	      }
-	      add_macro(tok1, tok2);  
+        r = sscanf(line, " %s = %s", tok1, tok2);
+        if (r != 2) {
+          char err[BUFSIZ];
+          sprintf( err, 
+                   "line %d of file %s:" \
+                   "expected \"macroName = value\"" \
+                   " but found:\n %s\n",
+                   nmacros,
+                   fileName,
+                   line);
+          Plat.fatal(err);
+        }
+        add_macro(tok1, tok2);  
       } 
      }
    }
@@ -755,9 +756,9 @@ void AbstractPlatform::fileNamePortabilityCheck(char* name, char* matchingName) 
   if (strcmp(name, matchingName) != 0) {
     char err[BUFSIZ];
     sprintf(err, 
-	    "Error: file %s also appears as %s.  "
-	    "Case must be consistent for portability.\n",
-	    matchingName, name);
+      "Error: file %s also appears as %s.  "
+      "Case must be consistent for portability.\n",
+      matchingName, name);
     //Plat.fatal(err);
   }
 }
@@ -767,7 +768,7 @@ void AbstractPlatform::fileNamePortabilityCheck(char* name) {
   if ('A' <= name[0]  &&  name[0] <= 'Z') {
     char err[BUFSIZ];
     sprintf(err, 
-	    "Error: for the sake of portability\n"
+      "Error: for the sake of portability\n"
             " we have chosen to avoid files starting with an uppercase letter.\n"
             " Please rename %s.",
             name);
@@ -856,9 +857,9 @@ void list::doFiles(list* s) {
     list* h = p->contents;
     if (h->platformDependentInclude != NULL) {
       fprintf(stderr, "Error: The source for %s is %s.\n\tIt shouldn't be included directly by %s.\n",
-	      h->platformDependentInclude,
-	      h->name,
-	      name);
+        h->platformDependentInclude,
+        h->name,
+        name);
       h->platformDependentInclude = NULL; // report once per file
       exitCode = 1;
     }
@@ -955,6 +956,17 @@ void list::put_incl_file( database* db ) {
   fclose(inclFile);
 }
 
+# define LEN 1024
+
+void readLine(char* line, FILE* f) {
+  int i, c;
+  for ( i = 0,  c = fgetc(f);
+        i < LEN-1  &&  c != EOF  &&  (char)c != '\n'  &&  (char)c != '\r';
+        ++i,  c = fgetc(f) )
+    line[i] = (char)c;
+
+  line[i] = '\0';
+}
 
 void database::get(char* plat_fileName, char* db_fileName) {
   printf("\treading platform file: %s\n", plat_fileName);
@@ -966,20 +978,12 @@ void database::get(char* plat_fileName, char* db_fileName) {
   printf("\treading database: %s\n", db_fileName);
 
   int lineNo = 0;
-  while (!feof(f)) {
-#   define LEN 1024
-    char line[LEN];
-    
-    
-    // read line into line[]
-    int i, c;
-    for ( i = 0,  c = fgetc(f);
-          i < LEN-1  &&  c != EOF  &&  (char)c != '\n'  &&  (char)c != '\r';
-          ++i,  c = fgetc(f) )
-      line[i] = (char)c;
 
-    line[i] = '\0';
-    lineNo++;
+  char line[LEN];
+  
+  while (!feof(f)) {
+    // read line into line[]
+    readLine(line, f);
     
     // check for comment
     if ( strncmp( line,  Plat.commentPrefix(),  strlen(Plat.commentPrefix()))
@@ -1013,7 +1017,7 @@ void database::get(char* plat_fileName, char* db_fileName) {
     if ( n == 0 ) {  // empty line
     } 
     else if (n == 2)
-      get_pair(token1, token2,                 plat_fileName, db_fileName, line, lineNo - 1);	 
+      get_pair(token1, token2,                 plat_fileName, db_fileName, line, lineNo - 1);  
     else if (n == 4) 
       get_quad(token1, token2, token3, token4, plat_fileName, db_fileName, line, lineNo - 1);
     else {
@@ -1024,9 +1028,6 @@ void database::get(char* plat_fileName, char* db_fileName) {
     cannot_recurse = false;  
   }   
 }
-
-
-
 
 void database::get_pair(char* unexpanded_includer, char* unexpanded_includee,
                         char* pltf, char* dbf, char* line, int lineNo // for errors
@@ -1220,8 +1221,8 @@ void database::write_grand_unix_makefile() {
     { // write Precompiled_Files = ...
       fprintf(gd, "Precompiled_Files = \\\n");
       for ( item* si = grand_include->first;  si;  si = si->next) {
-	      if (si->contents->count < threshold) 
-	        continue;
+        if (si->contents->count < threshold) 
+          continue;
         fprintf(gd, "%s \\\n", si->contents->name);
         // if .hh has plat dep incls, we also depend on them:
         if (si->contents->platformDependentIncludees != NULL)

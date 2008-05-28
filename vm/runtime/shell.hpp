@@ -20,3 +20,5 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 
 */
+
+int vm_main(int argc, char* argv[]);

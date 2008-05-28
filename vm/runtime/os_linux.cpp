@@ -24,7 +24,6 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 #define __OS_LINUX__
 #ifdef __LINUX__
 # include <pthread.h>
-# include "incls/_precompiled.incl"
 # include "incls/_os.cpp.incl"
 # include <unistd.h>
 # include <semaphore.h>
@@ -184,6 +183,7 @@ bool os::check_directory(char* dir_name) {
 
 // 1 reference (memory/util.cpp)
 void os::breakpoint() {
+  asm("int3");
 }
 
 // 1 reference process.cpp

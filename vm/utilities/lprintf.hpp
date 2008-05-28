@@ -25,7 +25,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 // output written by lprintf can easily be redirected, duplicated into a
 // log file, etc.
 
-extern "C" void lprintf(char* m, ...);
+extern "C" void lprintf(const char* m, ...);
 extern "C" void lputc(char c);
 extern "C" void lputs(char* str);
 extern "C" void error(char* m, ...);

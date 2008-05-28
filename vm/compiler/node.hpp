@@ -458,7 +458,7 @@ class StoreNode: public NonTrivialNode {
   bool canCopyPropagateOop() const 	{ return true; }
   bool hasSrc() const			{ return true; }
   virtual bool needsStoreCheck() const	{ return false; }
-  virtual char* action() const		= 0;		// for debugging messages
+  virtual const char* action() const		= 0;		// for debugging messages
   virtual void setStoreCheck(bool ncs)	{}
   void assert_preg_type(PReg* r, GrowableArray<klassOop>* klasses, LoopHeaderNode* n);
   void makeUses(BB* bb);
@@ -559,7 +559,7 @@ class AssignNode : public StoreNode {
   bool  shouldCopyWhenSplitting() const { return true; }
   bool	canBeEliminated() const;
   oop	constantSrc() const;
-  char* action() const			{ return _dest->isSAPReg() ?
+  const char* action() const			{ return _dest->isSAPReg() ?
 						  "passed as an argument" : "assigned to a local"; }
   Node*	clone(PReg* from, PReg* to) const;
   void	makeUses(BB* bb);

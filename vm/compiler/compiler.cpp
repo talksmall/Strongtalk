@@ -344,7 +344,7 @@ nmethod* Compiler::compile() {
   NewBackendGuard guard;
 
   if ((PrintProgress > 0) && (nofCompilations % PrintProgress == 0)) std->print(".");
-  char* compiling;
+  const char* compiling;
   if (DeltaProcess::active()->isUncommon()) {
     compiling = recompilee ? "Uncommon-Recompiling " : "Uncommon-Compiling ";
   } else {

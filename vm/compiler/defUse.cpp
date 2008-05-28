@@ -56,8 +56,8 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
       bool ok = toNode->copyPropagate(useBB, use, fromPR);
       if (CompilerDebug) {
 	// the original code broke the MSC++ 3.0 optimizer, so now it looks a bit weird.  -Urs 7/96
-	char* glob = global ? "global" : "local";
-	char* prop = ok ? "" : " couldn't propagate";
+	const char* glob = global ? "global" : "local";
+	const char* prop = ok ? "" : " couldn't propagate";
 	char* name = def->node->src()->name();	    // using fromNode or fromPR here will break
 	void* from = PrintHexAddresses ? fromNode : 0;
 	void* to   = PrintHexAddresses ? toNode : 0;

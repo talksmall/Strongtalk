@@ -75,7 +75,7 @@ public:
   PerformanceDebugger(Compiler* c);
 
   void report_context(InlinedScope* s);			  // couldn't eliminate scope's context
-  void report_block(Node* s, BlockPReg* blk, char* what); // couldn't eliminate block
+  void report_block(Node* s, BlockPReg* blk, const char* what); // couldn't eliminate block
   void report_toobig(InlinedScope* s);			  // nmethod getting too big
   void report_uncommon(bool reoptimizing);		  // uncommon recompile  
   void report_prim_failure(primitive_desc* pd);		  // failure not uncommon

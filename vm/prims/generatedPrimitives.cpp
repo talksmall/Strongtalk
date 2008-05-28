@@ -112,16 +112,16 @@ char* GeneratedPrimitives::primitiveValue(int n) {
 }
 
 
-extern "C" blockClosureOop primitiveNew0();
-extern "C" blockClosureOop primitiveNew1();
-extern "C" blockClosureOop primitiveNew2();
-extern "C" blockClosureOop primitiveNew3();
-extern "C" blockClosureOop primitiveNew4();
-extern "C" blockClosureOop primitiveNew5();
-extern "C" blockClosureOop primitiveNew6();
-extern "C" blockClosureOop primitiveNew7();
-extern "C" blockClosureOop primitiveNew8();
-extern "C" blockClosureOop primitiveNew9();
+extern "C" oop primitiveNew0(oop);
+extern "C" oop primitiveNew1(oop);
+extern "C" oop primitiveNew2(oop);
+extern "C" oop primitiveNew3(oop);
+extern "C" oop primitiveNew4(oop);
+extern "C" oop primitiveNew5(oop);
+extern "C" oop primitiveNew6(oop);
+extern "C" oop primitiveNew7(oop);
+extern "C" oop primitiveNew8(oop);
+extern "C" oop primitiveNew9(oop);
 
 char* GeneratedPrimitives::primitiveNew(int n) {
   assert(_is_initialized, "GeneratedPrimitives not initialized yet");
@@ -144,7 +144,7 @@ char* GeneratedPrimitives::primitiveNew(int n) {
   ShouldNotReachHere();
 }
 
-extern "C" oop allocateBlock(smiOop nofArgs);
+extern "C" blockClosureOop allocateBlock(smiOop nofArgs);
 extern "C" blockClosureOop allocateBlock0();
 extern "C" blockClosureOop allocateBlock1();
 extern "C" blockClosureOop allocateBlock2();
@@ -178,10 +178,10 @@ char* GeneratedPrimitives::allocateBlock(int n) {
   ShouldNotReachHere();
 }
 
-extern "C" oop allocateContext(smiOop nofVars);
-extern "C" oop allocateContext0();
-extern "C" oop allocateContext1();
-extern "C" oop allocateContext2();
+extern "C" contextOop allocateContext(smiOop nofVars);
+extern "C" contextOop allocateContext0();
+extern "C" contextOop allocateContext1();
+extern "C" contextOop allocateContext2();
 
 char* GeneratedPrimitives::allocateContext(int n) {
   assert(_is_initialized, "GeneratedPrimitives not initialized yet");

@@ -7,13 +7,13 @@
 #	mailing list
 # ----------------------------------------------------------------------
 
-include ../../build/makefile-macros.incl
+include ../../build.linux/makefile-macros.incl
 
 SRCS	= $(wildcard *.cpp)
 OBJS	= $(patsubst %.cpp,%.o,$(SRCS))
 
 %o: %cpp
-	$(C++) -c -g $(OPT) -fno-rtti -fno-const-strings -fno-for-scope -fno-operator-names -fms-extensions -ffriend-injection $(DEFINES) $(INCL_PATH) $<
+	$(C++) -c -g $(OPT) $(C++OPTIONS) $(DEFINES) $(INCL_PATH) $<
 
 objects: $(OBJS)
 

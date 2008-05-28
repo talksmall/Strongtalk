@@ -75,7 +75,7 @@ class TraceTime {
   bool   active;
   elapsedTimer t;
  public:
-  TraceTime(char* title, bool doit = true);
+  TraceTime(const char* title, bool doit = true);
   ~TraceTime();
 };
 

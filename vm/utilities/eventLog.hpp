@@ -37,9 +37,9 @@ const int EVENT_PARAMS = 3;       // number of params per EL_Event
 enum EL_EventStatus { starting, ending, atomic };
 
 struct EL_Event /* no superclass - never allocated individually */ {       
-  char* name;                     // in printf format
+  const char* name;                     // in printf format
   EL_EventStatus status;          // for nested events
-  void* args[EVENT_PARAMS];
+  const void* args[EVENT_PARAMS];
 };
 
 
@@ -59,16 +59,16 @@ struct EventLog : public CHeapObj {
   void   inc()          { next = nextEvent(next, buf, bufEnd); }
 
   void   log(EL_Event* e)  { *next = *e; inc(); }
-  void   log(char* name) {
+  void   log(const char* name) {
     next->name = name; next->status = atomic;
     inc(); }
-  void   log(char* name, void* p1) {
+  void   log(const char* name, const void* p1) {
     next->name = name; next->status = atomic;
     next->args[0] = p1; inc(); }
-  void   log(char* name, void* p1, void* p2) {
+  void   log(const char* name, const void* p1, const void* p2) {
     next->name = name; next->status = atomic;
     next->args[0] = p1; next->args[1] = p2; inc(); }
-  void   log(char* name, void* p1, void* p2, void* p3) {
+  void   log(const char* name, const void* p1, const void* p2, const void* p3) {
     next->name = name; next->status = atomic;
     next->args[0] = p1; next->args[1] = p2; next->args[2] = p3; inc(); }
   
@@ -85,12 +85,12 @@ class EventMarker : StackObj {    // for events which have a duration
   EL_Event event;
   EL_Event* here;
 
-  EventMarker(char* n)                                  { init(n, 0, 0, 0); }
-  EventMarker(char* n, void* p1)                        { init(n, p1, 0, 0); }
-  EventMarker(char* n, void* p1, void* p2)              { init(n, p1, p2, 0); }
-  EventMarker(char* n, void* p1, void* p2, void* p3)    { init(n, p1, p2, p3);}
+  EventMarker(const char* n)                                  { init(n, 0, 0, 0); }
+  EventMarker(const char* n, const void* p1)                        { init(n, p1, 0, 0); }
+  EventMarker(const char* n, const void* p1, const void* p2)              { init(n, p1, p2, 0); }
+  EventMarker(const char* n, const void* p1, const void* p2, const void* p3)    { init(n, p1, p2, p3);}
 
-  void init(char* n, void* p1, void* p2, void* p3) {
+  void init(const char* n, const void* p1, const void* p2, const void* p3) {
     here = eventLog->next;
     eventLog->log(n, p1, p2, p3);
     here->status = starting; 

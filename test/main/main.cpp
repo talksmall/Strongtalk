@@ -1,6 +1,6 @@
 #include "incls/_precompiled.incl"
 #include "incls/_shell.cpp.incl"
-#include "easyunit/testharness.h"
+#include "testharness.h"
 
 void ostream_init();
 

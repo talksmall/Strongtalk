@@ -132,7 +132,7 @@ void PerformanceDebugger::report_prim_failure(primitive_desc* pd) {
   str->print(" primitive failure of %s not uncommon\n", pd->name());
 }
 
-void PerformanceDebugger::report_block(Node* n, BlockPReg* blk, char* what) {
+void PerformanceDebugger::report_block(Node* n, BlockPReg* blk, const char* what) {
   if (!DebugPerformance) return;
   if (blocks->contains(blk)) return;
   if (blk->method()->is_clean_block()) return;

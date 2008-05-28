@@ -50,7 +50,7 @@ char* Recompilation::methodOop_invocation_counter_overflow(oop rcvr, methodOop m
   if (!ok) {
     // Possibly caused by a method sweeper bug: inline cache has been modified during the send.
     // To check: method is a jumpTable entry to an nmethod instead of a methodOop.
-    char* msg = oop(method)->is_smi() ? "(method might be jump table entry)" : "";
+    const char* msg = oop(method)->is_smi() ? "(method might be jump table entry)" : "";
     LOG_EVENT3("invocation counter overflow with broken methodOop 0x%x (recv = 0x%x) %s", method, rcvr, msg);
     fatal("invocation counter overflow with illegal method - internal error");
     // fatal("invocation counter overflow with illegal method - tell Robert");

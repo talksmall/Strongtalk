@@ -44,7 +44,7 @@ bool OopNCode::switch_pointers(oop from, oop to,
   return needToInvalICache;
 }
 
-void NCodeBase::verify2(char* name) {
+void NCodeBase::verify2(const char* name) {
   if ((int)this & (oopSize - 1))
     error("alignment error in %s at %#lx", name, this);
   if (instsLen() > 256 * K)
@@ -52,7 +52,7 @@ void NCodeBase::verify2(char* name) {
 }
   
 void OopNCode::verify() {
-  char* name = isNMethod() ? "nmethod" : (isPIC() ? " PIC" : "count stub");
+  const char* name = isNMethod() ? "nmethod" : (isPIC() ? " PIC" : "count stub");
   NCodeBase::verify2(name);
   // %fix: Verify via relocIterator
 }

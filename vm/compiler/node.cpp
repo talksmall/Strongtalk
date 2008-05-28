@@ -2333,7 +2333,7 @@ SimpleBitVector CallNode::trashedMask() 	{ return SimpleBitVector(-1); }
 // computeEscapingBlocks: find escaping blocks
 // ==================================================================================
 
-inline void computeEscapingBlocks(Node* n, PReg* src, GrowableArray<BlockPReg*>* l, char* msg) {
+inline void computeEscapingBlocks(Node* n, PReg* src, GrowableArray<BlockPReg*>* l, const char* msg) {
   // helper function for computing exposed blocks
   if (src->isBlockPReg()) {
     BlockPReg* r = (BlockPReg*)src;

@@ -77,7 +77,7 @@ double TimeStamp::seconds() {
   return count/freq;
 }
 
-TraceTime::TraceTime(char* title, bool doit) {
+TraceTime::TraceTime(const char* title, bool doit) {
   active = doit;
   if (active) {
     std->print("[%s", title);
