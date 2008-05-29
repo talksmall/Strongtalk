@@ -490,7 +490,7 @@ class StoreOffsetNode: public StoreNode {
   bool	needsStoreCheck() const		{ return _needsStoreCheck; }
   bool	hasSrc() const			{ return true; }
   void  setStoreCheck(bool ncs)		{ _needsStoreCheck = ncs; }
-  char* action() const			{ return "stored into an object"; }
+  const char* action() const			{ return "stored into an object"; }
   Node*	clone(PReg* from, PReg* to) const;
   void	makeUses(BB* bb);
   void	removeUses(BB* bb);
@@ -527,7 +527,7 @@ class StoreUplevelNode: public StoreNode {
   int	offset() const			{ return _offset; }
   bool	needsStoreCheck() const		{ return _needsStoreCheck; }
   void  setStoreCheck(bool ncs) 	{ _needsStoreCheck = ncs; }
-  char* action() const			{ return "stored into a context temporary"; }
+  const char* action() const			{ return "stored into a context temporary"; }
   Node*	clone(PReg* from, PReg* to) const;
   void	makeUses(BB* bb);
   void	removeUses(BB* bb);

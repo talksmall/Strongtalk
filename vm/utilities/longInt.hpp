@@ -22,6 +22,10 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 */
 
 // Support for 64 bit integer operations
+#ifndef bool
+typedef int _bool_type_;
+#define bool _bool_type_
+#endif
 
 class long_int {
  private:

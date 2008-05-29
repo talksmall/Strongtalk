@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="strongtalk-main"
-	ProjectGUID="{EC88A456-8548-4901-8CE2-C657B81327EC}"
-	RootNamespace="strongtalkmain"
+	Name="EasyUnit"
+	ProjectGUID="{C594C167-71C2-4019-8A3B-F8C28069A0E6}"
+	RootNamespace="EasyUnit"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -20,7 +20,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="4"
 			CharacterSet="0"
 			>
 			<Tool
@@ -41,14 +41,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				AdditionalIncludeDirectories=".;..;..\..\build;..\..\vm\asm;..\..\vm\code;..\..\vm\compiler;..\..\vm\disasm;..\..\vm\interpreter;..\..\vm\lookup;..\..\vm\memory;..\..\vm\oops;..\..\vm\prims;..\..\vm\recompiler;..\..\vm\runtime;..\..\vm\topIncludes;..\..\vm\utilities"
-				PreprocessorDefinitions="ASSERT;DEBUG;DELTA_COMPILER;_CONSOLE;_DEBUG;WIN32;MICROSOFT;_CRT_SECURE_NO_DEPRECATE;_HAS_ITERATOR_DEBUGGING;_SECURE_SCL"
+				AdditionalIncludeDirectories="..\..\easyunit\easyunit"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
 				ForceConformanceInForLoopScope="false"
-				UsePrecompiledHeader="2"
-				ProgramDataBaseFileName="$(IntDir)\strongtalk-main.pdb"
+				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)\strongtalk-test.pdb"
 				BrowseInformation="1"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -64,22 +64,11 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				ShowProgress="0"
-				OutputFile="..\..\$(ProjectName).exe"
-				LinkIncremental="1"
-				GenerateManifest="false"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="..\..\$(TargetName).pdb"
-				SubSystem="1"
-				DataExecutionPrevention="1"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
+				AdditionalOptions="/VERBOSE"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -91,9 +80,6 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -101,7 +87,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="4"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -124,7 +110,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -141,19 +127,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="1"
-				GenerateDebugInformation="true"
-				SubSystem="1"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -163,9 +140,6 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -181,16 +155,40 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\vm\runtime\main.cpp"
+				RelativePath="..\..\easyunit\src\alloc.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\easyunit\src\defaulttestprinter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\easyunit\src\simplestring.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\easyunit\src\test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\easyunit\src\testcase.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\easyunit\src\testpartresult.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\easyunit\src\testregistry.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\easyunit\src\testresult.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\easyunit\src\testrunner.cpp"
+				>
 			</File>
 		</Filter>
 		<Filter
@@ -199,75 +197,47 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\build\incls\_main.cpp.incl"
+				RelativePath="..\..\easyunit\easyunit\alloc.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\memory\allocation.hpp"
+				RelativePath="..\..\easyunit\easyunit\defaulttestprinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\topIncludes\asserts.hpp"
+				RelativePath="..\..\easyunit\easyunit\simplestring.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\topIncludes\bits.hpp"
+				RelativePath="..\..\easyunit\easyunit\test.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\topIncludes\config.hpp"
+				RelativePath="..\..\easyunit\easyunit\testcase.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\memory\error.hpp"
+				RelativePath="..\..\easyunit\easyunit\testharness.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\utilities\longInt.hpp"
+				RelativePath="..\..\easyunit\easyunit\testpartresult.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\utilities\lprintf.hpp"
+				RelativePath="..\..\easyunit\easyunit\testprinter.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\topIncludes\macros.hpp"
+				RelativePath="..\..\easyunit\easyunit\testregistry.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\oops\oopsHierarchy.hpp"
+				RelativePath="..\..\easyunit\easyunit\testresult.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\vm\runtime\os.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\vm\utilities\ostream.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\vm\runtime\shell.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\vm\topIncludes\std_includes.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\vm\topIncludes\tag.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\vm\topIncludes\top.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\vm\topIncludes\types.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\vm\memory\util.hpp"
+				RelativePath="..\..\easyunit\easyunit\testrunner.h"
 				>
 			</File>
 		</Filter>

@@ -31,6 +31,11 @@ long_int::long_int(unsigned int low, unsigned int high) {
   this->high = high;
 }
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4244 ) // conversion between __int64/double, possible loss of data
+#endif
+
 long_int::long_int(double value) {
   *(int64_t*)&low  = value;
 }
@@ -51,11 +56,6 @@ bool long_int::operator ==(long_int arg) {
 bool long_int::operator !=(long_int arg) {
   return *(int64_t*)&low != *(int64_t*)&arg.low;
 }
-
-#ifdef _MSC_VER
-#pragma warning( push )
-#pragma warning( disable : 4244 ) // conversion between __int64/double, possible loss of data
-#endif
 
 double long_int::as_double() {
   return double(*(int64_t*)&low);

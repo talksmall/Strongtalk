@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="EasyUnit"
-	ProjectGUID="{C594C167-71C2-4019-8A3B-F8C28069A0E6}"
-	RootNamespace="EasyUnit"
+	Name="makedeps"
+	ProjectGUID="{4C63951D-97E7-4846-8DD0-764CC4753D73}"
+	RootNamespace="makedeps"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -18,9 +18,9 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			OutputDirectory=".\debug"
+			IntermediateDirectory=".\debug"
+			ConfigurationType="1"
 			CharacterSet="0"
 			>
 			<Tool
@@ -41,18 +41,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				AdditionalIncludeDirectories="easyunit"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
-				ForceConformanceInForLoopScope="false"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(IntDir)\strongtalk-test.pdb"
-				BrowseInformation="1"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4291"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -64,11 +59,17 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalOptions="/VERBOSE"
+				Name="VCLinkerTool"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -80,6 +81,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -87,7 +91,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -110,7 +114,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -127,10 +131,19 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
+				Name="VCLinkerTool"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -140,6 +153,9 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -155,39 +171,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\alloc.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\defaulttestprinter.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\simplestring.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\test.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\testcase.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\testpartresult.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\testregistry.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\testresult.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\testrunner.cpp"
+				RelativePath="..\..\makedeps\makeDeps.cpp"
 				>
 			</File>
 		</Filter>
@@ -196,50 +180,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\easyunit\alloc.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\defaulttestprinter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\simplestring.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\test.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\testcase.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\testharness.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\testpartresult.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\testprinter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\testregistry.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\testresult.h"
-				>
-			</File>
-			<File
-				RelativePath=".\easyunit\testrunner.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
