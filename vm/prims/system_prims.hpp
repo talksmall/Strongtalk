@@ -537,4 +537,11 @@ class systemPrimitives : AllStatic {
   //              name   = 'systemPrimitives::current_thread_id' }
   //%
   static PRIM_DECL_0(current_thread_id);
+
+  //%prim
+  // <NoReceiver> primitiveObjectMemorySize ^<Float> =
+  //   Internal { doc    = 'Retrieves the current size of old space in bytes.'
+  //              name   = 'systemPrimitives::object_memory_size' }
+  //%
+  static PRIM_DECL_0(object_memory_size);
 };

@@ -902,3 +902,8 @@ PRIM_DECL_0(systemPrimitives::current_thread_id) {
   PROLOGUE_0("current_thread_id");
   return as_smiOop(os::current_thread_id());
 }
+
+PRIM_DECL_0(systemPrimitives::object_memory_size) {
+  PROLOGUE_0("object_memory_size");
+  return oopFactory::new_double(double(Universe::old_gen.used()) / Universe::old_gen.capacity());
+}

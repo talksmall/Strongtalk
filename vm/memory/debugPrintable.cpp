@@ -110,9 +110,10 @@ void pr(void* m) {
 
 void ps() { // print stack
   {
-    Command c("ps");
     // Prints the stack of the current Delta process
     DeltaProcess* p = DeltaProcess::active();
+    if (!p) return;
+    Command c("ps");
     std->print(" for process: ");
     p->print();
     std->cr();

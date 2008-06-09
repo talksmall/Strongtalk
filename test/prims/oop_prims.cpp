@@ -5,14 +5,14 @@
 
 using namespace easyunit;
 
-DECLARE(OopPrimitivesTest)
+DECLARE(OopPrimitivesBecomeTest)
   objArrayOop targetContainer, replacementContainer, filler;
   associationOop tenuredTargetContainer, tenuredReplacementContainer;
   memOop target, replacement;
   oop saveNil;
 END_DECLARE
 
-SETUP(OopPrimitivesTest) {
+SETUP(OopPrimitivesBecomeTest) {
   klassOop objectClass = klassOop(Universe::find_global("Object"));
 
   target = memOop(objectClass->primitive_allocate());
@@ -34,7 +34,7 @@ SETUP(OopPrimitivesTest) {
   saveNil = Universe::nilObj();
 }
 
-TEARDOWN(OopPrimitivesTest){
+TEARDOWN(OopPrimitivesBecomeTest){
   targetContainer = replacementContainer = NULL;
   tenuredTargetContainer = tenuredReplacementContainer = NULL;
   target = replacement = NULL;
@@ -43,19 +43,19 @@ TEARDOWN(OopPrimitivesTest){
   MarkSweep::collect();
 }
 
-TESTF(OopPrimitivesTest, becomeShouldSwapTargetAndReplacement)
+TESTF(OopPrimitivesBecomeTest, becomeShouldSwapTargetAndReplacement)
 {
   oopPrimitives::become(replacement, target);
   ASSERT_EQUALS_M(replacement, targetContainer->obj_at(1), "target of become: has not been replaced by replacement");
   ASSERT_EQUALS_M(target, replacementContainer->obj_at(1), "replacement has not been replaced by target of become:");
 }
 
-TESTF(OopPrimitivesTest, becomeShouldReturnTarget)
+TESTF(OopPrimitivesBecomeTest, becomeShouldReturnTarget)
 {
   ASSERT_EQUALS_M(target, oopPrimitives::become(replacement, target), "should return target");
 }
 
-TESTF(OopPrimitivesTest, becomeShouldMarkStoredCards)
+TESTF(OopPrimitivesBecomeTest, becomeShouldMarkStoredCards)
 {
   Universe::remembered_set->clear();
 
@@ -65,26 +65,26 @@ TESTF(OopPrimitivesTest, becomeShouldMarkStoredCards)
   ASSERT_TRUE_M(Universe::remembered_set->is_dirty(replacementContainer), "replacement container should be diry");
 }
 
-TESTF(OopPrimitivesTest, becomeShouldSwapTargetAndReplacementReferencesInTenuredObjects)
+TESTF(OopPrimitivesBecomeTest, becomeShouldSwapTargetAndReplacementReferencesInTenuredObjects)
 {
   oopPrimitives::become(replacement, target);
   ASSERT_EQUALS_M(replacement, tenuredTargetContainer->value(), "target of become: has not been replaced by replacement");
   ASSERT_EQUALS_M(target, tenuredReplacementContainer->value(), "replacement has not been replaced by target of become:");
 }
 
-TESTF(OopPrimitivesTest, becomeShouldUpdateRoots)
+TESTF(OopPrimitivesBecomeTest, becomeShouldUpdateRoots)
 {
   oopPrimitives::become(Universe::nilObj(), target);
   ASSERT_EQUALS_M(target, Universe::nilObj(), "nilObj should now be target");
 }
 
-TESTF(OopPrimitivesTest, becomeShouldReturnErrorWhenReceiverIsSmallInteger)
+TESTF(OopPrimitivesBecomeTest, becomeShouldReturnErrorWhenReceiverIsSmallInteger)
 {
   ASSERT_EQUALS_M(markSymbol(vmSymbols::first_argument_has_wrong_type()),
     oopPrimitives::become(replacement, smiOop_one), "receiver cannot be small integer");
 }
 
-TESTF(OopPrimitivesTest, becomeShouldReturnErrorWhenReplacementIsSmallInteger)
+TESTF(OopPrimitivesBecomeTest, becomeShouldReturnErrorWhenReplacementIsSmallInteger)
 {
   ASSERT_EQUALS_M(markSymbol(vmSymbols::second_argument_has_wrong_type()),
     oopPrimitives::become(smiOop_one, replacement), "replacement cannot be small integer");

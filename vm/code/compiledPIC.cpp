@@ -5,11 +5,11 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
 following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
-	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
-	  from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
 NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
@@ -112,7 +112,7 @@ static inline char* get_disp(char* p)		{ return *(int*)p + p + sizeof(int); }
 
 // Structure for storing the entries of a PIC
 class PIC_contents {
- public:
+public:
   // smi case
   char*		smi_nmethod;
   methodOop	smi_methodOop;
@@ -216,11 +216,11 @@ PIC_Iterator::PIC_Iterator(PIC* pic) {
 
 void PIC_Iterator::computeNextState() {
   if (get_shrt(_pos) == cmp_opcode) {
-     // same state
+    // same state
   } else if (*_pos == call_opcode) {
-     _state = at_methodOop;
-     _methodOop_counter = PIC::nof_entries(get_disp(_pos + 1));
-     _pos += PIC::PIC_methodOop_entry_offset - PIC::PIC_nmethod_entry_offset;
+    _state = at_methodOop;
+    _methodOop_counter = PIC::nof_entries(get_disp(_pos + 1));
+    _pos += PIC::PIC_methodOop_entry_offset - PIC::PIC_nmethod_entry_offset;
   } else {
     assert(*_pos == jmp_opcode, "jump to lookup routine expected");
     _state = at_the_end;
@@ -399,7 +399,7 @@ PIC* PIC::replace(nmethod* nm) {
       return this;
     }
   }
-   
+
   { // Create a new PIC 
     PIC_contents contents;
     PIC_Iterator it(this);
@@ -445,18 +445,18 @@ PIC* PIC::cleanup(nmethod** nm) {
         LookupKey key(it.get_klass(), it.interpreted_method()->selector());
         LookupResult result = lookupCache::lookup(&key);
         if (result.matches(it.interpreted_method())) {
-	  contents.append_method(it.get_klass(), it.interpreted_method());
-	} else {
+          contents.append_method(it.get_klass(), it.interpreted_method());
+        } else {
           if (result.is_method()) {
             contents.append_method(it.get_klass(), result.method());
             it.set_methodOop(result.method());
-	  } else if (result.is_entry()) {
+          } else if (result.is_entry()) {
             contents.append_nmethod_entry(it.get_klass(), result.get_nmethod()->verifiedEntryPoint());
             pic_layout_has_changed = true;
-	  } else {
+          } else {
             pic_layout_has_changed = true;
-	  }
-	}
+          }
+        }
       }
     } else {
       // Compiled nmethod
@@ -468,12 +468,12 @@ PIC* PIC::cleanup(nmethod** nm) {
         if (result.is_method()) {
           contents.append_method(it.get_klass(), result.method());
           pic_layout_has_changed = true;
-	} else if (result.is_entry()) {
+        } else if (result.is_entry()) {
           contents.append_nmethod_entry(it.get_klass(), result.get_nmethod()->verifiedEntryPoint());
           it.set_nmethod(result.get_nmethod());
-	} else {
+        } else {
           pic_layout_has_changed = true;
-	}
+        }
       }
     }
     it.advance();
@@ -481,7 +481,7 @@ PIC* PIC::cleanup(nmethod** nm) {
 
   *nm = NULL;
   if (pic_layout_has_changed) {
-    
+
     if (contents.number_of_targets() == 0) {
       // no targets left
       return NULL;
@@ -636,7 +636,7 @@ PIC* PIC::allocate(CompiledIC* ic, klassOop klass, LookupResult result) {
   PIC*     old_pic       = ic->pic();
   nmethod* old_nmethod   = ic->target();
   bool     switch_to_MIC = false;
-  
+
   // 3 possible cases:
   //
   // 1. IC is empty but lookup result returns methodOop -> needs 1-element PIC to call methodOop
@@ -676,9 +676,9 @@ PIC* PIC::allocate(CompiledIC* ic, klassOop klass, LookupResult result) {
   }
 
   assert(switch_to_MIC ||
-         contents.number_of_interpreted_targets() > 0 ||
-         contents.number_of_compiled_targets() > 1,
-	 "no PIC required for only 1 compiled target");
+    contents.number_of_interpreted_targets() > 0 ||
+    contents.number_of_compiled_targets() > 1,
+    "no PIC required for only 1 compiled target");
 
   PIC* new_pic = NULL;
   if (switch_to_MIC) {
@@ -688,9 +688,9 @@ PIC* PIC::allocate(CompiledIC* ic, klassOop klass, LookupResult result) {
     new_pic = new (allocated_code_size) PIC(ic, &contents, allocated_code_size);
   }
 
-  #ifdef ASSERT
-    new_pic->verify();
-  #endif
+#ifdef ASSERT
+  new_pic->verify();
+#endif
 
   return new_pic;
 }
@@ -759,7 +759,7 @@ void PIC::print() {
     switch (it.state()) {
       case PIC_Iterator::at_smi_nmethod: // fall through
       case PIC_Iterator::at_nmethod    : printf("\t-    nmethod  : %#x (entry %#x)\n", 
-      						    (int)it.compiled_method(), (int)it.get_call_addr()); break;
+                                           (int)it.compiled_method(), (int)it.get_call_addr()); break;
       case PIC_Iterator::at_methodOop  : printf("\t-    methodOop: %s\n", it.interpreted_method()->print_value_string()); break;
       default: ShouldNotReachHere();
     }
@@ -776,9 +776,9 @@ void PIC::verify() {
   for (int i = 0; i < k->length() - 1; i++) {
     for (int j = i + 1; j < k->length(); j++) {
       if (k->at(i) == k->at(j)) {
-	std->print("The class ");
+        std->print("The class ");
         k->at(i)->klass_part()->print_name_on(std);
-	std->print_cr("is twice in PIC 0x%lx", this);
+        std->print_cr("is twice in PIC 0x%lx", this);
         warning("PIC verify error");
       }
     }

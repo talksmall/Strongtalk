@@ -120,6 +120,9 @@ bool VirtualSpace::low_to_high() const {
 
 
 void VirtualSpace::expand(int size) {
+  //if (TraceExpansion) {
+  //  urs_ps();
+  //}
   assert(uncommitted_size() >= size, "not space enough");
   assert((size % os::vm_page_size()) == 0, "size not page aligned");
   if (low() == low_boundary()) {

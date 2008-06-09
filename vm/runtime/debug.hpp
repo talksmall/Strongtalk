@@ -131,6 +131,7 @@ class debugFlags {
   develop(TraceLookupAtMiss                  , false, "Trace lookups at lookup cache miss"                                          ) \
   develop(TraceBytecodes                     , false, "Trace byte code execution"                                                   ) \
   develop(TraceAllocation                    , false, "Trace allocation"                                                            ) \
+  develop(TraceExpansion                     , false, "Trace expansion of committed space"                                          ) \
   develop(TraceBootstrap                     , false, "Trace the bootstrap readin"                                                  ) \
   develop(TraceMethodPrims                   , false, "Trace method prims"                                                          ) \
   develop(TraceMixinPrims                    , false, "Trace mixin prims"                                                           ) \
@@ -139,7 +140,7 @@ class debugFlags {
   develop(TraceDLLCalls                      , false, "Trace DLL function calls"                                                    ) \
   product(TraceGC                            , true , "Trace Garbage Collection"                                                    ) \
   develop(TraceMessageSend                   , false, "Trace all message sends"                                                     ) \
-  develop(TraceInlineCacheMiss               , false, "Trace inline cache misses"                                                     ) \
+  develop(TraceInlineCacheMiss               , false, "Trace inline cache misses"                                                   ) \
   develop(TraceProcessEvents                 , false, "Trace all process events"                                                    ) \
   develop(TraceDeoptimization                , false, "Trace deoptimizion"                                                          ) \
   develop(TraceZombieCreation                , false, "Trace nmethod zombie creation"                                               ) \
