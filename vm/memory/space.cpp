@@ -5,11 +5,11 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
 following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
-	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
-	  from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
 NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
@@ -39,8 +39,8 @@ oop* OldWaterMark::pseudo_allocate(int size) {
 void space::clear() {
   set_top(bottom());
 # ifdef ASSERT 
-    // to detect scavenging bugs
-    set_oops(bottom(), capacity()/oopSize, oop(1));
+  // to detect scavenging bugs
+  set_oops(bottom(), capacity()/oopSize, oop(1));
 # endif
 }
 
@@ -72,8 +72,8 @@ void space::prepare_for_compaction(OldWaterMark* mark) {
     memOop m = as_memOop(q);
     if (m->is_gc_marked()) {
       if (first_free) { 
-	first_free->set_mark(q);
-	// lprintf("[%#lx] = %#lx, %#lx\n", first_free, first_free->mark(), q);
+        first_free->set_mark(q);
+        // lprintf("[%#lx] = %#lx, %#lx\n", first_free, first_free->mark(), q);
         first_free = NULL;
       }
 
@@ -87,13 +87,13 @@ void space::prepare_for_compaction(OldWaterMark* mark) {
       m->set_mark(markOop(root_or_mark));
 
       int size = m->gc_retrieve_size(); // The mark has to be restored before 
-                                        // the size is retrieved
+      // the size is retrieved
       new_top += size;
       q       += size;
     } else {
       if (!first_free) {
-	first_free = m;
-	// lprintf("First free %#lx\n", q);
+        first_free = m;
+        // lprintf("First free %#lx\n", q);
       }
       q += m->size();
     }
@@ -123,7 +123,7 @@ void space::compact(OldWaterMark* mark) {
       if (q != new_top) {
         copy_oops(q, new_top, size);
         // lprintf("copy %#lx -> %#lx (%d)\n", q, new_top, size);
-	assert((*new_top)->is_mark(), "should be header");
+        assert((*new_top)->is_mark(), "should be header");
       }
       mark->_space->update_offsets(new_top, new_top + size);
       q       += size;
@@ -167,7 +167,7 @@ survivorSpace::survivorSpace() {}
 void survivorSpace::scavenge_contents_from(NewWaterMark* mark) {
 # ifdef VERBOSE_SCAVENGING  
   lprintf("{scavenge_contents [ %#lx <= %#lx <= %#lx]}\n",
-	  bottom(), mark->_point, top());
+    bottom(), mark->_point, top());
 # endif
 
   if (top() == mark->_point) return;
@@ -175,7 +175,7 @@ void survivorSpace::scavenge_contents_from(NewWaterMark* mark) {
 
   oop* p = mark->_point; // for performance
   oop* t = top();
-  
+
   do {
     memOop m = as_memOop(p);
 
@@ -219,7 +219,7 @@ void oldSpace::update_offset_array(oop* p, oop* p_end) {
   //  [    ][    ][   ]       "card pages"
   //    ^p  ^t     ^p_end
   assert((next_offset_treshold - p) <= card_size_in_oops,
-	 "Offset should be <= card_size_in_oops");
+    "Offset should be <= card_size_in_oops");
   offset_array[next_offset_index++] = next_offset_treshold - p;
   next_offset_treshold += card_size_in_oops;
   while (next_offset_treshold < p_end) {
@@ -313,23 +313,23 @@ void newSpace::verify() {
 }
 
 class VerifyOldOopClosure : public OopClosure {
- public:
+public:
   memOop the_obj;
   void do_oop(oop* o) {
     oop obj = *o;
     if (obj->is_new()) {
       // Make sure the the_obj is in the remembered set
       if (!Universe::remembered_set->is_object_dirty(the_obj)) {
-	std->cr();
+        std->cr();
         std->print_cr("New obj reference found in non dirty page.");
-	std->print_cr("- object containing the reference:");
-	the_obj->print();
-	std->print_cr("- the referred object:");
-	std->print("[0x%lx]: 0x%lx = ", o, obj);
+        std->print_cr("- object containing the reference:");
+        the_obj->print();
+        std->print_cr("- the referred object:");
+        std->print("[0x%lx]: 0x%lx = ", o, obj);
         obj->print_value();
-	std->cr();
-	Universe::remembered_set->print_set_for_object(the_obj);
-	warning("gc problem");
+        std->cr();
+        Universe::remembered_set->print_set_for_object(the_obj);
+        warning("gc problem");
       }
     }
   }

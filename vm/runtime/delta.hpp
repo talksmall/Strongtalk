@@ -74,4 +74,6 @@ class Delta: public AllStatic {
   static oop call(oop receiver, oop selector, oop arg1, oop arg2);
   static oop call(oop receiver, oop selector, oop arg1, oop arg2, oop arg3);
   static oop call(oop receiver, oop selector, objArrayOop args);
+
+  static oop does_not_understand(oop receiver, symbolOop selector, int nofArgs, oop* argArray);
 };

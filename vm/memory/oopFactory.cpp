@@ -42,7 +42,9 @@ byteArrayOop oopFactory::new_byteArray(char* name) {
 objArrayOop oopFactory::new_objArray(int size) {
   objArrayKlass* ok =
     (objArrayKlass*) Universe::objArrayKlassObj()->klass_part();
-  return objArrayOop(ok->allocateObjectSize(size));
+  objArrayOop result = objArrayOop(ok->allocateObjectSize(size));
+  result->set_length(size);
+  return result;
 }
 
 objArrayOop oopFactory::new_objArray(GrowableArray<oop>* array) {

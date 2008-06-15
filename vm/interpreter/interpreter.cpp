@@ -2218,11 +2218,20 @@ void InterpreterGenerator::generate_method_entry_code() {
 // Inline cache misses
 
 void InterpreterGenerator::generate_inline_cache_miss_handler() {
+  Label _normal_return;
   assert(!_inline_cache_miss.is_bound(), "code has been generated before");
   masm->bind(_inline_cache_miss);
   // We need an inline cache for NLR evaluation.
   // This can happen because the inline cache miss may call "doesNotUnderstand:"
   call_C((char*)InterpretedIC::inline_cache_miss);
+  masm->testl(eax, eax);
+  masm->jcc(Assembler::equal, _normal_return);
+  masm->movl(ecx, Address(eax)); // pop arguments
+  masm->movl(eax, Address(eax, oopSize)); // doesNotUnderstand: result
+  masm->addl(esp, ecx); // pop arguments
+  load_ebx();
+  jump_ebx();
+  masm->bind(_normal_return);
   load_ebx();
   masm->popl(eax);
   jump_ebx();

@@ -21,7 +21,6 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 */
 
-
 // The InterpretedIC describes the contents of an inline cache in the
 // byte codes of a method. The inline cache holds a combination of
 // selector/method and 0/class oops and is read and modified during
@@ -98,12 +97,12 @@ class InterpretedIC: ValueObj {
   void print();
 
   // Cache miss
-  static void inline_cache_miss();		// the inline cache miss handler
+  static oop* inline_cache_miss();		// the inline cache miss handler
 
  private:
   // helpers for inline_cache_miss
   static void update_inline_cache(InterpretedIC* ic, frame* f, Bytecodes::Code send_code, klassOop klass, LookupResult result);
-  static void does_not_understand(oop receiver, InterpretedIC* ic, frame* f);
+  static oop does_not_understand(oop receiver, InterpretedIC* ic, frame* f);
   static void trace_inline_cache_miss(InterpretedIC* ic, klassOop klass, LookupResult result);
 };
 

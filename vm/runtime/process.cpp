@@ -113,6 +113,7 @@ void DeltaProcess::set_last_Delta_sp(oop* sp) {
 
 // last_Delta_pc
 char* DeltaProcess::last_Delta_pc() const {
+  if (this == NULL) return NULL;
   return _last_Delta_pc;
 }
 

@@ -119,7 +119,7 @@ oop MarkSweep::collect(oop p) {
   Universe::remembered_set->clear();
 
   allocate();	// allocate stack for traversal
-
+  
   mark_sweep_phase1(&p);
   mark_sweep_phase2();
   mark_sweep_phase3();

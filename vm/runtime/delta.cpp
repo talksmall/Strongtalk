@@ -110,8 +110,50 @@ oop Delta::call_generic(DeltaCallCache* ic, oop receiver, oop selector, int nofA
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
 
   LookupResult result = ic->lookup(receiver->klass(), symbolOop(selector));
-  if (result.is_empty()) fatal("lookup failure - not treated");
+  if (result.is_empty()) {
+    //can't patch ic as wrong arguments and argument types
+    return does_not_understand(receiver, symbolOop(selector), nofArgs, args);
+    //fatal("lookup failure - not treated");
+  }
   return _call_delta(result.value(), receiver, nofArgs, args);
+}
+
+oop Delta::does_not_understand(oop receiver, symbolOop selector, int nofArgs, oop* argArray) {
+  // message not understood...
+  BlockScavenge bs; // make sure that no scavenge happens
+  klassOop msgKlass = klassOop(Universe::find_global("Message"));
+  oop obj = msgKlass->klass_part()->allocateObject();
+  objArrayOop args = oopFactory::new_objArray(nofArgs);
+  for (int index = 0; index < nofArgs; index++)
+    args->obj_at_put(index + 1, argArray[index]);
+  assert(obj->is_mem(), "just checkin'...");
+  memOop msg = memOop(obj);
+  // for now: assume instance variables are there...
+  // later: should check this or use a VM interface:
+  // msg->set_receiver(recv);
+  // msg->set_selector(ic->selector());
+  // msg->set_arguments(args);
+  msg->raw_at_put(2, receiver);
+  msg->raw_at_put(3, selector);
+  msg->raw_at_put(4, args);
+  symbolOop sel = oopFactory::new_symbol("doesNotUnderstand:");
+  if (interpreter_normal_lookup(receiver->klass(), sel).is_empty()) {
+    // doesNotUnderstand: not found ==> process error
+    { ResourceMark rm;
+      std->print("LOOKUP ERROR\n");
+      sel->print_value(); std->print(" not found\n");
+    }
+    if (DeltaProcess::active()->is_scheduler()) {
+      DeltaProcess::active()->trace_stack();
+      fatal("lookup error in scheduler");
+    } else {
+      DeltaProcess::active()->suspend(::lookup_error);
+    }
+    ShouldNotReachHere();
+  }
+
+  // return marked result of doesNotUnderstand: message
+  return Delta::call(receiver, sel, msg);
 }
 
 oop Delta::call(oop receiver, oop selector) {
