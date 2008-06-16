@@ -10,7 +10,7 @@ DECLARE(OopPrimitivesPerformTest)
 END_DECLARE
 
 SETUP(OopPrimitivesPerformTest) {
-  klassOop objectClass = klassOop(Universe::find_global("DoesNotUnderstandFixture1"));
+  klassOop objectClass = klassOop(Universe::find_global("DoesNotUnderstandFixture"));
 
   fixture = objectClass->klass_part()->allocateObject();
 }
