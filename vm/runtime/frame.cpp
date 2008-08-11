@@ -471,7 +471,7 @@ class VerifyOopClosure : public OopClosure {
 
 void frame::verify() const {
   if (fp() == NULL) fatal("fp cannot be NULL");
-  if (sp() == NULL) fatal("fp cannot be NULL");
+  if (sp() == NULL) fatal("sp cannot be NULL");
   VerifyOopClosure blk;
   blk.fr = (frame*) this;
   ((frame*) this)->oop_iterate(&blk);

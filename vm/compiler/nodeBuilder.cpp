@@ -5,11 +5,11 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
 following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
-	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
-	  from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
 NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
@@ -136,14 +136,14 @@ void NodeBuilder::generate_subinterval(MethodInterval* m, bool produces_result) 
     }
     if (produces_result) {
       if (res == NULL) {
-	// subinterval should have produced a result but didn't
-	// This is legal: e.g., in "someCond or: [ otherCond ifTrue: [^ false ]. true]" the subinterval
-	// of or: doesn't return a result if otherCond is known to be true.   So, just fix it here.
-	// Urs 9/6/96
-	res = new NoResultExpr();
-	exprStack()->push(res, scope(), m->end_bci());
+        // subinterval should have produced a result but didn't
+        // This is legal: e.g., in "someCond or: [ otherCond ifTrue: [^ false ]. true]" the subinterval
+        // of or: doesn't return a result if otherCond is known to be true.   So, just fix it here.
+        // Urs 9/6/96
+        res = new NoResultExpr();
+        exprStack()->push(res, scope(), m->end_bci());
       } else {
-	exprStack()->assign_top(res);
+        exprStack()->assign_top(res);
       }
     }
   }
@@ -227,14 +227,14 @@ void NodeBuilder::if_node(IfNode* node) {
       bool ifEndsDead = is_in_dead_code();
       if (node->produces_result()) {
         ifResult = exprStack()->pop();
-	if (!ifResult->isNoResultExpr()) {
-	  // NB: must materialize block because it is merged with result of else branch
-	  // (was bug 7/4/96 -Urs)
-	  materialize(ifResult->preg(), NULL);
-	  append(NodeFactory::new_AssignNode(ifResult->preg(), resultReg));
-	} else {
-	  assert(ifEndsDead, "oops");
-	}
+        if (!ifResult->isNoResultExpr()) {
+          // NB: must materialize block because it is merged with result of else branch
+          // (was bug 7/4/96 -Urs)
+          materialize(ifResult->preg(), NULL);
+          append(NodeFactory::new_AssignNode(ifResult->preg(), resultReg));
+        } else {
+          assert(ifEndsDead, "oops");
+        }
       }
       append(endOfIf);
       // else branch
@@ -243,22 +243,22 @@ void NodeBuilder::if_node(IfNode* node) {
       bool elseEndsDead = is_in_dead_code();
       if (node->produces_result()) {
         elseResult = exprStack()->pop();
-	if (!elseResult->isNoResultExpr()) {
-	  materialize(elseResult->preg(), NULL);
-	  append(NodeFactory::new_AssignNode(elseResult->preg(), resultReg));
-	} else {
-	  assert(elseEndsDead, "oops");
-	}
+        if (!elseResult->isNoResultExpr()) {
+          materialize(elseResult->preg(), NULL);
+          append(NodeFactory::new_AssignNode(elseResult->preg(), resultReg));
+        } else {
+          assert(elseEndsDead, "oops");
+        }
       }
       append(endOfIf);
       setCurrent(endOfIf);
       // end
       if (ifEndsDead && elseEndsDead) {
-	abort();      // both branches end dead, so containing interval ends dead
+        abort();      // both branches end dead, so containing interval ends dead
       } else {
-	if (node->produces_result()) {
-	  exprStack()->push2nd(new MergeExpr(ifResult, elseResult, resultReg, current()), scope(), resultBCI);
-	}
+        if (node->produces_result()) {
+          exprStack()->push2nd(new MergeExpr(ifResult, elseResult, resultReg, current()), scope(), resultBCI);
+        }
       }
     } else {
       // no else branch
@@ -275,8 +275,8 @@ void NodeBuilder::if_node(IfNode* node) {
       setCurrent(endOfIf);
       if (node->produces_result()) {
         // materialize(exprStack()->top(), NULL);
-	// noo need to materialize result (see commment in constant_if_code)
-	scope()->setExprForBCI(resultBCI, exprStack()->top());	  // for debugging info
+        // noo need to materialize result (see commment in constant_if_code)
+        scope()->setExprForBCI(resultBCI, exprStack()->top());	  // for debugging info
       }
     }
     comment("end of if");
@@ -296,14 +296,14 @@ void NodeBuilder::cond_node(CondNode* node) {
     oop c = cond->asConstantExpr()->constant();
     if (c == trueObj || c == falseObj) {
       if (node->is_and() && c == trueObj ||
-	  node->is_or()  && c == falseObj) {
-        generate_subinterval(node->expr_code(), true);
-	// result of and:/or: is result of 2nd expression
-	Expr* res = exprStack()->top();
-	scope()->setExprForBCI(resultBCI, res);	  // for debugging info
-	if (abortIfDead(res)) return;		  // 2nd expr never returns, so rest is dead
+        node->is_or()  && c == falseObj) {
+          generate_subinterval(node->expr_code(), true);
+          // result of and:/or: is result of 2nd expression
+          Expr* res = exprStack()->top();
+          scope()->setExprForBCI(resultBCI, res);	  // for debugging info
+          if (abortIfDead(res)) return;		  // 2nd expr never returns, so rest is dead
       } else {
-	// don't need to evaluate 2nd expression, result is cond
+        // don't need to evaluate 2nd expression, result is cond
         exprStack()->push(cond, scope(), resultBCI);
       }
     } else {
@@ -341,9 +341,9 @@ void NodeBuilder::cond_node(CondNode* node) {
       Expr* exclude = cond->findKlass(node->is_or() ? falseObj->klass() : trueObj->klass());
       Expr* first;
       if (exclude) {
-	first = cond->copyWithout(exclude);
+        first = cond->copyWithout(exclude);
       } else {
-	first = cond;
+        first = cond;
       }
       exprStack()->push2nd(new MergeExpr(first, condResult, resultReg, current()), scope(), resultBCI);
       comment("end of cond");
@@ -386,7 +386,7 @@ void NodeBuilder::while_node(WhileNode* node) {
     if (c == trueObj || c == falseObj) {
       if (node->is_whileTrue() == (c == trueObj)) {
         append(loop);
-	setCurrent(exit);
+        setCurrent(exit);
       }
     } else {
       // non-boolean condition -> fails always
@@ -412,7 +412,7 @@ void NodeBuilder::while_node(WhileNode* node) {
     setCurrent(loop);
     generate_subinterval(node->body_code(), false);
     wloop->set_startOfBody(loop->next());   // don't use loop (MergeNode) as start since it's been 
-					    // created too early (before loop cond) --> node id range is off
+    // created too early (before loop cond) --> node id range is off
     if (theCompiler->is_uncommon_compile()) {
       // Make sure the invocation counter is incremented at least once per iteration; otherwise uncommon 
       // nmethods containing loops but no sends won't be recompiled early enough. 
@@ -507,12 +507,12 @@ void NodeBuilder::access_temporary(int no, int context, bool push) {
       PReg* src = contextTemp->preg();
       Expr* res;
       if (src->isBlockPReg()) {
-	// don't copy around blocks; see ContextInitializeNode et al.
-	res = contextTemp;
+        // don't copy around blocks; see ContextInitializeNode et al.
+        res = contextTemp;
       } else {
-	SAPReg* dst = new SAPReg(_scope);
-	append(NodeFactory::new_AssignNode(src, dst));
-	res = s->contextTemporary(no)->shallowCopy(dst, _current);
+        SAPReg* dst = new SAPReg(_scope);
+        append(NodeFactory::new_AssignNode(src, dst));
+        res = s->contextTemporary(no)->shallowCopy(dst, _current);
       }
       exprStack()->push(res, scope(), scope()->bci());
     } else {
@@ -683,7 +683,7 @@ GrowableArray<PReg*>* NodeBuilder::pass_arguments(PReg* receiver, int nofArgs) {
 void NodeBuilder::gen_normal_send(SendInfo* info, int nofArgs, SAPReg* result) {
   GrowableArray<PReg*>* args = pass_arguments(exprStack()->at(exprStack()->length() - nofArgs - 1)->preg(), nofArgs);
   SendNode* send = NodeFactory::new_SendNode(info->key, scope()->nlrTestPoint(), args, 
-					     copyCurrentExprStack(), false, info);
+    copyCurrentExprStack(), false, info);
   append(send);
   append(NodeFactory::new_AssignNode(send->dest(), result));
 }
@@ -692,7 +692,7 @@ void NodeBuilder::gen_normal_send(SendInfo* info, int nofArgs, SAPReg* result) {
 void NodeBuilder::gen_self_send(SendInfo* info, int nofArgs, SAPReg* result) {
   GrowableArray<PReg*>* args = pass_arguments(_scope->self()->preg(), nofArgs);
   SendNode* send = NodeFactory::new_SendNode(info->key, scope()->nlrTestPoint(), args, 
-					     copyCurrentExprStack(), false, info);
+    copyCurrentExprStack(), false, info);
   append(send);
   append(NodeFactory::new_AssignNode(send->dest(), result));
 }
@@ -701,7 +701,7 @@ void NodeBuilder::gen_self_send(SendInfo* info, int nofArgs, SAPReg* result) {
 void NodeBuilder::gen_super_send(SendInfo* info, int nofArgs, SAPReg* result) {
   GrowableArray<PReg*>* args = pass_arguments(_scope->self()->preg(), nofArgs);
   SendNode* send = NodeFactory::new_SendNode(info->key, scope()->nlrTestPoint(), args, 
-					     copyCurrentExprStack(), true, info);
+    copyCurrentExprStack(), true, info);
   append(send);
   append(NodeFactory::new_AssignNode(send->dest(), result));
 }
@@ -780,17 +780,17 @@ void NodeBuilder::method_return(int nofArgs) {
       // inlined return
       if (UseNewBackend) {
         // The new backend doesn't support InlinedReturnNodes anymore but has
-	// an explizit ContextZapNode that is used together with an AssignNode.
-	//
-	// Note: We don't know if context zapping is really needed before
-	// the block optimizations, therefore we introduce it eagerly if
-	// the scope seems to need it. However, the backend will check
-	// again if it is still necessary (the optimizations can only
-	// remove the need, not create it).
+        // an explizit ContextZapNode that is used together with an AssignNode.
+        //
+        // Note: We don't know if context zapping is really needed before
+        // the block optimizations, therefore we introduce it eagerly if
+        // the scope seems to need it. However, the backend will check
+        // again if it is still necessary (the optimizations can only
+        // remove the need, not create it).
 
-	// Turned off for now - problem with ScopeDesc - FIX THIS
-	// if (_scope->needsContextZapping()) append(NodeFactory::new_ContextZapNode(_scope->context()));
-	append(NodeFactory::new_AssignNode(src, _scope->resultPR));
+        // Turned off for now - problem with ScopeDesc - FIX THIS
+        // if (_scope->needsContextZapping()) append(NodeFactory::new_ContextZapNode(_scope->context()));
+        append(NodeFactory::new_AssignNode(src, _scope->resultPR));
       } else {
         if (_scope->needsContextZapping()) {
           // keep inlined return node (no context zap node yet)
@@ -842,11 +842,11 @@ void NodeBuilder::nonlocal_return(int nofArgs) {
       bool haveSetupNode = scope()->nlrPoint()->next() != NULL;
       assert(!haveSetupNode || scope()->nlrPoint()->next()->isNLRSetupNode(), "expected setup node");
       PReg* res = haveSetupNode ? ((NonTrivialNode*)scope()->nlrPoint()->next())->src() : 
-				  new SAPReg(scope(), NLRResultLoc, true, true, bci(), endBCI);
+        new SAPReg(scope(), NLRResultLoc, true, true, bci(), endBCI);
       append(NodeFactory::new_AssignNode(src, res));
       append(scope()->nlrPoint());
       if (!haveSetupNode) {
-	// lazily create setup code
+        // lazily create setup code
         append_exit(NodeFactory::new_NLRSetupNode(res, endBCI));
       }
     }
@@ -863,9 +863,9 @@ GrowableArray<NonTrivialNode*>* NodeBuilder::nodesBetween(Node* from, Node* to) 
     if (!n->hasSingleSuccessor()) return NULL;   // can't copy both paths
     bool shouldCopy = n->shouldCopyWhenSplitting();
     bool ok = (n == from) ||
-	       shouldCopy ||
-	       n->isTrivial() ||
-	       n->isMergeNode();
+      shouldCopy ||
+      n->isTrivial() ||
+      n->isMergeNode();
     if (!ok) return NULL;			      // can't copy this node
     if (shouldCopy && n != from) nodes->append((NonTrivialNode*)n);
     n = n->next();
@@ -896,7 +896,7 @@ void NodeBuilder::splitMergeExpr(Expr* expr, TypeTestNode* test) {
   split_count++;
   GrowableArray<Expr*>* exprsToSplit = splittablePaths(expr, test);
   if (!exprsToSplit) return;
- 
+
   for (int i = exprsToSplit->length() - 1; i >= 0; i--) {
     Expr* e = exprsToSplit->at(i);
     Node* start = e->node();
@@ -935,12 +935,12 @@ void NodeBuilder::splitMergeExpr(Expr* expr, TypeTestNode* test) {
       // no assignment to tested PReg found along path; must be earlier
       // check only leftmost path (must be assigned along any path)
       for (Node* n = start; n && !found; n = n->firstPrev()) {
-	if (n->hasDest() && ((NonTrivialNode*)n)->dest() == test->src()) {
-	  found = true;
-	}
+        if (n->hasDest() && ((NonTrivialNode*)n)->dest() == test->src()) {
+          found = true;
+        }
       }
       assert(found, "assignment to tested PReg not found");
-   }
+    }
 #endif
     // connect to 'to' node
     current->append(to);
@@ -966,13 +966,13 @@ GrowableArray<Expr*>* NodeBuilder::splittablePaths(const Expr* expr, const TypeT
       // check if there is a 'simple' path between defining node and type test node -> split if possible
       const Node* n = start;
       while (n != test) {
-	if (!n->hasSingleSuccessor()) goto nextExpr;   // can't copy both paths
-	bool ok = (n == start) ||
-		   n->isTrivial() ||
-		   n->isAssignNode() ||
-		   n->isMergeNode();
-	if (!ok) goto nextExpr;			      // can't copy this node
-	n = n->next();
+        if (!n->hasSingleSuccessor()) goto nextExpr;   // can't copy both paths
+        bool ok = (n == start) ||
+          n->isTrivial() ||
+          n->isAssignNode() ||
+          n->isMergeNode();
+        if (!ok) goto nextExpr;			      // can't copy this node
+        n = n->next();
       }
       // ok, the path from this node is splittable
       okExprs->append(x);
@@ -986,17 +986,17 @@ nextExpr: ;
     Node* start = okExprs->at(i)->node()->next();
     for (Node* n = start; n != (Node*)test; n = n->next()) {
       if (exprNodes->contains(n)) {
-	lprintf("error in splittable boolean expression:\n");
-	m->print();
-	okExprs->at(i)->print();
+        lprintf("error in splittable boolean expression:\n");
+        m->print();
+        okExprs->at(i)->print();
 #ifdef DEBUG
-	printNodes(okExprs->at(i)->node());
+        printNodes(okExprs->at(i)->node());
 #endif
-	for (int j = 0; j < exprNodes->length(); j++) { 
-	  exprNodes->at(j)->print();
-	  lprintf("\n");
-	}
-	fatal("compiler error");
+        for (int j = 0; j < exprNodes->length(); j++) { 
+          exprNodes->at(j)->print();
+          lprintf("\n");
+        }
+        fatal("compiler error");
       }
     }
   }
@@ -1046,7 +1046,7 @@ void NodeBuilder::allocate_context(int nofTemps, bool forMethod) {
         (incoming_info(_scope->method()) == methodOopDesc::expects_context)
         ? _scope->self()->preg()		// incoming context is passed in self's location (interpreter invariant); fix this to use different PReg
         : NULL;					// parent should never be used, set to 0 for debugging
-      						// (note: the interpreter sets parent always to self)
+      // (note: the interpreter sets parent always to self)
     } else {
       // create new context PReg (_scope->context() is the context passed in by the caller)
       parent = _scope->context();
@@ -1299,15 +1299,15 @@ void NodeBuilder::float_unaryToOop(Floats::Function f, int fno) {
     case Floats::is_zero: // fall through
     case Floats::is_not_zero:  
       { ConstPReg* zero = new_ConstPReg(_scope, oopFactory::new_double(0.0));
-	NodeFactory::new_FloatArithRRNode(new NoPReg(_scope), src, fCmpArithOp, zero);
-	BranchOpCode cond = f == Floats::is_zero ? EQBranchOp : NEBranchOp;
-	_exprStack->push(PrimInliner::generate_cond(cond, this, res), scope(), scope()->bci());
+      NodeFactory::new_FloatArithRRNode(new NoPReg(_scope), src, fCmpArithOp, zero);
+      BranchOpCode cond = f == Floats::is_zero ? EQBranchOp : NEBranchOp;
+      _exprStack->push(PrimInliner::generate_cond(cond, this, res), scope(), scope()->bci());
       }
       break;
     case Floats::oopify: 
       { append(NodeFactory::new_FloatUnaryArithNode(res, src, f2OopArithOp));
-        Expr* result = new KlassExpr(doubleKlassObj, res, current());
-	_exprStack->push(result, scope(), scope()->bci());
+      Expr* result = new KlassExpr(doubleKlassObj, res, current());
+      _exprStack->push(result, scope(), scope()->bci());
       }
       break;
     default: fatal1("bad float unaryToOop code %d", f);

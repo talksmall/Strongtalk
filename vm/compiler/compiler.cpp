@@ -339,7 +339,6 @@ class NewBackendGuard: StackObj {
 
 bool NewBackendGuard::_first_use = true;
 
-
 nmethod* Compiler::compile() {
   NewBackendGuard guard;
 

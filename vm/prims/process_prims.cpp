@@ -52,8 +52,26 @@ PRIM_DECL_0(processOopPrimitives::yield) {
   return DeltaProcess::active()->processObj();
 }
 
+class PrintFrameClosure : public FrameClosure {
+  void do_frame(frame* f) {
+    f->print();
+    if (f->is_compiled_frame()) {
+      f->code()->print();
+    } else if (f->is_interpreted_frame()) {
+      f->method()->print();
+    }
+  }
+};
+
+void print_nmethod(nmethod* nm) {
+  nm->print();
+}
+
 PRIM_DECL_0(processOopPrimitives::stop) {
   PROLOGUE_0("stop");
+  //PrintFrameClosure pfc;
+  //DeltaProcess::active()->frame_iterate(&pfc);
+  //Universe::code->nmethods_do(print_nmethod);
   if (!DeltaProcess::active()->is_scheduler()) {
     DeltaProcess::active()->suspend(stopped);
   }

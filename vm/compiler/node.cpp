@@ -5,11 +5,11 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
 following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
-	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
-	  from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
 NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
@@ -60,7 +60,7 @@ LoadIntNode* NodeFactory::new_LoadIntNode(PReg* dst, int value) {
   registerNode(res);
   return res;
 }
-  
+
 StoreOffsetNode* NodeFactory::new_StoreOffsetNode(PReg* src, PReg* base, int offs, bool needStoreCheck) {
   StoreOffsetNode* res = new StoreOffsetNode(src, base, offs, needStoreCheck);
   registerNode(res);
@@ -155,33 +155,33 @@ MergeNode* NodeFactory::new_MergeNode(int bci) {
 }
 
 SendNode* NodeFactory::new_SendNode(LookupKey* key, MergeNode* nlrTestPoint, GrowableArray<PReg*>* args,
-				    GrowableArray<PReg*>* expr_stack, bool superSend, SendInfo* info) {
-  SendNode* res = new SendNode(key, nlrTestPoint, args, expr_stack, superSend, info);
-  assert(expr_stack, "must have expression stack");
-  res->scope()->addSend(expr_stack, true);  // arguments to call are debug-visible
-  registerNode(res);
-  return res;
+                                    GrowableArray<PReg*>* expr_stack, bool superSend, SendInfo* info) {
+                                      SendNode* res = new SendNode(key, nlrTestPoint, args, expr_stack, superSend, info);
+                                      assert(expr_stack, "must have expression stack");
+                                      res->scope()->addSend(expr_stack, true);  // arguments to call are debug-visible
+                                      registerNode(res);
+                                      return res;
 }
 
 PrimNode* NodeFactory::new_PrimNode(primitive_desc* pdesc, MergeNode* nlrTestPoint, GrowableArray<PReg*>* args,
-				    GrowableArray<PReg*>* expr_stack) {
-  PrimNode* res = new PrimNode(pdesc, nlrTestPoint, args, expr_stack);
-  if (pdesc->can_walk_stack()) {
-    assert(expr_stack, "must have expression stack");
-    if (expr_stack) res->scope()->addSend(expr_stack, true);  // arguments to some prim calls are debug-visible
-  } else {
-    assert(expr_stack == NULL, "should not have expression stack");
-  }
-  registerNode(res);
-  return res;
+                                    GrowableArray<PReg*>* expr_stack) {
+                                      PrimNode* res = new PrimNode(pdesc, nlrTestPoint, args, expr_stack);
+                                      if (pdesc->can_walk_stack()) {
+                                        assert(expr_stack, "must have expression stack");
+                                        if (expr_stack) res->scope()->addSend(expr_stack, true);  // arguments to some prim calls are debug-visible
+                                      } else {
+                                        assert(expr_stack == NULL, "should not have expression stack");
+                                      }
+                                      registerNode(res);
+                                      return res;
 }
 
 DLLNode* NodeFactory::new_DLLNode(symbolOop dll_name, symbolOop function_name, dll_func function, bool async,
-  				  MergeNode* nlrTestPoint, GrowableArray<PReg*>* args, GrowableArray<PReg*>* expr_stack) {
-  DLLNode* res = new DLLNode(dll_name, function_name, function, async, nlrTestPoint, args, expr_stack);
-  res->scope()->addSend(expr_stack, true);  // arguments to DLL call are debug-visible
-  registerNode(res);
-  return res;
+                                  MergeNode* nlrTestPoint, GrowableArray<PReg*>* args, GrowableArray<PReg*>* expr_stack) {
+                                    DLLNode* res = new DLLNode(dll_name, function_name, function, async, nlrTestPoint, args, expr_stack);
+                                    res->scope()->addSend(expr_stack, true);  // arguments to DLL call are debug-visible
+                                    registerNode(res);
+                                    return res;
 }
 
 InterruptCheckNode* NodeFactory::new_InterruptCheckNode(GrowableArray<PReg*>* exprStack) {
@@ -195,7 +195,7 @@ LoopHeaderNode* NodeFactory::new_LoopHeaderNode() {
   registerNode(res);
   return res;
 }
-  
+
 BlockCreateNode* NodeFactory::new_BlockCreateNode(BlockPReg* b, GrowableArray<PReg*>* expr_stack) {
   BlockCreateNode* res = new BlockCreateNode(b, expr_stack);
   registerNode(res);
@@ -252,27 +252,27 @@ TypeTestNode* NodeFactory::new_TypeTestNode(PReg* recv, GrowableArray<klassOop>*
 }
 
 ArrayAtNode* NodeFactory::new_ArrayAtNode(ArrayAtNode::AccessType access_type, PReg* array, PReg* index, bool smiIndex,
-				          PReg* result, PReg* error, int data_offset, int length_offset) {
-  ArrayAtNode* res = new ArrayAtNode(access_type, array, index, smiIndex, result, error, data_offset, length_offset);
-  registerNode(res);
-  return res;
+                                          PReg* result, PReg* error, int data_offset, int length_offset) {
+                                            ArrayAtNode* res = new ArrayAtNode(access_type, array, index, smiIndex, result, error, data_offset, length_offset);
+                                            registerNode(res);
+                                            return res;
 }
-  
+
 ArrayAtPutNode* NodeFactory::new_ArrayAtPutNode(ArrayAtPutNode::AccessType access_type, PReg* array, PReg* index, bool smi_index,
-					        PReg* element, bool smi_element, PReg* result, PReg* error, int data_offset, int length_offset,
-					        bool needs_store_check) {
-  ArrayAtPutNode* res = new ArrayAtPutNode(access_type, array, index, smi_index, element, smi_element, result, error, data_offset, length_offset, needs_store_check);
-  registerNode(res);
-  return res;
+                                                PReg* element, bool smi_element, PReg* result, PReg* error, int data_offset, int length_offset,
+                                                bool needs_store_check) {
+                                                  ArrayAtPutNode* res = new ArrayAtPutNode(access_type, array, index, smi_index, element, smi_element, result, error, data_offset, length_offset, needs_store_check);
+                                                  registerNode(res);
+                                                  return res;
 }
 
 InlinedPrimitiveNode* NodeFactory::new_InlinedPrimitiveNode(InlinedPrimitiveNode::Operation op, PReg* result, PReg* error,
                                                             PReg* recv, PReg* arg1, bool arg1_is_smi, PReg* arg2, bool arg2_is_smi) {
-  InlinedPrimitiveNode* res = new InlinedPrimitiveNode(op, result, error, recv, arg1, arg1_is_smi, arg2, arg2_is_smi);
-  registerNode(res);
-  return res;
+                                                              InlinedPrimitiveNode* res = new InlinedPrimitiveNode(op, result, error, recv, arg1, arg1_is_smi, arg2, arg2_is_smi);
+                                                              registerNode(res);
+                                                              return res;
 }
-  
+
 UncommonNode* NodeFactory::new_UncommonNode(GrowableArray<PReg*>* exprStack, int bci) {
   UncommonNode* res = new UncommonNode(exprStack, bci);
   registerNode(res);
@@ -354,7 +354,7 @@ LoadUplevelNode::LoadUplevelNode(PReg* dst, PReg* context0, int nofLevels, int o
 
 
 StoreUplevelNode::StoreUplevelNode(PReg* src, PReg* context0, int nofLevels, int offset, symbolOop name, bool needsStoreCheck)
-  : StoreNode(src) {
+: StoreNode(src) {
   assert(context0 != NULL, "context0 is NULL");
   assert(nofLevels >= 0  , "nofLevels must be >= 0");
   assert(offset >= 0     , "offset must be >= 0");
@@ -383,19 +383,19 @@ CommentNode::CommentNode(char* s) {
 
 ArrayAtNode::ArrayAtNode(AccessType access_type, PReg* array, PReg* index, bool smiIndex,
                          PReg* result, PReg* error, int data_offset, int length_offset)
-  : AbstractArrayAtNode(array, index, smiIndex, result, error, data_offset, length_offset) {
-  _access_type = access_type;
+                         : AbstractArrayAtNode(array, index, smiIndex, result, error, data_offset, length_offset) {
+                           _access_type = access_type;
 }
 
 
 ArrayAtPutNode::ArrayAtPutNode(AccessType access_type, PReg* array, PReg* index, bool smi_index,
-			       PReg* element, bool smi_element, PReg* result, PReg* error, int data_offset, int length_offset,
-			       bool needs_store_check)
-  : AbstractArrayAtPutNode(array, index, smi_index, element, result, error, data_offset, length_offset) {
-  _access_type			= access_type;
-  _needs_store_check		= needs_store_check;
-  _smi_element			= smi_element;
-  _needs_element_range_check	= (access_type == byte_at_put || access_type == double_byte_at_put);
+                               PReg* element, bool smi_element, PReg* result, PReg* error, int data_offset, int length_offset,
+                               bool needs_store_check)
+                               : AbstractArrayAtPutNode(array, index, smi_index, element, result, error, data_offset, length_offset) {
+                                 _access_type			= access_type;
+                                 _needs_store_check		= needs_store_check;
+                                 _smi_element			= smi_element;
+                                 _needs_element_range_check	= (access_type == byte_at_put || access_type == double_byte_at_put);
 }
 
 
@@ -413,11 +413,11 @@ TypeTestNode::TypeTestNode(PReg* rr, GrowableArray<klassOop>* classes, bool hasU
     warning("TypeTestNode with only one klass & no uncommon case => performance bug");
   }
 # ifdef ASSERT
-    for (int i = 0; i < len; i++) {
-      for (int j = i + 1; j < len; j++) {
-	assert(classes->at(i) != classes->at(j), "duplicate class");
-      }
+  for (int i = 0; i < len; i++) {
+    for (int j = i + 1; j < len; j++) {
+      assert(classes->at(i) != classes->at(j), "duplicate class");
     }
+  }
 # endif
 }
 
@@ -446,7 +446,7 @@ TArithRRNode::TArithRRNode(ArithOpCode op, PReg* arg1, PReg* arg2, PReg* dst, bo
   _constResult = NULL;
   dontEliminate = true; // don't eliminate even if result unused because primitive might fail
 }
-  
+
 
 PReg* NonTrivialNode::dest() const {
   if (!hasDest()) fatal("has no dest");
@@ -521,7 +521,7 @@ void Node::removeNext(Node* n) {
 Node* Node::endOfList() const {
   if (_next == NULL) return (Node*)this;
   for (Node* n = _next; n->_next; n = n->_next) {
-      assert(n->hasSingleSuccessor(), ">1 successors");
+    assert(n->hasSingleSuccessor(), ">1 successors");
   }
   return n;
 }
@@ -552,9 +552,9 @@ bool AbstractMergeNode::isPredecessor(const Node* n) const {
 void AbstractBranchNode::removeMe() {
   if (hasSingleSuccessor()) {
     if (!_next && _nxt->nonEmpty()) { _next = next1(); _nxt->pop(); }
-      NonTrivialNode::removeMe();
+    NonTrivialNode::removeMe();
   } else {
-      fatal("not implemented yet");
+    fatal("not implemented yet");
   }
 }
 
@@ -638,23 +638,23 @@ BB* MergeNode::newBB() {
 
 
 ReturnNode::ReturnNode(PReg* res, int bci)
-  : AbstractReturnNode(
-      bci,
-      res,
-      new TempPReg(theCompiler->currentScope(), resultLoc, true, true)
-    ) {
-  assert(res->loc == resultLoc, "must be in special location");
+: AbstractReturnNode(
+                     bci,
+                     res,
+                     new TempPReg(theCompiler->currentScope(), resultLoc, true, true)
+                     ) {
+                       assert(res->loc == resultLoc, "must be in special location");
 }
 
 
 NLRSetupNode::NLRSetupNode(PReg* result, int bci)
-  : AbstractReturnNode(
-      bci,
-      result,
-      new TempPReg(theCompiler->currentScope(), resultLoc, true, true)
-    ) {
-  contextUse = resultUse = NULL;
-  assert(result->loc == NLRResultLoc, "must be in special location");
+: AbstractReturnNode(
+                     bci,
+                     result,
+                     new TempPReg(theCompiler->currentScope(), resultLoc, true, true)
+                     ) {
+                       contextUse = resultUse = NULL;
+                       assert(result->loc == NLRResultLoc, "must be in special location");
 }
 
 
@@ -681,20 +681,20 @@ CallNode::CallNode(MergeNode* n, GrowableArray<PReg*>* a, GrowableArray<PReg*>* 
 
 
 SendNode::SendNode(
-  LookupKey* key,
-  MergeNode* nlrTestPoint,
-  GrowableArray<PReg*>* args,
-  GrowableArray<PReg*>* expr_stack,
-  bool superSend,
-  SendInfo* info
-  )
-  : CallNode(nlrTestPoint, args, expr_stack) {
-  _key = key;
-  _superSend = superSend; _info = info;
-  assert(exprStack, "should have expr stack");
-  // Fix this when compiler is more flexible
-  // not a fatal because it could happen for super sends that fail (no super method found)
-  if (_superSend && !UseNewBackend) warning("We cannot yet have super sends in nmethods");
+                   LookupKey* key,
+                   MergeNode* nlrTestPoint,
+                   GrowableArray<PReg*>* args,
+                   GrowableArray<PReg*>* expr_stack,
+                   bool superSend,
+                   SendInfo* info
+                   )
+                   : CallNode(nlrTestPoint, args, expr_stack) {
+                     _key = key;
+                     _superSend = superSend; _info = info;
+                     assert(exprStack, "should have expr stack");
+                     // Fix this when compiler is more flexible
+                     // not a fatal because it could happen for super sends that fail (no super method found)
+                     if (_superSend && !UseNewBackend) warning("We cannot yet have super sends in nmethods");
 }
 
 
@@ -764,16 +764,16 @@ PrimNode(primitives::block_allocate(), NULL, NULL, expr_stack) {
   _contextUse = NULL;
   switch (b->method()->block_info()) {
    case methodOopDesc::expects_nil:		// no context needed
-   	_context = NULL; break;
+     _context = NULL; break;
    case methodOopDesc::expects_self:
-   	_context = b->scope()->self()->preg(); break;
+     _context = b->scope()->self()->preg(); break;
    case methodOopDesc::expects_parameter:	// fix this -- should find which
-	_context = NULL;
-	break;
+     _context = NULL;
+     break;
    case methodOopDesc::expects_context:
-	_context = b->scope()->context(); break;
+     _context = b->scope()->context(); break;
    default:
-   	fatal("unexpected incoming info");
+     fatal("unexpected incoming info");
   };
 }
 
@@ -790,7 +790,7 @@ int ContextInitNode::positionOfContextTemp(int n) const {
 
 void ContextInitNode::initialize(int no, Expr* expr) {
   assert((_initializers->at(no) == NULL) || (_initializers->at(no)->constant() == nilObj),
-	 "already initialized this context element");
+    "already initialized this context element");
   _initializers->at_put(no, expr);
 }
 
@@ -824,16 +824,16 @@ void ContextInitNode::notifyNoContext() {
 
       // remove use of block
       for (int j = _initializers->length() - 1; j >= 0; j--) {
-	if (_initializers->at(j)->preg() == blk) {
-	  blk->removeUse(_bb, _initializerUses->at(j));
-	  break;
-	}
+        if (_initializers->at(j)->preg() == blk) {
+          blk->removeUse(_bb, _initializerUses->at(j));
+          break;
+        }
       }
 
       // try to eliminate the block, too 
       if (blk->hasNoUses()) {
-	// eliminate the block
-	blk->eliminate(false);
+        // eliminate the block
+        blk->eliminate(false);
       }
     }
   }
@@ -841,7 +841,7 @@ void ContextInitNode::notifyNoContext() {
 
 
 PrimNode::PrimNode(primitive_desc* pdesc, MergeNode* nlrTestPoint, GrowableArray<PReg*>* args, GrowableArray<PReg*>* expr_stack)
-  : CallNode(nlrTestPoint, args, expr_stack) {
+: CallNode(nlrTestPoint, args, expr_stack) {
   _pdesc = pdesc;
   assert(_pdesc->can_perform_NLR() || (nlrTestPoint == NULL), "no NLR target needed"); 
   if (pdesc->can_invoke_delta()) {
@@ -857,14 +857,14 @@ PrimNode::PrimNode(primitive_desc* pdesc, MergeNode* nlrTestPoint, GrowableArray
 
 InlinedPrimitiveNode::InlinedPrimitiveNode(Operation op, PReg* result, PReg* error,
                                            PReg* recv, PReg* arg1, bool arg1_is_smi, PReg* arg2, bool arg2_is_smi) {
-  _op		= op;
-  _dest		= result;
-  _error	= error;
-  _src		= recv;
-  _arg1		= arg1;
-  _arg2		= arg2;
-  _arg1_is_smi	= arg1_is_smi;
-  _arg2_is_smi	= arg2_is_smi;
+                                             _op		= op;
+                                             _dest		= result;
+                                             _error	= error;
+                                             _src		= recv;
+                                             _arg1		= arg1;
+                                             _arg2		= arg2;
+                                             _arg1_is_smi	= arg1_is_smi;
+                                             _arg2_is_smi	= arg2_is_smi;
 }
 
 
@@ -903,18 +903,18 @@ bool PrimNode::canBeEliminated() const {
   // for now, treat cloning etc. special
   if (_pdesc->can_be_constant_folded()) return true;	// not safe!
   if (_pdesc->fn() == fntype(&behaviorPrimitives::allocate) ||
-      _pdesc->fn() == fntype(&primitiveNew0) ||
-      _pdesc->fn() == fntype(&primitiveNew1) ||
-      _pdesc->fn() == fntype(&primitiveNew2) ||
-      _pdesc->fn() == fntype(&primitiveNew3) ||
-      _pdesc->fn() == fntype(&primitiveNew4) ||
-      _pdesc->fn() == fntype(&primitiveNew5) ||
-      _pdesc->fn() == fntype(&primitiveNew6) ||
-      _pdesc->fn() == fntype(&primitiveNew7) ||
-      _pdesc->fn() == fntype(&primitiveNew8) ||
-      _pdesc->fn() == fntype(&primitiveNew9)
-     ) {
-    return true;
+    _pdesc->fn() == fntype(&primitiveNew0) ||
+    _pdesc->fn() == fntype(&primitiveNew1) ||
+    _pdesc->fn() == fntype(&primitiveNew2) ||
+    _pdesc->fn() == fntype(&primitiveNew3) ||
+    _pdesc->fn() == fntype(&primitiveNew4) ||
+    _pdesc->fn() == fntype(&primitiveNew5) ||
+    _pdesc->fn() == fntype(&primitiveNew6) ||
+    _pdesc->fn() == fntype(&primitiveNew7) ||
+    _pdesc->fn() == fntype(&primitiveNew8) ||
+    _pdesc->fn() == fntype(&primitiveNew9)
+    ) {
+      return true;
   }
   return false;
 }
@@ -929,12 +929,12 @@ bool PrimNode::canFail() const {
 
 
 DLLNode::DLLNode(symbolOop dll_name, symbolOop function_name, dll_func function, bool async,
-  	         MergeNode* nlrTestPoint, GrowableArray<PReg*>* args, GrowableArray<PReg*>* expr_stack)
-  : CallNode(nlrTestPoint, args, expr_stack) {
-  _dll_name      = dll_name;
-  _function_name = function_name;
-  _function      = function;
-  _async         = async;
+                 MergeNode* nlrTestPoint, GrowableArray<PReg*>* args, GrowableArray<PReg*>* expr_stack)
+                 : CallNode(nlrTestPoint, args, expr_stack) {
+                   _dll_name      = dll_name;
+                   _function_name = function_name;
+                   _function      = function;
+                   _async         = async;
 }
 
 
@@ -1120,17 +1120,17 @@ Node* NLRTestNode::clone(PReg* from, PReg* to) const {
 
 Node* ArrayAtNode::clone(PReg* from, PReg* to) const {
   return NodeFactory::new_ArrayAtNode(_access_type,
-                                      TRANSLATE(_src), TRANSLATE(_arg), _intArg,
-				      TRANSLATE(_dest), TRANSLATE(_error),
-				      _dataOffset, _sizeOffset);
+    TRANSLATE(_src), TRANSLATE(_arg), _intArg,
+    TRANSLATE(_dest), TRANSLATE(_error),
+    _dataOffset, _sizeOffset);
 }
 
 
 Node* ArrayAtPutNode::clone(PReg* from, PReg* to) const {
   return NodeFactory::new_ArrayAtPutNode(_access_type,
-  					 TRANSLATE(_src), TRANSLATE(_arg), _intArg,
-					 TRANSLATE(elem), _smi_element, TRANSLATE(_dest),
-					 TRANSLATE(_error), _dataOffset, _sizeOffset, _needs_store_check);
+    TRANSLATE(_src), TRANSLATE(_arg), _intArg,
+    TRANSLATE(elem), _smi_element, TRANSLATE(_dest),
+    TRANSLATE(_error), _dataOffset, _sizeOffset, _needs_store_check);
 }
 
 
@@ -1267,24 +1267,24 @@ void CallNode::makeUses(BB* bb) {
       BlockPReg* blk = blks->at(i);
       if (blk->escapes()) {
         // check if block's home is on current call stack; if not, we don't care about
-	// the block's uplevel accesses since the block is non-LIFO and we won't access its
-	// context anyway
-	Scope* home = blk->scope()->home();
-	if (home->isSenderOrSame(scope())) {
-	  // ok, this block is live
-	  GrowableArray<PReg*>* uplevelRead = blk->uplevelRead();
-	  for (int j = uplevelRead->length() - 1; j >= 0; j--) {
-	    PReg* r = uplevelRead->at(j);
-	    uplevelUses->append(bb->addUse(this, r));
-	    uplevelUsed->append(r);
-	  }
-	  GrowableArray<PReg*>* uplevelWritten = blk->uplevelWritten();
-	  for (j = uplevelWritten->length() - 1; j >= 0; j--) {
-	    PReg* r = uplevelWritten->at(j);
-	    uplevelDefs->append(bb->addDef(this, r));
-	    uplevelDefd->append(r);
-	  }
-	}
+        // the block's uplevel accesses since the block is non-LIFO and we won't access its
+        // context anyway
+        Scope* home = blk->scope()->home();
+        if (home->isSenderOrSame(scope())) {
+          // ok, this block is live
+          GrowableArray<PReg*>* uplevelRead = blk->uplevelRead();
+          for (int j = uplevelRead->length() - 1; j >= 0; j--) {
+            PReg* r = uplevelRead->at(j);
+            uplevelUses->append(bb->addUse(this, r));
+            uplevelUsed->append(r);
+          }
+          GrowableArray<PReg*>* uplevelWritten = blk->uplevelWritten();
+          for (j = uplevelWritten->length() - 1; j >= 0; j--) {
+            PReg* r = uplevelWritten->at(j);
+            uplevelDefs->append(bb->addDef(this, r));
+            uplevelDefd->append(r);
+          }
+        }
       }
     }
   }
@@ -1535,14 +1535,14 @@ inline void Node::eliminate(BB* bb, PReg* r, bool removing, bool cp) {
   if (CompilerDebug) {
     char buf[1024];
     cout(PrintEliminateUnnededNodes)->print("*%s node N%ld: %s\n", removing ? "removing" : "eliminating",
-					    id(), print_string(buf, PrintHexAddresses));
+      id(), print_string(buf, PrintHexAddresses));
   }
   assert(!dontEliminate || removing, "shouldn't eliminate this node");
   bb->remove(this);
 }
 
 # define CHECK(preg, r)						      \
-if (preg != r && preg->isOnlySoftUsed()) preg->eliminate(false);
+  if (preg != r && preg->isOnlySoftUsed()) preg->eliminate(false);
 
 inline void LoadNode::eliminate(BB* bb, PReg* r, bool rem, bool cp) {
   if (deleted) return;
@@ -1608,24 +1608,28 @@ void BasicNode::removeUpToMerge() {
     while (n->nSuccessors() > 1) {
       int i = n->nSuccessors() - 1;
       Node* succ = n->next(i);
+      succ->removeUpToMerge(); 
+      /*
+      Must removeNext after removeUpToMerge to avoid false removal of
+      MergeNode with 2 predecessors. SLR 08/08
+      */
       n->removeNext(succ);
-      succ->removeUpToMerge();
     }
     Node* nextn = n->next();
     if (!n->deleted) n->eliminate(thisBB, NULL, true, false);
     if (nextn) {
       BB* nextBB = nextn->bb();
       if (nextBB != thisBB) {
-	if (nextn->nPredecessors() >= 2) {
-	  // also remove n's successor so that we can delete past merges
-	  // if all incoming branches of the merges are deleted
-	  n->removeNext(nextn);
-	  // nextn had at least 2 predecessors, so must stop deleting here
-	  // NB: must break here -- if was 2 successors, will now be one
-	  // and loop would continue (was a bug)  -Urs 8/94
-	  break;
-	}
-	thisBB = nextBB;
+        if (nextn->nPredecessors() >= 2) {
+          // also remove n's successor so that we can delete past merges
+          // if all incoming branches of the merges are deleted
+          n->removeNext(nextn);
+          // nextn had at least 2 predecessors, so must stop deleting here
+          // NB: must break here -- if was 2 successors, will now be one
+          // and loop would continue (was a bug)  -Urs 8/94
+          break;
+        }
+        thisBB = nextBB;
       }
     }
     n = nextn;
@@ -1656,8 +1660,8 @@ void PrimNode::eliminate(BB* bb, PReg* r, bool rem, bool cp) {
       PReg* arg = args->at(i);
       if (arg->loc.isTopOfStack()) {
         // must delete this push, but node won't be eliminated with topOfStack because of side effect
-	// so reset location first
-	arg->loc = unAllocated;
+        // so reset location first
+        arg->loc = unAllocated;
       } else {
         fatal("internal compiler error");
         //fatal("Urs thinks all args should be topOfStack");
@@ -1684,13 +1688,12 @@ void TypeTestNode::eliminate(BB* bb, PReg* r, ConstPReg* c, klassOop theKlass) {
   Node* keep = NULL;
   if (CompilerDebug) {
     cout(PrintEliminateUnnededNodes)->print("*eliminating tt node %#lx const %#lx klass %#lx\n",
-	    PrintHexAddresses ? this : 0, constant, theKlass);
+      PrintHexAddresses ? this : 0, constant, theKlass);
   }
   Node* un = _next;		// save unknown branch
   // remove all successor nodes
   for (int i = 0; i < successors->length(); i++) {
     Node* succ = successors->at(i);
-    succ->removePrev(this);
     klassOop m = _classes->at(i);
     if (constant == m || theKlass == m) {
       assert(keep == NULL, "shouldn't have more than one match");
@@ -1699,8 +1702,9 @@ void TypeTestNode::eliminate(BB* bb, PReg* r, ConstPReg* c, klassOop theKlass) {
       _next = succ;
       _next->removeUpToMerge();
     }
+    succ->removePrev(this);
   }
-  
+
   if (keep || theKlass == klassOop(badOop)) {
     // found correct prediction, so can delete unknown branch, or
     // delete everything (theKlass == badOop)
@@ -1712,14 +1716,14 @@ void TypeTestNode::eliminate(BB* bb, PReg* r, ConstPReg* c, klassOop theKlass) {
     // (performance bug: should inline correct case since it's known now;
     // also, unknown branch may be uncommon)
     if (WizardMode) {
-	warning("Compiler: typetest didn't predict klass %#lx", theKlass);
-	lprintf("predicted klasses: ");
-	_classes->print();
-      }
+      warning("Compiler: typetest didn't predict klass %#lx", theKlass);
+      lprintf("predicted klasses: ");
+      _classes->print();
+    }
     _next = un;		// keep unknown branch
   }
   assert(this == bb->last, "should end my BB");
-    
+
   if (keep) {
     // append remaining case as fall-through
     append(keep);
@@ -1740,8 +1744,8 @@ void AbstractArrayAtNode::eliminate(BB* bb, PReg* r, bool rem, bool cp) {
   // remove fail branch nodes first
   Node* fail = next1();
   if (fail) {
-    fail->removePrev(this);
     fail->removeUpToMerge();
+    fail->removePrev(this);
   }
   AbstractBranchNode::eliminate(bb, r, rem, cp);
 }
@@ -1791,11 +1795,11 @@ void BranchNode::eliminateBranch(int op1, int op2, int res) {
   } else {
     nodeToRemove = 1;
   }
-  
+
   // discard one successor and make the remaining one the fall-thru case
   Node* discard = next(nodeToRemove);
-  removeNext(discard);
   discard->removeUpToMerge();
+  removeNext(discard);
   Node* succ = next(1 - nodeToRemove);
   removeNext(succ);
   append(succ);
@@ -1894,17 +1898,17 @@ Node* InlinedPrimitiveNode::uncommonSuccessor() const {
 // ==================================================================================
 
 # define CP_HELPER(_src, srcUse, return)				      \
-    /* live range must be correct - otherwise reg. allocation breaks   */     \
-    /* (even if doing just local CP - could fix this by checking for   */     \
-    /* local conflicts when allocating PRegs, i.e. keep BB alloc info) */     \
-    if (replace || (!d->loc.isTopOfStack() && d->extendLiveRange(this))) {    \
-      _src->removeUse(bb, srcUse);					      \
-      _src = d;								      \
-      srcUse = _src->addUse(bb, this);					      \
-      return true;							      \
-    } else {								      \
-      return false;							      \
-    }
+  /* live range must be correct - otherwise reg. allocation breaks   */     \
+  /* (even if doing just local CP - could fix this by checking for   */     \
+  /* local conflicts when allocating PRegs, i.e. keep BB alloc info) */     \
+  if (replace || (!d->loc.isTopOfStack() && d->extendLiveRange(this))) {    \
+  _src->removeUse(bb, srcUse);					      \
+  _src = d;								      \
+  srcUse = _src->addUse(bb, this);					      \
+  return true;							      \
+  } else {								      \
+  return false;							      \
+  }
 
 // if node can't fail anymore, remove failure branch (if not already removed)
 void AbstractBranchNode::removeFailureIfPossible() {
@@ -1921,7 +1925,7 @@ bool BasicNode::canCopyPropagate(Node* fromNode) const {
   // not just the stretch between fromNode and this node
   return canCopyPropagate() && fromNode->bb()->loopDepth() == _bb->loopDepth();
 }
-  
+
 bool NonTrivialNode::copyPropagate(BB* bb, Use* u, PReg* d, bool replace) {
   assert(canCopyPropagate(), "can't copy-propagate");
   assert(hasSrc(), "has no src");
@@ -1943,7 +1947,7 @@ bool LoadOffsetNode::copyPropagate(BB* bb, Use* u, PReg* d, bool replace) {
     return LoadNode::copyPropagate(bb, u, d, replace);
   }
   return false;
-  }
+}
 
 bool LoadUplevelNode::copyPropagate(BB* bb, Use* u, PReg* d, bool replace) {
   if (u == _context0Use) {
@@ -1982,7 +1986,7 @@ int ArithRRNode::operConst() const   {
   assert(operIsConst(), "not a constant");
   return _oper->isConstPReg(); 
 }
-  
+
 bool ArithNode::copyPropagate(BB* bb, Use* u, PReg* d, bool replace) {
   bool success = doCopyPropagate(bb, u, d, replace);
   if (_src->isConstPReg() && operIsConst()) {
@@ -1997,26 +2001,26 @@ bool ArithNode::copyPropagate(BB* bb, Use* u, PReg* d, bool replace) {
 
     case SubArithOp:
       res = c1 - c2; break;
-      
+
     case AndArithOp:		
       res = c1 & c2; break;
-      
+
     case OrArithOp:		
       res = c1 | c2; break;
-      
+
     case XOrArithOp:
       res = c1 ^ c2; break;
-      
+
     default:	return success;		// can't constant-fold
     }
-    
+
     _constResult = new_ConstPReg(scope(), (oop)res);
     // enable further constant propagation of the result
     dontEliminate = false;
     _src->removeUse(bb, srcUse);
     _src = _constResult;
     srcUse = bb->addUse(this, _src);
-    
+
     // condition codes set -- see if there's a branch we can eliminate
     Node* branch = next();
     if (branch->isBranchNode()) {
@@ -2068,21 +2072,21 @@ bool TArithRRNode::copyPropagate(BB* bb, Use* u, PReg* d, bool replace) {
       // first, discard the error branch (if there)
       Node* discard = next1();
       if (discard != NULL) {
-	discard->bb()->remove(discard);
-	discard->removeUpToMerge();
+        discard->bb()->remove(discard);// SLR should this be removeNext(discard)? and should it be after removeUpToMerge()?
+        discard->removeUpToMerge();
 #     ifdef ASSERT
-	bb->verify();
-	((BB*)bb->next())->verify();
+        bb->verify();
+        ((BB*)bb->next())->verify();
 #     endif
       }
       // now, discard the overflow check
       discard = next();
       assert(discard->isBranchNode(), "must be a cond. branch");
       assert(((BranchNode*)discard)->op() == VSBranchOp, "expected an overflow check");
-      discard->bb()->remove(discard);
+      discard->bb()->remove(discard);// SLR should this be removeNext(discard)? and should it be after removeUpToMerge()?
       // and the "overflow taken" code
       discard = discard->next1();
-      discard->bb()->remove(discard);
+      discard->bb()->remove(discard);// SLR ditto this?
       discard->removeUpToMerge();
 #     ifdef ASSERT
       bb->verify();
@@ -2201,9 +2205,9 @@ bool ContextInitNode::copyPropagate(BB* bb, Use* u, PReg* d, bool replace) {
       bool ok;
       CP_HELPER(initPR, newUse, ok = );
       if (ok) {
-	assert(newUse != u, "must have new use");
-	_initializers->at_put(i, initExpr->shallowCopy(d, initExpr->node()));
-	_initializerUses->at_put(i, newUse);
+        assert(newUse != u, "must have new use");
+        _initializers->at_put(i, initExpr->shallowCopy(d, initExpr->node()));
+        _initializerUses->at_put(i, newUse);
       }
       return ok;
     }
@@ -2420,10 +2424,10 @@ bool TypeTestNode::needsKlassLoad() const {
   for (int i = 0; i < len; i++) {
     klassOop klass = _classes->at(i);
     if (klass != trueObj->klass() &&
-        klass != falseObj->klass() &&
-	klass != nilObj->klass() &&
-	klass != smiKlassObj) {
-      return true;
+      klass != falseObj->klass() &&
+      klass != nilObj->klass() &&
+      klass != smiKlassObj) {
+        return true;
     }
   }
   return false;
@@ -2619,9 +2623,9 @@ void TypeTestNode::assert_preg_type(PReg* r, GrowableArray<klassOop>* k, LoopHea
 // ==================================================================================
 
 #ifdef PRODUCT
-  #define DISABLED_IN_PRODUCT return buf;
+#define DISABLED_IN_PRODUCT return buf;
 #else
-  #define DISABLED_IN_PRODUCT
+#define DISABLED_IN_PRODUCT
 #endif
 
 
@@ -2632,7 +2636,7 @@ static int id_of(Node* node)	{ return node == NULL ? -1 : node->id(); }
 
 char* PrologueNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "Prologue");
   if (printAddr) my_sprintf(buf, "((PrologueNode*)%#lx", this);
   return b;
@@ -2640,7 +2644,7 @@ char* PrologueNode::print_string(char* buf, bool printAddr) const {
 
 char* InterruptCheckNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "InterruptCheckNode");
   if (printAddr) my_sprintf(buf, "((InterruptCheckNode*)%#lx)", this);
   return b;
@@ -2648,7 +2652,7 @@ char* InterruptCheckNode::print_string(char* buf, bool printAddr) const {
 
 char* LoadOffsetNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "LoadOffset %s := %s[%#lx]", _dest->safeName(), _src->safeName(), offset);
   if (printAddr) my_sprintf(buf, "((LoadOffsetNode*)%#lx)", this);
   return b;
@@ -2656,7 +2660,7 @@ char* LoadOffsetNode::print_string(char* buf, bool printAddr) const {
 
 char* LoadIntNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "LoadInt %s := %#lx", _dest->safeName(), _value);
   if (printAddr) my_sprintf(buf, "((LoadIntNode*)%#lx)", this);
   return b;
@@ -2664,16 +2668,16 @@ char* LoadIntNode::print_string(char* buf, bool printAddr) const {
 
 char* LoadUplevelNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "LoadUpLevel %s := %s^%d[%d]", _dest->safeName(), 
-    		 _context0->safeName(), _nofLevels, _offset);
+    _context0->safeName(), _nofLevels, _offset);
   if (printAddr) my_sprintf(buf, "((LoadUplevelNode*)%#lx)", this);
   return b;
 }
 
 char* StoreOffsetNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "StoreOffset %s[%#lx] := %s", _base->safeName(), _offset, _src->safeName());
   if (printAddr) my_sprintf(buf, "((StoreOffsetNode*)%#lx)", this);
   return b;
@@ -2681,16 +2685,16 @@ char* StoreOffsetNode::print_string(char* buf, bool printAddr) const {
 
 char* StoreUplevelNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "StoreUpLevel %s^%d[%d] := %s", 
-		 _context0->safeName(), _nofLevels, _offset, _src->safeName());
+    _context0->safeName(), _nofLevels, _offset, _src->safeName());
   if (printAddr) my_sprintf(buf, "((StoreUplevelNode*)%#lx)", this);
   return b;
 }
-  
+
 char* AssignNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "%s := %s", _dest->safeName(), _src->safeName());
   if (printAddr) my_sprintf(buf, "((AssignNode*)%#lx)", this);
   return b;
@@ -2698,7 +2702,7 @@ char* AssignNode::print_string(char* buf, bool printAddr) const {
 
 char* SendNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf,PrintStringLen, "Send %s NLR %ld ", _key->print_string(), id_of(nlrTestPoint()));
   if (printAddr) my_sprintf(buf, "((SendNode*)%#lx)", this);
   return b;
@@ -2707,16 +2711,16 @@ char* SendNode::print_string(char* buf, bool printAddr) const {
 
 char* PrimNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "PrimCall _%s NLR %ld", _pdesc->name(), id_of(nlrTestPoint()));
   if (printAddr) my_sprintf(buf, "((PrimNode*)%#lx)", this);
   return b;
-  }
+}
 
 
 char* DLLNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "DLLCall <%s, %s> NLR %ld", _dll_name->as_string(), _function_name->as_string(), id_of(nlrTestPoint()));
   if (printAddr) my_sprintf(buf, "((DLLNode*)%#lx)", this);
   return b;
@@ -2725,7 +2729,7 @@ char* DLLNode::print_string(char* buf, bool printAddr) const {
 
 char* BlockCreateNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "BlockCreate %s", _dest->safeName());
   if (printAddr) my_sprintf(buf, "((BlockCreateNode*)%#lx)", this);
   return b;
@@ -2733,15 +2737,15 @@ char* BlockCreateNode::print_string(char* buf, bool printAddr) const {
 
 char* BlockMaterializeNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "BlockMaterialize %s", _dest->safeName());
-    if (printAddr) my_sprintf(buf, "((BlockMaterializeNode*)%#lx)", this);
+  if (printAddr) my_sprintf(buf, "((BlockMaterializeNode*)%#lx)", this);
   return b;
 }
 
 char* InlinedReturnNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "InlinedReturn %s := %s", _dest->safeName(), _src->safeName());
   if (printAddr) my_sprintf(buf, "((InlinedReturnNode*)%#lx)", this);
   return b;
@@ -2749,7 +2753,7 @@ char* InlinedReturnNode::print_string(char* buf, bool printAddr) const {
 
 char* NLRSetupNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "NLReturn %s := %s", _dest->safeName(), _src->safeName());
   if (printAddr) my_sprintf(buf, "((NLRSetupNode*)%#lx)", this);
   return b;
@@ -2757,7 +2761,7 @@ char* NLRSetupNode::print_string(char* buf, bool printAddr) const {
 
 char* NLRContinuationNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "NLR Continuation");
   if (printAddr) my_sprintf(buf, "((NLRContinuationNode*)%#lx)", this);
   return b;
@@ -2765,7 +2769,7 @@ char* NLRContinuationNode::print_string(char* buf, bool printAddr) const {
 
 char* ReturnNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "MethodReturn  %s", _src->safeName());
   if (printAddr) my_sprintf(buf, "((ReturnNode*)%#lx)", this);
   return b;
@@ -2773,7 +2777,7 @@ char* ReturnNode::print_string(char* buf, bool printAddr) const {
 
 char* NLRTestNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "NLRTest  N%ld N%ld", id_of(next1()), id_of(next()));
   if (printAddr) my_sprintf(buf, "((NLRTestNode*)%#lx)", this);
   return b;
@@ -2783,53 +2787,53 @@ char* ArithNode::opName() const { return ArithOpName[_op]; }
 
 char* ArithRRNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "%s := %s %s %s", 
-    		 _dest->safeName(), _src->safeName(), opName(), _oper->safeName());
+    _dest->safeName(), _src->safeName(), opName(), _oper->safeName());
   if (printAddr) my_sprintf(buf, "((ArithRRNode*)%#lx)", this);
   return b;
 }
 
 char* FloatArithRRNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "%s := %s %s %s", 
-    		 _dest->safeName(), _src->safeName(), opName(), _oper->safeName());
+    _dest->safeName(), _src->safeName(), opName(), _oper->safeName());
   if (printAddr) my_sprintf(buf, "((FloatArithRRNode*)%#lx)", this);
   return b;
 }
 
 char* FloatUnaryArithNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "%s := %s %s", 
-    		 _dest->safeName(), opName(), _src->safeName());
+    _dest->safeName(), opName(), _src->safeName());
   if (printAddr) my_sprintf(buf, "((FloatUnaryArithNode*)%#lx)", this);
   return b;
 }
 
 char* TArithRRNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "%s := %s %s %s   N%d, N%d",
-		 _dest->safeName(), _src->safeName(), ArithOpName[_op], _oper->safeName(),
-		 id_of(next1()), id_of(next()));
+    _dest->safeName(), _src->safeName(), ArithOpName[_op], _oper->safeName(),
+    id_of(next1()), id_of(next()));
   if (printAddr) my_sprintf(buf, "((TArithRRNode*)%#lx)", this);
   return b;
 }
 
 char* ArithRCNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "%s := %s %s %#lx",
-		 _dest->safeName(), _src->safeName(), opName(), _oper);
+    _dest->safeName(), _src->safeName(), opName(), _oper);
   if (printAddr) my_sprintf(buf, "((ArithRCNode*)%#lx)", this);
   return b;
 }
 
 char* BranchNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "%s  N%ld N%ld", BranchOpName[_op], id_of(next1()), id_of(next()));
   if (printAddr) my_sprintf(buf, "((BranchNode*)%#lx)", this);
   return b;
@@ -2837,7 +2841,7 @@ char* BranchNode::print_string(char* buf, bool printAddr) const {
 
 char* TypeTestNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf(buf, "TypeTest %s, ", _src->safeName());
   for (int i = 1; i <= _classes->length(); i++) {
     klassOop m = _classes->at(i-1);
@@ -2845,33 +2849,33 @@ char* TypeTestNode::print_string(char* buf, bool printAddr) const {
     my_sprintf(buf, ": N%ld; ", (i < nSuccessors() && next(i) != NULL) ? next(i)->id() : -1);
   }
   my_sprintf_len(buf, b + PrintStringLen - buf,
-		 "N%ld%s", id_of(next()),
-		 _hasUnknown ? "" : "*");
+    "N%ld%s", id_of(next()),
+    _hasUnknown ? "" : "*");
   if (printAddr) my_sprintf(buf, "((TypeTestNode*)%#lx)", this);
   return b;
 }
 
 char* ArrayAtNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "ArrayAt %s := %s[%s]",
-		 _dest->safeName(), _src->safeName(), _arg->safeName());
+    _dest->safeName(), _src->safeName(), _arg->safeName());
   if (printAddr) my_sprintf(buf, "((ArrayAtNode*)%#lx)", this);
   return b;
 }
 
 char* ArrayAtPutNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "ArrayAtPut %s[%s] := %s",
-	   	   _src->safeName(), _arg->safeName(), elem->safeName());
+    _src->safeName(), _arg->safeName(), elem->safeName());
   if (printAddr) my_sprintf(buf, "((ArrayAtPutNode*)%#lx)", this);
   return b;
 }
 
 char* FixedCodeNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "DeadEnd");
   if (printAddr) my_sprintf(buf, "((FixedCodeNode*)%#lx)", this);
   return b;
@@ -2885,7 +2889,7 @@ static void printPrevNodes(Node* n) {
 
 char* MergeNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf(buf, "Merge ");
   prevsLen = _prevs->length();
   mergePrintBuf = buf;
@@ -2898,26 +2902,26 @@ char* MergeNode::print_string(char* buf, bool printAddr) const {
 
 char* LoopHeaderNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf(buf, "LoopHeader ");
   if (_activated) {
     if (_integerLoop) {
       my_sprintf(buf, "int ");
       my_sprintf(buf, "%s=[%s..%s] ", _loopVar->safeName(), _lowerBound->safeName(), 
-		 _upperBound ? _upperBound->safeName() : _upperLoad->base()->safeName());
+        _upperBound ? _upperBound->safeName() : _upperLoad->base()->safeName());
     }
     if (_registerCandidates != NULL) {
       my_sprintf(buf, "reg vars = ");
-      for (int i = 0; i < _tests->length(); i++) my_sprintf(buf, "%s ", _registerCandidates->at(i)->preg()->name());
+      for (int i = 0; i < _registerCandidates->length(); i++) my_sprintf(buf, "%s ", _registerCandidates->at(i)->preg()->name());
     }
     if (_tests != NULL) {
       for (int i = 0; i < _tests->length(); i++) {
         HoistedTypeTest* t = _tests->at(i);
-	if (t->testedPR->loc != unAllocated) {
-	  stringStream s(50);
-	  t->print_test_on(&s);
-	  my_sprintf(buf, "%s ", s.as_string());
-	}
+        if (t->testedPR->loc != unAllocated) {
+          stringStream s(50);
+          t->print_test_on(&s);
+          my_sprintf(buf, "%s ", s.as_string());
+        }
       }
     }
     my_sprintf_len(buf, PrintStringLen - (buf - b), " ");
@@ -2930,7 +2934,7 @@ char* LoopHeaderNode::print_string(char* buf, bool printAddr) const {
 
 char* ContextCreateNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "Create Context %s", _dest->safeName());
   if (printAddr) my_sprintf(buf, "((ContextCreateNode*)%#lx)", this);
   return b;
@@ -2938,7 +2942,7 @@ char* ContextCreateNode::print_string(char* buf, bool printAddr) const {
 
 char* ContextInitNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf(buf, "Initialize context ");
   if (_src == NULL) {
     my_sprintf(buf, "(optimized away) ");
@@ -2957,7 +2961,7 @@ char* ContextInitNode::print_string(char* buf, bool printAddr) const {
 
 char* ContextZapNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "Zap Context %s", isActive() ? context()->safeName() : "- inactive");
   if (printAddr) my_sprintf(buf, "((ContextZapNode*)%#lx)", this);
   return b;
@@ -2965,7 +2969,7 @@ char* ContextZapNode::print_string(char* buf, bool printAddr) const {
 
 char* InlinedPrimitiveNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf(buf, "%s := ", _dest->safeName());
   char* op_name;
   switch (_op) {
@@ -2986,7 +2990,7 @@ char* InlinedPrimitiveNode::print_string(char* buf, bool printAddr) const {
 
 char* UncommonNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "UncommonBranch");
   if (printAddr) my_sprintf(buf, "((UncommonNode*)%#lx)", this);
   return b;
@@ -2994,7 +2998,7 @@ char* UncommonNode::print_string(char* buf, bool printAddr) const {
 
 char* NopNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "Nop");
   if (printAddr) my_sprintf(buf, "((NopNode*)%#lx)", this);
   return b;
@@ -3002,7 +3006,7 @@ char* NopNode::print_string(char* buf, bool printAddr) const {
 
 char* CommentNode::print_string(char* buf, bool printAddr) const {
   DISABLED_IN_PRODUCT
-  char* b = buf;
+    char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "'%s' ", comment);
   if (printAddr) my_sprintf(buf, "((CommentNode*)%#lx)", this);
   return b;
@@ -3010,7 +3014,7 @@ char* CommentNode::print_string(char* buf, bool printAddr) const {
 
 void BasicNode::printID() const {
   lprintf("%4ld:%1s %-4s", id(), deleted ? "D" : " ", " ");
-    //c hasSplitSig() ? splitSig()->prefix(buf) : " ");
+  //c hasSplitSig() ? splitSig()->prefix(buf) : " ");
 }
 
 void Node::verify() const {
@@ -3025,13 +3029,13 @@ void Node::verify() const {
     error("next->prev != this for Node %#lx", this);
   if (bbIterator->blocksBuilt && _bb == NULL) error("Node %#lx: doesn't belong to any BB", this);
   if (next() == NULL && !isExitNode() &&
-      !isCommentNode())   // for the "rest of method omitted (dead)" comment
+    !isCommentNode())   // for the "rest of method omitted (dead)" comment
     error("Node %#lx has no successor", this);
   if (next() != NULL && isExitNode()) {
     for (Node* n = next();
-	 n && (n->isCommentNode() || n->isDeadEndNode());
-	 n = n->next()) ;
-      if (n) error("exit node %#lx has a successor (%#lx)", this, next());
+      n && (n->isCommentNode() || n->isDeadEndNode());
+      n = n->next()) ;
+    if (n) error("exit node %#lx has a successor (%#lx)", this, next());
   }
 }
 
@@ -3055,7 +3059,7 @@ void LoadOffsetNode::verify() const {
   base()->verify();
   if (offset < 0) error("Node %#lx: offset must be >= 0", this);
 }
-  
+
 void LoadUplevelNode::verify() const {
   if (deleted) return;
   if (_context0 == NULL) error("Node %#lx: context0 is NULL", this);
@@ -3137,10 +3141,10 @@ void ContextInitNode::verify() const {
   if (deleted) return;
   int n = nofTemps();
   if ((n != contents()->length()) ||
-      (n != _initializers->length()) ||
-      (_contentDefs != NULL) && (n != _contentDefs->length()) ||
-      (_initializerUses != NULL) && (n != _initializerUses->length())) {
-    error("ContextInitNode %#lx: bad nofTemps %d", this, n);
+    (n != _initializers->length()) ||
+    (_contentDefs != NULL) && (n != _contentDefs->length()) ||
+    (_initializerUses != NULL) && (n != _initializerUses->length())) {
+      error("ContextInitNode %#lx: bad nofTemps %d", this, n);
   }
   int i = nofTemps();
   while (i-- > 0) {
@@ -3158,12 +3162,12 @@ void ContextInitNode::verify() const {
     // - gri 9/10/96
     /*
     if (r->isSAPReg() && !r->isBlockPReg() && !((SAPReg*)r)->isInContext()) {
-      // I'm not sure what the isInContext() flag is supposed to do....but the error is triggered
-      // in the test suite (when running the standard tests).  Could be because of copy propagation.
-      // If the assertion does make sense, please also put it in ContextInitNode::initialize().
-      // (But please turn the condition above into a method, don't duplicate it.)
-      // Urs 9/8/96
-      // error("ContextInitNode %#lx: temp %d is non-context SAPReg %s", this, i, r->safeName());
+    // I'm not sure what the isInContext() flag is supposed to do....but the error is triggered
+    // in the test suite (when running the standard tests).  Could be because of copy propagation.
+    // If the assertion does make sense, please also put it in ContextInitNode::initialize().
+    // (But please turn the condition above into a method, don't duplicate it.)
+    // Urs 9/8/96
+    // error("ContextInitNode %#lx: temp %d is non-context SAPReg %s", this, i, r->safeName());
     }
     */
   }
@@ -3247,5 +3251,5 @@ void printNodes(Node* n) {
     n->printID(); n->print_short(); lprintf("\n");
   }
 }
-  
+
 # endif

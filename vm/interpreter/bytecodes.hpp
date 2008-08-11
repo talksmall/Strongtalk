@@ -70,7 +70,7 @@ class Bytecodes: AllStatic {
     BOL,		// {byte, *, oop, long}
     BLL,		// {byte, *, long, long}
     BL,			// {byte, *, long}
-    BLB,		// {byte, *, byte}
+    BLB,		// {byte, *, byte} slr - surely this should be {byte, *, long, byte}?
     BBOO,		// {byte, byte, *, oop, oop}
     BBLO,		// {byte, byte, *, long, oop}
     BOOLB,		// {byte, *, oop, oop, long, byte}

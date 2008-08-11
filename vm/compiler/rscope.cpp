@@ -5,11 +5,11 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
 following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
-	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
-	  from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
 NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
@@ -46,16 +46,16 @@ static int compare_pcDescs(PcDesc** a, PcDesc** b) {
   int diff = (*b)->scope - (*a)->scope;
   return diff ? diff : (*a)->byteCode - (*b)->byteCode;
 }
-  
+
 int RNonDummyScope::compare(RNonDummyScope** a,  RNonDummyScope** b) {
   return (*b)->scopeID() - (*a)->scopeID();
 }
-  
+
 RNonDummyScope::RNonDummyScope(RNonDummyScope* s, int bci, methodOop m, int level)
 : RScope(s, bci),  
-  _level(level), 
-  uncommon(1),
-  ncodes(m == NULL ? 1 : m->size_of_codes() * oopSize) {
+_level(level), 
+uncommon(1),
+ncodes(m == NULL ? 1 : m->size_of_codes() * oopSize) {
   _subScopes = NEW_RESOURCE_ARRAY(GrowableArray<RScope*>*, ncodes + 1);
   for (int i = 0; i <= ncodes; i++) _subScopes[i] = NULL;
 }
@@ -65,11 +65,11 @@ RInlinedScope::RInlinedScope(RNonDummyScope* s, int bci, const nmethod* n, Scope
 
 
 RPICScope::RPICScope(const nmethod* c, PcDesc* pc, CompiledIC* s, klassOop k,
-		     ScopeDesc* dsc, nmethod* n, methodOop m, int ns, int lev, bool tr)
-  : RNonDummyScope(NULL, pc->byteCode, m, lev), 
-    caller(c), _sd(s), pcDesc(pc), klass(k), nm(n), _method(m), trusted(tr), desc(dsc) {
-  nsends = ns; 
-  extended = false;
+                     ScopeDesc* dsc, nmethod* n, methodOop m, int ns, int lev, bool tr)
+                     : RNonDummyScope(NULL, pc->byteCode, m, lev), 
+                     caller(c), _sd(s), pcDesc(pc), klass(k), nm(n), _method(m), trusted(tr), desc(dsc) {
+                       nsends = ns; 
+                       extended = false;
 }
 
 RDatabaseScope::RDatabaseScope(RNonDummyScope* sender, int bci, klassOop receiver_klass, methodOop method, int level)
@@ -82,7 +82,7 @@ RDatabaseScope::RDatabaseScope(RNonDummyScope* sender, int bci, klassOop receive
 }
 
 RUntakenScope::RUntakenScope(RNonDummyScope* sender, PcDesc* p, bool u)
-  : RNonDummyScope(sender, p->byteCode, NULL, 0), isUncommon(u), pc(p) { 
+: RNonDummyScope(sender, p->byteCode, NULL, 0), isUncommon(u), pc(p) { 
   int i = 0;	// to allow setting breakpoints
 }
 
@@ -91,10 +91,10 @@ RUninlinableScope::RUninlinableScope(RNonDummyScope* sender, int bci) : RNullSco
 }
 
 RInterpretedScope::RInterpretedScope(RNonDummyScope* sender, int bci, LookupKey* key, 
-				     methodOop m, int level, bool trusted) 
-  : RNonDummyScope(sender, bci, m, level) {
-  _key = key; _method = m; this->nsends = m->invocation_count(); this->trusted = trusted;
-  extended = false;
+                                     methodOop m, int level, bool trusted) 
+                                     : RNonDummyScope(sender, bci, m, level) {
+                                       _key = key; _method = m; this->nsends = m->invocation_count(); this->trusted = trusted;
+                                       extended = false;
 }
 
 LookupKey* RInlinedScope::key() const {
@@ -113,8 +113,8 @@ LookupKey* RPICScope::key() const {
   // If we have a send desc, return an allocated lookup key
   if (sd()) {
     return sd()->isSuperSend()
-         ? LookupKey::allocate(klass, _method)
-         : LookupKey::allocate(klass, _method->selector());
+      ? LookupKey::allocate(klass, _method)
+      : LookupKey::allocate(klass, _method->selector());
   }
   ShouldNotReachHere();
   // return nm ? (LookupKey*)&nm->key : LookupKey::allocate(klass, _method->selector()); 
@@ -128,9 +128,9 @@ bool RScope::wasNeverExecuted() const {
   methodOop m = method();
   symbolOop sel = m->selector();
   if (InliningPolicy::isInterpreterPredictedSmiSelector(sel) ||
-      InliningPolicy::isInterpreterPredictedBoolSelector(sel)) {
-    // predicted methods aren't called by interpreter if prediction succeeds
-    return false;
+    InliningPolicy::isInterpreterPredictedBoolSelector(sel)) {
+      // predicted methods aren't called by interpreter if prediction succeeds
+      return false;
   } else {
     return m->was_never_executed();
   }
@@ -142,24 +142,24 @@ bool RScope::wasNeverExecuted() const {
 bool RInterpretedScope::equivalent(LookupKey* l) const {
   return _key->equal(l);
 }
-  
+
 bool RInterpretedScope::equivalent(InlinedScope* s) const {
   return _key->equal(s->key());
 }
-  
+
 bool RInlinedScope::equivalent(LookupKey* l) const {
   return desc->l_equivalent(l);
 }
-  
+
 bool RInlinedScope::equivalent(InlinedScope* s) const {
   if (!s->isInlinedScope()) return false;
   InlinedScope* ss = (InlinedScope*)s;
   // don't use ss->rscope because it may not be set yet; but ss's sender
   // must have an rscope if ss is equivalent to this.
   return ss->senderBCI() == desc->senderBCI() &&
-         ss->sender()->rscope == sender();
+    ss->sender()->rscope == sender();
 }
-  
+
 bool RPICScope::equivalent(InlinedScope* s) const {
   Unused(s);
   // an RPICScope represents a non-inlined scope, so it can't be equivalent
@@ -172,7 +172,7 @@ bool RPICScope::equivalent(LookupKey* l) const {
   assert(!_sd->isSuperSend(), "this code probably doesn't work for super sends");
   return klass == l->klass() && _method->selector() == l->selector();
 }
-  
+
 RScope* RNonDummyScope::subScope(int bci, LookupKey* k) const {
   // return the subscope matching the lookup
   assert(bci >= 0 && bci < ncodes, "bci out of range");
@@ -269,7 +269,7 @@ void RNonDummyScope::unify(RNonDummyScope* s) {
     _subScopes[i] = s->_subScopes[i];
     if (_subScopes[i]) {
       for (int j = _subScopes[i]->length() - 1; j >= 0; j--) {
-	_subScopes[i]->at(j)->_sender = this;
+        _subScopes[i]->at(j)->_sender = this;
       }
     }
   }
@@ -285,78 +285,78 @@ void RPICScope::unify(RNonDummyScope* s) {
 
 const int UntrustedPICLimit = 2;
 const int PICTrustLimit = 2;
-  
+
 static void getCallees(const nmethod* nm, 
-		       GrowableArray<PcDesc*>*&   taken_uncommon,
-		       GrowableArray<PcDesc*>*& untaken_uncommon,
-		       GrowableArray<PcDesc*>*& uninlinable,
-		       GrowableArray<RNonDummyScope*>*& sends, 
-		       bool trusted, 
-		       int level) {
-  // return a list of all uncommon branches of nm, plus a list
-  // of all nmethods called by nm (in the form of PICScopes)
-  // all lists are sorted by scope (biggest offset first)
-  if (theCompiler && CompilerDebug) {
-    cout(PrintRScopes)->print("%*s*searching nm %#lx \"%s\" (%strusted; %ld callers)\n", 2 * level, "",
-			      nm, nm->key.selector()->as_string(), trusted ? "" : "not ", nm->ncallers());
-  }
-  taken_uncommon = new GrowableArray<PcDesc*>(1);
-  untaken_uncommon = new GrowableArray<PcDesc*>(16);
-  uninlinable = new GrowableArray<PcDesc*>(16);
-  sends = new GrowableArray<RNonDummyScope*>(10);
-  relocIterator iter(nm);
-  while (iter.next()) {
-    if (iter.type() == relocInfo::uncommon_type) {
-      GrowableArray<PcDesc*>* l = iter.wasUncommonTrapExecuted() ? taken_uncommon : untaken_uncommon;
-      l->append(nm->containingPcDesc((char*)iter.word_addr()));
-    }
-  }
+                       GrowableArray<PcDesc*>*&   taken_uncommon,
+                       GrowableArray<PcDesc*>*& untaken_uncommon,
+                       GrowableArray<PcDesc*>*& uninlinable,
+                       GrowableArray<RNonDummyScope*>*& sends, 
+                       bool trusted, 
+                       int level) {
+                         // return a list of all uncommon branches of nm, plus a list
+                         // of all nmethods called by nm (in the form of PICScopes)
+                         // all lists are sorted by scope (biggest offset first)
+                         if (theCompiler && CompilerDebug) {
+                           cout(PrintRScopes)->print("%*s*searching nm %#lx \"%s\" (%strusted; %ld callers)\n", 2 * level, "",
+                             nm, nm->key.selector()->as_string(), trusted ? "" : "not ", nm->ncallers());
+                         }
+                         taken_uncommon = new GrowableArray<PcDesc*>(1);
+                         untaken_uncommon = new GrowableArray<PcDesc*>(16);
+                         uninlinable = new GrowableArray<PcDesc*>(16);
+                         sends = new GrowableArray<RNonDummyScope*>(10);
+                         relocIterator iter(nm);
+                         while (iter.next()) {
+                           if (iter.type() == relocInfo::uncommon_type) {
+                             GrowableArray<PcDesc*>* l = iter.wasUncommonTrapExecuted() ? taken_uncommon : untaken_uncommon;
+                             l->append(nm->containingPcDesc((char*)iter.word_addr()));
+                           }
+                         }
 
-  taken_uncommon->sort(&compare_pcDescs);
-  untaken_uncommon->sort(&compare_pcDescs);
+                         taken_uncommon->sort(&compare_pcDescs);
+                         untaken_uncommon->sort(&compare_pcDescs);
 
-  if (TypeFeedback) {
-    relocIterator iter(nm);
-    while (iter.next()) {
-      if (iter.type() != relocInfo::ic_type)  continue;
-      CompiledIC* sd = iter.ic();
-      PcDesc* p = nm->containingPcDesc((char*)sd);
-      if (sd->wasNeverExecuted()) {
-	// this send was never taken
-	sends->append(new RUntakenScope(NULL, p, false));
-      } else if (sd->isUninlinable() || sd->isMegamorphic()) {
-	// don't inline this send
-	uninlinable->append(p);
-      } else {
-	bool useInfo  = trusted || sd->ntargets() <= UntrustedPICLimit;
-	if (useInfo) {
-	  CompiledIC_Iterator it(sd);
-	  while (!it.at_end()) {
-	    nmethod* callee = it.compiled_method();
-	    methodOop m = it.interpreted_method();
-	    ScopeDesc* desc;
-	    int count;
-            if (callee != NULL) {
-	      // compiled target
-	      desc = callee->scopes()->root();
-	      count = callee->invocation_count() / max(1, callee->ncallers());
-	    } else {
-	      // interpreted target
-	      desc = NULL;
-	      count = m->invocation_count();
-	    }
-	    sends->append(new RPICScope(nm, p, sd, it.klass(), desc, callee, m, count, level, trusted));
-	    it.advance();
-	  }
-	} else if (theCompiler && CompilerDebug) {
-	  cout(PrintRScopes)->print("%*s*not trusting PICs in sd %#lx \"%s\" (%ld cases)\n",
-	    			    2*level, "", sd, sd->selector()->as_string(), sd->ntargets());
-	}
-      }
-    }
-    sends->sort(&RPICScope::compare);
-    uninlinable->sort(&compare_pcDescs);
-  }
+                         if (TypeFeedback) {
+                           relocIterator iter(nm);
+                           while (iter.next()) {
+                             if (iter.type() != relocInfo::ic_type)  continue;
+                             CompiledIC* sd = iter.ic();
+                             PcDesc* p = nm->containingPcDesc((char*)sd);
+                             if (sd->wasNeverExecuted()) {
+                               // this send was never taken
+                               sends->append(new RUntakenScope(NULL, p, false));
+                             } else if (sd->isUninlinable() || sd->isMegamorphic()) {
+                               // don't inline this send
+                               uninlinable->append(p);
+                             } else {
+                               bool useInfo  = trusted || sd->ntargets() <= UntrustedPICLimit;
+                               if (useInfo) {
+                                 CompiledIC_Iterator it(sd);
+                                 while (!it.at_end()) {
+                                   nmethod* callee = it.compiled_method();
+                                   methodOop m = it.interpreted_method();
+                                   ScopeDesc* desc;
+                                   int count;
+                                   if (callee != NULL) {
+                                     // compiled target
+                                     desc = callee->scopes()->root();
+                                     count = callee->invocation_count() / max(1, callee->ncallers());
+                                   } else {
+                                     // interpreted target
+                                     desc = NULL;
+                                     count = m->invocation_count();
+                                   }
+                                   sends->append(new RPICScope(nm, p, sd, it.klass(), desc, callee, m, count, level, trusted));
+                                   it.advance();
+                                 }
+                               } else if (theCompiler && CompilerDebug) {
+                                 cout(PrintRScopes)->print("%*s*not trusting PICs in sd %#lx \"%s\" (%ld cases)\n",
+                                   2*level, "", sd, sd->selector()->as_string(), sd->ntargets());
+                               }
+                             }
+                           }
+                           sends->sort(&RPICScope::compare);
+                           uninlinable->sort(&compare_pcDescs);
+                         }
 }
 
 RNonDummyScope* RNonDummyScope::constructRScopes(const nmethod* nm, bool trusted, int level) {
@@ -377,8 +377,8 @@ RNonDummyScope* RNonDummyScope::constructRScopes(const nmethod* nm, bool trusted
     ScopeDesc* sender = s->sender();
     for (RNonDummyScope* rsender = current; rsender; rsender = rsender->sender()) {
       if (rsender->isInlinedScope() &&
-	  ((RInlinedScope*)rsender)->desc->is_equal(sender))
-	break;
+        ((RInlinedScope*)rsender)->desc->is_equal(sender))
+        break;
     }
     int bci = sender ? s->senderBCI() : IllegalBCI;
     current = new RInlinedScope((RInlinedScope*)rsender, bci, nm, s, level);
@@ -426,8 +426,6 @@ void RNonDummyScope::constructSubScopes(bool trusted) {
   if (m->is_accessMethod()) return;
   CodeIterator iter(m);
   do {
-    RNonDummyScope* s = NULL;
-    InterpretedIC* ic = iter.ic();
     switch (iter.send()) {
       case Bytecodes::interpreted_send:
       case Bytecodes::compiled_send   :
@@ -435,23 +433,26 @@ void RNonDummyScope::constructSubScopes(bool trusted) {
       case Bytecodes::accessor_send   :
       case Bytecodes::polymorphic_send:
       case Bytecodes::primitive_send  :
-        { for (InterpretedIC_Iterator it(ic); !it.at_end(); it.advance()) {
+        { 
+          RNonDummyScope* s = NULL;
+          InterpretedIC* ic = iter.ic();
+          for (InterpretedIC_Iterator it(ic); !it.at_end(); it.advance()) {
             if (it.is_compiled()) {
-	      nmethod* nm = it.compiled_method();
-	      RNonDummyScope* s = constructRScopes(nm, trusted && trustPICs(m), _level + 1);
-	      addScope(iter.bci(), s);
-	    } else {
-	      methodOop m = it.interpreted_method();
+              nmethod* nm = it.compiled_method();
+              RNonDummyScope* s = constructRScopes(nm, trusted && trustPICs(m), _level + 1);
+              addScope(iter.bci(), s);
+            } else {
+              methodOop m = it.interpreted_method();
               LookupKey* k = LookupKey::allocate(it.klass(), it.selector());
-	      new RInterpretedScope(this, iter.bci(), k, m, _level + 1, trusted && trustPICs(m)); 
-	      // NB: constructor adds callee to our subScope list
-	    }
-	  }
-	}
-	break;
+              new RInterpretedScope(this, iter.bci(), k, m, _level + 1, trusted && trustPICs(m)); 
+              // NB: constructor adds callee to our subScope list
+            }
+          }
+        }
+        break;
       case Bytecodes::megamorphic_send:
         new RUninlinableScope(this, iter.bci());  // constructor adds callee to our subScope list
-	break;
+        break;
       case Bytecodes::no_send         :
         break;
       default:
@@ -465,9 +466,9 @@ bool RNonDummyScope::trustPICs(methodOop m) {
   // should the PICs in m be trusted?
   symbolOop sel = m->selector();
   if (sel == vmSymbols::plus() || sel == vmSymbols::minus() ||
-      sel == vmSymbols::multiply() || sel == vmSymbols::divide()) {
-    // code space optimization: try to avoid unnecessary mixed-type arithmetic
-    return false;
+    sel == vmSymbols::multiply() || sel == vmSymbols::divide()) {
+      // code space optimization: try to avoid unnecessary mixed-type arithmetic
+      return false;
   } else {
     return true;	// can't easily determine number of callers
   }
@@ -480,9 +481,9 @@ bool RPICScope::trustPICs(const nmethod* nm) {
   int ncallers = nm->ncallers();
   symbolOop sel = nm->key.selector();
   if (sel == vmSymbols::plus() || sel == vmSymbols::minus() ||
-      sel == vmSymbols::multiply() || sel == vmSymbols::divide()) {
-    // code space optimization: try to avoid unnecessary mixed-type arithmetic
-    return ncallers <= 1;
+    sel == vmSymbols::multiply() || sel == vmSymbols::divide()) {
+      // code space optimization: try to avoid unnecessary mixed-type arithmetic
+      return ncallers <= 1;
   } else {
     return ncallers <= PICTrustLimit;
   }
@@ -528,15 +529,15 @@ void RNonDummyScope::printSubScopes() const {
     std->print("none");
   }
 }
-  
+
 void RInterpretedScope::print_short() {
   std->print("((RInterpretedScope*)%#lx) \"%s\" #%ld", PrintHexAddresses ? this : 0, _key->print_string(), nsends);
 }
-  
+
 void RInlinedScope::print_short() {
   std->print("((RInlinedScope*)%#lx) \"%s\" #%ld", PrintHexAddresses ? this : 0, desc->selector()->as_string(), nsends);
 }
-  
+
 void RInlinedScope::print() {
   print_short();
   std->print(": scope %#lx; subScopes: ", PrintHexAddresses ? desc : 0);
@@ -548,7 +549,7 @@ void RInlinedScope::print() {
 void RPICScope::print_short() {
   std->print("((RPICScope*)%#lx) \"%s\" #%ld", PrintHexAddresses ? this : 0, method()->selector()->as_string(), nsends);
 }
-  
+
 void RPICScope::print() {
   print_short();
   std->print(": IC %#lx; subScopes: ", PrintHexAddresses ? _sd : 0);
@@ -585,7 +586,7 @@ void RNonDummyScope::printTree(int senderBCI, int level) const {
   for (int bci = 0; bci < ncodes; bci++) {
     if (_subScopes[bci]) {
       for (int j = 0; j < _subScopes[bci]->length(); j++) {
-	_subScopes[bci]->at(j)->printTree(bci, level + 1);
+        _subScopes[bci]->at(j)->printTree(bci, level + 1);
       }
     }
     for (int j = u; j < uncommon.length() && uncommon.at(j)->bci() < bci; u++, j++) ;

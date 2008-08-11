@@ -67,7 +67,7 @@ PRIM_DECL_2(oopPrimitives::become, oop receiver, oop argument){
       ResourceMark mark;
       Processes::deoptimize_all();
     }
-    Universe::code->clear();
+    //Universe::code->clear();
     TwoWayBecomeClosure closure(receiver, argument);
     Universe::new_gen.object_iterate(&closure);
     Universe::old_gen.object_iterate(&closure);

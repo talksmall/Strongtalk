@@ -481,6 +481,7 @@ void os_init() {
 
   os::initialize_system_info();
 
+  //%todo: remove this processor affinity stuff 
   ULONG systemMask;
   ULONG processMask;
   GetProcessAffinityMask(GetCurrentProcess(), &processMask, &systemMask);
@@ -491,6 +492,7 @@ void os_init() {
   std->print_cr("processor: %ld", processorId);
   if (!SetProcessAffinityMask(GetCurrentProcess(), processorId))
     std->print_cr("error code: %d", GetLastError());
+  // end processor affinity - for removal
 
   SetConsoleCtrlHandler(&HandlerRoutine, TRUE);
 

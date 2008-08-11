@@ -56,12 +56,16 @@ oop* Universe::scavenge_and_allocate(int size, oop* p) {
   // Fix this:
   //  If it is a huge object we are allocating we should
   //  allocate it in old_space and return without doing a scavenge  
-  if (!can_scavenge()) return allocate_tenured(size);
+  if (!can_scavenge()) {
+    _scavenge_blocked = true;
+    return allocate_tenured(size);
+  }
 
   VM_Scavenge op(p);
   VMProcess::execute(&op);
   assert(DeltaProcess::active()->last_Delta_fp() != NULL, "last Delta fp should be present");
   assert(DeltaProcess::active()->last_Delta_sp() != NULL, "last Delta fp should be present");
+  _scavenge_blocked = false;
   return allocate_without_scavenge(size);
 }
 

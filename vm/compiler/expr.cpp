@@ -5,11 +5,11 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
 following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
-	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
-	  from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
 NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
@@ -67,9 +67,9 @@ KlassExpr::KlassExpr(klassOop k, PReg* p, Node* n) : Expr(p, n) {
   _klass = k;
   assert(k, "must have klass");
 }
-  
+
 BlockExpr::BlockExpr(BlockPReg* p, Node* n) 
-  : KlassExpr(blockClosureKlass::blockKlassFor(p->closure()->nofArgs()), p, n) {
+: KlassExpr(blockClosureKlass::blockKlassFor(p->closure()->nofArgs()), p, n) {
   assert(n, "must have a node");
   _blockScope = p->scope();
 }
@@ -141,10 +141,10 @@ Expr* NoResultExpr::mergeWith(Expr* other, Node* n)  {
 Expr* KlassExpr::mergeWith(Expr* other, Node* n)  {
   if (other->isNoResultExpr()) return this;
   if ((other->isKlassExpr() || other->isConstantExpr())
-      && other->klass() == klass()) {
-    // generalize klass + constant in same clone family --> klass
-    _node = NULL; 	// prevent future splitting
-    return this;
+    && other->klass() == klass()) {
+      // generalize klass + constant in same clone family --> klass
+      _node = NULL; 	// prevent future splitting
+      return this;
   } else {
     PReg* r = _preg == other->preg() ? _preg : NULL;
     return new MergeExpr(this, other, r, n);
@@ -173,16 +173,16 @@ Expr* ConstantExpr::mergeWith(Expr* other, Node* n)  {
   // NB: be careful not to turn true & false into klasses
   if (other->isNoResultExpr()) return this;
   if (other->isConstantExpr()
-      && other->constant() == constant()) {
-    if (n && node() && other->node()) {
-      // preserve splitting info
-      MergeExpr* e = new MergeExpr(this, other, preg(), n);
-      assert(e->isSplittable(), "wasted effort");
-      return e;
-    } else {
-      _node = NULL; 	// prevent future splitting
-      return this;
-    }
+    && other->constant() == constant()) {
+      if (n && node() && other->node()) {
+        // preserve splitting info
+        MergeExpr* e = new MergeExpr(this, other, preg(), n);
+        assert(e->isSplittable(), "wasted effort");
+        return e;
+      } else {
+        _node = NULL; 	// prevent future splitting
+        return this;
+      }
   } else if (other->isKlassExpr()) {
     return other->mergeWith(this, n);
   } else {
@@ -213,9 +213,9 @@ void MergeExpr::mergeInto(Expr* other, Node* n) {
       Expr* e = o->exprs->at(i);
       Expr* nexte;
       for ( ; e; e = nexte) {
-	nexte = e->next;
-	e->next = NULL;
-	add(e);
+        nexte = e->next;
+        e->next = NULL;
+        add(e);
       }
     }
   } else {
@@ -229,7 +229,7 @@ void MergeExpr::mergeInto(Expr* other, Node* n) {
       Expr* e2 = exprs->at(j);
       assert(! e->equals(e2), "duplicate expr");
       assert(! (e->hasKlass() && e2->hasKlass() && e->klass() == e2->klass()),
-	     "duplicate klasses");
+        "duplicate klasses");
     }
   }
 #endif
@@ -248,52 +248,52 @@ void MergeExpr::add(Expr* e) {
   for (int i = 0; i < exprs->length(); i++) {
     Expr* e1 = exprs->at(i);
     if (e->hasKlass() && e1->hasKlass() && e->klass() == e1->klass() ||
-	e->equals(e1)) {
-      // an equivalent expression is already in our list
-      // if unsplittable we don't need to do anything except
-      // if e is a klass and the expr we already have is a constant
-      // (otherwise: might later make unknown unlikely and rely on
-      // constant value)
-      if (!isSplittable() && !e1->isConstantExpr()) return;
-      
-      // even though the klass is already in our list, we care about
-      // the new entry because we might have to copy the nodes between
-      // it and the split send
-      // Therefore, we keep lists of equivalent Exprs (linked via the
-      // "next" field).
-      Node* n = e->node();
-      if (n) {
-	for (Expr* e2 = exprs->at(i); e2; e2 = e2->next) {
-	  if (n == e2->node()) {
-	    // node already in list; this can happen if we're merging an expression
-	    // with itself (e.g. we inlined 2 cases, both return the same argument)
-	    // can't treat as splittable anymore
-	    setSplittable(false);
-	    break;
-	  }
-	}
-     }
+      e->equals(e1)) {
+        // an equivalent expression is already in our list
+        // if unsplittable we don't need to do anything except
+        // if e is a klass and the expr we already have is a constant
+        // (otherwise: might later make unknown unlikely and rely on
+        // constant value)
+        if (!isSplittable() && !e1->isConstantExpr()) return;
 
-      // generalize different constants to klasses
-      if (e->isConstantExpr() && e1->isConstantExpr() &&
-	  e->constant() == e1->constant()) {
-	// leave them as constants
-      } else {
-	if (e->isConstantExpr()) {
-	  e = e->convertToKlass(e->preg(), e->node());
-	}
-	if (e1->isConstantExpr()) {
-	  // convertToKlass e1 and replace it in receiver
-	  Expr* ee = e1->convertToKlass(e1->preg(), e1->node());
-	  ee->next = e1->next;
-	  exprs->at_put(i, ee);
-	}
-      }
-      if (!isSplittable()) return;
-      // append e at end of e1's next chain
-      for (e1 = exprs->at(i); e1->next; e1 = e1->next) ;
-      e1->next = e;
-      return;
+        // even though the klass is already in our list, we care about
+        // the new entry because we might have to copy the nodes between
+        // it and the split send
+        // Therefore, we keep lists of equivalent Exprs (linked via the
+        // "next" field).
+        Node* n = e->node();
+        if (n) {
+          for (Expr* e2 = exprs->at(i); e2; e2 = e2->next) {
+            if (n == e2->node()) {
+              // node already in list; this can happen if we're merging an expression
+              // with itself (e.g. we inlined 2 cases, both return the same argument)
+              // can't treat as splittable anymore
+              setSplittable(false);
+              break;
+            }
+          }
+        }
+
+        // generalize different constants to klasses
+        if (e->isConstantExpr() && e1->isConstantExpr() &&
+          e->constant() == e1->constant()) {
+            // leave them as constants
+        } else {
+          if (e->isConstantExpr()) {
+            e = e->convertToKlass(e->preg(), e->node());
+          }
+          if (e1->isConstantExpr()) {
+            // convertToKlass e1 and replace it in receiver
+            Expr* ee = e1->convertToKlass(e1->preg(), e1->node());
+            ee->next = e1->next;
+            exprs->at_put(i, ee);
+          }
+        }
+        if (!isSplittable()) return;
+        // append e at end of e1's next chain
+        for (e1 = exprs->at(i); e1->next; e1 = e1->next) ;
+        e1->next = e;
+        return;
     }
   }
   if (exprs->length() == MaxMergeExprSize) {
@@ -450,14 +450,14 @@ Expr* MergeExpr::makeUnknownUnlikely(InlinedScope* s) {
     Expr* e;
     if ((e = exprs->at(i))->isUnknownExpr()) {
       if (!((UnknownExpr*)e)->isUnlikely()) {
-	// must make a copy to avoid side-effecting e.g. incoming arg
-	UnknownExpr* u = (UnknownExpr*)e;
-	UnknownExpr* new_u = new UnknownExpr(u->preg(), u->node(), true);
-	exprs->at_put(i, new_u);
-	for (u = (UnknownExpr*)u->next; u;
-					u = (UnknownExpr*)u->next, new_u = (UnknownExpr*)new_u->next){
-	  new_u->next = new UnknownExpr(u->preg(), u->node(), true);
-	}
+        // must make a copy to avoid side-effecting e.g. incoming arg
+        UnknownExpr* u = (UnknownExpr*)e;
+        UnknownExpr* new_u = new UnknownExpr(u->preg(), u->node(), true);
+        exprs->at_put(i, new_u);
+        for (u = (UnknownExpr*)u->next; u;
+          u = (UnknownExpr*)u->next, new_u = (UnknownExpr*)new_u->next){
+            new_u->next = new UnknownExpr(u->preg(), u->node(), true);
+        }
       }
       return this;
     }
@@ -472,14 +472,14 @@ Expr* ConstantExpr::findKlass(klassOop m) const { return klass() == m ? (Expr*)t
 bool KlassExpr::needsStoreCheck() const {
   return _klass != smiKlassObj;
 }
-  
+
 bool ConstantExpr::needsStoreCheck() const {
   // don't need a check if either
   // - it's a smi, or
   // - it's an old object (old objects never become young again)
   return ! (_c->is_smi() || _c->is_old());
 }
-  
+
 Expr* UnknownExpr::shallowCopy(PReg* p, Node* n) const {
   return new UnknownExpr(p, n, isUnlikely());
 }
@@ -522,10 +522,10 @@ InlinedScope* Expr::scope() const {
 
 NameNode* Expr::nameNode(bool mustBeLegal) const {
   return preg()->nameNode(mustBeLegal); }
-  
+
 NameNode* ConstantExpr::nameNode(bool mustBeLegal) const {
   Unused(mustBeLegal);
-//c    return newValueName(constant()); }
+  //c    return newValueName(constant()); }
   return 0;
 }
 
@@ -534,7 +534,7 @@ void Expr::print_helper(char* type) {
   if (next) lprintf(" (next %#lx)", next);
   lprintf("    ((%s*)%#x)\n", type, this);
 }
-  
+
 void UnknownExpr::print() {
   lprintf("UnknownExpr %s", isUnlikely() ? "unlikely" : "");
   Expr::print_helper("UnknownExpr");
@@ -572,9 +572,9 @@ void Expr::verify() const {
     _preg->verify();
   }
   //if (_node) _node->verify();
-//  if (unlikelyScope) unlikelyScope->verify();
+  //  if (unlikelyScope) unlikelyScope->verify();
 }
-  
+
 void KlassExpr::verify() const {
   Expr::verify();
   _klass->verify();
@@ -628,7 +628,7 @@ void ExprStack::push(Expr* expr, InlinedScope* currentScope, int bci) {
     SAPReg* sr = (SAPReg*)r;
     if (sr->scope() == _scope) {
       if (sr->begBCI() == IllegalBCI)
-	sr->_begBCI = sr->creationStartBCI = _scope->bci();
+        sr->_begBCI = sr->creationStartBCI = _scope->bci();
     } else {
       assert(sr->scope()->isSenderOf(_scope), "preg scope too low");
     }
@@ -648,7 +648,7 @@ void ExprStack::push2nd(Expr* expr, InlinedScope* currentScope, int bci) {
     SAPReg* sr = (SAPReg*)r;
     if (sr->scope() == _scope) {
       if (sr->begBCI() == IllegalBCI)
-	sr->_begBCI = sr->creationStartBCI = _scope->bci();
+        sr->_begBCI = sr->creationStartBCI = _scope->bci();
     } else {
       assert(sr->scope()->isSenderOf(_scope), "preg scope too low");
     }
@@ -671,7 +671,7 @@ Expr* ExprStack::pop() {
     if (sr->scope() == _scope) {
       // endBCI may be assigned several times
       int newBCI =
-	_scope->bci() == EpilogueBCI ? _scope->nofBytes() - 1 : _scope->bci();
+        _scope->bci() == EpilogueBCI ? _scope->nofBytes() - 1 : _scope->bci();
       if (bciLT(sr->endBCI(), newBCI)) sr->_endBCI = newBCI;
     } else {
       assert(sr->scope()->isSenderOf(_scope), "preg scope too low");
@@ -694,5 +694,5 @@ void ExprStack::print() {
   }
 }
 
-  
+
 # endif

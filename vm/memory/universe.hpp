@@ -83,6 +83,7 @@ class Universe: AllStatic {
   static symbolOop   _dll_lookup_selector;
 
   static methodOop   _sweeper_method; // Variable used by Sweeper only
+  static bool        _scavenge_blocked;
 
   friend class bootstrap;
  public:
@@ -206,6 +207,8 @@ class Universe: AllStatic {
   
   // allocators
   static oop* allocate(int size, memOop* p = NULL) {
+    if (_scavenge_blocked && can_scavenge())
+      return scavenge_and_allocate(size, (oop*) p);
     oop* obj = new_gen.allocate(size);
     return obj ? obj : scavenge_and_allocate(size, (oop*) p);
   }

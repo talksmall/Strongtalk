@@ -509,6 +509,14 @@ char* StubRoutines::generate_call_DLL(MacroAssembler* masm, bool async) {
   //slr mod: push a fake stack frame to support cdecl calls
   masm->enter();
   //slr mod end
+  // following is to allow 16-byte stack alignment for Darwin (OSX)
+  masm->movl(eax, ebx);
+  masm->negl(eax);
+  masm->leal(eax, Address(esp, eax, Address::times_4)); // esp - 4 x nargs
+  masm->andl(eax, 0xf); // padding required for 16-byte alignment
+  masm->subl(esp, eax); // align stack
+  // end stack alignment mod
+
   masm->testl(ebx, ebx);			// if number of arguments != 0 then
   masm->jcc(MacroAssembler::notZero, loop_entry);// convert arguments
 

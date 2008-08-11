@@ -29,7 +29,7 @@ bool NeedScavenge  = false;
 bool bootstrapping = true;
 
 int BlockScavenge::counter = 0;
-
+bool Universe::_scavenge_blocked = false;
 
 void Universe::genesis() {
   ResourceMark rm;
