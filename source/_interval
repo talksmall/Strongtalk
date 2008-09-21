@@ -1,0 +1,93 @@
+Class
+#categories!
+accessing!
+copying! !
+#superclassTypeString!
+SequenceableCollection[Number]! !
+#group!
+base! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.1 $! !
+stop!
+5340629!
+accessing!
+0Number! !
+at:!
+5338909!
+accessing!
+0Int:Number! !
+start!
+5340368!
+accessing!
+0Number! !
+#instanceVariableString!
+start <Number>
+stop <Number>
+increment <Number>
+		! !
+stop:!
+5340754!
+accessing!
+0Number:! !
+copyWithSize:!
+5997674!
+copying!
+4Int:VarSeqCltn[EX]! !
+size!
+5340195!
+accessing!
+0Int! !
+increment:!
+5340053!
+accessing!
+0Number:! !
+start:!
+5340495!
+accessing!
+0Number:! !
+#subtype!
+true! !
+#branded!
+true! !
+#comment!
+Intervals are SequenceableCollections that generate their contents on the fly as a progression
+of numbers from a start number to a stop number, separated by a step number.  Usually, the
+to:[by:]do: messages defined in the Number subclasses are used instead of Intervals
+when just a control structure is needed, since they are much faster.
+
+Note on strong typing issues:
+
+The to:[by:]do: messages in the Number hierarchy are typed restrictively, in such a way that they
+can only be used in non-coercive situations (i.e. where the start, stop, and step are all integers,
+or all floats, etc.).  This is done to preserve the type of the iteration value passed to the iteration block
+in the pure integer form, so that bit operations etc. can be performed etc.  This would not be possible
+if Number was the type for the step.  Although this may seem restrictive, the following points should
+be noted about this design:
+
+	1) explicit coercions handle the vast majority of these cases;
+		for example, use (j asFloat to: k asFloat by: 0.1) rather than
+		 (j to: k by: 0.1) when j and k are typed as Numbers or Integers.
+	2) this scheme is perfectly compatible with untyped code, since the typed versions will work correctly
+	    even if called with arguments of mismatched numeric types, so that things like (1 to: 10 by: 0.1) will 
+	    work, even though they don't typecheck.
+	3) If full coercive generality is needed in typesafe code, the Interval class can be used, which has been
+	    designed using values of type Number, so that things like (1 to: 10 by: 0.1) are ok.  They cannot, however,
+		preserve more detailed information about the kinds of numbers in the Interval.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+! !
+#abstract!
+false! !
+increment!
+5339918!
+accessing!
+0Number! !
+do:!
+5339448!
+accessing!
+0[Number]:! !

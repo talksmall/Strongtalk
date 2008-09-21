@@ -1,0 +1,211 @@
+Class
+dumpOn:indent:!
+4928827!
+debugging!
+0CharOutputStream:Int:! !
+#categories!
+displaying!
+private!
+private-testing!
+notification!
+control!
+restricted-to parts!
+accessing!
+iterating!
+input focus!
+event handling!
+private-event handling for children!
+private-event handling for receiver!
+hit testing!
+debugging!
+translation!
+core sampler! !
+localDisplayOn:!
+4918313!
+displaying!
+0Canvas:! !
+optimizeOverlappedRendering!
+4921293!
+private-testing!
+1Boolean! !
+keyUp:focus:event:!
+4926733!
+event handling!
+0Symbol:Visual:UIEvent:Boolean! !
+#group!
+ui! !
+mouseEvent:at:event:!
+4927263!
+event handling!
+0Symbol:Point:UIEvent:Boolean! !
+character:focus:event:!
+4925662!
+event handling!
+0Character:Visual:UIEvent:Boolean! !
+subregionsDo:!
+4920408!
+private!
+1[Region]:! !
+#extensionsAreSubtypes!
+true! !
+positionInContainingNativeWindowOf:!
+4922816!
+restricted-to parts!
+0Visual:Point! !
+popUpMenuIfAbsent:!
+4922617!
+restricted-to parts!
+2[^X def]:Menu|X! !
+isRectangularAndOpaque!
+4921124!
+private-testing!
+1Boolean! !
+near:doFromFront:!
+4924925!
+iterating!
+0Region:[SUB]:! !
+displaySubvisualsUsingPaintersAlgorithmOn:!
+4918976!
+private!
+1Canvas:! !
+detaching!
+4921500!
+notification!
+0! !
+keyDown:focus:event:!
+4926199!
+event handling!
+0Symbol:Visual:UIEvent:Boolean! !
+#typeArgumentString!
+(SUB covar) <Visual> ! !
+positionInTopWindowOf:!
+4923073!
+restricted-to parts!
+0Visual:! !
+displaySubvisualsWithSomeClippingOn:!
+4919228!
+private!
+1Canvas:! !
+directChildContaining:!
+4918482!
+private!
+1Visual:Visual! !
+#branded!
+true! !
+nonChildMouseEvent:at:event:!
+4928165!
+private-event handling for receiver!
+1Symbol:Point:UIEvent:Boolean! !
+#supportedProtocolString!
+VisualParent! !
+invalidate:forChild:!
+4922219!
+restricted-to parts!
+0Region:Visual:! !
+doFromBack:!
+4923985!
+iterating!
+0[SUB]:! !
+childIntersecting:ifAbsent:!
+4928485!
+hit testing!
+2Point:[^X def]:SUB|X! !
+translateRect:toChild:!
+4929862!
+translation!
+0Rect:Visual:Rect! !
+#superclassTypeString!
+CompositeRegion mixin |> Visual! !
+near:doFromBack:!
+4924523!
+iterating!
+0Region:[SUB]:! !
+doFromFront:!
+4924239!
+iterating!
+0[SUB]:! !
+translate:toChild:!
+4929357!
+translation!
+0Point:Visual:Point! !
+#isGeneric!
+true! !
+forChild:mouseEvent:at:event:!
+4927661!
+private-event handling for children!
+1Visual:Symbol:Point:UIEvent:Boolean! !
+partAt:!
+4923285!
+accessing!
+0Int:Visual! !
+nativePositionChanged!
+4921773!
+notification!
+0! !
+translateRect:fromChild:!
+4929606!
+translation!
+0Rect:Visual:Rect! !
+focusCandidatesDo:!
+4925307!
+input focus!
+0[Visual]:! !
+#revision!
+$Revision: 1.2 $! !
+#subtype!
+true! !
+translate:fromChild:!
+4929103!
+translation!
+0Point:Visual:Point! !
+propagateSession!
+4920220!
+private!
+1! !
+#comment!
+Implements the basic algorithms for managing subvisuals of type SUB.
+
+Composites can draw a 'backdrop' if desired behind their children.  The backdrop must cover the enclosedRect of the
+allocation when painted.  If that is not suitable, the backdrop should be reified and made one of the children, not
+by the backdrop feature of this class.
+
+%todo: see if I should remove the CompositeRegion mixin; just treat this like a single region.
+
+Subclass responsibilities:
+
+%responsibility - parenting - When new subvisuals are introduced, they must be sent #parent:id:, and when
+	they are removed, they must be sent noParent.
+
+%fulfills #attachedOn: #detaching #release - must be forwarded to any subvisuals.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+! !
+#abstract!
+true! !
+release!
+4922015!
+control!
+0! !
+drillAt:for:!
+4930115!
+core sampler!
+0Point:CoreSampler:! !
+parentVisualOfChild!
+4922460!
+restricted-to parts!
+0Visual! !
+do:!
+4923658!
+iterating!
+0[SUB]:! !
+displaySubvisualsOn:!
+4918671!
+private!
+1Canvas:! !
+hasBackdrop!
+4920045!
+private!
+1Boolean! !

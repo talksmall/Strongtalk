@@ -1,0 +1,86 @@
+Class
+#categories!
+private!
+accessing!
+initialization!
+converting!
+testing! !
+sortBlock:!
+2058528!
+accessing!
+0[E,E,^Boolean]:! !
+sort!
+2057212!
+private!
+1! !
+addAll:!
+2057906!
+accessing!
+0Cltn[E]:Cltn[E]! !
+#superclassTypeString!
+AddableSequenceableCollection[E]! !
+#group!
+base! !
+sortBlock!
+2058378!
+accessing!
+0[E,E,^Boolean]! !
+#revision!
+$Revision: 1.4 $! !
+#isGeneric!
+true! !
+#instanceVariableString!
+usesDefaultSortBlock <Boolean> sortBlock <[E,E,^Boolean]>
+		! !
+isSorted!
+2059331!
+testing!
+0Boolean! !
+add:!
+2057521!
+accessing!
+0E:E! !
+asSortedCollection!
+2059178!
+converting!
+0SeqCltn[Object]! !
+initCapacity:!
+2058935!
+initialization!
+0Int:! !
+indexFor:!
+2055527!
+private!
+1E:Int! !
+#typeArgumentString!
+E ! !
+#subtype!
+true! !
+#branded!
+true! !
+#comment!
+Sorted collections are addable collections that always keep their elements in sorted order.  The
+sort order is determined by the sortPredicate, which is a function that compares 2 elements and
+returns true if the first argument should be before the second argument in the collection.
+The sortPredicate should be provided when the collection is created.
+
+Unfortunately, Smalltalk defines SortedCollection as having a default sortPredicate that uses #<= to compare
+elements.  This is NOT typesafe, since there are many kinds of objects that you might want to sort that don't support
+the #<= operator; however, this feature is retained in Strongtalk for compatibility.   If you wish to write typesafe programs,
+then SortedCollections should always be given a sort block when they are created.  This involves using the creation
+messages #new:sortBlock:, #sortBlock: and the Collection utility message #asSortedCollection: instead of #new:, #new,
+and #asSortedCollection, respectively.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+! !
+#abstract!
+true! !
+#extensionsAreSubtypes!
+true! !
+usesDefaultSortBlock!
+2058767!
+accessing!
+0Boolean! !

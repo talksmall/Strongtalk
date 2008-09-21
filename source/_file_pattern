@@ -1,0 +1,154 @@
+Class
+#categories!
+accessing!
+restricted-initialization!
+testing!
+iterating!
+restricted-double dispatching!
+control!
+private!
+copying-moving!
+printing! !
+paths!
+1481461!
+accessing!
+0SeqCltn[FilePath]! !
+baseName!
+1480285!
+accessing!
+0FilePattern! !
+#group!
+base! !
+#extensionsAreSubtypes!
+true! !
+extensions!
+1481080!
+accessing!
+0FilePattern! !
+delete!
+1484090!
+control!
+0! !
+recursiveDeleteIfFail:!
+7910284!
+control!
+0[Symbol]:! !
+moveToDir:ifFail:!
+1485285!
+copying-moving!
+0FilePath:[ExternalError]:! !
+copyToDir:ifFail:!
+1485085!
+copying-moving!
+0FilePath:[ExternalError]:! !
+deleteIfFail:!
+1484376!
+control!
+0[Symbol]:! !
+,!
+1479796!
+accessing!
+4FilePattern:EXTENDED! !
+pattern!
+1481808!
+accessing!
+0Str! !
+isAbsolute!
+1482088!
+testing!
+0Boolean! !
+recursiveDelete!
+7909768!
+control!
+0! !
+elements!
+1480712!
+accessing!
+0SeqCltn[FilePattern]! !
+#branded!
+true! !
+#superclassTypeString!
+Object! !
+isRelative!
+1482446!
+testing!
+0Boolean! !
+pathsDo:!
+1483290!
+iterating!
+0[FilePath]:! !
+pattern:!
+1481954!
+restricted-initialization!
+0Str:! !
+#instanceVariableString!
+pattern <Str>
+	! !
+printOn:!
+1485479!
+printing!
+0CharOutputStream:! !
+isSyntaxValid!
+1482593!
+testing!
+0Boolean! !
+isPath!
+1482242!
+testing!
+0Boolean! !
+#revision!
+$Revision: 1.4 $! !
+#subtype!
+true! !
+extendPattern:!
+1483891!
+restricted-double dispatching!
+0FilePattern:FilePattern! !
+#comment!
+FilePatterns represent a pattern that matches some set of
+files, and are used (along with the subclass FilePath, which
+represents individual files without wildcards) to represent
+all file paths in the system.  For example, (FilePattern for: '*')
+is the pattern for all files in the current directory.
+
+The interface for FilePatterns is designed to be
+file-system independent, as well as typesafe. This mostly involves
+an interface that allows you to avoid use of file system dependent
+characters like $/ or $\.  This is done by using operators to
+combine FilePatterns for subpaths, as well as utility creation methods,
+so that you never have to use separators directly. 
+
+For example,  a relative FilePattern that matches '*.bar' files in a
+subdirectory 'foo' can be constructed with 
+	fp  := FilePattern forElements: #('foo' '*.bar')
+To turn this into an absolute path, you can use the general
+FilePattern concatenation operator ',':
+	FilePath currentDirectory, fp
+
+FilePatterns can be iterated over to examine all matching FilePaths, 
+and have stream operations used to open the files, and other
+methods for deleting, renaming, etc.
+
+Tags:  %User
+ 
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 
+! !
+#abstract!
+true! !
+elementsDo:!
+1482840!
+iterating!
+0[FilePattern]:! !
+containingDirectory!
+1480435!
+accessing!
+0FilePattern! !
+patternExtending:!
+1484903!
+private!
+1FilePattern:Str! !
+extendPath:!
+1483674!
+restricted-double dispatching!
+0FilePath:FilePattern! !

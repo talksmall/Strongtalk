@@ -1,0 +1,175 @@
+Class
+positionValidityStack:!
+5539603!
+private!
+1:! !
+formals:!
+5538335!
+private!
+1OrdCltn[TypeFormal]:! !
+#categories!
+ASTTool!
+initialization!
+private!
+accessing! !
+unaryTypeExprNode:!
+5536684!
+ASTTool!
+0UnaryTypeExpr:! !
+topScope:!
+5540257!
+private!
+1Scope:! !
+genericApplicationTypeNode:!
+5533815!
+ASTTool!
+0GenericApplicationType:! !
+#group!
+ast! !
+initialize!
+5537707!
+initialization!
+0! !
+#extensionsAreSubtypes!
+true! !
+tupleTypeNode:!
+5535864!
+ASTTool!
+0TupleType:! !
+protocolMergeNode:!
+5535354!
+ASTTool!
+0ProtocolMerge:! !
+formals!
+5540420!
+accessing!
+0OrdCltn[TypeFormal]! !
+protocolOverrideNode:!
+5535606!
+ASTTool!
+0ProtocolOverride:! !
+#subtype!
+true! !
+unionTypeNode:!
+5537453!
+ASTTool!
+0UnionType:! !
+blockApplicationTypeNode:!
+5533190!
+ASTTool!
+0BlockApplicationType:! !
+popValidity!
+5539272!
+private!
+1! !
+errorBlock:!
+5538166!
+private!
+1[ASTNode,Str]:! !
+typeIdNode:!
+5536538!
+ASTTool!
+0TypeIdNode:! !
+#branded!
+true! !
+path!
+5538869!
+private!
+1! !
+topScope!
+5540111!
+private!
+1Scope! !
+errorBlock!
+5538009!
+private!
+1[ASTNode,Str]! !
+path:!
+5538995!
+private!
+1:! !
+#superclassTypeString!
+DeltaASTTool! !
+#revision!
+$Revision: 1.4 $! !
+pop!
+5539130!
+private!
+1! !
+#instanceVariableString!
+path positionValidityStack formals topScope errorBlock ! !
+pushValidity:!
+5539928!
+private!
+1Boolean:! !
+isAtValidDefiningPosition!
+5538499!
+private!
+1Boolean! !
+methodNode:!
+5534512!
+ASTTool!
+0DeltaMethod:! !
+messagePatternNode:!
+5534298!
+ASTTool!
+0MessagePattern:! !
+push:!
+5539776!
+private!
+1Str:! !
+positionValidityStack!
+5539441!
+private!
+1! !
+#comment!
+This tool traverses a message signature, and detects all unary type expressions with
+selector 'def' in the signature's domain. It then determines whether the expression is valid or not.
+For each such valid expression, it produces a formal type argument declaration with an
+appropriate  inference clause. The set of declarations produced is available by sending
+the tool the message 'formals' after it has processed the signature.
+
+For invalid unary 'def' expressions, the tool reports an error, by invoking its
+errorBlock, which is set when the tool is created.
+
+The tool retains a state variable 'topScope' that keeps track of the method scope.
+This scope is initially set when creating the tool. Whenever a new type formal is created,
+the superscope of topScope is modified so that the method scope always nests inside
+the last defined type formal.
+
+The tool keeps  a stack of boolean values, 'positionValidityStack', whose
+top element specifies whether a 'def' is legal or not at any time. Whenever a construct
+that disallows defs is encountered, we push false onto this stack (this is probably more
+general than necessary; toggling the state would be sufficient).
+
+While traversing the AST, the tool builds a path that represents an inference clause. This path is
+equivalent to the explicit inference clause one would write to get the equivalent of a def clause
+at that point in the signature. 
+
+It follows from the preceding paragraphs that when a def clause is encountered we can 
+determine whether or not it is legal, and, if it is legal the path specifies what inference clause
+corresponds to the def clause.
+
+Upon encountering a def clause, the path is parsed to produce the appropriate formal
+type argument declaration, which is stored in 'formals'.
+
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.! !
+#abstract!
+false! !
+polyMsgSignatureNode:!
+5535170!
+ASTTool!
+0PolyMsgSignature:! !
+isValidDef:!
+5538691!
+private!
+1UnaryTypeExpr:! !
+typeErrorNode:!
+5536375!
+ASTTool!
+0DeltaTypeError:Self! !
+msgSignatureNode:!
+5534709!
+ASTTool!
+0MsgSignature:! !

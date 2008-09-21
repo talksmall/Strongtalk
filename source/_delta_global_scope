@@ -1,0 +1,69 @@
+Class
+#categories!
+Unclassified! !
+declare:type:ifFail:!
+5669385!
+Unclassified!
+0::[Str,Integer,^DoesNotMatter]:! !
+updateGlobalAssoc:!
+5671359!
+Unclassified!
+0GlobalAssociation:! !
+globalVariablesDo:!
+5669975!
+Unclassified!
+0[DeltaGlobalVar]:! !
+#superclassTypeString!
+DeltaScope! !
+#group!
+ast! !
+isGlobalScope!
+5670522!
+Unclassified!
+0! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.7 $! !
+declare:type:!
+5669106!
+Unclassified!
+0::! !
+updateGlobalsFromSmalltalk!
+5671970!
+Unclassified!
+0! !
+initialize:!
+5670260!
+Unclassified!
+0DeltaScope:! !
+#subtype!
+true! !
+declareGlobal:type:!
+5669799!
+Unclassified!
+0::! !
+#branded!
+true! !
+#comment!
+The global scope is implemented by this class. Any declared global variable or 
+magical type will be stored locally. Any definition (class, 
+mixin, protocol or  type alias) or any undeclared global variable will have an entry
+in the system dictionary. Therefore, if a local entry cannot be found, we will search
+the system dictionary. If we find an entry there, we cannot just return it. The look up
+in the global scope must return either a variable declaration or a type. Consequently,
+a synthetic variable declaration is generated in these cases. This variable declaration
+is an instance of DeltaTopLevelDeclVar.
+    
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.! !
+#abstract!
+false! !
+lookupInSystemDictionary:ifAbsent:!
+5670659!
+Unclassified!
+0Symbol:[^DoesNotMatter]:TopLevelDeclVar! !
+at:ifAbsent:!
+5668557!
+Unclassified!
+0Symbol:[^DoesNotMatter]:GlobalVar|Type! !

@@ -1,0 +1,100 @@
+Class
+externalObject!
+216524!
+initialization!
+0EOBJ! !
+#categories!
+private!
+initialization!
+control!
+testing! !
+handle:!
+215605!
+private!
+1ExternalProxy:! !
+#superclassTypeString!
+Object! !
+#group!
+base! !
+reopen!
+217284!
+control!
+0! !
+postCopy!
+215756!
+private!
+1! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.3 $! !
+#isGeneric!
+true! !
+#instanceVariableString!
+externalObject <EOBJ>
+			"is nil if closed"
+handle <ExternalProxy>
+		! !
+severExternalConnections!
+216060!
+private!
+1! !
+register!
+215908!
+private!
+1! !
+externalObject:!
+216682!
+initialization!
+0EOBJ:! !
+#subtype!
+true! !
+handle!
+215461!
+private!
+1ExternalProxy! !
+#classVariableString!
+OpenDescriptors <IdentitySet[ExternalDescriptor]>
+			"Registry of open descriptors. %todo: this must hold weak references, with entries being
+			 closed on finalization"
+		! !
+isClosed!
+217566!
+testing!
+0Boolean! !
+#branded!
+true! !
+#comment!
+ExternalDescriptors represent 'handles' to transient operating system objects such as open file descriptors, semaphores, etc.
+This class keeps track of the state of such descriptors, and attempts to 'reopen' them if possible after image restarts.
+
+Instances must be closed using finalization if they are garbage collected while open.  This
+can be handled automatically by sending the message #register to an instance.  This may not
+be appropriate in all cases, since sometimes the finalization should be handled by a higher-level
+object so that buffer flushing or other operations can be performed before closing.
+
+These objects are not generally handled directly by programmers- they are generally wrapped in a higher-level abstraction such as a stream.
+
+Subclass
+    %responsibility flushIfFail:
+        Subclasses for which flushing has meaning must reimplement flushIfFail:
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+! !
+#abstract!
+true! !
+unregister!
+216359!
+private!
+1! !
+close!
+216839!
+control!
+0! !
+openIfFail:!
+217013!
+control!
+0[ExternalError]:! !
+#typeArgumentString!
+EOBJ <ExternalObject> ! !

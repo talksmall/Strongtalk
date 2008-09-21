@@ -1,0 +1,363 @@
+Class
+#categories!
+initialization!
+private!
+accessing!
+control!
+geometry-local!
+restricted-win32!
+list management! !
+win32Style!
+718529!
+private!
+1ExternalData! !
+#extensionsAreSubtypes!
+true! !
+maxWidth!
+711830!
+private!
+1Int! !
+onSelChange:!
+720556!
+accessing!
+0[ListBox]:! !
+visuals:!
+730803!
+list management!
+0SeqCltn[Visual]:! !
+minWidth!
+712572!
+private!
+1Int! !
+createVisible!
+710502!
+private!
+1Boolean! !
+simpleMultiple:!
+708455!
+initialization!
+0Boolean:! !
+minClientWidth!
+712020!
+private!
+1Int! !
+setSelections:!
+716091!
+private!
+1Cltn[Int]:! !
+naturalWidth!
+719652!
+accessing!
+0Int! !
+onDoubleClick!
+720118!
+accessing!
+0[ListBox]! !
+#branded!
+true! !
+simpleMultiple!
+721066!
+accessing!
+0Boolean! !
+toValidateChange:!
+721379!
+accessing!
+0[ListBox,Cltn[Int],^Boolean]:! !
+updateNativeSelections!
+717448!
+private!
+1! !
+yStretchy:!
+708755!
+initialization!
+0Boolean:! !
+xStretchy!
+723448!
+accessing!
+0Boolean! !
+processMultipleSelectionChanged!
+713240!
+private!
+1! !
+addBackgroundTo:!
+708893!
+private!
+1Visual:Visual! !
+yStretchy!
+723582!
+accessing!
+0Boolean! !
+msgSetSel:at:!
+712816!
+private!
+1Boolean:Int:! !
+simpleVisualBlock:numItems:!
+729451!
+list management!
+0[Int,^Visual]:Int:! !
+selections:!
+720844!
+accessing!
+0Cltn[Int]:! !
+#revision!
+$Revision: 1.4 $! !
+#classVariableString!
+ListBoxClassName <CString>	"The windows class name"
+BackPainter <Painter>	"painter for the default selection background"
+		! !
+configureItem:at:!
+710255!
+private!
+1Visual:Int:! !
+listBoxClassName!
+711600!
+private!
+1CString! !
+xStretchy:!
+708610!
+initialization!
+0Boolean:! !
+naturalHeight:!
+707772!
+initialization!
+0Int:! !
+resetNaturalHeight:!
+724436!
+control!
+0Int:! !
+stringList:!
+730033!
+list management!
+0SeqCltn[Str]:! !
+#comment!
+Native list boxes, for either single or multiple selection.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 
+! !
+allowMultipleSelections!
+719290!
+accessing!
+0Boolean! !
+itemsDo:!
+711386!
+private!
+1[Visual]:! !
+buildWin32Handle!
+709291!
+private!
+1! !
+notificationMsg:!
+728331!
+restricted-win32!
+0ExternalData:! !
+naturalWidth:!
+708115!
+initialization!
+0Int:! !
+variableItemHeight:!
+722740!
+accessing!
+0Boolean:! !
+defaultNumItemsVisible!
+710775!
+private!
+1Int! !
+onSelChange!
+720416!
+accessing!
+0[ListBox]! !
+#abstract!
+false! !
+natural!
+726136!
+geometry-local!
+0Region! !
+allowMultipleSelections:!
+707172!
+initialization!
+0Boolean:! !
+processSelectionChanged!
+713850!
+private!
+1! !
+minHeight!
+712271!
+private!
+1Int! !
+selections!
+720706!
+accessing!
+0Cltn[Int]! !
+max!
+725813!
+geometry-local!
+0Region! !
+itemAt:selected:!
+711114!
+private!
+1Int:Boolean:Visual! !
+proposeSelectionChange:!
+714493!
+private!
+1Set[Int]:! !
+updateNativeMultipleSelections!
+716765!
+private!
+1! !
+measureItemMsg:!
+727793!
+restricted-win32!
+0MEASUREITEMSTRUCT:ExternalData! !
+updateNativeSingleSelection!
+717700!
+private!
+1! !
+setCount!
+715453!
+private!
+1! !
+selectionPaint!
+715265!
+private!
+1Paint! !
+resetNaturalWidth!
+725148!
+control!
+0! !
+numItems!
+719848!
+accessing!
+0Int! !
+processSingleSelectionChanged!
+714106!
+private!
+1! !
+#group!
+ui! !
+drawItemMsg:!
+726315!
+restricted-win32!
+0DRAWITEMSTRUCT:ExternalData! !
+defaultMaxNaturalItemsVisible!
+710634!
+private!
+1Int! !
+resetContents!
+723714!
+control!
+0! !
+getSelectionCount!
+710909!
+private!
+1Int! !
+#superclassTypeString!
+Win32Control! !
+resetNaturalHeight!
+724059!
+control!
+0! !
+backPainter!
+709065!
+private!
+1Painter! !
+numItemsVisible:!
+713094!
+private!
+1Int:! !
+toValidateChange!
+721210!
+accessing!
+0[ListBox,Cltn[Int],^Boolean]! !
+#instanceVariableString!
+xStretchy <Boolean>
+			"If true, then the listbox can stretch in the x dimension; otherwise max width = natural width"
+yStretchy <Boolean>
+naturalWidth <Int>
+			"The natural width of the selection box.  This can get set one of three ways: explicitly,
+				or by sending the #resetNaturalWidth message, which will set it based on the
+				maximum item length at the time the message is sent, or automatically, since if
+				it has no value when it is needed, #resetNaturalWidth is used at that point."
+naturalHeight <Int>
+			"Like naturalWidth, with corresponding ways of setting"
+numItemsVisible <Int>
+			"If non-nil, then this # is used rather than numItems when computing #resetNaturalHeight"
+allowMultipleSelections <Boolean>
+simpleMultiple <Boolean>
+			"If allowMultipleSelections, then this flag indicates what model of multiple
+				selection to use.  true indicates that you just single click on each multiple entry.
+				false indicates that it acts like a single selection box for single clicks, but you can
+				use ctrl- and shift- modifiers to add to or extend the range of the selections,
+				respectively."
+visualBlock <[Int,Boolean,^Visual]>
+				"A block that takes an item index, a flag that is true if the item is selected, and
+				  returns the visual to display for that item."
+numItems <Int>
+selections <Cltn[Int]>
+			"The set of selection indices"
+toValidateChange <[ListBox,Cltn[Int],^Boolean]>
+			"Evaluated to decide whether to allow a change in the set of selections. The
+			  first argument is the receiver with its selections unchanged, the second argument
+			  is the proposed change in the selection, and the return type is a boolean
+			  indicating whether to proceed with the change"
+onSelChange <[ListBox]>
+			"A block tbat is evaluated with the receiver as its argument
+				whenever the selection changes"
+onDoubleClick <[ListBox]>
+			"A block that is evaluated with the receiver as its argument whenever
+				the list box receives a double click"
+variableItemHeight <Boolean>
+			"Allow variable item heights?  True is neat, but slow for lots of items"
+		! !
+initialize!
+707345!
+initialization!
+0! !
+variableItemHeight!
+722588!
+accessing!
+0Boolean! !
+visualBlock:numItems:!
+730275!
+list management!
+0[Int,Boolean,^Visual]:Int:! !
+validatedSelectionsFromUser:updateScreen:!
+718059!
+private!
+1Cltn[Int]:Boolean:! !
+#subtype!
+true! !
+list:converter:!
+728699!
+list management!
+4SeqCltn[X]:[X,^Str]:! !
+numItemsVisible!
+719976!
+accessing!
+0Int! !
+naturalHeight!
+719452!
+accessing!
+0Int! !
+validatedSelectionsFromUser:!
+722376!
+accessing!
+0Cltn[Int]:! !
+visualBlock!
+723296!
+accessing!
+0[Int,Boolean,^Visual]! !
+min!
+725971!
+geometry-local!
+0Region! !
+onDoubleClick:!
+720262!
+accessing!
+0[ListBox]:! !
+stringVisualFor:selected:!
+716242!
+private!
+1Str:Boolean:Visual! !

@@ -1,0 +1,89 @@
+Class
+updateBufferLocationAfterFlush!
+3835856!
+private!
+1! !
+#categories!
+control!
+private!
+initialization! !
+#superclassTypeString!
+BasicOutputStream[Int] mixin |> ExternalStream[DESCRIPTOR]! !
+#group!
+base! !
+externalFlush!
+3833662!
+control!
+0! !
+finalize!
+3835220!
+private!
+1! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.2 $! !
+#isGeneric!
+true! !
+#instanceVariableString!
+dirty <Boolean>
+			"indicates whether the buffer contains unflushed modified data"
+! !
+arrangeForFinalization!
+3834723!
+private!
+1! !
+initDescriptor:!
+3836342!
+initialization!
+0DESCRIPTOR:! !
+dirty!
+3834938!
+private!
+1Boolean! !
+#typeArgumentString!
+DESCRIPTOR <ExternalStreamDescriptor> ! !
+#subtype!
+true! !
+dirty:!
+3835076!
+private!
+1Boolean:! !
+#branded!
+true! !
+#comment!
+%responsibility #updateBufferLocationAfterFlush
+    This method may have to be reimplemented (for example in read/write streams) depending
+    on whether the buffer contains only written elements, or a mix of read/written elements.
+
+%todo: we must make sure when %finalization is implemented that instances of this class are finalized before their descriptors, so that the buffer can be flushed.  See #finalize.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+! !
+#abstract!
+false! !
+logicalFlush!
+3834146!
+control!
+0! !
+flush!
+3833877!
+control!
+0! !
+writeBuffer!
+3836028!
+private!
+1! !
+close!
+3833511!
+control!
+0! !
+nextPut:!
+3835354!
+private!
+1Int:Int! !
+advanceBufferLocation!
+3834473!
+private!
+1! !

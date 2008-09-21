@@ -1,0 +1,308 @@
+Class
+doesReturn!
+761621!
+Unclassified!
+0! !
+#categories!
+Unclassified! !
+containsFloatValues!
+760379!
+Unclassified!
+0! !
+computeHeapMap:!
+754557!
+Unclassified!
+0:! !
+temporaries:!
+779141!
+Unclassified!
+0:! !
+parameters:!
+775000!
+Unclassified!
+0:! !
+parameters!
+774866!
+Unclassified!
+0! !
+isBlockScope!
+765236!
+Unclassified!
+0! !
+hasParametersInContext!
+761885!
+Unclassified!
+0! !
+collectStackInfo:!
+751939!
+Unclassified!
+0:! !
+#group!
+ast! !
+isInlineable!
+765513!
+Unclassified!
+0! !
+superVarsContainSelf!
+778790!
+Unclassified!
+0! !
+realSubScopesDo:!
+776571!
+Unclassified!
+0:! !
+nilOrContextOnly!
+772603!
+Unclassified!
+0! !
+containsNLR!
+760863!
+Unclassified!
+0! !
+incoming!
+762490!
+Unclassified!
+0! !
+isMethodScope!
+766600!
+Unclassified!
+0! !
+isInlined!
+766468!
+Unclassified!
+0! !
+head!
+762075!
+Unclassified!
+0! !
+#revision!
+$Revision: 1.3 $! !
+mapsAreComputed!
+772048!
+Unclassified!
+0! !
+allocatesContext!
+749947!
+Unclassified!
+0! !
+temporaries!
+779005!
+Unclassified!
+0! !
+subScopes:!
+778191!
+Unclassified!
+0:! !
+#superclassTypeString!
+DeltaScope! !
+initialize:!
+763626!
+Unclassified!
+0:! !
+komment!
+766911!
+Unclassified!
+0! !
+nofTemporaries!
+774717!
+Unclassified!
+0! !
+nofHeapTemporaries!
+773015!
+Unclassified!
+0! !
+isCodeScope!
+765384!
+Unclassified!
+0! !
+at:error:!
+750349!
+Unclassified!
+0::! !
+#comment!
+WARNING: DO NOT TOUCH ANY OF THE CODESCOPE'S CODE UNLESS YOU FULLY
+	UNDERSTAND WHAT IS GOING ON. THIS IS MORE COMPLICATED THAN IT LOOKS.
+
+	DeltaCodeScope represent method and block scopes in the AST. They collect
+	the bindings of ActivationVars to their variable names (symbols). During the AST
+	rewrite phase, a scope may be inlined within its enclosing scope. As a consequence,
+	e.g., a scope that originally was a block scope may become a method scope
+	(if it has been inlined within the topmost code scope), and if it formerly contained
+	a NLR (non-local return), this NLR will disappear too since it became a ordinary
+	return after inlining.
+
+	Note: All information (such as containsNLR, needsSelf) is recomputed whenever
+	needed and no such information is cached; the scope stores only static source
+	infomation (doesReturn, accessesSelf) and whether it has been inlined or not.
+	That is, inlining could be undone by simply resetting the isInlined flag.
+
+
+	Instance variables:
+
+	subScopes						the set or (inlined or real) subscopes; i.e., scopes for
+											which superScope is self
+
+	superVars						the set of ActivationVars defined in any of the super
+											scopes but accessed within this or any of its subscopes
+											(transitive)
+
+	containsReturn				true if the statements belonging to this scope
+											contain a return statement; false otherwise
+
+	accessesSelf					true if any of the statements belonging to this scope
+											accesses self; false otherwise
+
+	hasFloatValues				true if the scope stores FloatValues, false otherwise.
+
+	isInlined							true if the scope is inlined; false otherwise
+
+	stackMap							an IdentityDictionary mapping temporaries allocated on the
+											stack to a stack frame offset (temporary -> offset).
+
+	floatMap							an IdentityDictionary mapping float temporaries allocated on the
+											stack to a stack frame offset (temporary -> offset).
+
+	heapMap							an IdentityDictionary mapping temporaries allocated on the
+											heap to a context ptr offset (temporary -> offset).
+
+	heapParameters				an OrderedCollection of temporaries containing all the parameters
+											that have to be copied into the heap context.
+
+	nofStackTemporaries		the number of temporaries allocated on the stack
+											(i.e. the stack size used for this scope).
+
+    begin, end						the bci range of bytecodes generated for this scope.
+											end points to the first bytocode after the scope.
+    
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.! !
+map:toStack:toFloat:toHeap:!
+770417!
+Unclassified!
+0::::! !
+computeDebugInfo!
+752826!
+Unclassified!
+0! !
+at:ifAbsent:!
+750582!
+Unclassified!
+0::! !
+addSubScope:!
+747235!
+Unclassified!
+0:! !
+nofStackVariables!
+773433!
+Unclassified!
+0! !
+inline!
+764366!
+Unclassified!
+0! !
+computeMaps!
+757263!
+Unclassified!
+0! !
+mustBeCustomizedToClass!
+772290!
+Unclassified!
+0! !
+end!
+761765!
+Unclassified!
+0! !
+containsReturn!
+761479!
+Unclassified!
+0! !
+#extensionsAreSubtypes!
+true! !
+superVars:!
+778614!
+Unclassified!
+0:! !
+superVars!
+778367!
+Unclassified!
+0! !
+nofFloatTemporaries!
+772749!
+Unclassified!
+0! !
+realSuperScope!
+777022!
+Unclassified!
+0! !
+begin:end:!
+751593!
+Unclassified!
+0::! !
+#branded!
+true! !
+usesFloatValues!
+779436!
+Unclassified!
+0! !
+selfDistance!
+777424!
+Unclassified!
+0! !
+addTo:startAt:!
+748981!
+Unclassified!
+0::! !
+computeStackMap:!
+757858!
+Unclassified!
+0:! !
+nofParameters!
+773286!
+Unclassified!
+0! !
+#instanceVariableString!
+parameters temporaries subScopes superVars containsReturn accessesSelf containsFloatValues isInlined nilOrContextOnly mapsAreComputed stackMap floatMap heapMap stackInfo floatInfo heapInfo heapParameters nofStackTemporaries nofStackFloatValues begin end ! !
+addTemps:startAt:floats:startAt:!
+747571!
+Unclassified!
+0::::! !
+printOn:!
+775290!
+Unclassified!
+0:! !
+subScopes!
+778059!
+Unclassified!
+0! !
+computeHeapSet!
+756031!
+Unclassified!
+0! !
+accessSelf!
+746248!
+Unclassified!
+0! !
+#subtype!
+true! !
+inlinedSubScopesDo:!
+764882!
+Unclassified!
+0:! !
+#abstract!
+false! !
+accessesSelf!
+746511!
+Unclassified!
+0! !
+heapParameters!
+762348!
+Unclassified!
+0! !
+map:toHeap:!
+769551!
+Unclassified!
+0::! !
+begin!
+751469!
+Unclassified!
+0! !

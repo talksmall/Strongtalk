@@ -1,0 +1,543 @@
+Class
+#categories!
+win32-control!
+private!
+window creation!
+accessing!
+input focus!
+grabbing!
+input device state!
+control!
+frame rate control-restricted to window!
+debugging!
+iterating!
+private initialization! !
+updateLayoutsIfNeeded!
+3299066!
+control!
+0! !
+addGrab:!
+3290254!
+grabbing!
+0UIEventHandler:Boolean! !
+initInProcess!
+3276186!
+private!
+1! !
+shiftPressed!
+3294110!
+input device state!
+0Boolean! !
+repeatCountMask!
+3282591!
+private!
+1Int! !
+removeGrab:!
+3292393!
+grabbing!
+0UIEventHandler:! !
+#extensionsAreSubtypes!
+true! !
+run!
+3282875!
+private!
+1! !
+atIntervals:do:!
+3295133!
+control!
+0Float:[]:Timer! !
+postMessage:wParam:lParam:!
+3280276!
+private!
+1ExternalData:ExternalData:ExternalData:! !
+numLocked!
+3293562!
+input device state!
+0Boolean! !
+aboutToDestroyWindow:!
+3264466!
+win32-control!
+0Window:! !
+debugEvents!
+3265489!
+win32-control!
+0Boolean! !
+newStandardWindow:for:!
+3287495!
+window creation!
+0Str:Visual:StandardWindow! !
+keyUpEventWithWParam:lParam:toCancel:!
+3277263!
+private!
+1ExternalData:ExternalData:AbortBlock:ExternalData! !
+withBufferCanvasFor:do:!
+3269338!
+win32-control!
+2Rect:[Canvas,HBITMAP,^X def]:X! !
+process:!
+3280815!
+private!
+1Process:! !
+changing:!
+3295643!
+control!
+0RelayoutTarget:! !
+hasActiveWindow!
+3289160!
+input focus!
+0Boolean! !
+hasSessionActions!
+3275508!
+private!
+1Boolean! !
+register!
+3281581!
+private!
+1! !
+nextPaintTime:!
+3279802!
+private!
+1Float:! !
+keyDownEventWithWParam:lParam:toCancel:!
+3276318!
+private!
+1ExternalData:ExternalData:AbortBlock:ExternalData! !
+inputFocus!
+3289467!
+input focus!
+0Visual! !
+#branded!
+true! !
+timers!
+3284923!
+private!
+1VarDict[Win32Handle,Timer]! !
+grabStack:!
+3275165!
+private!
+1Stack[UIEventHandler]:! !
+charEventWithWParam:lParam:toCancel:!
+3272118!
+private!
+1ExternalData:ExternalData:AbortBlock:ExternalData! !
+activeWindow:!
+3289012!
+input focus!
+0Window:! !
+currentMsg!
+3273649!
+private!
+1MSG! !
+medium!
+3288084!
+accessing!
+0Medium! !
+schedulePaintFor:at:!
+3300738!
+frame rate control-restricted to window!
+0Window:Float:! !
+getMessageWithoutIdling:!
+3274777!
+private!
+1MSG:Boolean! !
+sessionWindow!
+3288578!
+accessing!
+0Window! !
+sendFocusEvent:!
+3283470!
+private!
+1UIEvent:ExternalData! !
+visualCritical:!
+3299591!
+control!
+0[]:! !
+activeWindow!
+3288870!
+input focus!
+0Window! !
+visualMonitor!
+3287202!
+private!
+1Semaphore! !
+hasInputFocus!
+3289318!
+input focus!
+0Boolean! !
+msgIsOkDuringVisualCritical:!
+3279313!
+private!
+1ExternalProxy:Boolean! !
+message:!
+3267048!
+win32-control!
+0MSG:! !
+#revision!
+$Revision: 1.13 $! !
+topWindowFor:ifAbsent:!
+3285069!
+private!
+3HWND:[^X def]:Window|X! !
+idleUntilGetMessage:!
+3275661!
+private!
+1MSG:Boolean! !
+#classVariableString!
+GrabMonitor <Semaphore>
+		DebugIncrementalLayout <Boolean>
+		DebugInvalidation <Boolean>
+		DebugEvents <Boolean>
+		Sessions <VarDict[Process,Session]>
+		LastProcess <Process>
+			"key cache to speed up Sessions access"
+		LastSession <Session>
+			"value cache to speed up Sessions access"
+		WndProc <APICallBack>
+		! !
+keyValueFor:ifAbsent:!
+3278145!
+private!
+1Int:AbortBlock:Symbol! !
+dispatchMessage:!
+3273978!
+private!
+1MSG:! !
+safeWindowFor:!
+3283187!
+private!
+1HWND:Window! !
+hasChanging!
+3287914!
+accessing!
+0Boolean! !
+overflowQueueSize!
+3279947!
+private!
+1Int! !
+forkLongOperation:!
+3296043!
+control!
+0[]:! !
+mouseButtonPressed:!
+3293312!
+input device state!
+0Symbol:Boolean! !
+wndProc!
+3270071!
+win32-control!
+0APICallBack! !
+resetNextPaintTime!
+3282722!
+private!
+1! !
+process!
+3288447!
+accessing!
+0Process! !
+updateLeaf:!
+3286040!
+private!
+1RelayoutTarget:! !
+displayBuffer!
+3274162!
+private!
+1HBITMAP! !
+modalWindowStack!
+3278487!
+private!
+1Stack[Window]! !
+#comment!
+A Session manages the event queue and the process for a group of related windows.
+This allows you to have a different process for different groups of windows.
+In addition, Sessions are the unit of 'modality'- i.e. modal windows lock
+out other windows in their Session.
+
+%todo: need to make more portable; ideally the mediums need to holds this stuff,
+and all the win32 stuff in this and the win32control hierarchy should go there.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+! !
+release!
+3282182!
+private!
+1! !
+unregisterTimer:!
+3268734!
+win32-control!
+0Timer:! !
+nextPaintTime!
+3279663!
+private!
+1Float! !
+hasGrabFor:!
+3292229!
+grabbing!
+0Visual:Boolean! !
+windows!
+3287345!
+private!
+1VarDict[HWND,Window]! !
+destroyBlinkTimer!
+3273780!
+private!
+1! !
+blinkFocus!
+3270640!
+private!
+1! !
+oldPrefsFor:!
+3288212!
+accessing!
+0RelayoutTarget:SeqCltn[Region]! !
+createBlinkTimer!
+3273418!
+private!
+1! !
+dumpAllBut:on:!
+3301122!
+debugging!
+0Window:CharOutputStream:! !
+inputFocus:!
+3289605!
+input focus!
+0Visual:! !
+updateLeaves!
+3286408!
+private!
+1! !
+longOpMonitor!
+3278344!
+private!
+1Semaphore! !
+ctrlPressed!
+3293148!
+input device state!
+0Boolean! !
+#group!
+ui! !
+mouseEvent:at:event:!
+3278732!
+private!
+1Symbol:Point:UIEvent:Boolean! !
+visualCriticalWouldBlock!
+3299940!
+control!
+0Boolean! !
+blinkState:!
+3271020!
+private!
+1Boolean:! !
+getMessage:!
+3274518!
+private!
+1MSG:Boolean! !
+registerWindow:handle:!
+3282008!
+private!
+1Window:HWND:! !
+debugIncrementalLayout!
+3300950!
+debugging!
+0Boolean! !
+setNoInputFocus!
+3284321!
+private!
+1! !
+initIn:do:!
+3301787!
+private initialization!
+1Medium:[Session]:! !
+sessionActions!
+3284021!
+private!
+1OrdCltn[[]]! !
+windowsDo:!
+3301624!
+iterating!
+0[Window]:! !
+primaryMouseButtonPressed!
+3293722!
+input device state!
+0Boolean! !
+handleIfFocusMsg:for:wParam:lParam:!
+3265857!
+win32-control!
+0ExternalData:Window:ExternalData:ExternalData:ExternalData! !
+modalDo:!
+3297596!
+control!
+0[]:! !
+sessionWindow:!
+3288720!
+accessing!
+0Window:! !
+checkPaintTime!
+3273038!
+private!
+1! !
+translateMessage:!
+3285431!
+private!
+1MSG:! !
+noInputFocus!
+3290022!
+input focus!
+0! !
+processSessionActions!
+3280950!
+private!
+1! !
+altPressed!
+3292986!
+input device state!
+0Boolean! !
+dumpIfWindow:on:!
+3274303!
+private!
+1Window|Win32Control:CharOutputStream:! !
+grabStack!
+3275026!
+private!
+1Stack[Visual]! !
+paintOccuredFor:!
+3300530!
+frame rate control-restricted to window!
+0Window:! !
+bufferCanvasWithMinimumExtent:!
+3271161!
+private!
+1Point:Canvas! !
+#superclassTypeString!
+InstanceCritical |> (ClassCritical |> Object)! !
+#instanceVariableString!
+medium <Medium>
+process <Process>
+sessionWindow <Window>
+			"When this window is closed, the session is terminated."
+
+inputFocus <Visual>		"nil if no focus"
+activeWindow <Window> "The window with the focus"
+
+currentMsg <MSG>
+			"If non-nil, then is the MSG that is currently being dispatched"
+
+grabStack <Stack[UIEventHandler]>
+			"A stack of handlers that should receive all events, or nil"
+changing <Set[RelayoutTarget]>
+			"The set of relayout targets that need to be checked"
+prefs <IdentityDictionary[RelayoutTarget,SeqCltn[Region]]>
+			"Dictionary recording for various relayout targets their old
+				preferences.  This may hold more entries than changing,
+				because it is also used to record the prefs of 
+				parents of changing entries that do nott have cached prefs."
+
+pendingForPaint <Set[Window]>
+			"All of the windows/win32controls in windows of this session that have an unsatisifed
+			  paint request pending.  Needed for frame rate checking."
+nextPaintTime <Float>
+			"When the next refresh interval comes up for any element of pendingForPaint "
+
+modalWindowStack <Stack[Window]>
+			"If there are any windows on this stack, the invariant is: all windows for the session
+				other than the top window on this stack are disabled"
+sessionActions <OrdCltn[[]]>
+			"A collection of one-shot actions to do in the sessions process"
+windows <VarDict[HWND,Window]>
+windowBeingCreated <Window>
+			"A horrible %hack so that the windows procedure can get the window being created, to
+			 register it the first time through the event loop."
+displayBuffer <HBITMAP>
+displayBufferSize <Point>
+bufferCanvas <Canvas>
+longOpMonitor <Semaphore>
+visualMonitor <Semaphore>
+timers <VarDict[Win32Handle,Timer]>
+blinkTimer <Timer>
+blinkState <Boolean>! !
+inProcessDo:!
+3297186!
+control!
+0[]:! !
+addModalWindow:!
+3294265!
+control!
+0Window:! !
+blinkState!
+3287777!
+accessing!
+0Boolean! !
+pendingForPaint!
+3280127!
+private!
+1Set[Window]! !
+dumpOn:!
+3301403!
+debugging!
+0CharOutputStream:! !
+unregister!
+3285619!
+private!
+1! !
+terminate!
+3298659!
+control!
+0! !
+postQuit!
+3280654!
+private!
+1! !
+hasGrab!
+3292081!
+grabbing!
+0Visual! !
+needPaintAtTime:!
+3300148!
+frame rate control-restricted to window!
+0Float:! !
+findFocusIfNeededFor:!
+3265649!
+win32-control!
+0Window:! !
+blinkInterval!
+3270873!
+private!
+1Float! !
+secondaryMouseButtonPressed!
+3293914!
+input device state!
+0Boolean! !
+#subtype!
+true! !
+hasModalWindow!
+3275318!
+private!
+1Boolean! !
+message:for:wParam:lParam:!
+3268030!
+win32-control!
+0ExternalData:HWND:ExternalData:ExternalData:ExternalData! !
+#abstract!
+false! !
+recordPrefsFor:!
+3298286!
+control!
+0RelayoutTarget:! !
+timeoutFor:!
+3284698!
+private!
+1Win32Handle:! !
+unregisterWindow:!
+3268927!
+win32-control!
+0Window:! !
+lostCapture!
+3266643!
+win32-control!
+0! !
+creatingWindow:do:!
+3265034!
+win32-control!
+0Window:[^Object]:! !

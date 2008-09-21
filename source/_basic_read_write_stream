@@ -1,0 +1,69 @@
+Class
+#categories!
+accessing!
+initialization! !
+#superclassTypeString!
+BasicOutputStream[E] mixin |> BasicReadStream[E]! !
+#group!
+base! !
+contentsWritten!
+4343759!
+accessing!
+0SeqCltn[E]! !
+contents!
+4343355!
+accessing!
+0SeqCltn[E]! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.2 $! !
+#isGeneric!
+true! !
+#instanceVariableString!
+size <Int>! !
+initialize!
+4344654!
+initialization!
+0! !
+size:!
+4344817!
+initialization!
+0Int:! !
+#typeArgumentString!
+E ! !
+#subtype!
+true! !
+#branded!
+true! !
+#comment!
+This class provides the standard implementation of the WriteStream and ReadWriteStream protocols.
+
+There is no BasicWriteStream class; this is because virtually all WriteStreams are on data structures with implicit readability (try thinking of a positionable collection that can be written and not read), so ReadStreams and ReadWriteStreams are used instead.
+
+Blue Book compatibility note: you can use ReadWriteStreams as you would in the Blue Book, with
+one exception: the #contents message acts like it would for a WriteStream (i.e. it returns the elements
+written) rather than returning the entire collection.  The messages #collection, #contentsRemaining, and #contentsWritten fulfill these kind of roles without ambiguity in our system, to make ReadWriteStreams
+fully substitutable for both ReadStreams and WriteStreams.
+
+%responsibility nextPut:
+    Subclasses must extend the nextPut: method to do the actual work of writing the element.
+%responsibility size:
+    Optional - Any subclass that wishes to start off with readable elements in the stream must send
+    the message size: to indicate how many there are.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+! !
+#abstract!
+true! !
+size!
+4344515!
+accessing!
+0Int! !
+#supportedProtocolString!
+ReadWriteStream[E]! !
+nextPut:!
+4344147!
+accessing!
+0E:E! !

@@ -1,0 +1,230 @@
+Class
+asString!
+6291749!
+converting!
+0String! !
+copyWithSize:!
+6287372!
+copying!
+4Int:VarSeqCltn[EX]! !
+stringCopyWith:!
+6294333!
+string copying!
+0Character:String! !
+#comment!
+This class implements most of the common protocol for string-like collections.
+It does not implement any mutation operations, since some subclasses aren't mutable.
+Subclasses must also decide how to actually store their contents, since this class simply works based on subclass'
+implementation of the #at: and #size messages.
+
+Compatibility note: The behaviors of <,<=,>=, and > are different than those defined in the BlueBook, since our
+versions are case sensitive.  This is done to preserve the important property that (a <= b) = (a < b or: [a = b]), 
+which is NOT true for the BlueBook definitions, since = is case sensitive.
+@<, @>, @<=, @>=, @~=, as well as @= (which is equivalent to #sameAs:)
+are provided as case insensitive comparison operators.
+
+Typing note:  In standard Smalltalks, many of the methods from SequenceableCollection, such as
+#copyReplaceFrom:to:, are not implemented in a semantically general manner for Strings, since you can
+only substitute characters.  This library generalizes these messages so they return Strings if possible,
+or some more general collection type like Array if necessary.  The tradeoff, however, is that the type
+system cannot tell statically whether a string is returned or not for the standard messages inherited
+from SeqCltn, so if you want to typecheck your code when using these messages on Strs, you should
+use the string forms of these messages (see the 'string copying' message category). - D.G.
+
+%optional unicodeAt:	- subclasses will usually want to reimplement this for speed
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $.! !
+indexOfStr:startingAt:caseSensitive:ifAbsent:!
+1581248!
+searching!
+2Str:Int:Boolean:[^X def]:Int|X! !
+#group!
+base! !
+@<=!
+1576164!
+comparing-case insensitive!
+0Str:Boolean! !
+stringCopyReplaceAll:with:!
+1573033!
+copying!
+0Str:Str:String! !
+>=!
+1575301!
+comparing-case sensitive!
+0Str:Boolean! !
+asLowercase!
+1570315!
+converting!
+0String! !
+platformMatch:!
+1579815!
+pattern matching!
+0Str:Boolean! !
+caseInsensitiveCompare:!
+1577123!
+comparing-case insensitive!
+0Str:Int! !
+@>=!
+1576735!
+comparing-case insensitive!
+0Str:Boolean! !
+sameAs:!
+1577740!
+comparing-case insensitive!
+0Str:Boolean! !
+match:!
+6327458!
+pattern matching!
+0Str:Boolean! !
+<=!
+1574536!
+comparing-case sensitive!
+0Str:Boolean! !
+match:ignoreCase:!
+1578123!
+pattern matching!
+0Str:Boolean:Boolean! !
+#extensionsAreSubtypes!
+true! !
+stringCopyFrom:to:!
+1572656!
+copying!
+0Int:Int:String! !
+,!
+1571136!
+copying!
+0Str:String! !
+#branded!
+true! !
+#categories!
+private!
+fake brands!
+converting!
+copying!
+printing!
+streaming!
+comparing-case sensitive!
+comparing-case insensitive!
+pattern matching!
+accessing!
+searching!
+restricted!
+string copying!
+Camp Smalltalk! !
+sunitMatch:!
+31029645!
+Camp Smalltalk!
+0:! !
+asSymbol!
+6291466!
+converting!
+0Symbol! !
+compare:!
+1575518!
+comparing-case sensitive!
+0Str:Int! !
+@>!
+1576549!
+comparing-case insensitive!
+0Str:Boolean! !
+=!
+6268348!
+comparing-case sensitive!
+0Object:Boolean! !
+>!
+1575085!
+comparing-case sensitive!
+0Str:Boolean! !
+newCopyOfSize:thatCanAlsoHoldElementsOf:!
+6293358!
+restricted!
+4Int:SeqCltn[X]:VarSeqCltn[EX|X]! !
+equalsStr:!
+1569082!
+private!
+1Str:Boolean! !
+#superclassTypeString!
+Magnitude[ReadString] mixin |> SequenceableCollection[Character]! !
+#revision!
+$Revision: 1.5 $! !
+caseInsensitiveEqualsStr:!
+1568758!
+private!
+1Str:Boolean! !
+copyWithout:!
+6291024!
+copying!
+4Object:VarSeqCltn[EX]! !
+<!
+1574362!
+comparing-case sensitive!
+0Str:Boolean! !
+readStream!
+1574176!
+streaming!
+0CharacterReadStream! !
+@<!
+1575949!
+comparing-case insensitive!
+0Str:Boolean! !
+@~=!
+1576929!
+comparing-case insensitive!
+0Str:Boolean! !
+printOn:!
+1573860!
+printing!
+0CharOutputStream:! !
+sunitAsSymbol!
+31259564!
+Camp Smalltalk!
+0! !
+match:ignoreCase:single:multiple:!
+1578342!
+pattern matching!
+0Str:Boolean:Character:Character:Boolean! !
+platformMatch:ignoreCase:!
+1580004!
+pattern matching!
+0Str:Boolean:Boolean! !
+unicodeAt:!
+1580304!
+accessing!
+0Int:Int! !
+#subtype!
+true! !
+stringCopyReplaceFrom:to:with:!
+1573433!
+copying!
+0Int:Int:Str:String! !
+sunitSubStrings!
+31029800!
+Camp Smalltalk!
+0! !
+#abstract!
+true! !
+stringCopyWithSize:!
+6269367!
+copying!
+0Int:String! !
+collection:matchesElementsAt:caseSensitive:!
+1580586!
+searching!
+0SeqCltn[Character]:Int:Boolean:Boolean! !
+hashAt:!
+1569376!
+private!
+1Int:Int! !
+asUppercase!
+1570877!
+converting!
+0String! !
+Str!
+6291898!
+fake brands!
+0Boolean! !
+@=!
+1576358!
+comparing-case insensitive!
+0Str:Boolean! !

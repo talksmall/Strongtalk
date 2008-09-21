@@ -1,0 +1,128 @@
+Class
+#categories!
+initialization!
+control!
+private! !
+fillBuffer!
+2686699!
+private!
+1! !
+#superclassTypeString!
+Object! !
+#group!
+base! !
+advanceBuffer!
+2684404!
+private!
+1! !
+bufferOrigin!
+2685546!
+private!
+1Int! !
+bufferNumElements!
+2685236!
+private!
+1Int! !
+postCopy!
+2687248!
+private!
+1! !
+nextBufferPosition:!
+2687088!
+private!
+1Int:! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.3 $! !
+descriptor:!
+2686267!
+private!
+1DESCRIPTOR:! !
+#isGeneric!
+true! !
+#instanceVariableString!
+descriptor <DESCRIPTOR>
+buffer <ExternalProxy>
+			"I/O buffer, cached from descriptor for speed (0 indexed)"
+bufferSize <Int>
+			"I/O buffer size, cached from descriptor for speed"
+bufferOrigin <Int>
+			"the offset between position and buffer coordinates"
+nextBufferPosition <Int>
+			"The actual position, in buffer coordinates, of the next element (i.e. position + 1 in buffer coords)"
+bufferNumElements <Int>
+			"The number of valid data bytes in the buffer"
+		! !
+bufferSize!
+2685836!
+private!
+1Int! !
+arrangeForFinalization!
+2684778!
+private!
+1! !
+descriptor!
+2686121!
+private!
+1DESCRIPTOR! !
+initBuffer!
+2683787!
+initialization!
+0! !
+bufferNumElements:!
+2685388!
+private!
+1Int:! !
+initDescriptor:!
+2684012!
+initialization!
+0DESCRIPTOR:! !
+buffer!
+2685096!
+private!
+1ExternalProxy! !
+#typeArgumentString!
+DESCRIPTOR <ExternalStreamDescriptor> ! !
+#subtype!
+true! !
+#branded!
+true! !
+#comment!
+This is the abstract superclass for all external stream classes.  It
+provides buffer management for subclasses.   Library users don't normally directly instantiate ExternalStreams,
+since that exposes you to genericity and raw ExternalDescriptors; instead, more appropriate entry points
+such as readStream/writeStream/readWriteStream are implemented for the various kinds of external objects
+that can be streamed over, such as File.
+
+Invariant: the buffer position is always less than the index of the last buffer element.   This is accomplished by proactively filling/flushing the buffer when the end is reached.
+
+%responsibility #arrangeForFinalization
+    Subclasses should reimplement this appropriately to do any finalization registration
+      to ensure that the stream is closed when it is garbage collected.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+! !
+#abstract!
+true! !
+doClose!
+2686418!
+private!
+1! !
+bufferSize:!
+2685975!
+private!
+1Int:! !
+bufferOrigin:!
+2685688!
+private!
+1Int:! !
+nextBufferPosition!
+2686934!
+private!
+1Int! !
+close!
+2684276!
+control!
+0! !

@@ -1,0 +1,230 @@
+Class
+unregister:!
+2879225!
+restricted- to processes!
+0Process:! !
+runNext!
+2883481!
+private!
+1Boolean! !
+#group!
+base! !
+handleStopFor:!
+2880315!
+private!
+1Process:! !
+#extensionsAreSubtypes!
+true! !
+terminateActive!
+2888865!
+control!
+0! !
+resume:!
+2877215!
+restricted- to processes!
+0Process:! !
+waitForAsyncDLLReturnOrTimeout!
+2886907!
+private!
+1! !
+uninterruptablyDo:!
+2878851!
+restricted- to processes!
+2[^X def]:X! !
+stopHandler:!
+2890409!
+accessing!
+0[Process]:! !
+executeAnIdleAction!
+2880006!
+private!
+1! !
+terminating:!
+2878209!
+restricted- to processes!
+0Process:! !
+stopWithError:!
+5966506!
+control!
+0ProcessError:BottomType! !
+isRunning:!
+2876689!
+restricted- to processes!
+0Process:Boolean! !
+processUnusualStatus:!
+2882072!
+private!
+1Symbol:! !
+removeFromDelayedIfNeeded:!
+2883189!
+private!
+1Process:! !
+signal:atTime:!
+2888318!
+control!
+0Semaphore:Int:! !
+nextDelayedTime:!
+2881759!
+private!
+1Float:! !
+delayed!
+2879833!
+private!
+1SortedCollection[Tuple[Float,Semaphore]]! !
+#categories!
+restricted- to processes!
+private!
+control!
+restricted!
+accessing!
+private-initialization!
+constants! !
+checkDelayed!
+2879417!
+private!
+1! !
+yield!
+2889022!
+control!
+0! !
+stopHandler!
+2890257!
+accessing!
+0[Process]! !
+nextDelayedTime!
+2881605!
+private!
+1Float! !
+transferTo:!
+2886287!
+private!
+1Process:Symbol! !
+isRunningStatus:!
+2881065!
+private!
+1Symbol:Boolean! !
+handleStopOnCommandLine:!
+2880592!
+private!
+1Process:! !
+#superclassTypeString!
+Process! !
+processes!
+2882883!
+private!
+1Extensible[Process]! !
+hasIdleActions!
+8654715!
+private!
+1Boolean! !
+noNextDelayedTime!
+2881919!
+private!
+1! !
+quiescenceDelay!
+2891067!
+constants!
+0Float! !
+activeProcess!
+2889879!
+accessing!
+0Process! !
+#revision!
+$Revision: 1.9 $! !
+quiescent!
+2890053!
+accessing!
+0Boolean! !
+start!
+2889423!
+restricted!
+0! !
+#instanceVariableString!
+processes <Extensible[Process]>
+	"Contains all processes controlled by the scheduler"
+tryingToRun <OrdCltn[Process]>
+	"Contains processes or groups holding processes that we should keep trying
+	    to give a slice to; these include processes blocked on an async dll call"
+next <Int>
+	"Next index in tryingToRun"
+nextDelayedTime <Float>
+	"The time to signal the next delayed semaphore,, in microseconds"
+delayed <SortedCollection[Tuple[Float,Semaphore]]>
+	"Contains a list of semaphores that should be signaled at a specific time"
+stopHandler <[Process]>
+	"Whenever a process is stopped this block will be evaluated in a new process
+		with the process as its arg."
+quiescent <Boolean>
+	"If true, then no process has had anything to do for quiescenceDelay time"
+toBeStoppedInEvaluator <OrdCltn[Process]>
+	"Contains processes that we should transfer to the command line evaluator.
+		This is a temporary solution until we discard the command line evaluator."
+! !
+next:!
+2881469!
+private!
+1Int:! !
+tryingToRun!
+2886750!
+private!
+1OrdCltn[Process]! !
+initialize!
+2890580!
+private-initialization!
+1! !
+#branded!
+true! !
+transferToEvaluator:!
+2886512!
+private!
+1Process:Symbol! !
+toBeStoppedInEvaluator!
+2886108!
+private!
+1OrdCltn[Process]! !
+run!
+2889168!
+restricted!
+0! !
+quiescent:!
+2883039!
+private!
+1Boolean:! !
+#subtype!
+true! !
+next!
+2881339!
+private!
+1Int! !
+suspend:!
+2877732!
+restricted- to processes!
+0Process:! !
+waitForAsyncDLLReturnOrTimeout:!
+2887840!
+private!
+1Float:Boolean! !
+setProcessErrorFor:!
+2885273!
+private!
+1Process:! !
+#comment!
+Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+! !
+#abstract!
+false! !
+activePriority!
+2889714!
+accessing!
+0Int! !
+register:!
+2876944!
+restricted- to processes!
+0Process:! !
+stopInEvaluator:!
+2877508!
+restricted- to processes!
+0Process:! !

@@ -1,0 +1,183 @@
+Class
+dumpOn:indent:!
+4040761!
+debugging!
+0CharOutputStream:Int:! !
+#categories!
+geometry-local!
+accessing!
+notification!
+control!
+displaying!
+region ops!
+testing!
+geometry-nonlocal!
+event handling!
+input focus!
+copying!
+debugging!
+core sampler! !
+#comment!
+A Glyph is a possibly shareable graphical object.  Visuals are Glyphs that
+are NOT shareable; other kinds of Glyphs, such as CharacterGlyphs, are.
+
+Because of this potential shareability, Glyphs need more information passed to
+them during rendering, layout, etc, to indicate their context.  For this reason, Glyphs
+do not directly support the Visual protocol, which assumes knowledge of context.
+To use a Glyph as a visual, it is necessary to wrap it as a VisualGlyph.
+
+Note that our definition of Glyph is slightly different than in systems such as Fresco(TM?):
+shareability is an optional property of our Glyphs, which simplifies programming for
+unshareable Glyphs like Visuals.
+
+As a practical matter, most subclasses of Glyph (rather than things that simply support
+the Glyph protocol) are shareable Glyphs, since otherwise they would be in the Visual
+heirarchy. Thus, the methods in this class provide default behavior for shareable Glyphs.
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+! !
+#group!
+ui! !
+displayOn:for:!
+4037382!
+displaying!
+0Canvas:VisualGlyph:! !
+#extensionsAreSubtypes!
+true! !
+allocation:at:for:!
+4034098!
+geometry-local!
+0Region:Point:VisualGlyph:! !
+isRectangularAndOpaque!
+4038590!
+testing!
+0Boolean! !
+enclosedRectFor:!
+4037881!
+region ops!
+0VisualGlyph:Rect! !
+naturalIn:!
+4035143!
+geometry-local!
+0Medium:Region! !
+detaching!
+4036976!
+notification!
+0! !
+session:!
+4036606!
+accessing!
+0Session:! !
+#branded!
+true! !
+adjustPositionTo:!
+4039099!
+geometry-nonlocal!
+0Point:! !
+layoutStatus!
+4035857!
+accessing!
+0Int! !
+id:!
+4035725!
+accessing!
+0Int:! !
+keyDown:focus:event:for:!
+4039669!
+event handling!
+0Symbol:Visual:UIEvent:VisualGlyph:Boolean! !
+mouseEvent:at:event:for:!
+4040151!
+event handling!
+0Symbol:Point:UIEvent:VisualGlyph:Boolean! !
+parent:id:!
+4036195!
+accessing!
+0VisualParent:Int:! !
+#superclassTypeString!
+Object! !
+keyUp:focus:event:for:!
+4039911!
+event handling!
+0Symbol:Visual:UIEvent:VisualGlyph:Boolean! !
+character:focus:event:for:!
+4039424!
+event handling!
+0Character:Visual:UIEvent:VisualGlyph:Boolean! !
+focusCandidatesDo:!
+4040389!
+input focus!
+0[Visual]:! !
+#revision!
+$Revision: 1.2 $! !
+isFocusCandidate!
+4038290!
+testing!
+0Boolean! !
+asVisual!
+4035582!
+accessing!
+0Visual! !
+isSurelyRigid!
+4038751!
+testing!
+0Boolean! !
+isNonLocal!
+4038462!
+testing!
+0Boolean! !
+prefsStatus!
+4036407!
+accessing!
+0Int! !
+nativePositionChanged!
+4039271!
+geometry-nonlocal!
+0! !
+naturalIn:at:!
+4035310!
+geometry-local!
+0Medium:Point:Region! !
+copy!
+4040560!
+copying!
+0Instance! !
+localDisplayOn:for:!
+4037653!
+displaying!
+0Canvas:VisualGlyph:! !
+maxIn:!
+4034719!
+geometry-local!
+0Medium:Region! !
+#subtype!
+true! !
+minIn:!
+4034931!
+geometry-local!
+0Medium:Region! !
+#abstract!
+false! !
+release!
+4037110!
+control!
+0! !
+enclosingRectFor:!
+4038086!
+region ops!
+0VisualGlyph:Rect! !
+drillAt:for:!
+4041000!
+core sampler!
+0Point:CoreSampler:! !
+allocationFor:!
+4034537!
+geometry-local!
+0VisualGlyph:Region! !
+noParentFor:!
+4036035!
+accessing!
+0VisualGlyph:! !

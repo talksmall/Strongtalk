@@ -1,0 +1,222 @@
+Class
+minScrollExtentBlock:!
+4770222!
+accessing!
+0[Viewport,^Point]:! !
+#categories!
+initialization!
+private!
+accessing!
+geometry-local!
+updating!
+event handling!
+control!
+restricted-to session!
+testing!
+displaying! !
+localDisplayOn:!
+4780485!
+displaying!
+0Canvas:! !
+#group!
+ui! !
+constrainX!
+4764292!
+initialization!
+0Boolean! !
+update:!
+4775646!
+updating!
+0Symbol:! !
+constrainY:!
+4764727!
+initialization!
+0Boolean:! !
+#extensionsAreSubtypes!
+true! !
+minScrollExtentBlock!
+4770054!
+accessing!
+0[Viewport,^Point]! !
+xScrollState!
+4772138!
+accessing!
+0ScrollState! !
+scrollPosition:!
+4771875!
+accessing!
+0Point:! !
+max!
+4772437!
+geometry-local!
+0Region! !
+pageBack!
+4776490!
+control!
+0! !
+notForScroller:!
+4770546!
+accessing!
+0Boolean:! !
+natural!
+4774164!
+geometry-local!
+0Region! !
+scrollPosition!
+4771665!
+accessing!
+0Point! !
+partIsFullyVisibleInY!
+4780296!
+testing!
+0Boolean! !
+xScrollState:!
+4765753!
+initialization!
+0ScrollState:! !
+keyDown:focus:event:!
+4776036!
+event handling!
+0Symbol:Visual:UIEvent:Boolean! !
+yScrollState:!
+4766011!
+initialization!
+0ScrollState:! !
+child:!
+4766262!
+private!
+1OverlappingVisual[Visual]:! !
+relayoutAndInvalidate!
+4776921!
+control!
+0! !
+yScrollState!
+4772285!
+accessing!
+0ScrollState! !
+layout!
+4767787!
+private!
+1! !
+child!
+4769290!
+accessing!
+0OverlappingVisual[Visual]! !
+pageForward!
+4776701!
+control!
+0! !
+computedChildAllocation!
+4766428!
+private!
+1Rect! !
+notForScroller!
+4770400!
+accessing!
+0Boolean! !
+#branded!
+true! !
+#superclassTypeString!
+VisualWithNativeWindow[Visual]! !
+optimizeScrolling!
+4771058!
+accessing!
+0Boolean! !
+client:!
+4769436!
+accessing!
+0Visual:! !
+constrainX:!
+4764435!
+initialization!
+0Boolean:! !
+scrollIfNeededToMakeVisible:relativeTo:minimizeMotion:!
+4777097!
+control!
+0Rect:Visual:Boolean:! !
+optimizeIncrementalLayout!
+4770698!
+accessing!
+0Boolean! !
+minScrollExtent!
+4769816!
+accessing!
+0Point! !
+#instanceVariableString!
+xScrollState <ScrollState>
+child <OverlappingVisual[Visual]>
+yScrollState <ScrollState>
+constrainX <Boolean>
+			"If this is true, then the part is forced to be the same width as the receiver
+				(and thus will never scroll in the x direction)"
+constrainY <Boolean>
+			"If this is true, then the part is forced to be the same height as the receiver
+				(and thus will never scroll in the y direction)"
+optimizeIncrementalLayout <Boolean>
+			"If true, do not propagate preference changes upwards"
+optimizeScrolling <Boolean>
+			"If this is true (the default), then the client will be wrapped in an OverlappingVisual
+				to optimize invalidation when scrolling.  This also speeds up scrolling of
+				hierarchies containing nativeWindows, since otherwise we have to
+				do work to move them.   The tradeoff is that when this is false, children
+				larger than the largest native window size can be viewed correctly."
+notForScroller <Boolean>
+			"If this is set to true, then when one dimension is constrained, extra space for
+				the scrollers scrollbar is not allocated"
+minScrollExtentBlock <[Viewport,^Point]>
+			"If non-nil, this block is called each time the preferences are computed to
+				compute the minScrollExtent"
+minScrollExtent <Point>
+			"when the childs extent is less than this (independently in each dimension), the viewports
+				natural size is the childs.   The natural size is never bigger than this."
+		! !
+oldcheckLayout:!
+4779152!
+restricted-to session!
+0SeqCltn[Region]:! !
+constrainY!
+4764584!
+initialization!
+0Boolean! !
+initialize!
+4764876!
+initialization!
+0! !
+partNatural!
+4769132!
+private!
+1Rect! !
+optimizeIncrementalLayout:!
+4770866!
+accessing!
+0Boolean:! !
+#revision!
+$Revision: 1.7 $! !
+checkLayout:!
+4777919!
+restricted-to session!
+0SeqCltn[Region]:! !
+#subtype!
+true! !
+#comment!
+A Viewport shows a clipped view of its single part.  The part may be larger than the Viewport,
+and may be offset in both the x and y directions.  The size of the child, the size of the Viewport,
+and the child's offset are all recorded in, and controlled by, ScrollState instances for both x and y.
+The ScrollStates can be used (among other things) to syncronize the Viewport with a Scroller,
+which provides scrollbars (see Scroller).
+
+Tags: %User %UI
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.7 
+! !
+#abstract!
+false! !
+optimizeScrolling:!
+4771210!
+accessing!
+0Boolean:! !
+min!
+4773486!
+geometry-local!
+0Region! !

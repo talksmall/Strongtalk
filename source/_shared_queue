@@ -1,0 +1,82 @@
+Class
+monitor!
+4315578!
+private!
+1Semaphore! !
+#categories!
+private!
+accessing!
+private-initialization!
+control! !
+#superclassTypeString!
+Queue[E]! !
+#group!
+base! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.5 $! !
+#isGeneric!
+true! !
+#instanceVariableString!
+writeEndChanged <Semaphore>
+monitor <Semaphore>
+closed <Boolean>
+			"If true, then the reading end has detected that the
+				writing end has been closed"
+		! !
+writeEndChanged!
+4315715!
+private!
+1Semaphore! !
+closed!
+4315304!
+private!
+1Boolean! !
+actualNext!
+4315021!
+private!
+1E! !
+actualAtEnd!
+4314570!
+private!
+1Boolean! !
+#typeArgumentString!
+E ! !
+#subtype!
+true! !
+#branded!
+true! !
+#comment!
+SharedQueues are Queues that can be read and written from different processes safely.
+
+Unlike in other Smalltalks, in this system SharedQueues support the full Queue
+protocol (including input/output stream and seqcltn protocols).   However, to use many of the InputStream
+messages safely, care must be taken that there are not multiple processes reading from the
+same queue, to avoid unpredictable results.
+If there are, then a separate mutual exclusion mechanism must be used to control who is
+reading at any one time.
+
+Tags: %BlueBook %User
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+! !
+#abstract!
+false! !
+initialize!
+4316094!
+private-initialization!
+1! !
+closed:!
+4315435!
+private!
+1Boolean:! !
+close!
+4316329!
+control!
+0! !
+nextPut:!
+4315870!
+accessing!
+0E:E! !

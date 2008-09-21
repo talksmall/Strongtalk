@@ -1,0 +1,76 @@
+Class
+#categories!
+initialization!
+control!
+private!
+accessing! !
+position:!
+587460!
+accessing!
+0Int:! !
+#superclassTypeString!
+ExternalStreamDescriptor[File]! !
+#group!
+base! !
+initialize!
+585974!
+initialization!
+0! !
+knowAtEnd:!
+586781!
+private!
+1Boolean:! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.2 $! !
+setExternalPosition:!
+586927!
+private!
+1Int:! !
+#instanceVariableString!
+position <Int>
+			"This must be cached here so that we can seek to the right spot when
+			  the descriptor is reopened after an image restart.  Note that because
+			  of external stream buffering, this position will probably not be the same
+			  as the stream position."
+knowAtEnd <Boolean>
+            "True if we know we are at the end, and can optimize reads"
+		! !
+size!
+587773!
+accessing!
+0Int! !
+setPosition:!
+587182!
+private!
+1Int:! !
+#subtype!
+true! !
+#branded!
+true! !
+#comment!
+A file descriptor is a positionable stream descriptor.
+%todo: factor out a superclass for positionable-ness if needed
+%bug: reopening on image startup will probably cause file truncation for write files, since we
+         don''t currently distinguish between the original open, which should truncate, and
+        reopens, which should not.  When we fix, be sure to set knowAtEnd on first open of
+        a write file, and be sure not to on reopens.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
+! !
+#abstract!
+false! !
+position!
+587327!
+accessing!
+0Int! !
+knowAtEnd!
+586641!
+private!
+1Boolean! !
+openIfFail:!
+586169!
+control!
+0[ExternalError]:! !

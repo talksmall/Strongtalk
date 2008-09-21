@@ -1,0 +1,165 @@
+Class
+newCollectionOfSize:!
+1870225!
+private!
+1Int:VarSeqCltn[E]! !
+#categories!
+private-constants!
+private!
+accessing!
+control!
+private-initialization!
+printing! !
+#comment!
+This class provides the standard implementation of the InputStream protocol.  It implements all functionality
+in terms of the two messages #actualNext and #actualAtEnd, which subclasses must provide.
+
+Note that streams support all collection operations.  However, when using collection messages with
+streams, the caller must be aware that iteration on a stream changes the state of the stream, so that
+iterations are not repeatable.  Also, care must be taken with infinite streams, since most collection
+messages will not terminate on their own for infinite streams.
+
+%responsibility #newCollectionOfSize:
+    Optionally override
+%responsibility #close
+    Close must be reimplemented if any work must be done when the stream is closed.
+
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+! !
+#group!
+base! !
+peek!
+1872826!
+accessing!
+0E! !
+peekVal!
+1870977!
+private!
+1E! !
+#extensionsAreSubtypes!
+true! !
+havePeeked:!
+1869707!
+private!
+1Boolean:! !
+upTo:!
+1873978!
+accessing!
+0Object:SeqCltn[E]! !
+atEndOrPeekIs:!
+1869368!
+private!
+1Object:Boolean! !
+actualNext!
+1869151!
+private!
+1E! !
+nextIfAbsent:!
+1872367!
+accessing!
+2[^X def]:E|X! !
+defaultExpected!
+1868452!
+private-constants!
+1Int! !
+actualAtEnd!
+1868909!
+private!
+1Boolean! !
+#typeArgumentString!
+E! !
+#branded!
+true! !
+noPeekVal!
+1870820!
+private!
+1! !
+skipTo:!
+1873754!
+accessing!
+0Object:Boolean! !
+#supportedProtocolString!
+InputStream[E]! !
+nextMatchFor:!
+1872664!
+accessing!
+0Object:Boolean! !
+close!
+1874240!
+control!
+0! !
+skip:!
+1873584!
+accessing!
+0Int:! !
+#superclassTypeString!
+Collection[E]! !
+accumulateUntil:!
+1868586!
+private!
+1[^Boolean]:SeqCltn[E]! !
+nextFromPeek!
+1870639!
+private!
+1E! !
+peekIfAbsent:!
+1873271!
+accessing!
+2[^X def]:E|X! !
+#revision!
+$Revision: 1.4 $! !
+#isGeneric!
+true! !
+newBuildStream!
+1869890!
+private!
+1ReadWriteStream[E]! !
+#instanceVariableString!
+havePeeked <Boolean>	"If true, then peekVal is the next element"
+peekVal <E>
+		! !
+next:!
+1872004!
+accessing!
+0Int:SeqCltn[E]! !
+printOn:!
+1874558!
+printing!
+0CharOutputStream:! !
+initialize!
+1874393!
+private-initialization!
+1! !
+atEnd!
+1871244!
+accessing!
+0Boolean! !
+contentsRemaining!
+1871443!
+accessing!
+0SeqCltn[E]! !
+#subtype!
+true! !
+next!
+1871801!
+accessing!
+0E! !
+havePeeked!
+1869566!
+private!
+1Boolean! !
+#abstract!
+true! !
+peekFor:!
+1873056!
+accessing!
+0Object:Boolean! !
+do:!
+1871624!
+accessing!
+0[E]:! !
+peekVal:!
+1871106!
+private!
+1E:! !

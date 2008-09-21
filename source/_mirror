@@ -1,0 +1,226 @@
+Class
+#subtype!
+true! !
+#categories!
+Unclassified!
+accessing! !
+rename:to:!
+4978097!
+Unclassified!
+0Symbol:Symbol:! !
+placeHolderFor:!
+4977190!
+Unclassified!
+0Symbol:! !
+#group!
+reflection! !
+fileNameExtension!
+4974642!
+Unclassified!
+0Str! !
+typecheck!
+4981058!
+Unclassified!
+0! !
+convert:toGeneric:ifFail:!
+4972045!
+Unclassified!
+0Mirror:GenericMirror:[Str]:! !
+nameWithTypeArgs!
+4981196!
+accessing!
+0Str! !
+convertToGlobalVariable:ifFail:!
+4973411!
+Unclassified!
+0GlobalVariableMirror:[Str]:! !
+definitionString!
+4974071!
+Unclassified!
+0Str! !
+name:ifFail:!
+4976115!
+Unclassified!
+0Symbol:[Str]:! !
+#extensionsAreSubtypes!
+true! !
+hasTypeInfoLoaded!
+4975135!
+Unclassified!
+0Boolean! !
+fileName!
+4974488!
+Unclassified!
+0Str! !
+comment!
+4971416!
+Unclassified!
+0Str! !
+convertToGenericMixin:ifFail:!
+4972938!
+Unclassified!
+0GenericMirror:[Str]:! !
+renameGroup:!
+4979122!
+Unclassified!
+0Dict[Symbol,Symbol]:! !
+mayNeedToUnwind!
+4975768!
+Unclassified!
+0! !
+removeDefinitionIfFail:!
+4977731!
+Unclassified!
+0[]:! !
+convertToMixin:ifFail:!
+4973650!
+Unclassified!
+0MixinDeclMirror:[Str]:! !
+nonAtomic!
+4976903!
+Unclassified!
+0! !
+definitionWriterClass!
+4974318!
+Unclassified!
+0DefinitionWriter class! !
+isMeta!
+4975618!
+Unclassified!
+0Boolean! !
+convertToGenericClass:ifFail:!
+4972701!
+Unclassified!
+0GenericMirror:[Str]:! !
+#superclassTypeString!
+Object! !
+renameTo:!
+4980329!
+Unclassified!
+0Symbol:! !
+comment:!
+4971562!
+Unclassified!
+0Str:! !
+#revision!
+$Revision: 1.10 $! !
+revision!
+4980539!
+Unclassified!
+0Str! !
+isGeneric!
+4975305!
+Unclassified!
+0Boolean! !
+placeHolder!
+4977032!
+Unclassified!
+0! !
+printOn:!
+4977361!
+Unclassified!
+0Stream:! !
+isGeneric:!
+4975460!
+Unclassified!
+0Boolean:! !
+name!
+4975973!
+Unclassified!
+0Symbol! !
+convertToProtocol:ifFail:!
+4973864!
+Unclassified!
+0ProtocolMirror:[Str]:! !
+revision:!
+4980714!
+Unclassified!
+0Str:! !
+convertToGenericProtocol:ifFail:!
+4973168!
+Unclassified!
+0GenericMirror:[Str]:! !
+rename:to:in:!
+4978363!
+Unclassified!
+0Symbol:Symbol:Str:Str! !
+nestInGenericWithTypeArguments:!
+4976729!
+Unclassified!
+0Str:! !
+reflectee!
+4977583!
+Unclassified!
+0T! !
+group:!
+4974955!
+Unclassified!
+0Str:! !
+convertToClass:ifFail:!
+4972277!
+Unclassified!
+0ClassMirror:[Str]:! !
+renameGroup:in:!
+4979439!
+Unclassified!
+0Dict[Symbol,Symbol]:Str:Str! !
+#comment!
+Mirrors are used in the Strongtalk system as the reflective interface
+used to examine objects.  This replaces the way reflection is
+done in other Smalltalks, which use a battery of reflective messages
+supported by Object and Behavior.  
+
+The reason for this difference is a philisophical one that has an
+important benefit.  The philisophical reason is encapsulation: an object's
+interface should be as independent as possible of its implementation.
+The benefit is that good encapsulation allows you to create alternative
+implementations that behave identically.
+
+But standard Smalltalk violates this principle, because all the reflective
+message go through an objects interface (#class, etc),  which means
+they are really a hole in the object's encapsulation.  Mirrors are a way
+around this problem.  The idea is that you shouldn't talk to an object
+directly to examine it reflectively, which would violate its interface
+encapsulation.  Instead, you ask the system to create a 'mirror' on that
+object, which you can use to 'reflect' on it (pun).  So if you want to
+examine an object o reflectively, you say (Mirror on: o), and the mirror
+supports all the reflective operations instead of the object.
+
+This also has the benefit of cleaning up an object's interface, since it
+doesn't have to support all the reflective messages that the system
+(inspectors, etc) uses to manipulate.   This also makes the type system
+protocols for objects simpler.
+
+Some of the most common reflective messages in standard Smalltalk-80
+(such as #class, #isKindOf:, etc)
+are still supported in Strongtalk, but because the system code doesn't
+use them, you are free to reimplement them, so that an object can pretend
+to have a different class, for example, without breaking any system code.
+
+Note: the concept (and name) of Mirrors comes from the Self system.
+
+Tags:  %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+! !
+#abstract!
+true! !
+sourceInfo!
+4980892!
+Unclassified!
+0CommonSourceHandler! !
+#branded!
+true! !
+convertToGeneric:ifFail:!
+4972489!
+Unclassified!
+0GenericMirror:[Str]:! !
+convert:ifFail:!
+4971713!
+Unclassified!
+0Mirror:[Str]:! !
+group!
+4974778!
+Unclassified!
+0Str! !

@@ -1,0 +1,203 @@
+Class
+#categories!
+accessing!
+private!
+testing!
+control!
+menus!
+private-initialization!
+launching!
+input focus!
+event  handling!
+toolbars!
+notification! !
+windowTitle!
+1617742!
+accessing!
+0Str! !
+#comment!
+Applications implement the functionality of an application that is too tied to
+the user interface to go in a model object.   This includes things like constructing
+and managing a Visual representation, input validation, etc.
+
+It is important as a matter of both design and style to keep the 'logical' functionality
+of an application in separate methods and categories from the methods that interact
+with the Visual representation on the screen.  Factoring out another level of objects
+between Applications and Visuals to do this is usually too clumsy, so applications
+usually have both kinds of functionality in one class, however, you should try to
+make sure that the logical methods in an application are usable as an 'API' even if
+the Visual representation doesn't exist.  %todo: we aren't following this style guide
+well right now; we need to go back and do it more rigorously.
+
+Subclass responsibilities:
+
+%optional menu
+		If you want a menu, you must make sure that #hasMenu returns true, and #menu returns the menu.
+		If the menu changes dynamically, you must call #menuChanged when that happens.
+
+%todo: need to add a message #initializeInSession sent as the first thing in the
+				Session process.  Also need to make sure that it is recursively sent to all subapps.
+				This is needed so that there is a clean hook for when to create things like timers
+				that must be created in the session.
+
+%bug/%todo: when an application's visual is imbedded in a visual that is not via an application,
+			it does not get closeRequests; so that dependencies in it etc. do not get cleaned up.
+			Currently this causes memory leaks for imbedded outliner applets in HTML, for
+			example.
+
+Tags: %User %UI
+(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+! !
+#group!
+ui! !
+winBackdrop!
+1617570!
+accessing!
+0Painter! !
+closeRequest:!
+1619281!
+control!
+0[]:! !
+#extensionsAreSubtypes!
+true! !
+buildVisualTop:!
+1618060!
+private!
+1Boolean:Visual! !
+popUpMenu!
+1620683!
+menus!
+0Menu! !
+hasToolBar!
+1624086!
+toolbars!
+0Boolean! !
+hasMenu!
+1619925!
+menus!
+0Boolean! !
+launchIn:!
+1621573!
+launching!
+0Session:Window! !
+topVisualWithHRule:!
+7765587!
+accessing!
+0Boolean:Visual! !
+keyDown:focus:event:interceptor:!
+1623268!
+event  handling!
+0Symbol:Visual:UIEvent:ApplicationInterceptor:Boolean! !
+imbeddedVisual!
+1615588!
+accessing!
+0Visual! !
+#branded!
+true! !
+mouseEvent:at:event:interceptor:!
+1623820!
+event  handling!
+0Symbol:Point:UIEvent:ApplicationInterceptor:Boolean! !
+defaultPainter!
+1618411!
+private!
+1Painter! !
+session:!
+5934379!
+accessing!
+0Session:! !
+windowIn:!
+1621742!
+launching!
+0Session:Window! !
+topVisual!
+7765287!
+accessing!
+0Visual! !
+#superclassTypeString!
+Object! !
+windowIn:withPrefixMenu:!
+1622121!
+launching!
+0Session:Menu:Window! !
+hasVisual!
+1619141!
+testing!
+0Boolean! !
+visualAllocated!
+5938214!
+notification!
+0! !
+keyUp:focus:event:interceptor:!
+1623547!
+event  handling!
+0Symbol:Visual:UIEvent:ApplicationInterceptor:Boolean! !
+#revision!
+$Revision: 1.12 $! !
+session!
+1616554!
+accessing!
+0Session! !
+#instanceVariableString!
+visual <Visual>
+			"Cache for visual representation.  This is NOT necessarily the same visual	
+				that buildBareVisual returns; subclasses must cached that independently
+				if it is needed."
+		! !
+visual!
+1617310!
+accessing!
+0Visual! !
+bareVisualTop:!
+1615090!
+accessing!
+0Boolean:Visual! !
+initialize!
+1621045!
+private-initialization!
+1! !
+becomeFocusIfFail:!
+1622528!
+input focus!
+0[]:! !
+hasPopUpMenuForTop!
+1620053!
+menus!
+0Boolean! !
+sendCloseRequest:toAll:!
+1618558!
+private!
+1[]:Cltn[Application]:! !
+buildBareVisualTop:!
+1617883!
+private!
+1Boolean:Visual! !
+#subtype!
+true! !
+character:focus:event:interceptor:!
+1622984!
+event  handling!
+0Character:Visual:UIEvent:ApplicationInterceptor:Boolean! !
+#abstract!
+true! !
+hasWinBackdrop!
+1615449!
+accessing!
+0Boolean! !
+toolBar!
+1624220!
+toolbars!
+0ToolBar! !
+inSessionProcessDo:!
+1619643!
+control!
+0[]:! !
+menuBar!
+1620267!
+menus!
+0Menu! !
+launch!
+33272831!
+launching!
+0Window! !

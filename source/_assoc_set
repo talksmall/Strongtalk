@@ -1,0 +1,41 @@
+Class
+#revision!
+$Revision:$! !
+#categories!
+adding! !
+#isGeneric!
+true! !
+#comment!
+This class is just for convenience when creating a standard type of 
+KeyedSets, a KeyedSet of Associations, which is just like a Dictionary
+except that the elements of the collection are the associations, not the
+values.  A performance advantage of this kind of keyed set over a dictionary
+is that you can change the value associated with any constant key much faster
+than with #at:put: if you cache the association (but NEVER change the
+key once you've put the association in the KeyedSet!!).
+
+For example, if you have an AssocSet[Int,Str] and
+you know you will be frequently setting the value associated with some
+known key like 1024, you can do it by holding on to the association for 1024
+and just sending it #value: whenever you need to change the value.  You
+can't do this with a normal dictionary, because you can't get at the associations,
+which are hidden inside the implementation.
+
+KeyedSets and AssocSets are only marginally useful in a Smalltalk system because
+there are already Set and Dictionary but a non-compatible Smalltalk or other
+language whose goal was to be smaller and simpler than Smalltalk could use
+the more general KeyedSet to replace both Set and Dictionary, so I have put
+these classes in as examples.  If such a system was not statically typed, the
+the convenience class AssocSet would not be needed.
+
+- Dave Griswold! !
+#superclassTypeString!
+KeyedSet[K,VarAssoc[K,V]]! !
+#typeArgumentString!
+K, V! !
+at:put:!
+7966398!
+adding!
+0K:V:VarAssoc[K,V]! !
+#group!
+Unclassified! !

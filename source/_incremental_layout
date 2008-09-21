@@ -1,0 +1,77 @@
+Mixin
+#categories!
+initialization!
+private!
+restricted-to session!
+control!
+accessing! !
+#superclassTypeString!
+Visual! !
+#group!
+base! !
+tryIncrementalLayout!
+5735056!
+private!
+1Boolean! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 1.1 $! !
+optimizeIncrementalLayout!
+5736853!
+accessing!
+0Boolean! !
+#instanceVariableString!
+needsFullLayout <Boolean>
+		"If this is true, then major changes have been made that will defeat any
+			optimized incremental layout algorithm (i.e. the preferences have changed, etc.)."
+	optimizeIncrementalLayout <Boolean>
+		"If false, defeat incremental layout optimizations"
+	! !
+needsFullLayout!
+5734481!
+private!
+1Boolean! !
+layout!
+5734321!
+private!
+1! !
+#abstract!
+false! !
+optimizeIncrementalLayout:!
+5737030!
+accessing!
+0Boolean:! !
+checkLayout:!
+5736051!
+restricted-to session!
+0SeqCltn[Region]:! !
+#subtype!
+true! !
+#branded!
+true! !
+#comment!
+This can be mixed into Visuals to add hooks to do incremental layout
+optimization.  The full optimization layout should be implement by the #layout method,
+as usual.
+
+%optional changingALot
+	  use (self changing) when minor things change, but use (self changingALot) when major things
+	  that can't be dealt with incrementally happen.  This will force a complete layout rather than
+	  an incremental one (layout rather than tryIncrementalLayout will be called).
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+! !
+initIncrementalLayoutFlags!
+5734120!
+initialization!
+0! !
+changingALot!
+5736453!
+control!
+0! !
+runIncrementalLayout!
+5734636!
+private!
+1Boolean! !

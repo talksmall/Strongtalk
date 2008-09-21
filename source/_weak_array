@@ -1,0 +1,55 @@
+Class
+notify!
+4010030!
+notification!
+0! !
+#categories!
+notification! !
+#comment!
+Implements Arrays whose elements are checked by the garbage collector
+to see if their memory would be reclaimed if they weren't referenced by a
+WeakArray.  This is called a 'near-death experience'.   The weak array is notified
+whenever such a reference is detected by the collector, with the message
+hadNearDeathExperience:.  By default, this message just nils out any
+references to the object, so that it can be reclaimed on the next garbage
+collection. 
+
+Compatibility note:
+This kind of WeakArray is not quite the same as the WeakArrays implemented
+in some other Smalltalks.  Other WeakArrays implement 'post-facto' notification,
+which some company has patented.  Our WeakArrays actually are more flexible,
+since they implement notification before-the-fact of object collection, so that
+the contents of the object are still accessible.  For example, if this was used to
+hold references to open file descriptors, upon notification, the file descriptor can
+be closed, and then its reference nilled out so that it can be collected.  With
+previous WeakArrays, the descriptor gets collected before you find out that it
+was destroyed, so you have to keep the information needed to close the file
+in some additional data structure.
+
+Tags: %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+! !
+#superclassTypeString!
+IndexedNextOfKinInstanceVariables[E] |> Array[E]! !
+#typeArgumentString!
+E ! !
+#subtype!
+true! !
+#branded!
+true! !
+#extensionsAreSubtypes!
+true! !
+#abstract!
+false! !
+#isGeneric!
+true! !
+hadNearDeathExperience:!
+4009844!
+notification!
+0:! !
+#revision!
+$Revision: 1.5 $! !
+#group!
+base! !

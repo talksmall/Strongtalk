@@ -1,0 +1,51 @@
+Class
+#categories!
+Unclassified! !
+type!
+3458062!
+Unclassified!
+0ObjectType! !
+#comment!
+Represents the global variable declaration conceptually associated with a top level definition.
+
+For example, every class in Smalltalk is represented by a global variable in the system dictionary.
+This value of this variable is an object that supports a set of messages as defined by the classes'
+class side methods (This object is almost always the class itself). Conceptually, a variable declaration
+specifying the type of the variable must be associated with such a variable. In practice, such a
+declaration can be inferred from the actual class (or other top level definition - protocol, type alias or mixin).
+
+If I am an instance of this class, then either:
+
+1. I have an entry in the system dictionary representing a definition.
+2. I have an entry in the system dictionary representing a global variable.
+3. I have no entry in the system dictionary (should not happen).
+
+(1) is the valid case, in which case the type of the declaration can be inferred from the defintion.
+(2) only happens if a global variable has been defined in Smalltalk, without creating a declaration
+for it. In this case, the type of the declaration is an error.
+(3) could only happen if I am obsolete, because of reflective changes that occurred after I was
+generated.
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.! !
+#revision!
+$Revision: 1.4 $! !
+#group!
+ast! !
+#subtype!
+true! !
+#branded!
+true! !
+isValidTerm!
+3457708!
+Unclassified!
+0Boolean! !
+#abstract!
+false! !
+#superclassTypeString!
+DeltaGlobalVar! !
+#extensionsAreSubtypes!
+true! !
+name:!
+3457885!
+Unclassified!
+0:! !
