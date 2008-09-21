@@ -33,7 +33,7 @@ class memOopKlass: public Klass {
   bool can_be_subclassed()           const { return true; }
 
   // allocation operations
-  oop allocateObject();
+  oop allocateObject(bool permit_scavenge = true);
   oop allocateObjectSize(int size);
 
   // invocation creation

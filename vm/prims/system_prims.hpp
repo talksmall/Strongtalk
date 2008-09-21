@@ -91,6 +91,18 @@ class systemPrimitives : AllStatic {
   static PRIM_DECL_1(garbageGollect, oop receiver);
 
   //%prim
+  // <NoReceiver> primitiveExpandMemory: size <SmallInteger> ^<Object> =
+  //   Internal { name  = 'systemPrimitives::expandMemory' }
+  //%
+  static PRIM_DECL_1(expandMemory, oop size);
+
+  //%prim
+  // <NoReceiver> primitiveSizeOfOop ^<SmallInteger> =
+  //   Internal { name  = 'systemPrimitives::oopSize' }
+  //%
+  static PRIM_DECL_0(oopSize);
+
+  //%prim
   // <NoReceiver> primitiveBreakpoint ^<Object> =
   //   Internal { name  = 'systemPrimitives::breakpoint' }
   //%

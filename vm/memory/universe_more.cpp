@@ -109,8 +109,9 @@ void Universe::scavenge(oop* p) {
     // Scavenge all roots
     if (p) SCAVENGE_TEMPLATE(p);
 
-    Universe::roots_do(scavenge_oop);
-    Handles::oops_do(scavenge_oop);
+    Universe::oops_do(scavenge_oop);
+    //Universe::roots_do(scavenge_oop);
+    //Handles::oops_do(scavenge_oop);
 
     {FOR_EACH_OLD_SPACE(s) s->scavenge_recorded_stores();}
 

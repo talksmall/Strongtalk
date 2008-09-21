@@ -45,8 +45,11 @@ ReservedSpace ReservedSpace::last_part(int  partition_size) {
 }
 
 int ReservedSpace::page_align_size(int size) {
-  int alignment = os::vm_page_size();
-  int adjust    = size == 0 ? alignment : (alignment - (size%alignment)) % alignment;
+  return align_size(size, os::vm_page_size());
+}
+
+int ReservedSpace::align_size(int size, int page_size) {
+  int adjust    = size == 0 ? page_size : (page_size - (size % page_size)) % page_size;
   return size + adjust;
 }
 
@@ -120,9 +123,6 @@ bool VirtualSpace::low_to_high() const {
 
 
 void VirtualSpace::expand(int size) {
-  //if (TraceExpansion) {
-  //  urs_ps();
-  //}
   assert(uncommitted_size() >= size, "not space enough");
   assert((size % os::vm_page_size()) == 0, "size not page aligned");
   if (low() == low_boundary()) {

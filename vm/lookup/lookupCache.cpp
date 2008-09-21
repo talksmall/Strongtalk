@@ -302,7 +302,7 @@ LookupResult lookupCache::cache_miss_lookup(LookupKey* key, bool compile) {
   // Check the code table
   nmethod* nm = Universe::code->lookup(key);
   if (nm) {
-    LookupResult result(nm);
+    LookupResult result(nm); // unnecessary?
     return nm;
   }
 
@@ -319,12 +319,12 @@ LookupResult lookupCache::cache_miss_lookup(LookupKey* key, bool compile) {
   if (CompiledCodeOnly && compile) {
     nm = compile_method(key, method);
     if (nm) {
-      LookupResult result(nm);
+      LookupResult result(nm); // unnecessary?
       return nm;
     }
   }
 
-  LookupResult result(method);
+  LookupResult result(method); // unnecessary
   return method;
 }
 

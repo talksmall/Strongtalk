@@ -223,6 +223,7 @@ class oldSpace: public space {
 
   void update_offset_array(oop* p, oop* p_end);
 
+  int expand(int size);
   oop* expand_and_allocate(int size);
 
   // Keeps offset for retrieving object start given a card_page

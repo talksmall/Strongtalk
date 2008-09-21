@@ -25,7 +25,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_byteArrayKlass.cpp.incl"
 # include <ctype.h>
 
-oop byteArrayKlass::allocateObject() {
+oop byteArrayKlass::allocateObject(bool permit_scavenge) {
   assert(!can_inline_allocation(), "using nonstandard allocation");
   fatal("should never call allocateObject in byteArrayKlass");
   return badOop;

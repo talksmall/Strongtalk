@@ -350,10 +350,10 @@ void frame::oop_iterate(OopClosure* blk) {
   }
 
   if (is_entry_frame()) {
-    // All oops are [sp..fp[
-    for (oop* p = sp(); p < (oop*)fp(); p++) {
-      // %hack
-     // blk->do_oop(p); 
+    // Need to iterate over the arguments passed to the frame called by the entry frame,
+    // but not the rest of the cruft (esi, edi, last sp and last fp) - slr 09/08.
+    for (oop* p = sp(); p < (oop*)fp() - 4; p++) {
+      blk->do_oop(p);
     }
     return;
   }

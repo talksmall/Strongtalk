@@ -32,7 +32,7 @@ void Klass::initialize() {
   set_mixin(mixinOop(nilObj));
 }
 
-oop Klass::allocateObject() {
+oop Klass::allocateObject(bool permit_scavenge) {
   return markSymbol(vmSymbols::not_oops());
 }
 oop Klass::allocateObjectSize(int size) {

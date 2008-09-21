@@ -1,6 +1,6 @@
 @rem = 'Copyright 1994, Animorphic Systems. $Revision: 1.3 $
 @echo off
-perl -S %0.bat %1
+perl -S %0 %1
 goto endofperl
 ';
 

@@ -5,11 +5,11 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
 following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
-	  disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
-	  from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following 
+disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Sun Microsystems nor the names of its contributors may be used to endorse or promote products derived 
+from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
 NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
@@ -31,7 +31,7 @@ bootstrap::bootstrap(char* name) {
   _has_error = false;
   open_file();
   if (!has_error()) {
-//    initialize_tables(file_size > 0 ? (file_size / 32) : (10 * K));
+    //    initialize_tables(file_size > 0 ? (file_size / 32) : (10 * K));
     initialize_tables(64 * K);
     parse_file();
     close_file();
@@ -63,12 +63,16 @@ void bootstrap::add(oop obj) {
     oop* new_oop_table = NEW_C_HEAP_ARRAY(oop, new_size);
     for(int index = 0; index < max_number_of_oops; index++)
       new_oop_table[index] = oop_table[index];
-   
+
     max_number_of_oops = new_size;
     FreeHeap(oop_table);
     oop_table = new_oop_table;
   }
   oop_table[number_of_oops++] = obj;
+}
+inline int igetc(FILE* fp) {
+  return getc(fp);
+  //return _getc_nolock(fp);
 }
 
 void bootstrap::open_file() {
@@ -78,18 +82,18 @@ void bootstrap::open_file() {
     lprintf("\nCould not open file (%s) for reading!\n", file_name);
     exit(-1);
   }
-//  int no    = _fileno(stream);
-//  file_size = _filelength(no);
+  //  int no    = _fileno(stream);
+  //  file_size = _filelength(no);
 }
 
 char bootstrap::get_char() {
   position++;
-  return getc(stream);
+  return igetc(stream);
 }
 
 int bootstrap::get_integer() {
   position++;
-  int result = getc(stream);
+  int result = igetc(stream);
   if (result == EOF) fatal("end of file");
   assert(result >= 0, "must be positive");
   if (result < 128 ) return result;
@@ -147,7 +151,7 @@ void bootstrap::parse_file() {
   klassOop platform_klass = klassOop(Universe::find_global(os::platform_class_name()));
   associationOop assoc = Universe::find_global_association("Platform");
   if (platform_klass != NULL && assoc != NULL) {
-      assoc->set_value(platform_klass);
+    assoc->set_value(platform_klass);
   }
 }
 
@@ -169,7 +173,7 @@ void bootstrap::insert_symbol(memOop obj) {
 
 oop bootstrap::get_object() {
   char type = get_char();
-  
+
   if (type == '0') {
     int v = get_integer();
     // if (TraceBootstrap) std->print_cr("i %d", v);
@@ -215,7 +219,7 @@ oop bootstrap::get_object() {
     case 'P': KLASS_CASE(set_processKlass_vtbl)
     case 'Q': KLASS_CASE(set_doubleValueArrayKlass_vtbl)
     case 'R': KLASS_CASE(set_vframeKlass_vtbl)
-    // Objects
+              // Objects
     case 'a': OBJECT_ERROR("klass")
     case 'b': OBJECT_ERROR("smi")
     case 'c': OBJECT_CASE(memOop);
@@ -256,7 +260,7 @@ double bootstrap::read_double() {
   unsigned char* str = (unsigned char*) &value;
   for (int index = 0; index < 8; index++) {
     position++;
-    str[index] = getc(stream);
+    str[index] = igetc(stream);
   }
   return value; 
 }

@@ -35,7 +35,7 @@ class processKlass: public memOopKlass {
   oop allocateProcess(int stack_size);
 
   // allocation operations
-  oop allocateObject();
+  oop allocateObject(bool permit_scavenge = true);
 
   // creates invocation
   klassOop create_subclass(mixinOop mixin, Format format);

@@ -311,6 +311,10 @@ void Recompilation::recompile_method(Recompilee* r) {
 #ifdef ASSERT
   LookupResult res = lookupCache::lookup(key);
   assert(res.method() == m, "mismatched method");
+  if (res.method() != m) {
+    res.method()->print();
+    m->print();
+  }
 #endif
   _newNM = Universe::code->lookup(key);	      // see if we've already compiled it
 

@@ -46,6 +46,7 @@ class ReservedSpace : public ValueObj {
 
   // Alignment
   static int page_align_size(int size);
+  static int align_size(int size, int page_size);
 };
 
 // VirtualSpace is data structure for reserving a contiguous chunk of memory and 

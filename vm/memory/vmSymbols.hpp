@@ -152,6 +152,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
   template(vframe_klass,                 "Activation")                        \
   template(proxy_klass,                  "Proxy")                             \
   template(smi_klass,                    "SmallInteger")                      \
+  template(failed_allocation,            "FailedAllocation")                  \
 								              \
   /* for compiler's type prediction */					      \
   template(error,      "error")        					      \

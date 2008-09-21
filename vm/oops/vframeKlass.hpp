@@ -31,7 +31,7 @@ class vframeKlass: public memOopKlass {
   bool can_inline_allocation() const { return false; }
 
   // allocation operations
-  oop allocateObject();
+  oop allocateObject(bool permit_scavenge = true);
   
   // creates invocation
   klassOop create_subclass(mixinOop mixin, Format format);

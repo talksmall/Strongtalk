@@ -29,7 +29,7 @@ void set_proxyKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop proxyKlass::allocateObject() {
+oop proxyKlass::allocateObject(bool permit_scavenge) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate

@@ -125,6 +125,11 @@ PRIM_DECL_1(systemPrimitives::scavenge, oop receiver) {
   return rec;
 }
 
+PRIM_DECL_0(systemPrimitives::oopSize) {
+  PROLOGUE_0("oopSize")
+  return as_smiOop(::oopSize);
+}
+
 PRIM_DECL_1(systemPrimitives::garbageGollect, oop receiver) {
   PROLOGUE_1("garbageGollect", receiver);
   oop rec = receiver;
@@ -132,6 +137,17 @@ PRIM_DECL_1(systemPrimitives::garbageGollect, oop receiver) {
   // The operation takes place in the vmProcess
   VMProcess::execute(&op);
   return rec;
+}
+
+PRIM_DECL_1(systemPrimitives::expandMemory, oop sizeOop) {
+  PROLOGUE_1("expandMemory", sizeOop);
+  if (!sizeOop->is_smi())
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+  int size = smiOop(sizeOop)->value();
+  if (size < 0)
+    return markSymbol(vmSymbols::argument_is_invalid());
+  Universe::old_gen.expand(size);
+  return trueObj;
 }
 
 PRIM_DECL_0(systemPrimitives::breakpoint) {

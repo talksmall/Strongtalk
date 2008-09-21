@@ -488,7 +488,8 @@ char* StubRoutines::generate_call_DLL(MacroAssembler* masm, bool async) {
 // ecx: address of last argument
 // edx: DLL function entry point
 
-  Label loop_entry, no_arguments, smi_argument, next_argument, wrong_call;
+  Label loop_entry, no_arguments, smi_argument, next_argument, wrong_call,
+    align_stack, convert_args;
 
   char* entry_point = masm->pc();
   masm->set_last_Delta_frame_after_call();
@@ -514,7 +515,13 @@ char* StubRoutines::generate_call_DLL(MacroAssembler* masm, bool async) {
   masm->negl(eax);
   masm->leal(eax, Address(esp, eax, Address::times_4)); // esp - 4 x nargs
   masm->andl(eax, 0xf); // padding required for 16-byte alignment
-  masm->subl(esp, eax); // align stack
+  masm->bind(align_stack);
+  masm->cmpl(eax, 0);
+  masm->jcc(MacroAssembler::lessEqual, convert_args);
+  masm->pushl(0);
+  masm->subl(eax, 4); // align stack
+  masm->jmp(align_stack);
+  masm->bind(convert_args);
   // end stack alignment mod
 
   masm->testl(ebx, ebx);			// if number of arguments != 0 then

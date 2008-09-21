@@ -24,7 +24,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_precompiled.incl"
 # include "incls/_doubleKlass.cpp.incl"
 
-oop doubleKlass::allocateObject() {
+oop doubleKlass::allocateObject(bool permit_scavenge) {
   assert(!can_inline_allocation(), "using nonstandard allocation");
   // allocate
   doubleOop obj = as_doubleOop(Universe::allocate(doubleOopDesc::object_size(), (memOop*)&doubleKlassObj));

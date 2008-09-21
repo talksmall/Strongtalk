@@ -37,7 +37,7 @@ class blockClosureKlass: public memOopKlass {
   int number_of_arguments() const;
 
   // allocation
-  oop allocateObject();
+  oop allocateObject(bool permit_scavenge = true);
   static klassOop blockKlassFor(int numberOfArguments);
 
   // creates invocation

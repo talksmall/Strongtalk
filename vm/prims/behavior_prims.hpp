@@ -30,6 +30,14 @@ class behaviorPrimitives : AllStatic {
   static int number_of_calls;
 
   //%prim
+  // <Behavior> primitiveNew2IfFail: failBlock <PrimFailBlock> ^<Instance> =
+  //   Internal { error = #(ReceiverIsIndexable)
+  //              name  = 'behaviorPrimitives::allocate2'
+  //              flags = #Allocate }
+  //%
+  static PRIM_DECL_1(allocate2, oop receiver);
+
+  //%prim
   // <Behavior> primitiveNewIfFail: failBlock <PrimFailBlock> ^<Instance> =
   //   Internal { error = #(ReceiverIsIndexable)
   //              name  = 'behaviorPrimitives::allocate'
@@ -156,14 +164,6 @@ class behaviorPrimitives : AllStatic {
   //              name  = 'behaviorPrimitives::is_class_of' }
   //%
   static PRIM_DECL_2(is_class_of, oop receiver, oop obj);
-};
-
-class behaviorPrimitivesGenerator : StackObj {
-
-public:
-  behaviorPrimitivesGenerator(MacroAssembler* masm);
-  
-  char* generate_primitiveNew(int i);
 };
 
 //%prim

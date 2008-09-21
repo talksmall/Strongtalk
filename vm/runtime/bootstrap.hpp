@@ -43,8 +43,8 @@ class bootstrap: CHeapObj {
   char* file_name;
   FILE* stream;
 //  int   file_size;
-  char get_char();
-  int  get_integer();
+  inline char get_char();
+  inline int  get_integer();
 
   // Error handline
   bool _has_error;

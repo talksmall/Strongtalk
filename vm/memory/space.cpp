@@ -228,11 +228,16 @@ void oldSpace::update_offset_array(oop* p, oop* p_end) {
   }
 }
 
-oop* oldSpace::expand_and_allocate(int size) {
+int oldSpace::expand(int size) {
   int min_size = ReservedSpace::page_align_size(size);
-  int expand_size = max(min_size, ObjectHeapExpandSize * K);
+  int expand_size = ReservedSpace::align_size(min_size, ObjectHeapExpandSize * K);
   Universe::old_gen.virtual_space.expand(expand_size);
   set_end((oop*) Universe::old_gen.virtual_space.high());
+  return expand_size;
+}
+
+oop* oldSpace::expand_and_allocate(int size) {
+  expand(size);
   return allocate(size);
 }
 

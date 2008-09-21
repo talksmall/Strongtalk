@@ -25,7 +25,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_dValueArrayKlass.cpp.incl"
 # include <ctype.h>
 
-oop doubleValueArrayKlass::allocateObject() {
+oop doubleValueArrayKlass::allocateObject(bool permit_scavenge) {
   fatal("should never call allocateObject in doubleValueArrayKlass");
   return badOop;
 }

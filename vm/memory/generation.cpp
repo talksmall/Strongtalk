@@ -196,35 +196,8 @@ void oldGeneration::switch_pointers(oop from, oop to) {
  FOR_EACH_OLD_SPACE(space) space->switch_pointers(from, to);
 }
     
-// Expand the old space by size bytes. 
-// Returns the amount actually allocated (0, maybe, if expansion isn't
-// possible; or more than asked for, due to rounding).
 int oldGeneration::expand(int size) {
-  EventMarker em("expanding heap by %d", (void*)size);
-  assert(size >= 0, "negative expansion?");
-  char *name= "old";
-  oldSpace *s = new oldSpace(name, size); // modifies size for amount allocated
-  if (size == 0) 
-    delete s;
-  else {
-    if ((char*) s->bottom() < Universe::new_gen.high_boundary)
-      fatal("allocation of old space before new space");
-    
-    // it's OK for the new oldSpace to go between the new spaces and
-    // existing old space (as there is already a card bytemap for this
-    // region), or between two old spaces (for the same reason), or after
-    // the last old space (in which case we will extend the card byte map).
-    
-    append_space(s);
-      
-    char* sStart= (char*) s->bottom();
-    char* sEnd  = (char*) s->end();
-    if (sStart <  low_boundary)  low_boundary= sStart;
-    if (sEnd   > high_boundary) high_boundary= sEnd;
-    Universe::remembered_set->fixup(sStart, sEnd);
-    Universe::current_sizes.old_size= capacity();
-  }
-  return size;
+  return first_space->expand(size);
 }
 
 void oldGeneration::prepare_for_compaction(OldWaterMark* mark) {

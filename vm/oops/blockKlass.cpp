@@ -52,7 +52,7 @@ void set_blockClosureKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop blockClosureKlass::allocateObject() {
+oop blockClosureKlass::allocateObject(bool permit_scavenge) {
   klassOop k    = as_klassOop();
   // allocate
   blockClosureOop obj =

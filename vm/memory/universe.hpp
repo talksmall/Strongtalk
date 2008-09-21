@@ -206,10 +206,11 @@ class Universe: AllStatic {
     return new_gen.contains(p) ? (generation*)&new_gen : (generation*)&old_gen; }
   
   // allocators
-  static oop* allocate(int size, memOop* p = NULL) {
+  static oop* allocate(int size, memOop* p = NULL, bool permit_scavenge = true) {
     if (_scavenge_blocked && can_scavenge())
       return scavenge_and_allocate(size, (oop*) p);
     oop* obj = new_gen.allocate(size);
+    if (!permit_scavenge) return obj;
     return obj ? obj : scavenge_and_allocate(size, (oop*) p);
   }
 

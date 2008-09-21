@@ -162,6 +162,18 @@ LookupKey* InterpretedRFrame::key() const {
       ((InterpretedRFrame*)this)->_key = NULL;
     }
   } else {
+    methodOop method = lookupCache::compile_time_normal_lookup(_receiverKlass, sel);
+    if (_method != method) {
+      if (_method != NULL) 
+        _method->print();
+      else
+        std->print("method is null");
+      std->cr();
+      if (method != NULL)
+        method->print();
+      else
+        std->print("looked up method is null");
+    }
     assert(_method == lookupCache::compile_time_normal_lookup(_receiverKlass, sel),
 	   "inconsistent lookup result");
   }

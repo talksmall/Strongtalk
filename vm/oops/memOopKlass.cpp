@@ -92,11 +92,15 @@ void memOopKlass::oop_print_value_on(oop obj, outputStream* st) {
   if (PrintOopAddress) st->print(" (%#x)", this);
 }
 
-oop memOopKlass::allocateObject() {
+oop memOopKlass::allocateObject(bool permit_scavenge) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
+  
+  oop* result = Universe::allocate(size, (memOop*)&k, permit_scavenge);
+  if (!result) 
+    return markSymbol(vmSymbols::failed_allocation());
   // allocate
-  memOop obj = as_memOop(Universe::allocate(size, (memOop*)&k));
+  memOop obj = as_memOop(result);
   // header
   obj->initialize_header(has_untagged_contents(), k);
   // instance variables

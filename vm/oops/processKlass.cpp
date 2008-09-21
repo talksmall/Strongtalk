@@ -33,7 +33,7 @@ oop processKlass::allocateProcess(int stack_size) {
   return allocateObject();
 }
 
-oop processKlass::allocateObject() {
+oop processKlass::allocateObject(bool permit_scavenge) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate

@@ -37,7 +37,7 @@ class byteArrayKlass: public memOopKlass {
   int array_offset() const		{ return non_indexable_size() + 1; }
 
   // creation operations
-  oop allocateObject();
+  oop allocateObject(bool permit_scavenge = true);
   oop allocateObjectSize(int bytes);
 
   // creates invocation

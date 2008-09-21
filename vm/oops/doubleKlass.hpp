@@ -34,7 +34,7 @@ class doubleKlass: public memOopKlass {
   bool can_be_subclassed()           const { return false; }
 
   // allocates a double
-  oop allocateObject();
+  oop allocateObject(bool permit_scavenge = true);
 
   // creates invocation
   klassOop create_subclass(mixinOop mixin, Format format);

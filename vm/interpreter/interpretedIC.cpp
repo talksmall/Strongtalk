@@ -611,7 +611,6 @@ oop* InterpretedIC::inline_cache_miss() {
   if (TraceInlineCacheMiss) {
     std->print("IC miss, ");  trace_inline_cache_miss(ic, klass, result);
   }
-
   // handle the lookup result
   if (!result.is_empty()) {
     update_inline_cache(ic, &f, ic->send_code(), klass, result);

@@ -30,6 +30,12 @@ int behaviorPrimitives::number_of_calls;
 
 #define ASSERT_RECEIVER assert(receiver->is_klass(), "receiver must klass")
 
+PRIM_DECL_1(behaviorPrimitives::allocate2, oop receiver) {
+  PROLOGUE_1("allocate2", receiver)
+  ASSERT_RECEIVER;
+  return receiver->primitive_allocate();
+}
+
 PRIM_DECL_1(behaviorPrimitives::allocate, oop receiver) {
   PROLOGUE_1("allocate", receiver)
   ASSERT_RECEIVER;
