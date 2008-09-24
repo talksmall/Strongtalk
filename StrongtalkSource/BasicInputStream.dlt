@@ -51,78 +51,6 @@ test: s <InputStream[E]> containing: els <SeqCltn[E]>
 	self test: 6 is: [ (c next: els size) = els ].
 	self test: 7 is: [ (s skipTo: nil) not ].! !
 
-! (Delta mirrorFor: #BasicInputStream) methodsFor: 'private-constants' !
-
-
-defaultExpected ^<Int>
-	^10! !
-
-! (Delta mirrorFor: #BasicInputStream) methodsFor: 'private' !
-
-
-accumulateUntil: predicate <[^Boolean]>  ^<SeqCltn[E]>
-
-	| build <ReadWriteStream[E]> |
-
-	build := self newBuildStream.
-	[ predicate value ]
-		whileFalse: [	build nextPut: self next   ].
-	^build contentsWritten!
-
-actualAtEnd ^<Boolean>
-	"Test whether there are elements remaining in the stream, disregarding peekVal"
-
-	self subclassResponsibility!
-
-actualNext ^<E>
-	"Return the next element of the stream, disregarding peekVal"
-
-	self subclassResponsibility!
-
-atEndOrPeekIs: delimiter <Object> ^<Boolean>
-
-	^(self peekIfAbsent: [ ^true ]) = delimiter!
-
-havePeeked ^<Boolean>
-	^havePeeked!
-
-havePeeked: f <Boolean>
-
-	f ifFalse: [ peekVal := nil ].
-	havePeeked := f.!
-
-newBuildStream ^<ReadWriteStream[E]>
-	"Returns a readwrite stream to be used for accumulating elements
-	 for the various contents messages, etc."
-
-	^BasicReadWriteStream[E] on: (self newCollectionOfSize: self defaultExpected)!
-
-newCollectionOfSize: n <Int> ^<VarSeqCltn[E]>
-	"Create and return a new collection of a class appropriate for
-	 holding elements of this stream.  By overriding this, subclasses
-	can customize the kind of collection returned by the various
-	contents messages, as well as #upTo:, etc."
-
-	^Array[E] new: n!
-
-nextFromPeek ^<E>
-
-	| v <E> |
-	v := self peekVal.
-	self	noPeekVal.
-	^v!
-
-noPeekVal
-
-	havePeeked := false.
-	peekVal := nil!
-
-peekVal ^<E>
-	^peekVal!
-
-peekVal: e <E> 
-	peekVal := e! !
-
 ! (Delta mirrorFor: #BasicInputStream) methodsFor: 'accessing' !
 
 
@@ -217,6 +145,85 @@ upTo: delimiter <Object> ^<SeqCltn[E]>
 close
 	"by default, do nothing"! !
 
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm	nextPutAll: self class name! !
+
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'private' !
+
+
+accumulateUntil: predicate <[^Boolean]>  ^<SeqCltn[E]>
+
+	| build <ReadWriteStream[E]> |
+
+	build := self newBuildStream.
+	[ predicate value ]
+		whileFalse: [	build nextPut: self next   ].
+	^build contentsWritten!
+
+actualAtEnd ^<Boolean>
+	"Test whether there are elements remaining in the stream, disregarding peekVal"
+
+	self subclassResponsibility!
+
+actualNext ^<E>
+	"Return the next element of the stream, disregarding peekVal"
+
+	self subclassResponsibility!
+
+atEndOrPeekIs: delimiter <Object> ^<Boolean>
+
+	^(self peekIfAbsent: [ ^true ]) = delimiter!
+
+havePeeked ^<Boolean>
+	^havePeeked!
+
+havePeeked: f <Boolean>
+
+	f ifFalse: [ peekVal := nil ].
+	havePeeked := f.!
+
+newBuildStream ^<ReadWriteStream[E]>
+	"Returns a readwrite stream to be used for accumulating elements
+	 for the various contents messages, etc."
+
+	^BasicReadWriteStream[E] on: (self newCollectionOfSize: self defaultExpected)!
+
+newCollectionOfSize: n <Int> ^<VarSeqCltn[E]>
+	"Create and return a new collection of a class appropriate for
+	 holding elements of this stream.  By overriding this, subclasses
+	can customize the kind of collection returned by the various
+	contents messages, as well as #upTo:, etc."
+
+	^Array[E] new: n!
+
+nextFromPeek ^<E>
+
+	| v <E> |
+	v := self peekVal.
+	self	noPeekVal.
+	^v!
+
+noPeekVal
+
+	havePeeked := false.
+	peekVal := nil!
+
+peekVal ^<E>
+	^peekVal!
+
+peekVal: e <E> 
+	peekVal := e! !
+
+! (Delta mirrorFor: #BasicInputStream) methodsFor: 'private-constants' !
+
+
+defaultExpected ^<Int>
+	^10! !
+
 ! (Delta mirrorFor: #BasicInputStream) methodsFor: 'private-initialization' !
 
 
@@ -224,11 +231,4 @@ initialize
 
 	super initialize.
 	self havePeeked: false.! !
-
-! (Delta mirrorFor: #BasicInputStream) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	strm	nextPutAll: self class name! !
 

@@ -1,0 +1,60 @@
+Delta define: #MessageNotUnderstoodTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #MessageNotUnderstoodTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #MessageNotUnderstoodTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #MessageNotUnderstoodTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #MessageNotUnderstoodTest) methodsFor: 'testing' !
+
+
+testMessageShouldReturnMessageThatWasNotUnderstood
+
+	| message |
+	message := Message
+								receiver: 1
+								selector: #zork
+								arguments: #().
+	[(MessageNotUnderstood message: message)
+			signal.]
+		on: MessageNotUnderstood
+		do: [:ex| self assert: message = ex message
+								description: 'Wrong message']!
+
+testReceiverShouldReturnReceiverOfMessage
+
+	| message |
+	message := Message
+								receiver: 1
+								selector: #zork
+								arguments: #().
+	[(MessageNotUnderstood message: message)
+			signal.]
+		on: MessageNotUnderstood
+		do: [:ex| self assert: 1 = ex receiver
+								description: 'Wrong receiver']!
+
+testResumeShouldReturnResultFromSignal
+"	note that until doesNotUnderstand: is fixed in the VM
+	we cannot use the more obvious test of sending a
+	message to an object that cannot understand it"
+	|result|
+	[result := (MessageNotUnderstood
+							message: (Message
+														receiver: 1
+														selector: #zork
+														arguments: #()))
+							signal.]
+		on: MessageNotUnderstood
+		do: [:ex| ex resume: 5].
+	self assert: result = 5
+			description: 'Result not returned'!
+
+testShouldBeResumable
+
+	self assert: MessageNotUnderstood new isResumable! !
+

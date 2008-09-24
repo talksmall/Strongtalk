@@ -18,44 +18,6 @@ Use and distribution of this software is subject to the terms of the attached so
 fileOutSignature ^<Integer>
     ^74! !
 
-! (Delta mirrorFor: #Method) methodsFor: 'file out' !
-
-
-fileOutBodyOn: d <Dumper>
-	| array |
-	array := {{self primitiveMethodBody}}.
-	1 to: array size by: 2 do: [ :index |
-		(array at: index) ifTrue: [
-        		d putByte: 52.
-        		d putByte: (array at: index + 1)
-		] ifFalse: [
-        		d putByte: 53.
-			(array at: index + 1) fileOutOn: d.
-		]
-	]!
-
-fileOutDebugInfo: d
-	| result |
-	result := {{self primitiveMethodDebugInfo}}.
-	result do: [ :e | e == 0 ifFalse: [ ^result ]].
-	^d emptyArray
-!
-
-fileOutHeaderOn: d <Dumper>
-	super fileOutHeaderOn: d.
-	(self fileOutDebugInfo: d)			fileOutOn: d.
-	self fileOutSelectorOrMethod	fileOutOn: d.
-	self fileOutSizeAndFlags 			fileOutOn: d.!
-
-fileOutSelectorOrMethod
-	^{{self primitiveMethodOuterIfFail: [:err | {{self primitiveMethodSelector}}]}}!
-
-fileOutSignature ^<Integer>
-    ^106!
-
-fileOutSizeAndFlags
-	^{{self primitiveMethodSizeAndFlags}}! !
-
 ! (Delta mirrorFor: #Method) methodsFor: 'accessing' !
 
 
@@ -155,6 +117,44 @@ printCodes
 		
 	{{self primitiveMethodPrintCodes}}.
 ! !
+
+! (Delta mirrorFor: #Method) methodsFor: 'file out' !
+
+
+fileOutBodyOn: d <Dumper>
+	| array |
+	array := {{self primitiveMethodBody}}.
+	1 to: array size by: 2 do: [ :index |
+		(array at: index) ifTrue: [
+        		d putByte: 52.
+        		d putByte: (array at: index + 1)
+		] ifFalse: [
+        		d putByte: 53.
+			(array at: index + 1) fileOutOn: d.
+		]
+	]!
+
+fileOutDebugInfo: d
+	| result |
+	result := {{self primitiveMethodDebugInfo}}.
+	result do: [ :e | e == 0 ifFalse: [ ^result ]].
+	^d emptyArray
+!
+
+fileOutHeaderOn: d <Dumper>
+	super fileOutHeaderOn: d.
+	(self fileOutDebugInfo: d)			fileOutOn: d.
+	self fileOutSelectorOrMethod	fileOutOn: d.
+	self fileOutSizeAndFlags 			fileOutOn: d.!
+
+fileOutSelectorOrMethod
+	^{{self primitiveMethodOuterIfFail: [:err | {{self primitiveMethodSelector}}]}}!
+
+fileOutSignature ^<Integer>
+    ^106!
+
+fileOutSizeAndFlags
+	^{{self primitiveMethodSizeAndFlags}}! !
 
 ! (Delta mirrorFor: #Method) methodsFor: 'inlining' !
 

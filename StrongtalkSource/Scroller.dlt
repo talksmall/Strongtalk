@@ -31,6 +31,23 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 
 '!
 
+! (Delta mirrorFor: #Scroller) classSide methodsFor: 'constants' !
+
+
+horizontalScrollBarDefaultHeight ^<Int>
+
+	HScrollbarHeight isNil
+		ifTrue: [ HScrollbarHeight := {{<user ExternalProxy GetSystemMetrics>
+						metric: Win32 SM_CYHSCROLL}} asSmallInteger	].
+	^HScrollbarHeight!
+
+verticalScrollBarDefaultWidth ^<Int>
+
+	VScrollbarWidth isNil
+		ifTrue: [ VScrollbarWidth := {{<user ExternalProxy GetSystemMetrics>
+						metric: Win32 SM_CXVSCROLL}} asSmallInteger	].
+	^VScrollbarWidth! !
+
 ! (Delta mirrorFor: #Scroller) classSide methodsFor: 'instance creation' !
 
 
@@ -71,55 +88,6 @@ viewportFor: v <Visual> vertical: vert <Boolean> horizontal: horiz <Boolean>^<Sc
 		ifFalse: [ vp constrainX: true ].
 
 	^inst! !
-
-! (Delta mirrorFor: #Scroller) classSide methodsFor: 'constants' !
-
-
-horizontalScrollBarDefaultHeight ^<Int>
-
-	HScrollbarHeight isNil
-		ifTrue: [ HScrollbarHeight := {{<user ExternalProxy GetSystemMetrics>
-						metric: Win32 SM_CYHSCROLL}} asSmallInteger	].
-	^HScrollbarHeight!
-
-verticalScrollBarDefaultWidth ^<Int>
-
-	VScrollbarWidth isNil
-		ifTrue: [ VScrollbarWidth := {{<user ExternalProxy GetSystemMetrics>
-						metric: Win32 SM_CXVSCROLL}} asSmallInteger	].
-	^VScrollbarWidth! !
-
-! (Delta mirrorFor: #Scroller) methodsFor: 'initialization' !
-
-
-initialize
-
-	super initialize.
-	self useContinuousScroll: true.
-	"self cursor: Cursor arrow."!
-
-useContinuousScroll: f <Boolean>
-
-	useContinuousScroll := f!
-
-viewport: v <Viewport>
-
-	viewport := v.
-	self part: v!
-
-xScrollState: sc <ScrollState>
-
-	xScrollState notNil
-		ifTrue: [ xScrollState removeDependent: self ].
-	xScrollState := sc.
-	sc addDependent: self.!
-
-yScrollState: sc <ScrollState>
-
-	yScrollState notNil
-		ifTrue: [ yScrollState removeDependent: self ].
-	yScrollState := sc.
-	sc addDependent: self.! !
 
 ! (Delta mirrorFor: #Scroller) methodsFor: 'accessing' !
 
@@ -164,6 +132,67 @@ yScrollBarShown ^<Boolean>
 yScrollState ^<ScrollState>
 
 		^yScrollState! !
+
+! (Delta mirrorFor: #Scroller) methodsFor: 'control' !
+
+
+scrollMeOrAParentBy: distance <Int> vertical: vertical <Boolean>
+
+	self yScrollState isFullyVisible
+		ifFalse: [	| state <ScrollState> startpos <Int> candidate <Int> |
+						vertical ifFalse: [ self unimplemented ].  "support only scrollwheels right now"
+						state := self yScrollState.
+						candidate := startpos := state scrollPosition.
+
+						candidate := candidate + distance.
+						state scrollPosition: candidate.
+						state scrollPosition = startpos
+							ifTrue: [ distance negative
+											ifTrue: [ state lineBack ]
+											ifFalse: [ state lineForward ].	].	]
+		ifTrue: [ super scrollMeOrAParentBy: distance vertical: vertical ]
+! !
+
+! (Delta mirrorFor: #Scroller) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	self viewport notNil
+		ifTrue: [ can subwindowsToDisplay add: self viewport ]
+		ifFalse: [ super localDisplayOn: can ]! !
+
+! (Delta mirrorFor: #Scroller) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self useContinuousScroll: true.
+	"self cursor: Cursor arrow."!
+
+useContinuousScroll: f <Boolean>
+
+	useContinuousScroll := f!
+
+viewport: v <Viewport>
+
+	viewport := v.
+	self part: v!
+
+xScrollState: sc <ScrollState>
+
+	xScrollState notNil
+		ifTrue: [ xScrollState removeDependent: self ].
+	xScrollState := sc.
+	sc addDependent: self.!
+
+yScrollState: sc <ScrollState>
+
+	yScrollState notNil
+		ifTrue: [ yScrollState removeDependent: self ].
+	yScrollState := sc.
+	sc addDependent: self.! !
 
 ! (Delta mirrorFor: #Scroller) methodsFor: 'private' !
 
@@ -414,33 +443,4 @@ update: aspect <Symbol> with: value <Object>
 			or: [aspect = #shown
 			or: [ aspect = #all ]]])
 		ifTrue: [ self update: aspect forScroller: value redraw: true ]! !
-
-! (Delta mirrorFor: #Scroller) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas>
-
-	self viewport notNil
-		ifTrue: [ can subwindowsToDisplay add: self viewport ]
-		ifFalse: [ super localDisplayOn: can ]! !
-
-! (Delta mirrorFor: #Scroller) methodsFor: 'control' !
-
-
-scrollMeOrAParentBy: distance <Int> vertical: vertical <Boolean>
-
-	self yScrollState isFullyVisible
-		ifFalse: [	| state <ScrollState> startpos <Int> candidate <Int> |
-						vertical ifFalse: [ self unimplemented ].  "support only scrollwheels right now"
-						state := self yScrollState.
-						candidate := startpos := state scrollPosition.
-
-						candidate := candidate + distance.
-						state scrollPosition: candidate.
-						state scrollPosition = startpos
-							ifTrue: [ distance negative
-											ifTrue: [ state lineBack ]
-											ifFalse: [ state lineForward ].	].	]
-		ifTrue: [ super scrollMeOrAParentBy: distance vertical: vertical ]
-! !
 

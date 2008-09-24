@@ -1,0 +1,352 @@
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+(Delta mirrorFor: #TestCase) revision: '$Revision:$'!
+
+(Delta mirrorFor: #TestCase) group: 'SUnit'!
+
+(Delta mirrorFor: #TestCase)
+comment: 
+'A TestCase is a Command representing the future running of a test case. Create one with the class method #selector: aSymbol, passing the name of the method to be run when the test case runs.
+
+When you discover a new fixture, subclass TestCase, declare instance variables for the objects in the fixture, override #setUp to initialize the variables, and possibly override# tearDown to deallocate any external resources allocated in #setUp.
+
+When you are writing a test case method, send #assert: aBoolean when you want to check for an expected value. For example, you might say "self assert: socket isOpen" to test whether or not a socket is open at a point in a test.'!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Accessing' !
+
+
+allTestSelectors
+
+	^(self sunitAllSelectors
+		select: [:each | 'test*' sunitMatch: each])
+		reject: [:each| each includes: $:]!
+
+resources
+
+	^#()
+			!
+
+sunitVersion
+	^'3.1'
+			!
+
+testSelectors
+
+	^(self sunitSelectors 
+		select: [:each | 'test*' sunitMatch: each])
+		reject: [:each| each includes: $:]
+			! !
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Building Suites' !
+
+
+buildSuite
+	| suite |
+	^self isAbstract
+		ifTrue: 
+			[suite := self suiteClass named: self name asString.
+			self allSubclasses 
+				do: [:each | each isAbstract ifFalse: [suite addTest: each buildSuiteFromSelectors]].
+			suite]
+		ifFalse: [self buildSuiteFromSelectors]
+			!
+
+buildSuiteFromAllSelectors
+
+	^self buildSuiteFromMethods: self allTestSelectors
+			!
+
+buildSuiteFromLocalSelectors
+
+	^self buildSuiteFromMethods: self testSelectors
+			!
+
+buildSuiteFromMethods: testMethods
+
+	^testMethods
+		inject: (self suiteClass named: self name asString)
+		into: [:suite :selector |
+			suite
+				addTest: (self selector: selector);
+				yourself]
+			!
+
+buildSuiteFromSelectors
+
+	^self shouldInheritSelectors
+		ifTrue: [self buildSuiteFromAllSelectors]
+		ifFalse: [self buildSuiteFromLocalSelectors]
+			!
+
+suiteClass
+	^TestSuite
+			! !
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Instance Creation' !
+
+
+debug: aSymbol
+
+	^(self selector: aSymbol) debug
+			!
+
+run: aSymbol
+
+	^(self selector: aSymbol) run
+			!
+
+runAll
+
+	[self suite run printOn: (Transcript cr; yourself)] fork!
+
+selector: aSymbol
+
+	^self new setTestSelector: aSymbol
+			!
+
+suite
+
+	^self buildSuite
+			! !
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Testing' !
+
+
+isAbstract
+	"Override to true if a TestCase subclass is Abstract and should not have
+	TestCase instances built from it"
+
+	^self sunitName = #TestCase
+			!
+
+shouldInheritSelectors
+	"I should inherit from an Abstract superclass but not from a concrete one by default, unless I have no testSelectors in which case I must be expecting to inherit them from my superclass.  If a test case with selectors wants to inherit selectors from a concrete superclass, override this to true in that subclass."
+
+	^self superclass isAbstract
+		or: [self testSelectors isEmpty]
+
+"$QA Ignore:Sends system method(superclass)$"
+			! !
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+
+
+assert: aBoolean
+
+	aBoolean ifFalse: [self signalFailure: 'Assertion failed']
+			!
+
+assert: aBoolean description: aString
+	aBoolean ifFalse: [
+		self logFailure: aString.
+		TestResult failure sunitSignalWith: aString]
+			!
+
+assert: aBoolean description: aString resumable: resumableBoolean 
+	| exception |
+	aBoolean
+		ifFalse: 
+			[self logFailure: aString.
+			exception := resumableBoolean
+						ifTrue: [TestResult resumableFailure]
+						ifFalse: [TestResult failure].
+			exception sunitSignalWith: aString]
+			!
+
+deny: aBoolean
+
+	self assert: aBoolean not
+			!
+
+deny: aBoolean description: aString
+	self assert: aBoolean not description: aString
+			!
+
+deny: aBoolean description: aString resumable: resumableBoolean 
+	self
+		assert: aBoolean not
+		description: aString
+		resumable: resumableBoolean
+			!
+
+resources
+	| allResources resourceQueue |
+	allResources := Set new.
+	resourceQueue := OrderedCollection new.
+	resourceQueue addAll: self class resources.
+	[resourceQueue isEmpty] whileFalse: [
+		| next |
+		next := resourceQueue removeFirst.
+		allResources add: next.
+		resourceQueue addAll: next resources].
+	^allResources
+			!
+
+selector
+	^testSelector
+			!
+
+should: aBlock
+	self assert: aBlock value
+			!
+
+should: aBlock description: aString
+	self assert: aBlock value description: aString
+			!
+
+should: aBlock raise: anExceptionalEvent 
+	^self assert: (self executeShould: aBlock inScopeOf: anExceptionalEvent)
+			!
+
+should: aBlock raise: anExceptionalEvent description: aString 
+	^self assert: (self executeShould: aBlock inScopeOf: anExceptionalEvent)
+		description: aString
+			!
+
+shouldnt: aBlock
+	self deny: aBlock value
+			!
+
+shouldnt: aBlock description: aString
+	self deny: aBlock value description: aString
+			!
+
+shouldnt: aBlock raise: anExceptionalEvent 
+	^self assert: (self executeShould: aBlock inScopeOf: anExceptionalEvent) not
+			!
+
+shouldnt: aBlock raise: anExceptionalEvent description: aString 
+	^self assert: (self executeShould: aBlock inScopeOf: anExceptionalEvent) not 		description: aString
+			!
+
+signalFailure: aString
+	TestResult failure sunitSignalWith: aString! !
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Dependencies' !
+
+
+addDependentToHierachy: anObject 
+	"an empty method. for Composite compability with TestSuite"
+
+
+			!
+
+removeDependentFromHierachy: anObject 
+	"an empty method. for Composite compability with TestSuite"
+
+
+			! !
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Printing' !
+
+
+echo
+
+	Transcript cr.
+	self printOn: Transcript!
+
+printOn: aStream
+
+	aStream
+		nextPutAll: self class printString;
+		nextPutAll: '>>#';
+		nextPutAll: testSelector
+			! !
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Private' !
+
+
+executeShould: aBlock inScopeOf: anExceptionalEvent 
+	^[aBlock value.
+ 	false] sunitOn: anExceptionalEvent
+		do: [:ex | ex sunitExitWith: true]
+			!
+
+performTest
+
+	self perform: testSelector sunitAsSymbol
+			!
+
+setTestSelector: aSymbol
+	testSelector := aSymbol
+			! !
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+
+
+debug
+	self resources do: [:res | 
+		res isAvailable ifFalse: [^res signalInitializationError]].
+	[(self class selector: testSelector) runCase] 
+		sunitEnsure: [self resources do: [:each | each reset]]
+			!
+
+debugAsFailure
+	| semaphore |
+	semaphore := Semaphore new.
+	self resources do: [:res | 
+		res isAvailable ifFalse: [^res signalInitializationError]].
+	[semaphore wait. self resources do: [:each | each reset]] fork.
+	(self class selector: testSelector) runCaseAsFailure: semaphore.
+
+			!
+
+failureLog	
+	^SUnitNameResolver defaultLogDevice
+
+			!
+
+isLogging
+	"By default, we're not logging failures. If you override this in 
+	a subclass, make sure that you override #failureLog"
+	^true
+			!
+
+logFailure: aString
+	self isLogging ifTrue: [
+		self failureLog 
+			cr; 
+			nextPutAll: aString; 
+			flush]
+			!
+
+openDebuggerOnFailingTestMethod
+	"SUnit has halted one step in front of the failing test method. Step over the 'self halt' and 
+	 send into 'self perform: testSelector' to see the failure from the beginning"
+
+	self
+		halt;
+		performTest
+			!
+
+run
+	| result |
+	result := TestResult new.
+	self run: result.
+	^result
+			!
+
+run: aResult
+	aResult runCase: self
+			!
+
+runCase
+
+	[self setUp.
+	self performTest] sunitEnsure: [self tearDown]
+			!
+
+runCaseAsFailure: aSemaphore
+	[self setUp.
+	self openDebuggerOnFailingTestMethod] sunitEnsure: [
+		self tearDown.
+		aSemaphore signal]
+			!
+
+setUp
+			!
+
+tearDown
+			! !
+

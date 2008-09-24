@@ -1,0 +1,98 @@
+Delta define: #LinkedExceptionHandlerTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #LinkedExceptionHandlerTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #LinkedExceptionHandlerTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #LinkedExceptionHandlerTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #LinkedExceptionHandlerTest) methodsFor: 'testing' !
+
+
+testHandlerShouldSetHandlerOnException
+
+	|handler exception assignedHandler|
+	exception := BlockExceptionDescriptor new.
+	exception handlerBlock: [:handler| assignedHandler := handler].
+	handler := LinkedExceptionHandler
+							on: BlockExceptionSelector trueSelector
+							do: [:ex| ].
+	self assert: assignedHandler ~~ handler
+			description: 'Handler should not have been assigned yet'.
+	handler handle: exception.
+	self assert: assignedHandler == handler
+			description: 'Handler should have been assigned'!
+
+testPassShouldDeferToNextHandler
+
+	|handler trueSelector exception wasPassed nextHandler|
+	exception := BlockExceptionDescriptor new.
+	handler := LinkedExceptionHandler
+							on: BlockExceptionSelector trueSelector
+							do: [:ex| ].
+	nextHandler := BlockExceptionHandler handleBlock: [:ex| wasPassed := true].
+	handler nextHandler: nextHandler.
+	wasPassed := false.
+	handler pass: exception.
+	self assert: wasPassed
+			description: 'Handler should defer pass to nextHandler'!
+
+testReturnShouldEvaluateReturnBlock
+
+	|handler result |
+	handler := LinkedExceptionHandler
+			on: nil
+			do: [:ex| ]
+			return: [:returnValue| result := returnValue].
+	handler return: #value.
+	self assert: result == #value
+			description: 'Should have invoked return'!
+
+testShouldDelegateToNextHandlerWhenNoMatch
+
+	|handled exception nextHandler|
+	handled := false.
+	exception := BlockExceptionDescriptor new.
+	nextHandler := BlockExceptionHandler
+										handleBlock: [:ex| self assert: ex == exception
+																					description: 'Handler invoked with wrong exception'.
+																	handled := true].
+	(LinkedExceptionHandler
+		on: BlockExceptionSelector falseSelector
+		do: [:ex| self signalFailure: 'Should not invoke hander'])
+			nextHandler: nextHandler;
+			handle: exception.
+	self assert: handled
+			description: 'Next handler not invoked'!
+
+testShouldInvokeExceptionsDefaultActionWhenNoNextHandler
+
+	|handled exception|
+	handled := false.
+	exception := BlockExceptionDescriptor new.
+	exception defaultActionBlock: [handled := true].
+	(LinkedExceptionHandler
+		on: BlockExceptionSelector falseSelector
+		do: [:ex| self shouldNotHappen])
+			handle: exception.
+	self assert: handled
+			description: 'Default action not invoked'!
+
+testShouldInvokeHandleBlockWhenExceptionMatches
+
+	|handled exception|
+	handled := false.
+	exception := BlockExceptionDescriptor new.
+	(LinkedExceptionHandler
+		on: BlockExceptionSelector trueSelector
+		do: [:ex|
+				self assert: ex == exception
+						description: 'Handler invoked with wrong exception'.
+				handled := true])
+		handle: exception.
+	self assert: handled
+			description: 'Exception not handled by handler'! !
+

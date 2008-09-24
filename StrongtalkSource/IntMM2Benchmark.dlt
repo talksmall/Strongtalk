@@ -11,16 +11,6 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #IntMM2Benchmark) methodsFor: 'run' !
-
-
-run
-	| m |
-	self initrand.
-	m := ((IntMM2Matrix new: IRowsize by: IRowsize) init: self) * ((IntMM2Matrix new: IRowsize by: IRowsize) init: self).
-	^m
-	"IntMM2Benchmark new run"! !
-
 ! (Delta mirrorFor: #IntMM2Benchmark) methodsFor: 'admin' !
 
 
@@ -35,4 +25,14 @@ name
 
 parcplaceTime
 	^232! !
+
+! (Delta mirrorFor: #IntMM2Benchmark) methodsFor: 'run' !
+
+
+run
+	| m |
+	self initrand.
+	m := ((IntMM2Matrix new: IRowsize by: IRowsize) init: self) * ((IntMM2Matrix new: IRowsize by: IRowsize) init: self).
+	^m
+	"IntMM2Benchmark new run"! !
 

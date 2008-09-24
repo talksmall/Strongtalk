@@ -60,31 +60,6 @@ test: s <ReadStream[E]> containing: els <SeqCltn[E]>
 	self test: 11 is: [ s atEnd ].
 	self test: 12 is: [ s contentsRemaining size = 0 ].! !
 
-! (Delta mirrorFor: #BasicReadStream) methodsFor: 'initialization' !
-
-
-initialize
-    super initialize.
-    self initializeActualPosition!
-
-initializeActualPosition
-    self actualPosition: 0! !
-
-! (Delta mirrorFor: #BasicReadStream) methodsFor: 'private' !
-
-
-actualAtEnd ^<Boolean>
-
-	^self actualPosition >= self size!
-
-actualPosition ^<Int>
-
-	^actualPosition!
-
-actualPosition: p <Int>
-
-	actualPosition := p! !
-
 ! (Delta mirrorFor: #BasicReadStream) methodsFor: 'accessing' !
 
 
@@ -210,4 +185,36 @@ upTo: delimiter <Object> ^<SeqCltn[E]>
 			result at: i put: self next ].
 	self nextIfAbsent: [].
 	^result"! !
+
+! (Delta mirrorFor: #BasicReadStream) methodsFor: 'initialization' !
+
+
+initialize
+    super initialize.
+    self initializeActualPosition!
+
+initializeActualPosition
+    self actualPosition: 0! !
+
+! (Delta mirrorFor: #BasicReadStream) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+
+	^self actualPosition >= self size!
+
+actualPosition ^<Int>
+
+	^actualPosition!
+
+actualPosition: p <Int>
+
+	actualPosition := p! !
+
+! (Delta mirrorFor: #BasicReadStream) methodsFor: 'smalltalk filein' !
+
+
+fileIn
+
+	(CharacterReadConverter on: self) fileIn! !
 

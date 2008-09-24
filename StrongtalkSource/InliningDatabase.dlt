@@ -11,6 +11,48 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'accessing' !
+
+
+activate
+
+VM booleanAt: #UseInliningDatabase put: true!
+
+deactivate
+
+VM booleanAt: #UseInliningDatabase put: false! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'compile' !
+
+
+compileAll
+	"file in all and compile all entries in the inlining database"
+	| ms <Integer> |
+	ms := Time millisecondsToRun:
+		[	[self compileNextMethod] whileTrue	].
+	Transcript show: 'Compile took ', ms printString, ' ms.'; cr.
+!
+
+compileInBackground
+
+	| action <[]> startTime<Float> |
+	startTime := Time clockValue.
+	action :=
+		[	self compileNextMethod
+				ifFalse: [ IdleProcess unregister: action.
+									Transcript putAll: 'Done compiling Inlining DB ',
+												'(elapsed time= ';
+											print: (Time clockValue - startTime) asInteger;
+											putAll: ' sec).';
+											cr. ].
+		].
+	IdleProcess register: action!
+
+compileNextMethod ^<Boolean>
+	"Compiles a entry in the inlining database"
+	
+	^{{primitiveInliningDatabaseCompile}}! !
+
 ! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'file in' !
 
 
@@ -58,6 +100,36 @@ compileFile: fp <FilePath>
 {{primitiveInliningDatabaseCompile: fp name ifFail: [:err  <Symbol> | self error: err]}}
 ! !
 
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'file out' !
+
+
+dump
+
+{{primitiveInliningDatabaseFileOutAllIfFail: [ :err | self error: err]}}! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	VM useInliningDatabase
+		ifTrue: [ self compileInBackground ]! !
+
+! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'iterating' !
+
+
+classPathsDo: blk <[FilePath]>
+
+	self filesIn: self directory do: blk
+!
+
+filesIn: directory <FilePath> do: blk <[FilePath]>
+
+	(directory, (FilePattern for: '*')) pathsDo: [ :fp <FilePath> | | base <String> |
+		base := fp elements last pattern.
+		(base ~= '.' and: [ base ~= '..' ]) ifTrue: [ blk value: fp ]
+	]! !
+
 ! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'private' !
 
 
@@ -93,76 +165,4 @@ selectorFromFileName: name <String> ^<Symbol>
 	dename := (self demangle: name) asString.
 	^(String withAll: (dename copyFrom: 1 to: dename size - 4)) asSymbol.
 ! !
-
-! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'file out' !
-
-
-dump
-
-{{primitiveInliningDatabaseFileOutAllIfFail: [ :err | self error: err]}}! !
-
-! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'iterating' !
-
-
-classPathsDo: blk <[FilePath]>
-
-	self filesIn: self directory do: blk
-!
-
-filesIn: directory <FilePath> do: blk <[FilePath]>
-
-	(directory, (FilePattern for: '*')) pathsDo: [ :fp <FilePath> | | base <String> |
-		base := fp elements last pattern.
-		(base ~= '.' and: [ base ~= '..' ]) ifTrue: [ blk value: fp ]
-	]! !
-
-! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'accessing' !
-
-
-activate
-
-VM booleanAt: #UseInliningDatabase put: true!
-
-deactivate
-
-VM booleanAt: #UseInliningDatabase put: false! !
-
-! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'compile' !
-
-
-compileAll
-	"file in all and compile all entries in the inlining database"
-	| ms <Integer> |
-	ms := Time millisecondsToRun:
-		[	[self compileNextMethod] whileTrue	].
-	Transcript show: 'Compile took ', ms printString, ' ms.'; cr.
-!
-
-compileInBackground
-
-	| action <[]> startTime<Float> |
-	startTime := Time clockValue.
-	action :=
-		[	self compileNextMethod
-				ifFalse: [ IdleProcess unregister: action.
-									Transcript putAll: 'Done compiling Inlining DB ',
-												'(elapsed time= ';
-											print: (Time clockValue - startTime) asInteger;
-											putAll: ' sec).';
-											cr. ].
-		].
-	IdleProcess register: action!
-
-compileNextMethod ^<Boolean>
-	"Compiles a entry in the inlining database"
-	
-	^{{primitiveInliningDatabaseCompile}}! !
-
-! (Delta mirrorFor: #InliningDatabase) classSide methodsFor: 'initialization' !
-
-
-initialize
-
-	VM useInliningDatabase
-		ifTrue: [ self compileInBackground ]! !
 

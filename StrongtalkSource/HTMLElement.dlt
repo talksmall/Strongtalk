@@ -14,6 +14,16 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #HTMLElement) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	ElementClasses := KeyedSet[Str,HTMLElement class]
+				newKeyedBy: [ :cl <HTMLElement class> |
+													cl name ].
+	self installElementClasses! !
+
 ! (Delta mirrorFor: #HTMLElement) classSide methodsFor: 'instance creation' !
 
 
@@ -29,16 +39,6 @@ newWithAttributes: attrs <OrdCltn[Tuple[Str,Str]]>
 parts: p <OrdCltn[HTMLNode]>  ^<Instance>
 
 	^self new initAttributes: attrs parts: p! !
-
-! (Delta mirrorFor: #HTMLElement) classSide methodsFor: 'initialization' !
-
-
-initialize
-
-	ElementClasses := KeyedSet[Str,HTMLElement class]
-				newKeyedBy: [ :cl <HTMLElement class> |
-													cl name ].
-	self installElementClasses! !
 
 ! (Delta mirrorFor: #HTMLElement) classSide methodsFor: 'private' !
 
@@ -84,14 +84,21 @@ installElementClasses
 		include: ElementEM.
 		! !
 
-! (Delta mirrorFor: #HTMLElement) methodsFor: 'initialization-private' !
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'accessing' !
 
 
-initAttributes: attrs <OrdCltn[Tuple[Str,Str]]>
-parts: p <OrdCltn[HTMLNode]>
+alignment ^<Symbol>
+	"returns the alignment attribute, or nil if none specified"
 
-	attributes := attrs.
-	parts := p.! !
+	| val <Str> |
+	val := (self attributeAt: #ALIGN ifAbsent: [ ^nil ]) asLowercase.
+	val = #right
+		ifTrue: [ ^HTMLBuilder alignRight ].
+	val = #center
+		ifTrue: [ ^HTMLBuilder alignCenter ].
+	val = #left
+		ifTrue: [ ^HTMLBuilder alignLeft ].
+	self error: 'unknown alignment type'! !
 
 ! (Delta mirrorFor: #HTMLElement) methodsFor: 'accessing- private' !
 
@@ -120,22 +127,6 @@ parts ^<OrdCltn[HTMLNode]>
 
 	^parts! !
 
-! (Delta mirrorFor: #HTMLElement) methodsFor: 'accessing' !
-
-
-alignment ^<Symbol>
-	"returns the alignment attribute, or nil if none specified"
-
-	| val <Str> |
-	val := (self attributeAt: #ALIGN ifAbsent: [ ^nil ]) asLowercase.
-	val = #right
-		ifTrue: [ ^HTMLBuilder alignRight ].
-	val = #center
-		ifTrue: [ ^HTMLBuilder alignCenter ].
-	val = #left
-		ifTrue: [ ^HTMLBuilder alignLeft ].
-	self error: 'unknown alignment type'! !
-
 ! (Delta mirrorFor: #HTMLElement) methodsFor: 'building' !
 
 
@@ -150,6 +141,30 @@ textOn: strm <CharOutputStream>
 	self do:
 		[ :el <HTMLNode> |
 			el textOn: strm ]! !
+
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'initialization-private' !
+
+
+initAttributes: attrs <OrdCltn[Tuple[Str,Str]]>
+parts: p <OrdCltn[HTMLNode]>
+
+	attributes := attrs.
+	parts := p.! !
+
+! (Delta mirrorFor: #HTMLElement) methodsFor: 'iterating' !
+
+
+do: blk <[HTMLNode]>
+
+	self parts isNil
+		ifTrue: [ ^self ].
+	self parts do: blk!
+
+linksDo: blk <[ElementA]>
+
+	self do:
+		[ :n <HTMLNode> |
+			n linksDo: blk ]! !
 
 ! (Delta mirrorFor: #HTMLElement) methodsFor: 'private' !
 
@@ -219,19 +234,4 @@ setTextPaintIfHaveFor: builder <HTMLBuilder>
 	| spec <Str> |
 	spec := self attributeAt: #TEXT ifAbsent: [ ^self ].
 	builder textPaint: (self parseColorSpec: spec ifFail: [ ^self ]).! !
-
-! (Delta mirrorFor: #HTMLElement) methodsFor: 'iterating' !
-
-
-do: blk <[HTMLNode]>
-
-	self parts isNil
-		ifTrue: [ ^self ].
-	self parts do: blk!
-
-linksDo: blk <[ElementA]>
-
-	self do:
-		[ :n <HTMLNode> |
-			n linksDo: blk ]! !
 

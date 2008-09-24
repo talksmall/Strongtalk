@@ -283,6 +283,21 @@ visibilityForSelector: sel <Symbol> ^ <Symbol>
 		ifFalse: [	#private ]
 		! !
 
+! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'private' !
+
+
+convertTypeFormat: t <Str> toVisibility: v <Symbol> ^ <Str>
+
+	v = #public
+		ifTrue: [		^t ]
+		ifFalse: [	| s <CharOutputStream> |
+							self assert: [ v = #private ].
+							s := (String new: t size) writeStream.
+							s nextPut: (Character digitValue: (t at: 1) digitValue + 1).
+							2 to: t size do: [ :i <Int> | s nextPut: (t at: i) ].
+							^s contents ]
+! !
+
 ! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'private-indices' !
 
 
@@ -305,19 +320,4 @@ tagIndex ^ <Int>
 typeFormatIndex ^ <Int>
 
 	^3! !
-
-! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'private' !
-
-
-convertTypeFormat: t <Str> toVisibility: v <Symbol> ^ <Str>
-
-	v = #public
-		ifTrue: [		^t ]
-		ifFalse: [	| s <CharOutputStream> |
-							self assert: [ v = #private ].
-							s := (String new: t size) writeStream.
-							s nextPut: (Character digitValue: (t at: 1) digitValue + 1).
-							2 to: t size do: [ :i <Int> | s nextPut: (t at: i) ].
-							^s contents ]
-! !
 

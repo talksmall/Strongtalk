@@ -132,6 +132,15 @@ size ^<Int>
 
 	^self primitiveSize! !
 
+! (Delta mirrorFor: #Array) methodsFor: 'converting' !
+
+
+asArray ^<Array[EX]>
+			{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is safe because of the inference clause"
+	^guaranteed <Array[EX]> self! !
+
 ! (Delta mirrorFor: #Array) methodsFor: 'copying' !
 
 
@@ -161,15 +170,6 @@ withAll: els <Cltn[E]> ^<Array[E]>
 			new at: next put: el.
 			next := next + 1.	].
 	^new! !
-
-! (Delta mirrorFor: #Array) methodsFor: 'converting' !
-
-
-asArray ^<Array[EX]>
-			{where EX is returnType of #anElement message of receiverType}
-
-	"The guarantee is safe because of the inference clause"
-	^guaranteed <Array[EX]> self! !
 
 ! (Delta mirrorFor: #Array) methodsFor: 'file out' !
 

@@ -10,14 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #ParserBenchmark) methodsFor: 'misc' !
-
-
-run
-	DeltaParser new parseMethod: 'foo ^ 42' 
-		within: (Mirror on: Object) scope 
-		ifError: [ :msg <Str> :pos <Int> | ]! !
-
 ! (Delta mirrorFor: #ParserBenchmark) methodsFor: 'admin' !
 
 
@@ -29,4 +21,12 @@ name
 
 parcplaceTime
 	^0! !
+
+! (Delta mirrorFor: #ParserBenchmark) methodsFor: 'misc' !
+
+
+run
+	DeltaParser new parseMethod: 'foo ^ 42' 
+		within: (Mirror on: Object) scope 
+		ifError: [ :msg <Str> :pos <Int> | ]! !
 

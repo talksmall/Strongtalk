@@ -18,16 +18,6 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 
 '!
 
-! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'initialization' !
-
-
-initialize
-
-	super initialize.
-	inside := false.
-	onEnter := [ :ev <UIEvent> | ].
-	onLeave := [ :ev <UIEvent> | ].! !
-
 ! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'accessing' !
 
 
@@ -69,6 +59,30 @@ event: ev <UIEvent>
 										^true ]].
 	^super mouseEvent: type at: loc event: ev! !
 
+! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	inside := false.
+	onEnter := [ :ev <UIEvent> | ].
+	onLeave := [ :ev <UIEvent> | ].! !
+
+! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'notification' !
+
+
+detaching
+
+	super detaching.
+	self inside
+		ifTrue: [ self recordLeave ]!
+
+lostGrab
+
+	self inside
+		ifTrue: [ self recordLeave ]! !
+
 ! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'private' !
 
 
@@ -98,18 +112,4 @@ recordLeave
 		ifTrue: [ self releaseGrab ].
 	self inside: false.
 ! !
-
-! (Delta mirrorFor: #EnterLeaveHandler) methodsFor: 'notification' !
-
-
-detaching
-
-	super detaching.
-	self inside
-		ifTrue: [ self recordLeave ]!
-
-lostGrab
-
-	self inside
-		ifTrue: [ self recordLeave ]! !
 

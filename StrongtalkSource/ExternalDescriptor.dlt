@@ -59,6 +59,36 @@ severAllExternalConnections
 	OpenDescriptors do: [ :d <ExternalDescriptor> |
 		d severExternalConnections	].! !
 
+! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'control' !
+
+
+close
+
+	self severExternalConnections.
+	externalObject := nil.!
+
+openIfFail: err <[ExternalError]>
+	"Subclasses should implement to open a handle, restore its state, and store it using #handle:"
+
+	self subclassResponsibility!
+
+reopen
+	"Sent on image startup to restablish any open descriptors. Can't be used to reopen a closed connection"
+
+	self isClosed
+		ifFalse: [ self openIfFail: [ ^self ] ]! !
+
+! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'initialization' !
+
+
+externalObject ^<EOBJ>
+
+	^externalObject!
+
+externalObject: o <EOBJ>
+
+	externalObject := o! !
+
 ! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'private' !
 
 
@@ -86,36 +116,6 @@ severExternalConnections
 
 unregister
     OpenDescriptors removeEvery: self! !
-
-! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'initialization' !
-
-
-externalObject ^<EOBJ>
-
-	^externalObject!
-
-externalObject: o <EOBJ>
-
-	externalObject := o! !
-
-! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'control' !
-
-
-close
-
-	self severExternalConnections.
-	externalObject := nil.!
-
-openIfFail: err <[ExternalError]>
-	"Subclasses should implement to open a handle, restore its state, and store it using #handle:"
-
-	self subclassResponsibility!
-
-reopen
-	"Sent on image startup to restablish any open descriptors. Can't be used to reopen a closed connection"
-
-	self isClosed
-		ifFalse: [ self openIfFail: [ ^self ] ]! !
 
 ! (Delta mirrorFor: #ExternalDescriptor) methodsFor: 'testing' !
 

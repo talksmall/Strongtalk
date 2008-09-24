@@ -114,6 +114,56 @@ unpressedBorder: b <Border>
 		ifTrue: [ self changing; updatePart ].
 	unpressedBorder := b! !
 
+! (Delta mirrorFor: #ToggleButton) methodsFor: 'control' !
+
+
+toggle
+
+	self model: self model not.
+	self modelSink value: self model.
+	self updatePart.! !
+
+! (Delta mirrorFor: #ToggleButton) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	super localDisplayOn: can.
+
+	(self isFocus and: [ self blinkState and: [ self pressing not ] ])
+		ifTrue: [ can withPainter: self focusPainter
+							do: [ can displayRectangle:
+										 ((self frame part allocationRelativeTo: self) enclosingRect
+												expandBy: 1) ]	].! !
+
+! (Delta mirrorFor: #ToggleButton) methodsFor: 'event processing' !
+
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	focus == self
+		ifFalse: [ ^false ].
+
+	key = #RETURN
+		ifTrue: [	self press.
+						^true ].
+	key = #SPACE
+		ifTrue: [	self action.
+						^true ].
+	(key = #TAB and: [ self pressing ])
+		ifTrue: [	self cancel.
+						^false ].
+
+	^false!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	focus == self
+		ifFalse: [ ^false ].
+
+	^(key = #RETURN and: [ self pressing ])
+		onTrue: [ self action ]! !
+
 ! (Delta mirrorFor: #ToggleButton) methodsFor: 'initialize' !
 
 
@@ -124,15 +174,6 @@ initialize
 	look := false.
 	self	pressedBorder: (Border standard3DRaised: false);
 			unpressedBorder: (Border standard3DRaised: true).! !
-
-! (Delta mirrorFor: #ToggleButton) methodsFor: 'control' !
-
-
-toggle
-
-	self model: self model not.
-	self modelSink value: self model.
-	self updatePart.! !
 
 ! (Delta mirrorFor: #ToggleButton) methodsFor: 'private' !
 
@@ -205,45 +246,4 @@ isFocus: f <Boolean>
 	(f not and: [ self isGrabbing ])
 		ifTrue: [ self releaseGrab ].
 	self invalidate.! !
-
-! (Delta mirrorFor: #ToggleButton) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas>
-
-	super localDisplayOn: can.
-
-	(self isFocus and: [ self blinkState and: [ self pressing not ] ])
-		ifTrue: [ can withPainter: self focusPainter
-							do: [ can displayRectangle:
-										 ((self frame part allocationRelativeTo: self) enclosingRect
-												expandBy: 1) ]	].! !
-
-! (Delta mirrorFor: #ToggleButton) methodsFor: 'event processing' !
-
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	focus == self
-		ifFalse: [ ^false ].
-
-	key = #RETURN
-		ifTrue: [	self press.
-						^true ].
-	key = #SPACE
-		ifTrue: [	self action.
-						^true ].
-	(key = #TAB and: [ self pressing ])
-		ifTrue: [	self cancel.
-						^false ].
-
-	^false!
-
-keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	focus == self
-		ifFalse: [ ^false ].
-
-	^(key = #RETURN and: [ self pressing ])
-		onTrue: [ self action ]! !
 

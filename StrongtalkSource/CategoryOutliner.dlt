@@ -70,6 +70,93 @@ outlinerForLocator: loc <DeltaLocator> ^ <MessageDeclarationOutliner>
 			ifTrue: [^mo]].
 ! !
 
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'control' !
+
+
+expandIfPublic
+
+	self open: (self mirror sourceInfo visibilityForCategory: self category) = #public
+	!
+
+newMessage
+
+	| mo <MessageDeclarationOutliner> |
+	self open: true.		"Open outliner and force body to be built"
+	mo := self messageDeclarationOutlinerClass newFor: self mirror category: self category.
+	self addChild: mo.
+	self bodyColumn insert: (Array[Visual] with: mo imbeddedVisual) before: 1.
+	self session updateLayoutsIfNeeded.
+	mo becomeFocusAndSelectAll
+!
+
+removeCategory
+
+	| selectors <Cltn[Symbol]> |
+	selectors := self mirror selectorsFor: self category.
+	selectors isEmpty
+		ifFalse: [	self visual 
+							promptOkCancel: 'Remove category ''', self category, ''' with contents'
+							title: 'Please Confirm'
+							type: #question
+							default: 2
+							action: [ :b <Boolean> | b ifFalse: [ ^self ] ] ].
+	selectors do: [:sel <Symbol> | mirror removeMethod: sel ifAbsent: [ self shouldNotHappen ]].
+	mirror sourceInfo removeCategory: category ifFail: [ self shouldNotHappen ].
+!
+
+typecheck
+
+	self typecheckAction: [
+											self categorySelectors 
+												do:[: sel <Symbol> | self mirror typecheckSelector: sel].
+											]
+		title: 'Typechecking ', self mirror name, ' category: ',self category.
+
+! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		(aspect = #category and: [ value = self category ])
+			ifTrue: [	self update ] ]
+! !
+
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	(self textView notNil and: [ self textView hasBeenChanged ]) 
+		ifTrue: [	^self textView popUpMenu ].
+	
+	^Menu new
+			add: (MenuAction new
+					name: 'New ', self entryName;
+					action: [ self newMessage ]);    
+			add: (MenuAction new
+					name: 'Remove category';
+					action: [ self removeCategory ]);
+        	addSeparator;
+			addAll: self typeCheckMenu removeAll;
+			addSeparator;
+			add: self viewMenu
+!
+
+typeCheckMenu ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'Typecheck';
+					action: [self typecheck])
+		! !
+
 ! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'private' !
 
 
@@ -274,92 +361,12 @@ update
 					]
 			]! !
 
-! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'dependencies' !
+! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'private-initialization' !
 
 
-update: aspect <Object> with: value <Object>
+initialize
 
-	self inSessionProcessDo: [
-		(aspect = #category and: [ value = self category ])
-			ifTrue: [	self update ] ]
-! !
-
-! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'menus' !
-
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^<Menu>
-
-	(self textView notNil and: [ self textView hasBeenChanged ]) 
-		ifTrue: [	^self textView popUpMenu ].
-	
-	^Menu new
-			add: (MenuAction new
-					name: 'New ', self entryName;
-					action: [ self newMessage ]);    
-			add: (MenuAction new
-					name: 'Remove category';
-					action: [ self removeCategory ]);
-        	addSeparator;
-			addAll: self typeCheckMenu removeAll;
-			addSeparator;
-			add: self viewMenu
-!
-
-typeCheckMenu ^<Menu>
-
-	^Menu new
-		add: (MenuAction new
-					name: 'Typecheck';
-					action: [self typecheck])
-		! !
-
-! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'control' !
-
-
-expandIfPublic
-
-	self open: (self mirror sourceInfo visibilityForCategory: self category) = #public
-	!
-
-newMessage
-
-	| mo <MessageDeclarationOutliner> |
-	self open: true.		"Open outliner and force body to be built"
-	mo := self messageDeclarationOutlinerClass newFor: self mirror category: self category.
-	self addChild: mo.
-	self bodyColumn insert: (Array[Visual] with: mo imbeddedVisual) before: 1.
-	self session updateLayoutsIfNeeded.
-	mo becomeFocusAndSelectAll
-!
-
-removeCategory
-
-	| selectors <Cltn[Symbol]> |
-	selectors := self mirror selectorsFor: self category.
-	selectors isEmpty
-		ifFalse: [	self visual 
-							promptOkCancel: 'Remove category ''', self category, ''' with contents'
-							title: 'Please Confirm'
-							type: #question
-							default: 2
-							action: [ :b <Boolean> | b ifFalse: [ ^self ] ] ].
-	selectors do: [:sel <Symbol> | mirror removeMethod: sel ifAbsent: [ self shouldNotHappen ]].
-	mirror sourceInfo removeCategory: category ifFail: [ self shouldNotHappen ].
-!
-
-typecheck
-
-	self typecheckAction: [
-											self categorySelectors 
-												do:[: sel <Symbol> | self mirror typecheckSelector: sel].
-											]
-		title: 'Typechecking ', self mirror name, ' category: ',self category.
-
-! !
+	self lastCategoryMove: ''! !
 
 ! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'restricted-to parts' !
 
@@ -375,11 +382,4 @@ removeMethodOutliner: o <MethodOutliner> ifAbsent: blk <[^X def]> ^ <Self | X>
 	self removeChild: o ifAbsent: [ ^blk value ].
 	self bodyColumn remove: 1 at: position
 ! !
-
-! (Delta mirrorFor: #CategoryOutliner) methodsFor: 'private-initialization' !
-
-
-initialize
-
-	self lastCategoryMove: ''! !
 

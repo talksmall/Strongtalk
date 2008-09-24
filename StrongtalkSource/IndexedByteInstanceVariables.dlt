@@ -13,6 +13,12 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
 '!
 
+! (Delta mirrorFor: #IndexedByteInstanceVariables) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^68! !
+
 ! (Delta mirrorFor: #IndexedByteInstanceVariables) classSide methodsFor: 'private' !
 
 
@@ -21,11 +27,16 @@ primitiveNew: size <Int> ^<Instance>
 	^{{self primitiveIndexedByteNew: size
 		ifFail: [ :err <Symbol> |  self error: err ]}}! !
 
-! (Delta mirrorFor: #IndexedByteInstanceVariables) classSide methodsFor: 'file out' !
+! (Delta mirrorFor: #IndexedByteInstanceVariables) methodsFor: 'file out' !
 
+
+fileOutBodyOn: d <Dumper>
+    super fileOutBodyOn: d.
+    self primitiveSize fileOutOn: d.
+    self indexedBytesDo: [ :b <Int> | d putByte: b ]!
 
 fileOutSignature ^<Integer>
-    ^68! !
+    ^100! !
 
 ! (Delta mirrorFor: #IndexedByteInstanceVariables) methodsFor: 'private' !
 
@@ -56,15 +67,4 @@ primitiveAt: index <Int> put: byte <Int> ^<Int>
 primitiveSize ^<Int>
 
 	^{{self primitiveIndexedByteSize}}! !
-
-! (Delta mirrorFor: #IndexedByteInstanceVariables) methodsFor: 'file out' !
-
-
-fileOutBodyOn: d <Dumper>
-    super fileOutBodyOn: d.
-    self primitiveSize fileOutOn: d.
-    self indexedBytesDo: [ :b <Int> | d putByte: b ]!
-
-fileOutSignature ^<Integer>
-    ^100! !
 

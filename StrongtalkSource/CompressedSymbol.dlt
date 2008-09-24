@@ -37,11 +37,26 @@ unicodeAt: index <Int> ^<Int>
 
   ^self primitiveAt: index! !
 
+! (Delta mirrorFor: #CompressedSymbol) methodsFor: 'comparing' !
+
+
+compare: other <Str>  ^<Int>
+
+	^{{self primitiveIndexedByteCompare: other
+			ifFail: [ :err <Symbol> |
+							^super compare: other 	] }}! !
+
 ! (Delta mirrorFor: #CompressedSymbol) methodsFor: 'copying' !
 
 
 copy ^<Instance>
 	^self! !
+
+! (Delta mirrorFor: #CompressedSymbol) methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^103! !
 
 ! (Delta mirrorFor: #CompressedSymbol) methodsFor: 'private' !
 
@@ -53,19 +68,4 @@ equalsStr: other <Str> ^<Boolean>
 		and:  [	0 == {{self primitiveIndexedByteCompare: other
 								ifFail: [ :err <Symbol> |
 											^super equalsStr: other	] }}	]! !
-
-! (Delta mirrorFor: #CompressedSymbol) methodsFor: 'comparing' !
-
-
-compare: other <Str>  ^<Int>
-
-	^{{self primitiveIndexedByteCompare: other
-			ifFail: [ :err <Symbol> |
-							^super compare: other 	] }}! !
-
-! (Delta mirrorFor: #CompressedSymbol) methodsFor: 'file out' !
-
-
-fileOutSignature ^<Integer>
-    ^103! !
 

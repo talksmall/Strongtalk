@@ -16,6 +16,14 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
 '!
 
+! (Delta mirrorFor: #PatternPaint) methodsFor: 'restricted-double dispatching' !
+
+
+contrastingFromSolidPaint: s <SolidPaint> ^<Paint>
+
+	"Can't adjust unless both paints are solid"
+	^s! !
+
 ! (Delta mirrorFor: #PatternPaint) methodsFor: 'restricted-win32 accessing' !
 
 
@@ -34,12 +42,4 @@ contrastingWith: background <Paint>  ^<Paint>
 
 	"Can't adjust pattern paints"
 	^self! !
-
-! (Delta mirrorFor: #PatternPaint) methodsFor: 'restricted-double dispatching' !
-
-
-contrastingFromSolidPaint: s <SolidPaint> ^<Paint>
-
-	"Can't adjust unless both paints are solid"
-	^s! !
 

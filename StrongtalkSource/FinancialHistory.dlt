@@ -49,21 +49,6 @@ new ^ <Instance>
 
 	^super new setInitialBalance: 0! !
 
-! (Delta mirrorFor: #FinancialHistory) methodsFor: 'transaction recording' !
-
-
-receive: amount <Integer> from: source <Symbol>
-
-	incomes 	at: source
-					put: (self totalReceivedFrom: source) + amount.
-	cashOnHand := cashOnHand + amount!
-
-spend: amount <Integer> for: reason <Symbol>
-
-	expenditures 	at: reason
-						put: (self totalSpentFor: reason) + amount.
-	cashOnHand := cashOnHand - amount! !
-
 ! (Delta mirrorFor: #FinancialHistory) methodsFor: 'inquiries' !
 
 
@@ -131,4 +116,19 @@ report ^ <SeqCltn[Character]>
 							
 							
 ! !
+
+! (Delta mirrorFor: #FinancialHistory) methodsFor: 'transaction recording' !
+
+
+receive: amount <Integer> from: source <Symbol>
+
+	incomes 	at: source
+					put: (self totalReceivedFrom: source) + amount.
+	cashOnHand := cashOnHand + amount!
+
+spend: amount <Integer> for: reason <Symbol>
+
+	expenditures 	at: reason
+						put: (self totalSpentFor: reason) + amount.
+	cashOnHand := cashOnHand - amount! !
 

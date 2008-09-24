@@ -32,19 +32,19 @@ using: blk <[Symbol, Object, Str,  ^Str]> ^ <Instance>
 
 ! !
 
-! (Delta mirrorFor: #TokenStreamEditor) classSide methodsFor: 'service' !
-
-
-transform: tokenString <Str> using: blk <[Symbol, Object, Str, ^Str]> ifFail: fb <[Str, Int, ^DoesNotMatter]> ^ <Str>
-
-^(self using: blk) transform: tokenString ifFail: fb! !
-
 ! (Delta mirrorFor: #TokenStreamEditor) classSide methodsFor: 'private' !
 
 
 tokenizerClass ^ <DeltaScanner class>
 
 ^DeltaScanner! !
+
+! (Delta mirrorFor: #TokenStreamEditor) classSide methodsFor: 'service' !
+
+
+transform: tokenString <Str> using: blk <[Symbol, Object, Str, ^Str]> ifFail: fb <[Str, Int, ^DoesNotMatter]> ^ <Str>
+
+^(self using: blk) transform: tokenString ifFail: fb! !
 
 ! (Delta mirrorFor: #TokenStreamEditor) classSide methodsFor: 'testing' !
 

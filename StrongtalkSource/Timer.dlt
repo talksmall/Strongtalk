@@ -45,30 +45,6 @@ win32Handle ^<Win32Handle>
 
 	^win32Handle! !
 
-! (Delta mirrorFor: #Timer) methodsFor: 'private-initialization' !
-
-
-initInterval: i <Float> action: blk <[]> in: sess <Session>
-
-	interval := i.
-	action := blk.
-	session := sess.
-	self registerTimer.! !
-
-! (Delta mirrorFor: #Timer) methodsFor: 'private' !
-
-
-registerTimer
-
-	win32Handle := {{<user Win32Handle SetTimer>
-									hwnd: Win32 NULL
-									id: Win32 NULL
-									interval: (self interval * 1000.0) asInteger
-									fn: Win32 NULL
-							  }}.
-	win32Handle isNull
-		ifTrue: [ Win32 handleError ].! !
-
 ! (Delta mirrorFor: #Timer) methodsFor: 'control' !
 
 
@@ -87,4 +63,28 @@ release
 	}} asBoolean
 		ifFalse: [ Win32 handleError ].
 	win32Handle := nil! !
+
+! (Delta mirrorFor: #Timer) methodsFor: 'private' !
+
+
+registerTimer
+
+	win32Handle := {{<user Win32Handle SetTimer>
+									hwnd: Win32 NULL
+									id: Win32 NULL
+									interval: (self interval * 1000.0) asInteger
+									fn: Win32 NULL
+							  }}.
+	win32Handle isNull
+		ifTrue: [ Win32 handleError ].! !
+
+! (Delta mirrorFor: #Timer) methodsFor: 'private-initialization' !
+
+
+initInterval: i <Float> action: blk <[]> in: sess <Session>
+
+	interval := i.
+	action := blk.
+	session := sess.
+	self registerTimer.! !
 

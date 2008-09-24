@@ -25,6 +25,107 @@ on: path <FilePath>  ^<Instance>
 
 	^self new path: path! !
 
+! (Delta mirrorFor: #TextEditor) methodsFor: 'accessing' !
+
+
+hasPath ^<Boolean>
+
+	^path notNil!
+
+path ^<FilePath>
+
+	^path!
+
+path: p <FilePath>
+
+	self setPath: p.
+	self doOpen.!
+
+windowTitle ^ <Str>
+
+	^self hasPath
+		ifTrue:	[	'Text Editor on: ', self path name ]
+		ifFalse: [	'Text Editor' ]! !
+
+! (Delta mirrorFor: #TextEditor) methodsFor: 'control' !
+
+
+cancel
+
+	self textView cancel!
+
+closeRequest: toClose <[]>
+	"Request that the user decide whether to save and close, close, or cancel close.
+		toClose is evaluated if the user decides to close.  The save is done first
+		if the user requests it."
+
+	self textView closeRequest: toClose!
+
+open
+
+	self textView hasBeenChanged
+		ifFalse: [ self promptOpen ]
+		ifTrue: [ self promptDiscardChangesOnSuccess: [ self promptOpen ] ]!
+
+save
+
+	self textView accept!
+
+saveAs
+
+	self saveAsAndOnSuccess: []! !
+
+! (Delta mirrorFor: #TextEditor) methodsFor: 'menus' !
+
+
+fileMenu ^<Menu>
+
+	^Menu new name: '&File';
+			add: (MenuAction new
+					name: '&Open...';
+					action: [ self open ]);
+			add: (MenuAction new
+					name: '&Save';
+					active: [ self hasPath ];
+					action: [ self save ] );
+			add: (MenuAction new
+					name: 'Save &As...';
+					action: [ self saveAs ]);
+			add: (MenuAction new
+					name: '&Restore Original';
+					action: [ self cancel ]);
+			addSeparator;
+			add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self]);
+			addSeparator;
+			add: (MenuAction new
+					name: 'E&xit';
+					action: [ self visual topWindow requestClose ])
+!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+hasPopUpMenuForTop ^<Boolean>
+	
+	^true!
+
+menuBar ^<Menu>
+
+	^self textView menuBar
+		prependItems: (Array[Menu] with: self fileMenu)!
+
+popUpMenu ^<Menu>
+
+	^Menu new
+		addAll: self textView editMenu removeAll;
+		addSeparator;
+		add: self fileMenu;
+		add: self textView propertiesMenu
+! !
+
 ! (Delta mirrorFor: #TextEditor) methodsFor: 'private' !
 
 
@@ -129,107 +230,6 @@ textView ^<TextView[CharGlyphs]>
 textViewClass ^ <TextView[CharGlyphs] class>
 
 	^TextView[CharGlyphs] ! !
-
-! (Delta mirrorFor: #TextEditor) methodsFor: 'accessing' !
-
-
-hasPath ^<Boolean>
-
-	^path notNil!
-
-path ^<FilePath>
-
-	^path!
-
-path: p <FilePath>
-
-	self setPath: p.
-	self doOpen.!
-
-windowTitle ^ <Str>
-
-	^self hasPath
-		ifTrue:	[	'Text Editor on: ', self path name ]
-		ifFalse: [	'Text Editor' ]! !
-
-! (Delta mirrorFor: #TextEditor) methodsFor: 'control' !
-
-
-cancel
-
-	self textView cancel!
-
-closeRequest: toClose <[]>
-	"Request that the user decide whether to save and close, close, or cancel close.
-		toClose is evaluated if the user decides to close.  The save is done first
-		if the user requests it."
-
-	self textView closeRequest: toClose!
-
-open
-
-	self textView hasBeenChanged
-		ifFalse: [ self promptOpen ]
-		ifTrue: [ self promptDiscardChangesOnSuccess: [ self promptOpen ] ]!
-
-save
-
-	self textView accept!
-
-saveAs
-
-	self saveAsAndOnSuccess: []! !
-
-! (Delta mirrorFor: #TextEditor) methodsFor: 'menus' !
-
-
-fileMenu ^<Menu>
-
-	^Menu new name: '&File';
-			add: (MenuAction new
-					name: '&Open...';
-					action: [ self open ]);
-			add: (MenuAction new
-					name: '&Save';
-					active: [ self hasPath ];
-					action: [ self save ] );
-			add: (MenuAction new
-					name: 'Save &As...';
-					action: [ self saveAs ]);
-			add: (MenuAction new
-					name: '&Restore Original';
-					action: [ self cancel ]);
-			addSeparator;
-			add: (MenuAction new
-		            name:'Meta';
-		            action:[Inspector launchOn: self]);
-			addSeparator;
-			add: (MenuAction new
-					name: 'E&xit';
-					action: [ self visual topWindow requestClose ])
-!
-
-hasMenu ^<Boolean>
-
-	^true!
-
-hasPopUpMenuForTop ^<Boolean>
-	
-	^true!
-
-menuBar ^<Menu>
-
-	^self textView menuBar
-		prependItems: (Array[Menu] with: self fileMenu)!
-
-popUpMenu ^<Menu>
-
-	^Menu new
-		addAll: self textView editMenu removeAll;
-		addSeparator;
-		add: self fileMenu;
-		add: self textView propertiesMenu
-! !
 
 ! (Delta mirrorFor: #TextEditor) methodsFor: 'private-initialization' !
 

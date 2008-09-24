@@ -27,24 +27,6 @@ strength: strengthSymbol
 
 	strength := Strength of: strengthSymbol.! !
 
-! (Delta mirrorFor: #AbstractConstraint) methodsFor: 'queries' !
-
-
-includeInPlan
-	"Answer true if this constraint should be included in the plan. Subclasses such as EditConstraint and StayConstraint override this method to return 'false', since they are noops at plan execution time."
-
-	^true!
-
-isInput
-	"Normal constraints are not input constraints. An input constraint is one that depends on external state, such as the mouse, the keyboard, a clock, or some arbitrary piece of imperative code."
-
-	^false!
-
-isSatisfied
-	"Answer true if this constraint is satisfied in the current solution."
-
-	self subclassResponsibility! !
-
 ! (Delta mirrorFor: #AbstractConstraint) methodsFor: 'add/remove' !
 
 
@@ -169,4 +151,22 @@ printOn: aStream
 shortPrintOn: aStream
 
 	aStream nextPutAll: self class name, '(', self asOop printString, ')'.! !
+
+! (Delta mirrorFor: #AbstractConstraint) methodsFor: 'queries' !
+
+
+includeInPlan
+	"Answer true if this constraint should be included in the plan. Subclasses such as EditConstraint and StayConstraint override this method to return 'false', since they are noops at plan execution time."
+
+	^true!
+
+isInput
+	"Normal constraints are not input constraints. An input constraint is one that depends on external state, such as the mouse, the keyboard, a clock, or some arbitrary piece of imperative code."
+
+	^false!
+
+isSatisfied
+	"Answer true if this constraint is satisfied in the current solution."
+
+	self subclassResponsibility! !
 

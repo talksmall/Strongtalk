@@ -60,6 +60,13 @@ underline: f <Boolean>
 
 	underline := f! !
 
+! (Delta mirrorFor: #FontSpec) methodsFor: 'building' !
+
+
+font ^<Font>
+
+	^Font forSpec: self! !
+
 ! (Delta mirrorFor: #FontSpec) methodsFor: 'restricted-win32' !
 
 
@@ -74,11 +81,4 @@ setFromLOGFONT: lf <LOGFONT> in: medium <Medium>
 	self italic: lf lfItalic ~= 0.
 	self underline: lf lfUnderline ~= 0.
 	self typeface: lf lfFaceName.! !
-
-! (Delta mirrorFor: #FontSpec) methodsFor: 'building' !
-
-
-font ^<Font>
-
-	^Font forSpec: self! !
 

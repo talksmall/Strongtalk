@@ -1,0 +1,77 @@
+Delta define: #ProcessExceptionHandlingTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #ProcessExceptionHandlingTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ProcessExceptionHandlingTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ProcessExceptionHandlingTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ProcessExceptionHandlingTest) methodsFor: 'testing' !
+
+
+testHandleShouldInvokeDefaultAction
+
+	|exception wasInvoked|
+	wasInvoked := false.
+	exception := BlockExceptionDescriptor new.
+	exception
+		defaultActionBlock: [wasInvoked := true];
+		resumeBlock: [:value|^self "force NLR to prevent problems with test infrastructure"].
+	[Processor activeProcess handle: exception]
+		ensure: [self assert: wasInvoked
+								description: 'Default action not invoked']!
+
+testPushedHandlerShouldDeferToDefaultHandlerWhenExceptionDoesntMatch
+
+	|process wasInvoked exception|
+	exception := BlockExceptionDescriptor new.
+	exception defaultActionBlock: [wasInvoked := true].
+	process := Processor activeProcess.
+	process pushHandler: (LinkedExceptionHandler
+														on: BlockExceptionSelector falseSelector
+														do: [:ex| ]).
+	wasInvoked := false.
+	[[process handle: exception]
+		ensure: [self assert: wasInvoked
+								description: 'Default action not invoked']]
+			ensure: [process popHandler]!
+
+testPushedHandlerShouldDeferToOuterHandlerWhenExceptionDoesntMatch
+
+	|process wasInvoked exception outerHandler|
+	wasInvoked := false.
+	exception := BlockExceptionDescriptor new.
+	exception
+		defaultActionBlock: [];
+		resumeBlock: [:value|^self "force NLR to prevent problems with test infrastructure"].
+	outerHandler := (LinkedExceptionHandler
+										on: BlockExceptionSelector trueSelector
+										do: [:ex| wasInvoked := true]).
+	process := Processor activeProcess.
+	process pushHandler: outerHandler.
+	process pushHandler: (LinkedExceptionHandler
+														on: BlockExceptionSelector falseSelector
+														do: [:ex| ]).
+	[[process handle: exception]
+			ensure: [self assert: wasInvoked
+									description: 'Outer handler should have been invoked']]
+				ensure: [process popHandler.
+								process popHandler]!
+
+testPushedHandlerShouldReplaceDefaultHandler
+
+	|process wasInvoked exception|
+	process := Processor activeProcess.
+	exception := BlockExceptionDescriptor new.
+	wasInvoked := false.
+	process pushHandler: (LinkedExceptionHandler
+													on: BlockExceptionSelector trueSelector
+													do: [:ex| wasInvoked := true]).
+	[wasInvoked := false.
+	process handle: exception]
+		ensure: [process popHandler].
+	self assert: wasInvoked description: 'Handler should be invoked'! !
+

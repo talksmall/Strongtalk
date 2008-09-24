@@ -10,13 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #ProtocolSelectorCache) classSide methodsFor: 'instance creation' !
-
-
-new ^ <Instance>
-
-^super new initialize! !
-
 ! (Delta mirrorFor: #ProtocolSelectorCache) classSide methodsFor: 'hit ratio' !
 
 
@@ -25,6 +18,13 @@ hitRatio ^ <Float>
 Lookups = 0 ifTrue: [^0.0].
 "Transcript show: Lookups printString; cr."
 ^((Lookups - Misses)/ Lookups) asFloat! !
+
+! (Delta mirrorFor: #ProtocolSelectorCache) classSide methodsFor: 'instance creation' !
+
+
+new ^ <Instance>
+
+^super new initialize! !
 
 ! (Delta mirrorFor: #ProtocolSelectorCache) methodsFor: 'access' !
 
@@ -48,6 +48,15 @@ pc := self dict 	at: p
 
 ! !
 
+! (Delta mirrorFor: #ProtocolSelectorCache) methodsFor: 'initialization' !
+
+
+initialize
+
+self dict: IdentityDictionary[DeltaProtocol, VarDict[Symbol, MsgSignature]] new.
+Lookups := 0.
+Misses := 0.! !
+
 ! (Delta mirrorFor: #ProtocolSelectorCache) methodsFor: 'private' !
 
 
@@ -58,13 +67,4 @@ dict ^ <VarDict[DeltaProtocol, VarDict[Symbol, MsgSignature]]>
 dict: d  <VarDict[DeltaProtocol, VarDict[Symbol, MsgSignature]]>
 
 dict := d! !
-
-! (Delta mirrorFor: #ProtocolSelectorCache) methodsFor: 'initialization' !
-
-
-initialize
-
-self dict: IdentityDictionary[DeltaProtocol, VarDict[Symbol, MsgSignature]] new.
-Lookups := 0.
-Misses := 0.! !
 

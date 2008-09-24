@@ -10,16 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #SupportedProtocolLocator) methodsFor: 'locator matching' !
-
-
-matchesLocator: l <DeltaLocator[Mirror]> ^ <Boolean>
-	^l matchesSupportedProtocolLocator: self!
-
-matchesSupportedProtocolLocator: l  <SupportedProtocolLocator> ^ <Boolean>
-
-^self matchesDefinitionLocator: l! !
-
 ! (Delta mirrorFor: #SupportedProtocolLocator) methodsFor: 'accessing' !
 
 
@@ -40,4 +30,14 @@ parseTree  ^ <ParseTree[TypeExpr]>
 source ^ <Str>
 
 ^self mirror supportedProtocolString! !
+
+! (Delta mirrorFor: #SupportedProtocolLocator) methodsFor: 'locator matching' !
+
+
+matchesLocator: l <DeltaLocator[Mirror]> ^ <Boolean>
+	^l matchesSupportedProtocolLocator: self!
+
+matchesSupportedProtocolLocator: l  <SupportedProtocolLocator> ^ <Boolean>
+
+^self matchesDefinitionLocator: l! !
 

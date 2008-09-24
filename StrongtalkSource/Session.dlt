@@ -74,33 +74,34 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.
 '!
 
-! (Delta mirrorFor: #Session) classSide methodsFor: 'instance creation' !
+! (Delta mirrorFor: #Session) classSide methodsFor: 'accessing' !
 
 
-in: med <Medium> do: blk <[Session]> ^<Instance>
+sessions ^<Cltn[Session]>
+	"A collection of the active sessions.  This message and the result are thread-safe."
+	
+	^Processor uninterruptablyDo: [ Sessions asOrderedCollection ]! !
 
-	^super new initIn: med do: blk! !
-
-! (Delta mirrorFor: #Session) classSide methodsFor: 'private' !
+! (Delta mirrorFor: #Session) classSide methodsFor: 'accessing-restricted' !
 
 
-grabMonitor ^<Semaphore>
+sessionsMap ^<VarDict[Process,Session]>
+	"The dictionary of active sessions.  Since this is shared across processes, and is
+		extremely performance critical, access to it should be done uninterruptably, using
+		(Processor uninterruptablyDo: [...]).  This is used rather than critical: because of the
+		extreme performance required.   #sessions should be used by user code,
+		which returns a copy that does not have to be protected."
+	
+	^Sessions! !
 
-"%hack: I think this monitor might be deadlocking and causing the frequent hangs
-  we've been having.  So the following line
-  disables it by just returning a new semaphore every
-  time someone asks for one, so they can never actually wait.  See if this
-  gets rid of the hang!!.  Theoretically this is unsafe, but I don't think any two things have
-  ever asked for the grab at the same time before anyway"
-^Semaphore forMutualExclusion.
+! (Delta mirrorFor: #Session) classSide methodsFor: 'constants' !
 
-	GrabMonitor isNil
-		ifTrue: [	Processor uninterruptablyDo:
-							[ GrabMonitor isNil
-								ifTrue: [ GrabMonitor := Semaphore forMutualExclusion ].
-							].
-					 ].
-	^GrabMonitor! !
+
+PROCESS_ACTION ^<ExternalData>
+	"This is posted when a session process action is queued using inProcessDo: if there are none already
+		queued"
+
+	^16r401! !
 
 ! (Delta mirrorFor: #Session) classSide methodsFor: 'debugging' !
 
@@ -137,6 +138,41 @@ debugInvalidation: f <Boolean>
 
 	DebugInvalidation := f! !
 
+! (Delta mirrorFor: #Session) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	Sessions := Dictionary[Process,Session] new.! !
+
+! (Delta mirrorFor: #Session) classSide methodsFor: 'instance creation' !
+
+
+in: med <Medium> do: blk <[Session]> ^<Instance>
+
+	^super new initIn: med do: blk! !
+
+! (Delta mirrorFor: #Session) classSide methodsFor: 'private' !
+
+
+grabMonitor ^<Semaphore>
+
+"%hack: I think this monitor might be deadlocking and causing the frequent hangs
+  we've been having.  So the following line
+  disables it by just returning a new semaphore every
+  time someone asks for one, so they can never actually wait.  See if this
+  gets rid of the hang!!.  Theoretically this is unsafe, but I don't think any two things have
+  ever asked for the grab at the same time before anyway"
+^Semaphore forMutualExclusion.
+
+	GrabMonitor isNil
+		ifTrue: [	Processor uninterruptablyDo:
+							[ GrabMonitor isNil
+								ifTrue: [ GrabMonitor := Semaphore forMutualExclusion ].
+							].
+					 ].
+	^GrabMonitor! !
+
 ! (Delta mirrorFor: #Session) classSide methodsFor: 'restricted' !
 
 
@@ -150,206 +186,362 @@ forProcess: p <Process>  ^<Session>
 								LastSession := Sessions at: p	]
 		].! !
 
-! (Delta mirrorFor: #Session) classSide methodsFor: 'initialization' !
+! (Delta mirrorFor: #Session) methodsFor: 'accessing' !
 
 
-initialize
+blinkState ^<Boolean>
 
-	Sessions := Dictionary[Process,Session] new.! !
+	^blinkState!
 
-! (Delta mirrorFor: #Session) classSide methodsFor: 'constants' !
+hasChanging ^<Boolean>
 
+	^changing notNil and: [ changing size > 0 ]!
 
-PROCESS_ACTION ^<ExternalData>
-	"This is posted when a session process action is queued using inProcessDo: if there are none already
-		queued"
+medium ^<Medium>
 
-	^16r401! !
+	^medium!
 
-! (Delta mirrorFor: #Session) classSide methodsFor: 'accessing' !
+oldPrefsFor: t <RelayoutTarget> ^<SeqCltn[Region]>
+	"This can be sent by visuals whose layout state = needsRelayout."
 
+	^prefs at: t!
 
-sessions ^<Cltn[Session]>
-	"A collection of the active sessions.  This message and the result are thread-safe."
-	
-	^Processor uninterruptablyDo: [ Sessions asOrderedCollection ]! !
+process ^<Process>
 
-! (Delta mirrorFor: #Session) classSide methodsFor: 'accessing-restricted' !
+	^process!
 
+sessionWindow ^<Window>
 
-sessionsMap ^<VarDict[Process,Session]>
-	"The dictionary of active sessions.  Since this is shared across processes, and is
-		extremely performance critical, access to it should be done uninterruptably, using
-		(Processor uninterruptablyDo: [...]).  This is used rather than critical: because of the
-		extreme performance required.   #sessions should be used by user code,
-		which returns a copy that does not have to be protected."
-	
-	^Sessions! !
+	^sessionWindow!
 
-! (Delta mirrorFor: #Session) methodsFor: 'win32-control' !
+sessionWindow: w <Window>
+
+	sessionWindow := w! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'control' !
 
 
-aboutToDestroyWindow: w <Window>
+addModalWindow: mw <Window>
+	"Make w the only active window in this session.  The other windows
+		will be re-enabled when w is destroyed"
 
-	self hasModalWindow
-		ifTrue: [	| newTop <Window> |
-						self modalWindowStack remove: w
-							ifAbsent: [ ^self ].
-						self hasModalWindow
-							ifTrue: [ self modalWindowStack top enabled: true; makeActive ]
-							ifFalse: [ self windowsDo:
-												[ :aw <Window> |
-													aw enabled: true	].
-											(self activeWindow == w and: [ w hasParent ])
-												ifTrue: [ w parent makeActive ]].	]
-!
+	"%bug: in both this and addModalWindow:, we should keep track of
+		the old enabled state for windows, rather than just enabling everything
+		when we are done.  This bug would cause windows that were disabled by other
+	    means than this mechanism to be
+	    incorrectly enabled after the dialog boxs for the session are destroyed"
 
-creatingWindow: w <Window> do: f <[^Object]> 
+	self modalWindowStack push: mw.
+	"make sure the modal window is created and active, so that MSWindows will remember
+		the previous active window before we disable it"
+	mw win32Handle; makeActive.
 
-	windowBeingCreated := w.
-	f value.
-	windowBeingCreated notNil
-		ifTrue: [	"For some reason, the creation didn't send any messages to the window, so
-							we have to register it here"
-						self shouldNotHappen.
-						self registerWindow: w handle: w win32Handle.	].
-	windowBeingCreated := nil.!
+	self windowsDo:
+		[ :w <Window> |
+			w = mw
+				ifFalse: [	w enabled: false ]	].!
 
-debugEvents ^<Boolean>
+atIntervals: interval <Float> do: blk <[]>  ^<Timer>
+	"Register blk to be executed in the session process repeatedly every
+		interval seconds, starting at interval seconds in the future.  A Timer object
+		is returned that can be used to cancel execution of blk."
 
-	^self actualClass debugEvents!
+	^self critical:
+		[	| t <Timer> |
+			t := Timer atIntervals: interval do: blk in: self.
+			self timers at: t win32Handle put: t.
+			t
+		]!
 
-findFocusIfNeededFor: wind <Window>
+changing: t <RelayoutTarget>
+	"Schedule t to have its preferences and layout checked by the
+	  incremental layout mechanism.  The caller must also register
+	  the preferences of t using #recordPrefsFor:"
 
-	self hasInputFocus
-		ifFalse: [ wind topWindow findInputFocus ]!
+	self hasChanging
+		ifFalse: [ changing := Set[LayoutTarget] new. ].
+	changing include: t.!
 
-handleIfFocusMsg: msgCode <ExternalData>
-for: wind <Window>
-wParam: wParam <ExternalData>
-lParam: lParam <ExternalData>
-^<ExternalData>
+forkLongOperation: blk <[]>
+	"Fork a background process to do a long ui operation.  This will disable
+		all the session's windows so that user input is discarded, and will
+		display the wait cursor for them.  The Session thread will
+		continue, however, so if the
+		operation needs to change information needed during painting,
+		it should use a visualCritical: call to surround those sections
+		within the blk"
 
-	msgCode @= Win32 WM_KEYDOWN
-		ifTrue: [	self findFocusIfNeededFor: wind.
-						self keyDownEventWithWParam: wParam lParam: lParam 
-																	toCancel: [^0].
-						^0 ].
-	msgCode @= Win32 WM_KEYUP
-		ifTrue: [	self findFocusIfNeededFor: wind.
-						self keyUpEventWithWParam: wParam lParam: lParam 
-																	toCancel: [^0].
-						^0 ].
-	msgCode @= Win32 WM_CHAR
-		ifTrue: [	self findFocusIfNeededFor: wind.
-						self charEventWithWParam: wParam lParam: lParam 
-																	toCancel: [^0].
-						^0 ].
-	^1!
+	[ self longOpMonitor critical:
+		[	| origState <VarDict[Window,Tuple[Boolean,Cursor]]> |
+			origState := Dictionary[Window,Tuple[Boolean,Cursor]] new.
+			self windowsDo:
+				[ :w <Window> |
+					origState at: w put: w enabled ,, w cursor.
+					w	cursor: Cursor wait;
+						enabled: false.	].
+			blk value.
+			self updateLayoutsIfNeeded.
+			origState keysAndValuesDo:
+				[ :w <Window> :state <Tuple[Boolean,Cursor]> |
+					w cursor = Cursor wait
+						ifTrue: [	"Then the op hasn't changed it"
+										w cursor: state at2. ].
+					w enabled: state at1.
+					w processDeferredPainting. 	].
+		 ].
+	] fork!
 
-lostCapture
-
-	self hasGrab
-		ifTrue: [	| old <Stack[UIEventHandler]> |
-						old := self grabStack copy.
-						self grabStack removeAll.
-						old do: [ :grabber <UIEventHandler> |
-											grabber addNonLocalCount: -1.
-											grabber lostGrab ].
-						self class grabMonitor signal.	].!
-
-message: msg <MSG>
-
-	self processSessionActions.
-
-	Session debugEvents
-			ifTrue: [ Platform errorStream
-							show: 'queue event: ';
-							show: (MSG descriptionOf: msg message asExternalProxy);
-							show: ' window: ';
-							print: msg hwnd;
-							cr ].
-
-	msg message @= Win32 WM_TIMER
-		ifTrue: [ self timeoutFor: msg wParam.
-						self updateLayoutsIfNeeded.
-					 	^self ].
-	msg message @= Session PROCESS_ACTION
-		ifTrue: [ ^self ].		"The actions are processed already on every event"
-	self checkPaintTime.
-
-	(self visualMonitor criticalWouldBlock and: [ self msgIsOkDuringVisualCritical: msg message ])
-		ifTrue: [	self dispatchMessage: msg.
-						"we don't update layouts because that can't be needed (or done)
-							here"	]
-		ifFalse: [	self visualCritical:
-							[ self	dispatchMessage: msg;
-										updateLayoutsIfNeeded.	]
-					 ]!
-
-message: msgCode <ExternalData>
-for: hwnd <HWND>
-wParam: wParam <ExternalData>
-lParam: lParam <ExternalData>
-^<ExternalData>
-
-	"This is where all the win32 messages are delivered to the per-session thread.  We
-	  just figure out which window it is for, and then forward the message."
-
-	"We have to treat the first message specially, since we have to register the window"
-	windowBeingCreated notNil
-		ifTrue: [	self registerWindow: windowBeingCreated handle: hwnd.
-						windowBeingCreated := nil. ].
-
-	^(self safeWindowFor: hwnd) message: msgCode for: hwnd wParam: wParam lParam: lParam!
-
-unregisterTimer: t <Timer>
+inProcessDo: blk <[]>
 
 	self critical:
-		[ self timers removeKey: t win32Handle ]!
+		[	(self process isNil or: [ self process running ])
+				ifTrue: [	self sessionActions add: blk.
+								(self sessionActions size = 1 and: [ self process notNil ])
+									ifTrue: [ self postMessage: Session PROCESS_ACTION wParam: 0 lParam: 0  ].
+							  ].
+		]!
 
-unregisterWindow: w <Window>
+modalDo: blk <[]>
+	"This disables ALL windows for this session during the execution of blk.
+		This is used before calling out to native dialog boxes that use a nested
+		event loop, in situations where they only disable the owner window. "
 
-	w = self sessionWindow
-		ifTrue: [ self windowsDo:
-							[ :otherWin <Window> |
-								otherWin = self sessionWindow
-									ifFalse: [ otherWin close ].
-							]
-					 ].
-	self windows removeKey: w win32Handle.
-	self windows isEmpty
-		ifTrue: [ self postQuit ].!
+	| oldState <VarDict[Window,Boolean]> |
+	oldState := IdentityDictionary[Window,Boolean] new.
+	self windowsDo:
+		[ :w <Window> |
+			oldState at: w put: w enabled.
+			w enabled: false ].
+	[ blk value ]
+		ensure:
+			[	self windowsDo:
+					[ :w <Window> |
+						(oldState includesKey: w)
+							ifTrue: [ w enabled: (oldState at: w) ]		 ]].!
 
-withBufferCanvasFor: invalid <Rect> do: f <[Canvas, HBITMAP, ^X def]> ^<X>
-	"Evaluate f with an canvas that draws to an off-screen
-		bitmap, which is the second argument to the block,
-		clipping to the specified invalid region, that is compatible with this medium"
+recordPrefsFor: t <RelayoutTarget>
+	"record the current preferences of t for the incremental layout mechanism."
 
-	| can <Canvas> |
-	can := self bufferCanvasWithMinimumExtent: invalid extent.
+	prefs isNil
+		ifTrue: [ prefs := IdentityDictionary[RelayoutTarget,SeqCltn[Region]] new ].
+	(prefs includesKey: t)
+		ifFalse: [ prefs at: t put: t prefs ].!
 
-	"We negate the offset relative to the region to be drawn"
-	can offset: invalid origin negated.
-	can initClippingRectBeforeTranslation: (Point origin corner: invalid extent).
+terminate
+	"terminate the session.  This will close all remaining open windows unconditionally.
+		Closing the session window will terminate the session process."
+
+	self windowsDo:
+		[ :w <Window> |
+			w = self sessionWindow
+				ifFalse: [ w close ].
+		].
+	self sessionWindow close.
+	self unregister.!
+
+updateLayoutsIfNeeded
+	"This is the incremental layout/pref recalculation algorithm."
+
+	(self debugIncrementalLayout and: [ self hasChanging ])
+		ifTrue: [ Platform errorStream show: '-------------------------------------------------- incr. layout: '; cr. ].
+
+	[ self hasChanging ]
+		whileTrue: [	self updateLeaves ].
+
+	"clear the set and preferences cache to clean up for next time"
+	changing := nil.
+	prefs := nil.!
+
+visualCritical: blk <[]>
+	"enter a critical region around access to the visuals contained in
+		the session's windows.  This is used to synchronize concurrent
+		painting and modification of a session's visuals."
+
+	self visualMonitor critical: blk.!
+
+visualCriticalWouldBlock ^<Boolean>
+
+	^self visualMonitor criticalWouldBlock! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'debugging' !
 
 
-	f value: can value: self displayBuffer.
+debugIncrementalLayout ^<Boolean>
 
-	"We don't release the canvas, since it is cached"!
+	^self class debugIncrementalLayout!
 
-wndProc ^<APICallBack>
+dumpAllBut: transcript <Window> on: strm <CharOutputStream>
 
-	WndProc isNil
-		ifTrue: [	WndProc := APICallBack
-							register:
-								[ :hwnd <ExternalProxy> :msg <SmallInteger> :wParam <ExternalData> :lParam <ExternalData> |
+	self windows do:
+		[ :w <Window|Win32Control> |
+			w ~~ transcript
+				ifTrue: [ self dumpIfWindow: w on: strm.]	]!
 
-									(Session forProcess: Processor activeProcess)
-											 message: msg for: hwnd wParam: wParam lParam: lParam ]
-							parameters: (OrderedCollection[Class]
-								with: ExternalProxy with: SmallInteger with: ExternalProxy with: ExternalProxy).	].
-	^WndProc! !
+dumpOn: strm <CharOutputStream>
+
+	self windows do:
+		[ :w <Window|Win32Control> |
+			self dumpIfWindow: w on: strm.	]! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'frame rate control-restricted to window' !
+
+
+needPaintAtTime: time <Float>
+	"This is sent back by a window that already has a paint pending
+		when a paint occurs for another window, just so we
+		can recompute the smallest next paint time"
+
+	self nextPaintTime: (self nextPaintTime min: time).!
+
+paintOccuredFor: w <Window>
+
+	self pendingForPaint remove: w ifAbsent: [].
+!
+
+schedulePaintFor: w <Window> at: time <Float>
+
+	self pendingForPaint include: w.
+	self needPaintAtTime: time.! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'grabbing' !
+
+
+addGrab: h <UIEventHandler> ^<Boolean>
+	"Aquire the grab, which means h will be sent all events for this session
+	  until #removeGrab: is sent for it.  There can be any number of grabbers at once; prior
+	  grabbers get events first, and subsequent ones get the events they let through.
+	  All grabbers must be in the same window; any grab that is not for the active window
+	  will be suspended until the existing grabs are done if it is in another session; if it
+	  is in the same session, the grab is denied, since it would cause a deadlock.
+	  The return value indicates whether the grab was successfully added.
+
+	  The grabber must be very careful to release the grab when it is done; especial care should
+	  be taken that the grab is release in unexpected circumstances such as a parent detaching the
+	  grabber.  This should be handled by keeping track of whether the grab is owned or not,
+	  and releasing it if needed when #detaching.
+
+	  The grabber must also be prepared to receive a #lostGrab message if its window loses the grab
+	  involuntarily.  In such a case, the grab is removed automatically.
+
+	  Note: The Session will transparently ensure that the grabber is registered as non-local (i.e. it
+		will receive detached messages) while it is grabbing.
+	  "
+
+	self grabStack isEmpty
+		ifTrue: [	self class grabMonitor wait.
+						h topWindow setCapture.  ]
+		ifFalse: [	h topWindow = self grabStack top topWindow
+							ifFalse: [ ^false ] ].
+	(self grabStack includes: h) 
+		ifTrue: [ self error: 'Duplicate grabs not allowed' ].
+
+	"Use a copy below in case the grab is being iterated over by a caller"
+	self grabStack: (self grabStack copy push: h).
+	h addNonLocalCount: 1.
+	^true!
+
+hasGrab ^<Visual>
+
+	^self grabStack isEmpty not!
+
+hasGrabFor: v <Visual> ^<Boolean>
+
+	^self grabStack includes: v!
+
+removeGrab: h <UIEventHandler>
+
+	"We test to see if the grab is really held, so that the holder can avoid bookeeping
+		for special case handling of lostGrab"
+	(self hasGrabFor: h)
+		ifFalse: [ ^self ].
+		
+	"Use a copy below in case the grab is being iterated over by a caller"
+	self grabStack: ((self grabStack copy) remove: h; yourself).
+	h addNonLocalCount: -1.
+	self grabStack isEmpty
+		ifTrue: [	h topWindow releaseCapture.
+						self actualClass grabMonitor signal. ]! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'input device state' !
+
+
+altPressed ^<Boolean>
+
+	^self currentMsg altPressed!
+
+ctrlPressed ^<Boolean>
+
+	^self currentMsg ctrlPressed!
+
+mouseButtonPressed: but <Symbol> ^<Boolean>
+	"but must be one of #primary, #secondary, #middle"
+
+	^self currentMsg mouseButtonPressed: but!
+
+numLocked ^<Boolean>
+
+	^self currentMsg numLocked!
+
+primaryMouseButtonPressed ^<Boolean>
+
+	^self currentMsg primaryMouseButtonPressed!
+
+secondaryMouseButtonPressed ^<Boolean>
+
+	^self currentMsg secondaryMouseButtonPressed!
+
+shiftPressed ^<Boolean>
+
+	^self currentMsg shiftPressed! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'input focus' !
+
+
+activeWindow ^<Window>
+
+	^activeWindow!
+
+activeWindow: w <Window>
+
+	activeWindow := w!
+
+hasActiveWindow ^<Boolean>
+
+	^self activeWindow notNil!
+
+hasInputFocus ^<Boolean>
+
+	^inputFocus notNil!
+
+inputFocus ^<Visual>
+
+	^inputFocus!
+
+inputFocus: f <Visual>
+	"Record the input focus & do notification.  Callers are responsible for setting
+	  the native window focus state."
+
+	self hasInputFocus
+		ifTrue: [ self setNoInputFocus ]
+		ifFalse: [ self createBlinkTimer ].
+	inputFocus := f.
+	inputFocus isFocus: true.
+	
+	f nativeWindow setFocus.!
+
+noInputFocus
+	"Remove the input focus."
+
+	self hasInputFocus
+		ifTrue: [	self destroyBlinkTimer.
+						self setNoInputFocus.		 ]! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'iterating' !
+
+
+windowsDo: blk <[Window]>
+
+	self windows do: blk! !
 
 ! (Delta mirrorFor: #Session) methodsFor: 'private' !
 
@@ -817,376 +1009,6 @@ windows ^<VarDict[HWND,Window]>
 
 	^windows! !
 
-! (Delta mirrorFor: #Session) methodsFor: 'window creation' !
-
-
-newStandardWindow: name <Str>
-for: vis <Visual>
-^<StandardWindow>
-	"Create a standard top-level window"
-
-	^self medium
-			newStandardWindow: name
-			session: self
-			for: vis! !
-
-! (Delta mirrorFor: #Session) methodsFor: 'accessing' !
-
-
-blinkState ^<Boolean>
-
-	^blinkState!
-
-hasChanging ^<Boolean>
-
-	^changing notNil and: [ changing size > 0 ]!
-
-medium ^<Medium>
-
-	^medium!
-
-oldPrefsFor: t <RelayoutTarget> ^<SeqCltn[Region]>
-	"This can be sent by visuals whose layout state = needsRelayout."
-
-	^prefs at: t!
-
-process ^<Process>
-
-	^process!
-
-sessionWindow ^<Window>
-
-	^sessionWindow!
-
-sessionWindow: w <Window>
-
-	sessionWindow := w! !
-
-! (Delta mirrorFor: #Session) methodsFor: 'input focus' !
-
-
-activeWindow ^<Window>
-
-	^activeWindow!
-
-activeWindow: w <Window>
-
-	activeWindow := w!
-
-hasActiveWindow ^<Boolean>
-
-	^self activeWindow notNil!
-
-hasInputFocus ^<Boolean>
-
-	^inputFocus notNil!
-
-inputFocus ^<Visual>
-
-	^inputFocus!
-
-inputFocus: f <Visual>
-	"Record the input focus & do notification.  Callers are responsible for setting
-	  the native window focus state."
-
-	self hasInputFocus
-		ifTrue: [ self setNoInputFocus ]
-		ifFalse: [ self createBlinkTimer ].
-	inputFocus := f.
-	inputFocus isFocus: true.
-	
-	f nativeWindow setFocus.!
-
-noInputFocus
-	"Remove the input focus."
-
-	self hasInputFocus
-		ifTrue: [	self destroyBlinkTimer.
-						self setNoInputFocus.		 ]! !
-
-! (Delta mirrorFor: #Session) methodsFor: 'grabbing' !
-
-
-addGrab: h <UIEventHandler> ^<Boolean>
-	"Aquire the grab, which means h will be sent all events for this session
-	  until #removeGrab: is sent for it.  There can be any number of grabbers at once; prior
-	  grabbers get events first, and subsequent ones get the events they let through.
-	  All grabbers must be in the same window; any grab that is not for the active window
-	  will be suspended until the existing grabs are done if it is in another session; if it
-	  is in the same session, the grab is denied, since it would cause a deadlock.
-	  The return value indicates whether the grab was successfully added.
-
-	  The grabber must be very careful to release the grab when it is done; especial care should
-	  be taken that the grab is release in unexpected circumstances such as a parent detaching the
-	  grabber.  This should be handled by keeping track of whether the grab is owned or not,
-	  and releasing it if needed when #detaching.
-
-	  The grabber must also be prepared to receive a #lostGrab message if its window loses the grab
-	  involuntarily.  In such a case, the grab is removed automatically.
-
-	  Note: The Session will transparently ensure that the grabber is registered as non-local (i.e. it
-		will receive detached messages) while it is grabbing.
-	  "
-
-	self grabStack isEmpty
-		ifTrue: [	self class grabMonitor wait.
-						h topWindow setCapture.  ]
-		ifFalse: [	h topWindow = self grabStack top topWindow
-							ifFalse: [ ^false ] ].
-	(self grabStack includes: h) 
-		ifTrue: [ self error: 'Duplicate grabs not allowed' ].
-
-	"Use a copy below in case the grab is being iterated over by a caller"
-	self grabStack: (self grabStack copy push: h).
-	h addNonLocalCount: 1.
-	^true!
-
-hasGrab ^<Visual>
-
-	^self grabStack isEmpty not!
-
-hasGrabFor: v <Visual> ^<Boolean>
-
-	^self grabStack includes: v!
-
-removeGrab: h <UIEventHandler>
-
-	"We test to see if the grab is really held, so that the holder can avoid bookeeping
-		for special case handling of lostGrab"
-	(self hasGrabFor: h)
-		ifFalse: [ ^self ].
-		
-	"Use a copy below in case the grab is being iterated over by a caller"
-	self grabStack: ((self grabStack copy) remove: h; yourself).
-	h addNonLocalCount: -1.
-	self grabStack isEmpty
-		ifTrue: [	h topWindow releaseCapture.
-						self actualClass grabMonitor signal. ]! !
-
-! (Delta mirrorFor: #Session) methodsFor: 'input device state' !
-
-
-altPressed ^<Boolean>
-
-	^self currentMsg altPressed!
-
-ctrlPressed ^<Boolean>
-
-	^self currentMsg ctrlPressed!
-
-mouseButtonPressed: but <Symbol> ^<Boolean>
-	"but must be one of #primary, #secondary, #middle"
-
-	^self currentMsg mouseButtonPressed: but!
-
-numLocked ^<Boolean>
-
-	^self currentMsg numLocked!
-
-primaryMouseButtonPressed ^<Boolean>
-
-	^self currentMsg primaryMouseButtonPressed!
-
-secondaryMouseButtonPressed ^<Boolean>
-
-	^self currentMsg secondaryMouseButtonPressed!
-
-shiftPressed ^<Boolean>
-
-	^self currentMsg shiftPressed! !
-
-! (Delta mirrorFor: #Session) methodsFor: 'control' !
-
-
-addModalWindow: mw <Window>
-	"Make w the only active window in this session.  The other windows
-		will be re-enabled when w is destroyed"
-
-	"%bug: in both this and addModalWindow:, we should keep track of
-		the old enabled state for windows, rather than just enabling everything
-		when we are done.  This bug would cause windows that were disabled by other
-	    means than this mechanism to be
-	    incorrectly enabled after the dialog boxs for the session are destroyed"
-
-	self modalWindowStack push: mw.
-	"make sure the modal window is created and active, so that MSWindows will remember
-		the previous active window before we disable it"
-	mw win32Handle; makeActive.
-
-	self windowsDo:
-		[ :w <Window> |
-			w = mw
-				ifFalse: [	w enabled: false ]	].!
-
-atIntervals: interval <Float> do: blk <[]>  ^<Timer>
-	"Register blk to be executed in the session process repeatedly every
-		interval seconds, starting at interval seconds in the future.  A Timer object
-		is returned that can be used to cancel execution of blk."
-
-	^self critical:
-		[	| t <Timer> |
-			t := Timer atIntervals: interval do: blk in: self.
-			self timers at: t win32Handle put: t.
-			t
-		]!
-
-changing: t <RelayoutTarget>
-	"Schedule t to have its preferences and layout checked by the
-	  incremental layout mechanism.  The caller must also register
-	  the preferences of t using #recordPrefsFor:"
-
-	self hasChanging
-		ifFalse: [ changing := Set[LayoutTarget] new. ].
-	changing include: t.!
-
-forkLongOperation: blk <[]>
-	"Fork a background process to do a long ui operation.  This will disable
-		all the session's windows so that user input is discarded, and will
-		display the wait cursor for them.  The Session thread will
-		continue, however, so if the
-		operation needs to change information needed during painting,
-		it should use a visualCritical: call to surround those sections
-		within the blk"
-
-	[ self longOpMonitor critical:
-		[	| origState <VarDict[Window,Tuple[Boolean,Cursor]]> |
-			origState := Dictionary[Window,Tuple[Boolean,Cursor]] new.
-			self windowsDo:
-				[ :w <Window> |
-					origState at: w put: w enabled ,, w cursor.
-					w	cursor: Cursor wait;
-						enabled: false.	].
-			blk value.
-			self updateLayoutsIfNeeded.
-			origState keysAndValuesDo:
-				[ :w <Window> :state <Tuple[Boolean,Cursor]> |
-					w cursor = Cursor wait
-						ifTrue: [	"Then the op hasn't changed it"
-										w cursor: state at2. ].
-					w enabled: state at1.
-					w processDeferredPainting. 	].
-		 ].
-	] fork!
-
-inProcessDo: blk <[]>
-
-	self critical:
-		[	(self process isNil or: [ self process running ])
-				ifTrue: [	self sessionActions add: blk.
-								(self sessionActions size = 1 and: [ self process notNil ])
-									ifTrue: [ self postMessage: Session PROCESS_ACTION wParam: 0 lParam: 0  ].
-							  ].
-		]!
-
-modalDo: blk <[]>
-	"This disables ALL windows for this session during the execution of blk.
-		This is used before calling out to native dialog boxes that use a nested
-		event loop, in situations where they only disable the owner window. "
-
-	| oldState <VarDict[Window,Boolean]> |
-	oldState := IdentityDictionary[Window,Boolean] new.
-	self windowsDo:
-		[ :w <Window> |
-			oldState at: w put: w enabled.
-			w enabled: false ].
-	[ blk value ]
-		ensure:
-			[	self windowsDo:
-					[ :w <Window> |
-						(oldState includesKey: w)
-							ifTrue: [ w enabled: (oldState at: w) ]		 ]].!
-
-recordPrefsFor: t <RelayoutTarget>
-	"record the current preferences of t for the incremental layout mechanism."
-
-	prefs isNil
-		ifTrue: [ prefs := IdentityDictionary[RelayoutTarget,SeqCltn[Region]] new ].
-	(prefs includesKey: t)
-		ifFalse: [ prefs at: t put: t prefs ].!
-
-terminate
-	"terminate the session.  This will close all remaining open windows unconditionally.
-		Closing the session window will terminate the session process."
-
-	self windowsDo:
-		[ :w <Window> |
-			w = self sessionWindow
-				ifFalse: [ w close ].
-		].
-	self sessionWindow close.
-	self unregister.!
-
-updateLayoutsIfNeeded
-	"This is the incremental layout/pref recalculation algorithm."
-
-	(self debugIncrementalLayout and: [ self hasChanging ])
-		ifTrue: [ Platform errorStream show: '-------------------------------------------------- incr. layout: '; cr. ].
-
-	[ self hasChanging ]
-		whileTrue: [	self updateLeaves ].
-
-	"clear the set and preferences cache to clean up for next time"
-	changing := nil.
-	prefs := nil.!
-
-visualCritical: blk <[]>
-	"enter a critical region around access to the visuals contained in
-		the session's windows.  This is used to synchronize concurrent
-		painting and modification of a session's visuals."
-
-	self visualMonitor critical: blk.!
-
-visualCriticalWouldBlock ^<Boolean>
-
-	^self visualMonitor criticalWouldBlock! !
-
-! (Delta mirrorFor: #Session) methodsFor: 'frame rate control-restricted to window' !
-
-
-needPaintAtTime: time <Float>
-	"This is sent back by a window that already has a paint pending
-		when a paint occurs for another window, just so we
-		can recompute the smallest next paint time"
-
-	self nextPaintTime: (self nextPaintTime min: time).!
-
-paintOccuredFor: w <Window>
-
-	self pendingForPaint remove: w ifAbsent: [].
-!
-
-schedulePaintFor: w <Window> at: time <Float>
-
-	self pendingForPaint include: w.
-	self needPaintAtTime: time.! !
-
-! (Delta mirrorFor: #Session) methodsFor: 'debugging' !
-
-
-debugIncrementalLayout ^<Boolean>
-
-	^self class debugIncrementalLayout!
-
-dumpAllBut: transcript <Window> on: strm <CharOutputStream>
-
-	self windows do:
-		[ :w <Window|Win32Control> |
-			w ~~ transcript
-				ifTrue: [ self dumpIfWindow: w on: strm.]	]!
-
-dumpOn: strm <CharOutputStream>
-
-	self windows do:
-		[ :w <Window|Win32Control> |
-			self dumpIfWindow: w on: strm.	]! !
-
-! (Delta mirrorFor: #Session) methodsFor: 'iterating' !
-
-
-windowsDo: blk <[Window]>
-
-	self windows do: blk! !
-
 ! (Delta mirrorFor: #Session) methodsFor: 'private initialization' !
 
 
@@ -1211,4 +1033,182 @@ initIn: med <Medium> do: blk <[Session]>
 		blk value: self.
 		self run
 	] fork.! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'win32-control' !
+
+
+aboutToDestroyWindow: w <Window>
+
+	self hasModalWindow
+		ifTrue: [	| newTop <Window> |
+						self modalWindowStack remove: w
+							ifAbsent: [ ^self ].
+						self hasModalWindow
+							ifTrue: [ self modalWindowStack top enabled: true; makeActive ]
+							ifFalse: [ self windowsDo:
+												[ :aw <Window> |
+													aw enabled: true	].
+											(self activeWindow == w and: [ w hasParent ])
+												ifTrue: [ w parent makeActive ]].	]
+!
+
+creatingWindow: w <Window> do: f <[^Object]> 
+
+	windowBeingCreated := w.
+	f value.
+	windowBeingCreated notNil
+		ifTrue: [	"For some reason, the creation didn't send any messages to the window, so
+							we have to register it here"
+						self shouldNotHappen.
+						self registerWindow: w handle: w win32Handle.	].
+	windowBeingCreated := nil.!
+
+debugEvents ^<Boolean>
+
+	^self actualClass debugEvents!
+
+findFocusIfNeededFor: wind <Window>
+
+	self hasInputFocus
+		ifFalse: [ wind topWindow findInputFocus ]!
+
+handleIfFocusMsg: msgCode <ExternalData>
+for: wind <Window>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	msgCode @= Win32 WM_KEYDOWN
+		ifTrue: [	self findFocusIfNeededFor: wind.
+						self keyDownEventWithWParam: wParam lParam: lParam 
+																	toCancel: [^0].
+						^0 ].
+	msgCode @= Win32 WM_KEYUP
+		ifTrue: [	self findFocusIfNeededFor: wind.
+						self keyUpEventWithWParam: wParam lParam: lParam 
+																	toCancel: [^0].
+						^0 ].
+	msgCode @= Win32 WM_CHAR
+		ifTrue: [	self findFocusIfNeededFor: wind.
+						self charEventWithWParam: wParam lParam: lParam 
+																	toCancel: [^0].
+						^0 ].
+	^1!
+
+lostCapture
+
+	self hasGrab
+		ifTrue: [	| old <Stack[UIEventHandler]> |
+						old := self grabStack copy.
+						self grabStack removeAll.
+						old do: [ :grabber <UIEventHandler> |
+											grabber addNonLocalCount: -1.
+											grabber lostGrab ].
+						self class grabMonitor signal.	].!
+
+message: msg <MSG>
+
+	self processSessionActions.
+
+	Session debugEvents
+			ifTrue: [ Platform errorStream
+							show: 'queue event: ';
+							show: (MSG descriptionOf: msg message asExternalProxy);
+							show: ' window: ';
+							print: msg hwnd;
+							cr ].
+
+	msg message @= Win32 WM_TIMER
+		ifTrue: [ self timeoutFor: msg wParam.
+						self updateLayoutsIfNeeded.
+					 	^self ].
+	msg message @= Session PROCESS_ACTION
+		ifTrue: [ ^self ].		"The actions are processed already on every event"
+	self checkPaintTime.
+
+	(self visualMonitor criticalWouldBlock and: [ self msgIsOkDuringVisualCritical: msg message ])
+		ifTrue: [	self dispatchMessage: msg.
+						"we don't update layouts because that can't be needed (or done)
+							here"	]
+		ifFalse: [	self visualCritical:
+							[ self	dispatchMessage: msg;
+										updateLayoutsIfNeeded.	]
+					 ]!
+
+message: msgCode <ExternalData>
+for: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	"This is where all the win32 messages are delivered to the per-session thread.  We
+	  just figure out which window it is for, and then forward the message."
+
+	"We have to treat the first message specially, since we have to register the window"
+	windowBeingCreated notNil
+		ifTrue: [	self registerWindow: windowBeingCreated handle: hwnd.
+						windowBeingCreated := nil. ].
+
+	^(self safeWindowFor: hwnd) message: msgCode for: hwnd wParam: wParam lParam: lParam!
+
+unregisterTimer: t <Timer>
+
+	self critical:
+		[ self timers removeKey: t win32Handle ]!
+
+unregisterWindow: w <Window>
+
+	w = self sessionWindow
+		ifTrue: [ self windowsDo:
+							[ :otherWin <Window> |
+								otherWin = self sessionWindow
+									ifFalse: [ otherWin close ].
+							]
+					 ].
+	self windows removeKey: w win32Handle.
+	self windows isEmpty
+		ifTrue: [ self postQuit ].!
+
+withBufferCanvasFor: invalid <Rect> do: f <[Canvas, HBITMAP, ^X def]> ^<X>
+	"Evaluate f with an canvas that draws to an off-screen
+		bitmap, which is the second argument to the block,
+		clipping to the specified invalid region, that is compatible with this medium"
+
+	| can <Canvas> |
+	can := self bufferCanvasWithMinimumExtent: invalid extent.
+
+	"We negate the offset relative to the region to be drawn"
+	can offset: invalid origin negated.
+	can initClippingRectBeforeTranslation: (Point origin corner: invalid extent).
+
+
+	f value: can value: self displayBuffer.
+
+	"We don't release the canvas, since it is cached"!
+
+wndProc ^<APICallBack>
+
+	WndProc isNil
+		ifTrue: [	WndProc := APICallBack
+							register:
+								[ :hwnd <ExternalProxy> :msg <SmallInteger> :wParam <ExternalData> :lParam <ExternalData> |
+
+									(Session forProcess: Processor activeProcess)
+											 message: msg for: hwnd wParam: wParam lParam: lParam ]
+							parameters: (OrderedCollection[Class]
+								with: ExternalProxy with: SmallInteger with: ExternalProxy with: ExternalProxy).	].
+	^WndProc! !
+
+! (Delta mirrorFor: #Session) methodsFor: 'window creation' !
+
+
+newStandardWindow: name <Str>
+for: vis <Visual>
+^<StandardWindow>
+	"Create a standard top-level window"
+
+	^self medium
+			newStandardWindow: name
+			session: self
+			for: vis! !
 

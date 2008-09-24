@@ -16,11 +16,20 @@ Use and distribution of this software is subject to the terms of the attached so
 
 initialize Queencount := 50 "QueensBenchmark initialize"! !
 
-! (Delta mirrorFor: #QueensBenchmark) methodsFor: 'run' !
+! (Delta mirrorFor: #QueensBenchmark) methodsFor: 'admin' !
 
 
-run
-	Queencount timesRepeat: [self doQueens]! !
+digitalkTime
+	^60!
+
+factor
+	^25!
+
+name
+	^#Queens!
+
+parcplaceTime
+	^83! !
 
 ! (Delta mirrorFor: #QueensBenchmark) methodsFor: 'private' !
 
@@ -79,18 +88,9 @@ tryI: i A: a B: b C: c X: x
 						ifFalse: [q := true]]].
 	^q! !
 
-! (Delta mirrorFor: #QueensBenchmark) methodsFor: 'admin' !
+! (Delta mirrorFor: #QueensBenchmark) methodsFor: 'run' !
 
 
-digitalkTime
-	^60!
-
-factor
-	^25!
-
-name
-	^#Queens!
-
-parcplaceTime
-	^83! !
+run
+	Queencount timesRepeat: [self doQueens]! !
 

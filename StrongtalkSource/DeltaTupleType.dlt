@@ -19,6 +19,21 @@ arity k < n.
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #DeltaTupleType) classSide methodsFor: 'naming' !
+
+
+publicTupleName  ^ <Symbol>
+
+^#Tuple!
+
+publicTupleName: n <Int > ^ <Symbol>
+
+^n = 0 ifTrue:[#Object]
+           ifFalse:[self publicTupleName].!
+
+tupleName: n <Int > ^ <Symbol>
+    ^(n printString, '_argTuple') asSymbol.! !
+
 ! (Delta mirrorFor: #DeltaTupleType) classSide methodsFor: 'private' !
 
 
@@ -133,21 +148,6 @@ tn := self tupleName: n.
 DeltaGlobals at: tn
            ifAbsent:[self createTupleType: n].
 ^DeltaTypeId new setId: tn; scope: DeltaGlobals.! !
-
-! (Delta mirrorFor: #DeltaTupleType) classSide methodsFor: 'naming' !
-
-
-publicTupleName  ^ <Symbol>
-
-^#Tuple!
-
-publicTupleName: n <Int > ^ <Symbol>
-
-^n = 0 ifTrue:[#Object]
-           ifFalse:[self publicTupleName].!
-
-tupleName: n <Int > ^ <Symbol>
-    ^(n printString, '_argTuple') asSymbol.! !
 
 ! (Delta mirrorFor: #DeltaTupleType) methodsFor: 'Unclassified' !
 

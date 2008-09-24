@@ -18,6 +18,14 @@ for: pat <Str>  ^<FilePattern>
 	self assert: [ self validPattern: pat ].
 	^self new pattern: pat! !
 
+! (Delta mirrorFor: #Win32FilePattern) classSide methodsFor: 'restricted' !
+
+
+patternHasWildcards: pat <Str> ^<Boolean>
+
+	^(pat includes: Platform multipleMatchWildcardCharacter)
+		or: [ pat includes: Platform singleMatchWildcardCharacter ]! !
+
 ! (Delta mirrorFor: #Win32FilePattern) classSide methodsFor: 'testing' !
 
 
@@ -26,13 +34,47 @@ validPattern: pat <Str> ^<Boolean>
 	"Make sure this is a valid syntactic pattern (should be valid even if no *s)"
 	self unimplemented! !
 
-! (Delta mirrorFor: #Win32FilePattern) classSide methodsFor: 'restricted' !
+! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'accessing' !
 
 
-patternHasWildcards: pat <Str> ^<Boolean>
+extensions ^<FilePattern>
 
-	^(pat includes: Platform multipleMatchWildcardCharacter)
-		or: [ pat includes: Platform singleMatchWildcardCharacter ]! !
+	^self , (FilePattern for: '*')! !
+
+! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'iterating' !
+
+
+elementsDo: blk <[FilePattern]>
+
+	| s <CharacterReadStream> |
+
+	s := self pattern readStream.
+	[ s atEnd ]
+		whileFalse:
+			[	| next <Str> |
+				next := s upTo: $\.
+				(next includes: $:)
+					ifTrue: [ next := next,'\' ].
+				blk value: (FilePattern for: next)	].!
+
+pathsDo: blk <[FilePath]>
+
+	| els <SeqCltn[FilePattern]> i <Int> |
+	els := self elements.
+	i := self firstWildElementOf: els
+				ifFail: [ ^self shouldNotHappen ].
+	i = els size
+		ifTrue: [ self terminalPathsDo: blk ]
+		ifFalse: [	| rest <FilePattern> |
+						i + 1 = els size
+							ifTrue: [ rest := els last ]
+							ifFalse: [ rest := FilePattern forAll: (els copyFrom: i + 1 to: els size) ].
+						(FilePattern forAll: (els copyFrom: 1 to: i))
+							pathsDo:
+								[ :fp <FilePath> |
+									fp isDirectory
+										ifTrue: [ (fp, rest) pathsDo: blk ]		]
+					 ]! !
 
 ! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'private' !
 
@@ -108,46 +150,4 @@ terminalPathsDo: blk <[FilePath]>
 isAbsolute ^<Boolean>
 
 	^self pattern includes: $:! !
-
-! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'iterating' !
-
-
-elementsDo: blk <[FilePattern]>
-
-	| s <CharacterReadStream> |
-
-	s := self pattern readStream.
-	[ s atEnd ]
-		whileFalse:
-			[	| next <Str> |
-				next := s upTo: $\.
-				(next includes: $:)
-					ifTrue: [ next := next,'\' ].
-				blk value: (FilePattern for: next)	].!
-
-pathsDo: blk <[FilePath]>
-
-	| els <SeqCltn[FilePattern]> i <Int> |
-	els := self elements.
-	i := self firstWildElementOf: els
-				ifFail: [ ^self shouldNotHappen ].
-	i = els size
-		ifTrue: [ self terminalPathsDo: blk ]
-		ifFalse: [	| rest <FilePattern> |
-						i + 1 = els size
-							ifTrue: [ rest := els last ]
-							ifFalse: [ rest := FilePattern forAll: (els copyFrom: i + 1 to: els size) ].
-						(FilePattern forAll: (els copyFrom: 1 to: i))
-							pathsDo:
-								[ :fp <FilePath> |
-									fp isDirectory
-										ifTrue: [ (fp, rest) pathsDo: blk ]		]
-					 ]! !
-
-! (Delta mirrorFor: #Win32FilePattern) methodsFor: 'accessing' !
-
-
-extensions ^<FilePattern>
-
-	^self , (FilePattern for: '*')! !
 

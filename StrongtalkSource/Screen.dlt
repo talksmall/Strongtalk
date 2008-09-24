@@ -61,21 +61,6 @@ newCanvas ^<Canvas>
 	can initialize; toRelease: [ :dc <HDC> | dc deleteDC ].
 	^can! !
 
-! (Delta mirrorFor: #Screen) methodsFor: 'restricted-win32 accessing' !
-
-
-adjustPoints: p <Int> ^<Int>
-	"Screen fonts are scaled up by 1.333 to make them readable"
-
-	^(p*1333)//1000
-!
-
-deadjustPoints: p <Int> ^<Int>
-	"Screen fonts are scaled up by 1.333 to make them readable"
-
-	^(p*1000)//1333
-	! !
-
 ! (Delta mirrorFor: #Screen) methodsFor: 'restricted-to session' !
 
 
@@ -91,4 +76,19 @@ for: vis <Visual>
 			session: sess
 			for: vis.
 	^w! !
+
+! (Delta mirrorFor: #Screen) methodsFor: 'restricted-win32 accessing' !
+
+
+adjustPoints: p <Int> ^<Int>
+	"Screen fonts are scaled up by 1.333 to make them readable"
+
+	^(p*1333)//1000
+!
+
+deadjustPoints: p <Int> ^<Int>
+	"Screen fonts are scaled up by 1.333 to make them readable"
+
+	^(p*1000)//1333
+	! !
 

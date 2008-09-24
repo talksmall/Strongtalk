@@ -38,6 +38,78 @@ test
 	q remove: 3; checkValidity.
 	[ #() hasSameElementsAndOrderAs: q ] verify.! !
 
+! (Delta mirrorFor: #Queue) methodsFor: 'accessing' !
+
+
+at: index <Int> ^<E>
+
+	^self havePeeked
+		ifFalse: [ (self linkAt: index) value ]
+		ifTrue: [ index = 1
+						ifFalse: [ (self linkAt: index - 1) value ]
+						ifTrue: [ self peekVal ]
+					]!
+
+at: index <Int> put: el <E>  ^<E>
+
+	self havePeeked
+		ifFalse: [ (self linkAt: index) value: el ]
+		ifTrue: [ index = 1
+						ifFalse: [ (self linkAt: index - 1) value: el ]
+						ifTrue: [ self peekVal: el ]
+					].
+	^el!
+
+nextPut: el <E> ^<E>
+
+	| l <DoubleLink[E]> |
+	l := DoubleLink[E] new value: el.
+	tail isNil
+		ifFalse: [	self tail next: l.
+						l prev: self tail.	]
+		ifTrue: [ self head: l ].
+	self tail: l.
+	self actualSize: self actualSize + 1.
+	^el!
+
+size ^<Int>
+
+	^self havePeeked
+		ifFalse: [ self actualSize ]
+		ifTrue: [ self actualSize + 1 ]! !
+
+! (Delta mirrorFor: #Queue) methodsFor: 'consistency checking' !
+
+
+checkValidity
+
+	| c <Int> l <DoubleLink[E]> peekCount <Int> |
+	peekCount := self havePeeked ifTrue: [ 1 ] ifFalse: [ 0 ].
+	l := self head.
+	l isNil
+		ifTrue: [ [ self size = peekCount and: [ self tail isNil ] ] verify.
+						^self ].
+	[ l prev isNil ] verify.
+
+	c := 1.
+	[ l next notNil ]
+		whileTrue: [	| next <DoubleLink[E]> |
+								next := l next.
+								self assert: [ next prev == l ].
+								l := next.
+								c := c + 1 ].
+	[ self tail == l ] verify.
+	[ (c + peekCount) = self size ] verify.! !
+
+! (Delta mirrorFor: #Queue) methodsFor: 'copying' !
+
+
+copyWithSize: s <Int> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is safe because of the inference clause"
+	^(Array[EX] new: s) replaceFrom: 1 to: (self size min: s) with: (guaranteed <SeqCltn[EX]> self)! !
+
 ! (Delta mirrorFor: #Queue) methodsFor: 'private' !
 
 
@@ -111,55 +183,6 @@ tail: l <DoubleLink[E]>
 
 	tail := l! !
 
-! (Delta mirrorFor: #Queue) methodsFor: 'accessing' !
-
-
-at: index <Int> ^<E>
-
-	^self havePeeked
-		ifFalse: [ (self linkAt: index) value ]
-		ifTrue: [ index = 1
-						ifFalse: [ (self linkAt: index - 1) value ]
-						ifTrue: [ self peekVal ]
-					]!
-
-at: index <Int> put: el <E>  ^<E>
-
-	self havePeeked
-		ifFalse: [ (self linkAt: index) value: el ]
-		ifTrue: [ index = 1
-						ifFalse: [ (self linkAt: index - 1) value: el ]
-						ifTrue: [ self peekVal: el ]
-					].
-	^el!
-
-nextPut: el <E> ^<E>
-
-	| l <DoubleLink[E]> |
-	l := DoubleLink[E] new value: el.
-	tail isNil
-		ifFalse: [	self tail next: l.
-						l prev: self tail.	]
-		ifTrue: [ self head: l ].
-	self tail: l.
-	self actualSize: self actualSize + 1.
-	^el!
-
-size ^<Int>
-
-	^self havePeeked
-		ifFalse: [ self actualSize ]
-		ifTrue: [ self actualSize + 1 ]! !
-
-! (Delta mirrorFor: #Queue) methodsFor: 'copying' !
-
-
-copyWithSize: s <Int> ^<VarSeqCltn[EX]>
-	{where EX is returnType of #anElement message of receiverType}
-
-	"The guarantee is safe because of the inference clause"
-	^(Array[EX] new: s) replaceFrom: 1 to: (self size min: s) with: (guaranteed <SeqCltn[EX]> self)! !
-
 ! (Delta mirrorFor: #Queue) methodsFor: 'private-initialization' !
 
 
@@ -177,27 +200,4 @@ remove: el <E> ^<E>
 		ifTrue: [	self next.	]
 		ifFalse: [ self removeLink: (self linkHolding: el) ].
 	^el! !
-
-! (Delta mirrorFor: #Queue) methodsFor: 'consistency checking' !
-
-
-checkValidity
-
-	| c <Int> l <DoubleLink[E]> peekCount <Int> |
-	peekCount := self havePeeked ifTrue: [ 1 ] ifFalse: [ 0 ].
-	l := self head.
-	l isNil
-		ifTrue: [ [ self size = peekCount and: [ self tail isNil ] ] verify.
-						^self ].
-	[ l prev isNil ] verify.
-
-	c := 1.
-	[ l next notNil ]
-		whileTrue: [	| next <DoubleLink[E]> |
-								next := l next.
-								self assert: [ next prev == l ].
-								l := next.
-								c := c + 1 ].
-	[ self tail == l ] verify.
-	[ (c + peekCount) = self size ] verify.! !
 

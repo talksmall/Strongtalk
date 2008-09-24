@@ -16,10 +16,16 @@ uniformly for better error handling"
 Use and distribution of this software is subject to the terms of the attached source license. 
 '!
 
-! (Delta mirrorFor: #ExternalStreamableObject) methodsFor: 'restricted-opening' !
+! (Delta mirrorFor: #ExternalStreamableObject) methodsFor: 'byte streaming' !
 
 
-open: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalDescriptor | X>
+inputStream ^<ExternalInputStream>
+	"Opens a byte input stream"
+
+	self subclassResponsibility!
+
+outputStream ^<ExternalOutputStream>
+	"Opens a byte output stream"
 
 	self subclassResponsibility! !
 
@@ -60,16 +66,10 @@ charOutputStreamDo: blk <[CharOutputStream, ^X def]> ^<X>
 	[ result := blk value: strm ] ensure: [ strm close ].
 	^result! !
 
-! (Delta mirrorFor: #ExternalStreamableObject) methodsFor: 'byte streaming' !
+! (Delta mirrorFor: #ExternalStreamableObject) methodsFor: 'restricted-opening' !
 
 
-inputStream ^<ExternalInputStream>
-	"Opens a byte input stream"
-
-	self subclassResponsibility!
-
-outputStream ^<ExternalOutputStream>
-	"Opens a byte output stream"
+open: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalDescriptor | X>
 
 	self subclassResponsibility! !
 

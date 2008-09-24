@@ -1,0 +1,42 @@
+Delta define: #ZeroDivide as: (
+(Class subclassOf: 'Error' instanceVariables: 'dividend')) !
+
+(Delta mirrorFor: #ZeroDivide) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ZeroDivide) group: 'Unclassified'!
+
+(Delta mirrorFor: #ZeroDivide)
+comment: 
+''!
+
+! (Delta mirrorFor: #ZeroDivide) classSide methodsFor: 'Instance creation' !
+
+
+dividend: dividend
+
+	^self new
+		dividend: dividend;
+		yourself! !
+
+! (Delta mirrorFor: #ZeroDivide) methodsFor: 'accessing' !
+
+
+dividend
+
+	^dividend! !
+
+! (Delta mirrorFor: #ZeroDivide) methodsFor: 'private - initialization' !
+
+
+dividend: aValue
+
+	dividend := aValue.
+	messageText := 'divide by zero'! !
+
+! (Delta mirrorFor: #ZeroDivide) methodsFor: 'testing' !
+
+
+isResumable
+
+	^true! !
+

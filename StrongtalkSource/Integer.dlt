@@ -40,6 +40,101 @@ readFrom: s <CharInputStream> ^<Int>
 		ifTrue: [ i := i negated ].
 	^i! !
 
+! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+
+
+denominator ^<Integer>
+	^1!
+
+hash ^<Int>
+
+	^self!
+
+hexDigitAt: nybble <Int> ^<Character>
+	"Return the hex character for the ith nybble (4 bits, index of lowest sig. = 1)"
+
+	^'0123456789ABCDEF'
+		at: ((self bitShift: (nybble - 1 * 4) negated) bitAnd: 16rF) + 1!
+
+identityHash ^<Int>
+
+	^self!
+
+negated ^<Int>
+
+	^self zero - self!
+
+numerator ^<Integer>
+	^self! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'benchmarking' !
+
+
+recurse
+	self > 0 ifTrue: [
+		(self - 1) recurse.
+		(self - 1) recurse.
+	]!
+
+sumTo: end <Int>  ^<Int>
+	| sum <Int> | 
+	sum := 0.
+	self to: end do: [ :i <Int> | sum := sum + i ].
+	^sum! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+
+
+allMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) = mask!
+
+anyMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) ~= 0!
+
+bitAnd: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	self unimplemented!
+
+bitAt: index <Int> ^<Int>
+	"Return the bit at the specified bit index, with the low bit being index 1"
+
+	^1 bitAnd: (self bitShift: (1 - index))!
+
+bitInvert ^<Int>
+
+	^-1 - self!
+
+bitOr: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	self unimplemented!
+
+bitShift: shift <Int> ^<Int>
+
+	self unimplemented!
+
+bitXor: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	self unimplemented!
+
+highBit ^<SmallInt>
+
+	self unimplemented!
+
+noMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) = 0!
+
+rawBitShift: numBits <Int> ^<Int>
+	"This is like bit shift, except that the result is truncated to a smallinteger, rather than
+		overflowing to a largeinteger.  The receiver cannot be a largeinteger."
+
+	self error: 'this message only works for small integers'! !
+
 ! (Delta mirrorFor: #Integer) methodsFor: 'comparison' !
 
 
@@ -69,6 +164,91 @@ readFrom: s <CharInputStream> ^<Int>
 	  as needed"
 
 	^(self @= other) not! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'constants' !
+
+
+unit ^<Integer>
+
+	^1!
+
+zero ^<Integer>
+
+	^0! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'converting' !
+
+
+asExternalProxy ^<ExternalProxy>
+
+	^ExternalProxy forInt: self!
+
+asFloat ^<Float>
+	self unimplemented!
+
+asInteger ^<Integer>
+
+	^self! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'iteration' !
+
+
+timesRepeat: f <[]> ^<Object>
+
+	1 to: self do: [ :i <Int> |
+		f value  ].
+	^nil!
+
+to: stop <Int> by: step <Int> do: f <[Int]> ^<Object>
+
+	| v <Int> |
+	v := self.
+	step < 0
+		ifFalse: [ [ v <= stop ]
+					whileTrue: [	f value: v.
+								v := v + step  ]]
+		ifTrue: [ [ v >= stop ]
+					whileTrue: [ f value: v.
+								v := v + step  ]].
+	^nil!
+
+to: stop <Int> do: f <[Int]> ^<Object>
+
+	| v <Int> |
+	v := self.
+	[ v <= stop ]
+		whileTrue: [	f value: v.
+					v := v + 1  ].
+	^nil!
+
+to: stop <Int> intervals: n <Int> do: f <[Int]> ^<Object>
+	"Evaluate f with n + 1 values as evenly spaced 
+	 as possible between the
+	 receiver and stop, inclusive."
+
+	| interval <RationalNumber> current <RationalNumber> |
+	interval := (stop - self) / n.
+	current := self.
+	n + 1 timesRepeat:
+		[	f value: current asInteger.
+			current := current + interval.	].! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'mathematical functions' !
+
+
+factorial ^<Int>
+
+	self assert: [ self >= self zero ].
+	^self <= 1
+		ifTrue: [ 1 ]
+		ifFalse: [ self * (self - 1) factorial ]!
+
+nfib ^<Int>
+	^self <= 1
+			ifTrue: [1]
+			ifFalse: [(self - 1) nfib +
+							(self - 2) nfib +
+							1]! !
 
 ! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
 
@@ -148,46 +328,70 @@ truncated ^<Int>
 
 	^self! !
 
-! (Delta mirrorFor: #Integer) methodsFor: 'converting' !
+! (Delta mirrorFor: #Integer) methodsFor: 'printing' !
 
 
-asExternalProxy ^<ExternalProxy>
+printBareHexDigits: nDigits <Int> on: strm <CharOutputStream>
 
-	^ExternalProxy forInt: self!
+	nDigits to: 1 by: -1
+		do: [ :i <Int> |
+					strm put: (self hexDigitAt: i) ]!
 
-asFloat ^<Float>
-	self unimplemented!
+printBareHexOn: strm <CharOutputStream>
 
-asInteger ^<Integer>
+	(self = (self bitAnd: 16rF))
+		ifFalse: [ (self bitShift: -4) printBareHexOn: strm ].
+	strm put: (self hexDigitAt: 1).!
 
-	^self! !
+printHexOn: strm <CharOutputStream>
 
-! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+	strm putAll: '16r'.
+	self printBareHexOn: strm.!
+
+printOn: strm <CharOutputStream>
+
+	self printOn: strm radix: 10!
+
+printOn: strm <CharOutputStream> radix: radix <Int>
+
+	| abs <Int> |
+	self negative
+		ifTrue: [	strm nextPut: $-.
+						abs := self negated. ]
+		ifFalse: [	abs := self. ].
+	abs printNonNegativeOn: strm radix: radix! !
+
+! (Delta mirrorFor: #Integer) methodsFor: 'private-proxy double dispatching' !
 
 
-denominator ^<Integer>
-	^1!
+bitAndFromSmallInteger: other <SmallInteger> ^<ExternalData>
 
-hash ^<Int>
+	^self bitAnd: other!
 
-	^self!
+bitOrFromSmallInteger: other <SmallInteger> ^<Int>
 
-hexDigitAt: nybble <Int> ^<Character>
-	"Return the hex character for the ith nybble (4 bits, index of lowest sig. = 1)"
+	^self bitOr: other! !
 
-	^'0123456789ABCDEF'
-		at: ((self bitShift: (nybble - 1 * 4) negated) bitAnd: 16rF) + 1!
+! (Delta mirrorFor: #Integer) methodsFor: 'proxy operations' !
 
-identityHash ^<Int>
 
-	^self!
+externalBitAnd: other <ExternalData> ^<ExternalData>
 
-negated ^<Int>
+	"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'!
 
-	^self zero - self!
+externalBitOr: other <ExternalData> ^<ExternalData>
 
-numerator ^<Integer>
-	^self! !
+		"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'!
+
+hasBitsSet: mask <ExternalData> ^<Boolean>
+
+	"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'! !
 
 ! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
 
@@ -242,217 +446,6 @@ subtractFromSmallInteger: o <SmallInteger> ^<Integer>
 	"%generated code- do not modify"
 	^self subtractFromInteger: o! !
 
-! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
-
-
-allMask: mask <Integer> ^<Boolean>
-
-	^(self bitAnd: mask) = mask!
-
-anyMask: mask <Integer> ^<Boolean>
-
-	^(self bitAnd: mask) ~= 0!
-
-bitAnd: o <X> ^<Self|X>
-		{where X <Integer> is arg 1}
-
-	self unimplemented!
-
-bitAt: index <Int> ^<Int>
-	"Return the bit at the specified bit index, with the low bit being index 1"
-
-	^1 bitAnd: (self bitShift: (1 - index))!
-
-bitInvert ^<Int>
-
-	^-1 - self!
-
-bitOr: o <X> ^<Self|X>
-		{where X <Integer> is arg 1}
-
-	self unimplemented!
-
-bitShift: shift <Int> ^<Int>
-
-	self unimplemented!
-
-bitXor: o <X> ^<Self|X>
-		{where X <Integer> is arg 1}
-
-	self unimplemented!
-
-highBit ^<SmallInt>
-
-	self unimplemented!
-
-noMask: mask <Integer> ^<Boolean>
-
-	^(self bitAnd: mask) = 0!
-
-rawBitShift: numBits <Int> ^<Int>
-	"This is like bit shift, except that the result is truncated to a smallinteger, rather than
-		overflowing to a largeinteger.  The receiver cannot be a largeinteger."
-
-	self error: 'this message only works for small integers'! !
-
-! (Delta mirrorFor: #Integer) methodsFor: 'truncation and rounding' !
-
-
-rounded ^<Int>
-
-	^self! !
-
-! (Delta mirrorFor: #Integer) methodsFor: 'iteration' !
-
-
-timesRepeat: f <[]> ^<Object>
-
-	1 to: self do: [ :i <Int> |
-		f value  ].
-	^nil!
-
-to: stop <Int> by: step <Int> do: f <[Int]> ^<Object>
-
-	| v <Int> |
-	v := self.
-	step < 0
-		ifFalse: [ [ v <= stop ]
-					whileTrue: [	f value: v.
-								v := v + step  ]]
-		ifTrue: [ [ v >= stop ]
-					whileTrue: [ f value: v.
-								v := v + step  ]].
-	^nil!
-
-to: stop <Int> do: f <[Int]> ^<Object>
-
-	| v <Int> |
-	v := self.
-	[ v <= stop ]
-		whileTrue: [	f value: v.
-					v := v + 1  ].
-	^nil!
-
-to: stop <Int> intervals: n <Int> do: f <[Int]> ^<Object>
-	"Evaluate f with n + 1 values as evenly spaced 
-	 as possible between the
-	 receiver and stop, inclusive."
-
-	| interval <RationalNumber> current <RationalNumber> |
-	interval := (stop - self) / n.
-	current := self.
-	n + 1 timesRepeat:
-		[	f value: current asInteger.
-			current := current + interval.	].! !
-
-! (Delta mirrorFor: #Integer) methodsFor: 'printing' !
-
-
-printBareHexDigits: nDigits <Int> on: strm <CharOutputStream>
-
-	nDigits to: 1 by: -1
-		do: [ :i <Int> |
-					strm put: (self hexDigitAt: i) ]!
-
-printBareHexOn: strm <CharOutputStream>
-
-	(self = (self bitAnd: 16rF))
-		ifFalse: [ (self bitShift: -4) printBareHexOn: strm ].
-	strm put: (self hexDigitAt: 1).!
-
-printHexOn: strm <CharOutputStream>
-
-	strm putAll: '16r'.
-	self printBareHexOn: strm.!
-
-printOn: strm <CharOutputStream>
-
-	self printOn: strm radix: 10!
-
-printOn: strm <CharOutputStream> radix: radix <Int>
-
-	| abs <Int> |
-	self negative
-		ifTrue: [	strm nextPut: $-.
-						abs := self negated. ]
-		ifFalse: [	abs := self. ].
-	abs printNonNegativeOn: strm radix: radix! !
-
-! (Delta mirrorFor: #Integer) methodsFor: 'constants' !
-
-
-unit ^<Integer>
-
-	^1!
-
-zero ^<Integer>
-
-	^0! !
-
-! (Delta mirrorFor: #Integer) methodsFor: 'benchmarking' !
-
-
-recurse
-	self > 0 ifTrue: [
-		(self - 1) recurse.
-		(self - 1) recurse.
-	]!
-
-sumTo: end <Int>  ^<Int>
-	| sum <Int> | 
-	sum := 0.
-	self to: end do: [ :i <Int> | sum := sum + i ].
-	^sum! !
-
-! (Delta mirrorFor: #Integer) methodsFor: 'restricted-to large integers' !
-
-
-asLargeInteger ^<LargeInteger>
-	"This message must ONLY be sent by large integers to construct a temporary large integer
-		during mixed-mode integer operations.  The result of this message must NEVER be
-		used by other code, since large integers that can be encoded as SmallIntegers
-		are never supposed to exist outside the large integer class"
-
-	self subclassResponsibility! !
-
-! (Delta mirrorFor: #Integer) methodsFor: 'mathematical functions' !
-
-
-factorial ^<Int>
-
-	self assert: [ self >= self zero ].
-	^self <= 1
-		ifTrue: [ 1 ]
-		ifFalse: [ self * (self - 1) factorial ]!
-
-nfib ^<Int>
-	^self <= 1
-			ifTrue: [1]
-			ifFalse: [(self - 1) nfib +
-							(self - 2) nfib +
-							1]! !
-
-! (Delta mirrorFor: #Integer) methodsFor: 'proxy operations' !
-
-
-externalBitAnd: other <ExternalData> ^<ExternalData>
-
-	"this happens only if receiver is a largeinteger, since
-		these messages are overridden in SmallInteger"
-	self error: 'Attempt to do external data operations on a LargeInteger'!
-
-externalBitOr: other <ExternalData> ^<ExternalData>
-
-		"this happens only if receiver is a largeinteger, since
-		these messages are overridden in SmallInteger"
-	self error: 'Attempt to do external data operations on a LargeInteger'!
-
-hasBitsSet: mask <ExternalData> ^<Boolean>
-
-	"this happens only if receiver is a largeinteger, since
-		these messages are overridden in SmallInteger"
-	self error: 'Attempt to do external data operations on a LargeInteger'! !
-
 ! (Delta mirrorFor: #Integer) methodsFor: 'restricted-to integers' !
 
 
@@ -466,14 +459,21 @@ printNonNegativeOn: strm <CharOutputStream> radix: radix <Int>
 		ifFalse: [ digit := self ].
 	strm put: (Character digitValue: digit).! !
 
-! (Delta mirrorFor: #Integer) methodsFor: 'private-proxy double dispatching' !
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-to large integers' !
 
 
-bitAndFromSmallInteger: other <SmallInteger> ^<ExternalData>
+asLargeInteger ^<LargeInteger>
+	"This message must ONLY be sent by large integers to construct a temporary large integer
+		during mixed-mode integer operations.  The result of this message must NEVER be
+		used by other code, since large integers that can be encoded as SmallIntegers
+		are never supposed to exist outside the large integer class"
 
-	^self bitAnd: other!
+	self subclassResponsibility! !
 
-bitOrFromSmallInteger: other <SmallInteger> ^<Int>
+! (Delta mirrorFor: #Integer) methodsFor: 'truncation and rounding' !
 
-	^self bitOr: other! !
+
+rounded ^<Int>
+
+	^self! !
 

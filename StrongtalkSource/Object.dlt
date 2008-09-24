@@ -28,6 +28,40 @@ Tags: %BlueBook %User
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
+! (Delta mirrorFor: #Object) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^67! !
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
+	^{{self primitiveNewIfFail: [ :err <Symbol> |
+		VM scavengeGarbage.
+		{{self primitiveNewIfFail: [:err <Symbol> |
+			Transcript show: err; cr.
+			VM isGCPending
+				ifTrue: [VM waitForGC.
+							{{self primitiveNewIfFail: [:err <Symbol> |
+								VM expand: (VMMirror on: self) instanceSize.
+								VM deferredGC.
+								{{self primitiveNewIfFail: [:err <Symbol> |
+																		self error: err]}}]}}]
+				ifFalse: [VM expand: (VMMirror on: self) instanceSize.
+							VM deferredGC.
+							{{self primitiveNewIfFail: [:err <Symbol> |
+																	self error: err]}}].
+			]}}
+		]}}
+"
+	^guaranteed <Instance> (super new)
+"! !
+
 ! (Delta mirrorFor: #Object) classSide methodsFor: 'private' !
 
 
@@ -69,18 +103,6 @@ isSupportedBy: o <Object> ^<Boolean>
 	self coerce: o else: [ ^false ].
 	^true! !
 
-! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
-
-
-new ^<Instance>
-	"Create and return an initialized instance of this class."
-
-	"%remove when inlining working:"
-	^{{self primitiveNewIfFail: [ :err <Symbol> | "can't happen" ]}}
-"
-	^guaranteed <Instance> (super new)
-"! !
-
 ! (Delta mirrorFor: #Object) classSide methodsFor: 'utility' !
 
 
@@ -92,11 +114,20 @@ yourself ^<Self>
 
 	^self! !
 
-! (Delta mirrorFor: #Object) classSide methodsFor: 'file out' !
+! (Delta mirrorFor: #Object) methodsFor: 'Camp Smalltalk' !
 
 
-fileOutSignature ^<Integer>
-    ^67! !
+sunitAddDependent: anObject
+ 
+        self addDependent: anObject!
+
+sunitChanged: anAspect
+ 
+        self changed: anAspect!
+
+sunitRemoveDependent: anObject
+ 
+        self removeDependent: anObject! !
 
 ! (Delta mirrorFor: #Object) methodsFor: 'accessing' !
 
@@ -113,86 +144,140 @@ identityHash ^<Integer>
 
 	^{{ self primitiveHash }}! !
 
-! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
 
 
-= other <Object> ^<Boolean>
-	"test whether this object and other are equivalent (as close to the same
-	 as possible without necessarily being ==).  
-	
-	 By default this is the same as ==.  Subclasses that redefine this must ensure
-	 that: 1) the method works with ANY object passed in as an argument
-	 (you CANNOT assume that the other object is of any particular type/class)
-	 2) if two objects are =, their #hash values are = too
-	 "
+deltaHack
 
-	^self == other!
+	"Called by methods that should be revisited after bootstrap"!
 
-isNil ^<Boolean>
-	"test whether the receiver is nil.  This method should not be overridden by application programmers."
+isAssociationOop ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: GlobalAssociation.!
 
-	^false!
+isBehavior ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Behavior.!
 
-isPoint ^<Boolean>
-	"%todo: remove when coercion is fast.  Don't write code that depends on this!!"
+isBoolean ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Boolean.!
 
-	^false!
+isCharacter ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Character.!
 
-notNil ^<Boolean>
-	"test whether the receiver is not nil.  This method should not be overridden by users."
+isCollection ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Collection[Object].!
 
+isError ^ <Boolean>
+	self deltaHack.
+	^false !
+
+isInteger ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Integer.!
+
+isMethodOop ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Method.!
+
+isOop ^ <Boolean>
+	self deltaHack.
 	^true!
 
-~= other <Object> ^<Boolean>
-	"not ="
+isSmallInteger ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: SmallInteger!
 
-	^(self = other)
-		ifTrue: [ false ]
-		ifFalse: [ true ]! !
+isString ^ <Boolean>
+	self deltaHack.
+	^(self isKindOf: String) or:[self isSymbol].!
 
-! (Delta mirrorFor: #Object) methodsFor: 'private' !
+isSymbol ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Symbol.!
+
+isSymbolOop ^ <Boolean>
+	self deltaHack.
+	^self isSymbol!
+
+printValue
+	self deltaHack.
+	{{self primitivePrintValue}}! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'copying' !
 
 
-articleFor: s <Str> ^<Str>
+copy ^<Instance>
+	"Create and return a copy of the receiver.  Objects that are immutable and cannot be copied may return
+	 themselves.  Objects contained by this object that are externally accessible objects and  are 	 considered
+	 'separate' from  the receiver (such as the elements of a collection) are not copied.
 
-	^(s at: 1) isVowel
-			ifTrue: [ 'an' ]
-			ifFalse: [ 'a' ]!
+	Subclasses must override postCopy if they contain private information that should not be shared
+	after a copy."
 
-assert: predicate <[^Boolean]>
-	"Assert that the predicate is true.   If it is false, the program is considered to have failed.  It is STRONGLY encouraged that you
-	 sprinkle assertions liberally through your code, to doublecheck that your designs are correct.  When you are running in a
-  	 high performance production environment, and wish to gain every bit of performance at the expense of some extra program
-	 validity checks, you can change inProduction to return true, so that none of the assertions are checked.
-	 Because of this, you should not put code with side effects in assert blocks, since they will not be executed
-	 in production environments.  See BooleanBlock>>verify for an alternative that always tests."
+	^self shallowCopy postCopy! !
 
-	self inProduction
-		ifFalse: [ predicate verify ]!
+! (Delta mirrorFor: #Object) methodsFor: 'dependencies' !
 
-halt
 
-	Processor stopWithError: ProcessHaltError new.
+addDependent: o <Object>
+
+	"Objects that aren't models don't need to store dependents, since they don't do notification.  To
+	  add support for BlueBook-style dependency notification to a class, mix-in or inherit from 
+	  NotifyingObject."!
+
+removeDependent: o <Object>
+
+	"Objects that aren't models don't need to store dependents, since they don't do notification"!
+
+update: aspect <Object> 
 !
 
-postCopy
-	"This is sent to an object that is the result of a shallowCopy to allow it to copy any subobjects
-	  that should not be shared.  Subclasses should override this if they have such subobjects."
-!
+update: aspect <Object> with: value <Object>
 
-shallowCopy ^<Instance>
-	"Create a bitwise copy of the current object.  This is not public because the new object shares the
-	 values of all of the receiver's instance variables, which may violate the design of the receiver's class.
-	 The postCopy message fixes such undesired sharing, after the fact"
+	self update: aspect
+! !
 
-	^guaranteed <Instance>
-		{{self primitiveShallowCopyIfFail: [ :err <Symbol> | self error: err ]}}!
+! (Delta mirrorFor: #Object) methodsFor: 'fake brands' !
 
-shallowCopyTenured ^<Instance>
-	"As shallowCopy, but forces the copy to be in old space"
 
-	^guaranteed <Instance>
-		{{self primitiveCopyTenuredIfFail: [ :err <Symbol> | self error: err ]}} ! !
+Number ^<Boolean>
+	^false!
+
+Str ^<Boolean>
+	^false! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'file out' !
+
+
+fileOutBodyOn: d <Dumper>
+	| start <Integer> end <Integer> |
+	"File out instance variables"
+	start	:= self fileOutHeaderSize.
+	end		:=	(Reflection classOf: self)	 fileOutNonIndexableSize.
+	start + 1 to: end do: [:index <Integer> |
+		(self fileOutInstVarAt: index) fileOutOn: d
+	]!
+
+fileOutHeaderOn: d <Dumper>
+	d	putByte: 		self fileOutSignature.
+	d	putInteger:	self fileOutSize.
+	(Reflection classOf: self)		fileOutOn: d!
+
+fileOutHeaderSize ^<Integer>
+	^(Reflection classOf: self) fileOutInstanceHeaderSize!
+
+fileOutInstVarAt: index <Integer> ^<Object>
+	^{{self primitiveInstVarAt: index ifFail: [:err <Symbol> | self error: err]}}!
+
+fileOutSignature ^<Integer>
+    ^99!
+
+fileOutSize ^<Integer>
+	^{{self primitiveOopSize}}! !
 
 ! (Delta mirrorFor: #Object) methodsFor: 'performing' !
 
@@ -303,6 +388,173 @@ withArguments: args <SeqCltn[Object]>
 	  }}
 ! !
 
+! (Delta mirrorFor: #Object) methodsFor: 'printing' !
+
+
+print
+
+	self printOn: Platform errorStream.
+	Platform errorStream cr.!
+
+printOn: strm <CharOutputStream>
+
+	| nm <Str> |
+	nm := self class name.
+	strm	nextPutAll: (self articleFor: nm);
+			nextPut: Character space;
+			nextPutAll: nm.!
+
+printString ^<Str>
+	"Return a string that holds a readable but terse representation of the receiver"
+
+	| strm <CharWriteStream> |
+	strm := CharacterReadWriteStream on: (String new: 8).
+	self printOn: strm.
+	^strm contentsWritten!
+
+vmPrint
+     "%remove"
+	{{self primitivePrint}}! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private' !
+
+
+articleFor: s <Str> ^<Str>
+
+	^(s at: 1) isVowel
+			ifTrue: [ 'an' ]
+			ifFalse: [ 'a' ]!
+
+assert: predicate <[^Boolean]>
+	"Assert that the predicate is true.   If it is false, the program is considered to have failed.  It is STRONGLY encouraged that you
+	 sprinkle assertions liberally through your code, to doublecheck that your designs are correct.  When you are running in a
+  	 high performance production environment, and wish to gain every bit of performance at the expense of some extra program
+	 validity checks, you can change inProduction to return true, so that none of the assertions are checked.
+	 Because of this, you should not put code with side effects in assert blocks, since they will not be executed
+	 in production environments.  See BooleanBlock>>verify for an alternative that always tests."
+
+	self inProduction
+		ifFalse: [ predicate verify ]!
+
+postCopy
+	"This is sent to an object that is the result of a shallowCopy to allow it to copy any subobjects
+	  that should not be shared.  Subclasses should override this if they have such subobjects."
+!
+
+shallowCopy ^<Instance>
+	"Create a bitwise copy of the current object.  This is not public because the new object shares the
+	 values of all of the receiver's instance variables, which may violate the design of the receiver's class.
+	 The postCopy message fixes such undesired sharing, after the fact"
+
+	^guaranteed <Instance>
+		{{self primitiveShallowCopyIfFail: [ :err <Symbol> | self error: err ]}}!
+
+shallowCopyTenured ^<Instance>
+	"As shallowCopy, but forces the copy to be in old space"
+
+	^guaranteed <Instance>
+		{{self primitiveCopyTenuredIfFail: [ :err <Symbol> | self error: err ]}} ! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private- file out' !
+
+
+fileOutOn: d <Dumper>
+
+	"%bug: this method should NOT be called fileOutOn:,
+		since this is NOT Smalltalk fileOut, but image save
+		code.  This conflicts with the real fileOutOn:, which
+		is implemented in DefinitionWriter"
+		
+	d at: self ifPresent: [ :id <Integer> |
+		d putByte: 51.
+		d putInteger: id.
+	] ifAbsentPut: [ :id <Integer> |
+		self fileOutHeaderOn: d.
+		self fileOutBodyOn: d.
+	]! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+
+
+doesNotUnderstand: m <Message> ^<BottomType>
+	"Processor stopWithError: (ProcessDoesNotUnderstandError new message: m)"
+	(MessageNotUnderstood message: m) signal!
+
+error: msg <Str> ^<BottomType>
+
+	"Processor stopWithError: (ProcessExplicitError new msg: msg)"
+	Error signal: msg!
+
+halt
+
+	"Processor stopWithError: ProcessHaltError new."
+	Halt signal
+!
+
+shouldNotHappen ^<BottomType>
+
+	self error: 'This shouldn''t happen'.!
+
+shouldNotImplement ^<BottomType>
+
+	self error: 'A message that cannot be supported by this class has been sent to an instance'.!
+
+subclassResponsibility ^<BottomType>
+
+	"Note: In the Strongtalk language, a method whose body consists of only 
+	 'self subclassResponsibility' is considered a declaration, which subclasses
+	  must implement for concrete subclasses"
+
+	self error: 'A message that should be implemented but is not has been sent to this object'.!
+
+unimplemented ^<BottomType>
+
+	self error: 'A hook for unimplemented code has been encountered'! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	"This initialize method does NOT have to be called by subclasses.  It is here
+		as a stub so that mixins can have an initialize method that sends super initialize so
+		that they work when invoked in the presence superclass initialize methods.
+		** Note that this method is NOT called by Object>>new; subclasses must provide a
+		#new method to invoke it if needed."
+
+	"do nothing"! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-reflective' !
+
+
+actualClass ^<Self class>
+
+	^{{self primitiveClass}}!
+
+become: otherObject <BottomType>
+	"Replace all references to the receiver anywhere in this image with references to otherObject, instead.
+
+	This is a very dangerous message that should only be used if you really know what you are doing. Note that ALL
+	references are changed, including 'self' in any currently active method contexts for the receiver,
+	which means that instance variables could be accessed incorrectly, etc.  Note that this also means that the receiver
+	becomes COMPLETELY inaccessible.
+	 Also, this is not typesafe, and the type of the argument has been chosen to force typed code to insert an 
+	 explicit guarantee, to avoid 'accidental' type-safety holes.  "
+
+	"self unimplemented"
+	{{ self primitiveBecome: otherObject ifFail: [:error| self error: error] }}! !
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-system testing' !
+
+
+inProduction ^<Boolean>
+
+	"Indicates whether the system should emphasis speed over extra design validity checks.
+     You can change this to return true for production applications.
+     For example, when this is true, assertions (see #assert) are not checked."
+
+	^true! !
+
 ! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
 
 
@@ -373,6 +625,43 @@ species ^<Object class>
 		ifTrue: [ false ] "for speed"
 		ifFalse: [ true ]! !
 
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+
+
+= other <Object> ^<Boolean>
+	"test whether this object and other are equivalent (as close to the same
+	 as possible without necessarily being ==).  
+	
+	 By default this is the same as ==.  Subclasses that redefine this must ensure
+	 that: 1) the method works with ANY object passed in as an argument
+	 (you CANNOT assume that the other object is of any particular type/class)
+	 2) if two objects are =, their #hash values are = too
+	 "
+
+	^self == other!
+
+isNil ^<Boolean>
+	"test whether the receiver is nil.  This method should not be overridden by application programmers."
+
+	^false!
+
+isPoint ^<Boolean>
+	"%todo: remove when coercion is fast.  Don't write code that depends on this!!"
+
+	^false!
+
+notNil ^<Boolean>
+	"test whether the receiver is not nil.  This method should not be overridden by users."
+
+	^true!
+
+~= other <Object> ^<Boolean>
+	"not ="
+
+	^(self = other)
+		ifTrue: [ false ]
+		ifFalse: [ true ]! !
+
 ! (Delta mirrorFor: #Object) methodsFor: 'utility' !
 
 
@@ -412,260 +701,4 @@ yourself ^<Self>
 
 	 In this example, yourself is needed to return the new ordered collection, because
 	 the #addLast: message returns val, not the ordered collection."! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'private-reflective' !
-
-
-actualClass ^<Self class>
-
-	^{{self primitiveClass}}!
-
-become: otherObject <BottomType>
-	"Replace all references to the receiver anywhere in this image with references to otherObject, instead.
-
-	This is a very dangerous message that should only be used if you really know what you are doing. Note that ALL
-	references are changed, including 'self' in any currently active method contexts for the receiver,
-	which means that instance variables could be accessed incorrectly, etc.  Note that this also means that the receiver
-	becomes COMPLETELY inaccessible.
-	 Also, this is not typesafe, and the type of the argument has been chosen to force typed code to insert an 
-	 explicit guarantee, to avoid 'accidental' type-safety holes.  "
-
-	self unimplemented! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'printing' !
-
-
-print
-
-	self printOn: Platform errorStream.
-	Platform errorStream cr.!
-
-printOn: strm <CharOutputStream>
-
-	| nm <Str> |
-	nm := self class name.
-	strm	nextPutAll: (self articleFor: nm);
-			nextPut: Character space;
-			nextPutAll: nm.!
-
-printString ^<Str>
-	"Return a string that holds a readable but terse representation of the receiver"
-
-	| strm <CharWriteStream> |
-	strm := CharacterReadWriteStream on: (String new: 8).
-	self printOn: strm.
-	^strm contentsWritten!
-
-vmPrint
-     "%remove"
-	{{self primitivePrint}}! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
-
-
-doesNotUnderstand: m <Message> ^<BottomType>
-
-	Processor stopWithError: (ProcessDoesNotUnderstandError new message: m)
-!
-
-error: msg <Str> ^<BottomType>
-
-	Processor stopWithError: (ProcessExplicitError new msg: msg)!
-
-shouldNotHappen ^<BottomType>
-
-	self error: 'This shouldn''t happen'.!
-
-shouldNotImplement ^<BottomType>
-
-	self error: 'A message that cannot be supported by this class has been sent to an instance'.!
-
-subclassResponsibility ^<BottomType>
-
-	"Note: In the Strongtalk language, a method whose body consists of only 
-	 'self subclassResponsibility' is considered a declaration, which subclasses
-	  must implement for concrete subclasses"
-
-	self error: 'A message that should be implemented but is not has been sent to this object'.!
-
-unimplemented ^<BottomType>
-
-	self error: 'A hook for unimplemented code has been encountered'! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'fake brands' !
-
-
-Number ^<Boolean>
-	^false!
-
-Str ^<Boolean>
-	^false! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'copying' !
-
-
-copy ^<Instance>
-	"Create and return a copy of the receiver.  Objects that are immutable and cannot be copied may return
-	 themselves.  Objects contained by this object that are externally accessible objects and  are 	 considered
-	 'separate' from  the receiver (such as the elements of a collection) are not copied.
-
-	Subclasses must override postCopy if they contain private information that should not be shared
-	after a copy."
-
-	^self shallowCopy postCopy! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'dependencies' !
-
-
-addDependent: o <Object>
-
-	"Objects that aren't models don't need to store dependents, since they don't do notification.  To
-	  add support for BlueBook-style dependency notification to a class, mix-in or inherit from 
-	  NotifyingObject."!
-
-removeDependent: o <Object>
-
-	"Objects that aren't models don't need to store dependents, since they don't do notification"!
-
-update: aspect <Object> 
-!
-
-update: aspect <Object> with: value <Object>
-
-	self update: aspect
-! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'private-initialization' !
-
-
-initialize
-
-	"This initialize method does NOT have to be called by subclasses.  It is here
-		as a stub so that mixins can have an initialize method that sends super initialize so
-		that they work when invoked in the presence superclass initialize methods.
-		** Note that this method is NOT called by Object>>new; subclasses must provide a
-		#new method to invoke it if needed."
-
-	"do nothing"! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'file out' !
-
-
-fileOutBodyOn: d <Dumper>
-	| start <Integer> end <Integer> |
-	"File out instance variables"
-	start	:= self fileOutHeaderSize.
-	end		:=	(Reflection classOf: self)	 fileOutNonIndexableSize.
-	start + 1 to: end do: [:index <Integer> |
-		(self fileOutInstVarAt: index) fileOutOn: d
-	]!
-
-fileOutHeaderOn: d <Dumper>
-	d	putByte: 		self fileOutSignature.
-	d	putInteger:	self fileOutSize.
-	(Reflection classOf: self)		fileOutOn: d!
-
-fileOutHeaderSize ^<Integer>
-	^(Reflection classOf: self) fileOutInstanceHeaderSize!
-
-fileOutInstVarAt: index <Integer> ^<Object>
-	^{{self primitiveInstVarAt: index ifFail: [:err <Symbol> | self error: err]}}!
-
-fileOutSignature ^<Integer>
-    ^99!
-
-fileOutSize ^<Integer>
-	^{{self primitiveOopSize}}! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
-
-
-deltaHack
-
-	"Called by methods that should be revisited after bootstrap"!
-
-isAssociationOop ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: GlobalAssociation.!
-
-isBehavior ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: Behavior.!
-
-isBoolean ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: Boolean.!
-
-isCharacter ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: Character.!
-
-isCollection ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: Collection[Object].!
-
-isError ^ <Boolean>
-	self deltaHack.
-	^false !
-
-isInteger ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: Integer.!
-
-isMethodOop ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: Method.!
-
-isOop ^ <Boolean>
-	self deltaHack.
-	^true!
-
-isSmallInteger ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: SmallInteger!
-
-isString ^ <Boolean>
-	self deltaHack.
-	^(self isKindOf: String) or:[self isSymbol].!
-
-isSymbol ^ <Boolean>
-	self deltaHack.
-	^self isKindOf: Symbol.!
-
-isSymbolOop ^ <Boolean>
-	self deltaHack.
-	^self isSymbol!
-
-printValue
-	self deltaHack.
-	{{self primitivePrintValue}}! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'private-system testing' !
-
-
-inProduction ^<Boolean>
-
-	"Indicates whether the system should emphasis speed over extra design validity checks.
-     You can change this to return true for production applications.
-     For example, when this is true, assertions (see #assert) are not checked."
-
-	^true! !
-
-! (Delta mirrorFor: #Object) methodsFor: 'private- file out' !
-
-
-fileOutOn: d <Dumper>
-
-	"%bug: this method should NOT be called fileOutOn:,
-		since this is NOT Smalltalk fileOut, but image save
-		code.  This conflicts with the real fileOutOn:, which
-		is implemented in DefinitionWriter"
-		
-	d at: self ifPresent: [ :id <Integer> |
-		d putByte: 51.
-		d putInteger: id.
-	] ifAbsentPut: [ :id <Integer> |
-		self fileOutHeaderOn: d.
-		self fileOutBodyOn: d.
-	]! !
 

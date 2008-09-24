@@ -34,28 +34,6 @@ session: s <Session>
 	super session: s.
 	self application session: s! !
 
-! (Delta mirrorFor: #ApplicationInterceptor) methodsFor: 'event handling' !
-
-
-character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	^self application character: c  focus: focus  event: ev interceptor: self
-!
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	^self application keyDown: key focus: focus event: ev interceptor: self
-!
-
-keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	^self application keyUp: key focus: focus event: ev interceptor: self
-!
-
-mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
-
-	^self application mouseEvent: type at: loc event: ev interceptor: self! !
-
 ! (Delta mirrorFor: #ApplicationInterceptor) methodsFor: 'default event handling' !
 
 
@@ -77,6 +55,28 @@ defaultKeyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
 defaultMouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
 
 	^super mouseEvent: type at: loc event: ev! !
+
+! (Delta mirrorFor: #ApplicationInterceptor) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self application character: c  focus: focus  event: ev interceptor: self
+!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self application keyDown: key focus: focus event: ev interceptor: self
+!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self application keyUp: key focus: focus event: ev interceptor: self
+!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	^self application mouseEvent: type at: loc event: ev interceptor: self! !
 
 ! (Delta mirrorFor: #ApplicationInterceptor) methodsFor: 'geometry-local' !
 

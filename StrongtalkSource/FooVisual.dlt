@@ -10,23 +10,6 @@ comment:
 '(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
 
-! (Delta mirrorFor: #FooVisual) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas>
-
-	| top <Int> bottom <Int> painter <Painter> |
-
-	top := self allocation enclosedRect top.
-	bottom := self allocation enclosedRect bottom.
-	painter := Painter new.
-	can withPainter: painter do:
-		[ 1 to: self width do:
-				[ :x <Int> |
-					painter paint: (colors at: x).
-					can displayLineFrom: x @ top to: x @ bottom.	].
-		].! !
-
 ! (Delta mirrorFor: #FooVisual) methodsFor: 'accessing' !
 
 
@@ -66,6 +49,23 @@ palette: p <Palette>
 width ^<Int>
 
 	^150! !
+
+! (Delta mirrorFor: #FooVisual) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	| top <Int> bottom <Int> painter <Painter> |
+
+	top := self allocation enclosedRect top.
+	bottom := self allocation enclosedRect bottom.
+	painter := Painter new.
+	can withPainter: painter do:
+		[ 1 to: self width do:
+				[ :x <Int> |
+					painter paint: (colors at: x).
+					can displayLineFrom: x @ top to: x @ bottom.	].
+		].! !
 
 ! (Delta mirrorFor: #FooVisual) methodsFor: 'geometry' !
 

@@ -56,6 +56,24 @@ test
 	[ q next = 2 ] verify.
 	[ q contentsRemaining hasSameElementsAndOrderAs: c ] verify.! !
 
+! (Delta mirrorFor: #SharedQueue) methodsFor: 'accessing' !
+
+
+nextPut: e <E> ^<E>
+
+	self monitor critical:
+		[ super nextPut: e ].
+	self writeEndChanged signal.
+	^e! !
+
+! (Delta mirrorFor: #SharedQueue) methodsFor: 'control' !
+
+
+close
+
+	super close.
+	self writeEndChanged signal.! !
+
 ! (Delta mirrorFor: #SharedQueue) methodsFor: 'private' !
 
 
@@ -99,16 +117,6 @@ writeEndChanged ^<Semaphore>
 
 	^writeEndChanged! !
 
-! (Delta mirrorFor: #SharedQueue) methodsFor: 'accessing' !
-
-
-nextPut: e <E> ^<E>
-
-	self monitor critical:
-		[ super nextPut: e ].
-	self writeEndChanged signal.
-	^e! !
-
 ! (Delta mirrorFor: #SharedQueue) methodsFor: 'private-initialization' !
 
 
@@ -118,12 +126,4 @@ initialize
 	writeEndChanged := Semaphore new.
 	monitor := Semaphore forMutualExclusion.
 	self closed: false.! !
-
-! (Delta mirrorFor: #SharedQueue) methodsFor: 'control' !
-
-
-close
-
-	super close.
-	self writeEndChanged signal.! !
 

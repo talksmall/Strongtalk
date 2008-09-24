@@ -22,28 +22,6 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
 '!
 
-! (Delta mirrorFor: #EventHandler) methodsFor: 'initialization' !
-
-
-initialize
-
-	super initialize.
-	
-	self charHandler: [ :c <Character> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
-		self defaultCharacter: c focus: focus  event: ev ].
-		
-	self keyDownHandler: [ :key <Symbol> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
-		self defaultKeyDown: key focus: focus  event: ev ].
-		
-	self keyUpHandler: [ :key <Symbol> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
-		self defaultKeyUp: key focus: focus  event: ev ].
-		
-	self mouseHandler: [ :button <Symbol> :loc <Point> :ev <UIEvent> :eh <EventHandler> |
-		self defaultMouseEvent: button at: loc event: ev ].
-		
-	isFocusCandidate := false.
-	onRelease := [ ].! !
-
 ! (Delta mirrorFor: #EventHandler) methodsFor: 'accessing' !
 
 
@@ -95,6 +73,14 @@ onRelease: b <[^Object]>
 
 	onRelease := b! !
 
+! (Delta mirrorFor: #EventHandler) methodsFor: 'control' !
+
+
+release
+
+	self onRelease value.
+	super release.! !
+
 ! (Delta mirrorFor: #EventHandler) methodsFor: 'event handling' !
 
 
@@ -130,11 +116,25 @@ mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
 
 	^self mouseHandler value: type value: loc value: ev value: self! !
 
-! (Delta mirrorFor: #EventHandler) methodsFor: 'control' !
+! (Delta mirrorFor: #EventHandler) methodsFor: 'initialization' !
 
 
-release
+initialize
 
-	self onRelease value.
-	super release.! !
+	super initialize.
+	
+	self charHandler: [ :c <Character> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
+		self defaultCharacter: c focus: focus  event: ev ].
+		
+	self keyDownHandler: [ :key <Symbol> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
+		self defaultKeyDown: key focus: focus  event: ev ].
+		
+	self keyUpHandler: [ :key <Symbol> :focus <Visual> :ev <UIEvent> :eh <EventHandler> |
+		self defaultKeyUp: key focus: focus  event: ev ].
+		
+	self mouseHandler: [ :button <Symbol> :loc <Point> :ev <UIEvent> :eh <EventHandler> |
+		self defaultMouseEvent: button at: loc event: ev ].
+		
+	isFocusCandidate := false.
+	onRelease := [ ].! !
 

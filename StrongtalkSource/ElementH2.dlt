@@ -10,6 +10,15 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #ElementH2) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	builder verticalWhitespace.
+	super buildFor: builder.
+	builder verticalWhitespace.! !
+
 ! (Delta mirrorFor: #ElementH2) methodsFor: 'private' !
 
 
@@ -23,13 +32,4 @@ painterFor: builder <HTMLBuilder> ^<Painter>
 							) font;
 				paint: builder textPaint
 ! !
-
-! (Delta mirrorFor: #ElementH2) methodsFor: 'building' !
-
-
-buildFor: builder <HTMLBuilder>
-
-	builder verticalWhitespace.
-	super buildFor: builder.
-	builder verticalWhitespace.! !
 

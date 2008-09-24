@@ -10,14 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #MethodLocator) methodsFor: 'initialization' !
-
-
-definition: d <BasicLocator > selector: s <Symbol >
-	self definition: d.
-	self selector: s.
-! !
-
 ! (Delta mirrorFor: #MethodLocator) methodsFor: 'accessing' !
 
 
@@ -87,6 +79,14 @@ sourceHighlight ^ <Tuple[Int,Int]>
 
 typeInfo ^ <DeltaMsgSignature>
     ^super typeInfo selectMsg: self selector! !
+
+! (Delta mirrorFor: #MethodLocator) methodsFor: 'initialization' !
+
+
+definition: d <BasicLocator > selector: s <Symbol >
+	self definition: d.
+	self selector: s.
+! !
 
 ! (Delta mirrorFor: #MethodLocator) methodsFor: 'locator matching' !
 

@@ -1,0 +1,37 @@
+Delta define: #AbstractExceptionHandlingTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #AbstractExceptionHandlingTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AbstractExceptionHandlingTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #AbstractExceptionHandlingTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #AbstractExceptionHandlingTest) classSide methodsFor: 'Testing' !
+
+
+isAbstract
+
+	^name = #AbstractExceptionHandlingTest! !
+
+! (Delta mirrorFor: #AbstractExceptionHandlingTest) methodsFor: 'Running' !
+
+
+tearDown
+"	some of these tests do nasty things to the exception
+	environment so best clean up after them by resetting it"
+	Processor activeProcess resetExceptionEnvironment! !
+
+! (Delta mirrorFor: #AbstractExceptionHandlingTest) methodsFor: 'test support' !
+
+
+withStopHandler: stopHandler do: aBlock
+
+	| oldHandler |
+	oldHandler := Processor stopHandler.
+	Processor stopHandler: stopHandler.
+	aBlock
+		ensure: [Processor stopHandler: oldHandler]! !
+

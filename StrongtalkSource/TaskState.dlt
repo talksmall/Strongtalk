@@ -30,29 +30,6 @@ waitingWithPacket
     ^super new waitingWithPacket
 ! !
 
-! (Delta mirrorFor: #TaskState) methodsFor: 'initialize' !
-
-
-packetPending
-    packetPending := true.
-    taskWaiting := false.
-    taskHolding := false
-!
-
-running
-    packetPending := taskWaiting := taskHolding := false
-!
-
-waiting
-    packetPending := taskHolding := false.
-    taskWaiting := true
-!
-
-waitingWithPacket
-    taskHolding := false.
-    taskWaiting := packetPending := true
-! !
-
 ! (Delta mirrorFor: #TaskState) methodsFor: 'accessing' !
 
 
@@ -74,6 +51,29 @@ taskHolding: aBoolean
 
 taskWaiting: aBoolean
     taskWaiting := aBoolean
+! !
+
+! (Delta mirrorFor: #TaskState) methodsFor: 'initialize' !
+
+
+packetPending
+    packetPending := true.
+    taskWaiting := false.
+    taskHolding := false
+!
+
+running
+    packetPending := taskWaiting := taskHolding := false
+!
+
+waiting
+    packetPending := taskHolding := false.
+    taskWaiting := true
+!
+
+waitingWithPacket
+    taskHolding := false.
+    taskWaiting := packetPending := true
 ! !
 
 ! (Delta mirrorFor: #TaskState) methodsFor: 'testing' !

@@ -31,23 +31,6 @@ value: aValue
 
 	^(super new) initialize; value: aValue! !
 
-! (Delta mirrorFor: #Variable) methodsFor: 'initialize-release' !
-
-
-initialize
-
-	value := 0.
-	constraints := OrderedCollection new: 2.
-	determinedBy := nil.
-	walkStrength := Strength absoluteWeakest.
-	stay := true.
-	mark := 0.!
-
-release
-	"Break cycles (but leave me printable)."
-
-	self initialize.! !
-
 ! (Delta mirrorFor: #Variable) methodsFor: 'access' !
 
 
@@ -170,33 +153,6 @@ setValue: aValue strength: strengthSymbol
 		 Planner propagateFrom: self].
 	editConstraint destroyConstraint.! !
 
-! (Delta mirrorFor: #Variable) methodsFor: 'stay constraints' !
-
-
-defaultStay
-
-	^StayConstraint var: self strength: #default!
-
-preferredStay
-
-	^StayConstraint var: self strength: #preferred!
-
-requiredStay
-
-	^StayConstraint var: self strength: #required!
-
-strongDefaultStay
-
-	^StayConstraint var: self strength: #strongDefault!
-
-strongPreferredStay
-
-	^StayConstraint var: self strength: #strongPreferred!
-
-weakDefaultStay
-
-	^StayConstraint var: self strength: #weakDefault! !
-
 ! (Delta mirrorFor: #Variable) methodsFor: 'equality constraints' !
 
 
@@ -204,6 +160,23 @@ requireEquals: aVariable
 	"Install a required equality constraint between me and the given variable."
 
 	^EqualityConstraint var: self var: aVariable strength: #required! !
+
+! (Delta mirrorFor: #Variable) methodsFor: 'initialize-release' !
+
+
+initialize
+
+	value := 0.
+	constraints := OrderedCollection new: 2.
+	determinedBy := nil.
+	walkStrength := Strength absoluteWeakest.
+	stay := true.
+	mark := 0.!
+
+release
+	"Break cycles (but leave me printable)."
+
+	self initialize.! !
 
 ! (Delta mirrorFor: #Variable) methodsFor: 'printing' !
 
@@ -237,4 +210,31 @@ shortPrintOn: aStream
 	aStream nextPutAll: value printString.
 	aStream nextPutAll: ')'.
 	aStream cr.! !
+
+! (Delta mirrorFor: #Variable) methodsFor: 'stay constraints' !
+
+
+defaultStay
+
+	^StayConstraint var: self strength: #default!
+
+preferredStay
+
+	^StayConstraint var: self strength: #preferred!
+
+requiredStay
+
+	^StayConstraint var: self strength: #required!
+
+strongDefaultStay
+
+	^StayConstraint var: self strength: #strongDefault!
+
+strongPreferredStay
+
+	^StayConstraint var: self strength: #strongPreferred!
+
+weakDefaultStay
+
+	^StayConstraint var: self strength: #weakDefault! !
 

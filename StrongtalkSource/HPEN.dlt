@@ -50,19 +50,6 @@ cosmeticPens ^<VarDict[HPEN,HPEN]>
 
 	^CosmeticPens! !
 
-! (Delta mirrorFor: #HPEN) methodsFor: 'comparing' !
-
-
-= other <Object> ^<Boolean>
-
-	^self == other
-		or: [	other class == self class			"%todo: Use coerce here when it is fast"
-					and: [	self equalsInstance: other ]]!
-
-hash ^<Int>
-
-	^self paint hash bitXor: self lineStyle hash! !
-
 ! (Delta mirrorFor: #HPEN) methodsFor: 'accessing' !
 
 
@@ -77,6 +64,27 @@ lineWidth ^<Int>
 paint ^<Paint>
 
 	^paint! !
+
+! (Delta mirrorFor: #HPEN) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [	other class == self class			"%todo: Use coerce here when it is fast"
+					and: [	self equalsInstance: other ]]!
+
+hash ^<Int>
+
+	^self paint hash bitXor: self lineStyle hash! !
+
+! (Delta mirrorFor: #HPEN) methodsFor: 'control' !
+
+
+release
+
+	"This is right only for objects we created, which currently we always do"
+	self win32DeleteObject! !
 
 ! (Delta mirrorFor: #HPEN) methodsFor: 'initialization' !
 
@@ -127,12 +135,4 @@ win32StyleCode ^<ExternalData>
 		ifTrue: [ ^Win32 PS_DASHDOTDOT ].
 
 	self shouldNotHappen.! !
-
-! (Delta mirrorFor: #HPEN) methodsFor: 'control' !
-
-
-release
-
-	"This is right only for objects we created, which currently we always do"
-	self win32DeleteObject! !
 

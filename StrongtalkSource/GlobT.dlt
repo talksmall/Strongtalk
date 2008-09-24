@@ -1,0 +1,50 @@
+Delta define: #GlobT as: (
+(Class subclassOf: 'CStructure' instanceVariables: '')) !
+
+(Delta mirrorFor: #GlobT) revision: '$Revision:$'!
+
+(Delta mirrorFor: #GlobT) group: 'Unclassified'!
+
+(Delta mirrorFor: #GlobT)
+comment: 
+''!
+
+! (Delta mirrorFor: #GlobT) methodsFor: 'accessing' !
+
+
+glPathc
+
+	^self smallIntegerAt: self glPathcOffset!
+
+glPathv
+
+	^self proxyAt: self glPathvOffset!
+
+structureSize
+
+	^36! !
+
+! (Delta mirrorFor: #GlobT) methodsFor: 'iterating' !
+
+
+pathsDo: blk
+
+	| pathArray |
+	pathArray := self glPathv.
+	1 to: self glPathc do: [:index| |cstring|
+    	cstring := (pathArray
+    		proxyAt: (index - 1) * 4
+    		result: CString new).
+    	blk value: cstring asString]! !
+
+! (Delta mirrorFor: #GlobT) methodsFor: 'offsets' !
+
+
+glPathcOffset
+
+	^0!
+
+glPathvOffset
+
+	^4! !
+

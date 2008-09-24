@@ -1,0 +1,322 @@
+Delta define: #ExceptionTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #ExceptionTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ExceptionTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ExceptionTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ExceptionTest) methodsFor: 'Testing' !
+
+
+testDefaultActionShouldExecuteInSignallingEnvironment
+
+	| original wasHandled |
+	original := TestException defaultActionBlock: [self error: ''].
+	original resumable: true.
+	wasHandled := false.
+	[original signal]
+		on: Error
+		do: [:ex| wasHandled := true].
+	self assert: wasHandled!
+
+testDefaultActionShouldExecuteInSignallingEnvironmentAfterResumableOuter
+
+	| original wasHandled |
+	original := TestException defaultActionBlock: [self error: ''].
+	original resumable: true.
+	wasHandled := false.
+	[[original signal]
+		on: Error
+		do: [:ex| wasHandled := true]]
+			on: TestException
+			do: [:ex| ex outer].
+	self assert: wasHandled!
+
+testExceptionSetForWarningAndHaltHandlesBoth
+
+	| exceptionSet |
+	exceptionSet := Warning, Halt.
+	self assert: (exceptionSet handles: Warning new)
+			description: 'Should handle Warning'.
+	self assert: (exceptionSet handles: Halt new)
+			description: 'Should handle Halt'.
+	self deny: (exceptionSet handles: Error new)
+			description: 'Shouldn''t handle Error'.!
+
+testIsNestedShouldBeFalseWhenOuterHandlerDoesntHandle
+
+	|wasHandled|
+	wasHandled := false.
+	[[Exception signal]
+		on: Exception
+		do: [:ex| self deny: ex isNested.
+				wasHandled := true]]
+		on: TestException
+		do: [:ex|].
+	self assert: wasHandled!
+
+testIsNestedShouldBeFalseWithNoHandler
+
+	|exception|
+	exception := Exception new.
+	self deny: exception isNested!
+
+testIsNestedShouldBeTrueWhenOuterHandlerHandles
+
+	|wasHandled|
+	wasHandled := false.
+	[[Exception signal]
+		on: Exception
+		do: [:ex| self assert: ex isNested.
+				wasHandled:= true]]
+		on: Exception
+		do: [:ex| self shouldNotHappen].
+	self assert: wasHandled!
+
+testIsNestedShouldBeTrueWhenOuterOuterHandlerHandles
+
+	|wasHandled|
+	wasHandled := false.
+	[[[Exception signal]
+		on: Exception
+		do: [:ex| self assert: ex isNested.
+				wasHandled := true]]
+			on: TestException
+			do: [:ex|]]
+				on: Exception
+				do: [:ex|].
+	self assert: wasHandled!
+
+testOuterShouldInvokeAndReturnDefaultActionWhenResumable
+
+	|outer result|
+	[(TestException defaultActionBlock: [#result])
+		resumable: true;
+		signal]
+			on: TestException
+			do: [:ex|
+					self assert: ex outer == #result description: 'outer returned wrong result'.
+					result := #returned].
+	self assert: result == #returned description: 'outer did not return'!
+
+testOuterShouldReturnResumptionValueWhenResumed
+
+	|wasResumed|
+	wasResumed := false.
+	[[TestException new resumable: true; signal]
+		on: TestException
+		do: [:ex| |result|
+				result := ex outer.
+				self assert: 'result' = result description: result printString.
+				wasResumed := true]]
+					on: TestException
+					do: [:ex| ex resume: 'result'.
+							self signalFailure: 'Resume should not return'].
+	self assert: wasResumed description: 'not resumed'!
+
+testOuterTwiceShouldInvokeSurroundingHandlerTwice
+
+	|count|
+	count := 0.
+	[[TestException new
+		resumable: true;
+		signal]
+		on: TestException
+		do: [:ex| ex outer.
+				ex outer]]
+			on: TestException
+			do: [:ex| count := count + 1.
+							ex resume].
+	self assert: count == 2 description: 'Count was ', count printString!
+
+testPassShouldDeferToOuterHandler
+
+	|wasPassed|
+	wasPassed := false.
+	[[TestException signal]
+		on: TestException
+		do: [:ex| ex pass.
+				self signalFailure: 'pass should not return']]
+		on: TestException
+		do: [:ex| wasPassed := true].
+	self assert: wasPassed!
+
+testPassShouldInvokeDefaultActionWithoutReturning
+
+	| signalReturned |
+	signalReturned := false.
+	[|result|
+	result := (TestException defaultActionBlock: ['result'])
+						resumable: true;
+						signal.
+	self assert: result = 'result' description: result printString.
+	signalReturned := true]
+		on: TestException
+		do: [:ex| ex pass.
+				self signalFailure: 'Pass should not return'].
+	self assert: signalReturned description: 'Signal did not return'!
+
+testPassShouldInvokeSurroundingHandler
+
+	| wasPassed |
+	wasPassed := false.
+	[[TestException new signal]
+		on: TestException
+		do: [:ex| ex pass.
+				self signalFailure: 'Pass should not return']]
+				on: TestException
+				do: [:ex| wasPassed := true].
+	self assert: wasPassed description: 'Outer handler not invoked'!
+
+testResignalAsShouldRestoreSignalEnvironment
+
+	|log|
+	log := String new writeStream.
+	[[Exception signal]
+		on: TestException
+		do: [:ex| log nextPutAll: 'resignal']]
+			on: Exception
+			do: [:ex| [log nextPutAll: 'signal '.
+							ex resignalAs: TestException new]
+								ifCurtailed: [log nextPutAll: 'curtail ']].
+	self assert: log contents = 'signal curtail resignal' description: log contents!
+
+testResumeAfterPassShouldReturnFromSignal
+
+	| wasReturned |
+	wasReturned := false.
+	[[|result|
+	result := TestException new resumable: true; signal.
+	wasReturned := true]
+		on: TestException
+		do: [:ex| ex pass.
+				self signalFailure: 'Pass should not return']]
+				on: TestException
+				do: [:ex| ex resume].
+	self assert: wasReturned description: 'Resume did not return from signal'!
+
+testResumeAfterPassShouldReturnResultFromSignal
+
+	| wasReturned |
+	wasReturned := false.
+	[[|result|
+	result := TestException new resumable: true; signal.
+	self assert: 'result' = result description: result printString.
+	wasReturned := true]
+		on: TestException
+		do: [:ex| ex pass.
+				self signalFailure: 'Pass should not return']]
+				on: TestException
+				do: [:ex| ex resume: 'result'].
+	self assert: wasReturned description: 'Resume did not return from signal'!
+
+testResumeShouldReturnAsValueOfOuter
+
+	|result|
+	[[Exception signal]
+		on: Exception
+		do: [:ex| result := ex outer]]
+			on: Exception
+			do: [:ex| ex resume: #result].
+	self assert: result == #result description: result printString!
+
+testResumeShouldReturnValueAsResultOfSignal
+
+	|wasResumed|
+	wasResumed := false.
+	[|result|
+	result := TestException new
+						resumable: true;
+						signal.
+	self assert: #resume == result description: result printString.
+	wasResumed := true]
+		on: TestException
+		do: [:ex| ex resume: #resume].
+	self assert: wasResumed description: 'Should have resumed after signal'!
+
+testRetryShouldReevaluateProtectee
+
+	|count|
+	count := 0.
+	[count := count + 1.
+	count == 1 ifTrue:[Exception signal]]
+		on: Exception
+		do: [:ex| ex retry].
+	self assert: count == 2 description: 'Count was ' , count printString!
+
+testRetryUsingShouldReplaceProtectee
+
+	|log count|
+	log := String new writeStream.
+	count := 0.
+	[[Exception signal]
+		ensure: [log nextPutAll: 'unwind ']]
+			on: Exception
+			do: [:ex|
+					log nextPutAll: 'handle '.
+					count := count + 1.
+					count = 1 ifTrue: [ex retryUsing: [log nextPutAll: 'using '.
+													Exception signal]]].
+	self assert: log contents = 'handle unwind using handle '
+			description: log contents!
+
+testReturnShouldDelegateToHandler
+
+	|exception handler result|
+	exception := Exception new.
+	handler := BlockExceptionHandler new.
+	result := #invalid.
+	handler returnBlock: [:value| result := value].
+	exception handler: handler.
+	exception return.
+	self assert: result isNil description: 'Return should pass back nil'!
+
+testReturnShouldReturnValueAsResutlOfOnDo
+
+	| result |
+	result := [Error signal]
+						on: Error
+						do: [:ex| ex return: #value.
+										self signalFailure: 'return: should not return!!'].
+	self assert: result = #value
+			description: 'Wrong result returned:', result!
+
+testReturnShouldReturnValueFromInnerHandler
+
+	| result |
+	[result := [Error signal]
+						on: Error
+						do: [:ex| ex return: #value1]]
+							on: Error
+							do: [:ex| ex return: #value2].
+	self assert: result = #value1
+			description: 'Wrong result returned:', result!
+
+testReturnShouldReturnValueFromOuterHandler
+
+	| result |
+	result := [[Error signal]
+						on: Error
+						do: [:ex| ex outer].
+					self signalFailure: 'Block should not complete']
+							on: Error
+							do: [:ex| ex return: #value2].
+	self assert: result = #value2
+			description: 'Wrong result returned:', result!
+
+testSignalShouldInvokeProcessHandler
+
+	|wasInvoked|
+	wasInvoked := false.
+	Processor activeProcess
+		pushHandler: (LinkedExceptionHandler
+										on: Exception
+										do: [:ex| wasInvoked := true]).
+	Exception signal.
+	[self assert: wasInvoked description: 'Should invoke exception handler']
+		ensure: [Processor activeProcess popHandler]! !
+

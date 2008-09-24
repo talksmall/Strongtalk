@@ -32,12 +32,23 @@ new ^<Instance>
 
 	^super new initialize! !
 
-! (Delta mirrorFor: #FileDescriptor) methodsFor: 'initialization' !
+! (Delta mirrorFor: #FileDescriptor) methodsFor: 'accessing' !
 
 
-initialize
-    position := 0.
-    self knowAtEnd: false.    "By default, we know nothing"! !
+position ^<Int>
+	^position!
+
+position: p <Int>
+    p = self position
+        ifFalse: [ self knowAtEnd: false ]
+        ifTrue: [ ^self ].
+    self setPosition: p.
+    self isClosed
+        ifFalse: [ self setExternalPosition: p ]!
+
+size ^<Int>
+
+	self subclassResponsibility! !
 
 ! (Delta mirrorFor: #FileDescriptor) methodsFor: 'control' !
 
@@ -52,6 +63,13 @@ openIfFail: errf <[ExternalError]>
     "When opening a write only file, the file is created/truncated, so we
       know we are at the end"
     self knowAtEnd: self mode = #write! !
+
+! (Delta mirrorFor: #FileDescriptor) methodsFor: 'initialization' !
+
+
+initialize
+    position := 0.
+    self knowAtEnd: false.    "By default, we know nothing"! !
 
 ! (Delta mirrorFor: #FileDescriptor) methodsFor: 'private' !
 
@@ -70,22 +88,4 @@ setExternalPosition: p <Int>
 setPosition: p <Int>
 
 	position := p.! !
-
-! (Delta mirrorFor: #FileDescriptor) methodsFor: 'accessing' !
-
-
-position ^<Int>
-	^position!
-
-position: p <Int>
-    p = self position
-        ifFalse: [ self knowAtEnd: false ]
-        ifTrue: [ ^self ].
-    self setPosition: p.
-    self isClosed
-        ifFalse: [ self setExternalPosition: p ]!
-
-size ^<Int>
-
-	self subclassResponsibility! !
 

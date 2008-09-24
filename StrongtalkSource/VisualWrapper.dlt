@@ -72,80 +72,6 @@ removePart ^<Visual>
 	part := nil.
 	^p! !
 
-! (Delta mirrorFor: #VisualWrapper) methodsFor: 'iterating-private' !
-
-
-doFromBack: f <[Visual]>
-
-	f value: self part!
-
-doFromFront: f <[Visual]>
-
-	f value: self part! !
-
-! (Delta mirrorFor: #VisualWrapper) methodsFor: 'geometry-local' !
-
-
-max ^<Region>
-
-	^self childIsSameSize
-		ifTrue: [ self part max ]
-		ifFalse: [ self shouldNotHappen ]!
-
-min ^<Region>
-
-	^self childIsSameSize
-		ifTrue: [ self part min ]
-		ifFalse: [ self shouldNotHappen ]!
-
-natural ^<Region>
-
-	^self childIsSameSize
-		ifTrue: [ self part natural ]
-		ifFalse: [ self shouldNotHappen ]! !
-
-! (Delta mirrorFor: #VisualWrapper) methodsFor: 'private' !
-
-
-childIsSameSize ^<Boolean>
-
-	^true!
-
-directChildContaining: v <Visual>  ^<Visual>
-
-	"We only have one child, so we don't have to search"
-	^self part!
-
-layout
-
-	self layoutPart.
-	super layout.!
-
-layoutPart
-
-	self childIsSameSize 
-		ifTrue: [ self part allocation: self allocation at: Point origin ]
-		ifFalse: [ self shouldNotHappen ]
-!
-
-skipCheckLayout ^<Boolean>
-
-	^true! !
-
-! (Delta mirrorFor: #VisualWrapper) methodsFor: 'wrapping' !
-
-
-withoutWrapper: w <VisualWrapper> ^<Visual>
-
-	^w == self
-		ifTrue: [	| p <Visual> |
-						p := self part noParent.
-						part := nil.
-						p	 ]
-		ifFalse: [	self part: (self part withoutWrapper: w).
-						self ]
-! !
-
 ! (Delta mirrorFor: #VisualWrapper) methodsFor: 'control' !
 
 
@@ -183,12 +109,35 @@ relayoutAndInvalidate
 											oldalloc = self part allocation
 												ifFalse: [ self invalidate ]	]	]! !
 
-! (Delta mirrorFor: #VisualWrapper) methodsFor: 'testing' !
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'geometry-local' !
 
 
-isSurelyRigid ^<Boolean>
+max ^<Region>
 
-	^self part isSurelyRigid! !
+	^self childIsSameSize
+		ifTrue: [ self part max ]
+		ifFalse: [ self shouldNotHappen ]!
+
+min ^<Region>
+
+	^self childIsSameSize
+		ifTrue: [ self part min ]
+		ifFalse: [ self shouldNotHappen ]!
+
+natural ^<Region>
+
+	^self childIsSameSize
+		ifTrue: [ self part natural ]
+		ifFalse: [ self shouldNotHappen ]! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'hit testing' !
+
+
+childIntersecting: loc <Point> ifAbsent: blk <[^X def]> ^<Visual | X>
+
+	^self childIsSameSize
+		ifTrue: [ self part ]
+		ifFalse: [ super childIntersecting: loc ifAbsent: blk ]! !
 
 ! (Delta mirrorFor: #VisualWrapper) methodsFor: 'iterating' !
 
@@ -201,14 +150,51 @@ near: r <Region> doFromFront: f <[Visual]>
 
 	f value: self part! !
 
-! (Delta mirrorFor: #VisualWrapper) methodsFor: 'hit testing' !
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'iterating-private' !
 
 
-childIntersecting: loc <Point> ifAbsent: blk <[^X def]> ^<Visual | X>
+doFromBack: f <[Visual]>
 
-	^self childIsSameSize
-		ifTrue: [ self part ]
-		ifFalse: [ super childIntersecting: loc ifAbsent: blk ]! !
+	f value: self part!
+
+doFromFront: f <[Visual]>
+
+	f value: self part! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'private' !
+
+
+childIsSameSize ^<Boolean>
+
+	^true!
+
+directChildContaining: v <Visual>  ^<Visual>
+
+	"We only have one child, so we don't have to search"
+	^self part!
+
+layout
+
+	self layoutPart.
+	super layout.!
+
+layoutPart
+
+	self childIsSameSize 
+		ifTrue: [ self part allocation: self allocation at: Point origin ]
+		ifFalse: [ self shouldNotHappen ]
+!
+
+skipCheckLayout ^<Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'testing' !
+
+
+isSurelyRigid ^<Boolean>
+
+	^self part isSurelyRigid! !
 
 ! (Delta mirrorFor: #VisualWrapper) methodsFor: 'translation' !
 
@@ -236,4 +222,18 @@ translateRect: r <Rect> toChild: child <Visual> ^<Rect>
 	^self childIsSameSize
 		ifTrue: [  r ]
 		ifFalse: [ super translateRect: r toChild: child ]! !
+
+! (Delta mirrorFor: #VisualWrapper) methodsFor: 'wrapping' !
+
+
+withoutWrapper: w <VisualWrapper> ^<Visual>
+
+	^w == self
+		ifTrue: [	| p <Visual> |
+						p := self part noParent.
+						part := nil.
+						p	 ]
+		ifFalse: [	self part: (self part withoutWrapper: w).
+						self ]
+! !
 

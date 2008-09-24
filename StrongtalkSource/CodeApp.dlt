@@ -77,6 +77,60 @@ self subclassResponsibility
 
 ! !
 
+! (Delta mirrorFor: #CodeApp) methodsFor: 'private' !
+
+
+buildBody ^ <Column[Visual]>
+
+	| col <Column[Visual]> editor <Visual>  oc <OrdCltn[Visual]> |
+
+	self setCodeView.
+	self codeView codeManager: self.
+	editor := self editorBorderFor: self codeView.
+	oc := OrderedCollection[Visual] with: editor.
+	self errors isNil ifFalse:[oc add: self errorView].
+	^Column[Visual] holding: oc.!
+
+errorViewForBatches: bes <OrdCltn[OrdCltn[TypeError]]> 
+localBatch: localBatch <OrdCltn[TypeError]>
+title: t <Str>  ^ <Visual>
+
+| btn <Button>  oc <OrdCltn[Visual]> lb <ListBox> |
+
+oc := OrderedCollection[Visual] new.												
+lb := ListBox forSingleSelection.
+lb list: localBatch
+	converter: [: te <TypeError> | te errorMessage];
+	onSelChange:[: lbox <ListBox> | 
+								self showTypeError: (self errors at: lbox selections anElement).
+								].
+oc add: (lb withBorder: (Border standard3DRaised: false)).
+bes size > 1 
+	ifTrue:[
+				btn := Button 	labeled: 'List all errors' 
+											action:[:b <Button> | self 	launchErrorLocList: bes 
+																	title: t].	
+				oc add: btn.
+				].
+^Column[Visual] holding: oc
+!
+
+listBox ^ <ListBox>
+
+^ ListBox coerce: (self errorView at: 1) part else: [self shouldNotHappen]!
+
+setCodeView
+
+self subclassResponsibility!
+
+typecheckAction: blk <[]> title: t <Str>
+
+| eh <DeltaTypeErrorHandler> |
+
+eh := Type doChecks: blk.
+self displayErrors: eh reportedErrors
+ 		title: t.! !
+
 ! (Delta mirrorFor: #CodeApp) methodsFor: 'type errors' !
 
 
@@ -165,58 +219,4 @@ showTypeError: te <SelectableTypeError>
 	self codeView becomeFocusIfFail:[].
 	
 ! !
-
-! (Delta mirrorFor: #CodeApp) methodsFor: 'private' !
-
-
-buildBody ^ <Column[Visual]>
-
-	| col <Column[Visual]> editor <Visual>  oc <OrdCltn[Visual]> |
-
-	self setCodeView.
-	self codeView codeManager: self.
-	editor := self editorBorderFor: self codeView.
-	oc := OrderedCollection[Visual] with: editor.
-	self errors isNil ifFalse:[oc add: self errorView].
-	^Column[Visual] holding: oc.!
-
-errorViewForBatches: bes <OrdCltn[OrdCltn[TypeError]]> 
-localBatch: localBatch <OrdCltn[TypeError]>
-title: t <Str>  ^ <Visual>
-
-| btn <Button>  oc <OrdCltn[Visual]> lb <ListBox> |
-
-oc := OrderedCollection[Visual] new.												
-lb := ListBox forSingleSelection.
-lb list: localBatch
-	converter: [: te <TypeError> | te errorMessage];
-	onSelChange:[: lbox <ListBox> | 
-								self showTypeError: (self errors at: lbox selections anElement).
-								].
-oc add: (lb withBorder: (Border standard3DRaised: false)).
-bes size > 1 
-	ifTrue:[
-				btn := Button 	labeled: 'List all errors' 
-											action:[:b <Button> | self 	launchErrorLocList: bes 
-																	title: t].	
-				oc add: btn.
-				].
-^Column[Visual] holding: oc
-!
-
-listBox ^ <ListBox>
-
-^ ListBox coerce: (self errorView at: 1) part else: [self shouldNotHappen]!
-
-setCodeView
-
-self subclassResponsibility!
-
-typecheckAction: blk <[]> title: t <Str>
-
-| eh <DeltaTypeErrorHandler> |
-
-eh := Type doChecks: blk.
-self displayErrors: eh reportedErrors
- 		title: t.! !
 

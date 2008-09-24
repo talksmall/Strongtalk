@@ -15,44 +15,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
-! (Delta mirrorFor: #ToolBar) methodsFor: 'private' !
-
-
-buildBareVisualTop: top <Boolean> ^ <Visual>
-
-	self rebuild.
-	^self column withBackdrop:
-			(Painter new paint: Paint backgroundGray)!
-
-buttonSpacer ^<Glyph>
-
-	^Glue xRigid: 10!
-
-column ^<Column[Visual]>
-
-	^column!
-
-rebuild
-
-	self column removeAll.
-	self visible
-		ifTrue: [ self row noParent.
-						self column
-							add: (self row withBorder: (Border withRigidInset: 2)) baselined	].!
-
-row ^<GlyphRow>
-
-	^row! !
-
-! (Delta mirrorFor: #ToolBar) methodsFor: 'private-initialization' !
-
-
-initialize
-
-	self visible: true.
-	column := Column[Visual] new.
-	row := GlyphRow new.! !
-
 ! (Delta mirrorFor: #ToolBar) methodsFor: 'accessing' !
 
 
@@ -91,4 +53,42 @@ action: action <[Button]>
 addSpace
 
 	self row add: self buttonSpacer! !
+
+! (Delta mirrorFor: #ToolBar) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	self rebuild.
+	^self column withBackdrop:
+			(Painter new paint: Paint backgroundGray)!
+
+buttonSpacer ^<Glyph>
+
+	^Glue xRigid: 10!
+
+column ^<Column[Visual]>
+
+	^column!
+
+rebuild
+
+	self column removeAll.
+	self visible
+		ifTrue: [ self row noParent.
+						self column
+							add: (self row withBorder: (Border withRigidInset: 2)) baselined	].!
+
+row ^<GlyphRow>
+
+	^row! !
+
+! (Delta mirrorFor: #ToolBar) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	self visible: true.
+	column := Column[Visual] new.
+	row := GlyphRow new.! !
 

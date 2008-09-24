@@ -52,47 +52,6 @@ itemFor: id <ExternalData> ^<MenuItem>
 	^MenuItem critical:
 		[ self activeItems at: id ]! !
 
-! (Delta mirrorFor: #MenuItem) methodsFor: 'private' !
-
-
-postCopy
-
-	super postCopy.
-	id := nil.
-	parent := nil.!
-
-rebuild
-
-	self parent rebuild.!
-
-rebuildIfNeeded
-
-	self isBuilt
-		ifTrue: [ self rebuild ]! !
-
-! (Delta mirrorFor: #MenuItem) methodsFor: 'control' !
-
-
-buildFor: menu <Menu> at: index <Int>
-
-	self subclassResponsibility!
-
-execute
-
-	"Non-actions do nothing"!
-
-release
-	"Release any external resources for the menu.  The menu may be reused
-		after this if desired"
-
-	id notNil
-		ifTrue: [ self class unregister: id ].
-	id := nil!
-
-updateFor: menu <Menu> at: index <Int>
-
-	"By default, do nothing"! !
-
 ! (Delta mirrorFor: #MenuItem) methodsFor: 'accessing' !
 
 
@@ -119,12 +78,46 @@ parent: p <Menu>
 	self assert: [ parent isNil ].
 	parent := p! !
 
-! (Delta mirrorFor: #MenuItem) methodsFor: 'testing-restricted' !
+! (Delta mirrorFor: #MenuItem) methodsFor: 'control' !
 
 
-isBuilt ^<Boolean>
+buildFor: menu <Menu> at: index <Int>
 
-	^self hasParent and: [ self parent isBuilt ]! !
+	self subclassResponsibility!
+
+execute
+
+	"Non-actions do nothing"!
+
+release
+	"Release any external resources for the menu.  The menu may be reused
+		after this if desired"
+
+	id notNil
+		ifTrue: [ self class unregister: id ].
+	id := nil!
+
+updateFor: menu <Menu> at: index <Int>
+
+	"By default, do nothing"! !
+
+! (Delta mirrorFor: #MenuItem) methodsFor: 'private' !
+
+
+postCopy
+
+	super postCopy.
+	id := nil.
+	parent := nil.!
+
+rebuild
+
+	self parent rebuild.!
+
+rebuildIfNeeded
+
+	self isBuilt
+		ifTrue: [ self rebuild ]! !
 
 ! (Delta mirrorFor: #MenuItem) methodsFor: 'restricted-win32' !
 
@@ -137,4 +130,11 @@ mergeInto: menu <Menu>
 updateMenuWithHandle: handle <ExternalProxy>
 
 	"By default, do nothing"! !
+
+! (Delta mirrorFor: #MenuItem) methodsFor: 'testing-restricted' !
+
+
+isBuilt ^<Boolean>
+
+	^self hasParent and: [ self parent isBuilt ]! !
 

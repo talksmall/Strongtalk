@@ -17,6 +17,24 @@ Use and distribution of this software is subject to the terms of the attached so
 fileOutSignature ^<Integer>
     ^73! !
 
+! (Delta mirrorFor: #GlobalAssociation) methodsFor: 'file out' !
+
+
+fileOutHeaderOn: d <Dumper>
+	| group |
+	super fileOutHeaderOn: d.
+	self key		fileOutOn: d.
+	self isConstant ifTrue: [
+		self value	fileOutOn: d.
+		true 			fileOutOn: d.
+	] ifFalse: [
+		nil				fileOutOn: d.
+		false			fileOutOn: d
+	]!
+
+fileOutSignature ^<Integer>
+    ^105! !
+
 ! (Delta mirrorFor: #GlobalAssociation) methodsFor: 'misc' !
 
 
@@ -37,22 +55,4 @@ value
 
 value: v
 	{{self primitiveGlobalAssociationSetValue: v}}! !
-
-! (Delta mirrorFor: #GlobalAssociation) methodsFor: 'file out' !
-
-
-fileOutHeaderOn: d <Dumper>
-	| group |
-	super fileOutHeaderOn: d.
-	self key		fileOutOn: d.
-	self isConstant ifTrue: [
-		self value	fileOutOn: d.
-		true 			fileOutOn: d.
-	] ifFalse: [
-		nil				fileOutOn: d.
-		false			fileOutOn: d
-	]!
-
-fileOutSignature ^<Integer>
-    ^105! !
 

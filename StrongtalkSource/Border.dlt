@@ -23,6 +23,24 @@ Tags: %User
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
 '!
 
+! (Delta mirrorFor: #Border) classSide methodsFor: '3D' !
+
+
+whiteInterior3DRaised: raised <Boolean> ^<Instance>
+	"Like #standard3DRaised:, except colors are contrast tuned for situations
+		where the interior will be white"
+
+	"only the raised case is different"
+	^raised
+		ifFalse: [ self standard3DRaised: raised ]
+		ifTrue: [ 	| p <Point> |
+						p := 2@2.
+						self new
+							rigidInset: (p corner: p);
+							displayBlock: (self displayBlockFor3DRaisedForWhiteInterior)
+					 ]
+! !
+
 ! (Delta mirrorFor: #Border) classSide methodsFor: 'instance creation' !
 
 
@@ -34,154 +52,6 @@ withRigidInset: inset <Number | Point | Rect> ^<Instance>
 
 	^self new rigidInset: inset
 ! !
-
-! (Delta mirrorFor: #Border) classSide methodsFor: 'standard-lines' !
-
-
-lineWithColor: p <Paint> ^<Instance>
-
-	^self lineWithColor: p extraInset: 0 extraOutset: 0
-!
-
-lineWithColor: p <Paint>
-extraInset: innerSpace <Int>
-extraOutset: outerSpace
-^<Instance>
-
-	^self lineWithPainter: (Painter new paint: p) extraInset: innerSpace extraOutset: outerSpace
-!
-
-lineWithPainter: p <Painter>
-extraInset: innerSpace <Int>
-extraOutset: outerSpace
-^<Instance>
-
-	^self new
-		rigidInset: innerSpace + 1 + outerSpace;
-		displayBlock:
-			[ :can <Canvas> :alloc <Region> |
-				can withPainter: p
-					do: [ can displayRectangle: (alloc enclosingRect insetBy: outerSpace) ] ]
-!
-
-thinBlack ^<Border>
-
-	ThinBlack isNil
-		ifTrue: [	ThinBlack := self lineWithPainter: Painter default
-													extraInset: 0
-													extraOutset: 0.	].
-
-	^ThinBlack! !
-
-! (Delta mirrorFor: #Border) classSide methodsFor: 'unusual' !
-
-
-leftBracket ^<Border>
-
-	^self new
-		rigidInset: (25 @ 0 corner: 0@0);
-		displayBlock:
-			[ :can <Canvas> :alloc <Region> |
-				can withPainter: Painter default
-					do: [	| rect <Rect> left <Int> top <Int> bottom <Int> right <Int> |
-							rect := alloc enclosedRect.
-							top := rect top + 2.
-							bottom := rect bottom - 3.
-							left := rect left + 18.
-							right := left + 4.
-							can	displayLineFrom: left @ top to: right @ top;
-									displayLineFrom: left @ top to: left @ bottom;
-									displayLineFrom: left @ bottom to: right @ bottom.	] ]! !
-
-! (Delta mirrorFor: #Border) classSide methodsFor: 'standard-3D' !
-
-
-standard3DRaised: raised <Boolean>
-^<Instance>
-
-	^self standard3DWithExtraInteriorSpace: 0
-			raised: raised!
-
-standard3DWithColor: paint <Paint>
-extraInteriorSpace: width <Int>
-raised: flag <Boolean>
-^<Instance>
-
-	| p <Point> |
-	p := (2 + width) @ (2 + width).
-	^self new
-		rigidInset: (p corner: p);
-		displayBlock: (self displayBlockForStandard3DColor: paint raised: flag)
-!
-
-standard3DWithColor: p <Paint>
-raised: flag <Boolean>
-^<Instance>
-
-	^self standard3DWithColor: p extraInteriorSpace: 0 raised: flag
-
-!
-
-standard3DWithExtraInteriorSpace: width <Int>
-raised: raised <Boolean>
-^<Instance>
-
-	^self standard3DWithColor: Paint gray
-			extraInteriorSpace: width
-			raised: raised!
-
-thin3DRaised: raised <Boolean> ^<Instance>
-
-	^self thin3DWithExtraInteriorSpace: 0 raised: raised!
-
-thin3DWithColor: paint <SolidPaint>
-extraInteriorSpace: width <Int>
-raised: flag <Boolean>
-^<Instance>
-
-	| p <Point> |
-	p := (1 + width) @ (1 + width).
-	^self new
-		rigidInset: ((p corner: p) expandBy: width);
-		displayBlock: (self displayBlockForThin3DColor: paint raised: flag)
-!
-
-thin3DWithExtraInteriorSpace: width <Int>
-raised: raised <Boolean>
-^<Instance>
-
-	| p <Painter> |
-	p := Painter new.
-
-	^self new
-		rigidInset: width + 1;
-		displayBlock:	
-			[ :can <Canvas> :alloc <Region> |
-				|	r <Rect>
-					bottomLeft <Point>
-					topRight <Point>
-					ul <Paint>
-					lr <Paint>
-					|
-				r := alloc enclosingRect.
-				"Remember the lower right edges of alloc are outside the region"
-				r := r origin corner: ((r corner x - 1) @ (r corner y - 1)).
-				bottomLeft := r bottomLeft.
-				topRight := r topRight.
-				raised
-					ifTrue: [	ul := Paint white.
-							lr := Paint gray.	]
-					ifFalse: [	ul := Paint gray.
-									lr := Paint white ].
-
-				can withPainter: p
-					do: [	p paint: ul.
-							can	displayLineFrom: bottomLeft to: r topLeft;
-									displayLineFrom: r topLeft to: topRight.
-
-							p paint: lr.
-							can	displayLineFrom: topRight to: r bottomRight;
-									displayLineFrom: r bottomRight to: bottomLeft.		].  ].! !
 
 ! (Delta mirrorFor: #Border) classSide methodsFor: 'private' !
 
@@ -305,23 +175,153 @@ raised: raised <Boolean>
 					can	displayLineFrom: innerTopRight to: inner bottomRight;
 							displayLineFrom: inner bottomRight to: inner bottomLeft.		].	]! !
 
-! (Delta mirrorFor: #Border) classSide methodsFor: '3D' !
+! (Delta mirrorFor: #Border) classSide methodsFor: 'standard-3D' !
 
 
-whiteInterior3DRaised: raised <Boolean> ^<Instance>
-	"Like #standard3DRaised:, except colors are contrast tuned for situations
-		where the interior will be white"
+standard3DRaised: raised <Boolean>
+^<Instance>
 
-	"only the raised case is different"
-	^raised
-		ifFalse: [ self standard3DRaised: raised ]
-		ifTrue: [ 	| p <Point> |
-						p := 2@2.
-						self new
-							rigidInset: (p corner: p);
-							displayBlock: (self displayBlockFor3DRaisedForWhiteInterior)
-					 ]
-! !
+	^self standard3DWithExtraInteriorSpace: 0
+			raised: raised!
+
+standard3DWithColor: paint <Paint>
+extraInteriorSpace: width <Int>
+raised: flag <Boolean>
+^<Instance>
+
+	| p <Point> |
+	p := (2 + width) @ (2 + width).
+	^self new
+		rigidInset: (p corner: p);
+		displayBlock: (self displayBlockForStandard3DColor: paint raised: flag)
+!
+
+standard3DWithColor: p <Paint>
+raised: flag <Boolean>
+^<Instance>
+
+	^self standard3DWithColor: p extraInteriorSpace: 0 raised: flag
+
+!
+
+standard3DWithExtraInteriorSpace: width <Int>
+raised: raised <Boolean>
+^<Instance>
+
+	^self standard3DWithColor: Paint gray
+			extraInteriorSpace: width
+			raised: raised!
+
+thin3DRaised: raised <Boolean> ^<Instance>
+
+	^self thin3DWithExtraInteriorSpace: 0 raised: raised!
+
+thin3DWithColor: paint <SolidPaint>
+extraInteriorSpace: width <Int>
+raised: flag <Boolean>
+^<Instance>
+
+	| p <Point> |
+	p := (1 + width) @ (1 + width).
+	^self new
+		rigidInset: ((p corner: p) expandBy: width);
+		displayBlock: (self displayBlockForThin3DColor: paint raised: flag)
+!
+
+thin3DWithExtraInteriorSpace: width <Int>
+raised: raised <Boolean>
+^<Instance>
+
+	| p <Painter> |
+	p := Painter new.
+
+	^self new
+		rigidInset: width + 1;
+		displayBlock:	
+			[ :can <Canvas> :alloc <Region> |
+				|	r <Rect>
+					bottomLeft <Point>
+					topRight <Point>
+					ul <Paint>
+					lr <Paint>
+					|
+				r := alloc enclosingRect.
+				"Remember the lower right edges of alloc are outside the region"
+				r := r origin corner: ((r corner x - 1) @ (r corner y - 1)).
+				bottomLeft := r bottomLeft.
+				topRight := r topRight.
+				raised
+					ifTrue: [	ul := Paint white.
+							lr := Paint gray.	]
+					ifFalse: [	ul := Paint gray.
+									lr := Paint white ].
+
+				can withPainter: p
+					do: [	p paint: ul.
+							can	displayLineFrom: bottomLeft to: r topLeft;
+									displayLineFrom: r topLeft to: topRight.
+
+							p paint: lr.
+							can	displayLineFrom: topRight to: r bottomRight;
+									displayLineFrom: r bottomRight to: bottomLeft.		].  ].! !
+
+! (Delta mirrorFor: #Border) classSide methodsFor: 'standard-lines' !
+
+
+lineWithColor: p <Paint> ^<Instance>
+
+	^self lineWithColor: p extraInset: 0 extraOutset: 0
+!
+
+lineWithColor: p <Paint>
+extraInset: innerSpace <Int>
+extraOutset: outerSpace
+^<Instance>
+
+	^self lineWithPainter: (Painter new paint: p) extraInset: innerSpace extraOutset: outerSpace
+!
+
+lineWithPainter: p <Painter>
+extraInset: innerSpace <Int>
+extraOutset: outerSpace
+^<Instance>
+
+	^self new
+		rigidInset: innerSpace + 1 + outerSpace;
+		displayBlock:
+			[ :can <Canvas> :alloc <Region> |
+				can withPainter: p
+					do: [ can displayRectangle: (alloc enclosingRect insetBy: outerSpace) ] ]
+!
+
+thinBlack ^<Border>
+
+	ThinBlack isNil
+		ifTrue: [	ThinBlack := self lineWithPainter: Painter default
+													extraInset: 0
+													extraOutset: 0.	].
+
+	^ThinBlack! !
+
+! (Delta mirrorFor: #Border) classSide methodsFor: 'unusual' !
+
+
+leftBracket ^<Border>
+
+	^self new
+		rigidInset: (25 @ 0 corner: 0@0);
+		displayBlock:
+			[ :can <Canvas> :alloc <Region> |
+				can withPainter: Painter default
+					do: [	| rect <Rect> left <Int> top <Int> bottom <Int> right <Int> |
+							rect := alloc enclosedRect.
+							top := rect top + 2.
+							bottom := rect bottom - 3.
+							left := rect left + 18.
+							right := left + 4.
+							can	displayLineFrom: left @ top to: right @ top;
+									displayLineFrom: left @ top to: left @ bottom;
+									displayLineFrom: left @ bottom to: right @ bottom.	] ]! !
 
 ! (Delta mirrorFor: #Border) methodsFor: 'accessing' !
 
@@ -373,18 +373,19 @@ displayOn: can <Canvas> allocation: a <Region>
 
 	self displayBlock value: can value: a! !
 
-! (Delta mirrorFor: #Border) methodsFor: 'utility' !
+! (Delta mirrorFor: #Border) methodsFor: 'initialization' !
 
 
-rigidInset: inset <Number | Point | Rect>
+initialize
 
-	| blk <[Visual,^Region]> |
-	blk := [ :v <Visual> :pref <Region> |
-				  pref expandBy: inset ].
-	self naturalBlock: blk; minBlock: blk; maxBlock: blk.
-	self layoutBlock:
-		[ :v <Visual> :alloc <Region> |
-			v allocation: (alloc insetBy: inset) at: Point origin ].! !
+	self displayBlock: [ :can <Canvas> :a <Region> | "By default, draw nothing" ]! !
+
+! (Delta mirrorFor: #Border) methodsFor: 'layout' !
+
+
+layout: v <Visual> given: alloc <Region>
+
+	self layoutBlock value: v value: alloc! !
 
 ! (Delta mirrorFor: #Border) methodsFor: 'preferences' !
 
@@ -401,17 +402,16 @@ naturalFor: v <Visual> ^<Region>
 
 	^self naturalBlock value: v value: v natural! !
 
-! (Delta mirrorFor: #Border) methodsFor: 'layout' !
+! (Delta mirrorFor: #Border) methodsFor: 'utility' !
 
 
-layout: v <Visual> given: alloc <Region>
+rigidInset: inset <Number | Point | Rect>
 
-	self layoutBlock value: v value: alloc! !
-
-! (Delta mirrorFor: #Border) methodsFor: 'initialization' !
-
-
-initialize
-
-	self displayBlock: [ :can <Canvas> :a <Region> | "By default, draw nothing" ]! !
+	| blk <[Visual,^Region]> |
+	blk := [ :v <Visual> :pref <Region> |
+				  pref expandBy: inset ].
+	self naturalBlock: blk; minBlock: blk; maxBlock: blk.
+	self layoutBlock:
+		[ :v <Visual> :alloc <Region> |
+			v allocation: (alloc insetBy: inset) at: Point origin ].! !
 

@@ -22,6 +22,14 @@ var: aVariable offset: xOffset strength: strengthSymbol
 
 	^(self new) var: aVariable offset: xOffset strength: strengthSymbol! !
 
+! (Delta mirrorFor: #XMouseConstraint) methodsFor: 'execution' !
+
+
+execute
+	"Enforce this constraint. Assume that it is satisfied."
+
+	output value: (Sensor mousePoint x + xOffset).! !
+
 ! (Delta mirrorFor: #XMouseConstraint) methodsFor: 'initialize-release' !
 
 
@@ -38,12 +46,4 @@ isInput
 	"I depend on the state of the mouse."
 
 	^true! !
-
-! (Delta mirrorFor: #XMouseConstraint) methodsFor: 'execution' !
-
-
-execute
-	"Enforce this constraint. Assume that it is satisfied."
-
-	output value: (Sensor mousePoint x + xOffset).! !
 

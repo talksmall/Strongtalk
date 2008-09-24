@@ -1,0 +1,410 @@
+Delta define: #TestRunner as: (
+(Class subclassOf: 'NotifyingObject mixin |> Application' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+(Delta mirrorFor: #TestRunner) revision: '$Revision:$'!
+
+(Delta mirrorFor: #TestRunner) group: 'Unclassified'!
+
+(Delta mirrorFor: #TestRunner)
+comment: 
+'Test runner for SUnit tests. To launch doit on the following:-
+
+	(TestRunner open)'!
+
+! (Delta mirrorFor: #TestRunner) classSide methodsFor: 'instance creation' !
+
+
+new
+
+        ^super new initialize!
+
+open
+	"(TestRunner open)"
+        ^super new launch! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'accessing' !
+
+
+details
+
+        ^details!
+
+errors
+
+        ^errors!
+
+errorsList
+
+        ^self errors collect: [:error | error printString]!
+
+failures
+
+        ^failures!
+
+formatTime: aTime
+        aTime hour > 0 ifTrue: [^aTime hour printString , 'h'].
+        aTime minutes > 0 ifTrue: [^aTime minutes printString , 'min'].
+        ^aTime second printString , ' sec'!
+
+passFail
+
+        ^passFail!
+
+suite
+        ^TestCase buildSuite!
+
+tests
+
+        ^ tests!
+
+timeSinceLastPassAsString: aResult
+        (lastPass isNil or: [aResult hasPassed not]) ifTrue: [^ ''].
+        ^ ', ' , (self formatTime: (Time now subtractTime: lastPass)) , '
+since last Pass'! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'constants' !
+
+
+debugButtonLabel
+        ^ 'DEBUG'!
+
+debugState
+
+        ^true!
+
+errorColor
+        ^ Paint red!
+
+failColor
+        ^ Paint yellow!
+
+passColor
+        ^ Paint green!
+
+refreshButtonLabel
+        ^ 'Refresh'!
+
+refreshButtonState
+
+        ^true!
+
+runButtonLabel
+        ^ 'Run All'!
+
+runButtonState
+
+        ^true!
+
+runOneButtonLabel
+        ^ 'Run'!
+
+windowLabel
+
+        ^'SUnit Camp Smalltalk ', TestCase sunitVersion, ' Test Runner'! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'initialize' !
+
+
+initialize
+        result := TestResult new.
+        passFail := 'N/A'.
+        details := '...'.
+        failures := OrderedCollection new.
+        errors := OrderedCollection new.
+        tests := self buildTests.
+        selectedSuite := 0.
+        selectedFailureTest := 0.
+        selectedErrorTest := 0.! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+
+
+buildBareVisualTop: top
+
+	| testsColumn failureColumn errorColumn listEqualizer buttonEqualizer
+	  textEqualizer resultsRow resultsColumn testList errorsList failuresList |
+	listEqualizer := Equalizer forX.
+	buttonEqualizer := Equalizer forY.
+	textEqualizer := Equalizer forX.
+	passFailText := self textViewOn: #passFail.
+	detailsText := self textViewOn: #details.
+	testList := ListModel
+							on: self
+							items: #tests
+							selected: #selectedSuite
+							select: #selectedSuite:.
+	failuresList := ListModel
+									on: self
+									items: #failuresList
+									selected: #selectedFailureTest
+									select: #debugFailureTest:.
+	errorsList := ListModel
+									on: self
+									items: #errorsList
+									selected: #selectedErrorTest
+									select: #debugErrorTest:.
+	testsColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: testList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self refreshButtonLabel
+																																		action: [:b| self refreshTests]))).
+	failureColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: failuresList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self runButtonLabel
+																																		action: [:b| self runTests]))).
+	errorColumn := Column holding: (OrderedCollection
+																			with: (listEqualizer for: errorsList with3DBorder)
+																			with: (buttonEqualizer for: (Button labeled: self runOneButtonLabel
+																																			action: [:b| self runOneTest]))).
+	resultsRow := Row holding: (OrderedCollection
+																with: failureColumn
+																with: errorColumn).
+	resultsColumn := Column holding: (OrderedCollection
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: passFailText imbeddedVisual))
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: detailsText imbeddedVisual))
+																			with: (textEqualizer for: resultsRow)).
+	self updateAll.
+	^ApplicationInterceptor
+			for: (Row holding: (OrderedCollection
+													with: testsColumn
+													with: resultsColumn))
+			application: self!
+
+font
+
+	^Font forSpec: (FontSpec new points: 8; typeface: 'Times Roman')!
+
+frameWithBorderAndBackdrop: visual
+
+	^(visual with3DBorder)
+			backdrop: (Painter new);
+			yourself!
+
+textViewOn: aspect
+
+	^TextModel
+			on: self
+			aspect: aspect! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'notificaition' !
+
+
+visualAllocated
+
+"	self refreshWindow"! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'processing' !
+
+
+debugErrorTest: anInteger
+        selectedErrorTest := anInteger.				"added rew"
+        selectedFailureTest := 0.							"added rew"
+        self changed: #selectedFailureTest.		"added rew"
+        self changed: #selectedErrorTest.			"added rew"
+        (anInteger ~= 0)
+                ifTrue: [(result errors at: anInteger) debug]!
+
+debugFailureTest: anInteger
+
+        (anInteger ~= 0)
+                ifTrue: [[(self failures at: anInteger) debugAsFailure] fork].
+
+        selectedFailureTest := anInteger.
+        selectedErrorTest := 0.
+        self changed: #selectedErrorTest.
+        self changed: #selectedFailureTest!
+
+debugTest!
+
+runOneTest
+        "Cursor execute showWhile:
+                ["
+	testSuite notNil
+		ifTrue: [self runWindow.
+						result := testSuite asSymbol sunitAsClass suite run.
+						self updateWindow: result]
+ 		ifFalse: [self runWindow.
+						self displayPassFail: 'No Test Suite Selected']
+       "]"!
+
+runTests
+	"Cursor execute showWhile:["
+	self runWindow.
+	result := TestResult new.
+	self suite tests
+		do:[:each|
+				self displayPassFail: 'Running ', each name.
+				Processor yield.
+				each run: result.
+				self updateWindow: result]
+	"]."
+!
+
+selectedErrorTest
+        ^selectedErrorTest!
+
+selectedFailureTest
+
+        ^selectedFailureTest!
+
+selectedSuite
+
+        ^selectedSuite!
+
+selectedSuite: anInteger
+        anInteger ~= 0 ifTrue: [testSuite := tests at: anInteger].
+        selectedSuite := selectedSuite = anInteger
+                                        ifTrue:[0]
+                                        ifFalse:[anInteger].
+        selectedFailureTest := 0.
+        selectedErrorTest := 0.
+        self changed: #selectedFailureTest.             "added rew"
+        self changed: #selectedErrorTest.               "added rew" 
+        self changed: #selectedSuite! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'test processing' !
+
+
+errorLog
+	^SUnitNameResolver defaultLogDevice!
+
+showResult
+
+	self errorLog cr;cr; show: '==== SUnit ======== Start ===='.
+	self
+		showResultSummary;
+		showResultDefects.
+	self errorLog cr; show: '==== SUnit ========== End ===='; cr.!
+
+showResultDefects
+
+	(self result failureCount > 0)
+		ifTrue: [
+			self errorLog cr; show: '---- SUnit ----- Failures ----'.
+			self result failures do: [:failure |
+				self errorLog crtab; show: failure printString]].
+	(self result errorCount > 0)
+		ifTrue: [
+			self errorLog cr; show: '---- SUnit ------- Errors ----'.
+			self result errors do: [:error |
+				self errorLog crtab; show: error printString]].!
+
+showResultSummary
+
+	| message summary |
+	message := (self result runCount = self result correctCount)
+		ifTrue: [self successMessage]
+		ifFalse: [self failureMessage].
+	self errorLog crtab; show: message.
+	summary :=
+		self result runCount printString, ' run, ',
+		self result failureCount printString, ' failed, ',
+		self result errorCount printString, ' errors (',
+		self duration printString, ' ms)'.
+	self errorLog crtab; show: summary.! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+
+
+buildTests
+
+	^(TestCase allSubclasses collect: [:each | each name])
+			asSortedCollection:[:a :b| a asString <= b asString]!
+
+displayDetails: aString
+        details := aString.
+        self changed: #details!
+
+displayErrors: anOrderedCollection
+
+        errors := anOrderedCollection.
+        self changed: #errorsList!
+
+displayFailures: anOrderedCollection
+
+        failures := anOrderedCollection.
+        self changed: #failuresList!
+
+displayPassFail: aString
+        passFail := aString.
+        self changed: #passFail!
+
+failuresList
+
+	^self failures collect: [:failure | failure printString]!
+
+refreshTests
+
+        tests := self buildTests.
+        self changed: #tests.
+        testSuite := nil.
+        selectedSuite := 0.
+        selectedFailureTest := 0.
+        selectedErrorTest := 0.
+        self changed: #selectedFailureTest.             "added rew"
+        self changed: #selectedErrorTest.               "added rew"
+        self changed: #selectedSuite.
+        self refreshWindow!
+
+refreshWindow
+
+        self refreshWindow: 'N/A'!
+
+refreshWindow: passFailString
+
+        self updatePartColors: Paint white.
+        self updateErrors: TestResult new.
+        self updateFailures: TestResult new.
+        self displayPassFail: passFailString.
+        self displayDetails: '...'!
+
+runWindow
+
+        self refreshWindow:  'Running...'!
+
+updateAll
+
+	self changed: #tests.
+	self changed: #details.
+	self changed: #passFail.
+	self refreshWindow!
+
+updateDetails: aTestResult
+
+	| detailString |
+	detailString := aTestResult printString , (self timeSinceLastPassAsString: aTestResult).
+	self displayDetails: detailString.
+	aTestResult hasPassed
+		ifTrue: [lastPass := Time now]!
+
+updateErrors: aTestResult
+
+        self displayErrors: aTestResult errors!
+
+updateFailures: aTestResult
+
+        self displayFailures: aTestResult failures asOrderedCollection!
+
+updatePartColors: aColor
+
+	passFailText visual backgroundPainter paint: aColor.
+	detailsText visual backgroundPainter paint: aColor!
+
+updatePassFail: aTestResult
+
+	| message |
+	message := aTestResult hasPassed
+								ifTrue: ['Pass']
+								ifFalse: ['Fail'].
+	self displayPassFail: message!
+
+updateWindow: aTestResult
+        aTestResult hasPassed
+                ifTrue: [self updatePartColors: self passColor]
+                ifFalse: [aTestResult hasErrors
+									ifTrue: [self updatePartColors: self errorColor]
+									ifFalse: [self updatePartColors: self failColor]].
+        self updatePassFail: aTestResult.
+        self updateDetails: aTestResult.
+        self updateFailures: aTestResult.
+        self updateErrors: aTestResult! !
+

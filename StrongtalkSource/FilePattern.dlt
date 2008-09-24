@@ -127,67 +127,6 @@ pattern ^<Str>
 
 	^pattern! !
 
-! (Delta mirrorFor: #FilePattern) methodsFor: 'restricted-initialization' !
-
-
-pattern: p <Str>
-
-	pattern := p! !
-
-! (Delta mirrorFor: #FilePattern) methodsFor: 'testing' !
-
-
-isAbsolute ^<Boolean>
-
-	self subclassResponsibility!
-
-isPath ^<Boolean>
-	"Returns true if the receive is a FilePath (i.e. contains no wildcards)"
-
-	^false!
-
-isRelative ^<Boolean>
-
-	^self isAbsolute not!
-
-isSyntaxValid ^<Boolean>
-
-	"Make sure the pattern is syntactically valid.
-		Wildcards should not be required"
-
-	self subclassResponsibility! !
-
-! (Delta mirrorFor: #FilePattern) methodsFor: 'iterating' !
-
-
-elementsDo: blk <[FilePattern]>
-	"Evaluate blk with each path element, from the highest to the lowest.
-		For example, on a unix system, a pattern named '/usr/*.txt' would
-		be evaluated with patterns for '/', 'usr', and '*.txt'.  On Win32 platforms,
-		'C:\windows\*.dll' would be: 'C:\', 'windows', and '*.dll'"
-
-	self subclassResponsibility!
-
-pathsDo: blk <[FilePath]>
-
-	"Evaluate blk for each existing path that matches the receiver's pattern.
-		
-		Note: Implicit files for the current directory and/or the
-		containing directory (e.g. '.' and '..') are not listed."
-
-	self subclassResponsibility! !
-
-! (Delta mirrorFor: #FilePattern) methodsFor: 'restricted-double dispatching' !
-
-
-extendPath: path <FilePath> ^<FilePattern>
-
-	^FilePattern for: (self patternExtending: path)!
-
-extendPattern: pat <FilePattern> ^<FilePattern>
-
-	^FilePattern for: (self patternExtending: pat)! !
-
 ! (Delta mirrorFor: #FilePattern) methodsFor: 'control' !
 
 
@@ -237,13 +176,6 @@ recursiveDeleteIfFail: failBlk <[Symbol]>
 			p deleteIfFail: [ :err <Symbol> |
 										failBlk value: err  ].		]! !
 
-! (Delta mirrorFor: #FilePattern) methodsFor: 'private' !
-
-
-patternExtending: pat <FilePattern> ^<Str>
-
-	self subclassResponsibility! !
-
 ! (Delta mirrorFor: #FilePattern) methodsFor: 'copying-moving' !
 
 
@@ -255,6 +187,26 @@ moveToDir: dirPath <FilePath> ifFail: fail <[ExternalError]>
 
 	self subclassResponsibility! !
 
+! (Delta mirrorFor: #FilePattern) methodsFor: 'iterating' !
+
+
+elementsDo: blk <[FilePattern]>
+	"Evaluate blk with each path element, from the highest to the lowest.
+		For example, on a unix system, a pattern named '/usr/*.txt' would
+		be evaluated with patterns for '/', 'usr', and '*.txt'.  On Win32 platforms,
+		'C:\windows\*.dll' would be: 'C:\', 'windows', and '*.dll'"
+
+	self subclassResponsibility!
+
+pathsDo: blk <[FilePath]>
+
+	"Evaluate blk for each existing path that matches the receiver's pattern.
+		
+		Note: Implicit files for the current directory and/or the
+		containing directory (e.g. '.' and '..') are not listed."
+
+	self subclassResponsibility! !
+
 ! (Delta mirrorFor: #FilePattern) methodsFor: 'printing' !
 
 
@@ -262,4 +214,52 @@ printOn: strm <CharOutputStream>
 
 	super printOn: strm.
 	strm put: $(; print: self pattern; put: $).! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'private' !
+
+
+patternExtending: pat <FilePattern> ^<Str>
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'restricted-double dispatching' !
+
+
+extendPath: path <FilePath> ^<FilePattern>
+
+	^FilePattern for: (self patternExtending: path)!
+
+extendPattern: pat <FilePattern> ^<FilePattern>
+
+	^FilePattern for: (self patternExtending: pat)! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'restricted-initialization' !
+
+
+pattern: p <Str>
+
+	pattern := p! !
+
+! (Delta mirrorFor: #FilePattern) methodsFor: 'testing' !
+
+
+isAbsolute ^<Boolean>
+
+	self subclassResponsibility!
+
+isPath ^<Boolean>
+	"Returns true if the receive is a FilePath (i.e. contains no wildcards)"
+
+	^false!
+
+isRelative ^<Boolean>
+
+	^self isAbsolute not!
+
+isSyntaxValid ^<Boolean>
+
+	"Make sure the pattern is syntactically valid.
+		Wildcards should not be required"
+
+	self subclassResponsibility! !
 

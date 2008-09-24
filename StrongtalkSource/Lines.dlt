@@ -306,6 +306,232 @@ setSelection: sel <Tuple[Point,Point]>
 
 	self setSelection: sel reanchor: true! !
 
+! (Delta mirrorFor: #Lines) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	super localDisplayOn: can.
+	self displaySelectionOn: can.
+! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'event processing' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	self selecting
+		ifTrue: [ ^false ].
+
+	(super character: c focus: focus event: ev)
+		ifTrue: [ ^true ].
+
+	"if we aren't the focus, the event must be for a child"
+	self isFocus ifFalse: [ ^false ].
+
+	^self charHandler value: c value: focus value: ev
+!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	self selecting
+		ifTrue: [ ^false ].
+
+	(super keyDown: key focus: focus event: ev)
+		ifTrue: [ ^true ].
+
+	"if we aren't the focus, the event must be for a child"
+	self isFocus ifFalse: [ ^false ].
+
+	^self keyDownHandler value: key value: focus value: ev
+!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
+
+	| spot <Point> |
+
+	(super mouseEvent: type at: loc event: ev)
+		ifTrue: [ ^true ].
+
+	(type = #primaryButtonDown and: [ ev shiftPressed not ])
+		ifTrue: [	self startSelectingAt: loc.
+
+						(self isFocusCandidate and: [ self isFocus not ])
+							ifTrue: [ self becomeFocus ].
+						^true		].
+
+	(type = #mouseMove and: [ self selecting ])
+		ifTrue: [	"If this assertion fails, somehow grab release notification didn't work right"
+						self assert: [ self session primaryMouseButtonPressed ].
+
+						self continueSelectingAt: loc.
+						^true		].
+
+	(type= #primaryButtonUp and: [ self selecting ])
+		ifTrue: [	self finishSelectingAt: loc.
+						^true		].
+
+	(type = #primaryButtonDown and: [ ev shiftPressed ])
+		ifTrue: [	self extendSelectionAt: loc.
+						^true		].
+
+	(type = #primaryButtonDoubleClick)
+		ifTrue: [	^self doubleClickHandler value: loc value: ev ].
+	^false! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'glyph access' !
+
+
+cutGlyphs  ^<SeqCltn[SeqCltn[Glyph]]>
+	"Delete the selection, The glyphs for the section deleted is returned."
+
+	^self replaceSelectionWithGlyphs: (Array[SeqCltn[Glyph]] with: Array[Glyph] new)!
+
+deleteGlyphs  ^<SeqCltn[SeqCltn[Glyph]]>
+	"Delete the selection, or if it is empty, the element before it.  The glyphs for the
+		section deleted are returned."
+
+	|	prev <Painter>
+		result <SeqCltn[SeqCltn[Glyph]]>
+		|
+	"save the painter because we don't want the painter to change"
+	prev := self painter.
+	result := self selectionIsEmpty
+			ifFalse: [	self replaceSelectionWithGlyphs: (Array[SeqCltn[Glyph]] with: (Array[Glyph] new: 0)). ]
+			ifTrue: [ 	self emptySelectionDelete ].
+	self painter: prev.
+	^result!
+
+enterGlyph: g <Glyph>  ^<SeqCltn[SeqCltn[Glyph]]>
+
+	|	prev <Painter>
+		result <SeqCltn[SeqCltn[Glyph]]>
+		|
+	"save the painter because we don't want the painter to change"
+	prev := self painter.
+	result := self replaceSelectionWithGlyphs:
+			(Array[SeqCltn[Glyph]] with: (Array[Glyph] with: g)).
+	self painter: prev.
+	^result!
+
+glyphsFrom: start <Point> to: end <Point>  ^<SeqCltn[SeqCltn[Glyph]]>
+	"Return a collection of lines containing the glyphs in the specified range, where start and end
+		are points specifying col@row.  Carriage returns are included as regular character glyphs at the end
+		of each line."
+
+	|	lines <OrderedCollection[SeqCltn[Glyph]]>
+		row <GlyphRow> |
+	lines := OrderedCollection[SeqCltn[Glyph]] new.
+	row := self lineAt: start y.
+	start y = end y
+		ifTrue: [	"range covers one line only"
+						lines addLast: (row glyphsFrom: start x to: end x - 1).
+						^lines	].
+	"part on first line"
+	lines addLast: (row glyphsFrom: start x to: row size).
+
+	"interior lines"
+	start y + 1 to: end y - 1 do:
+		[ :line <Int> |
+			row := self lineAt: line.
+			lines addLast: (row glyphsFrom: 1 to: row size).	].
+	
+	"part on last line"
+	row := self lineAt: end y.
+	lines addLast: (row glyphsFrom: 1 to: end x - 1).
+
+	^lines!
+
+replaceFrom: start <Point>
+to: end <Point>
+withGlyphs: newLines <SeqCltn[SeqCltn[Glyph]]>
+^<SeqCltn[SeqCltn[Glyph]]>
+	"Replace the specified range with the specified newLines.  newLines is a seqcltn of individual line
+	  collections, which are themselves sequenceable collections of glyphs.  Carriage return glyphs must
+	  already have been inserted at the end of all but the last line.  The selection is left covering the
+	  inserted lines.  The elements removed are returned.
+
+	  Note: this is the central mutation routine that all changes go through."
+
+	| adaptEndCr <Boolean> |
+	adaptEndCr := end = self endSpot.
+	^(start y = end y and: [ newLines size = 1 ])
+		ifTrue: [	"we optimize the case where both the replacement range and new values
+								fit on a single line"
+						|	newEnd <Int>
+							old <SeqCltn[Glyph]> |
+						old := (self lineAt: start y)
+									replaceFrom: start x
+									to: end x - 1
+									with: newLines first.
+						newEnd := start x + newLines first size.
+						adaptEndCr
+							ifTrue: [	self adaptEndCr ].
+
+						self selection: start ,, (newEnd @ end y).
+
+						Array[SeqCltn[Glyph]] with: old	]
+		ifFalse: [	"Call the general algorithm for multi-line replacement"
+							self generalReplaceFrom: start to: end withLines: newLines.	].
+!
+
+replaceSelectionWithGlyphs: newLines <SeqCltn[SeqCltn[Glyph]]>	^<SeqCltn[SeqCltn[Glyph]]>
+	"Replace the selection with the specified newLines.  newLines is a seqcltn of individual line
+	  collections, which are themselves sequenceable collections of glyphs.  Carriage return glyphs must
+	  already have been inserted at the end of all but the last line.  The selection is left covering the
+	  inserted lines.  The elements removed are returned."
+
+	^self replaceFrom: self selectionStart to: self selectionEnd withGlyphs: newLines!
+
+selectionGlyphs ^<SeqCltn[SeqCltn[Glyph]]>
+	"This gets the glyphs for the selection"
+
+	^self glyphsFrom: self selectionStart to: self selectionEnd! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self isFocusCandidate: false.
+	self painter: Painter default.
+	self xAnchor: 0.
+	self column: ((GlyphColumn holding: (OrderedCollection[GlyphRow] with: self newLine))
+							alignFirst: true;
+							optimizeIncrementalLayout: false
+						  ).
+
+	self selecting:  false.
+	self selection: (1@1) ,, (1@1).
+	self doubleClickHandler: [ :p <Point> :ev <UIEvent> | false ].
+	self blinkDeferCount: 0.
+	self isFocusBlock: [ :hasFocus <Boolean> | ].! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'input focus' !
+
+
+isFocus: flag <Boolean>
+
+	super isFocus: flag.
+	self isFocusBlock value: flag.
+	self layoutValid
+		ifTrue: [ self invalidateSelection ].! !
+
+! (Delta mirrorFor: #Lines) methodsFor: 'notification' !
+
+
+detaching
+
+	self selecting
+		ifTrue: [ self finishSelecting ].
+	super detaching.!
+
+lostGrab
+
+	super lostGrab.
+	self finishSelecting.! !
+
 ! (Delta mirrorFor: #Lines) methodsFor: 'private' !
 
 
@@ -722,25 +948,16 @@ xAnchor: a <Int>
 
 	xAnchor := a! !
 
-! (Delta mirrorFor: #Lines) methodsFor: 'initialization' !
+! (Delta mirrorFor: #Lines) methodsFor: 'restricted-to session' !
 
 
-initialize
+blinkFocus: shown <Boolean>
 
-	super initialize.
-	self isFocusCandidate: false.
-	self painter: Painter default.
-	self xAnchor: 0.
-	self column: ((GlyphColumn holding: (OrderedCollection[GlyphRow] with: self newLine))
-							alignFirst: true;
-							optimizeIncrementalLayout: false
-						  ).
-
-	self selecting:  false.
-	self selection: (1@1) ,, (1@1).
-	self doubleClickHandler: [ :p <Point> :ev <UIEvent> | false ].
-	self blinkDeferCount: 0.
-	self isFocusBlock: [ :hasFocus <Boolean> | ].! !
+	self blinkDeferCount > 0
+		ifTrue: [ self blinkDeferCount: self blinkDeferCount - 1 ]
+		ifFalse: [ self selectionIsEmpty
+							ifTrue: [ self invalidateSelection ]
+					 ]! !
 
 ! (Delta mirrorFor: #Lines) methodsFor: 'selection' !
 
@@ -888,221 +1105,4 @@ upArrow
 	line := line - 1.
 	col := self boundaryClosestTo: self xAnchor onLine: line.
 	self selection: (col@line),,(col@line) reanchor: false.! !
-
-! (Delta mirrorFor: #Lines) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas>
-
-	super localDisplayOn: can.
-	self displaySelectionOn: can.
-! !
-
-! (Delta mirrorFor: #Lines) methodsFor: 'notification' !
-
-
-detaching
-
-	self selecting
-		ifTrue: [ self finishSelecting ].
-	super detaching.!
-
-lostGrab
-
-	super lostGrab.
-	self finishSelecting.! !
-
-! (Delta mirrorFor: #Lines) methodsFor: 'event processing' !
-
-
-character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	self selecting
-		ifTrue: [ ^false ].
-
-	(super character: c focus: focus event: ev)
-		ifTrue: [ ^true ].
-
-	"if we aren't the focus, the event must be for a child"
-	self isFocus ifFalse: [ ^false ].
-
-	^self charHandler value: c value: focus value: ev
-!
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	self selecting
-		ifTrue: [ ^false ].
-
-	(super keyDown: key focus: focus event: ev)
-		ifTrue: [ ^true ].
-
-	"if we aren't the focus, the event must be for a child"
-	self isFocus ifFalse: [ ^false ].
-
-	^self keyDownHandler value: key value: focus value: ev
-!
-
-mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
-
-	| spot <Point> |
-
-	(super mouseEvent: type at: loc event: ev)
-		ifTrue: [ ^true ].
-
-	(type = #primaryButtonDown and: [ ev shiftPressed not ])
-		ifTrue: [	self startSelectingAt: loc.
-
-						(self isFocusCandidate and: [ self isFocus not ])
-							ifTrue: [ self becomeFocus ].
-						^true		].
-
-	(type = #mouseMove and: [ self selecting ])
-		ifTrue: [	"If this assertion fails, somehow grab release notification didn't work right"
-						self assert: [ self session primaryMouseButtonPressed ].
-
-						self continueSelectingAt: loc.
-						^true		].
-
-	(type= #primaryButtonUp and: [ self selecting ])
-		ifTrue: [	self finishSelectingAt: loc.
-						^true		].
-
-	(type = #primaryButtonDown and: [ ev shiftPressed ])
-		ifTrue: [	self extendSelectionAt: loc.
-						^true		].
-
-	(type = #primaryButtonDoubleClick)
-		ifTrue: [	^self doubleClickHandler value: loc value: ev ].
-	^false! !
-
-! (Delta mirrorFor: #Lines) methodsFor: 'input focus' !
-
-
-isFocus: flag <Boolean>
-
-	super isFocus: flag.
-	self isFocusBlock value: flag.
-	self layoutValid
-		ifTrue: [ self invalidateSelection ].! !
-
-! (Delta mirrorFor: #Lines) methodsFor: 'glyph access' !
-
-
-cutGlyphs  ^<SeqCltn[SeqCltn[Glyph]]>
-	"Delete the selection, The glyphs for the section deleted is returned."
-
-	^self replaceSelectionWithGlyphs: (Array[SeqCltn[Glyph]] with: Array[Glyph] new)!
-
-deleteGlyphs  ^<SeqCltn[SeqCltn[Glyph]]>
-	"Delete the selection, or if it is empty, the element before it.  The glyphs for the
-		section deleted are returned."
-
-	|	prev <Painter>
-		result <SeqCltn[SeqCltn[Glyph]]>
-		|
-	"save the painter because we don't want the painter to change"
-	prev := self painter.
-	result := self selectionIsEmpty
-			ifFalse: [	self replaceSelectionWithGlyphs: (Array[SeqCltn[Glyph]] with: (Array[Glyph] new: 0)). ]
-			ifTrue: [ 	self emptySelectionDelete ].
-	self painter: prev.
-	^result!
-
-enterGlyph: g <Glyph>  ^<SeqCltn[SeqCltn[Glyph]]>
-
-	|	prev <Painter>
-		result <SeqCltn[SeqCltn[Glyph]]>
-		|
-	"save the painter because we don't want the painter to change"
-	prev := self painter.
-	result := self replaceSelectionWithGlyphs:
-			(Array[SeqCltn[Glyph]] with: (Array[Glyph] with: g)).
-	self painter: prev.
-	^result!
-
-glyphsFrom: start <Point> to: end <Point>  ^<SeqCltn[SeqCltn[Glyph]]>
-	"Return a collection of lines containing the glyphs in the specified range, where start and end
-		are points specifying col@row.  Carriage returns are included as regular character glyphs at the end
-		of each line."
-
-	|	lines <OrderedCollection[SeqCltn[Glyph]]>
-		row <GlyphRow> |
-	lines := OrderedCollection[SeqCltn[Glyph]] new.
-	row := self lineAt: start y.
-	start y = end y
-		ifTrue: [	"range covers one line only"
-						lines addLast: (row glyphsFrom: start x to: end x - 1).
-						^lines	].
-	"part on first line"
-	lines addLast: (row glyphsFrom: start x to: row size).
-
-	"interior lines"
-	start y + 1 to: end y - 1 do:
-		[ :line <Int> |
-			row := self lineAt: line.
-			lines addLast: (row glyphsFrom: 1 to: row size).	].
-	
-	"part on last line"
-	row := self lineAt: end y.
-	lines addLast: (row glyphsFrom: 1 to: end x - 1).
-
-	^lines!
-
-replaceFrom: start <Point>
-to: end <Point>
-withGlyphs: newLines <SeqCltn[SeqCltn[Glyph]]>
-^<SeqCltn[SeqCltn[Glyph]]>
-	"Replace the specified range with the specified newLines.  newLines is a seqcltn of individual line
-	  collections, which are themselves sequenceable collections of glyphs.  Carriage return glyphs must
-	  already have been inserted at the end of all but the last line.  The selection is left covering the
-	  inserted lines.  The elements removed are returned.
-
-	  Note: this is the central mutation routine that all changes go through."
-
-	| adaptEndCr <Boolean> |
-	adaptEndCr := end = self endSpot.
-	^(start y = end y and: [ newLines size = 1 ])
-		ifTrue: [	"we optimize the case where both the replacement range and new values
-								fit on a single line"
-						|	newEnd <Int>
-							old <SeqCltn[Glyph]> |
-						old := (self lineAt: start y)
-									replaceFrom: start x
-									to: end x - 1
-									with: newLines first.
-						newEnd := start x + newLines first size.
-						adaptEndCr
-							ifTrue: [	self adaptEndCr ].
-
-						self selection: start ,, (newEnd @ end y).
-
-						Array[SeqCltn[Glyph]] with: old	]
-		ifFalse: [	"Call the general algorithm for multi-line replacement"
-							self generalReplaceFrom: start to: end withLines: newLines.	].
-!
-
-replaceSelectionWithGlyphs: newLines <SeqCltn[SeqCltn[Glyph]]>	^<SeqCltn[SeqCltn[Glyph]]>
-	"Replace the selection with the specified newLines.  newLines is a seqcltn of individual line
-	  collections, which are themselves sequenceable collections of glyphs.  Carriage return glyphs must
-	  already have been inserted at the end of all but the last line.  The selection is left covering the
-	  inserted lines.  The elements removed are returned."
-
-	^self replaceFrom: self selectionStart to: self selectionEnd withGlyphs: newLines!
-
-selectionGlyphs ^<SeqCltn[SeqCltn[Glyph]]>
-	"This gets the glyphs for the selection"
-
-	^self glyphsFrom: self selectionStart to: self selectionEnd! !
-
-! (Delta mirrorFor: #Lines) methodsFor: 'restricted-to session' !
-
-
-blinkFocus: shown <Boolean>
-
-	self blinkDeferCount > 0
-		ifTrue: [ self blinkDeferCount: self blinkDeferCount - 1 ]
-		ifFalse: [ self selectionIsEmpty
-							ifTrue: [ self invalidateSelection ]
-					 ]! !
 

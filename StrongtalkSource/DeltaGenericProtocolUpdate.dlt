@@ -107,6 +107,13 @@ trivialActuals := self formals collect:[:f <TypeFormal>  | f typeVar].
 ^DeltaGenericApplicationType new apply: (DeltaTypeId new setId: self name; scope: DeltaGlobals) to: trivialActuals.
 ! !
 
+! (Delta mirrorFor: #DeltaGenericProtocolUpdate) methodsFor: 'private typechecking' !
+
+
+wellFormedMessage: m <Message >
+
+self body wellFormedMessage: m! !
+
 ! (Delta mirrorFor: #DeltaGenericProtocolUpdate) methodsFor: 'typechecking' !
 
 
@@ -126,11 +133,4 @@ self retractTypeAssumptions.
 self errorHandler popDefinition.
 
 ! !
-
-! (Delta mirrorFor: #DeltaGenericProtocolUpdate) methodsFor: 'private typechecking' !
-
-
-wellFormedMessage: m <Message >
-
-self body wellFormedMessage: m! !
 

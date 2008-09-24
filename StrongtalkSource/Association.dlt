@@ -24,20 +24,6 @@ key: k <K> value: v <V> ^<Instance>
 
 	^self new key: k value: v! !
 
-! (Delta mirrorFor: #Association) methodsFor: 'comparing' !
-
-
-= other <Object> ^<Boolean>
-
-	| othera <Assoc[Object,Object]> |
-	"%todo: replace Association with Assoc when typecase is fully impl"
-	othera := Association[Object,Object] coerce: other else: [ ^false ].
-	^self key = othera key and: [ self value = othera value ]!
-
-hash ^<Int>
-
-	^self key hash bitXor: self value hash! !
-
 ! (Delta mirrorFor: #Association) methodsFor: 'accessing' !
 
 
@@ -77,6 +63,20 @@ value ^<V>
 value: v <V>
 
 	value := v.! !
+
+! (Delta mirrorFor: #Association) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	| othera <Assoc[Object,Object]> |
+	"%todo: replace Association with Assoc when typecase is fully impl"
+	othera := Association[Object,Object] coerce: other else: [ ^false ].
+	^self key = othera key and: [ self value = othera value ]!
+
+hash ^<Int>
+
+	^self key hash bitXor: self value hash! !
 
 ! (Delta mirrorFor: #Association) methodsFor: 'printing' !
 

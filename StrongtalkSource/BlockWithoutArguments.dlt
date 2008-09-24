@@ -28,7 +28,7 @@ test
 	self assert: [ v ].
 
 	self testForEnsure: [ v := false ] onUnwind: [ v := true ].
-	self assert: [ v ].!
+	self assert: [ v ]!
 
 testForEnsure: b <[]> onUnwind: b2 <[]> ^<Object>
 
@@ -37,6 +37,17 @@ testForEnsure: b <[]> onUnwind: b2 <[]> ^<Object>
 testForUnwind: b <[]> onUnwind: b2 <[]> ^<Object>
 
 	[ ^b value ] ifCurtailed: b2! !
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'Camp Smalltalk' !
+
+
+sunitEnsure: aBlock
+ 
+        ^self ensure: aBlock!
+
+sunitOn: anException do: aHandlerBlock
+ 
+        ^self on: anException do: aHandlerBlock! !
 
 ! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
 
@@ -176,4 +187,15 @@ whileTrue: blk <[]> ^<Object>
 						whileTrue: [ blk value ]	].
 
 	^nil! !
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'exceptions' !
+
+
+on: exception do: handlerBlock
+
+	^(LinkedExceptionHandler
+		on: exception
+		do: handlerBlock
+		return: [:value | ^ value]) protect: self
+! !
 

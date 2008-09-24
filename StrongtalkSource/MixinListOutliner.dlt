@@ -10,21 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #MixinListOutliner) methodsFor: 'private' !
-
-
-computeWorldList ^ <OrdCltn[MixinDeclMirror]>
-
-	| result <SortedCollection[MixinDeclMirror]> |
-	result := SortedCollection[MixinDeclMirror] 
-					sortBlock: [ :m1 <MixinDeclMirror> :m2 <MixinDeclMirror> | m1 name <= m2 name ].
-	Smalltalk mixinsDo: [ :m <Mixin> | result add: (MixinDeclMirror on: m) ].
-	^result asOrderedCollection!
-
-labelPainter ^<Painter>
-
-	^self mixinPainter! !
-
 ! (Delta mirrorFor: #MixinListOutliner) methodsFor: 'accessing' !
 
 
@@ -35,40 +20,6 @@ entryName ^ <Str>
 windowTitle ^ <Str>
 
 	^'Mixins'! !
-
-! (Delta mirrorFor: #MixinListOutliner) methodsFor: 'menus' !
-
-
-fileMenu ^ <Menu>
-
-	^super fileMenu
-		add: (MenuAction new
-					name: '&Add new mixin';
-					action: [ self addNewMixin ] )!
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^ <Menu>
-
-	^Menu new
-		add: self fileMenu;
-		add: self typecheckingMenu!
-
-typecheckingMenu ^ <Menu>
-
-^Menu new name: 'Typecheck';
-    add: (MenuAction new
-                  name: 'Typecheck all mixins';
-                  action: [self typecheckAll]);
-    add: (MenuAction new
-                  name: 'Typecheck interfaces of all mixins';
-                  action: [self typecheckAllInterfaces]);
-    add: (MenuAction new
-                  name: 'Typecheck definitions of all mixins';
-                  action: [self typecheckAllDefs])
-! !
 
 ! (Delta mirrorFor: #MixinListOutliner) methodsFor: 'control' !
 
@@ -110,4 +61,53 @@ update: aspect <Object> with: value <Object>
 	self inSessionProcessDo: [
 		((aspect = #addGlobal or: [aspect = #removeGlobal]) and: [ ClassMixin = value at2 class ])
 			ifTrue: [	self update ] ]! !
+
+! (Delta mirrorFor: #MixinListOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+					name: '&Add new mixin';
+					action: [ self addNewMixin ] )!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self typecheckingMenu!
+
+typecheckingMenu ^ <Menu>
+
+^Menu new name: 'Typecheck';
+    add: (MenuAction new
+                  name: 'Typecheck all mixins';
+                  action: [self typecheckAll]);
+    add: (MenuAction new
+                  name: 'Typecheck interfaces of all mixins';
+                  action: [self typecheckAllInterfaces]);
+    add: (MenuAction new
+                  name: 'Typecheck definitions of all mixins';
+                  action: [self typecheckAllDefs])
+! !
+
+! (Delta mirrorFor: #MixinListOutliner) methodsFor: 'private' !
+
+
+computeWorldList ^ <OrdCltn[MixinDeclMirror]>
+
+	| result <SortedCollection[MixinDeclMirror]> |
+	result := SortedCollection[MixinDeclMirror] 
+					sortBlock: [ :m1 <MixinDeclMirror> :m2 <MixinDeclMirror> | m1 name <= m2 name ].
+	Smalltalk mixinsDo: [ :m <Mixin> | result add: (MixinDeclMirror on: m) ].
+	^result asOrderedCollection!
+
+labelPainter ^<Painter>
+
+	^self mixinPainter! !
 

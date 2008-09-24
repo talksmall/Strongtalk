@@ -38,6 +38,13 @@ brushes ^<VarDict[Paint,HBRUSH]>
 
 	^Brushes! !
 
+! (Delta mirrorFor: #HBRUSH) methodsFor: 'accessing' !
+
+
+paint ^<Paint>
+
+	^paint! !
+
 ! (Delta mirrorFor: #HBRUSH) methodsFor: 'comparing' !
 
 
@@ -51,20 +58,6 @@ hash ^<Int>
 
 	^self paint hash! !
 
-! (Delta mirrorFor: #HBRUSH) methodsFor: 'accessing' !
-
-
-paint ^<Paint>
-
-	^paint! !
-
-! (Delta mirrorFor: #HBRUSH) methodsFor: 'initialization' !
-
-
-initPaint: p <Paint>
-
-	paint := p! !
-
 ! (Delta mirrorFor: #HBRUSH) methodsFor: 'control' !
 
 
@@ -72,4 +65,11 @@ release
 
 	"This is right only for objects we created, which currently we always do"
 	self win32DeleteObject! !
+
+! (Delta mirrorFor: #HBRUSH) methodsFor: 'initialization' !
+
+
+initPaint: p <Paint>
+
+	paint := p! !
 

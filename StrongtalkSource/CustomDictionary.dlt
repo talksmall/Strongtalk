@@ -29,15 +29,6 @@ hashBlock: hashBlock <[K, ^Int]>
 
 	^(self new) compareBlock: compareBlock; hashBlock: hashBlock! !
 
-! (Delta mirrorFor: #CustomDictionary) methodsFor: 'initialization' !
-
-
-initCapacity: cap <Int>
-
-	super initCapacity: cap.
-	self	compareBlock: [ :k1 <K> :k2 <K> |  k1 = k2 ];
-			hashBlock: [ :k <K> | k hash ].! !
-
 ! (Delta mirrorFor: #CustomDictionary) methodsFor: 'accessing' !
 
 
@@ -48,4 +39,13 @@ compareBlock: blk <[K,K,^Boolean]>
 hashBlock: blk <[K, ^Int]>
 
 	hashBlock := blk! !
+
+! (Delta mirrorFor: #CustomDictionary) methodsFor: 'initialization' !
+
+
+initCapacity: cap <Int>
+
+	super initCapacity: cap.
+	self	compareBlock: [ :k1 <K> :k2 <K> |  k1 = k2 ];
+			hashBlock: [ :k <K> | k hash ].! !
 

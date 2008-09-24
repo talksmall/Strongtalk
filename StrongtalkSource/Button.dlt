@@ -99,6 +99,134 @@ withImage: i <Image> action: action <[Button]> ^<Button>
 		clickAction: action
 		) image: i! !
 
+! (Delta mirrorFor: #Button) methodsFor: 'accessing' !
+
+
+addDefaultStyle
+	"Add the heavy black border to the style that makes it look like the default button.
+		Only works for pushbuttons."
+
+	buttonStyle := self buttonStyle externalBitOr: Win32 BS_DEFPUSHBUTTON.!
+
+clickAction ^<[Button]>
+
+	^clickAction!
+
+clickAction: a <[Button]>
+
+	clickAction := a!
+
+hasImage ^<Boolean>
+	"If true, the button displays an image.  If false, it displays text"
+	
+	^self image notNil!
+
+image ^<Image>
+
+	^image!
+
+image: i <Image>
+
+	self changing.
+	image := i.
+	"Make sure there is no text."
+	label := nil.
+	
+	"update the style"
+	buttonStyle := self buttonStyle externalBitOr: Win32 BS_BITMAP.
+	
+	win32Handle isNil
+		ifFalse: [	natural := nil.
+							self setWindowImage: i.  ].!
+
+label ^<Str>
+
+	^label!
+
+label: l <Str>
+
+	"Currently, we don't allow changing from images to labels, but only because
+		I don't have time to fiddle with unsetting the button style BS_BITMAP"
+	self assert: [ self hasImage not ].
+	self changing.
+	label := l.
+	image := nil.
+	
+	win32Handle isNil
+		ifFalse: [	natural := nil.
+							self setWindowText: l.  ].!
+
+state ^<Boolean|Nil>
+
+	^state!
+
+state: s <Boolean|Nil>
+
+	self state ~= s
+		ifTrue: [ self setState: s ]!
+
+stretchy ^<Boolean>
+
+	^stretchy!
+
+stretchy: flag <Boolean>
+
+	stretchy := flag! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'control' !
+
+
+press
+
+	MenuAction timeActions
+		ifTrue: [ Transcript print: [ self clickAction value: self ] time; cr. ]
+		ifFalse: [ self clickAction value: self ]
+! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'event handling' !
+
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	(super keyDown: key focus: focus event: ev)
+		ifTrue: [ ^true ].
+
+	key = #RETURN
+		ifTrue: [	self press.
+						"Absorb any built-up repeat chars so we don't get behind"
+						ev repeatCount: 0.
+						^true ].
+	^false! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'geometry-local' !
+
+
+max ^<Region>
+
+	^self stretchy
+		ifFalse: [ self natural ]
+		ifTrue: [	| nat <Rect> |
+						0 @ self natural top corner: UI huge @ self natural bottom  ]!
+
+natural ^<Rect>
+
+	natural isNil
+		ifTrue: [ self computeNatural ].
+	^natural! !
+
+! (Delta mirrorFor: #Button) methodsFor: 'initialization' !
+
+
+initializeWithStyle: bstyle <ExternalData>
+label: l <Str>
+clickAction: action <[Button]>
+
+	buttonStyle := bstyle.
+	label := l.
+	self clickAction: action.
+	state := false.
+	stretchy := true.! !
+
 ! (Delta mirrorFor: #Button) methodsFor: 'private' !
 
 
@@ -266,109 +394,6 @@ win32Style ^<ExternalData>
 		externalBitOr: (self buttonStyle
 		externalBitOr: Win32 BS_NOTIFY)! !
 
-! (Delta mirrorFor: #Button) methodsFor: 'initialization' !
-
-
-initializeWithStyle: bstyle <ExternalData>
-label: l <Str>
-clickAction: action <[Button]>
-
-	buttonStyle := bstyle.
-	label := l.
-	self clickAction: action.
-	state := false.
-	stretchy := true.! !
-
-! (Delta mirrorFor: #Button) methodsFor: 'accessing' !
-
-
-addDefaultStyle
-	"Add the heavy black border to the style that makes it look like the default button.
-		Only works for pushbuttons."
-
-	buttonStyle := self buttonStyle externalBitOr: Win32 BS_DEFPUSHBUTTON.!
-
-clickAction ^<[Button]>
-
-	^clickAction!
-
-clickAction: a <[Button]>
-
-	clickAction := a!
-
-hasImage ^<Boolean>
-	"If true, the button displays an image.  If false, it displays text"
-	
-	^self image notNil!
-
-image ^<Image>
-
-	^image!
-
-image: i <Image>
-
-	self changing.
-	image := i.
-	"Make sure there is no text."
-	label := nil.
-	
-	"update the style"
-	buttonStyle := self buttonStyle externalBitOr: Win32 BS_BITMAP.
-	
-	win32Handle isNil
-		ifFalse: [	natural := nil.
-							self setWindowImage: i.  ].!
-
-label ^<Str>
-
-	^label!
-
-label: l <Str>
-
-	"Currently, we don't allow changing from images to labels, but only because
-		I don't have time to fiddle with unsetting the button style BS_BITMAP"
-	self assert: [ self hasImage not ].
-	self changing.
-	label := l.
-	image := nil.
-	
-	win32Handle isNil
-		ifFalse: [	natural := nil.
-							self setWindowText: l.  ].!
-
-state ^<Boolean|Nil>
-
-	^state!
-
-state: s <Boolean|Nil>
-
-	self state ~= s
-		ifTrue: [ self setState: s ]!
-
-stretchy ^<Boolean>
-
-	^stretchy!
-
-stretchy: flag <Boolean>
-
-	stretchy := flag! !
-
-! (Delta mirrorFor: #Button) methodsFor: 'geometry-local' !
-
-
-max ^<Region>
-
-	^self stretchy
-		ifFalse: [ self natural ]
-		ifTrue: [	| nat <Rect> |
-						0 @ self natural top corner: UI huge @ self natural bottom  ]!
-
-natural ^<Rect>
-
-	natural isNil
-		ifTrue: [ self computeNatural ].
-	^natural! !
-
 ! (Delta mirrorFor: #Button) methodsFor: 'restricted-win32' !
 
 
@@ -396,29 +421,4 @@ notificationMsg: notifyCode <ExternalData>
 						^self	].
 	
 	super notificationMsg: notifyCode! !
-
-! (Delta mirrorFor: #Button) methodsFor: 'control' !
-
-
-press
-
-	MenuAction timeActions
-		ifTrue: [ Transcript print: [ self clickAction value: self ] time; cr. ]
-		ifFalse: [ self clickAction value: self ]
-! !
-
-! (Delta mirrorFor: #Button) methodsFor: 'event handling' !
-
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	(super keyDown: key focus: focus event: ev)
-		ifTrue: [ ^true ].
-
-	key = #RETURN
-		ifTrue: [	self press.
-						"Absorb any built-up repeat chars so we don't get behind"
-						ev repeatCount: 0.
-						^true ].
-	^false! !
 

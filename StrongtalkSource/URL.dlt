@@ -126,6 +126,17 @@ type ^<Str>
 	^String withAll: (self path copyFrom: dotSpot + 1 to: self path size)
 ! !
 
+! (Delta mirrorFor: #URL) methodsFor: 'converting' !
+
+
+asString ^<String>
+
+	^String withAll: self path!
+
+asSymbol ^<Symbol>
+
+	^self path asSymbol! !
+
 ! (Delta mirrorFor: #URL) methodsFor: 'loading' !
 
 
@@ -230,15 +241,4 @@ isLocal ^<Boolean>
 isRelative ^<Boolean>
 
 	^self isAbsolute not! !
-
-! (Delta mirrorFor: #URL) methodsFor: 'converting' !
-
-
-asString ^<String>
-
-	^String withAll: self path!
-
-asSymbol ^<Symbol>
-
-	^self path asSymbol! !
 

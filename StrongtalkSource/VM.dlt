@@ -1,5 +1,5 @@
 Delta define: #VM as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore') !
 
 (Delta mirrorFor: #VM) revision: '$Revision: 1.5 $'!
 
@@ -9,6 +9,32 @@ Delta define: #VM as: (
 comment: 
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
+
+
+compiledCodeOnly: value <True|False>
+	self booleanAt: #CompiledCodeOnly put: value!
+
+traceDoubleByteArrayPrimitives: value <True|False>
+	self booleanAt: #TraceDoubleByteArrayPrims put: value!
+
+traceProxyPrimitives: value <True|False>
+	self booleanAt: #TraceProxyPrims put: value!
+
+useInliningDatabase ^<Boolean>
+
+	^VM booleanAt: #UseInliningDatabase!
+
+useInliningDatabase: f <Boolean>
+
+	VM booleanAt: #UseInliningDatabase put: f!
+
+wizardMode ^<True|False>
+	^self booleanAt: #WizardMode!
+
+wizardMode: value <True|False>
+	self booleanAt: #WizardMode put: value! !
 
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
 
@@ -60,35 +86,6 @@ recompilation: flag <Boolean>
 
 	self vmFlagAt: #UseRecompilation put: flag! !
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
-
-
-booleanAt: name <Symbol> ^<SmallInteger>
-	^{{primitiveBooleanFlagAt: name ifFail: [:err | self error: self]}}!
-
-booleanAt: name <Symbol> put: value <True|False> ^<SmallInteger>
-	^{{primitiveBooleanFlagAt: name put: value ifFail: [:err | self error: err]}}!
-
-error: msg <Symbol> ^ <Boolean>
-	"ignore flags that are not defined in product version"
-	^ false!
-
-smallIntegerAt: name <Symbol> ^<SmallInteger>
-	^{{primitiveSmallIntegerFlagAt: name ifFail: [:err | self error: self]}}!
-
-smallIntegerAt: name <Symbol> put: value <SmallInteger> ^<SmallInteger>
-	^{{primitiveSmallIntegerFlagAt: name put: value  ifFail: [:err | self error: self]}}!
-
-vmFlagAt: name <Symbol>  ^<Boolean>
-
-	^{{primitiveBooleanFlagAt: name
-			ifFail: [ :err <Symbol> | self error: err ]}}!
-
-vmFlagAt: name <Symbol> put:  flag <Boolean>
-
-	{{primitiveBooleanFlagAt: name put: flag
-			ifFail: [ :err <Symbol> | self error: err ]}}! !
-
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
 
 
@@ -96,25 +93,60 @@ collectGarbage
 
 	{{self primitiveGarbageCollect}}!
 
+deferredGC
+
+	GCSemaphore := Semaphore new.
+	[self collectGarbage.
+	GCSemaphore signal] fork!
+
+expand: size
+
+	{{primitiveExpandMemory: (size * self oopSize)}}!
+
+initializeGCProcess
+
+GCProcess := [| delay |
+							delay := Delay forMilliseconds: 500.
+							[delay wait.
+							VM objectMemorySize > 0.95
+								ifTrue: [VM collectGarbage]] repeat] fork!
+
+isGCPending
+
+	^GCSemaphore notNil!
+
+needsNewGCProcess
+
+	^GCProcess isNil
+		or: [(GCProcess running
+					or: [GCProcess suspended]) not]!
+
+objectMemorySize
+
+	^{{self primitiveObjectMemorySize}}!
+
 scavengeGarbage
 	"Collect very recent garbage.  This is fast, but does not collect all garbage.
 		(i.e. it scavenges the object nursery) "
 
-	{{self primitiveScavenge}}! !
+	{{self primitiveScavenge}}!
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'system control' !
+startGCProcess
 
+	self needsNewGCProcess
+		ifTrue: [self initializeGCProcess]!
 
-quit
-	"Terminate the virtual machine"
+stopGCProcess
 
-	{{primitiveQuit}}.!
+	self needsNewGCProcess
+		ifFalse: [GCProcess terminate]!
 
-quitUI
-	"Terminate the user interface"
-	
-	{{<user ExternalProxy PostQuitMessage> arg: 0}}.
-! !
+waitForGC
+
+	GCSemaphore isNil
+		ifTrue: [self deferredGC]
+		ifFalse:[GCSemaphore wait.
+					GCSemaphore := nil]! !
 
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'integer flags' !
 
@@ -124,32 +156,6 @@ numberOfBlockAllocations
 
 numberOfContextAllocations
 	^self smallIntegerAt: #NumberOfContextAllocations! !
-
-! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
-
-
-compiledCodeOnly: value <True|False>
-	self booleanAt: #CompiledCodeOnly put: value!
-
-traceDoubleByteArrayPrimitives: value <True|False>
-	self booleanAt: #TraceDoubleByteArrayPrims put: value!
-
-traceProxyPrimitives: value <True|False>
-	self booleanAt: #TraceProxyPrims put: value!
-
-useInliningDatabase ^<Boolean>
-
-	^VM booleanAt: #UseInliningDatabase!
-
-useInliningDatabase: f <Boolean>
-
-	VM booleanAt: #UseInliningDatabase put: f!
-
-wizardMode ^<True|False>
-	^self booleanAt: #WizardMode!
-
-wizardMode: value <True|False>
-	self booleanAt: #WizardMode put: value! !
 
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'integer operations' !
 
@@ -174,6 +180,53 @@ numberOfPrimaryLookupCacheHits
 numberOfSecondaryLookupCacheHits
 	"Number of lookups where the result were located in the secondary cache"
 	^{{primitiveNumberOfPrimaryLookupCacheHits}}! !
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
+
+
+booleanAt: name <Symbol> ^<SmallInteger>
+	^{{primitiveBooleanFlagAt: name ifFail: [:err | self error: self]}}!
+
+booleanAt: name <Symbol> put: value <True|False> ^<SmallInteger>
+	^{{primitiveBooleanFlagAt: name put: value ifFail: [:err | self error: err]}}!
+
+error: msg <Symbol> ^ <Boolean>
+	"ignore flags that are not defined in product version"
+	^ false!
+
+oopSize
+
+	^{{primitiveSizeOfOop}}!
+
+smallIntegerAt: name <Symbol> ^<SmallInteger>
+	^{{primitiveSmallIntegerFlagAt: name ifFail: [:err | self error: self]}}!
+
+smallIntegerAt: name <Symbol> put: value <SmallInteger> ^<SmallInteger>
+	^{{primitiveSmallIntegerFlagAt: name put: value  ifFail: [:err | self error: self]}}!
+
+vmFlagAt: name <Symbol>  ^<Boolean>
+
+	^{{primitiveBooleanFlagAt: name
+			ifFail: [ :err <Symbol> | self error: err ]}}!
+
+vmFlagAt: name <Symbol> put:  flag <Boolean>
+
+	{{primitiveBooleanFlagAt: name put: flag
+			ifFail: [ :err <Symbol> | self error: err ]}}! !
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'system control' !
+
+
+quit
+	"Terminate the virtual machine"
+
+	{{primitiveQuit}}.!
+
+quitUI
+	"Terminate the user interface"
+	
+	{{<user ExternalProxy PostQuitMessage> arg: 0}}.
+! !
 
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'wrappers' !
 

@@ -13,33 +13,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
 '!
 
-! (Delta mirrorFor: #Boolean) methodsFor: 'operations' !
-
-
-& other <Boolean>	^<Boolean>
-	"and"
-
-	self subclassResponsibility!
-
-eqv: other <Boolean>	^<Boolean>
-	"equivalence (obsolete; use = instead)"
-
-	^self == other!
-
-not ^<Boolean>
-
-	self subclassResponsibility!
-
-xor: other <Boolean>	^<Boolean>
-	"exclusive-or"
-
-	^self ~~ other!
-
-| other <Boolean>	^<Boolean>
-	"or"
-
-	self subclassResponsibility! !
-
 ! (Delta mirrorFor: #Boolean) methodsFor: 'control' !
 
 
@@ -71,17 +44,44 @@ or: f <[^Boolean]>	^<Boolean>
 
 	self subclassResponsibility! !
 
+! (Delta mirrorFor: #Boolean) methodsFor: 'converting' !
+
+
+asExternalData ^<Int>
+	"Convert to C boolean representation"
+
+	self subclassResponsibility! !
+
 ! (Delta mirrorFor: #Boolean) methodsFor: 'copying' !
 
 
 copy ^<Instance>
 	^self! !
 
-! (Delta mirrorFor: #Boolean) methodsFor: 'converting' !
+! (Delta mirrorFor: #Boolean) methodsFor: 'operations' !
 
 
-asExternalData ^<Int>
-	"Convert to C boolean representation"
+& other <Boolean>	^<Boolean>
+	"and"
+
+	self subclassResponsibility!
+
+eqv: other <Boolean>	^<Boolean>
+	"equivalence (obsolete; use = instead)"
+
+	^self == other!
+
+not ^<Boolean>
+
+	self subclassResponsibility!
+
+xor: other <Boolean>	^<Boolean>
+	"exclusive-or"
+
+	^self ~~ other!
+
+| other <Boolean>	^<Boolean>
+	"or"
 
 	self subclassResponsibility! !
 

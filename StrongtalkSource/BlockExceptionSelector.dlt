@@ -1,0 +1,42 @@
+Delta define: #BlockExceptionSelector as: (
+(Class subclassOf: 'Object' instanceVariables: 'handlesBlock')) !
+
+(Delta mirrorFor: #BlockExceptionSelector) revision: '$Revision$'!
+
+(Delta mirrorFor: #BlockExceptionSelector) group: 'exceptions'!
+
+(Delta mirrorFor: #BlockExceptionSelector)
+comment: 
+'Determines whether an exception can be handled by evaluating the handlesBlock.'!
+
+! (Delta mirrorFor: #BlockExceptionSelector) classSide methodsFor: 'instantiation' !
+
+
+falseSelector
+
+	^BlockExceptionSelector handlesBlock: [:ex| false]!
+
+handlesBlock: block
+
+	^self new
+		handlesBlock: block;
+		yourself!
+
+trueSelector
+
+	^BlockExceptionSelector handlesBlock: [:ex| true]! !
+
+! (Delta mirrorFor: #BlockExceptionSelector) methodsFor: 'exception selector' !
+
+
+handles: exceptionDescriptor
+
+	^handlesBlock value: exceptionDescriptor! !
+
+! (Delta mirrorFor: #BlockExceptionSelector) methodsFor: 'private - initialization' !
+
+
+handlesBlock: block
+
+	handlesBlock := block ! !
+

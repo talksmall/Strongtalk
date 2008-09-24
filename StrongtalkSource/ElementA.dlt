@@ -10,39 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #ElementA) methodsFor: 'building' !
-
-
-buildFor: builder <HTMLBuilder>
-
-	| p <Painter> |
-	p := builder painter copy.
-	p paint: builder linkPaint.
-	p font: (p font newSpec underline: true) font.
-	builder withPainter: p
-		do: [	(self isLink or: [ self isDoit ])
-						ifTrue: [ self buildLinkFor: builder ]
-						ifFalse: [ super buildFor: builder ]
-				]!
-
-buildLinkFor: builder <HTMLBuilder>
-
-	builder
-		withGlyphTransformer:
-			[ :gl <Glyph> |
-					self wrap: gl builder: builder ]
-		do: [ super buildFor: builder ]! !
-
-! (Delta mirrorFor: #ElementA) methodsFor: 'private' !
-
-
-wrap: gl <Glyph> builder: builder <HTMLBuilder>^<Glyph>
-
-	^HTMLLink
-		for: gl
-		app: builder app
-		element: self! !
-
 ! (Delta mirrorFor: #ElementA) methodsFor: 'accessing' !
 
 
@@ -70,6 +37,48 @@ url ^<URL>
 
 	^URL for: (self attributeAt: #HREF)! !
 
+! (Delta mirrorFor: #ElementA) methodsFor: 'building' !
+
+
+buildFor: builder <HTMLBuilder>
+
+	| p <Painter> |
+	p := builder painter copy.
+	p paint: builder linkPaint.
+	p font: (p font newSpec underline: true) font.
+	builder withPainter: p
+		do: [	(self isLink or: [ self isDoit ])
+						ifTrue: [ self buildLinkFor: builder ]
+						ifFalse: [ super buildFor: builder ]
+				]!
+
+buildLinkFor: builder <HTMLBuilder>
+
+	builder
+		withGlyphTransformer:
+			[ :gl <Glyph> |
+					self wrap: gl builder: builder ]
+		do: [ super buildFor: builder ]! !
+
+! (Delta mirrorFor: #ElementA) methodsFor: 'iterating' !
+
+
+linksDo: blk <[ElementA]>
+
+	blk value: self
+	"There shouldn't be any imbedded
+		links, so just return"! !
+
+! (Delta mirrorFor: #ElementA) methodsFor: 'private' !
+
+
+wrap: gl <Glyph> builder: builder <HTMLBuilder>^<Glyph>
+
+	^HTMLLink
+		for: gl
+		app: builder app
+		element: self! !
+
 ! (Delta mirrorFor: #ElementA) methodsFor: 'restricted' !
 
 
@@ -80,13 +89,4 @@ activateAt: loc <Point> for: app <HTMLView>
 		ifFalse: [ self isDoit
 							ifTrue: [	app doitAction: self doitAction ]
 						]! !
-
-! (Delta mirrorFor: #ElementA) methodsFor: 'iterating' !
-
-
-linksDo: blk <[ElementA]>
-
-	blk value: self
-	"There shouldn't be any imbedded
-		links, so just return"! !
 

@@ -70,6 +70,161 @@ new ^<Instance>
 
 	self error: 'You should not create Font instances directly.  Use #forSpec: instead.'! !
 
+! (Delta mirrorFor: #Font) methodsFor: 'accessing' !
+
+
+medium: m <Medium>
+
+	self checkMedium: m!
+
+mediumPoints ^<Int>
+
+	^self mediumPointsFor: self medium!
+
+naturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
+
+	|	ascent <Dist>
+		met <TEXTMETRIC>
+		width1 <Int> width2 <Int>
+		can <Canvas>
+		buf <ABCFLOAT>
+		s <ExternalProxy>
+		|
+	met := self metricsIn: m.
+
+	can := m newCanvas.
+	can withPainter: painter
+		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
+				buf := ExternalProxy new malloc: Platform wordSize * 2.
+				s := ExternalProxy new malloc: 2.
+				s byteAt: 0 put: c asciiValue.
+				s byteAt: 1 put: c asciiValue.
+				"We call this twice with one and then two characters, so that
+					we can compute the actual advance for the character from
+					the difference (%todo: find a better way to do this that
+					works on Win95)."
+				{{<gdi ExternalProxy GetTextExtentPoint32A>
+						dc: can deviceContext
+						str: s
+						len: 1
+						buffer: buf
+				 }} asBoolean
+					ifFalse: [ Win32 handleError ].
+				width1 := buf smallIntegerAt: 0.
+				
+				{{<gdi ExternalProxy GetTextExtentPoint32A>
+						dc: can deviceContext
+						str: s
+						len: 2
+						buffer: buf
+				 }} asBoolean
+					ifFalse: [ Win32 handleError ].
+				width2 := buf smallIntegerAt: 0.	].
+	buf free.
+	s free.
+	can release.
+
+	^Rectangle
+		left: 0
+		right: width2 - width1
+		top: (met tmAscent "+ met tmExternalLeading") negated
+		bottom: met tmDescent.
+!
+
+newSpec ^<FontSpec>
+
+	"note that the mediumPoints instvar is accessed directly below to avoid trying
+		to compute it, which would fail if the medium isn't set"
+	^FontSpec new
+		family: self family;
+		points: self points;
+		"mediumPoints: mediumPoints;"
+		boldness: self boldness;
+		italic: self italic;
+		underline: self underline;
+		typeface: self typeface!
+
+newnaturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
+
+	| ascent <Dist> met <TEXTMETRIC> width <Int> can <Canvas> buf <ABCFLOAT> |
+	met := self metricsIn: m.
+
+	can := m newCanvas.
+	can withPainter: painter
+		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
+				buf := ExternalProxy new malloc: 4.
+				{{<gdi ExternalProxy GetCharWidthFloatA>
+						dc: can deviceContext
+						first: c unicodeValue
+						last: c unicodeValue
+						buffer: buf
+				 }} asBoolean
+					ifFalse: [ Win32 handleError ].	].
+	width := (buf singlePrecisionFloatAt: 0) asInteger.
+	buf free.
+	can release.
+
+	^Rectangle
+		left: 0
+		right: width
+		top: (met tmAscent "+ met tmExternalLeading") negated
+		bottom: met tmDescent!
+
+oldnaturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
+
+	| ascent <Dist> met <TEXTMETRIC> width <Int> can <Canvas> buf <ABCFLOAT> |
+	met := self metricsIn: m.
+
+	can := m newCanvas.
+	can withPainter: painter
+		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
+				buf := ExternalProxy new malloc: 4.
+				{{<gdi ExternalProxy GetCharWidth32A>
+						dc: can deviceContext
+						first: c unicodeValue
+						last: c unicodeValue
+						buffer: buf
+				 }} asBoolean
+					ifFalse: [ Win32 handleError ].	].
+	width := buf smallIntegerAt: 0.
+	buf free.
+	can release.
+
+	^Rectangle
+		left: 0
+		right: width
+		top: (met tmAscent "+ met tmExternalLeading") negated
+		bottom: met tmDescent! !
+
+! (Delta mirrorFor: #Font) methodsFor: 'control' !
+
+
+trulyRelease
+	"Not called release since the cache is in control of this (users shouldn't call it)"
+
+	self flush.
+	win32Font notNil
+		ifTrue: [ win32Font win32DeleteObject. ].! !
+
+! (Delta mirrorFor: #Font) methodsFor: 'initialization' !
+
+
+initFamily: fam <Symbol>
+points: p <Int>
+mediumPoints: mp <Int>
+boldness: b <Float>
+italic: i <Boolean>
+underline: u <Boolean>
+typeface: tf <Str>
+
+	family := fam.
+	points := p.
+	mediumPoints := mp.
+	boldness := b.
+	italic := i.
+	underline := u.
+	typeface := tf.! !
+
 ! (Delta mirrorFor: #Font) methodsFor: 'private' !
 
 
@@ -219,159 +374,4 @@ win32Font ^<ExternalProxy>
 win32Handle ^<Win32Handle>
 
 	^self win32Font! !
-
-! (Delta mirrorFor: #Font) methodsFor: 'initialization' !
-
-
-initFamily: fam <Symbol>
-points: p <Int>
-mediumPoints: mp <Int>
-boldness: b <Float>
-italic: i <Boolean>
-underline: u <Boolean>
-typeface: tf <Str>
-
-	family := fam.
-	points := p.
-	mediumPoints := mp.
-	boldness := b.
-	italic := i.
-	underline := u.
-	typeface := tf.! !
-
-! (Delta mirrorFor: #Font) methodsFor: 'accessing' !
-
-
-medium: m <Medium>
-
-	self checkMedium: m!
-
-mediumPoints ^<Int>
-
-	^self mediumPointsFor: self medium!
-
-naturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
-
-	|	ascent <Dist>
-		met <TEXTMETRIC>
-		width1 <Int> width2 <Int>
-		can <Canvas>
-		buf <ABCFLOAT>
-		s <ExternalProxy>
-		|
-	met := self metricsIn: m.
-
-	can := m newCanvas.
-	can withPainter: painter
-		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
-				buf := ExternalProxy new malloc: Platform wordSize * 2.
-				s := ExternalProxy new malloc: 2.
-				s byteAt: 0 put: c asciiValue.
-				s byteAt: 1 put: c asciiValue.
-				"We call this twice with one and then two characters, so that
-					we can compute the actual advance for the character from
-					the difference (%todo: find a better way to do this that
-					works on Win95)."
-				{{<gdi ExternalProxy GetTextExtentPoint32A>
-						dc: can deviceContext
-						str: s
-						len: 1
-						buffer: buf
-				 }} asBoolean
-					ifFalse: [ Win32 handleError ].
-				width1 := buf smallIntegerAt: 0.
-				
-				{{<gdi ExternalProxy GetTextExtentPoint32A>
-						dc: can deviceContext
-						str: s
-						len: 2
-						buffer: buf
-				 }} asBoolean
-					ifFalse: [ Win32 handleError ].
-				width2 := buf smallIntegerAt: 0.	].
-	buf free.
-	s free.
-	can release.
-
-	^Rectangle
-		left: 0
-		right: width2 - width1
-		top: (met tmAscent "+ met tmExternalLeading") negated
-		bottom: met tmDescent.
-!
-
-newSpec ^<FontSpec>
-
-	"note that the mediumPoints instvar is accessed directly below to avoid trying
-		to compute it, which would fail if the medium isn't set"
-	^FontSpec new
-		family: self family;
-		points: self points;
-		"mediumPoints: mediumPoints;"
-		boldness: self boldness;
-		italic: self italic;
-		underline: self underline;
-		typeface: self typeface!
-
-newnaturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
-
-	| ascent <Dist> met <TEXTMETRIC> width <Int> can <Canvas> buf <ABCFLOAT> |
-	met := self metricsIn: m.
-
-	can := m newCanvas.
-	can withPainter: painter
-		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
-				buf := ExternalProxy new malloc: 4.
-				{{<gdi ExternalProxy GetCharWidthFloatA>
-						dc: can deviceContext
-						first: c unicodeValue
-						last: c unicodeValue
-						buffer: buf
-				 }} asBoolean
-					ifFalse: [ Win32 handleError ].	].
-	width := (buf singlePrecisionFloatAt: 0) asInteger.
-	buf free.
-	can release.
-
-	^Rectangle
-		left: 0
-		right: width
-		top: (met tmAscent "+ met tmExternalLeading") negated
-		bottom: met tmDescent!
-
-oldnaturalFor: c <Character> in: m <Medium> using: painter <Painter> ^<Rect>
-
-	| ascent <Dist> met <TEXTMETRIC> width <Int> can <Canvas> buf <ABCFLOAT> |
-	met := self metricsIn: m.
-
-	can := m newCanvas.
-	can withPainter: painter
-		do: [	can checkPainter; checkFont.		"%kludge: move all this to HDC"
-				buf := ExternalProxy new malloc: 4.
-				{{<gdi ExternalProxy GetCharWidth32A>
-						dc: can deviceContext
-						first: c unicodeValue
-						last: c unicodeValue
-						buffer: buf
-				 }} asBoolean
-					ifFalse: [ Win32 handleError ].	].
-	width := buf smallIntegerAt: 0.
-	buf free.
-	can release.
-
-	^Rectangle
-		left: 0
-		right: width
-		top: (met tmAscent "+ met tmExternalLeading") negated
-		bottom: met tmDescent! !
-
-! (Delta mirrorFor: #Font) methodsFor: 'control' !
-
-
-trulyRelease
-	"Not called release since the cache is in control of this (users shouldn't call it)"
-
-	self flush.
-	win32Font notNil
-		ifTrue: [ win32Font win32DeleteObject. ].! !
 

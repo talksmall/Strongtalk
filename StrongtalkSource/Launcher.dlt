@@ -16,24 +16,43 @@ comment:
 (c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license. '!
 
-! (Delta mirrorFor: #Launcher) classSide methodsFor: 'registering menus' !
+! (Delta mirrorFor: #Launcher) classSide methodsFor: 'accessing' !
 
 
-registerMenu: m <Menu> for: owner <Object>
-	"Merge m into the launcher menu.  It can be unregistered later.
-		Any displayed launchers will update their menus dynamically."
+launchers ^<IdentitySet[Launcher]>
+	"call only from a critical region"
 
-	self critical:
-		[	self menuRegistry addLast:
-						(LookupKey[Object,Menu] key: owner value: m).
-			self rebuildMenus	]!
+	Launchers isNil
+		ifTrue: [ Launchers := IdentitySet[Launcher] new ].
+	^Launchers! !
 
-unregisterMenuFor: owner <Object>
-	"Unmerge m from the launcher menu. "
+! (Delta mirrorFor: #Launcher) classSide methodsFor: 'control' !
 
-	self critical:
-		[	self menuRegistry remove: (LookupKey[Object,Menu] key: owner value: nil). "value doesn't matter"
-			self rebuildMenus	]! !
+
+createUITranscript
+
+	"Make sure the UI isn't already running"
+	self assert: [ Transcript class ~~ Workspace ].
+	
+	Transcript := Workspace new.!
+
+startProgEnv ^<Instance>
+
+	| launcher <Instance> |
+	self createUITranscript.
+	
+	"Register stophandler for process scheduler"
+	Processor stopHandler: [ :p <Process> | (StackTraceInspector on: p) launch ].
+
+	launcher := (self new) launch; yourself.
+
+	"Don't launch start page if system is inconsistent so that it won't
+		obscure the error messages in the transcript"
+	SourceHandler systemIsConsistent
+		ifTrue: [ [ launcher browseStartPage ] fork. ]. 
+
+	^launcher
+! !
 
 ! (Delta mirrorFor: #Launcher) classSide methodsFor: 'private' !
 
@@ -70,260 +89,39 @@ registerLauncher: l <Launcher>
 	self critical:
 		[ self launchers include: l ]! !
 
-! (Delta mirrorFor: #Launcher) classSide methodsFor: 'control' !
+! (Delta mirrorFor: #Launcher) classSide methodsFor: 'registering menus' !
 
 
-createUITranscript
+registerMenu: m <Menu> for: owner <Object>
+	"Merge m into the launcher menu.  It can be unregistered later.
+		Any displayed launchers will update their menus dynamically."
 
-	"Make sure the UI isn't already running"
-	self assert: [ Transcript class ~~ Workspace ].
-	
-	Transcript := Workspace new.!
+	self critical:
+		[	self menuRegistry addLast:
+						(LookupKey[Object,Menu] key: owner value: m).
+			self rebuildMenus	]!
 
-startProgEnv ^<Instance>
+unregisterMenuFor: owner <Object>
+	"Unmerge m from the launcher menu. "
 
-	| launcher <Instance> |
-	self createUITranscript.
-	
-	"Register stophandler for process scheduler"
-	Processor stopHandler: [ :p <Process> | (StackTraceInspector on: p) launch ].
+	self critical:
+		[	self menuRegistry remove: (LookupKey[Object,Menu] key: owner value: nil). "value doesn't matter"
+			self rebuildMenus	]! !
 
-	launcher := (self new) launch; yourself.
-
-	"Don't launch start page if system is inconsistent so that it won't
-		obscure the error messages in the transcript"
-	SourceHandler systemIsConsistent
-		ifTrue: [ launcher browseStartPage ]. 
-
-	^launcher
-! !
-
-! (Delta mirrorFor: #Launcher) classSide methodsFor: 'accessing' !
+! (Delta mirrorFor: #Launcher) methodsFor: 'accessing' !
 
 
-launchers ^<IdentitySet[Launcher]>
-	"call only from a critical region"
+docPath ^<FilePath>
 
-	Launchers isNil
-		ifTrue: [ Launchers := IdentitySet[Launcher] new ].
-	^Launchers! !
+	^FilePath currentDirectory, (FilePath for: 'documentation\index.html')!
 
-! (Delta mirrorFor: #Launcher) methodsFor: 'private' !
+windowTitle ^ <Str>
 
+	^'Strongtalk Launcher'!
 
-buildBareVisualTop: top <Boolean> ^ <Visual>
+workspace ^<Workspace>
 
-	^ApplicationInterceptor
-			for: self workspace imbeddedVisual with3DBorder
-			application: self! !
-
-! (Delta mirrorFor: #Launcher) methodsFor: 'restricted' !
-
-
-menuBar: m <Menu>
-	"Set or change the merged application menu.  We don't actually
-		store this menu, since we have to change the window's menu
-		in place; we simply replace all of the current menus elements
-		with m's"
-
-	self inSessionProcessDo: [ self menuBar 
-																	removeAll;
-																	add: self fileMenu;
-																	add: self browsingMenu;
-																	merge: m
-														].! !
-
-! (Delta mirrorFor: #Launcher) methodsFor: 'menus' !
-
-
-docMenu ^<Menu>
-
-	^Menu new name: '&Documentation';
-				add: (MenuAction new
-							name: '&Browse';
-							action: [ self launchDoc ])!
-
-fileMenu ^<Menu>
-
-	^Menu new name: '&File';
-		add: (MenuAction new
-					name: '&Save System';
-					action: [ self saveSystem ] );
-		addSeparator;
-		add: (MenuAction new
-					name: 'File &in...';
-					action: [ self fileIn ] );
-		add: (MenuAction new
-					name: 'File &out world...';
-					action: [ self fileOutWorld ] );
-		add: (MenuAction new
-					name: '&Recompile world...';
-					action: [ self recompileWorld ] );
-		add: (MenuAction new
-					name: 'Typecheck world...';
-					action: [ self typecheckWorld ] );
-		 addSeparator;
-		 add: (MenuAction new
-		            name:'Meta';
-		            action:[Inspector launchOn: self]);
-		addSeparator;
-		add: (MenuAction new
-					name: 'E&xit';
-					action: [ self closeRequest: []  ] )!
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^<Menu>
-
-	menuBar isNil
-		ifTrue: [ menuBar := Menu new 
-															add: self fileMenu;
-															add: self browsingMenu;
-															merge: self class mergedMenu;
-															add: self docMenu
-					 ].
-	^menuBar! !
-
-! (Delta mirrorFor: #Launcher) methodsFor: 'private-initialization' !
-
-
-initialize
-
-	super initialize.
-	self actualClass registerLauncher: self.
-	sourceConsistencyHasBeenChecked := false.
-! !
-
-! (Delta mirrorFor: #Launcher) methodsFor: 'control' !
-
-
-closeRequest: toClose <[]>
-
-	SourceHandler unsavedChangesHaveBeenMade
-		ifTrue: [ self promptForSave: toClose ]
-		ifFalse: [ self promptForQuit: toClose ]!
-
-recompileWorld
-
-	(Workspace coerce: Transcript) visual
-		promptOkCancel: 'Recompile all methods in the system?'
-		title: 'Please confirm'
-		type: #question
-		default: 2
-		action: [ : b <Boolean> | b ifTrue: [ [ Smalltalk recompileAllMethods ] fork ] ]!
-
-saveSystem
-
-	self visual promptOkCancel: 'Save System?'
-				title: 'Save System'
-				type: #exclamation
-				default: 1
-				action: [ :ok <Boolean> |
-								ok ifTrue: [	Dumper saveSystem.
-														self visual
-																promptOk: 'System Saved.'
-																title: 'Save System'
-																type: #info
-																action: [ ]
-													]
-							]
-!
-
-typecheckWorld
- 
-	| vis <Visual> |
-	vis := 	(Workspace coerce: Transcript) visual.
-	vis	promptYesNo: 'Do you really want to typecheck all the source code in the system?'
-		title: 'Typecheck world'
-		type: #question
-		default: 2
-		action:	[: b <Boolean> |
-							b ifTrue: [ Smalltalk typecheckWorld ].
-						]
-! !
-
-! (Delta mirrorFor: #Launcher) methodsFor: 'menus to move elsewhere' !
-
-
-browsingMenu ^<Menu>
-
-	^Menu new name: '&Browse';
-			add: (MenuAction new
-					name: 'My &Start Page';
-					action: [ self browseStartPage ] );
-			addSeparator;
-			add: (MenuAction new
-					name: '&Definition...';
-					action: [ self findDefinition] );
-			add: (MenuAction new
-					name: '&User Classes (i.e. classes useful to users)';
-					action: [ self openUserClassHierarchyOutliner ] );
-			add: (MenuAction new
-					name: 'All &Classes';
-					action: [ self openClassHierarchyOutliner ] );
-			add: (MenuAction new
-					name: '&Mixins';
-					action: [ self openMixinListOutliner ] );
-			add: (MenuAction new
-					name: '&Protocols';
-					action: [ self openProtocolListOutliner ] );
-			add: (MenuAction new
-					name: '&Type Aliases';
-					action: [ self openTypeAliasListOutliner ] );
-			add: (MenuAction new
-					name: '&Global Variables';
-					action: [ self openGlobalVariableListOutliner ] );
-			addSeparator;
-			add: (MenuAction new
-					name: 'Message Implementors ...';
-					action: [ self findImplementors ] );
-			add: (MenuAction new
-					name: 'Message Senders ...';
-					action: [ self findSenders ] );
-			add: (MenuAction new
-					name: 'Global References ...';
-					action: [ self findGlobalReferences ] );
-			addSeparator;
-			add: (MenuAction new
-					name: 'Unsaved Changes From This Session';
-					active: [ SourceHandler unsavedChangesHaveBeenMade ];
-					action: [ self showUnsavedChanges ] );
-			add: (MenuAction new
-					name: 'Restore Log';
-					active: [ (FilePath forElements: #('source' 'strongtalkrestore.log')) exists ];
-					action: [ (CodeEditor on: (FilePath forElements: #('source' 'strongtalkrestore.log'))) launch ] );
-			add: (MenuAction new
-					name: 'Save Log';
-					active: [ (FilePath forElements: #('source' 'strongtalkSave.log')) exists ];
-					action: [ (CodeEditor on: (FilePath forElements: #('source' 'strongtalkSave.log'))) launch ] )
-! !
-
-! (Delta mirrorFor: #Launcher) methodsFor: 'filing in/out' !
-
-
-fileIn
-
-	(Workspace coerce: Transcript) visual
-		userPickOpenFileWithAction: [ :file< FilePath> :readOnly <Boolean> | [ Smalltalk fileInFromFile: file ] fork ]
-		fileTypes: (Array[Tuple[Str,Str]] with: 'Delta files (*.dlt)' ,, '*.dlt' with: 'All files (*.*)' ,, '*.*')
-		defaultFile: nil
-		defaultDir: nil
-		title: 'Install file-in into image'
-		allowReadOnly: false
-		mustExist: true
-!
-
-fileOutWorld
-
-	(Workspace coerce: Transcript) visual
-		userPickSaveFileWithAction: [ :file< FilePath> | [ Smalltalk fileOutWorldToFile: file ] fork ]
-		fileTypes: (Array[Tuple[Str,Str]] with: 'Group files (*.gr)' ,, '*.gr' with: 'All files (*.*)' ,, '*.*')
-		defaultFile: (FilePath for: 'world.gr')
-		defaultDir: nil
-		title: 'File out world and corresponding world group file'
-! !
+	^Workspace coerce: Transcript! !
 
 ! (Delta mirrorFor: #Launcher) methodsFor: 'browsing' !
 
@@ -621,53 +419,53 @@ startPagePath ^<FilePath>
 
 	^FilePath currentDirectory, (FilePath for: 'startPage.html')! !
 
-! (Delta mirrorFor: #Launcher) methodsFor: 'accessing' !
+! (Delta mirrorFor: #Launcher) methodsFor: 'control' !
 
 
-docPath ^<FilePath>
+closeRequest: toClose <[]>
 
-	^FilePath currentDirectory, (FilePath for: 'documentation\index.html')!
+	SourceHandler unsavedChangesHaveBeenMade
+		ifTrue: [ self promptForSave: toClose ]
+		ifFalse: [ self promptForQuit: toClose ]!
 
-windowTitle ^ <Str>
+recompileWorld
 
-	^'Strongtalk Launcher'!
+	(Workspace coerce: Transcript) visual
+		promptOkCancel: 'Recompile all methods in the system?'
+		title: 'Please confirm'
+		type: #question
+		default: 2
+		action: [ : b <Boolean> | b ifTrue: [ [ Smalltalk recompileAllMethods ] fork ] ]!
 
-workspace ^<Workspace>
+saveSystem
 
-	^Workspace coerce: Transcript! !
+	self visual promptOkCancel: 'Save System?'
+				title: 'Save System'
+				type: #exclamation
+				default: 1
+				action: [ :ok <Boolean> |
+								ok ifTrue: [	Dumper saveSystem.
+														self visual
+																promptOk: 'System Saved.'
+																title: 'Save System'
+																type: #info
+																action: [ ]
+													]
+							]
+!
 
-! (Delta mirrorFor: #Launcher) methodsFor: 'toolbar' !
-
-
-hasToolBar ^<Boolean>
-
-	^true!
-
-toolBar ^<ToolBar>
-
-	^ToolBar new
-			addButtonWithImageFrom: 'resources/smallHome.bmp'
-					action: [ :b <Button> |	self browseStartPage ];
-			addSpace;
-			addButtonWithImageFrom: 'resources/open.bmp'
-					action: [ :b <Button> |	self findDefinition ];
-			addButtonWithImageFrom: 'resources/implementors.bmp'
-					action: [ :b <Button> |	self findImplementors ];
-			addButtonWithImageFrom: 'resources/senders.bmp'
-					action: [ :b <Button> |	self findSenders ];
-			addSpace;
-			addButtonWithImageFrom: 'resources/userHierarchy.bmp'
-					action: [ :b <Button> |	self openUserClassHierarchyOutliner ];
-			addButtonWithImageFrom: 'resources/hierarchy.bmp'
-					action: [ :b <Button> |	self openClassHierarchyOutliner ];
-			addButtonWithImageFrom: 'resources/blankSheet.bmp'
-					action: [ :b <Button> |	Workspace new launch ];
-			addSpace;
-			addButtonWithImageFrom: 'resources/texteditor.bmp'
-					action: [ :b <Button> |	CodeEditor new launch ];
-			addButtonWithImageFrom: 'resources/documentation.bmp'
-					action: [ :b <Button> |	self launchDoc ];
-			yourself! !
+typecheckWorld
+ 
+	| vis <Visual> |
+	vis := 	(Workspace coerce: Transcript) visual.
+	vis	promptYesNo: 'Do you really want to typecheck all the source code in the system?'
+		title: 'Typecheck world'
+		type: #question
+		default: 2
+		action:	[: b <Boolean> |
+							b ifTrue: [ Smalltalk typecheckWorld ].
+						]
+! !
 
 ! (Delta mirrorFor: #Launcher) methodsFor: 'control-private' !
 
@@ -705,6 +503,140 @@ promptForSave: toClose <[]>
 													self doClose: toClose		]
 								]! !
 
+! (Delta mirrorFor: #Launcher) methodsFor: 'filing in/out' !
+
+
+fileIn
+
+	(Workspace coerce: Transcript) visual
+		userPickOpenFileWithAction: [ :file< FilePath> :readOnly <Boolean> | [ Smalltalk fileInFromFile: file ] fork ]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'Delta files (*.dlt)' ,, '*.dlt' with: 'All files (*.*)' ,, '*.*')
+		defaultFile: nil
+		defaultDir: nil
+		title: 'Install file-in into image'
+		allowReadOnly: false
+		mustExist: true
+!
+
+fileOutWorld
+
+	(Workspace coerce: Transcript) visual
+		userPickSaveFileWithAction: [ :file< FilePath> | [ Smalltalk fileOutWorldToFile: file ] fork ]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'Group files (*.gr)' ,, '*.gr' with: 'All files (*.*)' ,, '*.*')
+		defaultFile: (FilePath for: 'world.gr')
+		defaultDir: nil
+		title: 'File out world and corresponding world group file'
+! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'menus' !
+
+
+docMenu ^<Menu>
+
+	^Menu new name: '&Documentation';
+				add: (MenuAction new
+							name: '&Browse';
+							action: [ self launchDoc ])!
+
+fileMenu ^<Menu>
+
+	^Menu new name: '&File';
+		add: (MenuAction new
+					name: '&Save System';
+					action: [ self saveSystem ] );
+		addSeparator;
+		add: (MenuAction new
+					name: 'File &in...';
+					action: [ self fileIn ] );
+		add: (MenuAction new
+					name: 'File &out world...';
+					action: [ self fileOutWorld ] );
+		add: (MenuAction new
+					name: '&Recompile world...';
+					action: [ self recompileWorld ] );
+		add: (MenuAction new
+					name: 'Typecheck world...';
+					action: [ self typecheckWorld ] );
+		 addSeparator;
+		 add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self]);
+		addSeparator;
+		add: (MenuAction new
+					name: 'E&xit';
+					action: [ self closeRequest: []  ] )!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	menuBar isNil
+		ifTrue: [ menuBar := Menu new 
+															add: self fileMenu;
+															add: self browsingMenu;
+															merge: self class mergedMenu;
+															add: self docMenu
+					 ].
+	^menuBar! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'menus to move elsewhere' !
+
+
+browsingMenu ^<Menu>
+
+	^Menu new name: '&Browse';
+			add: (MenuAction new
+					name: 'My &Start Page';
+					action: [ self browseStartPage ] );
+			addSeparator;
+			add: (MenuAction new
+					name: '&Definition...';
+					action: [ self findDefinition] );
+			add: (MenuAction new
+					name: '&User Classes (i.e. classes useful to users)';
+					action: [ self openUserClassHierarchyOutliner ] );
+			add: (MenuAction new
+					name: 'All &Classes';
+					action: [ self openClassHierarchyOutliner ] );
+			add: (MenuAction new
+					name: '&Mixins';
+					action: [ self openMixinListOutliner ] );
+			add: (MenuAction new
+					name: '&Protocols';
+					action: [ self openProtocolListOutliner ] );
+			add: (MenuAction new
+					name: '&Type Aliases';
+					action: [ self openTypeAliasListOutliner ] );
+			add: (MenuAction new
+					name: '&Global Variables';
+					action: [ self openGlobalVariableListOutliner ] );
+			addSeparator;
+			add: (MenuAction new
+					name: 'Message Implementors ...';
+					action: [ self findImplementors ] );
+			add: (MenuAction new
+					name: 'Message Senders ...';
+					action: [ self findSenders ] );
+			add: (MenuAction new
+					name: 'Global References ...';
+					action: [ self findGlobalReferences ] );
+			addSeparator;
+			add: (MenuAction new
+					name: 'Unsaved Changes From This Session';
+					active: [ SourceHandler unsavedChangesHaveBeenMade ];
+					action: [ self showUnsavedChanges ] );
+			add: (MenuAction new
+					name: 'Restore Log';
+					active: [ (FilePath forElements: #('source' 'strongtalkrestore.log')) exists ];
+					action: [ (CodeEditor on: (FilePath forElements: #('source' 'strongtalkrestore.log'))) launch ] );
+			add: (MenuAction new
+					name: 'Save Log';
+					active: [ (FilePath forElements: #('source' 'strongtalkSave.log')) exists ];
+					action: [ (CodeEditor on: (FilePath forElements: #('source' 'strongtalkSave.log'))) launch ] )
+! !
+
 ! (Delta mirrorFor: #Launcher) methodsFor: 'notification' !
 
 
@@ -723,4 +655,72 @@ visualAllocated
 							SourceHandler checkSystemConsistencyAndPrintMessagesIfNeeded.
 							] fork.	].
 ! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'private' !
+
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	^ApplicationInterceptor
+			for: self workspace imbeddedVisual with3DBorder
+			application: self! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self actualClass registerLauncher: self.
+	sourceConsistencyHasBeenChecked := false.
+! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'restricted' !
+
+
+menuBar: m <Menu>
+	"Set or change the merged application menu.  We don't actually
+		store this menu, since we have to change the window's menu
+		in place; we simply replace all of the current menus elements
+		with m's"
+
+	self inSessionProcessDo: [ self menuBar 
+																	removeAll;
+																	add: self fileMenu;
+																	add: self browsingMenu;
+																	merge: m
+														].! !
+
+! (Delta mirrorFor: #Launcher) methodsFor: 'toolbar' !
+
+
+hasToolBar ^<Boolean>
+
+	^true!
+
+toolBar ^<ToolBar>
+
+	^ToolBar new
+			addButtonWithImageFrom: 'resources/smallHome.bmp'
+					action: [ :b <Button> |	self browseStartPage ];
+			addSpace;
+			addButtonWithImageFrom: 'resources/open.bmp'
+					action: [ :b <Button> |	self findDefinition ];
+			addButtonWithImageFrom: 'resources/implementors.bmp'
+					action: [ :b <Button> |	self findImplementors ];
+			addButtonWithImageFrom: 'resources/senders.bmp'
+					action: [ :b <Button> |	self findSenders ];
+			addSpace;
+			addButtonWithImageFrom: 'resources/userHierarchy.bmp'
+					action: [ :b <Button> |	self openUserClassHierarchyOutliner ];
+			addButtonWithImageFrom: 'resources/hierarchy.bmp'
+					action: [ :b <Button> |	self openClassHierarchyOutliner ];
+			addButtonWithImageFrom: 'resources/blankSheet.bmp'
+					action: [ :b <Button> |	Workspace new launch ];
+			addSpace;
+			addButtonWithImageFrom: 'resources/texteditor.bmp'
+					action: [ :b <Button> |	CodeEditor new launch ];
+			addButtonWithImageFrom: 'resources/documentation.bmp'
+					action: [ :b <Button> |	self launchDoc ];
+			yourself! !
 

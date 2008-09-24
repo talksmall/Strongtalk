@@ -32,6 +32,30 @@ new ^<Instance>
 
 	^super new initIncrementalLayoutFlags! !
 
+! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'accessing' !
+
+
+optimizeIncrementalLayout ^<Boolean>
+
+	^optimizeIncrementalLayout!
+
+optimizeIncrementalLayout: f <Boolean>
+
+	self changing.
+	optimizeIncrementalLayout := f.! !
+
+! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'control' !
+
+
+changingALot
+	"Like #changing, but also sets a flag that can be tested with #needsFullLayout during relayout
+		to indicate that a full layout is needed"
+
+	self changing.
+	needsFullLayout := true.
+	self layoutStatus = Visual valid
+		ifTrue: [ self layoutStatus: Visual needsRelayout ]! !
+
 ! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'initialization' !
 
 
@@ -86,28 +110,4 @@ checkLayout: oldPrefs <SeqCltn[Region]>
 				or: [ self runIncrementalLayout not ]]])
 		ifTrue: [ super checkLayout: oldPrefs ]
 		ifFalse: [ self prefsStatus: Visual valid ].! !
-
-! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'control' !
-
-
-changingALot
-	"Like #changing, but also sets a flag that can be tested with #needsFullLayout during relayout
-		to indicate that a full layout is needed"
-
-	self changing.
-	needsFullLayout := true.
-	self layoutStatus = Visual valid
-		ifTrue: [ self layoutStatus: Visual needsRelayout ]! !
-
-! (Delta mirrorFor: #IncrementalLayout) methodsFor: 'accessing' !
-
-
-optimizeIncrementalLayout ^<Boolean>
-
-	^optimizeIncrementalLayout!
-
-optimizeIncrementalLayout: f <Boolean>
-
-	self changing.
-	optimizeIncrementalLayout := f.! !
 

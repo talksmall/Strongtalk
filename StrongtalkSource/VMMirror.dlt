@@ -11,17 +11,6 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'private' !
-
-
-primitiveFailed: e <Symbol>
-
-	self error: 'Primitive failure ', e.!
-
-primitiveFailed: e <Symbol> handler: fb <[Str]>
-
-	fb value: 'Primitive failure ', e.! !
-
 ! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'instance creation' !
 
 
@@ -71,7 +60,7 @@ on: o <Object> ^ <VMMirror>
 	self shouldNotHappen.
 ! !
 
-! (Delta mirrorFor: #VMMirror) methodsFor: 'private' !
+! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'private' !
 
 
 primitiveFailed: e <Symbol>
@@ -134,4 +123,15 @@ iterateInstanceVariables: iterator <ObjectIterator>
 safePrintString ^ <Str>
 
 	self subclassResponsibility! !
+
+! (Delta mirrorFor: #VMMirror) methodsFor: 'private' !
+
+
+primitiveFailed: e <Symbol>
+
+	self error: 'Primitive failure ', e.!
+
+primitiveFailed: e <Symbol> handler: fb <[Str]>
+
+	fb value: 'Primitive failure ', e.! !
 

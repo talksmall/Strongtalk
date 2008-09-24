@@ -22,6 +22,13 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 
 '!
 
+! (Delta mirrorFor: #VisualWithNativeWindow) classSide methodsFor: 'instance creation' !
+
+
+for: v <Visual> ^<Instance>
+
+	^self new part: v! !
+
 ! (Delta mirrorFor: #VisualWithNativeWindow) classSide methodsFor: 'private' !
 
 
@@ -63,77 +70,123 @@ win32ClassName ^<CString>
 												self registerWindowClass.	] ] ].
 	^Win32ClassName				! !
 
-! (Delta mirrorFor: #VisualWithNativeWindow) classSide methodsFor: 'instance creation' !
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'accessing' !
 
 
-for: v <Visual> ^<Instance>
+backgroundPainter ^<Painter>
 
-	^self new part: v! !
+	backgroundPainter isNil
+		ifTrue: [  backgroundPainter := self part backgroundPainter ].
+	^backgroundPainter!
 
-! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'private' !
+gridFor: p <Point> ^<Rect>
+
+	| partpos <Point> |
+
+	partpos := self part position.
+	^(self part gridFor: p - partpos) translatedBy: partpos!
+
+hasPart ^<Boolean>
+
+	^part notNil!
+
+part ^<V>
+
+	^part!
+
+part: p <Visual>
+
+	part == p
+		ifTrue: [ ^self ].
+	self changing.
+	part notNil
+		ifTrue: [ part noParent ].
+	part := p.
+	p parent: self id: 1.!
+
+partAt: childId <Int> ^<Visual>
+
+	self assert: [ childId = 0 ].
+	^self part!
+
+removePart ^<Visual>
+	"Detach and return the part"
+	
+	| p <Visual> |
+	self layoutStatus = Visual valid
+		ifTrue: [ self changing ].
+	p := self part.
+	p noParent.
+	part := nil.
+	^p! !
+
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'control' !
 
 
-beforeSetFocus
+release
 
-	"We don't call the inherited version because it assumes that it must mean that IT is the focus;
-		whereas for us it might be a subvisual that is getting the focus"
-!
+	super release.
+	self scratchRECT free.! !
 
-buildWin32Handle
-	"Must not be sent before layout because allocation & position (and of parents) must exist"
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'initialization' !
 
-	| pos <Point> container <Window|Win32Control> |
 
-	pos := self nativePosition.
-	container := self parent nativeWindow.
-	win32Handle := {{<user ExternalProxy CreateWindowExA>
-		extendedStyle: self extendedWin32Style
-		className: self actualClass win32ClassName
-		caption: Win32 NULL
-		style: self win32Style
-		xpos: pos x asInteger
-		ypos: pos y asInteger
-		xsize: self allocation enclosedRect width asInteger
-		ysize: self allocation enclosedRect height asInteger
-		parent: container win32Handle
-        id: self controlId
-		program: container hInstance
-		params: Win32 NULL }}.!
+initialize
 
-canBeFocusCandidate ^<Boolean>
+	super initialize.
+	scratchRECT := RECT new allocate.
+	self haveErased: false.! !
 
-	^false!
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'iterating' !
 
-displayVisualIfCanOn: canvas <Canvas>
 
-	self session visualCriticalWouldBlock
-		ifTrue: [ self recordDeferredPaint: canvas clippingRect ]
-		ifFalse: [	self paintOccuring.
-						canvas atOffset: self allocation enclosingRect origin negated
-									do: [ self localDisplayOn: canvas ].
-					 ]!
+doFromBack: f <[V]>
 
-handleMouseEvent: type <Symbol> at: loc <Point> ^<Boolean>
+	part == nil
+		ifFalse: [ f value: self part ]!
 
-	^(super handleMouseEvent: type at: loc)
-		or: [	"%hack: Look for a context menu, so that popupmenu handlers work
-							even for native windows"
-				type = #secondaryButtonUp
-					and: [ self displayUpwardPopUpMenuAt: loc ] ]!
+doFromFront: f <[V]>
 
-haveErased ^<Boolean>
+	part == nil
+		ifFalse: [ f value: self part ]!
 
-	^haveErased!
+focusCandidatesDo: blk <[Visual]>
 
-haveErased: f <Boolean>
+	"We override this to prevent recursing on parts if the control is disabled"
 
-	haveErased := f!
+	self enabled
+		ifTrue: [ super focusCandidatesDo: blk ]! !
 
-win32Style ^<ExternalData>
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'methods copied from Win32Control' !
 
-	^(super win32Style
-		externalBitOr: Win32 WS_CLIPCHILDREN)
-		externalBitOr: Win32 WS_CLIPSIBLINGS! !
+
+moveBy: positionDelta <Point>
+
+	"We copy this down because the CompositeVisual mixin shadows the inherited one"
+
+	"We override this since moving a native visual will generate any needed invalidations
+	  automatically."
+
+	self adjustPositionBy: positionDelta!
+
+nativePositionChanged
+
+	"We copy this down because the CompositeVisual mixin shadows the inherited one"
+
+	"DON'T pass this message to super if we have a handle or are not attached,
+		 since our children are native relative to us!!!!
+		(remember that we mixin CompositeVisual, which would try to send this
+		message down to its children).  If we don't have a handle and are attached,
+		and our child is nonLocal, we send it down anyway so that our children can
+		create their windows."
+
+	self checkForNativePositionChanging
+		ifTrue: [	self updateWindowDimensions ]
+		ifFalse: [ (self hasWin32Handle not and: [ self isAttached ])
+							ifTrue: [	self updateWindowDimensions.
+											self part isNonLocal
+												ifTrue: [ self part nativePositionChanged.	]]	].
+! !
 
 ! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'methods copied from Window' !
 
@@ -267,92 +320,78 @@ popUpMenuIfAbsent: f <[^X def]> ^<Menu | X>
 
 	^self parent popUpMenuIfAbsent: f! !
 
-! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'initialization' !
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'private' !
 
 
-initialize
+beforeSetFocus
 
-	super initialize.
-	scratchRECT := RECT new allocate.
-	self haveErased: false.! !
+	"We don't call the inherited version because it assumes that it must mean that IT is the focus;
+		whereas for us it might be a subvisual that is getting the focus"
+!
 
-! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'control' !
+buildWin32Handle
+	"Must not be sent before layout because allocation & position (and of parents) must exist"
 
+	| pos <Point> container <Window|Win32Control> |
 
-release
+	pos := self nativePosition.
+	container := self parent nativeWindow.
+	win32Handle := {{<user ExternalProxy CreateWindowExA>
+		extendedStyle: self extendedWin32Style
+		className: self actualClass win32ClassName
+		caption: Win32 NULL
+		style: self win32Style
+		xpos: pos x asInteger
+		ypos: pos y asInteger
+		xsize: self allocation enclosedRect width asInteger
+		ysize: self allocation enclosedRect height asInteger
+		parent: container win32Handle
+        id: self controlId
+		program: container hInstance
+		params: Win32 NULL }}.!
 
-	super release.
-	self scratchRECT free.! !
+canBeFocusCandidate ^<Boolean>
 
-! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'accessing' !
+	^false!
 
+displayVisualIfCanOn: canvas <Canvas>
 
-backgroundPainter ^<Painter>
+	self session visualCriticalWouldBlock
+		ifTrue: [ self recordDeferredPaint: canvas clippingRect ]
+		ifFalse: [	self paintOccuring.
+						canvas atOffset: self allocation enclosingRect origin negated
+									do: [ self localDisplayOn: canvas ].
+					 ]!
 
-	backgroundPainter isNil
-		ifTrue: [  backgroundPainter := self part backgroundPainter ].
-	^backgroundPainter!
+handleMouseEvent: type <Symbol> at: loc <Point> ^<Boolean>
 
-gridFor: p <Point> ^<Rect>
+	^(super handleMouseEvent: type at: loc)
+		or: [	"%hack: Look for a context menu, so that popupmenu handlers work
+							even for native windows"
+				type = #secondaryButtonUp
+					and: [ self displayUpwardPopUpMenuAt: loc ] ]!
 
-	| partpos <Point> |
+haveErased ^<Boolean>
 
-	partpos := self part position.
-	^(self part gridFor: p - partpos) translatedBy: partpos!
+	^haveErased!
 
-hasPart ^<Boolean>
+haveErased: f <Boolean>
 
-	^part notNil!
+	haveErased := f!
 
-part ^<V>
+win32Style ^<ExternalData>
 
-	^part!
+	^(super win32Style
+		externalBitOr: Win32 WS_CLIPCHILDREN)
+		externalBitOr: Win32 WS_CLIPSIBLINGS! !
 
-part: p <Visual>
-
-	part == p
-		ifTrue: [ ^self ].
-	self changing.
-	part notNil
-		ifTrue: [ part noParent ].
-	part := p.
-	p parent: self id: 1.!
-
-partAt: childId <Int> ^<Visual>
-
-	self assert: [ childId = 0 ].
-	^self part!
-
-removePart ^<Visual>
-	"Detach and return the part"
-	
-	| p <Visual> |
-	self layoutStatus = Visual valid
-		ifTrue: [ self changing ].
-	p := self part.
-	p noParent.
-	part := nil.
-	^p! !
-
-! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'iterating' !
+! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'restricted-to parts' !
 
 
-doFromBack: f <[V]>
+containerBackgroundPainter ^<Painter>
+	"Re-define since the Window mixin blasted the version from Visual"
 
-	part == nil
-		ifFalse: [ f value: self part ]!
-
-doFromFront: f <[V]>
-
-	part == nil
-		ifFalse: [ f value: self part ]!
-
-focusCandidatesDo: blk <[Visual]>
-
-	"We override this to prevent recursing on parts if the control is disabled"
-
-	self enabled
-		ifTrue: [ super focusCandidatesDo: blk ]! !
+	^self parent containerBackgroundPainter! !
 
 ! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'restricted-win32' !
 
@@ -373,43 +412,4 @@ lParam: lParam <ExternalData>
 						^self eraseBackgroundFor: hwnd msgCode: msgCode wParam: wParam lParam: lParam ].
 
 	^super message: msgCode for: hwnd wParam: wParam lParam: lParam! !
-
-! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'restricted-to parts' !
-
-
-containerBackgroundPainter ^<Painter>
-	"Re-define since the Window mixin blasted the version from Visual"
-
-	^self parent containerBackgroundPainter! !
-
-! (Delta mirrorFor: #VisualWithNativeWindow) methodsFor: 'methods copied from Win32Control' !
-
-
-moveBy: positionDelta <Point>
-
-	"We copy this down because the CompositeVisual mixin shadows the inherited one"
-
-	"We override this since moving a native visual will generate any needed invalidations
-	  automatically."
-
-	self adjustPositionBy: positionDelta!
-
-nativePositionChanged
-
-	"We copy this down because the CompositeVisual mixin shadows the inherited one"
-
-	"DON'T pass this message to super if we have a handle or are not attached,
-		 since our children are native relative to us!!!!
-		(remember that we mixin CompositeVisual, which would try to send this
-		message down to its children).  If we don't have a handle and are attached,
-		and our child is nonLocal, we send it down anyway so that our children can
-		create their windows."
-
-	self checkForNativePositionChanging
-		ifTrue: [	self updateWindowDimensions ]
-		ifFalse: [ (self hasWin32Handle not and: [ self isAttached ])
-							ifTrue: [	self updateWindowDimensions.
-											self part isNonLocal
-												ifTrue: [ self part nativePositionChanged.	]]	].
-! !
 

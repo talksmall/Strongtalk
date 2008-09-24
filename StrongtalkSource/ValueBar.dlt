@@ -11,42 +11,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #ValueBar) methodsFor: 'preferences' !
-
-
-max ^<Region>
-
-	^Point origin extent: (UI huge @ self defaultHeight negated)!
-
-natural ^<Region>
-
-	^Point origin extent: (self defaultWidth @ self defaultHeight negated)! !
-
-! (Delta mirrorFor: #ValueBar) methodsFor: 'private' !
-
-
-defaultHeight ^<Int>
-
-	^8!
-
-defaultWidth ^<Int>
-
-	^50! !
-
-! (Delta mirrorFor: #ValueBar) methodsFor: 'displaying' !
-
-
-localDisplayOn: canvas <Canvas>
-
-	canvas withPainter: self painter
-		do: [	| width <Int> barwidth <Int> |
-					width := self allocation enclosedRect width.
-					barwidth := (value * width) asInteger.
-					canvas displayFilledRectangle:
-						(Point origin extent: 
-								barwidth @ (self defaultHeight negated)).
-				]! !
-
 ! (Delta mirrorFor: #ValueBar) methodsFor: 'accessing' !
 
 
@@ -68,6 +32,20 @@ value: v <Float>
 	value := v.
 	self invalidate! !
 
+! (Delta mirrorFor: #ValueBar) methodsFor: 'displaying' !
+
+
+localDisplayOn: canvas <Canvas>
+
+	canvas withPainter: self painter
+		do: [	| width <Int> barwidth <Int> |
+					width := self allocation enclosedRect width.
+					barwidth := (value * width) asInteger.
+					canvas displayFilledRectangle:
+						(Point origin extent: 
+								barwidth @ (self defaultHeight negated)).
+				]! !
+
 ! (Delta mirrorFor: #ValueBar) methodsFor: 'initialization' !
 
 
@@ -76,6 +54,28 @@ initialize
 	super initialize.
 	self painter: (Painter new paint: Paint blue).
 	self value: 0.0.! !
+
+! (Delta mirrorFor: #ValueBar) methodsFor: 'preferences' !
+
+
+max ^<Region>
+
+	^Point origin extent: (UI huge @ self defaultHeight negated)!
+
+natural ^<Region>
+
+	^Point origin extent: (self defaultWidth @ self defaultHeight negated)! !
+
+! (Delta mirrorFor: #ValueBar) methodsFor: 'private' !
+
+
+defaultHeight ^<Int>
+
+	^8!
+
+defaultWidth ^<Int>
+
+	^50! !
 
 ! (Delta mirrorFor: #ValueBar) methodsFor: 'utility' !
 

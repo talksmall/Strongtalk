@@ -23,6 +23,42 @@ on: sc <SeqCltn[E]> ^<ReadStream[E]>
 	"This blocks access to the instance creation messages inherited from BasicReadStream"
 	self shouldNotImplement! !
 
+! (Delta mirrorFor: #ExternalReadStream) methodsFor: 'accessing' !
+
+
+at: index <Int> ^<Int>
+
+	| i <Int> |
+	i := index - self bufferOrigin.
+	^(i < 1 or: [ i > self bufferNumElements ])
+		ifFalse: [ self buffer byteAt: i - 1 ]
+		ifTrue: [	| pos <Int> result <Int> |
+						pos := self position.
+						self position: index - 1.
+						"Use a recursive call, which should now be in range"
+						result := self at: index.
+						self position: pos.
+						result	]!
+
+repositioningAt: index <Int> ^<Int>
+	
+	| i <Int> |
+	i := index - self bufferOrigin.
+	^(i < 1 or: [ i > self bufferNumElements ])
+		ifFalse: [ self buffer byteAt: i - 1 ]
+		ifTrue: [	self position: index - 1.
+						self at: index  ]!
+
+size ^<Int>
+
+	^self descriptor size! !
+
+! (Delta mirrorFor: #ExternalReadStream) methodsFor: 'initialization' !
+
+
+initializeActualPosition
+    "disable initialization, since we don't use the inherited actualPosition instance variable"! !
+
 ! (Delta mirrorFor: #ExternalReadStream) methodsFor: 'private' !
 
 
@@ -55,40 +91,4 @@ writeIfNeededBeforePositionChange
 
 	"This is a hook for mutable subclasses to do any buffer flushing necessary before
 	 the buffer is repositioned.  By default, do nothing"! !
-
-! (Delta mirrorFor: #ExternalReadStream) methodsFor: 'initialization' !
-
-
-initializeActualPosition
-    "disable initialization, since we don't use the inherited actualPosition instance variable"! !
-
-! (Delta mirrorFor: #ExternalReadStream) methodsFor: 'accessing' !
-
-
-at: index <Int> ^<Int>
-
-	| i <Int> |
-	i := index - self bufferOrigin.
-	^(i < 1 or: [ i > self bufferNumElements ])
-		ifFalse: [ self buffer byteAt: i - 1 ]
-		ifTrue: [	| pos <Int> result <Int> |
-						pos := self position.
-						self position: index - 1.
-						"Use a recursive call, which should now be in range"
-						result := self at: index.
-						self position: pos.
-						result	]!
-
-repositioningAt: index <Int> ^<Int>
-	
-	| i <Int> |
-	i := index - self bufferOrigin.
-	^(i < 1 or: [ i > self bufferNumElements ])
-		ifFalse: [ self buffer byteAt: i - 1 ]
-		ifTrue: [	self position: index - 1.
-						self at: index  ]!
-
-size ^<Int>
-
-	^self descriptor size! !
 

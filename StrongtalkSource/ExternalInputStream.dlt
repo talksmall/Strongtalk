@@ -45,6 +45,21 @@ peekIfAbsent: f <[^X def]>  ^<E | X>
 		ifTrue: [ f value ]
 		ifFalse: [ self buffer byteAt: self nextBufferPosition ]! !
 
+! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'control' !
+
+
+close
+    "We have to reimplement this because BasicInputStream mixin in an inappropriate version"
+    self doClose.! !
+
+! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'initialization' !
+
+
+initDescriptor: d <DESCRIPTOR> 
+
+	super initDescriptor: d.
+	self fillBuffer.! !
+
 ! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'private' !
 
 
@@ -77,19 +92,4 @@ fillBuffer
 newCollectionOfSize: n <Int> ^<ByteArray>
 
 	^ByteArray new: n! !
-
-! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'initialization' !
-
-
-initDescriptor: d <DESCRIPTOR> 
-
-	super initDescriptor: d.
-	self fillBuffer.! !
-
-! (Delta mirrorFor: #ExternalInputStream) methodsFor: 'control' !
-
-
-close
-    "We have to reimplement this because BasicInputStream mixin in an inappropriate version"
-    self doClose.! !
 

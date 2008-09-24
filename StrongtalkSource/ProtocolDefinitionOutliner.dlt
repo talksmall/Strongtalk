@@ -10,6 +10,27 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #ProtocolDefinitionOutliner) methodsFor: 'accessing' !
+
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+^SuperprotocolLocator	coerce: loc
+	do:[:l <SuperprotocolLocator> | self superProtocolOutliner] 
+	else:[super outlinerForLocator: loc].! !
+
+! (Delta mirrorFor: #ProtocolDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	super update: aspect with: value.
+	self inSessionProcessDo: [
+		aspect = #superProtocol
+			ifTrue: [	self updateHeaders ].
+	]
+! !
+
 ! (Delta mirrorFor: #ProtocolDefinitionOutliner) methodsFor: 'private' !
 
 
@@ -32,25 +53,4 @@ superProtocolOutliner ^ <SuperProtocolOutliner>
 superProtocolOutliner: o <SuperProtocolOutliner>
 
 	superProtocolOutliner := o! !
-
-! (Delta mirrorFor: #ProtocolDefinitionOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	super update: aspect with: value.
-	self inSessionProcessDo: [
-		aspect = #superProtocol
-			ifTrue: [	self updateHeaders ].
-	]
-! !
-
-! (Delta mirrorFor: #ProtocolDefinitionOutliner) methodsFor: 'accessing' !
-
-
-outlinerForLocator: loc <DeltaLocator[Mirror]> 
-
-^SuperprotocolLocator	coerce: loc
-	do:[:l <SuperprotocolLocator> | self superProtocolOutliner] 
-	else:[super outlinerForLocator: loc].! !
 

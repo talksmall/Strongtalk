@@ -24,6 +24,25 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #Outliner) classSide methodsFor: 'constants' !
+
+
+defaultClosedGlyph ^<Glyph>
+
+	DefaultClosedGlyph isNil
+		ifTrue: [ DefaultClosedGlyph :=
+						(Image fromFile: (FilePath for: 'resources\closedItem.bmp'))
+							alignLowerLeft. 	].
+	^DefaultClosedGlyph!
+
+defaultOpenGlyph ^<Glyph>
+
+	DefaultOpenGlyph isNil
+		ifTrue: [ DefaultOpenGlyph :=
+						(Image fromFile: (FilePath for: 'resources\openItem.bmp'))
+							alignLowerLeft. 	].
+	^DefaultOpenGlyph! !
+
 ! (Delta mirrorFor: #Outliner) classSide methodsFor: 'instance creation' !
 
 
@@ -47,24 +66,78 @@ bodyBlock: bblk <[^Visual]>
 			openLook: ol
 			bodyBlock: bblk! !
 
-! (Delta mirrorFor: #Outliner) classSide methodsFor: 'constants' !
+! (Delta mirrorFor: #Outliner) methodsFor: 'accessing' !
 
 
-defaultClosedGlyph ^<Glyph>
+body ^<Visual>
 
-	DefaultClosedGlyph isNil
-		ifTrue: [ DefaultClosedGlyph :=
-						(Image fromFile: (FilePath for: 'resources\closedItem.bmp'))
-							alignLowerLeft. 	].
-	^DefaultClosedGlyph!
+	body isNil
+		ifTrue: [ body := ((Frame for: self bodyBlock value)
+										border: Border leftBracket
+									) baselined. ].
+	^body!
 
-defaultOpenGlyph ^<Glyph>
+bodyBlock ^<[^Visual]>
 
-	DefaultOpenGlyph isNil
-		ifTrue: [ DefaultOpenGlyph :=
-						(Image fromFile: (FilePath for: 'resources\openItem.bmp'))
-							alignLowerLeft. 	].
-	^DefaultOpenGlyph! !
+	^bodyBlock!
+
+bodyBlock: bblk <[^Visual]>
+
+	| oldBlock <Object> |
+	oldBlock := bodyBlock.
+
+	bodyBlock := bblk.
+	body := nil.
+
+	oldBlock isNil
+		ifFalse: [ self button model
+							ifTrue: [ self build ]].!
+
+indent ^<Int>
+
+	^indent!
+
+indent: i <Int>
+
+	indent := i!
+
+leftBracketbody ^<Visual>
+
+	body isNil
+		ifTrue: [ body := ((Frame for: self bodyBlock value)
+										border: Border leftBracket
+									) baselined. ].
+	^body!
+
+open ^<Boolean>
+
+	^self button model!
+
+open: o <Boolean>
+
+	self button model: o.
+	self build.!
+
+openSink ^<[Boolean]>
+
+	^openSink!
+
+openSink: b <[Boolean]>
+
+	openSink := b !
+
+threeDbodybody ^<Visual>
+
+	body isNil
+		ifTrue: [ 	body := self bodyBlock value.
+						body := (Frame for: body)
+								border: (Border standard3DWithColor: Paint gray
+													extraInteriorSpace: 2
+													raised: true).
+						body := (Frame for: body)
+									border: (Border withRigidInset: (self indent @ 0 corner: Point origin)).
+						body := body baselined.  ].
+	^body! !
 
 ! (Delta mirrorFor: #Outliner) methodsFor: 'initialization' !
 
@@ -156,77 +229,4 @@ userOpen: state <Boolean>
 	self openSink: state.
 	self build.
 	self session updateLayoutsIfNeeded! !
-
-! (Delta mirrorFor: #Outliner) methodsFor: 'accessing' !
-
-
-body ^<Visual>
-
-	body isNil
-		ifTrue: [ body := ((Frame for: self bodyBlock value)
-										border: Border leftBracket
-									) baselined. ].
-	^body!
-
-bodyBlock ^<[^Visual]>
-
-	^bodyBlock!
-
-bodyBlock: bblk <[^Visual]>
-
-	| oldBlock <Object> |
-	oldBlock := bodyBlock.
-
-	bodyBlock := bblk.
-	body := nil.
-
-	oldBlock isNil
-		ifFalse: [ self button model
-							ifTrue: [ self build ]].!
-
-indent ^<Int>
-
-	^indent!
-
-indent: i <Int>
-
-	indent := i!
-
-leftBracketbody ^<Visual>
-
-	body isNil
-		ifTrue: [ body := ((Frame for: self bodyBlock value)
-										border: Border leftBracket
-									) baselined. ].
-	^body!
-
-open ^<Boolean>
-
-	^self button model!
-
-open: o <Boolean>
-
-	self button model: o.
-	self build.!
-
-openSink ^<[Boolean]>
-
-	^openSink!
-
-openSink: b <[Boolean]>
-
-	openSink := b !
-
-threeDbodybody ^<Visual>
-
-	body isNil
-		ifTrue: [ 	body := self bodyBlock value.
-						body := (Frame for: body)
-								border: (Border standard3DWithColor: Paint gray
-													extraInteriorSpace: 2
-													raised: true).
-						body := (Frame for: body)
-									border: (Border withRigidInset: (self indent @ 0 corner: Point origin)).
-						body := body baselined.  ].
-	^body! !
 

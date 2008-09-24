@@ -24,6 +24,27 @@ new ^ <Instance>
 
 	^super new initialize! !
 
+! (Delta mirrorFor: #SystemMonitor) methodsFor: 'accessing' !
+
+
+hasWinBackdrop ^<Boolean>
+
+	^true!
+
+monitorData ^ <SystemMonitorData>
+
+	^monitorData!
+
+updateDelay ^ <Int>
+
+	"Update delay in milliseconds"
+	
+	^500!
+
+winBackdrop ^<Painter>
+
+	^Painter new paint: Paint backgroundGray! !
+
 ! (Delta mirrorFor: #SystemMonitor) methodsFor: 'private' !
 
 
@@ -55,7 +76,7 @@ addValuesToTable
 
 buildBareVisualTop: top <Boolean> ^ <Visual>
 
-	self table: (Table rows: 7 columns: 2).
+	self table: (Table rows: 8 columns: 2).
 	self addConstantEntriesToTable.
 	self startUpdateProcess.
 	^self table imbeddedVisual" withBorder: (Border standard3DWithColor: Paint gray raised: false)"
@@ -93,6 +114,25 @@ table: t  <Table>
 
 	table := t! !
 
+! (Delta mirrorFor: #SystemMonitor) methodsFor: 'private  - initialization' !
+
+
+entriesDo: blk <[Str, [^Float]]>
+	"Iterates over all entries for the table"
+	
+	blk value: 'Optimized code'		value: [ self monitorData inCompiledCode ].
+	blk value: 'Interpreted code'		value: [ self monitorData inInterpretedCode ].
+	blk value: 'PIC code' 					value: [ self monitorData inPICCode ].
+	blk value: 'Compiling' 					value: [ self monitorData inCompiler ].
+	blk value: 'Garbage Collector'	value: [ self monitorData inGarbageCollector ].
+	blk value: 'Stub code'					value: [ self monitorData inStubCode ].
+	blk value: 'Primitives/DLL'			value: [ self monitorData inVM ].
+	blk value: 'Object Memory'		value: [ self monitorData objectMemory ]!
+
+initialize
+	super initialize.
+	self monitorData: SystemMonitorData new.! !
+
 ! (Delta mirrorFor: #SystemMonitor) methodsFor: 'private - painters' !
 
 
@@ -107,43 +147,4 @@ valuePainter ^ <Painter>
 	^Painter default
 	
 ! !
-
-! (Delta mirrorFor: #SystemMonitor) methodsFor: 'private  - initialization' !
-
-
-entriesDo: blk <[Str, [^Float]]>
-	"Iterates over all entries for the table"
-	
-	blk value: 'Optimized code'		value: [ self monitorData inCompiledCode ].
-	blk value: 'Interpreted code'		value: [ self monitorData inInterpretedCode ].
-	blk value: 'PIC code' 					value: [ self monitorData inPICCode ].
-	blk value: 'Compiling' 					value: [ self monitorData inCompiler ].
-	blk value: 'Garbage Collector'	value: [ self monitorData inGarbageCollector ].
-	blk value: 'Stub code'					value: [ self monitorData inStubCode ].
-	blk value: 'Primitives/DLL'			value: [ self monitorData inVM ]!
-
-initialize
-	super initialize.
-	self monitorData: SystemMonitorData new.! !
-
-! (Delta mirrorFor: #SystemMonitor) methodsFor: 'accessing' !
-
-
-hasWinBackdrop ^<Boolean>
-
-	^true!
-
-monitorData ^ <SystemMonitorData>
-
-	^monitorData!
-
-updateDelay ^ <Int>
-
-	"Update delay in milliseconds"
-	
-	^500!
-
-winBackdrop ^<Painter>
-
-	^Painter new paint: Paint backgroundGray! !
 

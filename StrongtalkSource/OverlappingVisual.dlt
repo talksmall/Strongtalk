@@ -19,13 +19,20 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 
 '!
 
-! (Delta mirrorFor: #OverlappingVisual) methodsFor: 'private' !
+! (Delta mirrorFor: #OverlappingVisual) methodsFor: 'control' !
 
 
-layout
+relayoutAndInvalidate
 
-	self part allocation: self allocation at: Point origin.
-	super layout.! !
+	"We override this to avoid complete invalidation if possible
+		by passing it along to the child, in case it can do a better job."
+
+	"We can skip telling the child its allocation if it had one before, because
+		relayout for this class doesn't change the child size"
+	self part layoutStatus = Visual invalid
+		ifTrue: [ super layout ]
+		ifFalse: [	self layoutStatus: Visual valid.
+						self part relayoutAndInvalidate.	]! !
 
 ! (Delta mirrorFor: #OverlappingVisual) methodsFor: 'geometry-local' !
 
@@ -53,18 +60,11 @@ natural ^<Region>
 
 	^self part natural! !
 
-! (Delta mirrorFor: #OverlappingVisual) methodsFor: 'control' !
+! (Delta mirrorFor: #OverlappingVisual) methodsFor: 'private' !
 
 
-relayoutAndInvalidate
+layout
 
-	"We override this to avoid complete invalidation if possible
-		by passing it along to the child, in case it can do a better job."
-
-	"We can skip telling the child its allocation if it had one before, because
-		relayout for this class doesn't change the child size"
-	self part layoutStatus = Visual invalid
-		ifTrue: [ super layout ]
-		ifFalse: [	self layoutStatus: Visual valid.
-						self part relayoutAndInvalidate.	]! !
+	self part allocation: self allocation at: Point origin.
+	super layout.! !
 

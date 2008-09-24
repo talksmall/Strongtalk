@@ -19,6 +19,18 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #HashedCollection) classSide methodsFor: 'constants' !
+
+
+defaultCapacity ^<Int>
+
+	^0!
+
+firstTableSize ^<Int>
+	"The size used for the table when the capacity is 0 and the first element is added"
+	
+	^8! !
+
 ! (Delta mirrorFor: #HashedCollection) classSide methodsFor: 'instance creation' !
 
 
@@ -50,17 +62,234 @@ withAll: cltn <Cltn[A]> ^<Instance>
 
 	^(self new: cltn size) includeAll: cltn; yourself! !
 
-! (Delta mirrorFor: #HashedCollection) classSide methodsFor: 'constants' !
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'accessing' !
 
 
-defaultCapacity ^<Int>
+at: key <K> ^<E>
 
-	^0!
+	^self at: key ifAbsent: [ self error: 'key not found' ]!
 
-firstTableSize ^<Int>
-	"The size used for the table when the capacity is 0 and the first element is added"
+at: key <Object> ifAbsent: f <[^X def]> ^<E|X>
+
+	^self elementFor:
+			(self valAt: key ifAbsent: [ ^f value ])!
+
+indexOf: el <Object> ^<K>
+
+	^self indexOf: el
+			ifAbsent: [ self error: 'Element not found' ]!
+
+indexOf: el <Object> ifAbsent: blk <[^X def]> ^<K | X>
+
+	self contentsDo:
+		[ :v <A> |
+			(self elementFor: v) = el
+				ifTrue: [ ^self keyFor: v ]  ].
+	^blk value!
+
+keyAtValue: v <Object> ^<K>
+
+	^self indexOf: v!
+
+keyAtValue: v <Object> ifAbsent: blk <[^X def]> ^<K | X>
+
+	^self indexOf: v ifAbsent: blk !
+
+size ^<Int>
+
+	^size! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'consistency testing' !
+
+
+checkValidity
+	"This method performs various validity checks on the receiver"
+
+	| c <Int> |
+	c := 0.
+	self contentsDo:
+		[ :val <A> |
+			self assert: [ (self at: (self keyFor: val)) = (self elementFor: val) ].
+			c := c + 1.		].
+
+	self assert: [ c = self size ].! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'debugging' !
+
+
+printStats
+
+	self printStatsOn: Transcript!
+
+printStatsOn: strm <CharOutputStream>
+
+	| max <Int> density <Float> avgProbes <Float> |
+
+	self table == nil
+		ifTrue: [	strm putAll: '(size=0; no table)'; cr.
+						^self ].
+	self statsDo:
+		[ :d <Float> :avg <Float> :m <Int> |
+			density := d.
+			avgProbes := avg.
+			max := m.	].
+
+	strm putAll: '(size='; print: self size;
+		putAll: ' tableSize='; print: self table size;
+		putAll: ' deleted='; print: self deleted;
+		putAll: ' density='; print: density;
+		putAll: ' avg probes='; print: avgProbes;
+		putAll: ' max probes= '; print: max;
+		put: $); cr.!
+
+statsDo: blk <["density" Float, "avgProbes" Float, "maxProbes" Int]>
+	"evaluate blk with three important statistics:
+			density, average number of probes, and maximum
+			number of probes.  If no table has been allocated,
+			then the density is reported as 0, and the average and
+			max probes are reported as 1"
+
+	| max <Int> totReprobes <Int> probes <Int> |
 	
-	^8! !
+	self table == nil
+		ifTrue: [	blk value: 0.0 value: 1.0 value: 1.
+						^self	 ].
+	max  := totReprobes :=  0.
+
+	self keysDo:
+		[ :key <K> |
+			| reprobes <Int> |
+			reprobes := 0.
+			self lookup: key
+					inTable: self table
+					matchingSlotDo: [ :index <Int> :val <A> | "nothing" ]
+					emptySlotDo: [ :index <Int> | self shouldNotHappen ]
+					deletedSlotsDo:
+						[ :index <Int> |
+							reprobes := reprobes + 1. ]
+					mismatchingSlotsDo:
+						[ :index <Int> |
+							reprobes := reprobes + 1. ].
+			totReprobes := totReprobes + reprobes.
+			max := (1 + reprobes) max: max.
+		].
+
+	probes := self size + totReprobes.
+	blk value: self occupied asFloat / self table size asFloat
+			value: probes asFloat / self size asFloat
+			value: max! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'including/adding' !
+
+
+add: val <A> ^<A>
+
+	^self include: val!
+
+addAll: c <Cltn[A]> ^<Cltn[A]>
+
+	c do: [ :e <A> |
+		self add: e. ].
+	^c!
+
+include: val <A> ^<A>
+
+	^self include: val ifNew: []
+!
+
+include: val <A> ifNew: ifNew <[]> ^<A>
+
+	^self tableAt: (self keyFor: val) put: (self elementFor: val) ifNew: ifNew
+!
+
+includeAll: c <Cltn[A]> ^<Cltn[A]>
+
+	c do: [ :el <A> |
+		self include: el   ].
+	^c! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'iterating' !
+
+
+do: f <[E]>
+
+	self contentsDo:
+		[ :val <A> |
+			f value: (self elementFor: val)		]!
+
+keysDo: f <[K]>
+
+	self contentsDo:
+		[ :val <A> |
+			f value: (self keyFor: val)		]! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-accessing' !
+
+
+deleted ^<Int>
+
+	^deleted!
+
+deleted: v <Int>
+
+	deleted := v!
+
+setTable: t <Array[A|Object]>
+
+	table := t.
+!
+
+size: s <Int>
+
+	size := s!
+
+table ^<Array[A|Object]>
+
+	^table!
+
+table: t <Array[A|Object]>
+
+	self setTable: t.
+	self assert: [ self deleted == 0 ].! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-computations' !
+
+
+advanceAmount ^<Int>
+	"a large prime - 1"
+	
+		^99990!
+
+indexOf: key <Object> tableMask: mask <Int> ^<Int>
+
+	^((self hashFor: key) bitAnd: mask) + 1!
+
+minTableSize ^<Int>
+
+	^4!
+
+minTableSizeForCapacity: cap <Int> ^<Int>
+
+	"max density is 50% full"
+	^cap + cap!
+
+newTableWithSize: tableSize <Int>  ^<Array[A|Object]>
+
+	^Array[A|Object] new: tableSize!
+
+occupied ^<Int>
+
+	^self size + self deleted!
+
+tableSizeForCapacity: cap <Int> ^<Int>
+
+        | min <Int> tsize <Int> |
+        min := self minTableSizeForCapacity: cap.
+        "search for the smallest power of two that is >= min"
+        tsize := self minTableSize.
+        [ tsize < min ]
+                whileTrue: [ tsize := tsize + tsize ].
+        ^tsize! !
 
 ! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-initialization' !
 
@@ -71,6 +300,133 @@ initCapacity: cap <Int>
 	cap > 0
 		ifTrue: [	self table: (self newTableWithSize: (self tableSizeForCapacity: cap)). ].
 ! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-misc' !
+
+
+markDeleted: index <Int>
+
+	| tbl <Array[A|Object]> |
+	tbl := self table.
+	tbl at: index put: tbl.
+	self deleted: self deleted + 1!
+
+postCopy
+
+	| tbl <Array[A|Object]> newtbl <Array[A|Object]> |
+
+	super postCopy.
+	tbl := self table.
+	tbl == nil
+		ifTrue: [ ^self ].
+
+	newtbl := self newTableWithSize: tbl size.
+	1 to: tbl size do:
+		[ :index <Int> |
+			self	atIndex: index
+					inTable: tbl
+					occupiedSlotDo:
+						[ :val <A> |
+							newtbl at: index put: (self elementForCopy: val)	]
+					emptySlotDo: [ ]
+					deletedSlotDo:
+						[	newtbl at: index put: newtbl		]
+		].
+	self setTable: newtbl!
+
+printElementsDo: f <[Object]>
+	
+	self contentsDo: f! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-subclass responsibility' !
+
+
+buildValForKey: k <K> element: el <E> ^<A>
+	"construct an A from a K and an E"
+
+	self subclassResponsibility!
+
+elementFor: val <A> ^<E>
+	"extract an E from an A"
+
+	self subclassResponsibility!
+
+elementForCopy: el <A> ^<A>
+	"When a copy of the collection is made, this method implements what happens
+	  to each element.  For example, Dictionaries copy their elements, since the
+	  associations are really part of the Dictionary, whereas KeyedSets don't since the
+	  associations are really elements of the collection."
+
+	self subclassResponsibility!
+
+hashFor: key <Object> ^<Int>
+	"return the appropriate hash value for a key"
+
+	self subclassResponsibility!
+
+key: key1 <Object> matches: key2 <Object> ^<Boolean>
+	"Test whether two keys match"
+
+	self subclassResponsibility!
+
+keyFor: val <A> ^<K>
+	"extract an K from an A"
+
+	self subclassResponsibility!
+
+objToIncludeFor: new <A> withExisting: other <A> ^<A>
+	"In the situation where a new value  is being 'include'ed in the collection, and there is already an existing
+	 value with a matching key, this method determines what value is actually placed in the collection"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-subroutines for #tableAt:put:ifNew:' !
+
+
+tableAt: key <K>
+put: el <E>
+inDeletedSlot: index <Int>
+^<A>
+
+	| val <A> |
+	val := self tableAt: key put: el inUnusedSlot: index.
+	self deleted: self deleted - 1.
+	"we don't have to check for growth when reusing a previously used slot"
+	^val!
+
+tableAt: key <K>
+put: el <E>
+inEmptySlot: index <Int>
+^<A>
+
+	| val <A> |
+	val := self tableAt: key put: el inUnusedSlot: index.
+	self growIfNeeded.
+	^val!
+
+tableAt: key <K>
+put: el <E>
+inMatchingSlot: index <Int>
+value: val <A>
+^<A>
+
+	| newVal <A> |
+	newVal := self	objToIncludeFor: (self buildValForKey: key element: el)
+								withExisting: val.
+	self table at: index put: newVal.
+	^newVal!
+
+tableAt: key <K>
+put: el <E>
+inUnusedSlot: index <Int>
+^<A>
+	"This does the core work for #tableAt:put:[inDeletedSlot:|inEmptySlot:]"
+
+	| newVal <A> |
+	newVal := self buildValForKey: key element: el.
+	self table at: index put: newVal.
+	self size: self size + 1.
+	^newVal! !
 
 ! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-table manipulation' !
 
@@ -233,201 +589,6 @@ valAt: key <Object> ifAbsent: f <[^X def]> ^<A|X>
 					[ :index <Int> |
 						"ignore deleted slots" ]! !
 
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-accessing' !
-
-
-deleted ^<Int>
-
-	^deleted!
-
-deleted: v <Int>
-
-	deleted := v!
-
-setTable: t <Array[A|Object]>
-
-	table := t.
-!
-
-size: s <Int>
-
-	size := s!
-
-table ^<Array[A|Object]>
-
-	^table!
-
-table: t <Array[A|Object]>
-
-	self setTable: t.
-	self assert: [ self deleted == 0 ].! !
-
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-computations' !
-
-
-advanceAmount ^<Int>
-	"a large prime - 1"
-	
-		^99990!
-
-indexOf: key <Object> tableMask: mask <Int> ^<Int>
-
-	^((self hashFor: key) bitAnd: mask) + 1!
-
-minTableSize ^<Int>
-
-	^4!
-
-minTableSizeForCapacity: cap <Int> ^<Int>
-
-	"max density is 50% full"
-	^cap + cap!
-
-newTableWithSize: tableSize <Int>  ^<Array[A|Object]>
-
-	^Array[A|Object] new: tableSize!
-
-occupied ^<Int>
-
-	^self size + self deleted!
-
-tableSizeForCapacity: cap <Int> ^<Int>
-
-        | min <Int> tsize <Int> |
-        min := self minTableSizeForCapacity: cap.
-        "search for the smallest power of two that is >= min"
-        tsize := self minTableSize.
-        [ tsize < min ]
-                whileTrue: [ tsize := tsize + tsize ].
-        ^tsize! !
-
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'accessing' !
-
-
-at: key <K> ^<E>
-
-	^self at: key ifAbsent: [ self error: 'key not found' ]!
-
-at: key <Object> ifAbsent: f <[^X def]> ^<E|X>
-
-	^self elementFor:
-			(self valAt: key ifAbsent: [ ^f value ])!
-
-indexOf: el <Object> ^<K>
-
-	^self indexOf: el
-			ifAbsent: [ self error: 'Element not found' ]!
-
-indexOf: el <Object> ifAbsent: blk <[^X def]> ^<K | X>
-
-	self contentsDo:
-		[ :v <A> |
-			(self elementFor: v) = el
-				ifTrue: [ ^self keyFor: v ]  ].
-	^blk value!
-
-keyAtValue: v <Object> ^<K>
-
-	^self indexOf: v!
-
-keyAtValue: v <Object> ifAbsent: blk <[^X def]> ^<K | X>
-
-	^self indexOf: v ifAbsent: blk !
-
-size ^<Int>
-
-	^size! !
-
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-subclass responsibility' !
-
-
-buildValForKey: k <K> element: el <E> ^<A>
-	"construct an A from a K and an E"
-
-	self subclassResponsibility!
-
-elementFor: val <A> ^<E>
-	"extract an E from an A"
-
-	self subclassResponsibility!
-
-elementForCopy: el <A> ^<A>
-	"When a copy of the collection is made, this method implements what happens
-	  to each element.  For example, Dictionaries copy their elements, since the
-	  associations are really part of the Dictionary, whereas KeyedSets don't since the
-	  associations are really elements of the collection."
-
-	self subclassResponsibility!
-
-hashFor: key <Object> ^<Int>
-	"return the appropriate hash value for a key"
-
-	self subclassResponsibility!
-
-key: key1 <Object> matches: key2 <Object> ^<Boolean>
-	"Test whether two keys match"
-
-	self subclassResponsibility!
-
-keyFor: val <A> ^<K>
-	"extract an K from an A"
-
-	self subclassResponsibility!
-
-objToIncludeFor: new <A> withExisting: other <A> ^<A>
-	"In the situation where a new value  is being 'include'ed in the collection, and there is already an existing
-	 value with a matching key, this method determines what value is actually placed in the collection"
-
-	self subclassResponsibility! !
-
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-subroutines for #tableAt:put:ifNew:' !
-
-
-tableAt: key <K>
-put: el <E>
-inDeletedSlot: index <Int>
-^<A>
-
-	| val <A> |
-	val := self tableAt: key put: el inUnusedSlot: index.
-	self deleted: self deleted - 1.
-	"we don't have to check for growth when reusing a previously used slot"
-	^val!
-
-tableAt: key <K>
-put: el <E>
-inEmptySlot: index <Int>
-^<A>
-
-	| val <A> |
-	val := self tableAt: key put: el inUnusedSlot: index.
-	self growIfNeeded.
-	^val!
-
-tableAt: key <K>
-put: el <E>
-inMatchingSlot: index <Int>
-value: val <A>
-^<A>
-
-	| newVal <A> |
-	newVal := self	objToIncludeFor: (self buildValForKey: key element: el)
-								withExisting: val.
-	self table at: index put: newVal.
-	^newVal!
-
-tableAt: key <K>
-put: el <E>
-inUnusedSlot: index <Int>
-^<A>
-	"This does the core work for #tableAt:put:[inDeletedSlot:|inEmptySlot:]"
-
-	| newVal <A> |
-	newVal := self buildValForKey: key element: el.
-	self table at: index put: newVal.
-	self size: self size + 1.
-	^newVal! !
-
 ! (Delta mirrorFor: #HashedCollection) methodsFor: 'removing' !
 
 
@@ -490,72 +651,6 @@ removeKey: key <K> ifAbsent: f <[^X def]> ^<E|X>
 							"ignore"
 						]! !
 
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'including/adding' !
-
-
-add: val <A> ^<A>
-
-	^self include: val!
-
-addAll: c <Cltn[A]> ^<Cltn[A]>
-
-	c do: [ :e <A> |
-		self add: e. ].
-	^c!
-
-include: val <A> ^<A>
-
-	^self include: val ifNew: []
-!
-
-include: val <A> ifNew: ifNew <[]> ^<A>
-
-	^self tableAt: (self keyFor: val) put: (self elementFor: val) ifNew: ifNew
-!
-
-includeAll: c <Cltn[A]> ^<Cltn[A]>
-
-	c do: [ :el <A> |
-		self include: el   ].
-	^c! !
-
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'private-misc' !
-
-
-markDeleted: index <Int>
-
-	| tbl <Array[A|Object]> |
-	tbl := self table.
-	tbl at: index put: tbl.
-	self deleted: self deleted + 1!
-
-postCopy
-
-	| tbl <Array[A|Object]> newtbl <Array[A|Object]> |
-
-	super postCopy.
-	tbl := self table.
-	tbl == nil
-		ifTrue: [ ^self ].
-
-	newtbl := self newTableWithSize: tbl size.
-	1 to: tbl size do:
-		[ :index <Int> |
-			self	atIndex: index
-					inTable: tbl
-					occupiedSlotDo:
-						[ :val <A> |
-							newtbl at: index put: (self elementForCopy: val)	]
-					emptySlotDo: [ ]
-					deletedSlotDo:
-						[	newtbl at: index put: newtbl		]
-		].
-	self setTable: newtbl!
-
-printElementsDo: f <[Object]>
-	
-	self contentsDo: f! !
-
 ! (Delta mirrorFor: #HashedCollection) methodsFor: 'testing' !
 
 
@@ -573,99 +668,4 @@ includesIndex: k <Object> ^<Boolean>
 includesKey: k <Object> ^<Boolean>
 
 	^self includesIndex: k! !
-
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'iterating' !
-
-
-do: f <[E]>
-
-	self contentsDo:
-		[ :val <A> |
-			f value: (self elementFor: val)		]!
-
-keysDo: f <[K]>
-
-	self contentsDo:
-		[ :val <A> |
-			f value: (self keyFor: val)		]! !
-
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'consistency testing' !
-
-
-checkValidity
-	"This method performs various validity checks on the receiver"
-
-	| c <Int> |
-	c := 0.
-	self contentsDo:
-		[ :val <A> |
-			self assert: [ (self at: (self keyFor: val)) = (self elementFor: val) ].
-			c := c + 1.		].
-
-	self assert: [ c = self size ].! !
-
-! (Delta mirrorFor: #HashedCollection) methodsFor: 'debugging' !
-
-
-printStats
-
-	self printStatsOn: Transcript!
-
-printStatsOn: strm <CharOutputStream>
-
-	| max <Int> density <Float> avgProbes <Float> |
-
-	self table == nil
-		ifTrue: [	strm putAll: '(size=0; no table)'; cr.
-						^self ].
-	self statsDo:
-		[ :d <Float> :avg <Float> :m <Int> |
-			density := d.
-			avgProbes := avg.
-			max := m.	].
-
-	strm putAll: '(size='; print: self size;
-		putAll: ' tableSize='; print: self table size;
-		putAll: ' deleted='; print: self deleted;
-		putAll: ' density='; print: density;
-		putAll: ' avg probes='; print: avgProbes;
-		putAll: ' max probes= '; print: max;
-		put: $); cr.!
-
-statsDo: blk <["density" Float, "avgProbes" Float, "maxProbes" Int]>
-	"evaluate blk with three important statistics:
-			density, average number of probes, and maximum
-			number of probes.  If no table has been allocated,
-			then the density is reported as 0, and the average and
-			max probes are reported as 1"
-
-	| max <Int> totReprobes <Int> probes <Int> |
-	
-	self table == nil
-		ifTrue: [	blk value: 0.0 value: 1.0 value: 1.
-						^self	 ].
-	max  := totReprobes :=  0.
-
-	self keysDo:
-		[ :key <K> |
-			| reprobes <Int> |
-			reprobes := 0.
-			self lookup: key
-					inTable: self table
-					matchingSlotDo: [ :index <Int> :val <A> | "nothing" ]
-					emptySlotDo: [ :index <Int> | self shouldNotHappen ]
-					deletedSlotsDo:
-						[ :index <Int> |
-							reprobes := reprobes + 1. ]
-					mismatchingSlotsDo:
-						[ :index <Int> |
-							reprobes := reprobes + 1. ].
-			totReprobes := totReprobes + reprobes.
-			max := (1 + reprobes) max: max.
-		].
-
-	probes := self size + totReprobes.
-	blk value: self occupied asFloat / self table size asFloat
-			value: probes asFloat / self size asFloat
-			value: max! !
 

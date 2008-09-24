@@ -202,6 +202,13 @@ initialize
 
     self DLLInitialize! !
 
+! (Delta mirrorFor: #Win32Platform) classSide methodsFor: 'os specific' !
+
+
+currentThreadId
+
+	^ {{ primitiveCurrentThreadId }}! !
+
 ! (Delta mirrorFor: #Win32Platform) classSide methodsFor: 'os streams' !
 
 
@@ -220,10 +227,7 @@ pathClass ^<FilePath class>
 
 patternClass ^<FilePattern class>
 
-    ^Win32FilePattern!
-
-processClass
-	^Win32Process! !
+    ^Win32FilePattern! !
 
 ! (Delta mirrorFor: #Win32Platform) classSide methodsFor: 'private' !
 
@@ -276,4 +280,14 @@ openClipboard
 usesCrLfConvention ^<Boolean>
 
     ^true! !
+
+! (Delta mirrorFor: #Win32Platform) classSide methodsFor: 'time' !
+
+
+localSYSTEMTIME ^<SYSTEMTIME>
+
+	| t <SYSTEMTIME> |
+	t := SYSTEMTIME new allocate.
+	{{<kernel ExternalProxy GetLocalTime> struct: t}}.
+	^t! !
 

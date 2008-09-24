@@ -24,14 +24,6 @@ for: g <Glyph> app: a <HTMLView> element: el <ElementA>  ^<Instance>
 
 	^(self for: g) initApp: a element: el! !
 
-! (Delta mirrorFor: #HTMLLink) methodsFor: 'private- initialization' !
-
-
-initApp: a <HTMLView> element: el <ElementA>
-
-	app := a.
-	element := el.! !
-
 ! (Delta mirrorFor: #HTMLLink) methodsFor: 'accessing' !
 
 
@@ -52,4 +44,12 @@ mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> ^<Boolean>
 		ifTrue: [ self element activateAt: loc for: self app. 
 						^true ].
 	^false! !
+
+! (Delta mirrorFor: #HTMLLink) methodsFor: 'private- initialization' !
+
+
+initApp: a <HTMLView> element: el <ElementA>
+
+	app := a.
+	element := el.! !
 

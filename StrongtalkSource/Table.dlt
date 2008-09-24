@@ -30,16 +30,6 @@ rows: rows <Int> columns: cols <Int> ^<Instance>
 
 	^self new initRows: rows columns: cols! !
 
-! (Delta mirrorFor: #Table) methodsFor: 'private-initialization' !
-
-
-initRows: rows <Int> columns: cols <Int> ^<Instance>
-
-	numRows := rows.
-	numCols := cols.
-	rowMajor := false.
-! !
-
 ! (Delta mirrorFor: #Table) methodsFor: 'accessing' !
 
 
@@ -141,4 +131,14 @@ wrapperAtRow: r <Int> col: c <Int>  ^<EqualizerWrapper>
 	^self rowMajor
 		ifTrue: [ (self major at: c) at: r ]
 		ifFalse: [ (self major at: r) at: c ]! !
+
+! (Delta mirrorFor: #Table) methodsFor: 'private-initialization' !
+
+
+initRows: rows <Int> columns: cols <Int> ^<Instance>
+
+	numRows := rows.
+	numCols := cols.
+	rowMajor := false.
+! !
 

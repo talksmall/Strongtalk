@@ -23,13 +23,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
-! (Delta mirrorFor: #MenuAction) classSide methodsFor: 'instance creation' !
-
-
-new ^<Instance>
-
-	^super new initialize! !
-
 ! (Delta mirrorFor: #MenuAction) classSide methodsFor: 'debugging' !
 
 
@@ -43,13 +36,12 @@ timeActions: b <Boolean>
 
 	TimeActions := b! !
 
-! (Delta mirrorFor: #MenuAction) methodsFor: 'initialization' !
+! (Delta mirrorFor: #MenuAction) classSide methodsFor: 'instance creation' !
 
 
-initialize
+new ^<Instance>
 
-	super initialize.
-	self active: [ true ].! !
+	^super new initialize! !
 
 ! (Delta mirrorFor: #MenuAction) methodsFor: 'accessing' !
 
@@ -167,6 +159,14 @@ updateFor: menu <Menu> at: index <Int>
 	(newActive ~= displayedActive or: [ self hasChecked ])
 		ifTrue: [	displayedActive := newActive.
 						self updateStateFor: menu at: index	].! !
+
+! (Delta mirrorFor: #MenuAction) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	self active: [ true ].! !
 
 ! (Delta mirrorFor: #MenuAction) methodsFor: 'private' !
 

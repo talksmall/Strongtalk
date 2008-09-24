@@ -1,0 +1,190 @@
+Delta define: #TestResult as: (
+(Class subclassOf: 'Object' instanceVariables: 'failures errors passed')) !
+
+(Delta mirrorFor: #TestResult) revision: '$Revision:$'!
+
+(Delta mirrorFor: #TestResult) group: 'SUnit'!
+
+(Delta mirrorFor: #TestResult)
+comment: 
+'This is a Collecting Parameter for the running of a bunch of tests. TestResult is an interesting object to subclass or substitute. #runCase: is the external protocol you need to reproduce. Kent has seen TestResults that recorded coverage information and that sent email when they were done.'!
+
+! (Delta mirrorFor: #TestResult) classSide methodsFor: 'Exceptions' !
+
+
+error
+	^self exError
+			!
+
+exError
+	^SUnitNameResolver errorObject
+			!
+
+failure
+	^TestFailure
+			!
+
+resumableFailure
+	^ResumableTestFailure
+			!
+
+signalErrorWith: aString 
+	self error sunitSignalWith: aString
+			!
+
+signalFailureWith: aString 
+	self failure sunitSignalWith: aString
+			! !
+
+! (Delta mirrorFor: #TestResult) classSide methodsFor: 'Init / Release' !
+
+
+new
+	^super new initialize
+			! !
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Accessing' !
+
+
+correctCount
+	"depreciated - use #passedCount"
+
+	^self passedCount
+			!
+
+defects
+	^OrderedCollection new
+		addAll: self errors;
+		addAll: self failures; yourself
+			!
+
+errorCount
+
+	^self errors size
+			!
+
+errors
+
+	errors isNil
+		ifTrue: [errors := OrderedCollection new].
+	^errors
+			!
+
+failureCount
+
+	^self failures size
+			!
+
+failures
+	failures isNil
+		ifTrue: [failures := Set new].
+	^failures
+			!
+
+passed
+
+	passed isNil
+		ifTrue: [passed := OrderedCollection new].
+
+	^passed
+			!
+
+passedCount
+
+	^self passed size
+			!
+
+runCount
+
+	^self passedCount + self failureCount + self errorCount
+			!
+
+tests
+
+	^(OrderedCollection new: self runCount)
+		addAll: self passed;
+		addAll: self errors;
+		addAll: self failures;
+		yourself
+			! !
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Init / Release' !
+
+
+initialize
+			! !
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Printing' !
+
+
+printOn: aStream
+
+	aStream
+		nextPutAll: self runCount printString;
+		nextPutAll: ' run, ';
+		nextPutAll: self correctCount printString;
+		nextPutAll: ' passed, ';
+		nextPutAll: self failureCount printString;
+		nextPutAll: ' failed, ';
+		nextPutAll: self errorCount printString;
+		nextPutAll: ' error'.
+
+	self errorCount ~= 1
+		ifTrue: [aStream nextPut: $s]
+			! !
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+
+
+runCase: aTestCase
+
+	| testCasePassed |
+
+	testCasePassed :=
+		[[aTestCase runCase.
+			true]
+				sunitOn: self class failure
+				do: [:signal |
+						self failures add: aTestCase.
+						signal sunitExitWith: false]]
+							sunitOn: self class error
+							do: [:signal |
+									self errors add: aTestCase.
+									signal sunitExitWith: false].
+
+	testCasePassed
+		ifTrue: [self passed add: aTestCase]
+			! !
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Testing' !
+
+
+hasErrors
+
+	^self errors size > 0
+			!
+
+hasFailures
+
+	^self failures size > 0
+			!
+
+hasPassed
+
+	^self hasErrors not and: [self hasFailures not]
+			!
+
+isError: aTestCase
+
+	^self errors includes: aTestCase
+			!
+
+isFailure: aTestCase
+	^self failures includes: aTestCase
+			!
+
+isPassed: aTestCase
+
+	^self passed includes: aTestCase
+			! !
+

@@ -16,31 +16,20 @@ Use and distribution of this software is subject to the terms of the attached so
 
 initialize Maxcells := 18. Stackrange := 3. Sentinel := Towers2Disk new discSize: 15. "Towers2Benchmark initialize"! !
 
-! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'run' !
+! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'admin' !
 
 
-makenull: s
-	stack at: s put: Sentinel!
+digitalkTime
+	^70!
 
-run
-	stack := Array new: Stackrange.
-	self makenull: 1.
-	self makenull: 2.
-	self makenull: 3.
-	self init: 1 to: 14.
-	movesdone := 0. 
-	self
-		towerI: 1
-		j: 2
-		k: 14.
-	movesdone = 16383 ifFalse: [self error: ' Error in towers.'].
-	"Towers2Benchmark new run"! !
+factor
+	^25!
 
-! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'private' !
+name
+	^#Towers2!
 
-
-error: msg
-	super error: 'Error in towers: ', msg! !
+parcplaceTime
+	^90! !
 
 ! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'misc' !
 
@@ -86,18 +75,29 @@ towerI: i j: j k: k
 				j: j
 				k: k - 1]! !
 
-! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'admin' !
+! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'private' !
 
 
-digitalkTime
-	^70!
+error: msg
+	super error: 'Error in towers: ', msg! !
 
-factor
-	^25!
+! (Delta mirrorFor: #Towers2Benchmark) methodsFor: 'run' !
 
-name
-	^#Towers2!
 
-parcplaceTime
-	^90! !
+makenull: s
+	stack at: s put: Sentinel!
+
+run
+	stack := Array new: Stackrange.
+	self makenull: 1.
+	self makenull: 2.
+	self makenull: 3.
+	self init: 1 to: 14.
+	movesdone := 0. 
+	self
+		towerI: 1
+		j: 2
+		k: 14.
+	movesdone = 16383 ifFalse: [self error: ' Error in towers.'].
+	"Towers2Benchmark new run"! !
 

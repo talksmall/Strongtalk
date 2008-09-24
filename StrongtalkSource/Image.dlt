@@ -72,26 +72,6 @@ tempWithExtent: ext <Point> in: medium <Medium> ^<Instance>
 	medcan release.
 	^self new fastWin32Image: bmap; medium: medium! !
 
-! (Delta mirrorFor: #Image) methodsFor: 'restricted-win32' !
-
-
-fastWin32Image: b <HBITMAP>
-
-	self win32Image: b.
-	fastBitmap := b!
-
-medium: m  <Medium>
-
-	medium := m!
-
-win32Image ^<HBITMAP>
-
-	^win32Image!
-
-win32Image: b <HBITMAP>
-
-	win32Image := b! !
-
 ! (Delta mirrorFor: #Image) methodsFor: 'accessing' !
 
 
@@ -130,6 +110,39 @@ renderingCanvas ^<Canvas>
 renderingCanvas: can <Canvas>
 
 	renderingCanvas := can! !
+
+! (Delta mirrorFor: #Image) methodsFor: 'control' !
+
+
+destroy
+
+	"%todo: need to add finalization to this class to invoke this automatically"
+	renderingCanvas notNil
+		ifTrue: [ renderingCanvas release ].
+	win32Image win32DeleteObject.
+	(fastBitmap notNil and: [ win32Image @~= fastBitmap ])
+		ifTrue: [ fastBitmap win32DeleteObject ].
+	win32Image := nil.
+	fastBitmap := nil!
+
+finalize
+
+	self destroy! !
+
+! (Delta mirrorFor: #Image) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas> for: context <VisualGlyph>
+
+	can atOffset: self allocation origin
+		do: [	self renderingCanvas isNil
+					ifTrue: [	can displayRawWin32Image:
+												(self fastBitmapFor: can on: context medium)
+											rasterOp: UI ropCopy	]
+					ifFalse: [ can bitBlt: self renderingCanvas
+											extent: self extent
+											op: UI ropCopy	]
+				]! !
 
 ! (Delta mirrorFor: #Image) methodsFor: 'geometry-local' !
 
@@ -186,36 +199,23 @@ medium ^<Medium>
 
 	^medium! !
 
-! (Delta mirrorFor: #Image) methodsFor: 'displaying' !
+! (Delta mirrorFor: #Image) methodsFor: 'restricted-win32' !
 
 
-localDisplayOn: can <Canvas> for: context <VisualGlyph>
+fastWin32Image: b <HBITMAP>
 
-	can atOffset: self allocation origin
-		do: [	self renderingCanvas isNil
-					ifTrue: [	can displayRawWin32Image:
-												(self fastBitmapFor: can on: context medium)
-											rasterOp: UI ropCopy	]
-					ifFalse: [ can bitBlt: self renderingCanvas
-											extent: self extent
-											op: UI ropCopy	]
-				]! !
+	self win32Image: b.
+	fastBitmap := b!
 
-! (Delta mirrorFor: #Image) methodsFor: 'control' !
+medium: m  <Medium>
 
+	medium := m!
 
-destroy
+win32Image ^<HBITMAP>
 
-	"%todo: need to add finalization to this class to invoke this automatically"
-	renderingCanvas notNil
-		ifTrue: [ renderingCanvas release ].
-	win32Image win32DeleteObject.
-	(fastBitmap notNil and: [ win32Image @~= fastBitmap ])
-		ifTrue: [ fastBitmap win32DeleteObject ].
-	win32Image := nil.
-	fastBitmap := nil!
+	^win32Image!
 
-finalize
+win32Image: b <HBITMAP>
 
-	self destroy! !
+	win32Image := b! !
 

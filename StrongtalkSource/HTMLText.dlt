@@ -19,13 +19,6 @@ for: s <Str> ^<Instance>
 
 	^self new initText: s! !
 
-! (Delta mirrorFor: #HTMLText) methodsFor: 'initialization' !
-
-
-initText: s <Str>
-
-	text := s! !
-
 ! (Delta mirrorFor: #HTMLText) methodsFor: 'accessing' !
 
 
@@ -56,6 +49,20 @@ textOn: strm <CharOutputStream>
 			]
 		)! !
 
+! (Delta mirrorFor: #HTMLText) methodsFor: 'initialization' !
+
+
+initText: s <Str>
+
+	text := s! !
+
+! (Delta mirrorFor: #HTMLText) methodsFor: 'iterating' !
+
+
+linksDo: blk <[ElementA]>
+
+	"no links"! !
+
 ! (Delta mirrorFor: #HTMLText) methodsFor: 'private' !
 
 
@@ -76,11 +83,4 @@ isWhitespace: c <Character> ^<Boolean>
 	^c == Character space
 		or: [ c == Character tab
 		or: [ c == Character cr ]] ! !
-
-! (Delta mirrorFor: #HTMLText) methodsFor: 'iterating' !
-
-
-linksDo: blk <[ElementA]>
-
-	"no links"! !
 

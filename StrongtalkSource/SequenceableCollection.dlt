@@ -153,63 +153,6 @@ species ^<Collection[E] class>
 
 	^Array[E]! !
 
-! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'iterating' !
-
-
-collect: map <[E, ^R def]> ^<SeqCltn[R]>
-
-	^self collectUsingAtPut: map!
-
-do: f <[E]>
-
-	1 to: self size do:
-		[ :i <Int> |
-			f value: (self at: i)	]!
-
-keysAndValuesDo: f <[Int,E]>
-
-	1 to: self size do:
-		[ :i <Int> |
-			f value: i value: (self at: i)	]!
-
-reverseDo: f <[E]>
-
-	self size to: 1 by: -1 do:
-		[ :i <Int> |
-			f value: (self at: i)	]!
-
-with: other <SeqCltn[X def]> do: f <[E,X]>
-
-	self assert: [ self size = other size ].
-	1 to: self size do:
-		[ :i <Int> |
-			f value: (self at: i) value: (other at: i)	].! !
-
-! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'private' !
-
-
-collectUsingAtPut: map <[E, ^R def]> ^<SeqCltn[R]>
-
-	| c <VarSeqCltn[R]> |
-	"See #newForCollect: for explanation of why the guarantee is safe"
-	c := (guaranteed <VarSeqCltn[R]> (self newForCollectUsingAtPut: self size)).
-	1 to: self size do:
-		[ :i <Int> |
-			c at: i put: (map value: (self at: i))  ].
-	^c!
-
-hashAt: index <Int> ^<Int>
-
-	^(self at: index) hash!
-
-newForCollectUsingAtPut: size <Int> ^<VarSeqCltn[Object]>
-
-	"Return a new extensible collection that is as closely related to the receiver's class as possible.  The
-	 returned collection must be unaliased and empty, so it is safe for the caller to guarantee that the type
-	 variable is of a more specific type"
-
-	^Array[Object] new: size! !
-
 ! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'copying' !
 
 
@@ -378,6 +321,84 @@ reverse   ^<VarSeqCltn[EX]>
 			copy at: self size + 1 - i put: el.	].
 	^copy! !
 
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'iterating' !
+
+
+collect: map <[E, ^R def]> ^<SeqCltn[R]>
+
+	^self collectUsingAtPut: map!
+
+do: f <[E]>
+
+	1 to: self size do:
+		[ :i <Int> |
+			f value: (self at: i)	]!
+
+keysAndValuesDo: f <[Int,E]>
+
+	1 to: self size do:
+		[ :i <Int> |
+			f value: i value: (self at: i)	]!
+
+reverseDo: f <[E]>
+
+	self size to: 1 by: -1 do:
+		[ :i <Int> |
+			f value: (self at: i)	]!
+
+with: other <SeqCltn[X def]> do: f <[E,X]>
+
+	self assert: [ self size = other size ].
+	1 to: self size do:
+		[ :i <Int> |
+			f value: (self at: i) value: (other at: i)	].! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'private' !
+
+
+collectUsingAtPut: map <[E, ^R def]> ^<SeqCltn[R]>
+
+	| c <VarSeqCltn[R]> |
+	"See #newForCollect: for explanation of why the guarantee is safe"
+	c := (guaranteed <VarSeqCltn[R]> (self newForCollectUsingAtPut: self size)).
+	1 to: self size do:
+		[ :i <Int> |
+			c at: i put: (map value: (self at: i))  ].
+	^c!
+
+hashAt: index <Int> ^<Int>
+
+	^(self at: index) hash!
+
+newForCollectUsingAtPut: size <Int> ^<VarSeqCltn[Object]>
+
+	"Return a new extensible collection that is as closely related to the receiver's class as possible.  The
+	 returned collection must be unaliased and empty, so it is safe for the caller to guarantee that the type
+	 variable is of a more specific type"
+
+	^Array[Object] new: size! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'restricted' !
+
+
+newCopyOfSize: size <Int>
+thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
+^<VarSeqCltn[EX | X]>
+		{where X is returnType of #anElement message of arg 2;
+		     where EX is returnType of #anElement message of receiverType}
+
+	"Return a fresh collection of a closely related type
+	that can hold both elements of self and elements of the other collection"
+
+	^Array[EX | X] new: size! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'streaming' !
+
+
+readStream ^<ReadStream[E]>
+
+	^SeqCltnReadStream[E] on: self! !
+
 ! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'testing' !
 
 
@@ -411,42 +432,11 @@ isSortedBy: compare <[E,E,^Boolean]> ^<Boolean>
 		ifTrue: [ ^true ].
 	last := self at: 1.
 	2 to: self size do:
-		[ :i <Int> |
-			(compare value: last value: (self at: i))
-				ifFalse: [ ^false ]	].
+		[ :i <Int> | |current|
+			(compare value: last value: (current := self at: i))
+				ifFalse: [ ^false ].
+			last := current].
 	^true! !
-
-! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'streaming' !
-
-
-readStream ^<ReadStream[E]>
-
-	^SeqCltnReadStream[E] on: self! !
-
-! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'restricted' !
-
-
-newCopyOfSize: size <Int>
-thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
-^<VarSeqCltn[EX | X]>
-		{where X is returnType of #anElement message of arg 2;
-		     where EX is returnType of #anElement message of receiverType}
-
-	"Return a fresh collection of a closely related type
-	that can hold both elements of self and elements of the other collection"
-
-	^Array[EX | X] new: size! !
-
-! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'virtual operations' !
-
-
-virtualCollect: blk <[E, ^X def]> ^<VirtualCollector[X]>
-
-	^SequenceableVirtualCollector[X] on: self map: blk!
-
-virtualSelectorClass  ^<SequenceableVirtualSelector[E] class>
-
-	^SequenceableVirtualSelector[E]! !
 
 ! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'utility' !
 
@@ -487,4 +477,15 @@ toCompare: compare <[EL def,EL,^Boolean]>
 			between: 1
 			and: self size
 			toCompare: compare! !
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'virtual operations' !
+
+
+virtualCollect: blk <[E, ^X def]> ^<VirtualCollector[X]>
+
+	^SequenceableVirtualCollector[X] on: self map: blk!
+
+virtualSelectorClass  ^<SequenceableVirtualSelector[E] class>
+
+	^SequenceableVirtualSelector[E]! !
 

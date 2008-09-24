@@ -20,45 +20,6 @@ on: binaryStrm <STRM> ^<Instance>
 
 	^self new initBinaryStream: binaryStrm! !
 
-! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'private' !
-
-
-actualAtEnd ^<Boolean>
-
-	^self binaryStream atEnd!
-
-actualNext ^<Character>
-    | c <Character> |
-	c := Character value: self binaryStream next.
-	(Platform usesCrLfConvention and: [ c = Character cr ])
-        ifTrue: [ self binaryStream atEnd
-						ifFalse: [ self binaryStream peek = Character lf asciiValue
-											ifTrue: [  self binaryStream next ]	]].
-	^c
-!
-
-binaryStream ^<STRM>
-
-	^binaryStream!
-
-binaryStream: b <STRM>
-
-	binaryStream := b! !
-
-! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'initialization' !
-
-
-initBinaryStream: binaryStrm <STRM>
-
-	self binaryStream: binaryStrm! !
-
-! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'control' !
-
-
-close
-
-	self binaryStream close.! !
-
 ! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'accessing' !
 
 
@@ -116,4 +77,43 @@ upTo: del <Object> ^<Str>
 	self havePeeked
 		ifTrue: [ s at: 1 put: self next ].
 	^s! !
+
+! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'control' !
+
+
+close
+
+	self binaryStream close.! !
+
+! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'initialization' !
+
+
+initBinaryStream: binaryStrm <STRM>
+
+	self binaryStream: binaryStrm! !
+
+! (Delta mirrorFor: #CharacterInputConverter) methodsFor: 'private' !
+
+
+actualAtEnd ^<Boolean>
+
+	^self binaryStream atEnd!
+
+actualNext ^<Character>
+    | c <Character> |
+	c := Character value: self binaryStream next.
+	(Platform usesCrLfConvention and: [ c = Character cr ])
+        ifTrue: [ self binaryStream atEnd
+						ifFalse: [ self binaryStream peek = Character lf asciiValue
+											ifTrue: [  self binaryStream next ]	]].
+	^c
+!
+
+binaryStream ^<STRM>
+
+	^binaryStream!
+
+binaryStream: b <STRM>
+
+	binaryStream := b! !
 

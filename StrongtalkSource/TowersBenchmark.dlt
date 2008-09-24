@@ -16,25 +16,20 @@ Use and distribution of this software is subject to the terms of the attached so
 
 initialize Maxcells := 18. Stackrange := 3 "TowersBenchmark initialize"! !
 
-! (Delta mirrorFor: #TowersBenchmark) methodsFor: 'run' !
+! (Delta mirrorFor: #TowersBenchmark) methodsFor: 'admin' !
 
 
-run
-	cellspace := Array new: Maxcells.
-	1 to: cellspace size do: [:i | cellspace at: i put: TowersBenchmarkElement new].
-	stack := Array new: Stackrange. 
-	1 to: Maxcells do: [:i | (cellspace at: i)
-			next: i - 1].
-	freelist := Maxcells.
-	self init: 1 to: 14.
-	self makenull: 2.
-	self makenull: 3.
-	movesdone := 0.
-	self
-		towerI: 1
-		j: 2
-		k: 14.
-	movesdone = 16383 ifFalse: [self error: ' Error in towers.']! !
+digitalkTime
+	^148!
+
+factor
+	^11!
+
+name
+	^#Towers!
+
+parcplaceTime
+	^199! !
 
 ! (Delta mirrorFor: #TowersBenchmark) methodsFor: 'private' !
 
@@ -105,18 +100,23 @@ towerI: i j: j k: k
 				j: j
 				k: k - 1]! !
 
-! (Delta mirrorFor: #TowersBenchmark) methodsFor: 'admin' !
+! (Delta mirrorFor: #TowersBenchmark) methodsFor: 'run' !
 
 
-digitalkTime
-	^148!
-
-factor
-	^11!
-
-name
-	^#Towers!
-
-parcplaceTime
-	^199! !
+run
+	cellspace := Array new: Maxcells.
+	1 to: cellspace size do: [:i | cellspace at: i put: TowersBenchmarkElement new].
+	stack := Array new: Stackrange. 
+	1 to: Maxcells do: [:i | (cellspace at: i)
+			next: i - 1].
+	freelist := Maxcells.
+	self init: 1 to: 14.
+	self makenull: 2.
+	self makenull: 3.
+	movesdone := 0.
+	self
+		towerI: 1
+		j: 2
+		k: 14.
+	movesdone = 16383 ifFalse: [self error: ' Error in towers.']! !
 

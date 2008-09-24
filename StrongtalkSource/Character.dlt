@@ -26,78 +26,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $
 '!
 
-! (Delta mirrorFor: #Character) classSide methodsFor: 'testing' !
-
-
-test
-	"self test"
-
-	'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'  do:
-		[ :c <Character> |
-			self test: 1 is: [ c = (Character digitValue: c digitValue) ]	].
-	self test: 2 is: [ $a digitValue = $A digitValue ].
-	self test: 3 is: [ $z digitValue = $Z digitValue ].
-
-	'aeiouAEIOU' do:
-		[ :c <Character> |
-			self test: 4 is: [ c isVowel ]	].
-	self test: 5 is: [ $b isVowel not ].! !
-
-! (Delta mirrorFor: #Character) classSide methodsFor: 'instance creation' !
-
-
-digitValue: i <Int> ^<Character>
-
-	^'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'  at: i + 1!
-
-new ^<Instance>
-
-	self shouldNotImplement!
-
-value: code <Int> ^<Instance>
-  "get the character with the specified unicode value (this works for ascii too, since
-  the ascii codes are the same as the first Unicode values"
-
-	"%todo: make this work for unicode values"
-	^AsciiCharacters at: code + 1
-! !
-
-! (Delta mirrorFor: #Character) classSide methodsFor: 'private' !
-
-
-classify: chars <Str> as: mask <Int>
-
-	chars do:
-		[ :c <Character> |
-			Classifications at: c asciiValue + 1 put: ((Classifications at: c asciiValue + 1) bitOr: mask)	].!
-
-initializeClassifications
-
-	Classifications := ByteArray new: 128.
-	Classifications atAllPut: 0.
-	self classify:
-			'0123456789',
-			'ABCDEFGHIJKLMNOPQRSTUVWXYZ_',
-			'abcdefghijklmnopqrstuvwxyz'
-		as: self alphaNumericMask.
-
-	self classify:
-			(OrderedCollection[Character] new
-				add: Character space;
-				add: Character tab;
-				add: Character cr;
-				add: Character lf;
-				add: Character formFeed;
-				yourself)
-		as: self separatorMask.
-
-	self classify: 'aeiouAEIOU'
-		as: self vowelMask.
-
-	self classify: '`''1234567890-=~!!@#$%^&*()_+qwertyuio',
-			'p[]\QWERTYUIOP{}|asdfghjkl;ASDFGHJKL:"zxcvbnm,./ZXCVBNM<>? '
-		as: self printableMask! !
-
 ! (Delta mirrorFor: #Character) classSide methodsFor: 'class initialization' !
 
 
@@ -161,6 +89,61 @@ tab ^<Character>
 
 	^self value: 9! !
 
+! (Delta mirrorFor: #Character) classSide methodsFor: 'instance creation' !
+
+
+digitValue: i <Int> ^<Character>
+
+	^'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'  at: i + 1!
+
+new ^<Instance>
+
+	self shouldNotImplement!
+
+value: code <Int> ^<Instance>
+  "get the character with the specified unicode value (this works for ascii too, since
+  the ascii codes are the same as the first Unicode values"
+
+	"%todo: make this work for unicode values"
+	^AsciiCharacters at: code + 1
+! !
+
+! (Delta mirrorFor: #Character) classSide methodsFor: 'private' !
+
+
+classify: chars <Str> as: mask <Int>
+
+	chars do:
+		[ :c <Character> |
+			Classifications at: c asciiValue + 1 put: ((Classifications at: c asciiValue + 1) bitOr: mask)	].!
+
+initializeClassifications
+
+	Classifications := ByteArray new: 128.
+	Classifications atAllPut: 0.
+	self classify:
+			'0123456789',
+			'ABCDEFGHIJKLMNOPQRSTUVWXYZ_',
+			'abcdefghijklmnopqrstuvwxyz'
+		as: self alphaNumericMask.
+
+	self classify:
+			(OrderedCollection[Character] new
+				add: Character space;
+				add: Character tab;
+				add: Character cr;
+				add: Character lf;
+				add: Character formFeed;
+				yourself)
+		as: self separatorMask.
+
+	self classify: 'aeiouAEIOU'
+		as: self vowelMask.
+
+	self classify: '`''1234567890-=~!!@#$%^&*()_+qwertyuio',
+			'p[]\QWERTYUIOP{}|asdfghjkl;ASDFGHJKL:"zxcvbnm,./ZXCVBNM<>? '
+		as: self printableMask! !
+
 ! (Delta mirrorFor: #Character) classSide methodsFor: 'restricted-classification' !
 
 
@@ -180,12 +163,144 @@ vowelMask ^<Int>
 
 	^1 rawBitShift: 2! !
 
+! (Delta mirrorFor: #Character) classSide methodsFor: 'testing' !
+
+
+test
+	"self test"
+
+	'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'  do:
+		[ :c <Character> |
+			self test: 1 is: [ c = (Character digitValue: c digitValue) ]	].
+	self test: 2 is: [ $a digitValue = $A digitValue ].
+	self test: 3 is: [ $z digitValue = $Z digitValue ].
+
+	'aeiouAEIOU' do:
+		[ :c <Character> |
+			self test: 4 is: [ c isVowel ]	].
+	self test: 5 is: [ $b isVowel not ].! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'accessing' !
+
+
+asInteger ^<Int>
+
+	^self unicodeValue!
+
+asciiValue ^<Int>
+
+	self assert: [ code < 256 ].
+	^code!
+
+digitValue ^<Int>
+
+	| c <Int> |
+	c := code.	 	
+	^(c >= 48 and: [ c <= 57 ])
+		ifTrue: [ c - 48 ] 									"(48= $0 asInteger)"
+		ifFalse: [ (c >= 65 and: [ c <= 90 ])					" $A = 65, $Z = 90"
+					ifTrue: [ c - 55 ]
+					ifFalse: [ (c >=97 and: [ c <= 122 ])  	"$a = 97, $z = 122"
+								ifTrue: [ c - 87 ]
+								ifFalse: [ -1 ]	]]!
+
+hash ^<Int>
+
+	^self asciiValue - $a asciiValue "subtract offset to lowercase letters, since they are the most common"!
+
+unicodeValue ^<SmallInt>
+	^code! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'comparing' !
+
+
+< other <Character> ^<Boolean>
+
+	^self unicodeValue < other unicodeValue!
+
+<= other <Character> ^<Boolean>
+
+	"%remove when Magnitude uses inherited types"
+	^self unicodeValue <= other unicodeValue!
+
+> other <Character> ^<Boolean>
+
+	"%remove when Magnitude uses inherited types"
+	^self unicodeValue > other unicodeValue!
+
+>= other <Character> ^<Boolean>
+
+	"%remove when Magnitude uses inherited types"
+	^self unicodeValue >= other unicodeValue!
+
+compare: other <Character>  ^<Int>
+
+	| diff <Int> |
+	diff := self unicodeValue - other unicodeValue.
+	^0 < diff
+		ifTrue: [ 1 ]
+		ifFalse: [ 0 == diff
+							ifTrue: [ 0 ] ifFalse: [ -1 ]  ]! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'converting' !
+
+
+asLowercase ^<Character>
+
+	^UpperToLowerMap at: self unicodeValue + 1 ifAbsent: [ self ]!
+
+asString ^<String>
+
+	^String with: self!
+
+asUppercase ^<Character>
+
+	^LowerToUpperMap at: self unicodeValue + 1 ifAbsent: [ self ]! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+	^self! !
+
 ! (Delta mirrorFor: #Character) methodsFor: 'initialization' !
 
 
 initUnicode: c <SmallInt>
 
 	code := c! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'printing' !
+
+
+constantNameIfNone: blk <[^Str]> ^<Str>
+
+	self = Character cr
+		ifTrue: [ ^'cr' ].
+	self = Character formFeed
+		ifTrue: [ ^'formFeed' ].
+	self = Character lf
+		ifTrue: [ ^'lf' ].
+	self = Character space
+		ifTrue: [ ^'space' ].
+	self = Character tab
+		ifTrue: [ ^'tab' ].
+	^blk value!
+
+printOn: strm <CharOutputStream>
+
+	| special <Str> |
+	special := self constantNameIfNone: 
+		[	strm nextPut: $$; nextPut: self.
+			^self ].
+	strm putAll: 'Character '; putAll: special.! !
+
+! (Delta mirrorFor: #Character) methodsFor: 'private' !
+
+
+isClassifiedAs: mask <Int> ^<Boolean>
+
+	^(Classifications at: self unicodeValue + 1 ifAbsent: [ ^false ]) allMask: mask! !
 
 ! (Delta mirrorFor: #Character) methodsFor: 'testing' !
 
@@ -225,119 +340,4 @@ isUppercase ^<Boolean>
 isVowel ^<Boolean>
 
 	^self isClassifiedAs: self actualClass vowelMask! !
-
-! (Delta mirrorFor: #Character) methodsFor: 'accessing' !
-
-
-asInteger ^<Int>
-
-	^self unicodeValue!
-
-asciiValue ^<Int>
-
-	self assert: [ code < 256 ].
-	^code!
-
-digitValue ^<Int>
-
-	| c <Int> |
-	c := code.	 	
-	^(c >= 48 and: [ c <= 57 ])
-		ifTrue: [ c - 48 ] 									"(48= $0 asInteger)"
-		ifFalse: [ (c >= 65 and: [ c <= 90 ])					" $A = 65, $Z = 90"
-					ifTrue: [ c - 55 ]
-					ifFalse: [ (c >=97 and: [ c <= 122 ])  	"$a = 97, $z = 122"
-								ifTrue: [ c - 87 ]
-								ifFalse: [ -1 ]	]]!
-
-hash ^<Int>
-
-	^self asciiValue - $a asciiValue "subtract offset to lowercase letters, since they are the most common"!
-
-unicodeValue ^<SmallInt>
-	^code! !
-
-! (Delta mirrorFor: #Character) methodsFor: 'copying' !
-
-
-copy ^<Instance>
-	^self! !
-
-! (Delta mirrorFor: #Character) methodsFor: 'private' !
-
-
-isClassifiedAs: mask <Int> ^<Boolean>
-
-	^(Classifications at: self unicodeValue + 1 ifAbsent: [ ^false ]) allMask: mask! !
-
-! (Delta mirrorFor: #Character) methodsFor: 'comparing' !
-
-
-< other <Character> ^<Boolean>
-
-	^self unicodeValue < other unicodeValue!
-
-<= other <Character> ^<Boolean>
-
-	"%remove when Magnitude uses inherited types"
-	^self unicodeValue <= other unicodeValue!
-
-> other <Character> ^<Boolean>
-
-	"%remove when Magnitude uses inherited types"
-	^self unicodeValue > other unicodeValue!
-
->= other <Character> ^<Boolean>
-
-	"%remove when Magnitude uses inherited types"
-	^self unicodeValue >= other unicodeValue!
-
-compare: other <Character>  ^<Int>
-
-	| diff <Int> |
-	diff := self unicodeValue - other unicodeValue.
-	^0 < diff
-		ifTrue: [ 1 ]
-		ifFalse: [ 0 == diff
-							ifTrue: [ 0 ] ifFalse: [ -1 ]  ]! !
-
-! (Delta mirrorFor: #Character) methodsFor: 'printing' !
-
-
-constantNameIfNone: blk <[^Str]> ^<Str>
-
-	self = Character cr
-		ifTrue: [ ^'cr' ].
-	self = Character formFeed
-		ifTrue: [ ^'formFeed' ].
-	self = Character lf
-		ifTrue: [ ^'lf' ].
-	self = Character space
-		ifTrue: [ ^'space' ].
-	self = Character tab
-		ifTrue: [ ^'tab' ].
-	^blk value!
-
-printOn: strm <CharOutputStream>
-
-	| special <Str> |
-	special := self constantNameIfNone: 
-		[	strm nextPut: $$; nextPut: self.
-			^self ].
-	strm putAll: 'Character '; putAll: special.! !
-
-! (Delta mirrorFor: #Character) methodsFor: 'converting' !
-
-
-asLowercase ^<Character>
-
-	^UpperToLowerMap at: self unicodeValue + 1 ifAbsent: [ self ]!
-
-asString ^<String>
-
-	^String with: self!
-
-asUppercase ^<Character>
-
-	^LowerToUpperMap at: self unicodeValue + 1 ifAbsent: [ self ]! !
 

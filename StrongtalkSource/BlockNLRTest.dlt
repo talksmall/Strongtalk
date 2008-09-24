@@ -1,0 +1,37 @@
+Delta define: #BlockNLRTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #BlockNLRTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BlockNLRTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #BlockNLRTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #BlockNLRTest) methodsFor: 'Testing' !
+
+
+doWith: block
+
+	^block value!
+
+nlrWith: value
+
+	self doWith: [^value].
+	^2 * value!
+
+nlrWith: value with: boolean
+
+	self doWith: [boolean ifTrue: [^value].
+							3 * value].
+	^2 * value!
+
+testNLRResult
+
+	1000000 timesRepeat: [
+		| result |
+		result := (self nlrWith: 1 with: true).
+		self assert: 1 = result
+				description: 'Should have returned 1, but was: ', result printString]! !
+

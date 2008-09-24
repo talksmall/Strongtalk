@@ -1,0 +1,25 @@
+Delta define: #Error as: (
+(Class subclassOf: 'Exception' instanceVariables: '')) !
+
+(Delta mirrorFor: #Error) revision: '$Revision:$'!
+
+(Delta mirrorFor: #Error) group: 'Unclassified'!
+
+(Delta mirrorFor: #Error)
+comment: 
+''!
+
+! (Delta mirrorFor: #Error) methodsFor: 'exception descriptor' !
+
+
+isResumable
+
+	^false! !
+
+! (Delta mirrorFor: #Error) methodsFor: 'priv handling' !
+
+
+defaultAction
+
+	Processor stopWithError: (ProcessExplicitError new msg: messageText)! !
+

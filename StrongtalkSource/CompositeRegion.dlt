@@ -11,45 +11,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
 '!
 
-! (Delta mirrorFor: #CompositeRegion) methodsFor: 'private' !
-
-
-subregionsDo: f <[Region]>
-	"Subclasses must implement to iterate over the subregions that form the receiver"
-
-	self subclassResponsibility! !
-
-! (Delta mirrorFor: #CompositeRegion) methodsFor: 'region operations' !
-
-
-mightIntersect: other <Region> ^<Boolean>
-
-	self subRegionsDo: 
-		[ :sub <Region> |
-			(sub mightIntersect: other)
-				ifTrue: [ ^true ]		].
-	^false! !
-
-! (Delta mirrorFor: #CompositeRegion) methodsFor: 'iterating' !
-
-
-reduceRegions: reduceFn <[RE def,RE,^RE]> ifEmpty: onEmpty <[^X def]>  ^<RE | X>
-			{where CONSTRAINER <RE subtypes> is returnType of #aRegion message of receiverType}
-
-	"Like Collection>>reduce:ifEmpty:, but doesn't conflict with collection protocol"
-
-	| current <RE> |
-	self do:
-		[ :el <E> |
-			| rel <RE> |
-			rel := guaranteed <RE> el.
-			current isNil
-				ifTrue: [ current := rel ]
-				ifFalse: [ current := reduceFn value: current value: rel ]	].
-	^current isNil
-		ifFalse: [ current ]
-		ifTrue: [ onEmpty value ]! !
-
 ! (Delta mirrorFor: #CompositeRegion) methodsFor: 'accessing' !
 
 
@@ -71,6 +32,45 @@ enclosingRect ^<Rect>
 				r1 regionEnclosingMerge: r2 ]
 	  	ifEmpty: [ 0@0 corner: 0@0 ]
 	 ) enclosingRect! !
+
+! (Delta mirrorFor: #CompositeRegion) methodsFor: 'iterating' !
+
+
+reduceRegions: reduceFn <[RE def,RE,^RE]> ifEmpty: onEmpty <[^X def]>  ^<RE | X>
+			{where CONSTRAINER <RE subtypes> is returnType of #aRegion message of receiverType}
+
+	"Like Collection>>reduce:ifEmpty:, but doesn't conflict with collection protocol"
+
+	| current <RE> |
+	self do:
+		[ :el <E> |
+			| rel <RE> |
+			rel := guaranteed <RE> el.
+			current isNil
+				ifTrue: [ current := rel ]
+				ifFalse: [ current := reduceFn value: current value: rel ]	].
+	^current isNil
+		ifFalse: [ current ]
+		ifTrue: [ onEmpty value ]! !
+
+! (Delta mirrorFor: #CompositeRegion) methodsFor: 'private' !
+
+
+subregionsDo: f <[Region]>
+	"Subclasses must implement to iterate over the subregions that form the receiver"
+
+	self subclassResponsibility! !
+
+! (Delta mirrorFor: #CompositeRegion) methodsFor: 'region operations' !
+
+
+mightIntersect: other <Region> ^<Boolean>
+
+	self subRegionsDo: 
+		[ :sub <Region> |
+			(sub mightIntersect: other)
+				ifTrue: [ ^true ]		].
+	^false! !
 
 ! (Delta mirrorFor: #CompositeRegion) methodsFor: 'restricted-double dispatching' !
 

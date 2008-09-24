@@ -1,0 +1,139 @@
+Delta define: #FileOutSet as: (
+(Class subclassOf: 'Object' instanceVariables: 'classes
+classCategories
+definitions')) !
+
+(Delta mirrorFor: #FileOutSet) revision: '$Revision:$'!
+
+(Delta mirrorFor: #FileOutSet) group: 'Unclassified'!
+
+(Delta mirrorFor: #FileOutSet)
+comment: 
+'Simple tool to help organize file outs. Acts as a collection for classes
+and method categories.
+
+Add classes using addClass: and method categories using
+addClass:category:. When adding method categories, you must add those
+for class and instance side separately. When adding whole classes, just add
+the instance side. File out the results using fileOutOn:.
+
+Files out definitions of all classes before any methods are filed out to
+ensure that there are no undefined symbols, even if there are circular
+references between classes.'!
+
+! (Delta mirrorFor: #FileOutSet) classSide methodsFor: 'instance creation' !
+
+
+new
+
+	^(super new)
+		initialize;
+		yourself! !
+
+! (Delta mirrorFor: #FileOutSet) methodsFor: 'adding' !
+
+
+addClass: class
+
+	classes add: class.
+	classCategories
+		removeKey: class
+		ifAbsent: [].
+	classCategories
+		removeKey: class class
+		ifAbsent: [].
+	definitions
+		remove: class
+		ifAbsent: []!
+
+addClass: class category: category
+
+	(classes includes: class)
+		ifTrue: [^self].
+	classCategories
+		at: class
+		ifPresent: [:categories| categories add: category]
+		ifAbsentPut: [Set with: category]!
+
+addDefinition: class
+
+	(classes includes: class) ifTrue: [^self].
+	definitions add: class! !
+
+! (Delta mirrorFor: #FileOutSet) methodsFor: 'filing out' !
+
+
+definitionWriterFor: class
+
+	^(DefinitionWriter for: (ClassMirror on: class))!
+
+fileOutCategoriesOn: stream
+
+	classCategories keysAndValuesDo: [:class :categories|
+		| definitionWriter |
+		definitionWriter := self definitionWriterFor: class.
+		categories do: [:category|
+			definitionWriter fileOutCategory: category on: stream]]!
+
+fileOutClassHeadersOn: stream
+
+	self definitionsForFileOut do: [:class|
+		(self definitionWriterFor: class)
+			fileOutHeaderOn: stream]!
+
+fileOutClassMethodsOn: stream
+
+	self classesForFileOut do: [:class|
+		(self definitionWriterFor: class)
+			fileOutMethodsOn: stream]!
+
+fileOutOn: stream
+
+	self fileOutClassHeadersOn: stream.
+	self fileOutClassMethodsOn: stream.
+	self fileOutCategoriesOn: stream! !
+
+! (Delta mirrorFor: #FileOutSet) methodsFor: 'private -  filing out' !
+
+
+allDefinitions
+
+	^Set new
+		addAll: classes;
+		addAll: definitions;
+		yourself!
+
+classSortBlock
+
+	^[:class1 :class2| ((self superclassesFor: class2) includes: class1)
+											or: [class1 name <= class2 name
+														and: [((self superclassesFor: class1) includes: class2) not]]]!
+
+classesForFileOut
+
+	^classes asSortedCollection: self classSortBlock!
+
+definitionSortBlock
+
+	^[:class1 :class2| ((self superclassesFor: class1) includes: class2) not]!
+
+definitionsForFileOut
+
+	^self allDefinitions asSortedCollection: self classSortBlock!
+
+superclassesFor: aClass
+
+	|superclasses|
+	superclasses := Set new.
+	aClass superclassesDo: [:class| superclasses add: class].
+	^superclasses! !
+
+! (Delta mirrorFor: #FileOutSet) methodsFor: 'private - initialization' !
+
+
+initialize
+
+	classes := Set new.
+	classCategories := Dictionary new.
+	definitions := Set new! !
+

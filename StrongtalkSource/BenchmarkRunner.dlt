@@ -134,6 +134,30 @@ runTypecheckerBenchmarks: iterations
 	]
 ! !
 
+! (Delta mirrorFor: #BenchmarkRunner) methodsFor: 'evaluating' !
+
+
+evaluate: blk
+	blk value	!
+
+evaluate: bm inner: inner
+	self evaluate: bm!
+
+measure: bm
+	| t f |	
+	f := bm factor.
+	t := (Time millisecondsToRun: [ f  timesRepeat: [ bm run ] ]) // f.
+	self  showTime: bm name delta: t digitalk: bm digitalkTime parcplace: bm parcplaceTime.
+	^t
+	!
+
+measure: bm inner: inner
+	| t |
+	t := Time millisecondsToRun: [ bm run ].
+	self  showTime: bm name delta: t digitalk: bm digitalkTime parcplace: bm parcplaceTime.
+	^t
+	! !
+
 ! (Delta mirrorFor: #BenchmarkRunner) methodsFor: 'printing' !
 
 
@@ -176,28 +200,4 @@ showTitle: t
 		; 	show: '(', self name, ')'
 		;	cr.
 ! !
-
-! (Delta mirrorFor: #BenchmarkRunner) methodsFor: 'evaluating' !
-
-
-evaluate: blk
-	blk value	!
-
-evaluate: bm inner: inner
-	self evaluate: bm!
-
-measure: bm
-	| t f |	
-	f := bm factor.
-	t := (Time millisecondsToRun: [ f  timesRepeat: [ bm run ] ]) // f.
-	self  showTime: bm name delta: t digitalk: bm digitalkTime parcplace: bm parcplaceTime.
-	^t
-	!
-
-measure: bm inner: inner
-	| t |
-	t := Time millisecondsToRun: [ bm run ].
-	self  showTime: bm name delta: t digitalk: bm digitalkTime parcplace: bm parcplaceTime.
-	^t
-	! !
 

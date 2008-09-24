@@ -19,6 +19,21 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
 '!
 
+! (Delta mirrorFor: #Glue) classSide methodsFor: 'constants' !
+
+
+hugeXMax ^<Rect>
+
+	HugeXMax isNil
+		ifTrue: [ HugeXMax := UI huge negated @0 corner: 0 @ 0	].
+	^HugeXMax!
+
+hugeYMax ^<Rect>
+
+	HugeYMax isNil
+		ifTrue: [ HugeYMax := 0@UI huge negated corner: 0@0	].
+	^HugeYMax! !
+
 ! (Delta mirrorFor: #Glue) classSide methodsFor: 'instance creation' !
 
 
@@ -70,30 +85,6 @@ yStretchy ^<Instance>
 		min: Rectangle null
 		max: self hugeYMax! !
 
-! (Delta mirrorFor: #Glue) classSide methodsFor: 'constants' !
-
-
-hugeXMax ^<Rect>
-
-	HugeXMax isNil
-		ifTrue: [ HugeXMax := UI huge negated @0 corner: 0 @ 0	].
-	^HugeXMax!
-
-hugeYMax ^<Rect>
-
-	HugeYMax isNil
-		ifTrue: [ HugeYMax := 0@UI huge negated corner: 0@0	].
-	^HugeYMax! !
-
-! (Delta mirrorFor: #Glue) methodsFor: 'initialization' !
-
-
-natural: nat <Rect> min: mn <Rect> max: mx <Rect>
-
-	natural := nat.
-	min := mn.
-	max := mx.! !
-
 ! (Delta mirrorFor: #Glue) methodsFor: 'accessing' !
 
 
@@ -117,4 +108,13 @@ displayOn: can <Canvas>
 
 localDisplayOn: can <Canvas>
 ! !
+
+! (Delta mirrorFor: #Glue) methodsFor: 'initialization' !
+
+
+natural: nat <Rect> min: mn <Rect> max: mx <Rect>
+
+	natural := nat.
+	min := mn.
+	max := mx.! !
 

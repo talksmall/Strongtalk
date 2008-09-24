@@ -27,16 +27,6 @@ new ^<Instance>
 
 	^super new initialize! !
 
-! (Delta mirrorFor: #Menu) methodsFor: 'initialization' !
-
-
-initialize
-
-	super initialize.
-	items := OrderedCollection[MenuItem] new.
-	win32Size := 0.
-	submenus := Dictionary[Str,Menu] new.! !
-
 ! (Delta mirrorFor: #Menu) methodsFor: 'accessing' !
 
 
@@ -147,6 +137,60 @@ window: w <Window>
 
 	window := w! !
 
+! (Delta mirrorFor: #Menu) methodsFor: 'control' !
+
+
+buildFor: menu <Menu> at: index <Int>
+
+	| content <CString> flags <ExternalData>  |
+			
+	content := CString for: self name.
+	flags := Win32 MF_POPUP externalBitOr: Win32 MF_STRING.
+
+	self parent appendWithFlags: flags item: self win32Handle content: content.
+
+	content free.!
+
+newbuildFor: menu <Menu> at: index <Int>
+"%todo: use when everyone is win32"
+	| info <MENUITEMINFO> cname <CString> |
+	info := MENUITEMINFO new allocate.
+	info fMask:
+		((						Win32 MIIM_SUBMENU
+			externalBitOr:	Win32 MIIM_ID)
+			externalBitOr:	Win32 MIIM_TYPE).
+	cname := CString for: self name.
+	info	fType: Win32 MFT_STRING;
+			wID: self id;
+			hSubMenu: self win32Handle;
+			dwTypeData: cname;
+			cch: self name size.
+
+	self parent insertWithInfo: info at: index.
+
+	cname free.
+	info free.!
+
+release
+
+	self items do:
+		[ :item <MenuItem> |
+			item release ].
+	self destroy.
+	window := nil.
+	win32Size := 0.
+	super release.! !
+
+! (Delta mirrorFor: #Menu) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	items := OrderedCollection[MenuItem] new.
+	win32Size := 0.
+	submenus := Dictionary[Str,Menu] new.! !
+
 ! (Delta mirrorFor: #Menu) methodsFor: 'private' !
 
 
@@ -240,57 +284,6 @@ win32RemoveAt: i <Int>
 		ifFalse: [ Win32 handleError ].
 	win32Size := win32Size - 1.! !
 
-! (Delta mirrorFor: #Menu) methodsFor: 'control' !
-
-
-buildFor: menu <Menu> at: index <Int>
-
-	| content <CString> flags <ExternalData>  |
-			
-	content := CString for: self name.
-	flags := Win32 MF_POPUP externalBitOr: Win32 MF_STRING.
-
-	self parent appendWithFlags: flags item: self win32Handle content: content.
-
-	content free.!
-
-newbuildFor: menu <Menu> at: index <Int>
-"%todo: use when everyone is win32"
-	| info <MENUITEMINFO> cname <CString> |
-	info := MENUITEMINFO new allocate.
-	info fMask:
-		((						Win32 MIIM_SUBMENU
-			externalBitOr:	Win32 MIIM_ID)
-			externalBitOr:	Win32 MIIM_TYPE).
-	cname := CString for: self name.
-	info	fType: Win32 MFT_STRING;
-			wID: self id;
-			hSubMenu: self win32Handle;
-			dwTypeData: cname;
-			cch: self name size.
-
-	self parent insertWithInfo: info at: index.
-
-	cname free.
-	info free.!
-
-release
-
-	self items do:
-		[ :item <MenuItem> |
-			item release ].
-	self destroy.
-	window := nil.
-	win32Size := 0.
-	super release.! !
-
-! (Delta mirrorFor: #Menu) methodsFor: 'testing-restricted' !
-
-
-isBuilt ^<Boolean>
-
-	^win32Handle notNil! !
-
 ! (Delta mirrorFor: #Menu) methodsFor: 'restricted-win32' !
 
 
@@ -347,4 +340,11 @@ win32Handle ^<ExternalProxy>
 	win32Handle isNil
 		ifTrue: [ self build ].
 	^win32Handle! !
+
+! (Delta mirrorFor: #Menu) methodsFor: 'testing-restricted' !
+
+
+isBuilt ^<Boolean>
+
+	^win32Handle notNil! !
 

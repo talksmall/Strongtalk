@@ -24,14 +24,6 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
 '!
 
-! (Delta mirrorFor: #Paint) classSide methodsFor: 'instance creation' !
-
-
-red: r <Int> green: g <Int> blue: b <Int>  ^<Paint>
-	"r,g, & b all must be in the range 0-255"
-
-	^SolidPaint red: r green: g blue: b! !
-
 ! (Delta mirrorFor: #Paint) classSide methodsFor: 'constants' !
 
 
@@ -91,6 +83,14 @@ initialize
 	BackgroundGray := self red: 192 green: 192 blue: 192.
 	BlueGreen := self red: 0 green: 128 blue: 128.
 	Yellow := self red: 255 green: 255 blue: 0.! !
+
+! (Delta mirrorFor: #Paint) classSide methodsFor: 'instance creation' !
+
+
+red: r <Int> green: g <Int> blue: b <Int>  ^<Paint>
+	"r,g, & b all must be in the range 0-255"
+
+	^SolidPaint red: r green: g blue: b! !
 
 ! (Delta mirrorFor: #Paint) methodsFor: 'restricted-win32 accessing' !
 

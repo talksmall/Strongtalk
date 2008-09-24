@@ -18,6 +18,16 @@ on: binaryStrm <OutputStream[Int]> ^<Instance>
 
 	^self new initBinaryStream: binaryStrm! !
 
+! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'accessing' !
+
+
+nextPut: c <Character> ^<Character>
+
+	self binaryStream nextPut: c asciiValue.
+	 (Platform usesCrLfConvention and: [ c = Character cr ])
+		ifTrue: [ self binaryStream nextPut: Character lf asciiValue ].
+	^c! !
+
 ! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'control' !
 
 
@@ -33,15 +43,12 @@ flush
 
 	self binaryStream flush.! !
 
-! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'accessing' !
+! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'initialization' !
 
 
-nextPut: c <Character> ^<Character>
+initBinaryStream: binaryStrm <InputStream[Int]>
 
-	self binaryStream nextPut: c asciiValue.
-	 (Platform usesCrLfConvention and: [ c = Character cr ])
-		ifTrue: [ self binaryStream nextPut: Character lf asciiValue ].
-	^c! !
+	self binaryStream: binaryStrm! !
 
 ! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'private' !
 
@@ -53,11 +60,4 @@ binaryStream ^<OutputStream[Int]>
 binaryStream: b <OutputStream[Int]>
 
 	binaryStream := b! !
-
-! (Delta mirrorFor: #CharacterOutputConverter) methodsFor: 'initialization' !
-
-
-initBinaryStream: binaryStrm <InputStream[Int]>
-
-	self binaryStream: binaryStrm! !
 

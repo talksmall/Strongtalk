@@ -30,15 +30,6 @@ numerator: n <Int> denominator: d <Int> ^<RationalNumber>
 
 	^self primitiveNew numerator: n denominator: d! !
 
-! (Delta mirrorFor: #Fraction) methodsFor: 'initialization' !
-
-
-numerator: n <Int> denominator: d <Int>
-	"%assume: n/d is already simplified"
-
-	numerator := n.
-	denominator := d.! !
-
 ! (Delta mirrorFor: #Fraction) methodsFor: 'accessing' !
 
 
@@ -51,6 +42,24 @@ hash ^<Int>
 
 numerator ^<Integer>
 	^numerator! !
+
+! (Delta mirrorFor: #Fraction) methodsFor: 'converting' !
+
+
+asInteger ^<Integer>
+
+	| dsigned <Int> |
+	dsigned := self negative ifTrue: [ self denominator negated ] ifFalse: [ self denominator ].
+	^(self numerator + self numerator + dsigned) quo: (self denominator + self denominator)! !
+
+! (Delta mirrorFor: #Fraction) methodsFor: 'initialization' !
+
+
+numerator: n <Int> denominator: d <Int>
+	"%assume: n/d is already simplified"
+
+	numerator := n.
+	denominator := d.! !
 
 ! (Delta mirrorFor: #Fraction) methodsFor: 'iteration' !
 
@@ -83,13 +92,4 @@ to: stop <RationalNumber> do: f <[RationalNumber]> ^<Object>
 printOn: strm <CharOutputStream>
 
 	strm print: self numerator; nextPut: $/; print: self denominator! !
-
-! (Delta mirrorFor: #Fraction) methodsFor: 'converting' !
-
-
-asInteger ^<Integer>
-
-	| dsigned <Int> |
-	dsigned := self negative ifTrue: [ self denominator negated ] ifFalse: [ self denominator ].
-	^(self numerator + self numerator + dsigned) quo: (self denominator + self denominator)! !
 

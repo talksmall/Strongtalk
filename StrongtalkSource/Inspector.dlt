@@ -30,18 +30,6 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #Inspector) classSide methodsFor: 'instance creation' !
-
-
-launchOn: o <Object>
-
-	(self on: o) launch!
-
-on: o <Object> ^ <Instance>
-
-	^self new initFor: (VMMirror on: o)
-! !
-
 ! (Delta mirrorFor: #Inspector) classSide methodsFor: 'accessing' !
 
 
@@ -54,6 +42,163 @@ globalSafePrinting ^<Boolean>
 globalSafePrinting: b <Boolean>
 
 	GlobalSafePrinting := b! !
+
+! (Delta mirrorFor: #Inspector) classSide methodsFor: 'instance creation' !
+
+
+launchOn: o <Object>
+
+	(self on: o) launch!
+
+on: o <Object> ^ <Instance>
+
+	^self new initFor: (VMMirror on: o)
+! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'accessing' !
+
+
+safePrinting ^<Boolean>
+
+	^safePrinting!
+
+safePrinting: b <Boolean>
+
+	safePrinting := b!
+
+windowTitle ^ <Str>
+
+	^'Inspector on ', self mirror reflectee class name! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'control' !
+
+
+addMoreIndexables
+	"Display additional indexables (if possible)"
+	
+	| newIndexableCount <Int> |
+	newIndexableCount := self indexableSize min: (self indexableCount + self indexableBatchSize).
+	self indexableCount + 1 to: newIndexableCount do: [ :index <Int> |
+		| value <Object> |
+		value := self indexables at: index.
+		self addEntry: index printString oop: value print: (self printOop: value) ].
+	self indexableCount: newIndexableCount.
+	!
+
+launchClassBrowser
+	"Open browser on the inspected objects' class"
+	
+	| m <AbstractClassMirror> |
+	m := (Mirror on: self mirror reflectee class) instanceSide.	"Only non-meta classes are browseable"
+	(DefOutliner on: m) launch
+	!
+
+launchObjectSize
+	"Display message box with real object size"
+	
+	| strm <CharReadWriteStream> |
+	strm := String new writeStream.
+	strm nextPutAll: 'Object size: '.
+	strm nextPutAll: self objectSize printString.
+	strm nextPutAll: ' words'; cr.
+	self indexableSize isNil
+		ifFalse: [	strm nextPutAll: 'Indexable size: '.
+							strm nextPutAll: self indexableSize printString.
+							strm nextPutAll: ' elements'; cr ].
+	self visual
+		promptOk: strm contentsWritten
+		title: 'Size of ', (self printOop: self mirror reflectee)
+		type: #info
+		action: []!
+
+toggleGlobalSafePrinting
+
+	self actualClass globalSafePrinting: self actualClass globalSafePrinting not 
+	!
+
+toggleLocalSafePrinting
+
+	self session noInputFocus.
+	self safePrinting: self safePrinting not.
+	self update! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'indexed part' !
+
+
+index: i <Int> byte: value <Int>
+
+	self addIndexableEntry: i oop: value!
+
+index: i <Int> doubleByte: value <Int>
+
+	self addIndexableEntry: i oop: value!
+
+index: i <Int> oop: value <Object>
+
+	self addIndexableEntry: i oop: value! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+					name: '&Refresh';
+					action: [	self update ] );
+		add: (MenuAction new
+					name: '&Browse class';
+					action: [	self launchClassBrowser ] )!
+
+hasMenu ^ <Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self optionsMenu!
+
+optionsMenu ^ <Menu>
+
+	^Menu new name: '&Options';
+		add: (MenuAction new
+					name: 'Use safe printing &locally';
+					checked: [ self safePrinting ];
+					action: [	self toggleLocalSafePrinting ] );
+		add: (MenuAction new
+					name: 'Use safe printing &globally';
+					checked: [ self actualClass globalSafePrinting ];
+					action: [	self toggleGlobalSafePrinting ] );
+		addSeparator;
+		add: (MenuAction new
+					name: 'Display additional indexables';
+					active: [ self indexableSize notNil and: [ self indexableSize > self indexableCount ]];
+					action: [ self addMoreIndexables ]);
+		add: (MenuAction new
+					name: 'Display object size...';
+					action: [	self launchObjectSize ] )
+! !
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'named  parts' !
+
+
+name: n <Str> byte: value <Int>
+
+	self addEntry: n oop: value!
+
+name: n <Str> doubleByte: value <Int>
+
+	self addEntry: n oop: value!
+
+name: n <Str> hex: value <Int>
+
+	self addHexEntry: n value: value!
+
+name: n <Str> oop: value <Object>
+
+	self addEntry: n oop: value! !
 
 ! (Delta mirrorFor: #Inspector) methodsFor: 'private' !
 
@@ -245,55 +390,6 @@ updateNonsafeFields: queue <SharedQueue[Tuple[Int, Str]]>
 	] ensure:[ 
 		queue close ]! !
 
-! (Delta mirrorFor: #Inspector) methodsFor: 'accessing' !
-
-
-safePrinting ^<Boolean>
-
-	^safePrinting!
-
-safePrinting: b <Boolean>
-
-	safePrinting := b!
-
-windowTitle ^ <Str>
-
-	^'Inspector on ', self mirror reflectee class name! !
-
-! (Delta mirrorFor: #Inspector) methodsFor: 'named  parts' !
-
-
-name: n <Str> byte: value <Int>
-
-	self addEntry: n oop: value!
-
-name: n <Str> doubleByte: value <Int>
-
-	self addEntry: n oop: value!
-
-name: n <Str> hex: value <Int>
-
-	self addHexEntry: n value: value!
-
-name: n <Str> oop: value <Object>
-
-	self addEntry: n oop: value! !
-
-! (Delta mirrorFor: #Inspector) methodsFor: 'indexed part' !
-
-
-index: i <Int> byte: value <Int>
-
-	self addIndexableEntry: i oop: value!
-
-index: i <Int> doubleByte: value <Int>
-
-	self addIndexableEntry: i oop: value!
-
-index: i <Int> oop: value <Object>
-
-	self addIndexableEntry: i oop: value! !
-
 ! (Delta mirrorFor: #Inspector) methodsFor: 'structure' !
 
 
@@ -322,100 +418,4 @@ beginInstanceVariables
 beginObject: size <Int>
 
 	self objectSize: size! !
-
-! (Delta mirrorFor: #Inspector) methodsFor: 'menus' !
-
-
-fileMenu ^ <Menu>
-
-	^super fileMenu
-		add: (MenuAction new
-					name: '&Refresh';
-					action: [	self update ] );
-		add: (MenuAction new
-					name: '&Browse class';
-					action: [	self launchClassBrowser ] )!
-
-hasMenu ^ <Boolean>
-
-	^true!
-
-menuBar ^ <Menu>
-
-	^Menu new
-		add: self fileMenu;
-		add: self optionsMenu!
-
-optionsMenu ^ <Menu>
-
-	^Menu new name: '&Options';
-		add: (MenuAction new
-					name: 'Use safe printing &locally';
-					checked: [ self safePrinting ];
-					action: [	self toggleLocalSafePrinting ] );
-		add: (MenuAction new
-					name: 'Use safe printing &globally';
-					checked: [ self actualClass globalSafePrinting ];
-					action: [	self toggleGlobalSafePrinting ] );
-		addSeparator;
-		add: (MenuAction new
-					name: 'Display additional indexables';
-					active: [ self indexableSize notNil and: [ self indexableSize > self indexableCount ]];
-					action: [ self addMoreIndexables ]);
-		add: (MenuAction new
-					name: 'Display object size...';
-					action: [	self launchObjectSize ] )
-! !
-
-! (Delta mirrorFor: #Inspector) methodsFor: 'control' !
-
-
-addMoreIndexables
-	"Display additional indexables (if possible)"
-	
-	| newIndexableCount <Int> |
-	newIndexableCount := self indexableSize min: (self indexableCount + self indexableBatchSize).
-	self indexableCount + 1 to: newIndexableCount do: [ :index <Int> |
-		| value <Object> |
-		value := self indexables at: index.
-		self addEntry: index printString oop: value print: (self printOop: value) ].
-	self indexableCount: newIndexableCount.
-	!
-
-launchClassBrowser
-	"Open browser on the inspected objects' class"
-	
-	| m <AbstractClassMirror> |
-	m := (Mirror on: self mirror reflectee class) instanceSide.	"Only non-meta classes are browseable"
-	(DefOutliner on: m) launch
-	!
-
-launchObjectSize
-	"Display message box with real object size"
-	
-	| strm <CharReadWriteStream> |
-	strm := String new writeStream.
-	strm nextPutAll: 'Object size: '.
-	strm nextPutAll: self objectSize printString.
-	strm nextPutAll: ' words'; cr.
-	self indexableSize isNil
-		ifFalse: [	strm nextPutAll: 'Indexable size: '.
-							strm nextPutAll: self indexableSize printString.
-							strm nextPutAll: ' elements'; cr ].
-	self visual
-		promptOk: strm contentsWritten
-		title: 'Size of ', (self printOop: self mirror reflectee)
-		type: #info
-		action: []!
-
-toggleGlobalSafePrinting
-
-	self actualClass globalSafePrinting: self actualClass globalSafePrinting not 
-	!
-
-toggleLocalSafePrinting
-
-	self session noInputFocus.
-	self safePrinting: self safePrinting not.
-	self update! !
 

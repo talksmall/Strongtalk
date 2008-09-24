@@ -31,6 +31,120 @@ withDesiredRows: r <Int> columns: c <Int> ^ <Instance>
 	^inst
 ! !
 
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'accessing' !
+
+
+cr
+
+	super cr.
+	self flush!
+
+doneUpdating ^<Semaphore>
+
+	^doneUpdating!
+
+logStream ^<CharOutputStream>
+
+	^logStream!
+
+logStream: s <CharOutputStream>
+
+	self critical:
+		[ logStream := s ]!
+
+logging ^<Boolean>
+
+	^logging!
+
+nextPut: c <Character> ^<Character>
+
+	self critical:
+		[	| update <Boolean> |
+			update := self bufferStream isEmpty.
+			self bufferStream nextPut: c.
+			self logging
+				ifTrue: [ self logStream nextPut: c ].
+			(update and: [ self hasVisual ])
+				ifTrue: [ self session inProcessDo:
+								[ self update ]
+							].
+		].
+	^c! !
+
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'control' !
+
+
+empty
+
+	self session  inProcessDo: [ self doEmpty ]!
+
+flush
+
+	| event <Semaphore> |
+	self logStream notNil
+		ifTrue: [ self logStream flush ].
+
+	(self hasVisual and: [ self visual layoutValid ])
+		ifTrue: [	"We do it this way to be absolutely sure that an update doesn't occur between the test below, and the
+							accessing of the event"
+						Processor activeProcess = self session process
+							ifTrue: [ self update ]
+							ifFalse: [	self critical:
+												[	self bufferStream isEmpty
+														ifFalse: [ event := self doneUpdating ].
+												].
+											event notNil
+												ifTrue: [ event wait ]
+										 ].
+					].!
+
+logging: f <Boolean>
+
+	logging := f! !
+
+! (Delta mirrorFor: #OutputStreamView) methodsFor: 'menus' !
+
+
+fileMenu ^<Menu>
+
+	^Menu new name: '&File';
+			add: (MenuAction new
+					name: '&Save as...';
+					action: [ self saveAsAndOnSuccess: [] ]);
+			add: (MenuAction new
+					name: '&Clear';
+					action: [ self empty ]);
+			add: (MenuAction new
+					name: '&Logging';
+					checked: [ self logging ];
+					action: [ self logging: self logging not ]);
+		 addSeparator;
+		 add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self])!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+hasPopUpMenuForTop ^<Boolean>
+	
+	^true!
+
+menuBar ^<Menu>
+
+	^self textView menuBar
+		prependItems: (Array[Menu] with: self fileMenu)!
+
+popUpMenu ^<Menu>
+
+	^Menu new
+		addAll: self textView smalltalkMenu removeAll;
+		addSeparator;
+		add: self fileMenu;
+		add: self textView editMenu;
+		add: self textView propertiesMenu! !
+
 ! (Delta mirrorFor: #OutputStreamView) methodsFor: 'private' !
 
 
@@ -129,46 +243,6 @@ update
 						done signalEvent.
 					]! !
 
-! (Delta mirrorFor: #OutputStreamView) methodsFor: 'accessing' !
-
-
-cr
-
-	super cr.
-	self flush!
-
-doneUpdating ^<Semaphore>
-
-	^doneUpdating!
-
-logStream ^<CharOutputStream>
-
-	^logStream!
-
-logStream: s <CharOutputStream>
-
-	self critical:
-		[ logStream := s ]!
-
-logging ^<Boolean>
-
-	^logging!
-
-nextPut: c <Character> ^<Character>
-
-	self critical:
-		[	| update <Boolean> |
-			update := self bufferStream isEmpty.
-			self bufferStream nextPut: c.
-			self logging
-				ifTrue: [ self logStream nextPut: c ].
-			(update and: [ self hasVisual ])
-				ifTrue: [ self session inProcessDo:
-								[ self update ]
-							].
-		].
-	^c! !
-
 ! (Delta mirrorFor: #OutputStreamView) methodsFor: 'private-initialization' !
 
 
@@ -193,80 +267,6 @@ initialize
 			desiredRows: self desiredRows;
 			desiredColumns: self desiredColumns.
 ! !
-
-! (Delta mirrorFor: #OutputStreamView) methodsFor: 'menus' !
-
-
-fileMenu ^<Menu>
-
-	^Menu new name: '&File';
-			add: (MenuAction new
-					name: '&Save as...';
-					action: [ self saveAsAndOnSuccess: [] ]);
-			add: (MenuAction new
-					name: '&Clear';
-					action: [ self empty ]);
-			add: (MenuAction new
-					name: '&Logging';
-					checked: [ self logging ];
-					action: [ self logging: self logging not ]);
-		 addSeparator;
-		 add: (MenuAction new
-		            name:'Meta';
-		            action:[Inspector launchOn: self])!
-
-hasMenu ^<Boolean>
-
-	^true!
-
-hasPopUpMenuForTop ^<Boolean>
-	
-	^true!
-
-menuBar ^<Menu>
-
-	^self textView menuBar
-		prependItems: (Array[Menu] with: self fileMenu)!
-
-popUpMenu ^<Menu>
-
-	^Menu new
-		addAll: self textView smalltalkMenu removeAll;
-		addSeparator;
-		add: self fileMenu;
-		add: self textView editMenu;
-		add: self textView propertiesMenu! !
-
-! (Delta mirrorFor: #OutputStreamView) methodsFor: 'control' !
-
-
-empty
-
-	self session  inProcessDo: [ self doEmpty ]!
-
-flush
-
-	| event <Semaphore> |
-	self logStream notNil
-		ifTrue: [ self logStream flush ].
-
-	(self hasVisual and: [ self visual layoutValid ])
-		ifTrue: [	"We do it this way to be absolutely sure that an update doesn't occur between the test below, and the
-							accessing of the event"
-						Processor activeProcess = self session process
-							ifTrue: [ self update ]
-							ifFalse: [	self critical:
-												[	self bufferStream isEmpty
-														ifFalse: [ event := self doneUpdating ].
-												].
-											event notNil
-												ifTrue: [ event wait ]
-										 ].
-					].!
-
-logging: f <Boolean>
-
-	logging := f! !
 
 ! (Delta mirrorFor: #OutputStreamView) methodsFor: 'utility' !
 

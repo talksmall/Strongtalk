@@ -54,52 +54,6 @@ test
 	s := strm upTo: Character space.
 	[s = '2.0'] verify.! !
 
-! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'initialization' !
-
-
-initBuffer: sc <VarSeqCltn[E]>
-
-	buffer := sc.! !
-
-! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'private' !
-
-
-accumulateUntil: predicate <[^Boolean]>  ^<SeqCltn[E]>
-
-	| start <Int> |
-
-	start := self position.
-	[ predicate value ]
-		whileFalse: [ self position: self position + 1 ].
-	^self buffer copyFrom: start + 1 to: self position!
-
-actualNext ^<E>
-
-	| pos <Int> |
-	pos := self actualPosition.
-	pos := pos + 1.
-	pos > self size
-		ifTrue: [ self error: 'Attempt to read past the end of a stream' ].
-	self actualPosition: pos.
-	^self buffer at: pos!
-
-buffer ^<VarSeqCltn[E]>
-
-	^buffer!
-
-collection ^<VarSeqCltn[E]>
-
-	^self buffer copyFrom: 1 to: self size!
-
-nextFromPeek ^<E>
-
-	"If this happens, you should have overridden the calling method"
-	self shouldNotHappen!
-
-peekVal ^<E>
-
-	self shouldNotHappen! !
-
 ! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'accessing' !
 
 
@@ -169,6 +123,13 @@ position: p <Int>
 	self actualPosition: p.
 	"Don't have to unset the peekVal"! !
 
+! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'initialization' !
+
+
+initBuffer: sc <VarSeqCltn[E]>
+
+	buffer := sc.! !
+
 ! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'printing' !
 
 
@@ -179,4 +140,43 @@ printOn: strm <CharOutputStream>
 			nextPutAll: ' buffer=';  print: self buffer;
 			nextPut: $)
 			! !
+
+! (Delta mirrorFor: #SeqCltnReadWriteStream) methodsFor: 'private' !
+
+
+accumulateUntil: predicate <[^Boolean]>  ^<SeqCltn[E]>
+
+	| start <Int> |
+
+	start := self position.
+	[ predicate value ]
+		whileFalse: [ self position: self position + 1 ].
+	^self buffer copyFrom: start + 1 to: self position!
+
+actualNext ^<E>
+
+	| pos <Int> |
+	pos := self actualPosition.
+	pos := pos + 1.
+	pos > self size
+		ifTrue: [ self error: 'Attempt to read past the end of a stream' ].
+	self actualPosition: pos.
+	^self buffer at: pos!
+
+buffer ^<VarSeqCltn[E]>
+
+	^buffer!
+
+collection ^<VarSeqCltn[E]>
+
+	^self buffer copyFrom: 1 to: self size!
+
+nextFromPeek ^<E>
+
+	"If this happens, you should have overridden the calling method"
+	self shouldNotHappen!
+
+peekVal ^<E>
+
+	self shouldNotHappen! !
 

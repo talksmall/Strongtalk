@@ -25,16 +25,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.
 '!
 
-! (Delta mirrorFor: #View) methodsFor: 'private-initialization' !
-
-
-initialize
-
-	super initialize.
-	self changeBlock:
-		[  "By default, do nothing"  ].
-	self hasBeenChanged: false.! !
-
 ! (Delta mirrorFor: #View) methodsFor: 'accessing' !
 
 
@@ -100,16 +90,19 @@ closeRequest: toClose <[]>
 							caption: self saveAndCloseCaption	 ]
 		ifFalse: [ toClose value ]! !
 
-! (Delta mirrorFor: #View) methodsFor: 'testing' !
+! (Delta mirrorFor: #View) methodsFor: 'menus' !
 
 
-hasBeenChanged ^<Boolean>
+acceptMenu ^<Menu>
 
-	^hasBeenChanged!
-
-isReadOnly ^<Boolean>
-
-	^self doneBlock isNil! !
+	^Menu new name: '&Accept';
+		add: (MenuAction new
+					name: '&Accept';
+					action: [ self accept ] );
+			add: (MenuAction new
+					name: 'Cancel';
+					active: [ self hasBeenChanged ];
+					action: [ self cancel ] )! !
 
 ! (Delta mirrorFor: #View) methodsFor: 'private' !
 
@@ -156,19 +149,26 @@ setModel: m <MODEL>
 
 	model := m.! !
 
-! (Delta mirrorFor: #View) methodsFor: 'menus' !
+! (Delta mirrorFor: #View) methodsFor: 'private-initialization' !
 
 
-acceptMenu ^<Menu>
+initialize
 
-	^Menu new name: '&Accept';
-		add: (MenuAction new
-					name: '&Accept';
-					action: [ self accept ] );
-			add: (MenuAction new
-					name: 'Cancel';
-					active: [ self hasBeenChanged ];
-					action: [ self cancel ] )! !
+	super initialize.
+	self changeBlock:
+		[  "By default, do nothing"  ].
+	self hasBeenChanged: false.! !
+
+! (Delta mirrorFor: #View) methodsFor: 'testing' !
+
+
+hasBeenChanged ^<Boolean>
+
+	^hasBeenChanged!
+
+isReadOnly ^<Boolean>
+
+	^self doneBlock isNil! !
 
 ! (Delta mirrorFor: #View) methodsFor: 'utility' !
 

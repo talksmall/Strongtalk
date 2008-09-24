@@ -18,14 +18,6 @@ forWorld ^ <Instance>
 
 	^self new initializeForWorld! !
 
-! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'private-initialization' !
-
-
-initializeForWorld
-
-	self list: self computeWorldList.
-	Smalltalk addDependent: self.! !
-
 ! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'accessing' !
 
 
@@ -40,6 +32,34 @@ list ^ <OrdCltn[M]>
 list: l <OrdCltn[M]>
 
 	list := l! !
+
+! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+
+	Smalltalk removeDependent: self.
+	super closeRequest: toClose.!
+
+typecheckAllDefs
+
+self typecheckAction: [
+											self list do:[: m <M> |
+											 					m typecheckDefinition.
+																].
+											]
+		title: 'Typechecking definitions of all ', self windowTitle.
+! !
+
+! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'menus' !
+
+
+menuBarFor: m <M>
+
+	^Menu new
+		add: (MenuAction new
+						name: '&Remove ', self entryName;
+						action: [ self removeDefinition: m ])! !
 
 ! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'private' !
 
@@ -87,31 +107,11 @@ update
 	self updateBody.
 	! !
 
-! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'control' !
+! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'private-initialization' !
 
 
-closeRequest: toClose <[]>
+initializeForWorld
 
-	Smalltalk removeDependent: self.
-	super closeRequest: toClose.!
-
-typecheckAllDefs
-
-self typecheckAction: [
-											self list do:[: m <M> |
-											 					m typecheckDefinition.
-																].
-											]
-		title: 'Typechecking definitions of all ', self windowTitle.
-! !
-
-! (Delta mirrorFor: #MirrorListOutliner) methodsFor: 'menus' !
-
-
-menuBarFor: m <M>
-
-	^Menu new
-		add: (MenuAction new
-						name: '&Remove ', self entryName;
-						action: [ self removeDefinition: m ])! !
+	self list: self computeWorldList.
+	Smalltalk addDependent: self.! !
 

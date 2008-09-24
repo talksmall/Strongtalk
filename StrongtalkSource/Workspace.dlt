@@ -35,19 +35,6 @@ launcherMenu ^<Menu>
 									action: [ self new launch ])
 					)! !
 
-! (Delta mirrorFor: #Workspace) methodsFor: 'private' !
-
-
-codeView ^ <CodeView>
-
-	^CodeView coerce: self textView
-!
-
-textViewClass ^ <TextView[CharGlyphs] class>
-
-	^CodeView
-! !
-
 ! (Delta mirrorFor: #Workspace) methodsFor: 'accessing' !
 
 
@@ -67,6 +54,19 @@ receiver ^<Object>
 receiver: oop <Object>
 
 	self codeView receiver: oop
+! !
+
+! (Delta mirrorFor: #Workspace) methodsFor: 'private' !
+
+
+codeView ^ <CodeView>
+
+	^CodeView coerce: self textView
+!
+
+textViewClass ^ <TextView[CharGlyphs] class>
+
+	^CodeView
 ! !
 
 ! (Delta mirrorFor: #Workspace) methodsFor: 'utility' !

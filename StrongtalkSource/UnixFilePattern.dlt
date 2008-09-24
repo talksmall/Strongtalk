@@ -52,14 +52,14 @@ elementsDo: blk <[FilePattern]>
     [ s atEnd ]
         whileFalse:
             [   | next <Str> |
-                next := s upTo: $\.
-                (next includes: $:)
-                    ifTrue: [ next := next,'\' ].
-                blk value: (FilePattern for: next)  ].!
+                next := s upTo: $/.
+                next isEmpty
+                    ifFalse: [ blk value: (FilePattern for: next)] ]!
 
 pathsDo: blk <[FilePath]>
 
-    | els <SeqCltn[FilePattern]> i <Int> |
+	self terminalPathsDo: blk
+    "| els <SeqCltn[FilePattern]> i <Int> |
     els := self elements.
     i := self firstWildElementOf: els
                 ifFail: [ ^self shouldNotHappen ].
@@ -74,7 +74,7 @@ pathsDo: blk <[FilePath]>
                                 [ :fp <FilePath> |
                                     fp isDirectory
                                         ifTrue: [ (fp, rest) pathsDo: blk ]     ]
-                     ]! !
+                     ]"! !
 
 ! (Delta mirrorFor: #UnixFilePattern) methodsFor: 'private' !
 
@@ -96,58 +96,23 @@ patternExtending: pat <FilePattern> ^<Str>
 
 terminalPathsDo: blk <[FilePath]>
 
-    "assumes that the last element of the receiver is the only one that contains wildcards"
-    | data <WIN32_FIND_DATA> hnd <Win32Handle> allpat <CString> pat <Str> els <SeqCltn[FilePattern]> prefix <Str> |
-    data := WIN32_FIND_DATA new allocate.
-    els := self elements.
-    "%todo %opt - should check to see if the pattern is suitable for the windows call directly, so that the 
-        elements are prefiltered.  Rule would be: use pattern directly if * appears only just before a dot or at the
-        end, and contains no other wildcards"
-    els size = 1
-        ifTrue: [   allpat := CString for: '*.*'.
-                        prefix := ''. ]
-        ifFalse: [  allpat := CString for: self containingDirectory pattern, '\*.*'.
-                            prefix := (FilePattern forAll: (els copyFrom: 1 to: els size - 1)) pattern,'\'.  ].
-    pat := els last pattern.
-    [   hnd := {{<kernel Win32Handle FindFirstFileA>
-                        pattern: allpat
-                        data: data
-                    }}.
-        hnd @= Win32 INVALID_HANDLE_VALUE
-            ifTrue: [ Win32 getLastError @= Win32 ERROR_NO_MORE_FILES
-                            ifFalse: [ Win32 handleError ]
-                            ifTrue: [ ^self ]
-                        ]
-            ifFalse: [  [   | next <Str> |
-                                next := data cFileName asString.
-                                ((pat platformMatch: next) and: [ next ~= '.' and: [ next ~= '..' ]])
-                                    ifTrue: [ blk value: (FilePath for: prefix,next) ].
-                                [   {{<kernel Win32Handle FindNextFileA>
-                                        hnd: hnd
-                                        data: data
-                                    }} asBoolean
-                                        ifFalse: [ Win32 getLastError @= Win32 ERROR_NO_MORE_FILES
-                                                            ifFalse: [ Win32 handleError ]
-                                                            ifTrue: [ ^self ]
-                                                     ]
-                                        ifTrue: [   next := data cFileName asString.
-                                                        ((pat platformMatch: next) and: [ next ~= '.' and: [ next ~= '..' ]])
-                                                            ifTrue: [ blk value: (FilePath for: prefix,next) ].
-                                                    ]
-                                ] repeat.
-                            ] ensure:
-                                [   {{<kernel Win32Handle FindClose> hnd: hnd}} asBoolean
-                                        ifFalse: [ Win32 handleError ].
-                                ]
-                        ]                                       
-    ] ensure:
-        [   data free.
-            allpat free.        ]! !
+    | glob pathArray strings patternString |
+   glob := GlobT new allocate.
+   patternString := CString for: self pattern.
+   {{<libc ExternalProxy glob>
+    	pattern: patternString
+    	flags: 0
+    	ignore: 0
+    	glob: glob}}.
+	[glob pathsDo: [:pathString| blk value: (FilePath for: pathString)]]
+		ensure: [
+			glob free.
+			patternString free.]! !
 
 ! (Delta mirrorFor: #UnixFilePattern) methodsFor: 'testing' !
 
 
 isAbsolute ^<Boolean>
 
-    ^self pattern includes: $:! !
+    ^self pattern first == $/! !
 

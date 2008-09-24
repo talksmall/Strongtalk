@@ -225,27 +225,6 @@ self methods do:[:m <DeltaMethod> | d remove: m selector ifAbsent:[]].
 self messages  keys do: [: k <Symbol> | d add: k].
 ^d! !
 
-! (Delta mirrorFor: #DeltaSideUpdateBehavior) methodsFor: 'typechecking' !
-
-
-typecheckSuperclassType
-
-self errorHandler pushDefinition: self.
-self fixupScopes.
-self setupTypeAssumptions.
-self testSuperclassType.
-self retractTypeAssumptions.
-self errorHandler popDefinition.!
-
-typecheckSupportedProtocol
-
-self errorHandler pushDefinition: self.
-self fixupScopes.
-self setupTypeAssumptions.
-self testSupportedProtocol.
-self retractTypeAssumptions.
-self errorHandler popDefinition.! !
-
 ! (Delta mirrorFor: #DeltaSideUpdateBehavior) methodsFor: 'private typechecking' !
 
 
@@ -413,4 +392,25 @@ wellTypedAttributeInterface: m <Attribute > ^ <Boolean>
 	self testAttributeAgainstSupported: m.
 
 	super wellTypedAttributeInterface: m! !
+
+! (Delta mirrorFor: #DeltaSideUpdateBehavior) methodsFor: 'typechecking' !
+
+
+typecheckSuperclassType
+
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self testSuperclassType.
+self retractTypeAssumptions.
+self errorHandler popDefinition.!
+
+typecheckSupportedProtocol
+
+self errorHandler pushDefinition: self.
+self fixupScopes.
+self setupTypeAssumptions.
+self testSupportedProtocol.
+self retractTypeAssumptions.
+self errorHandler popDefinition.! !
 

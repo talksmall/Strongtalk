@@ -55,33 +55,6 @@ test2
 	
 	! !
 
-! (Delta mirrorFor: #Activation) methodsFor: 'file out' !
-
-
-fileOutSignature ^<Integer>
-	self error: 'should not file out an activation'.
-	^0! !
-
-! (Delta mirrorFor: #Activation) methodsFor: 'printing ' !
-
-
-printOn: stream <CharOutputStream>
-
-	self index printOn: stream.
-	stream tab.
-	self isSmalltalk ifTrue: [
-		self receiver printOn: stream.
-		stream tab.
-		self method selector printOn: stream.
-		stream tab.
-		self byteCodeIndex printOn: stream.
-		stream cr.
-		self vmPrettyPrint printOn: stream.
-	] ifFalse: [
-		'External activation' printOn: stream
-	]
-! !
-
 ! (Delta mirrorFor: #Activation) methodsFor: 'accessing' !
 
 
@@ -148,6 +121,33 @@ vmPrettyPrint	^<Str>
 error: err <Str>
 	Transcript show: 'Error: '; show: err; cr.
 	^nil! !
+
+! (Delta mirrorFor: #Activation) methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+	self error: 'should not file out an activation'.
+	^0! !
+
+! (Delta mirrorFor: #Activation) methodsFor: 'printing ' !
+
+
+printOn: stream <CharOutputStream>
+
+	self index printOn: stream.
+	stream tab.
+	self isSmalltalk ifTrue: [
+		self receiver printOn: stream.
+		stream tab.
+		self method selector printOn: stream.
+		stream tab.
+		self byteCodeIndex printOn: stream.
+		stream cr.
+		self vmPrettyPrint printOn: stream.
+	] ifFalse: [
+		'External activation' printOn: stream
+	]
+! !
 
 ! (Delta mirrorFor: #Activation) methodsFor: 'testing' !
 

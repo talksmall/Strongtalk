@@ -20,6 +20,25 @@ Use and distribution of this software is subject to the terms of the attached so
 new ^<Instance>
 	^super new initialize! !
 
+! (Delta mirrorFor: #CoreSampler) methodsFor: 'accessing' !
+
+
+hasWinBackdrop ^<Boolean>
+
+	^true!
+
+winBackdrop ^<Painter>
+
+	^Painter new paint: Paint backgroundGray! !
+
+! (Delta mirrorFor: #CoreSampler) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+	
+	Sampler := nil.
+	super closeRequest: toClose! !
+
 ! (Delta mirrorFor: #CoreSampler) methodsFor: 'dispatching' !
 
 
@@ -50,14 +69,6 @@ start
 initialize
 	Sampler := self! !
 
-! (Delta mirrorFor: #CoreSampler) methodsFor: 'control' !
-
-
-closeRequest: toClose <[]>
-	
-	Sampler := nil.
-	super closeRequest: toClose! !
-
 ! (Delta mirrorFor: #CoreSampler) methodsFor: 'private' !
 
 
@@ -85,15 +96,4 @@ showCore
 				)
 		].
 	core := nil.! !
-
-! (Delta mirrorFor: #CoreSampler) methodsFor: 'accessing' !
-
-
-hasWinBackdrop ^<Boolean>
-
-	^true!
-
-winBackdrop ^<Painter>
-
-	^Painter new paint: Paint backgroundGray! !
 

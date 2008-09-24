@@ -16,21 +16,20 @@ Use and distribution of this software is subject to the terms of the attached so
 
 initialize IRowsize := 40 "IntMMBenchmark initialize"! !
 
-! (Delta mirrorFor: #IntMMBenchmark) methodsFor: 'run' !
+! (Delta mirrorFor: #IntMMBenchmark) methodsFor: 'admin' !
 
 
-run
-	self initialize.
-	mr := self mmMatrix.
-	ma := self initmatrix.
-	mb := self initmatrix.
-	self initrand.
-	1 to: IRowsize do: [:i | 1 to: IRowsize do: [:j | (mr at: i)
-				at: j put: (self
-					innerproductOf: ma
-					and: mb
-					row: i
-					column: j)]]! !
+digitalkTime
+	^119!
+
+factor
+	^14!
+
+name
+	^#IntMM!
+
+parcplaceTime
+	^159! !
 
 ! (Delta mirrorFor: #IntMMBenchmark) methodsFor: 'private' !
 
@@ -70,18 +69,19 @@ mmMatrix
 newValue
 	^self rand! !
 
-! (Delta mirrorFor: #IntMMBenchmark) methodsFor: 'admin' !
+! (Delta mirrorFor: #IntMMBenchmark) methodsFor: 'run' !
 
 
-digitalkTime
-	^119!
-
-factor
-	^14!
-
-name
-	^#IntMM!
-
-parcplaceTime
-	^159! !
+run
+	self initialize.
+	mr := self mmMatrix.
+	ma := self initmatrix.
+	mb := self initmatrix.
+	self initrand.
+	1 to: IRowsize do: [:i | 1 to: IRowsize do: [:j | (mr at: i)
+				at: j put: (self
+					innerproductOf: ma
+					and: mb
+					row: i
+					column: j)]]! !
 

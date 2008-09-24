@@ -28,6 +28,26 @@ The constraint thus created may be bound to actual variables with a specific str
 		[: s | Method names: variableNames methodString: s].
 	^(super new: variableNames size) methods: methodList! !
 
+! (Delta mirrorFor: #Constraint) methodsFor: 'add/remove' !
+
+
+addToGraph
+	"Add myself to the constraint graph."
+
+	1 to: self size do:
+		[: i | (self at: i) addConstraint: self].
+	whichMethod := nil.!
+
+removeFromGraph
+	"Remove myself from the constraint graph."
+
+	| v |
+	1 to: self size do:
+		[: i |
+		 v := self at: i.
+		 (v == nil) ifFalse: [v removeConstraint: self]].
+	whichMethod := nil.! !
+
 ! (Delta mirrorFor: #Constraint) methodsFor: 'initialize-release' !
 
 
@@ -118,34 +138,6 @@ vars: vars strength: aSymbol
 	strength := Strength of: aSymbol.
 	self addConstraint.! !
 
-! (Delta mirrorFor: #Constraint) methodsFor: 'queries' !
-
-
-isSatisfied
-	"Answer true if this constraint is satisfied in the current solution."
-
-	^whichMethod notNil! !
-
-! (Delta mirrorFor: #Constraint) methodsFor: 'add/remove' !
-
-
-addToGraph
-	"Add myself to the constraint graph."
-
-	1 to: self size do:
-		[: i | (self at: i) addConstraint: self].
-	whichMethod := nil.!
-
-removeFromGraph
-	"Remove myself from the constraint graph."
-
-	| v |
-	1 to: self size do:
-		[: i |
-		 v := self at: i.
-		 (v == nil) ifFalse: [v removeConstraint: self]].
-	whichMethod := nil.! !
-
 ! (Delta mirrorFor: #Constraint) methodsFor: 'planning' !
 
 
@@ -221,4 +213,12 @@ recalculate
 	out walkStrength: self outputWalkStrength.
 	out stay: self constantOutput.
 	(out stay) ifTrue: [self execute].		"stay optimization"! !
+
+! (Delta mirrorFor: #Constraint) methodsFor: 'queries' !
+
+
+isSatisfied
+	"Answer true if this constraint is satisfied in the current solution."
+
+	^whichMethod notNil! !
 

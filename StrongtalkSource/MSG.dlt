@@ -24,6 +24,138 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
 '!
 
+! (Delta mirrorFor: #MSG) classSide methodsFor: 'key symbols' !
+
+
+keyValueFor: code <Int> ifAbsent: blk <AbortBlock> ^<Symbol>
+
+	KeyMap isNil
+		ifTrue: [	KeyMap := Dictionary[Int,Symbol] new: 128.
+						self keySymbolsDo:
+							[ :sym <Symbol> :code <Int> |
+								KeyMap at: code put: sym ].	].
+	^KeyMap at: code ifAbsent: blk! !
+
+! (Delta mirrorFor: #MSG) classSide methodsFor: 'private' !
+
+
+keySymbolsDo: blk <[Symbol,Int]>
+	"Iterate over the mapping of key symbols to Win32 virtual key codes"
+
+    blk
+	value: #CANCEL         value: 16r03;
+	value: #BACK           value: 16r08;
+	value: #TAB            value: 16r09;
+	value: #CLEAR          value: 16r0C;
+	value: #RETURN         value: 16r0D;
+	value: #SHIFT          value: 16r10;
+	value: #CONTROL        value: 16r11;
+	value: #MENU           value: 16r12;
+	value: #PAUSE          value: 16r13;
+	value: #CAPITAL        value: 16r14;
+	value: #ESCAPE         value: 16r1B;
+	value: #SPACE          value: 16r20;
+	value: #PRIOR          value: 16r21;
+	value: #NEXT           value: 16r22;
+	value: #END            value: 16r23;
+	value: #HOME           value: 16r24;
+	value: #LEFT           value: 16r25;
+	value: #UP             value: 16r26;
+	value: #RIGHT          value: 16r27;
+	value: #DOWN           value: 16r28;
+	value: #SELECT         value: 16r29;
+	value: #PRINT          value: 16r2A;
+	value: #EXECUTE        value: 16r2B;
+	value: #SNAPSHOT       value: 16r2C;
+	value: #INSERT         value: 16r2D;
+	value: #DELETE         value: 16r2E;
+	value: #HELP           value: 16r2F;
+
+	value: #ZERO	value: 16r30;
+	value: #ONE	value: 16r31;
+	value: #TWO 	value: 16r32;
+	value: #THREE	value: 16r33;
+	value: #FOUR	value: 16r34;
+	value: #FIVE	value: 16r35;
+	value: #SIX	value: 16r36;
+	value: #SEVEN	value: 16r37;
+	value: #EIGHT	value: 16r38;
+	value: #NINE	value: 16r39;
+
+	value: #A	value: 16r41;
+	value: #B	value: 16r42;
+	value: #C	value: 16r43;
+	value: #D	value: 16r44;
+	value: #E	value: 16r45;
+	value: #F	value: 16r46;
+	value: #G	value: 16r47;
+	value: #H	value: 16r48;
+	value: #I	value: 16r49;
+	value: #J	value: 16r4A;
+	value: #K	value: 16r4B;
+	value: #L	value: 16r4C;
+	value: #M	value: 16r4D;
+	value: #N	value: 16r4E;
+	value: #O	value: 16r4F;
+	value: #P	value: 16r50;
+	value: #Q	value: 16r51;
+	value: #R	value: 16r52;
+	value: #S	value: 16r53;
+	value: #T	value: 16r54;
+	value: #U	value: 16r55;
+	value: #V	value: 16r56;
+	value: #W	value: 16r57;
+	value: #X	value: 16r58;
+	value: #Y	value: 16r59;
+	value: #Z	value: 16r5A;
+
+	value: #LWIN           value: 16r5B;
+	value: #RWIN           value: 16r5C;
+	value: #APPS           value: 16r5D;
+	value: #NUMPAD0        value: 16r60;
+	value: #NUMPAD1        value: 16r61;
+	value: #NUMPAD2        value: 16r62;
+	value: #NUMPAD3        value: 16r63;
+	value: #NUMPAD4        value: 16r64;
+	value: #NUMPAD5        value: 16r65;
+	value: #NUMPAD6        value: 16r66;
+	value: #NUMPAD7        value: 16r67;
+	value: #NUMPAD8        value: 16r68;
+	value: #NUMPAD9        value: 16r69;
+	value: #MULTIPLY       value: 16r6A;
+	value: #ADD            value: 16r6B;
+	value: #SEPARATOR      value: 16r6C;
+	value: #SUBTRACT       value: 16r6D;
+	value: #DECIMAL        value: 16r6E;
+	value: #DIVIDE         value: 16r6F;
+	value: #F1             value: 16r70;
+	value: #F2             value: 16r71;
+	value: #F3             value: 16r72;
+	value: #F4             value: 16r73;
+	value: #F5             value: 16r74;
+	value: #F6             value: 16r75;
+	value: #F7             value: 16r76;
+	value: #F8             value: 16r77;
+	value: #F9             value: 16r78;
+	value: #F10            value: 16r79;
+	value: #F11            value: 16r7A;
+	value: #F12            value: 16r7B;
+	value: #F13            value: 16r7C;
+	value: #F14            value: 16r7D;
+	value: #F15            value: 16r7E;
+	value: #F16            value: 16r7F;
+	value: #F17            value: 16r80;
+	value: #F18            value: 16r81;
+	value: #F19            value: 16r82;
+	value: #F20            value: 16r83;
+	value: #F21            value: 16r84;
+	value: #F22            value: 16r85;
+	value: #F23            value: 16r86;
+	value: #F24            value: 16r87;
+	value: #NUMLOCK        value: 16r90;
+	value: #SCROLL         value: 16r91.
+	! !
+
 ! (Delta mirrorFor: #MSG) classSide methodsFor: 'utility' !
 
 
@@ -255,138 +387,6 @@ nameMappingsDo: fn <[Symbol,ExternalData]>
 		value: #WM_MOUSEWHEEL	value: Win32 WM_MOUSEWHEEL;
 		value: #WM_APP	value: Win32 WM_APP. ! !
 
-! (Delta mirrorFor: #MSG) classSide methodsFor: 'private' !
-
-
-keySymbolsDo: blk <[Symbol,Int]>
-	"Iterate over the mapping of key symbols to Win32 virtual key codes"
-
-    blk
-	value: #CANCEL         value: 16r03;
-	value: #BACK           value: 16r08;
-	value: #TAB            value: 16r09;
-	value: #CLEAR          value: 16r0C;
-	value: #RETURN         value: 16r0D;
-	value: #SHIFT          value: 16r10;
-	value: #CONTROL        value: 16r11;
-	value: #MENU           value: 16r12;
-	value: #PAUSE          value: 16r13;
-	value: #CAPITAL        value: 16r14;
-	value: #ESCAPE         value: 16r1B;
-	value: #SPACE          value: 16r20;
-	value: #PRIOR          value: 16r21;
-	value: #NEXT           value: 16r22;
-	value: #END            value: 16r23;
-	value: #HOME           value: 16r24;
-	value: #LEFT           value: 16r25;
-	value: #UP             value: 16r26;
-	value: #RIGHT          value: 16r27;
-	value: #DOWN           value: 16r28;
-	value: #SELECT         value: 16r29;
-	value: #PRINT          value: 16r2A;
-	value: #EXECUTE        value: 16r2B;
-	value: #SNAPSHOT       value: 16r2C;
-	value: #INSERT         value: 16r2D;
-	value: #DELETE         value: 16r2E;
-	value: #HELP           value: 16r2F;
-
-	value: #ZERO	value: 16r30;
-	value: #ONE	value: 16r31;
-	value: #TWO 	value: 16r32;
-	value: #THREE	value: 16r33;
-	value: #FOUR	value: 16r34;
-	value: #FIVE	value: 16r35;
-	value: #SIX	value: 16r36;
-	value: #SEVEN	value: 16r37;
-	value: #EIGHT	value: 16r38;
-	value: #NINE	value: 16r39;
-
-	value: #A	value: 16r41;
-	value: #B	value: 16r42;
-	value: #C	value: 16r43;
-	value: #D	value: 16r44;
-	value: #E	value: 16r45;
-	value: #F	value: 16r46;
-	value: #G	value: 16r47;
-	value: #H	value: 16r48;
-	value: #I	value: 16r49;
-	value: #J	value: 16r4A;
-	value: #K	value: 16r4B;
-	value: #L	value: 16r4C;
-	value: #M	value: 16r4D;
-	value: #N	value: 16r4E;
-	value: #O	value: 16r4F;
-	value: #P	value: 16r50;
-	value: #Q	value: 16r51;
-	value: #R	value: 16r52;
-	value: #S	value: 16r53;
-	value: #T	value: 16r54;
-	value: #U	value: 16r55;
-	value: #V	value: 16r56;
-	value: #W	value: 16r57;
-	value: #X	value: 16r58;
-	value: #Y	value: 16r59;
-	value: #Z	value: 16r5A;
-
-	value: #LWIN           value: 16r5B;
-	value: #RWIN           value: 16r5C;
-	value: #APPS           value: 16r5D;
-	value: #NUMPAD0        value: 16r60;
-	value: #NUMPAD1        value: 16r61;
-	value: #NUMPAD2        value: 16r62;
-	value: #NUMPAD3        value: 16r63;
-	value: #NUMPAD4        value: 16r64;
-	value: #NUMPAD5        value: 16r65;
-	value: #NUMPAD6        value: 16r66;
-	value: #NUMPAD7        value: 16r67;
-	value: #NUMPAD8        value: 16r68;
-	value: #NUMPAD9        value: 16r69;
-	value: #MULTIPLY       value: 16r6A;
-	value: #ADD            value: 16r6B;
-	value: #SEPARATOR      value: 16r6C;
-	value: #SUBTRACT       value: 16r6D;
-	value: #DECIMAL        value: 16r6E;
-	value: #DIVIDE         value: 16r6F;
-	value: #F1             value: 16r70;
-	value: #F2             value: 16r71;
-	value: #F3             value: 16r72;
-	value: #F4             value: 16r73;
-	value: #F5             value: 16r74;
-	value: #F6             value: 16r75;
-	value: #F7             value: 16r76;
-	value: #F8             value: 16r77;
-	value: #F9             value: 16r78;
-	value: #F10            value: 16r79;
-	value: #F11            value: 16r7A;
-	value: #F12            value: 16r7B;
-	value: #F13            value: 16r7C;
-	value: #F14            value: 16r7D;
-	value: #F15            value: 16r7E;
-	value: #F16            value: 16r7F;
-	value: #F17            value: 16r80;
-	value: #F18            value: 16r81;
-	value: #F19            value: 16r82;
-	value: #F20            value: 16r83;
-	value: #F21            value: 16r84;
-	value: #F22            value: 16r85;
-	value: #F23            value: 16r86;
-	value: #F24            value: 16r87;
-	value: #NUMLOCK        value: 16r90;
-	value: #SCROLL         value: 16r91.
-	! !
-
-! (Delta mirrorFor: #MSG) classSide methodsFor: 'key symbols' !
-
-
-keyValueFor: code <Int> ifAbsent: blk <AbortBlock> ^<Symbol>
-
-	KeyMap isNil
-		ifTrue: [	KeyMap := Dictionary[Int,Symbol] new: 128.
-						self keySymbolsDo:
-							[ :sym <Symbol> :code <Int> |
-								KeyMap at: code put: sym ].	].
-	^KeyMap at: code ifAbsent: blk! !
-
 ! (Delta mirrorFor: #MSG) methodsFor: 'accessing' !
 
 
@@ -447,59 +447,6 @@ wParam ^<ExternalData>
 wParam: v <ExternalData>
 
 	self externalDataAt: self wParamOffset put: v! !
-
-! (Delta mirrorFor: #MSG) methodsFor: 'offsets' !
-
-
-hwndOffset ^<Int>
-
-	^0!
-
-lParamOffset ^<Int>
-
-	^12!
-
-messageOffset ^<Int>
-
-	^4!
-
-pointXOffset ^<Int>
-
-	^20!
-
-pointYOffset ^<Int>
-
-	^24!
-
-timeOffset ^<Int>
-
-	^16!
-
-wParamOffset ^<Int>
-
-	^8! !
-
-! (Delta mirrorFor: #MSG) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	strm putAll: 'MSG('; putAll: (self actualClass descriptionOf: self message asExternalProxy); putAll: ')'! !
-
-! (Delta mirrorFor: #MSG) methodsFor: 'private' !
-
-
-pressedStateOf: virtualKey <ExternalData> ^<Boolean>
-	"Return true if the specified key is pressed, false otherwise"
-
-	^(({{<user ExternalProxy GetKeyState> key: virtualKey}}
-			low) bitAnd: 16r8000) ~= 0!
-
-toggleStateOf: virtualKey <ExternalData> ^<Boolean>
-	"Return true if the specified key is toggled on, false otherwise"
-
-	^({{<user ExternalProxy GetKeyState> key: virtualKey}}
-		low bitAnd: 1) @= 1! !
 
 ! (Delta mirrorFor: #MSG) methodsFor: 'control' !
 
@@ -568,4 +515,57 @@ secondaryMouseButtonPressed ^<Boolean>
 shiftPressed ^<Boolean>
 
 	^shiftPressed! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'offsets' !
+
+
+hwndOffset ^<Int>
+
+	^0!
+
+lParamOffset ^<Int>
+
+	^12!
+
+messageOffset ^<Int>
+
+	^4!
+
+pointXOffset ^<Int>
+
+	^20!
+
+pointYOffset ^<Int>
+
+	^24!
+
+timeOffset ^<Int>
+
+	^16!
+
+wParamOffset ^<Int>
+
+	^8! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm putAll: 'MSG('; putAll: (self actualClass descriptionOf: self message asExternalProxy); putAll: ')'! !
+
+! (Delta mirrorFor: #MSG) methodsFor: 'private' !
+
+
+pressedStateOf: virtualKey <ExternalData> ^<Boolean>
+	"Return true if the specified key is pressed, false otherwise"
+
+	^(({{<user ExternalProxy GetKeyState> key: virtualKey}}
+			low) bitAnd: 16r8000) ~= 0!
+
+toggleStateOf: virtualKey <ExternalData> ^<Boolean>
+	"Return true if the specified key is toggled on, false otherwise"
+
+	^({{<user ExternalProxy GetKeyState> key: virtualKey}}
+		low bitAnd: 1) @= 1! !
 

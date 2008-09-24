@@ -15,6 +15,28 @@ Tags: %BlueBook
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
 '!
 
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'comparing' !
+
+
+= other <Object> ^<Boolean>
+
+	^other isNil! !
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+
+	self messageNotUnderstood:
+		(Message receiver: self selector: #copy arguments: #())! !
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm putAll: 'nil'! !
+
 ! (Delta mirrorFor: #UndefinedObject) methodsFor: 'testing' !
 
 
@@ -25,26 +47,4 @@ isNil ^<Boolean>
 notNil ^<Boolean>
 
 	^false! !
-
-! (Delta mirrorFor: #UndefinedObject) methodsFor: 'copying' !
-
-
-copy ^<Instance>
-
-	self messageNotUnderstood:
-		(Message receiver: self selector: #copy arguments: #())! !
-
-! (Delta mirrorFor: #UndefinedObject) methodsFor: 'comparing' !
-
-
-= other <Object> ^<Boolean>
-
-	^other isNil! !
-
-! (Delta mirrorFor: #UndefinedObject) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	strm putAll: 'nil'! !
 

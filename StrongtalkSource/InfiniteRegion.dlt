@@ -30,6 +30,30 @@ initialize
 
 	TheInstance := InfiniteRegion new.! !
 
+! (Delta mirrorFor: #InfiniteRegion) methodsFor: 'accessing' !
+
+
+enclosedRect ^<Rect>
+
+	self halt.	"This should really never get here; almost all callers should be optimized"
+	^Rectangle infinite!
+
+enclosingRect ^<Rect>
+
+	self halt.	"This should really never get here; almost all callers should be optimized"
+	^Rectangle infinite! !
+
+! (Delta mirrorFor: #InfiniteRegion) methodsFor: 'operations' !
+
+
+relativeTo: p <Point> ^<Region>
+
+	^self!
+
+translatedBy: p <Point> ^<Region>
+
+	^self! !
+
 ! (Delta mirrorFor: #InfiniteRegion) methodsFor: 'testing' !
 
 
@@ -56,28 +80,4 @@ surelyContains: other <Region> ^<Boolean>
 translatedBy: p <Point> mightIntersect: r <Region>  ^<Boolean>
 
 	^true! !
-
-! (Delta mirrorFor: #InfiniteRegion) methodsFor: 'operations' !
-
-
-relativeTo: p <Point> ^<Region>
-
-	^self!
-
-translatedBy: p <Point> ^<Region>
-
-	^self! !
-
-! (Delta mirrorFor: #InfiniteRegion) methodsFor: 'accessing' !
-
-
-enclosedRect ^<Rect>
-
-	self halt.	"This should really never get here; almost all callers should be optimized"
-	^Rectangle infinite!
-
-enclosingRect ^<Rect>
-
-	self halt.	"This should really never get here; almost all callers should be optimized"
-	^Rectangle infinite! !
 

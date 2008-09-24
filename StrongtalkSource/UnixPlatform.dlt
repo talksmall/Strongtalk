@@ -43,11 +43,8 @@ DLLLookup: name <Str> in: library <Str>
     ^r!
 
 DLLMapName: name <Str> ^<Str>
-    name = 'user'       ifTrue: [^'USER32.DLL'].
-    name = 'gdi'            ifTrue: [^'GDI32.DLL'].
-    name = 'kernel'     ifTrue: [^'KERNEL32.DLL'].
-    name = 'comdlg'     ifTrue: [^'COMDLG32.DLL'].
-    self error: 'Mapping ', name, ' not found'! !
+    name = 'libc' ifTrue: [^'libc.so.6'].
+    ^name, '.so'! !
 
 ! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'clipboard access' !
 
@@ -156,24 +153,13 @@ wordSize ^<Int>
 
 environmentVariableAt: key <Str> ifAbsent: blk <[^X def]> ^ <Str | X>
 
-    | cKey <CString> cValue <CString> size <Int> cSize <ExternalProxy> result <Str> done <Boolean> found <Boolean> |
-    size := 1024.
+    | cKey <CString> cValue <CString> |
     cKey := CString for: key.
-    done := false.
-    [ done ] whileFalse: [
-        cValue := CString for: (String new: size).
-        cSize := {{<kernel ExternalProxy GetEnvironmentVariableA> key: cKey buffer: cValue bufSize: size}}.
-        cSize asSmallInteger > size
-            ifTrue: [   cValue free.                                                    "Buffer size too small for value of variable"
-                            size := cSize asSmallInteger ]
-            ifFalse: [  done := true.                                                   "Buffer size ok, check if variable was found"
-                            (found := cSize asSmallInteger ~= 0)
-                                ifTrue: [ result := cValue asString ] ] ].
-    cKey free. 
-    cValue free.
-    ^found
-        ifTrue: [ result ]
-        ifFalse: blk ! !
+    [cValue := {{<libc CString getenv> key: cKey}}.
+    ^cValue isNull
+    	ifTrue: [blk value]
+    	ifFalse: [cValue asString]]
+    	ensure: [cKey free]! !
 
 ! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'initialization' !
 
@@ -181,6 +167,13 @@ environmentVariableAt: key <Str> ifAbsent: blk <[^X def]> ^ <Str | X>
 initialize
 
     self DLLInitialize! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'os specific' !
+
+
+currentThreadId
+	"^ 0"
+	^ {{ primitiveCurrentThreadId }}! !
 
 ! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'os streams' !
 
@@ -196,15 +189,11 @@ errorStream ^<CharOutputStream>
 
 pathClass ^<FilePath class>
 
-    ^Win32FilePath!
+    ^UnixFilePath!
 
 patternClass ^<FilePattern class>
 
-    ^Win32FilePattern!
-
-processClass
-
-	^UnixProcess! !
+    ^UnixFilePattern! !
 
 ! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'private' !
 
@@ -245,5 +234,19 @@ openClipboard
 
 usesCrLfConvention ^<Boolean>
 
-    ^true! !
+    ^false! !
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'time' !
+
+
+localSYSTEMTIME ^<SYSTEMTIME>
+
+	| t tm |
+	t := TimeT new allocate.
+	[{{<libc ExternalProxy time> struct: t}} isAllOnes
+		ifTrue: [self error: 'Invalid time'].
+	tm := {{<libc TM gmtime>
+					struct: t}}.
+	^tm asSYSTEMTIME] ensure: [t free]
+! !
 

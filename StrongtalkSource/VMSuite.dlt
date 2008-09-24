@@ -56,6 +56,86 @@ runVanilla
 	self showBanner: 'VM Test Suite'.
 	self printAndEvaluate: 'vanilla' do: [ self runSuite ]! !
 
+! (Delta mirrorFor: #VMSuite) methodsFor: 'block tests' !
+
+
+blockTest1
+	| blk1 <[]> blk2 <[]>  i <Integer> b <Boolean> |
+	blk1 := [ i := i - 1 ].
+	blk2 := [ i := i - 2 ].	
+	1000 timesRepeat: [ 
+		i := 1000.
+		b:= true.
+		[ i > 0 ] whileTrue: [
+			b 
+				ifTrue: blk1 
+				ifFalse: blk2.
+			b := b not
+		]
+	]
+!
+
+blockTest2
+	|  i <Integer> b <Boolean> blk <[]> |
+	100 timesRepeat: [ 
+		i := 1000.
+		b:= true.
+		[ i > 0 ] whileTrue: [
+			blk := b 
+				ifTrue: [ [ i := i - 1 ] ] 
+				ifFalse: [ [ i := i - 2 ] ].
+			blk value.
+			b := b not
+		]
+	]!
+
+blockTest3
+	|  i <Integer> b <Boolean> blk <[]> |
+	100 timesRepeat: [ 
+		i := 1000.
+		b:= true.
+		[ i > 0 ] whileTrue: [
+			b 
+				ifTrue: [  blk := [ i := i - 1 ] ] 
+				ifFalse: [ blk := [ i := i - 2 ] ].
+			blk value.
+			b := b not
+		]
+	]! !
+
+! (Delta mirrorFor: #VMSuite) methodsFor: 'configurations' !
+
+
+clearSystem
+ 	Transcript show: 'Clear system'; cr.
+
+	"Clear invocation counters"
+	{{primitiveClearInvocationCounters}}.
+
+	"Clear inline caches"
+	{{primitiveClearInlineCaches}}.
+
+	"Clear lookup cache"
+	{{primitiveClearLookupCache}}.
+
+	"Cleanup heap"
+	{{self primitiveGarbageCollect}}.
+!
+
+setCompiledOnly
+	VM booleanAt: #CompiledCodeOnly				put: true.
+	VM booleanAt: #UseRecompilation			    	put: false.
+	VM booleanAt: #DeferUncommonBranches	put: false.!
+
+setInterpretedOnly
+	VM booleanAt: #CompiledCodeOnly	put: false.
+	VM booleanAt: #UseRecompilation		put: false.
+!
+
+setRecompilation
+	VM booleanAt: #CompiledCodeOnly	put: false.
+	VM booleanAt: #UseRecompilation		put: true.! !
+
 ! (Delta mirrorFor: #VMSuite) methodsFor: 'private' !
 
 
@@ -128,39 +208,6 @@ showBanner: title
 
 verify
 	{{primitiveVerify}}! !
-
-! (Delta mirrorFor: #VMSuite) methodsFor: 'configurations' !
-
-
-clearSystem
- 	Transcript show: 'Clear system'; cr.
-
-	"Clear invocation counters"
-	{{primitiveClearInvocationCounters}}.
-
-	"Clear inline caches"
-	{{primitiveClearInlineCaches}}.
-
-	"Clear lookup cache"
-	{{primitiveClearLookupCache}}.
-
-	"Cleanup heap"
-	{{self primitiveGarbageCollect}}.
-!
-
-setCompiledOnly
-	VM booleanAt: #CompiledCodeOnly				put: true.
-	VM booleanAt: #UseRecompilation			    	put: false.
-	VM booleanAt: #DeferUncommonBranches	put: false.!
-
-setInterpretedOnly
-	VM booleanAt: #CompiledCodeOnly	put: false.
-	VM booleanAt: #UseRecompilation		put: false.
-!
-
-setRecompilation
-	VM booleanAt: #CompiledCodeOnly	put: false.
-	VM booleanAt: #UseRecompilation		put: true.! !
 
 ! (Delta mirrorFor: #VMSuite) methodsFor: 'test code' !
 
@@ -294,51 +341,4 @@ testDeadCode2
     self  dead11.
     self  dead12.
 ! !
-
-! (Delta mirrorFor: #VMSuite) methodsFor: 'block tests' !
-
-
-blockTest1
-	| blk1 <[]> blk2 <[]>  i <Integer> b <Boolean> |
-	blk1 := [ i := i - 1 ].
-	blk2 := [ i := i - 2 ].	
-	1000 timesRepeat: [ 
-		i := 1000.
-		b:= true.
-		[ i > 0 ] whileTrue: [
-			b 
-				ifTrue: blk1 
-				ifFalse: blk2.
-			b := b not
-		]
-	]
-!
-
-blockTest2
-	|  i <Integer> b <Boolean> blk <[]> |
-	100 timesRepeat: [ 
-		i := 1000.
-		b:= true.
-		[ i > 0 ] whileTrue: [
-			blk := b 
-				ifTrue: [ [ i := i - 1 ] ] 
-				ifFalse: [ [ i := i - 2 ] ].
-			blk value.
-			b := b not
-		]
-	]!
-
-blockTest3
-	|  i <Integer> b <Boolean> blk <[]> |
-	100 timesRepeat: [ 
-		i := 1000.
-		b:= true.
-		[ i > 0 ] whileTrue: [
-			b 
-				ifTrue: [  blk := [ i := i - 1 ] ] 
-				ifFalse: [ blk := [ i := i - 2 ] ].
-			blk value.
-			b := b not
-		]
-	]! !
 

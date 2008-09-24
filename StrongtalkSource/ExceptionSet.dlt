@@ -1,0 +1,43 @@
+Delta define: #ExceptionSet as: (
+(Class subclassOf: 'Object' instanceVariables: 'exceptions')) !
+
+(Delta mirrorFor: #ExceptionSet) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ExceptionSet) group: 'Unclassified'!
+
+(Delta mirrorFor: #ExceptionSet)
+comment: 
+''!
+
+! (Delta mirrorFor: #ExceptionSet) classSide methodsFor: 'instance creation' !
+
+
+with: exceptionClass
+
+	^self new initialize , exceptionClass! !
+
+! (Delta mirrorFor: #ExceptionSet) methodsFor: 'accessing' !
+
+
+, exceptionClass
+
+	exceptions add: exceptionClass!
+
+add: exceptionSelector
+
+	! !
+
+! (Delta mirrorFor: #ExceptionSet) methodsFor: 'exception selector' !
+
+
+handles: anException
+
+	^exceptions includes: anException class! !
+
+! (Delta mirrorFor: #ExceptionSet) methodsFor: 'initialization' !
+
+
+initialize
+
+	exceptions := Set new! !
+

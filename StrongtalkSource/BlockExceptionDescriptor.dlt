@@ -1,0 +1,80 @@
+Delta define: #BlockExceptionDescriptor as: (
+(Class subclassOf: 'Object' instanceVariables: 'defaultBlock
+handlerBlock
+resumeBlock')) !
+
+(Delta mirrorFor: #BlockExceptionDescriptor) revision: '$Revision$'!
+
+(Delta mirrorFor: #BlockExceptionDescriptor) group: 'exceptions'!
+
+(Delta mirrorFor: #BlockExceptionDescriptor)
+comment: 
+'Implements the <exceptionDescriptor> protocol from the ANSI standard using configurable actionsdefined as blocks. Intended to be used primarily as a testing aid.'!
+
+! (Delta mirrorFor: #BlockExceptionDescriptor) classSide methodsFor: 'instantiation' !
+
+
+falseSelector
+
+	^BlockExceptionSelector handlesBlock: [:ex| false]!
+
+new
+
+	^super new
+		initialize;
+		yourself!
+
+trueSelector
+
+	^BlockExceptionSelector handlesBlock: [:ex| true]! !
+
+! (Delta mirrorFor: #BlockExceptionDescriptor) methodsFor: 'configuring' !
+
+
+defaultActionBlock: block
+
+	defaultBlock := block!
+
+handler: handler
+
+	handlerBlock value: handler !
+
+handlerBlock: block
+
+	handlerBlock := block !
+
+resumeBlock: aBlock
+
+	resumeBlock := aBlock! !
+
+! (Delta mirrorFor: #BlockExceptionDescriptor) methodsFor: 'exception descriptor' !
+
+
+defaultAction
+
+	^defaultBlock value!
+
+isResumable
+
+	^true!
+
+resume: aValue
+
+	resumeBlock value: aValue! !
+
+! (Delta mirrorFor: #BlockExceptionDescriptor) methodsFor: 'initialization' !
+
+
+initialize
+
+	defaultBlock := [nil].
+	handlerBlock := [:ignore|].
+	resumeBlock := [:ignore|]! !
+
+! (Delta mirrorFor: #BlockExceptionDescriptor) methodsFor: 'restricted - exception handling' !
+
+
+inContextDo: aBlock
+
+	^aBlock value! !
+

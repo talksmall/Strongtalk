@@ -1,0 +1,227 @@
+Delta define: #Exception as: (
+(Class subclassOf: 'Object' instanceVariables: 'messageText
+tag
+handler
+signalledHandler "this was the first handler when the exception was originally signalled"
+contextBlock	"used to mark the signalling context - should be restored whenever evaluated"
+resumeBlock')) !
+
+(Delta mirrorFor: #Exception) revision: '$Revision$'!
+
+(Delta mirrorFor: #Exception) group: 'exceptions'!
+
+(Delta mirrorFor: #Exception)
+comment: 
+'Base class of the exception hierarchy. Implements the core of the ANSI exception handling protocols'!
+
+! (Delta mirrorFor: #Exception) classSide methodsFor: 'Camp Smalltalk' !
+
+
+sunitSignalWith: aString
+  
+        ^self signal: aString! !
+
+! (Delta mirrorFor: #Exception) classSide methodsFor: 'exceptionInstantiator' !
+
+
+new
+
+	^super new
+			initialize;
+			yourself!
+
+signal
+"Signal the occurrence of an exceptional condition."
+	^ self new signal!
+
+signal: signalerText
+"Signal the occurrence of an exceptional condition with a specified textual description."
+	^ self new signal: signalerText! !
+
+! (Delta mirrorFor: #Exception) classSide methodsFor: 'exceptionSelector' !
+
+
+, anotherException
+"Create an exception set."
+
+	^(ExceptionSet with: self)
+			,  anotherException!
+
+handles: exception
+"Determine whether an exception handler will accept a signaled exception."
+	^ exception isKindOf: self! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'Camp Smalltalk' !
+
+
+sunitExitWith: aValue
+ 
+        self return: aValue! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'exceptionBuilder' !
+
+
+tag: t
+"This message is not specified in the ANSI protocol,
+but that looks like an oversight because #tag is specified,
+and the spec states that the signaler may store the tag value."
+	tag := t! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'exceptionDescription' !
+
+
+tag
+"Return an exception's tag value."
+	^tag == nil
+		ifTrue: [self messageText]
+		ifFalse: [tag]! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'handling' !
+
+
+isNested
+"Determine whether the current exception handler is within 
+the scope of another handler for the same exception."
+	^ handler notNil and: [handler nextHandler canHandleSignal: self]!
+
+outer
+"Evaluate the enclosing exception action and return to here 
+instead of signal if it resumes (see #resumeUnchecked:)."
+	| oldHandler oldContext |
+	self isResumable
+		ifFalse: [self pass].
+	["oldContext := contextBlock."
+	"^(self installContextAndDo: ["
+	^(oldHandler := handler)
+			outer: self return: [:value| ^value]
+															"]) value"
+															]
+		ensure: [handler := oldHandler.
+						"contextBlock := oldContext"]!
+
+pass
+"Yield control to the enclosing exception action for the receiver."
+	contextBlock value: [handler pass: self]!
+
+resignalAs: replacementException
+"Signal an alternative exception in place of the receiver."
+	contextBlock value: [replacementException signal]!
+
+resume
+"Return from the message that signaled the receiver."
+	self resume: nil!
+
+resume: resumptionValue
+"Return resumptionValue as the value of the signal message."
+	resumeBlock value: resumptionValue!
+
+retry
+"Abort an exception handler and re-evaluate its protected block."
+	handler retry!
+
+retryUsing: alternativeBlock
+"Abort an exception handler and evaluate a new block 
+in place of the handler's protected block."
+	handler retryUsing: alternativeBlock!
+
+return
+"Return nil as the value of the block protected 
+by the active exception handler."
+	self return: nil!
+
+return: returnValue
+"Return the argument as the value of the block protected 
+by the active exception handler."
+	handler return: returnValue! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'printing' !
+
+
+description
+"Return a textual description of the exception."
+	| desc mt |
+	desc := self class name asString.
+	^(mt := self messageText) == nil
+		ifTrue: [desc]
+		ifFalse: [desc, ': ', mt]!
+
+messageText
+"Return an exception's message text."
+	^messageText!
+
+printOn: stream
+
+	stream nextPutAll: self description! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'priv handling' !
+
+
+defaultAction
+"The default action taken if the exception is signaled."
+	self subclassResponsibility!
+
+handler: aHandler
+
+	handler := aHandler!
+
+isResumable
+"Determine whether an exception is resumable."
+	^ true! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'private signal handling' !
+
+
+installContextAndDo: aBlock
+	"sets up a new context used as the target of a non-local return whenever an exception
+	handling action needs to return to the signalling context. The context reference is cached
+	in contextBlock. Whenever this block gets evaluated, its context will be consumed, so a
+	new one needs to be set up. This is the purpose of the recursive call in the innermost block"
+	|result|
+	contextBlock := [:action| ^[(self installContextAndDo: action) value]].
+	result := aBlock value.
+	^[result]! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'restricted exception handling' !
+
+
+inContextDo: aBlock
+
+	Processor activeProcess
+		inEnvironment: signalledHandler
+		do: aBlock
+	!
+
+initialize
+
+	resumeBlock := [:resumptionValue| contextBlock value: [resumptionValue]]!
+
+withResume: aResumeBlock do: aBlock
+
+	| oldResume |
+	oldResume := resumeBlock.
+	resumeBlock := aResumeBlock.
+	aBlock
+		ensure: [resumeBlock := oldResume]! !
+
+! (Delta mirrorFor: #Exception) methodsFor: 'signaling' !
+
+
+messageText: signalerText
+"Set an exception's message text."
+	messageText := signalerText!
+
+privateSignal
+
+	^self installContextAndDo: [signalledHandler := Processor activeProcess handlerChain.
+														signalledHandler handle: self]!
+
+signal
+
+	^self privateSignal value!
+
+signal: signalerText
+"Signal the occurrence of an exceptional condition with a 
+specified textual description."
+	self messageText: signalerText.
+	^ self signal! !
+

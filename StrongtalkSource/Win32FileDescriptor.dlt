@@ -13,77 +13,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
 '!
 
-! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'private' !
-
-
-initializeIOCount
-    ioCount := ExternalProxy new.
-    ioCount malloc: 4.!
-
-ioCount ^<ExternalProxy>
-
-	^ioCount!
-
-postCopy
-    super postCopy.
-    self initializeIOCount.!
-
-printLastError
-	| result |
-	"Dump the error message for the last windows call"
-	"%temporary"
-	result := {{<kernel ExternalProxy GetLastError>geterror}}.
-	Platform errorStream show: 'Last error from windows: ', result asSmallInteger printString; cr!
-
-setExternalPosition: p <Int>
-    "%todo: support large integer positions for extremely large files"
-    {{<kernel ExternalProxy SetFilePointer>
-        handle: self handle
-        distanceLow: p
-        distanceHigh: 0
-        moveMethod: 0 }}    "FILE_BEGIN"! !
-
-! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'i/o' !
-
-
-readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
-    | result <ExternalProxy> count <Int> |
-    self position = pos
-        ifFalse: [ self position: pos ].
-    self knowAtEnd
-        ifTrue: [        count := 0 ]
-        ifFalse: [
-                    result := {{<kernel ExternalProxy ReadFile>
-                        handle: self handle
-                        buffer: self buffer
-                        count: self bufferSize
-                        numberRead: self ioCount
-                        overlapped: 0    }}.
-                    result isNull
-                        ifTrue: [ 
-						self printLastError.
-						errf value: #IOError.
-                                ^0    ].
-                    count := self ioCount smallIntegerAt: 0.    ].
-    self setPosition: self position + count.
-    ^count!
-
-write: nBytes <Int> at: pos <Int> ifFail: errf <[ExternalError]>
-    | result <ExternalProxy> count <Int> |
-    self position ~= pos
-        ifTrue: [ self position: pos ].
-    result := {{<kernel ExternalProxy WriteFile>
-        handle: self handle
-        buffer: self buffer
-        count: nBytes
-        numberWritten: self ioCount
-        overlapped: 0 }}.
-    result isNull
-        ifTrue: [ errf value: #IOError.
-                ^0    ].
-    count := self ioCount smallIntegerAt: 0.
-    self setPosition: self position + count.! !
-
 ! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'accessing' !
 
 
@@ -152,10 +81,81 @@ severExternalConnections
     result isNull
         ifTrue: [ self error: 'Error closing file handle' ].! !
 
+! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'i/o' !
+
+
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    self knowAtEnd
+        ifTrue: [        count := 0 ]
+        ifFalse: [
+                    result := {{<kernel ExternalProxy ReadFile>
+                        handle: self handle
+                        buffer: self buffer
+                        count: self bufferSize
+                        numberRead: self ioCount
+                        overlapped: 0    }}.
+                    result isNull
+                        ifTrue: [ 
+						self printLastError.
+						errf value: #IOError.
+                                ^0    ].
+                    count := self ioCount smallIntegerAt: 0.    ].
+    self setPosition: self position + count.
+    ^count!
+
+write: nBytes <Int> at: pos <Int> ifFail: errf <[ExternalError]>
+    | result <ExternalProxy> count <Int> |
+    self position ~= pos
+        ifTrue: [ self position: pos ].
+    result := {{<kernel ExternalProxy WriteFile>
+        handle: self handle
+        buffer: self buffer
+        count: nBytes
+        numberWritten: self ioCount
+        overlapped: 0 }}.
+    result isNull
+        ifTrue: [ errf value: #IOError.
+                ^0    ].
+    count := self ioCount smallIntegerAt: 0.
+    self setPosition: self position + count.! !
+
 ! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'initialization' !
 
 
 mode: m <Symbol>
     super mode: m.
     self initializeIOCount.! !
+
+! (Delta mirrorFor: #Win32FileDescriptor) methodsFor: 'private' !
+
+
+initializeIOCount
+    ioCount := ExternalProxy new.
+    ioCount malloc: 4.!
+
+ioCount ^<ExternalProxy>
+
+	^ioCount!
+
+postCopy
+    super postCopy.
+    self initializeIOCount.!
+
+printLastError
+	| result |
+	"Dump the error message for the last windows call"
+	"%temporary"
+	result := {{<kernel ExternalProxy GetLastError>geterror}}.
+	Platform errorStream show: 'Last error from windows: ', result asSmallInteger printString; cr!
+
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    {{<kernel ExternalProxy SetFilePointer>
+        handle: self handle
+        distanceLow: p
+        distanceHigh: 0
+        moveMethod: 0 }}    "FILE_BEGIN"! !
 

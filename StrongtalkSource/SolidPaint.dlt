@@ -17,13 +17,6 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
 '!
 
-! (Delta mirrorFor: #SolidPaint) classSide methodsFor: 'restricted-instance creation' !
-
-
-forWin32Color: c <Int> ^<Instance>
-
-	^self new initWin32Color: c! !
-
 ! (Delta mirrorFor: #SolidPaint) classSide methodsFor: 'instance-creation' !
 
 
@@ -36,6 +29,31 @@ red: r <Int> green: g <Int> blue: b <Int>  ^<Instance>
 	"r,g, & b all must be in the range 0-255"
 
 	^self new initRed: r green: g blue: b ditherable: false! !
+
+! (Delta mirrorFor: #SolidPaint) classSide methodsFor: 'restricted-instance creation' !
+
+
+forWin32Color: c <Int> ^<Instance>
+
+	^self new initWin32Color: c! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'accessing' !
+
+
+blue ^<Int>
+	"blue value in range 0-255"
+
+	^(self win32Color bitShift: -16) bitAnd: 16rFF!
+
+green ^<Int>
+	"green value in range 0-255"
+
+	^(self win32Color bitShift: -8) bitAnd: 16rFF!
+
+red ^<Int>
+	"Red value in range 0-255"
+
+	^self win32Color bitAnd: 16rFF! !
 
 ! (Delta mirrorFor: #SolidPaint) methodsFor: 'comparing' !
 
@@ -66,6 +84,37 @@ initRed: r <Int> green: g <Int> blue: b ditherable: ditherable <Boolean>
 initWin32Color: c <Int>
 
 	win32Color := c! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	super printOn: strm.
+	strm putAll: '(rgb:';
+			print: self red; put: Character space;
+			print: self green; put: Character space;
+			print: self blue; put: Character space;
+			put: $).! !
+
+! (Delta mirrorFor: #SolidPaint) methodsFor: 'restricted-double dispatching' !
+
+
+contrastingFromSolidPaint: fore <SolidPaint> ^<Paint>
+
+	"The current algorithm uses a simple definition of contrast: the difference
+		in the sum r+g+b for the two colors.  If the contrast is not > maxContrast/2, then
+		either black or white is returned, whichever has more contrast from the
+		background color.  Otherwise, the foreground color remains the same."
+
+	| backSum <Int> midpoint <Int> |
+	midpoint := (3*256)//2.
+	backSum := self red + self green + self blue.
+	^((fore red + fore green + fore blue) - backSum) abs > midpoint
+		ifTrue: [ fore ]
+		ifFalse: [ backSum < midpoint
+							ifTrue: [ Paint white ]
+							ifFalse: [ Paint black ]	]! !
 
 ! (Delta mirrorFor: #SolidPaint) methodsFor: 'restricted-win32 accessing' !
 
@@ -100,53 +149,4 @@ win32Color ^<Int>
 contrastingWith: background <Paint>  ^<Paint>
 
 	^background contrastingFromSolidPaint: self! !
-
-! (Delta mirrorFor: #SolidPaint) methodsFor: 'restricted-double dispatching' !
-
-
-contrastingFromSolidPaint: fore <SolidPaint> ^<Paint>
-
-	"The current algorithm uses a simple definition of contrast: the difference
-		in the sum r+g+b for the two colors.  If the contrast is not > maxContrast/2, then
-		either black or white is returned, whichever has more contrast from the
-		background color.  Otherwise, the foreground color remains the same."
-
-	| backSum <Int> midpoint <Int> |
-	midpoint := (3*256)//2.
-	backSum := self red + self green + self blue.
-	^((fore red + fore green + fore blue) - backSum) abs > midpoint
-		ifTrue: [ fore ]
-		ifFalse: [ backSum < midpoint
-							ifTrue: [ Paint white ]
-							ifFalse: [ Paint black ]	]! !
-
-! (Delta mirrorFor: #SolidPaint) methodsFor: 'accessing' !
-
-
-blue ^<Int>
-	"blue value in range 0-255"
-
-	^(self win32Color bitShift: -16) bitAnd: 16rFF!
-
-green ^<Int>
-	"green value in range 0-255"
-
-	^(self win32Color bitShift: -8) bitAnd: 16rFF!
-
-red ^<Int>
-	"Red value in range 0-255"
-
-	^self win32Color bitAnd: 16rFF! !
-
-! (Delta mirrorFor: #SolidPaint) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	super printOn: strm.
-	strm putAll: '(rgb:';
-			print: self red; put: Character space;
-			print: self green; put: Character space;
-			print: self blue; put: Character space;
-			put: $).! !
 

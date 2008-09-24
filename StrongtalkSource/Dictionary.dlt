@@ -73,40 +73,24 @@ test
 	d checkValidity.
 	self test: 10 is: [ new ].! !
 
-! (Delta mirrorFor: #Dictionary) methodsFor: 'private-superclass implementation' !
+! (Delta mirrorFor: #Dictionary) methodsFor: 'accessing' !
 
 
-buildValForKey: k <K> element: el <E> ^<VarAssoc[K,E]>
+keys ^<Set[K]>
 
-	^Association[K,E] key: k value: el!
+	| s <Set[K]> |
 
-elementFor: assoc <Assoc[K,E]> ^<E>
+	s := Set[K] new: self size.
+	self keysDo:
+		[ :key <K> |
+			s include: key ].
+	^s!
 
-	^assoc value!
+values ^<OrdCltn[E]>
 
-elementForCopy: el <VarAssoc[K,E]> ^<VarAssoc[K,E]>
-
-	^el copy!
-
-hashFor: key <Object> ^<Int>
-
-	^key hash!
-
-key: k <Object> matches: another <Object> ^<Boolean>
-
-	^k = another!
-
-keyFor: assoc <Assoc[K,E]> ^<K>
-
-	^assoc key!
-
-objToIncludeFor: newAssoc <VarAssoc[K,E]>
-withExisting: assoc <VarAssoc[K,E]>
-^<VarAssoc[K,E]>
-
-	"Dictionaries reuse the previous association"
-	assoc value: newAssoc value.
-	^assoc! !
+	^self inject: (OrderedCollection[E] new: self size) into:
+		[ :oc <OrdCltn[E]>  :el <E> |
+			oc add: el; yourself  ]! !
 
 ! (Delta mirrorFor: #Dictionary) methodsFor: 'adding' !
 
@@ -119,25 +103,6 @@ at: key <K> put: el <E> ifNew: blk <[]> ^<E>
 
 	self tableAt: key put: el ifNew: blk.
 	^el! !
-
-! (Delta mirrorFor: #Dictionary) methodsFor: 'iterating' !
-
-
-keysAndValuesDo: f <[K,E]>
-
-	self contentsDo:
-		[ :assoc <Assoc[K,E]> |
-		   f value: assoc key value: assoc value ]! !
-
-! (Delta mirrorFor: #Dictionary) methodsFor: 'testing' !
-
-
-= other <Object> ^<Boolean>
-
-	^super = other and: [
-		self == other or: [
-			"We already know that the other object must be a Dictionary"
-			self keys = (guaranteed <Dict[Object,Object]> other) keys	]]! !
 
 ! (Delta mirrorFor: #Dictionary) methodsFor: 'associations' !
 
@@ -185,44 +150,6 @@ removeAssociation: assoc <Assoc[K,E]> ifAbsent: fn <[^X def]>  ^<Assoc[K,E] | X>
 	self removeKey: assoc key ifAbsent: [ ^fn value ].
 	^assoc! !
 
-! (Delta mirrorFor: #Dictionary) methodsFor: 'accessing' !
-
-
-keys ^<Set[K]>
-
-	| s <Set[K]> |
-
-	s := Set[K] new: self size.
-	self keysDo:
-		[ :key <K> |
-			s include: key ].
-	^s!
-
-values ^<OrdCltn[E]>
-
-	^self inject: (OrderedCollection[E] new: self size) into:
-		[ :oc <OrdCltn[E]>  :el <E> |
-			oc add: el; yourself  ]! !
-
-! (Delta mirrorFor: #Dictionary) methodsFor: 'virtual operations' !
-
-
-merge: d <Dictionary[K,E]> ^ <DictionaryMerge>
-
-^DictionaryMerge new dict1: self dict2: d!
-
-override: d <Dictionary[K,E]> ^ <DictionaryOverride>
-
-^DictionaryOverride new dict1: self dict2: d!
-
-virtualCollect: blk <[E, ^X def]> ^<VirtualCollector[X]>
-
-	^ VirtualDictCollector[K,X] on: self map: blk!
-
-virtualSelectorClass^ <VirtualDictSelector[K,E] class>
-
-	^VirtualDictSelector[K,E]! !
-
 ! (Delta mirrorFor: #Dictionary) methodsFor: 'combined getting/putting' !
 
 
@@ -260,6 +187,15 @@ at: key <K> ifPresent: pblk <[E]> ifAbsentPut: ablk <[^E]> ^<E>
 								ifTrue: [ reusableSlot := index ].
 						]! !
 
+! (Delta mirrorFor: #Dictionary) methodsFor: 'iterating' !
+
+
+keysAndValuesDo: f <[K,E]>
+
+	self contentsDo:
+		[ :assoc <Assoc[K,E]> |
+		   f value: assoc key value: assoc value ]! !
+
 ! (Delta mirrorFor: #Dictionary) methodsFor: 'private-subroutines for #tableAt:put:ifNew:' !
 
 
@@ -271,4 +207,68 @@ value: val <VarAssoc[K,E]>
 
 	val value: el.
 	^val! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'private-superclass implementation' !
+
+
+buildValForKey: k <K> element: el <E> ^<VarAssoc[K,E]>
+
+	^Association[K,E] key: k value: el!
+
+elementFor: assoc <Assoc[K,E]> ^<E>
+
+	^assoc value!
+
+elementForCopy: el <VarAssoc[K,E]> ^<VarAssoc[K,E]>
+
+	^el copy!
+
+hashFor: key <Object> ^<Int>
+
+	^key hash!
+
+key: k <Object> matches: another <Object> ^<Boolean>
+
+	^k = another!
+
+keyFor: assoc <Assoc[K,E]> ^<K>
+
+	^assoc key!
+
+objToIncludeFor: newAssoc <VarAssoc[K,E]>
+withExisting: assoc <VarAssoc[K,E]>
+^<VarAssoc[K,E]>
+
+	"Dictionaries reuse the previous association"
+	assoc value: newAssoc value.
+	^assoc! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'testing' !
+
+
+= other <Object> ^<Boolean>
+
+	^super = other and: [
+		self == other or: [
+			"We already know that the other object must be a Dictionary"
+			self keys = (guaranteed <Dict[Object,Object]> other) keys	]]! !
+
+! (Delta mirrorFor: #Dictionary) methodsFor: 'virtual operations' !
+
+
+merge: d <Dictionary[K,E]> ^ <DictionaryMerge>
+
+^DictionaryMerge new dict1: self dict2: d!
+
+override: d <Dictionary[K,E]> ^ <DictionaryOverride>
+
+^DictionaryOverride new dict1: self dict2: d!
+
+virtualCollect: blk <[E, ^X def]> ^<VirtualCollector[X]>
+
+	^ VirtualDictCollector[K,X] on: self map: blk!
+
+virtualSelectorClass^ <VirtualDictSelector[K,E] class>
+
+	^VirtualDictSelector[K,E]! !
 

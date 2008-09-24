@@ -160,36 +160,6 @@ asOrderedCollection ^<OrdCltn[EX]>
 	"the guarantee is safe because of the inference clause"
 	^guaranteed <OrdCltn[EX]> self! !
 
-! (Delta mirrorFor: #OrderedCollection) methodsFor: 'iterating' !
-
-
-collect: map <[E, ^R def]> ^<OrdCltn[R]>
-
-	^(self collectUsingAdd: map) asOrderedCollection! !
-
-! (Delta mirrorFor: #OrderedCollection) methodsFor: 'stack operations' !
-
-
-bottomToTopDo: blk <[E]>
-
-	self do: blk!
-
-pop ^<E>
-
-	^self removeLast!
-
-push: el <E>
-
-	self addLast: el!
-
-top ^<E>
-
-	^self last!
-
-topToBottomDo: blk <[E]>
-
-	self reverseDo: blk! !
-
 ! (Delta mirrorFor: #OrderedCollection) methodsFor: 'copying' !
 
 
@@ -216,16 +186,12 @@ copyWithSize: s <Int> ^<OrdCltn[EX]>
 
 	^copy! !
 
-! (Delta mirrorFor: #OrderedCollection) methodsFor: 'restricted' !
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'iterating' !
 
 
-newCopyOfSize: size <Int>
-thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
-^<OrdCltn[EX | X]>
-		{where X is returnType of #anElement message of arg 2;
-		     where EX is returnType of #anElement message of receiverType}
+collect: map <[E, ^R def]> ^<OrdCltn[R]>
 
-	^(OrderedCollection[EX | X] new: size) size: size! !
+	^(self collectUsingAdd: map) asOrderedCollection! !
 
 ! (Delta mirrorFor: #OrderedCollection) methodsFor: 'replacing' !
 
@@ -243,4 +209,38 @@ startingAt: repStart <Int>
 		ifFalse: [ self error: 'range out of bounds' ].
 
 	self contents replaceFrom: start + self startGap to: stop + self startGap with: other startingAt: repStart! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'restricted' !
+
+
+newCopyOfSize: size <Int>
+thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
+^<OrdCltn[EX | X]>
+		{where X is returnType of #anElement message of arg 2;
+		     where EX is returnType of #anElement message of receiverType}
+
+	^(OrderedCollection[EX | X] new: size) size: size! !
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'stack operations' !
+
+
+bottomToTopDo: blk <[E]>
+
+	self do: blk!
+
+pop ^<E>
+
+	^self removeLast!
+
+push: el <E>
+
+	self addLast: el!
+
+top ^<E>
+
+	^self last!
+
+topToBottomDo: blk <[E]>
+
+	self reverseDo: blk! !
 

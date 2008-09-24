@@ -24,25 +24,20 @@ for: obj <EOBJ> mode: m <Symbol>  ^<Instance>
 
 	^self new externalObject: obj; mode: m! !
 
-! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'initialization' !
+! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'accessing' !
 
 
-mode: m <Symbol>
+buffer ^<ExternalProxy>
 
-	mode := m.
-	buffer := ExternalProxy new.! !
+	^buffer!
 
-! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'i/o' !
+bufferSize ^<Int>
 
+	^bufferSize!
 
-readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
-    "read as many bytes as possible into the buffer (up to its size), and return the number
-     of bytes that were actually read.  The semantics at end of file are to return 0 with no error."
-    self subclassResponsibility!
+getBufferSize ^<Int>
 
-write: nBytes <Int> at: pos <Int> ifFail: errf <[ExternalError]>
-    "write nBytes from the buffer"
-    self subclassResponsibility! !
+	self subclassResponsibility! !
 
 ! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'control' !
 
@@ -59,20 +54,25 @@ openIfFail: err <[ExternalError]>
 	self bufferSize: self getBufferSize.
 	self buffer malloc: self bufferSize.! !
 
-! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'accessing' !
+! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'i/o' !
 
 
-buffer ^<ExternalProxy>
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    "read as many bytes as possible into the buffer (up to its size), and return the number
+     of bytes that were actually read.  The semantics at end of file are to return 0 with no error."
+    self subclassResponsibility!
 
-	^buffer!
+write: nBytes <Int> at: pos <Int> ifFail: errf <[ExternalError]>
+    "write nBytes from the buffer"
+    self subclassResponsibility! !
 
-bufferSize ^<Int>
+! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'initialization' !
 
-	^bufferSize!
 
-getBufferSize ^<Int>
+mode: m <Symbol>
 
-	self subclassResponsibility! !
+	mode := m.
+	buffer := ExternalProxy new.! !
 
 ! (Delta mirrorFor: #ExternalStreamDescriptor) methodsFor: 'private' !
 

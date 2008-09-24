@@ -15,6 +15,12 @@ Tags: %BlueBook
 Use and distribution of this software is subject to the terms of the attached source license.
 '!
 
+! (Delta mirrorFor: #Behavior) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^67 "Read in as VMmemOopKlass"! !
+
 ! (Delta mirrorFor: #Behavior) classSide methodsFor: 'testing' !
 
 
@@ -23,31 +29,40 @@ test
 	[ Object name = 'Object' ] verify.
 	[ Object class name = 'Object class' ] verify.! !
 
-! (Delta mirrorFor: #Behavior) classSide methodsFor: 'file out' !
+! (Delta mirrorFor: #Behavior) methodsFor: 'Camp Smalltalk' !
 
 
-fileOutSignature ^<Integer>
-    ^67 "Read in as VMmemOopKlass"! !
+allSelectors
 
-! (Delta mirrorFor: #Behavior) methodsFor: 'private' !
+	|selectors|
+	selectors := Set withAll: self selectors.
+	self superclassesDo: [:class| selectors addAll: class selectors].
+	^selectors!
 
+selectors
 
-call: f <[Symbol,Object]> for: o <Object>
+	|selectors|
+	selectors := Set new.
+	(ClassMirror on: self)
+		methodsDo: [:method| selectors add: method selector asString].
+	^selectors!
 
-	| ga <GlobalAssociation> |
-	ga := (GlobalAssociation coerce: o else: [ ^self ]).
-	f value: ga key value: ga value.!
+sunitAllSelectors 
 
-primitiveNew ^<Object>
+        ^self allSelectors asSortedCollection asOrderedCollection!
 
-	^{{self primitiveNewIfFail: [ :err <Symbol> | "can't happen" ]}}! !
+sunitSelectors
+ 
+        ^self selectors asSortedCollection asOrderedCollection!
 
-! (Delta mirrorFor: #Behavior) methodsFor: 'instance creation' !
+superclassesDo: block
 
-
-new ^<Objectx>
-
-	^self primitiveNew! !
+	|current|
+	current := self superclassIfAbsent: [^self].
+	[current = nil]
+		whileFalse: [
+			block value: current.
+			current := current superclassIfAbsent: [^self]]! !
 
 ! (Delta mirrorFor: #Behavior) methodsFor: 'accessing' !
 
@@ -63,75 +78,6 @@ superclassIfAbsent: fail <[^X def]> ^<Behavior | X>
 	^result isNil
 		ifFalse: [ result ]
 		ifTrue: [ fail value ]! !
-
-! (Delta mirrorFor: #Behavior) methodsFor: 'temporary' !
-
-
-smalltalkKeysAndValuesDo: f <[Symbol,Object]>
-
-	| n <Int> |
-	n := {{primitiveSmalltalkSize}}.
-	1 to: n do:
-		[ :i <Int> |
-			| ga <GlobalAssociation> |
-			ga := {{primitiveSmalltalkAt: i ifFail: [ :err <Symbol> | self error: err ]}}.
-			self call: f for: ga	]! !
-
-! (Delta mirrorFor: #Behavior) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	| nm <Str> |
-	nm := self nameIfAbsent: [ 
-			strm nextPutAll: '(An anonymous ', self class name, ')'.
-			^self ].
-	strm nextPutAll: nm! !
-
-! (Delta mirrorFor: #Behavior) methodsFor: 'reflective' !
-
-
-canUnderstand: aSymbol <Symbol> ^ <Boolean>
- 	{{self primitiveMethodFor: aSymbol ifFail: [:err <CompressedSymbol> | ^false]}}.
-	^true! !
-
-! (Delta mirrorFor: #Behavior) methodsFor: 'file out' !
-
-
-fileOutClassVars ^<Array[GlobalAssociation]>
-	^{{primitiveBehavior: self classVariablesIfFail: [:err <CompressedSymbol> | self error: err]}}!
-
-fileOutHeaderOn: d <Dumper>
-	d	putByte: 		self fileOutSignature.
-	d	putInteger:	self fileOutSize.
-
-	"Part one"
-	self fileOutNonIndexableSize	fileOutOn: d.
-	0												fileOutOn: d.
-
-	"part two"
-	self class	fileOutOn: d.
-
-	"Part three"
-	self fileOutClassVars		fileOutOn: d.
-    d emptyMethodArray		fileOutOn: d.
-	self fileOutSuper				fileOutOn: d.
-	self fileOutMixin				fileOutOn: d
-!
-
-fileOutInstanceHeaderSize ^<Integer>
-	^{{primitiveBehaviorHeaderSizeOf: self ifFail: [:err <CompressedSymbol> | self error: err]}}
-!
-
-fileOutMixin ^<Mixin>
-	^{{primitiveBehaviorMixinOf: self ifFail: [:err <Symbol> | self error: err]}}!
-
-fileOutNonIndexableSize ^<Integer>
-	^{{primitiveBehaviorNonIndexableSizeOf: self ifFail: [ :err <CompressedSymbol> | self error: err]}}
-!
-
-fileOutSuper ^<Object>
-	^{{self primitiveSuperclass}}! !
 
 ! (Delta mirrorFor: #Behavior) methodsFor: 'bootstrap-temporary' !
 
@@ -176,4 +122,102 @@ typeInfo: t
 	Type atClass: self put: t.
 	t klass: self.
 ! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'file out' !
+
+
+fileOutClassVars ^<Array[GlobalAssociation]>
+	^{{primitiveBehavior: self classVariablesIfFail: [:err <CompressedSymbol> | self error: err]}}!
+
+fileOutHeaderOn: d <Dumper>
+	d	putByte: 		self fileOutSignature.
+	d	putInteger:	self fileOutSize.
+
+	"Part one"
+	self fileOutNonIndexableSize	fileOutOn: d.
+	0												fileOutOn: d.
+
+	"part two"
+	self class	fileOutOn: d.
+
+	"Part three"
+	self fileOutClassVars		fileOutOn: d.
+    d emptyMethodArray		fileOutOn: d.
+	self fileOutSuper				fileOutOn: d.
+	self fileOutMixin				fileOutOn: d
+!
+
+fileOutInstanceHeaderSize ^<Integer>
+	^{{primitiveBehaviorHeaderSizeOf: self ifFail: [:err <CompressedSymbol> | self error: err]}}
+!
+
+fileOutMixin ^<Mixin>
+	^{{primitiveBehaviorMixinOf: self ifFail: [:err <Symbol> | self error: err]}}!
+
+fileOutNonIndexableSize ^<Integer>
+	^{{primitiveBehaviorNonIndexableSizeOf: self ifFail: [ :err <CompressedSymbol> | self error: err]}}
+!
+
+fileOutSuper ^<Object>
+	^{{self primitiveSuperclass}}! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'instance creation' !
+
+
+new ^<Objectx>
+
+	^self primitiveNew! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	| nm <Str> |
+	nm := self nameIfAbsent: [ 
+			strm nextPutAll: '(An anonymous ', self class name, ')'.
+			^self ].
+	strm nextPutAll: nm! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'private' !
+
+
+call: f <[Symbol,Object]> for: o <Object>
+
+	| ga <GlobalAssociation> |
+	ga := (GlobalAssociation coerce: o else: [ ^self ]).
+	f value: ga key value: ga value.!
+
+primitiveNew ^<Object>
+
+	^{{self primitiveNewIfFail: [ :err <Symbol> | 
+		VM scavengeGarbage.
+		{{self primitiveNewIfFail: [:err2<Symbol> |
+			Transcript show: err2.
+			VM collectGarbage.
+			{{self primitiveNewIfFail: [:err3 <Symbol> |
+				"need to expand memory here"
+				]}}
+			]}}
+		]}}! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'reflective' !
+
+
+canUnderstand: aSymbol <Symbol> ^ <Boolean>
+ 	{{self primitiveMethodFor: aSymbol ifFail: [:err <CompressedSymbol> | ^false]}}.
+	^true! !
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'temporary' !
+
+
+smalltalkKeysAndValuesDo: f <[Symbol,Object]>
+
+	| n <Int> |
+	n := {{primitiveSmalltalkSize}}.
+	1 to: n do:
+		[ :i <Int> |
+			| ga <GlobalAssociation> |
+			ga := {{primitiveSmalltalkAt: i ifFail: [ :err <Symbol> | self error: err ]}}.
+			self call: f for: ga	]! !
 

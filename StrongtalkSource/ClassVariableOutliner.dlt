@@ -10,6 +10,34 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <ClassVarLocator>
+
+^ClassVarLocator ofDefinition: self mirror basicLocator! !
+
+! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'control' !
+
+
+referencesToClassVar
+! !
+
+! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'References...';
+					action: [ self referencesToClassVar ])
+! !
+
 ! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'private' !
 
 
@@ -65,32 +93,4 @@ typecheck
 
 self typecheckAction:[self mirror typecheckClassVars]
 		title: 'Typechecking ', self mirror name, ' class variables'.! !
-
-! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'accessing' !
-
-
-locator ^ <ClassVarLocator>
-
-^ClassVarLocator ofDefinition: self mirror basicLocator! !
-
-! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'menus' !
-
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^<Menu>
-
-	^Menu new
-		add: (MenuAction new
-					name: 'References...';
-					action: [ self referencesToClassVar ])
-! !
-
-! (Delta mirrorFor: #ClassVariableOutliner) methodsFor: 'control' !
-
-
-referencesToClassVar
-! !
 

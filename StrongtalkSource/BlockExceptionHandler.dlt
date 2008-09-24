@@ -1,0 +1,85 @@
+Delta define: #BlockExceptionHandler as: (
+(Class subclassOf: 'Object' instanceVariables: 'handleBlock passBlock returnBlock')) !
+
+(Delta mirrorFor: #BlockExceptionHandler) revision: '$Revision$'!
+
+(Delta mirrorFor: #BlockExceptionHandler) group: 'exceptions'!
+
+(Delta mirrorFor: #BlockExceptionHandler)
+comment: 
+'Exception handler for an exception. Handles the exception by invoking its handleBlock.'!
+
+! (Delta mirrorFor: #BlockExceptionHandler) classSide methodsFor: 'instantiation' !
+
+
+default
+
+	^self handleBlock: [:ex| 
+										ex inContextDo: [|result|
+																		result :=  ex defaultAction.
+																		ex isResumable ifFalse: [self defaultActionReturnError].
+																		ex resume: result]]!
+
+defaultActionReturnError
+
+	self error: 'Return from non-resumable default action is not supported'!
+
+handleBlock: block
+
+	^self new
+		handleBlock: block;
+		yourself!
+
+new
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #BlockExceptionHandler) methodsFor: 'exception handler' !
+
+
+canHandleSignal: exception
+
+	^false!
+
+handle: exception
+
+	^handleBlock value: exception!
+
+handle: exception return: aBlock
+
+	aBlock value: (handleBlock value: exception)!
+
+nextHandler
+
+	^nil!
+
+nextHandler: ignored!
+
+pass: exception
+
+	passBlock value: exception!
+
+passBlock: block
+
+	passBlock := block!
+
+return: value
+
+	returnBlock value: value!
+
+returnBlock: block
+
+	returnBlock := block! !
+
+! (Delta mirrorFor: #BlockExceptionHandler) methodsFor: 'private initialization' !
+
+
+handleBlock: block
+
+	handleBlock := block!
+
+initialize
+
+	handleBlock := [:exception|].
+	passBlock := [:exception|].! !
+

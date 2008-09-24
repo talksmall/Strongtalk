@@ -1,0 +1,218 @@
+Delta define: #SUnitTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'hasRun hasSetup hasRanOnce')) !
+
+(Delta mirrorFor: #SUnitTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SUnitTest) group: 'SUnitTests'!
+
+(Delta mirrorFor: #SUnitTest)
+comment: 
+'This is both an example of writing tests and a self test for the SUnit. The tests 
+here are pretty strange, since you want to make sure things blow up. You should 
+not generally have to write tests this complicated in structure, although they 
+will be far more complicated in terms of your own objects- more assertions, more 
+complicated setup. Kent says: "Never forget, however, that if the tests are hard 
+to write, something is probably wrong with the design".'!
+
+! (Delta mirrorFor: #SUnitTest) methodsFor: 'Accessing' !
+
+
+hasRun
+	^hasRun
+			!
+
+hasSetup
+	^hasSetup
+			! !
+
+! (Delta mirrorFor: #SUnitTest) methodsFor: 'Private' !
+
+
+assertForTestResult: aResult runCount: aRunCount passed: aPassedCount failed: aFailureCount errors: anErrorCount
+
+	self
+		assert: aResult runCount = aRunCount;
+		assert: aResult passedCount = aPassedCount;
+		assert: aResult failureCount = aFailureCount;
+		assert: aResult errorCount = anErrorCount
+			!
+
+error
+	3 zork
+			!
+
+fail
+	self assert: false
+			!
+
+noop
+			!
+
+setRun
+	hasRun := true
+			! !
+
+! (Delta mirrorFor: #SUnitTest) methodsFor: 'Running' !
+
+
+setUp
+	hasSetup := true
+			! !
+
+! (Delta mirrorFor: #SUnitTest) methodsFor: 'Testing' !
+
+
+errorShouldntRaise
+	self 
+		shouldnt: [self someMessageThatIsntUnderstood] 
+		raise: SUnitNameResolver notificationObject
+			!
+
+testAssert
+	self assert: true.
+	self deny: false
+			!
+
+testDefects
+	| result suite error failure |
+	suite := TestSuite new.
+	suite addTest: (error := self class selector: #error).
+	suite addTest: (failure := self class selector: #fail).
+	result := suite run.
+	self assert: result defects asArray = (Array with: error with: failure).
+	self
+		assertForTestResult: result
+		runCount: 2
+		passed: 0
+		failed: 1
+		errors: 1
+			!
+
+testDialectLocalizedException
+
+	self
+		should: [TestResult signalFailureWith: 'Foo']
+		raise: TestResult failure.
+	self
+		should: [TestResult signalErrorWith: 'Foo']
+		raise: TestResult error.
+
+			!
+
+testError
+
+	| case result |
+
+	case := self class selector: #error.
+	result := case run.
+	self
+		assertForTestResult: result
+		runCount: 1
+		passed: 0
+		failed: 0
+		errors: 1.
+
+	case := self class selector: #errorShouldntRaise.
+	result := case run.
+	self 
+		assertForTestResult: result
+		runCount: 1
+		passed: 0
+		failed: 0
+		errors: 1
+			!
+
+testException
+
+	self
+		should: [self error: 'foo']
+		raise: TestResult error
+			!
+
+testFail
+
+	| case result |
+
+	case := self class selector: #fail.
+	result := case run.
+
+	self
+		assertForTestResult: result
+		runCount: 1
+		passed: 0
+		failed: 1
+		errors: 0
+			!
+
+testIsNotRerunOnDebug
+
+	| case |
+
+	case := self class selector: #testRanOnlyOnce.
+	case run.
+	case debug
+			!
+
+testRan
+
+	| case |
+
+	case := self class selector: #setRun.
+	case run.
+	self assert: case hasSetup.
+	self assert: case hasRun
+			!
+
+testRanOnlyOnce
+
+	self assert: hasRanOnce ~= true.
+	hasRanOnce := true
+			!
+
+testResult
+
+	| case result |
+
+	case := self class selector: #noop.
+	result := case run.
+
+	self
+		assertForTestResult: result
+		runCount: 1
+		passed: 1
+		failed: 0
+		errors: 0
+			!
+
+testRunning
+
+	(SUnitDelay forSeconds: 2) wait
+			!
+
+testShould
+
+	self
+		should: [true];
+		shouldnt: [false]
+			!
+
+testSuite
+
+	| suite result |
+
+	suite := TestSuite new.
+	suite 
+		addTest: (self class selector: #noop);
+		addTest: (self class selector: #fail);
+		addTest: (self class selector: #error).
+
+	result := suite run.
+
+	self
+		assertForTestResult: result
+		runCount: 3
+		passed: 1
+		failed: 1
+		errors: 1
+			! !
+

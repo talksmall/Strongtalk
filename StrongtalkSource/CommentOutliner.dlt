@@ -10,6 +10,51 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #CommentOutliner) methodsFor: 'control' !
+
+
+removeComment
+
+	| removeBlk <[]> |
+	removeBlk := [ 
+		self comment: ''. 
+		self updateClosedHeader. 
+		self updateBody.
+		self open: false ].
+
+	self codeView isNil 
+		ifTrue: removeBlk
+		ifFalse: [ self codeView closeRequest: removeBlk ]
+! !
+
+! (Delta mirrorFor: #CommentOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #comment
+			ifTrue: [	self updateClosedHeader.
+							self  codeView notNil 
+								ifTrue: [	self codeView model = self commentAsGlyphs
+													ifFalse: [	self codeView model: self commentAsGlyphs ] ] ] ]
+! !
+
+! (Delta mirrorFor: #CommentOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: '&Remove comment';
+					active: [ self comment isEmpty not ];
+					action: [ self removeComment ])! !
+
 ! (Delta mirrorFor: #CommentOutliner) methodsFor: 'private' !
 
 
@@ -75,51 +120,6 @@ storeAndOnSuccess: blk <[]>
 	self updateClosedHeader.
 	blk value.
 
-! !
-
-! (Delta mirrorFor: #CommentOutliner) methodsFor: 'menus' !
-
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^<Menu>
-
-	^Menu new
-		add: (MenuAction new
-					name: '&Remove comment';
-					active: [ self comment isEmpty not ];
-					action: [ self removeComment ])! !
-
-! (Delta mirrorFor: #CommentOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		aspect = #comment
-			ifTrue: [	self updateClosedHeader.
-							self  codeView notNil 
-								ifTrue: [	self codeView model = self commentAsGlyphs
-													ifFalse: [	self codeView model: self commentAsGlyphs ] ] ] ]
-! !
-
-! (Delta mirrorFor: #CommentOutliner) methodsFor: 'control' !
-
-
-removeComment
-
-	| removeBlk <[]> |
-	removeBlk := [ 
-		self comment: ''. 
-		self updateClosedHeader. 
-		self updateBody.
-		self open: false ].
-
-	self codeView isNil 
-		ifTrue: removeBlk
-		ifFalse: [ self codeView closeRequest: removeBlk ]
 ! !
 
 ! (Delta mirrorFor: #CommentOutliner) methodsFor: 'private-licensing' !

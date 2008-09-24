@@ -1,0 +1,48 @@
+Delta define: #ExceptionSetTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: 'exceptionSelector
+wasHandled')) !
+
+(Delta mirrorFor: #ExceptionSetTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ExceptionSetTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ExceptionSetTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ExceptionSetTest) methodsFor: 'Running' !
+
+
+setUp
+
+	super setUp.
+	exceptionSelector := Warning, Halt.
+	wasHandled := false! !
+
+! (Delta mirrorFor: #ExceptionSetTest) methodsFor: 'Testing' !
+
+
+signal: exceptionClass
+
+	[exceptionClass signal]
+		on: exceptionSelector
+		do: [:ex| wasHandled := true].!
+
+testExceptionSetSelectsHalt
+
+	self signal: Halt.
+	self assert: wasHandled
+			description: 'Should have caught Halt'!
+
+testExceptionSetSelectsWarning
+
+	self signal: Warning.
+	self assert: wasHandled
+			description: 'Should have caught Warning'!
+
+testExceptionSetShouldntSelectNotification
+
+	self signal: Notification.
+	self deny: wasHandled
+			description: 'Shouldn''t have caught Notification'	! !
+

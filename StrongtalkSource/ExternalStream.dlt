@@ -40,6 +40,12 @@ Use and distribution of this software is subject to the terms of the attached so
 onDescriptor: d <DESCRIPTOR> ^<Instance>
     ^self new initDescriptor: d! !
 
+! (Delta mirrorFor: #ExternalStream) methodsFor: 'control' !
+
+
+close
+    self doClose! !
+
 ! (Delta mirrorFor: #ExternalStream) methodsFor: 'initialization' !
 
 
@@ -57,12 +63,6 @@ initDescriptor: d <DESCRIPTOR>
 	self bufferOrigin: 0.
 	self bufferNumElements: 0.
 	self nextBufferPosition: 0.! !
-
-! (Delta mirrorFor: #ExternalStream) methodsFor: 'control' !
-
-
-close
-    self doClose! !
 
 ! (Delta mirrorFor: #ExternalStream) methodsFor: 'private' !
 

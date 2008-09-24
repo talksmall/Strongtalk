@@ -16,14 +16,6 @@ members.
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
 '!
 
-! (Delta mirrorFor: #CStructure) methodsFor: 'reflective' !
-
-
-structureSize ^<Int>
-	"The size of the structure in bytes"
-
-	self subclassResponsibility! !
-
 ! (Delta mirrorFor: #CStructure) methodsFor: 'allocating' !
 
 
@@ -34,4 +26,12 @@ allocate
 allocateZeroed
 
 	self calloc: self structureSize! !
+
+! (Delta mirrorFor: #CStructure) methodsFor: 'reflective' !
+
+
+structureSize ^<Int>
+	"The size of the structure in bytes"
+
+	self subclassResponsibility! !
 

@@ -1,0 +1,30 @@
+Delta define: #BlockExceptionSelectorTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #BlockExceptionSelectorTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BlockExceptionSelectorTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #BlockExceptionSelectorTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #BlockExceptionSelectorTest) methodsFor: 'Testing' !
+
+
+testShouldHandleWhenHandleBlockReturnsTrue
+
+	|canHandle selector|
+	selector := BlockExceptionSelector handlesBlock: [:ex| canHandle].
+	canHandle := true.
+	self assert: (selector handles: nil).
+	canHandle := false.
+	self deny: (selector handles: nil)!
+
+testShouldPassExceptionToHandlesBlock
+
+	|exception selector|
+	exception := Object new.
+	selector := BlockExceptionSelector handlesBlock: [:ex| self assert: (ex == exception). true].
+	self assert: (selector handles: exception)! !
+

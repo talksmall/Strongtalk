@@ -47,13 +47,46 @@ buildFor: c <Character> painter: p <Painter>  ^<CharacterGlyph>
 	
 	^super new initFor: c painter: p! !
 
-! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'initialization' !
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'accessing' !
 
 
-initFor: c <Character> painter: p <Painter>
+character ^<Character>
 
-	character := c.
-	painter := p.! !
+	^character!
+
+font ^<Font>
+
+	^self painter font!
+
+paint ^<Paint>
+
+	^self painter paint!
+
+painter ^<Painter>
+
+	^painter! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream> indent: level <Int>
+
+	level timesRepeat: [ strm show: '    ' ].
+	strm show: self class name.
+	strm show: '('; print: self character; show: ')'.
+	strm cr.! !
+
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas> for: context <VisualGlyph>
+
+	| c <Character> |
+	c := self character.
+	(c == Character cr or: [ c == Character tab ])
+		ifFalse: [	can	displayCharacter: c
+								allocation: (self allocationFor: context)
+								painter: self painter	]! !
 
 ! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'geometry-local' !
 
@@ -78,36 +111,13 @@ naturalIn: m <Medium> at: proposedPosition <Point> ^<Region>
 		ifFalse: [	self regularAllocationIn: m ]
 ! !
 
-! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'accessing' !
+! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'initialization' !
 
 
-character ^<Character>
+initFor: c <Character> painter: p <Painter>
 
-	^character!
-
-font ^<Font>
-
-	^self painter font!
-
-paint ^<Paint>
-
-	^self painter paint!
-
-painter ^<Painter>
-
-	^painter! !
-
-! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas> for: context <VisualGlyph>
-
-	| c <Character> |
-	c := self character.
-	(c == Character cr or: [ c == Character tab ])
-		ifFalse: [	can	displayCharacter: c
-								allocation: (self allocationFor: context)
-								painter: self painter	]! !
+	character := c.
+	painter := p.! !
 
 ! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'private' !
 
@@ -156,14 +166,4 @@ isRectangularAndOpaque ^<Boolean>
 isSurelyRigid ^<Boolean>
 
 	^true! !
-
-! (Delta mirrorFor: #CharacterGlyph) methodsFor: 'debugging' !
-
-
-dumpOn: strm <CharOutputStream> indent: level <Int>
-
-	level timesRepeat: [ strm show: '    ' ].
-	strm show: self class name.
-	strm show: '('; print: self character; show: ')'.
-	strm cr.! !
 

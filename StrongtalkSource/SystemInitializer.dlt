@@ -10,60 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'library class initialization' !
-
-
-run
-	"This is the entry point for normal execution."
-	
-	| commands <OrderedCollection[Str]> |
-
-	self runBaseClassInitializers.
-	commands := self commandLineArguments.
-	commands size > 0 ifTrue: [
-		self runNonCriticalClassInitializers.
-		self processArguments: commands.
-	] ifFalse: [
-		[	self runNonCriticalClassInitializers.
-			UI start.
-		] fork
-	]!
-
-runBaseClassInitializers
-	"Initialize critical base library classes (run in the process scheduler)"
-
-	Platform initialize.
-	Transcript := TempTranscript new.
-	SmallInteger initialize.
-	Character initialize.
-	CallBack initialize.
-	IdleProcess initialize.
-	InliningDatabase initialize.
-!
-
-runNonCriticalClassInitializers
-	"This is the root class initializer that is called when the system starts up.
-		Any class initializers that must be called should be called from
-		this method."
-
-	Session initialize.
-
-	Rectangle initialize.
-	Paint initialize.
-	Painter initialize.
-	HPEN initialize.
-	GeometricHPEN initialize.
-	HBRUSH initialize.
-	InfiniteRegion initialize.
-
-	Smalltalk initialize.
-
-	CodeEditor initialize.
-	Workspace initialize.
-
-	HTMLElement initialize.
-	HTMLParser initialize.! !
-
 ! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'command line arguments' !
 
 
@@ -269,5 +215,124 @@ processArguments: commands
 
 	print ifTrue: [
 		{{primitivePrintMemory}}.
-	]! !
+	]!
+
+processCommandLineArguments ^<Boolean>
+	"process command line args, and return boolean indicating whether the 
+		default program should be run (which is normally the GUI)"
+
+	| args <ReadStream[Str]>  runDefault <Boolean> |
+	args := Platform commandLineTokens.
+	args next.  "Skip command"
+	runDefault := true.
+	
+	[ args atEnd ] whileFalse: [  | arg <Str> |
+		arg := args next.
+		
+		arg = '-benchmark'
+			ifTrue: [	self runBenchmarks: args.
+						runDefault := false ].
+		arg = '-script'
+			ifTrue: [	args atEnd
+							ifTrue: [ Transcript show: 'Command line argument error: -script option must be followed by a filename';cr. ]
+							ifFalse: [ self runScript: args next ].
+						runDefault := false ].		].
+	^runDefault
+!
+
+runBenchmarks: args <InputStream[Str]>
+
+	| dict runner repeat inner print |
+	dict := self benchmarkDictionary.
+	runner	:= BenchmarkRunner.
+	repeat	:= 1.
+	inner	:= 1.
+	print		:= false.
+
+	[ args atEnd ] whileFalse: [	| arg <Str> cmd options |
+		arg := args next.
+		options	:= false.
+		arg = 'profile'	ifTrue: [ runner := BenchMarkProfileRunner.		options := true ].
+		arg = 'prims'		ifTrue: [ runner := BenchmarkPrimTraceRunner.	options := true ].
+		arg = 'inner'		ifTrue: [ inner := repeat. repeat := 1.						options := true ].
+		arg = 'print'		ifTrue: [ print := true.												options := true ].
+		options ifFalse: [
+			repeat := self parseInteger: arg ifFail: [
+				Transcript show: 'Processing '; show: arg; show: ' ('; show: repeat printString; show: ' times)'; cr.
+				cmd := dict at: arg ifAbsent: [nil].
+				cmd isNil ifTrue:  [ Transcript show: 'Command not found'; cr ]
+							   ifFalse: [ cmd value: runner value: repeat value: inner ].
+				repeat
+			]
+		]
+	].
+
+	print ifTrue: [
+		{{primitivePrintMemory}}.
+	]!
+
+runDefaultProgram
+	"This starts the 'default' program, which is the code that should run when no
+	  command line options specifies something else"
+	  
+	[ UI start ] fork!
+
+runScript: filename <Str>
+
+	[	| file <FilePath> |
+		file := FilePath for: filename.
+		file exists
+			ifFalse: [	Transcript show: 'Error: script file ''', filename, ''' not found.'; cr.
+							^self	].
+		file charInputStream fileIn
+	] fork! !
+
+! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'library class initialization' !
+
+
+run
+	"This is the entry point for normal execution."
+	
+	| commands <OrdCltn[Str]> |
+
+	self runBaseClassInitializers.
+	self runNonCriticalClassInitializers.
+	(self processCommandLineArguments)
+		ifTrue: [ self runDefaultProgram ].
+!
+
+runBaseClassInitializers
+	"Initialize critical base library classes (run in the process scheduler)"
+
+	Platform initialize.
+	Transcript := TempTranscript new.
+	SmallInteger initialize.
+	Character initialize.
+	CallBack initialize.
+	IdleProcess initialize.
+	InliningDatabase initialize.
+!
+
+runNonCriticalClassInitializers
+	"This is the root class initializer that is called when the system starts up.
+		Any class initializers that must be called should be called from
+		this method."
+
+	Session initialize.
+
+	Rectangle initialize.
+	Paint initialize.
+	Painter initialize.
+	HPEN initialize.
+	GeometricHPEN initialize.
+	HBRUSH initialize.
+	InfiniteRegion initialize.
+
+	Smalltalk initialize.
+
+	CodeEditor initialize.
+	Workspace initialize.
+
+	HTMLElement initialize.
+	HTMLParser initialize.! !
 

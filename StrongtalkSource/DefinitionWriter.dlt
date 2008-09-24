@@ -118,17 +118,26 @@ fileOutGroup: s <Str> on: stream <WriteStream> ^ <Int>
 	^pos
 !
 
+fileOutHeaderOn: stream <WriteStream> ^ <Int>
+
+	self fileOutDefinition: self mirror definitionString on: stream.
+	self fileOutRevision: self mirror revision on: stream.
+	self fileOutGroup: self mirror group on: stream.
+	self fileOutComment: self mirror comment on: stream.
+!
+
+fileOutMethodsOn: stream <WriteStream> ^ <Int>
+
+	(self class for: self mirror classSide) fileOutBodyOn: stream.
+	self fileOutBodyOn: stream!
+
 fileOutOn: stream <WriteStream> ^ <Int>
 
 	| pos <Int> |
 	self assert: [ self mirror isMeta not ].
 	pos := stream position.
-	self fileOutDefinition: self mirror definitionString on: stream.
-	self fileOutRevision: self mirror revision on: stream.
-	self fileOutGroup: self mirror group on: stream.
-	self fileOutComment: self mirror comment on: stream.
-	(self class for: self mirror classSide) fileOutBodyOn: stream.
-	self fileOutBodyOn: stream.
+	self fileOutHeaderOn: stream.
+	self fileOutMethodsOn: stream.
 	^pos
 !
 

@@ -29,40 +29,6 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
 '!
 
-! (Delta mirrorFor: #Glyph) methodsFor: 'geometry-local' !
-
-
-allocation: r <Region> at: pos <Point> for: context <VisualGlyph>
-	"Sets the allocation for the glyph (and do any layout necessary).  If the glyph desires the context
-	  to keep track of the extent, then it is the responsibility of this method
-	  to store the extent in the context."
-
-	"By default for shareable Glyphs, do nothing"!
-
-allocationFor: context <VisualGlyph>  ^<Region>
-
-	self subclassResponsibility!
-
-maxIn: m <Medium>  ^<Region>
-
-	"By default, the max is the same as the natural region"
-	^self naturalIn: m!
-
-minIn: m <Medium>  ^<Region>
-
-	"By default, the min is the same as the natural region"
-	^self naturalIn: m!
-
-naturalIn: m <Medium>  ^<Region>
-
-	self subclassResponsibility!
-
-naturalIn: m <Medium> at: proposedPosition <Point> ^<Region>
-	"Like naturalIn:, but allows the receiver to take into
-	  account a proposed position."
-
-	^self naturalIn: m! !
-
 ! (Delta mirrorFor: #Glyph) methodsFor: 'accessing' !
 
 
@@ -99,13 +65,6 @@ session: s <Session>
 
 	"By default for shareable Glyphs, the session is not stored"! !
 
-! (Delta mirrorFor: #Glyph) methodsFor: 'notification' !
-
-
-detaching
-
-	"By default, do nothing"! !
-
 ! (Delta mirrorFor: #Glyph) methodsFor: 'control' !
 
 
@@ -114,6 +73,31 @@ release
 	"By default, do nothing.  This is sent every time that a containing
 		visual is released, so this is NOT the right place to
 		free resources for shared glyphs"! !
+
+! (Delta mirrorFor: #Glyph) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+
+	"Subclasses of Glyph are shareable, and should also probably be immutable"
+	^self! !
+
+! (Delta mirrorFor: #Glyph) methodsFor: 'core sampler' !
+
+
+drillAt: loc <Point> for: sampler <CoreSampler>
+	| child <Visual> |
+
+	sampler record: self! !
+
+! (Delta mirrorFor: #Glyph) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream> indent: level <Int>
+
+	level timesRepeat: [ strm show: '    ' ].
+	strm show: self class name.
+	strm cr.! !
 
 ! (Delta mirrorFor: #Glyph) methodsFor: 'displaying' !
 
@@ -128,6 +112,88 @@ localDisplayOn: can <Canvas> for: context <VisualGlyph>
 	"corresponds to Visual>>localDisplayOn:"
 
 	self subclassResponsiblity! !
+
+! (Delta mirrorFor: #Glyph) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
+
+	"By default, do nothing"
+	^false!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
+
+	"By default, do nothing"
+	^false!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
+
+	"By default, do nothing"
+	^false!
+
+mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
+
+	"By default, do nothing"
+	^false! !
+
+! (Delta mirrorFor: #Glyph) methodsFor: 'geometry-local' !
+
+
+allocation: r <Region> at: pos <Point> for: context <VisualGlyph>
+	"Sets the allocation for the glyph (and do any layout necessary).  If the glyph desires the context
+	  to keep track of the extent, then it is the responsibility of this method
+	  to store the extent in the context."
+
+	"By default for shareable Glyphs, do nothing"!
+
+allocationFor: context <VisualGlyph>  ^<Region>
+
+	self subclassResponsibility!
+
+maxIn: m <Medium>  ^<Region>
+
+	"By default, the max is the same as the natural region"
+	^self naturalIn: m!
+
+minIn: m <Medium>  ^<Region>
+
+	"By default, the min is the same as the natural region"
+	^self naturalIn: m!
+
+naturalIn: m <Medium>  ^<Region>
+
+	self subclassResponsibility!
+
+naturalIn: m <Medium> at: proposedPosition <Point> ^<Region>
+	"Like naturalIn:, but allows the receiver to take into
+	  account a proposed position."
+
+	^self naturalIn: m! !
+
+! (Delta mirrorFor: #Glyph) methodsFor: 'geometry-nonlocal' !
+
+
+adjustPositionTo: newPosition <Point>
+
+	"By default, do nothing"!
+
+nativePositionChanged
+
+	"By default, do nothing"! !
+
+! (Delta mirrorFor: #Glyph) methodsFor: 'input focus' !
+
+
+focusCandidatesDo: blk <[Visual]>
+
+	"Only visuals can be the input focus"! !
+
+! (Delta mirrorFor: #Glyph) methodsFor: 'notification' !
+
+
+detaching
+
+	"By default, do nothing"! !
 
 ! (Delta mirrorFor: #Glyph) methodsFor: 'region ops' !
 
@@ -163,70 +229,4 @@ isSurelyRigid ^<Boolean>
 		It is always permissible to return false, however; the caller can only use true for optimization."
 
 	^false! !
-
-! (Delta mirrorFor: #Glyph) methodsFor: 'geometry-nonlocal' !
-
-
-adjustPositionTo: newPosition <Point>
-
-	"By default, do nothing"!
-
-nativePositionChanged
-
-	"By default, do nothing"! !
-
-! (Delta mirrorFor: #Glyph) methodsFor: 'event handling' !
-
-
-character: c <Character> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
-
-	"By default, do nothing"
-	^false!
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
-
-	"By default, do nothing"
-	^false!
-
-keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
-
-	"By default, do nothing"
-	^false!
-
-mouseEvent: type <Symbol> at: loc <Point>  event: ev <UIEvent> for: context <VisualGlyph> ^<Boolean>
-
-	"By default, do nothing"
-	^false! !
-
-! (Delta mirrorFor: #Glyph) methodsFor: 'input focus' !
-
-
-focusCandidatesDo: blk <[Visual]>
-
-	"Only visuals can be the input focus"! !
-
-! (Delta mirrorFor: #Glyph) methodsFor: 'copying' !
-
-
-copy ^<Instance>
-
-	"Subclasses of Glyph are shareable, and should also probably be immutable"
-	^self! !
-
-! (Delta mirrorFor: #Glyph) methodsFor: 'debugging' !
-
-
-dumpOn: strm <CharOutputStream> indent: level <Int>
-
-	level timesRepeat: [ strm show: '    ' ].
-	strm show: self class name.
-	strm cr.! !
-
-! (Delta mirrorFor: #Glyph) methodsFor: 'core sampler' !
-
-
-drillAt: loc <Point> for: sampler <CoreSampler>
-	| child <Visual> |
-
-	sampler record: self! !
 

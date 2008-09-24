@@ -13,19 +13,51 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
 '!
 
+! (Delta mirrorFor: #IndexedInstanceVariables) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^70! !
+
 ! (Delta mirrorFor: #IndexedInstanceVariables) classSide methodsFor: 'private' !
 
 
 primitiveNew: size <Int> ^<Instance>
 
 	^{{self primitiveIndexedObjectNew: size
-		ifFail: [ :err <Symbol> |  self error: err ]}}! !
+			ifFail: [ :err <Symbol> |
+					VM scavengeGarbage.
+					{{self primitiveIndexedObjectNew: size
+							ifFail: [ :err <Symbol> |
+									VM isGCPending
+										ifTrue: [VM waitForGC.
+													{{self primitiveIndexedObjectNew: size
+															ifFail: [:err <Symbol> |
+																	VM expand: (VMMirror on: self) instanceSize + size.
+																	VM deferredGC.
+																	{{self primitiveIndexedObjectNew: size
+																			ifFail: [:err <Symbol> |
+																						self error: err]}}]}}]
+										ifFalse: [VM expand: (VMMirror on: self) instanceSize + size.
+													VM deferredGC.
+													{{self primitiveIndexedObjectNew: size
+															ifFail: [:err <Symbol> |
+																	self error: err]}}]
+						]}}
+				]}}! !
 
-! (Delta mirrorFor: #IndexedInstanceVariables) classSide methodsFor: 'file out' !
+! (Delta mirrorFor: #IndexedInstanceVariables) methodsFor: 'file out' !
 
+
+fileOutBodyOn: d <Dumper>
+    super fileOutBodyOn: d.
+    self primitiveSize fileOutOn: d.
+    1 to: self primitiveSize do:
+    	[ :i <Int> |
+    		(self primitiveAt: i) fileOutOn: d ]!
 
 fileOutSignature ^<Integer>
-    ^70! !
+    ^102! !
 
 ! (Delta mirrorFor: #IndexedInstanceVariables) methodsFor: 'private' !
 
@@ -59,17 +91,4 @@ primitiveAt: index <Int> put: val <T> ^<T>
 primitiveSize ^<Int>
 
 	^{{self primitiveIndexedObjectSize}}! !
-
-! (Delta mirrorFor: #IndexedInstanceVariables) methodsFor: 'file out' !
-
-
-fileOutBodyOn: d <Dumper>
-    super fileOutBodyOn: d.
-    self primitiveSize fileOutOn: d.
-    1 to: self primitiveSize do:
-    	[ :i <Int> |
-    		(self primitiveAt: i) fileOutOn: d ]!
-
-fileOutSignature ^<Integer>
-    ^102! !
 

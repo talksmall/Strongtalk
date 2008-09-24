@@ -1,0 +1,171 @@
+Delta define: #TestResource as: (
+(Class subclassOf: 'Object' instanceVariables: 'name description') classVariables: 'CurrentDictionary') !
+
+(Delta mirrorFor: #TestResource) revision: '$Revision:$'!
+
+(Delta mirrorFor: #TestResource) group: 'SUnit'!
+
+(Delta mirrorFor: #TestResource)
+comment: 
+''!
+
+! (Delta mirrorFor: #TestResource) classSide methodsFor: 'Accessing' !
+
+
+current
+
+	^self currentDictionary
+		at: self
+		ifPresent: [:current| ^current]
+		ifAbsentPut: [self new].
+
+			!
+
+current: aTestResource
+
+	aTestResource isNil
+		ifTrue: [self currentDictionary removeKey: self]
+		ifFalse: [self currentDictionary
+							at: self
+							put: aTestResource]			!
+
+currentDictionary
+
+	CurrentDictionary isNil
+		ifTrue: [CurrentDictionary := Dictionary new].
+
+	^CurrentDictionary
+			!
+
+resources
+	^#()
+			! !
+
+! (Delta mirrorFor: #TestResource) classSide methodsFor: 'Creation' !
+
+
+new
+
+	^super new initialize
+			!
+
+reset
+	|current|
+	current := self currentDictionary
+		at: self
+		ifAbsent: [^nil].
+	[current isNil
+		ifFalse: [current tearDown]] ensure: [
+					self current: nil]
+			!
+
+signalInitializationError
+	^TestResult signalErrorWith: 'Resource ' , self name , ' could not be initialized'
+			! !
+
+! (Delta mirrorFor: #TestResource) classSide methodsFor: 'Testing' !
+
+
+isAbstract
+	"Override to true if a TestResource subclass is Abstract and should not have
+	TestCase instances built from it"
+
+	^self sunitName = #TestResource
+			!
+
+isAvailable
+	^self current notNil and: [self current isAvailable]
+			!
+
+isUnavailable
+
+	^self isAvailable not
+			! !
+
+! (Delta mirrorFor: #TestResource) methodsFor: 'Accessing' !
+
+
+description
+
+	description isNil
+		ifTrue: [^''].
+
+	^description
+			!
+
+description: aString
+
+	description := aString
+			!
+
+name
+
+	name isNil
+		ifTrue: [^self printString].
+
+	^name
+			!
+
+name: aString
+
+	name := aString
+			!
+
+resources
+	^self class resources
+			! !
+
+! (Delta mirrorFor: #TestResource) methodsFor: 'Init / Release' !
+
+
+initialize
+	self setUp
+
+			!
+
+reset
+
+	self class reset! !
+
+! (Delta mirrorFor: #TestResource) methodsFor: 'Printing' !
+
+
+printOn: aStream
+
+	aStream nextPutAll: self class printString
+			! !
+
+! (Delta mirrorFor: #TestResource) methodsFor: 'Running' !
+
+
+setUp
+	"Does nothing. Subclasses should override this
+	to initialize their resource"
+			!
+
+signalInitializationError
+	^self class signalInitializationError
+			!
+
+tearDown
+	"Does nothing. Subclasses should override this
+	to tear down their resource"
+			! !
+
+! (Delta mirrorFor: #TestResource) methodsFor: 'Testing' !
+
+
+isAvailable
+	"override to provide information on the
+	readiness of the resource"
+	
+	^true
+			!
+
+isUnavailable
+	"override to provide information on the
+	readiness of the resource"
+	
+	^self isAvailable not
+			! !
+

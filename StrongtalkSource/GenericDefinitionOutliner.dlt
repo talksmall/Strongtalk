@@ -11,33 +11,49 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'private' !
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'accessing' !
 
 
-addingGenericity ^ <Boolean>
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
 
-	^addingGenericity!
+TypeArgumentLocator
+	coerce: loc 
+	do:[:l <TypeArgumentLocator> | ^self typeArgumentOutliner]
+! !
 
-addingGenericity: b <Boolean>
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'control' !
 
-	addingGenericity := b!
 
-insertGenericDefinition: col <Column[Visual]>
+addTypeArguments
 
-	(self mirror isGeneric or: [self addingGenericity])
-		ifTrue: [		self typeArgumentOutliner: (TypeArgumentOutliner for: self mirror).
-							col add: (self addChild: self typeArgumentOutliner) imbeddedVisual ]
-		ifFalse: [	self typeArgumentOutliner: nil ]
+	self open: true.
+	self addingGenericity: true.
+	[ self updateBody ] ensure: [ self addingGenericity: false ].
+	self typeArgumentOutliner notNil
+		ifTrue: [ self inSessionProcessDo: [ 
+							self typeArgumentOutliner becomeFocusIfFail: [] ] ]
+	!
 
-!
+makeSubtype: b <Boolean>
 
-typeArgumentOutliner ^ <TypeArgumentOutliner>
+	self mirror subtype: b
+	! !
 
-	^typeArgumentOutliner!
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'dependencies' !
 
-typeArgumentOutliner: o <TypeArgumentOutliner>
 
-	typeArgumentOutliner := o! !
+update: aspect <Object> with: value <Object>
+	
+	self inSessionProcessDo: [
+		aspect = #typeArguments
+			ifTrue: [		self updateHeaders.
+							self mirror typeArgumentString isEmpty = self typeArgumentOutliner isNil
+								ifFalse: [	self updateBody ] ].
+
+		aspect = #subtype
+			ifTrue: [	self updateHeaders ].
+	]
+! !
 
 ! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'menus' !
 
@@ -78,39 +94,33 @@ strongtalkUncommonMenuBar ^ <Menu>
 					name: (subtype ifTrue: [ 'Make non-subtype' ] ifFalse: [ 'Make subtype' ]);
 					action: [ self makeSubtype: subtype not ])! !
 
-! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'control' !
+! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'private' !
 
 
-addTypeArguments
+addingGenericity ^ <Boolean>
 
-	self open: true.
-	self addingGenericity: true.
-	[ self updateBody ] ensure: [ self addingGenericity: false ].
-	self typeArgumentOutliner notNil
-		ifTrue: [ self inSessionProcessDo: [ 
-							self typeArgumentOutliner becomeFocusIfFail: [] ] ]
-	!
+	^addingGenericity!
 
-makeSubtype: b <Boolean>
+addingGenericity: b <Boolean>
 
-	self mirror subtype: b
-	! !
+	addingGenericity := b!
 
-! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'dependencies' !
+insertGenericDefinition: col <Column[Visual]>
 
+	(self mirror isGeneric or: [self addingGenericity])
+		ifTrue: [		self typeArgumentOutliner: (TypeArgumentOutliner for: self mirror).
+							col add: (self addChild: self typeArgumentOutliner) imbeddedVisual ]
+		ifFalse: [	self typeArgumentOutliner: nil ]
 
-update: aspect <Object> with: value <Object>
-	
-	self inSessionProcessDo: [
-		aspect = #typeArguments
-			ifTrue: [		self updateHeaders.
-							self mirror typeArgumentString isEmpty = self typeArgumentOutliner isNil
-								ifFalse: [	self updateBody ] ].
+!
 
-		aspect = #subtype
-			ifTrue: [	self updateHeaders ].
-	]
-! !
+typeArgumentOutliner ^ <TypeArgumentOutliner>
+
+	^typeArgumentOutliner!
+
+typeArgumentOutliner: o <TypeArgumentOutliner>
+
+	typeArgumentOutliner := o! !
 
 ! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'private-initilization' !
 
@@ -119,14 +129,4 @@ initialize
 
 	super initialize.
 	self addingGenericity: false.! !
-
-! (Delta mirrorFor: #GenericDefinitionOutliner) methodsFor: 'accessing' !
-
-
-outlinerForLocator: loc <DeltaLocator[Mirror]> 
-
-TypeArgumentLocator
-	coerce: loc 
-	do:[:l <TypeArgumentLocator> | ^self typeArgumentOutliner]
-! !
 

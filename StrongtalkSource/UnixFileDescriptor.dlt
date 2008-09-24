@@ -36,24 +36,6 @@ getBufferSize ^<Int>
     "Use the block size"
     ^self blockSize * 8!
 
-sectorSize ^<Int>
-    "Use the sector size"
-    | junk <ExternalProxy> bytesPerSector <ExternalProxy> status <ExternalProxy> result <Int> |
-    junk := ExternalProxy new malloc: Platform wordSize.
-    bytesPerSector := ExternalProxy new malloc: Platform wordSize.
-    status := {{<kernel ExternalProxy GetDiskFreeSpaceA>
-            rootPath: 0
-            sectorsPerCluster: junk
-            bytesPerSector: bytesPerSector
-            freeClusters: junk
-            clusters: junk    }}.
-    status isNull
-        ifTrue: [ self error: 'Cannot get disk sector size' ]
-        ifFalse: [ result := bytesPerSector smallIntegerAt: 0 ].
-    junk free.
-    bytesPerSector free.
-    ^result!
-
 size ^<Int>
     "Use the sector size"
     | statBuffer <StatBuffer> 
@@ -146,13 +128,6 @@ ioCount ^<ExternalProxy>
 postCopy
     super postCopy.
     self initializeIOCount.!
-
-printLastError
-    | result |
-    "Dump the error message for the last windows call"
-    "%temporary"
-    result := {{<kernel ExternalProxy GetLastError>geterror}}.
-    Platform errorStream show: 'Last error from windows: ', result asSmallInteger printString; cr!
 
 setExternalPosition: p <Int>
     "%todo: support large integer positions for extremely large files"

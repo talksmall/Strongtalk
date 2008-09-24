@@ -53,3 +53,14 @@ simpleTest: n
 	n timesRepeat:
 		[ a at: 1 put: 3.]! !
 
+! (Delta mirrorFor: #Test) methodsFor: 'test' !
+
+
+blockReturn
+	[^nil] fork.
+	Processor yield!
+
+printString
+
+^1 + 'a'! !
+

@@ -10,23 +10,16 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'private' !
+! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'accessing' !
 
 
-computeWorldList ^ <OrdCltn[GlobalVariableMirror]>
+entryName ^ <Str>
 
-	| result <SortedCollection[GlobalVariableMirror]> ga <GlobalAssociation> |
+	^'global'!
 
-	result := SortedCollection[GlobalVariableMirror] 
-					sortBlock: [ :m1 <GlobalVariableMirror> :m2 <GlobalVariableMirror> | m1 name <= m2 name ].
-	Smalltalk globalVariablesDo: [ :ga <GlobalAssociation> | 
-																		result add: (GlobalVariableMirror on: ga).
-																		].
-	^result asOrderedCollection!
+windowTitle ^ <Str>
 
-labelPainter ^<Painter>
-
-	^self globalVariablePainter! !
+	^'Globals'! !
 
 ! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'control' !
 
@@ -48,6 +41,16 @@ self typecheckAction:[
 																].
 											]
 title: 'Typechecking all global variables'.											
+! !
+
+! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		(aspect = #addGlobal or: [aspect = #removeGlobal])
+			ifTrue: [	self update ] ]
 ! !
 
 ! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'menus' !
@@ -85,24 +88,21 @@ typecheckingMenu ^ <Menu>
                   action: [self typecheckAll])
 ! !
 
-! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'accessing' !
+! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'private' !
 
 
-entryName ^ <Str>
+computeWorldList ^ <OrdCltn[GlobalVariableMirror]>
 
-	^'global'!
+	| result <SortedCollection[GlobalVariableMirror]> ga <GlobalAssociation> |
 
-windowTitle ^ <Str>
+	result := SortedCollection[GlobalVariableMirror] 
+					sortBlock: [ :m1 <GlobalVariableMirror> :m2 <GlobalVariableMirror> | m1 name <= m2 name ].
+	Smalltalk globalVariablesDo: [ :ga <GlobalAssociation> | 
+																		result add: (GlobalVariableMirror on: ga).
+																		].
+	^result asOrderedCollection!
 
-	^'Globals'! !
+labelPainter ^<Painter>
 
-! (Delta mirrorFor: #GlobalVariableListOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		(aspect = #addGlobal or: [aspect = #removeGlobal])
-			ifTrue: [	self update ] ]
-! !
+	^self globalVariablePainter! !
 

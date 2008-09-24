@@ -22,13 +22,6 @@ forPainter: p <Painter>  ^<Instance>
 
 	^(self new: 128) initPainter: p! !
 
-! (Delta mirrorFor: #CanonicalCharGlyphs) methodsFor: 'initialization-private' !
-
-
-initPainter: p <Painter>
-
-	painter := p! !
-
 ! (Delta mirrorFor: #CanonicalCharGlyphs) methodsFor: 'accessing' !
 
 
@@ -48,4 +41,11 @@ copyWithSize: s <Int> ^<Instance>
 
 	"%remove when the primitive is fixed to copy instvars"
 	^(super copyWithSize: s) initPainter: self painter! !
+
+! (Delta mirrorFor: #CanonicalCharGlyphs) methodsFor: 'initialization-private' !
+
+
+initPainter: p <Painter>
+
+	painter := p! !
 

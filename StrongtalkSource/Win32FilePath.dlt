@@ -26,30 +26,80 @@ currentDirectory ^<FilePath>
 				ifFalse: [ self new pattern: buf asString ]
 	  ] ensure: [ buf free ]! !
 
-! (Delta mirrorFor: #Win32FilePath) methodsFor: 'testing' !
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'accessing' !
 
 
-exists ^<Boolean>
+type ^<Str>
+	"The file type (on most platforms this is the part after the $. at the end)"
 
-	self win32FileAttributesIfFail: [ ^false ].
-	^true!
+	| indices <SeqCltn[Int]> |
+	indices := self name indicesOfSubCollection: '.'.
+	indices isEmpty
+		ifTrue: [ ^'' ].
+	^self name
+			copyFrom: indices last + 1
+			to: self name size! !
 
-isDirectory ^<Boolean>
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'control' !
 
-	^((self win32FileAttributesIfFail: [ ^false ])
-			externalBitAnd: Win32 FILE_ATTRIBUTE_DIRECTORY
-	  ) @~= 0!
 
-isReadOnly ^<Boolean>
+createDirectoryIfFail: fail <[Symbol]>
 
-	^((self win32FileAttributesIfFail: [ ^false ])
-			externalBitAnd: Win32 FILE_ATTRIBUTE_READONLY
-	  ) @~= 0!
+	| name <CString> sec <SECURITY_ATTRIBUTES> |
+	name := CString for: self name.
+	sec := SECURITY_ATTRIBUTES new allocateZeroed.
+	sec nLength: sec structureSize.
 
-isSyntaxValid ^<Boolean>
+	[	{{<kernel ExternalProxy CreateDirectoryA>
+			name: name
+			security: sec
+		}} asBoolean
+			ifFalse: [ Win32 getLastError @= Win32 ERROR_ALREADY_EXISTS
+								ifFalse: [ fail value: #CannotCreateFile ] ]
+	] ensure: [	name free.
+						sec free.	 ]! !
 
-	"Extend inherited version to ensure no wildcard characters"
-	^super isSyntaxValid and: [ self unimplemented ]! !
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'copying-moving' !
+
+
+copyAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+
+	| csrc <CString> cdest <CString> |
+	csrc := CString for: self name.
+	cdest := CString for: newPath name.
+	[	{{<kernel ExternalProxy CopyFileA>
+				source: csrc
+				dest: cdest
+				failIfExists: false asExternalData
+		}} asBoolean
+			ifFalse: [	fail value:
+								('Error copying file: ', Win32 getLastError printString) asSymbol ]
+	] ensure:
+		[	csrc free.
+			cdest free	]!
+
+moveAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+
+	| csrc <CString> cdest <CString> |
+	csrc := CString for: self name.
+	cdest := CString for: newPath name.
+	[	{{<kernel ExternalProxy MoveFileA>
+				source: csrc
+				dest: cdest
+		}} asBoolean
+			ifFalse: [	| err <ExternalData> |
+							err := Win32 getLastError.
+							err @= Win32 ERROR_ALREADY_EXISTS
+								ifTrue: [	fail value: #AlreadyExists.
+												 ^self.  ].
+							err @= Win32 ERROR_SHARING_VIOLATION
+								ifTrue: [	fail value: #SharingViolation.
+												 ^self.  ].
+							fail value:
+								('Error moving file: ', Win32 getLastError printString) asSymbol ]
+	] ensure:
+		[	csrc free.
+			cdest free	]! !
 
 ! (Delta mirrorFor: #Win32FilePath) methodsFor: 'private' !
 
@@ -181,25 +231,6 @@ template: dtemplate        <ExternalData>
         attributes: dattributes
         template: dtemplate}}! !
 
-! (Delta mirrorFor: #Win32FilePath) methodsFor: 'control' !
-
-
-createDirectoryIfFail: fail <[Symbol]>
-
-	| name <CString> sec <SECURITY_ATTRIBUTES> |
-	name := CString for: self name.
-	sec := SECURITY_ATTRIBUTES new allocateZeroed.
-	sec nLength: sec structureSize.
-
-	[	{{<kernel ExternalProxy CreateDirectoryA>
-			name: name
-			security: sec
-		}} asBoolean
-			ifFalse: [ Win32 getLastError @= Win32 ERROR_ALREADY_EXISTS
-								ifFalse: [ fail value: #CannotCreateFile ] ]
-	] ensure: [	name free.
-						sec free.	 ]! !
-
 ! (Delta mirrorFor: #Win32FilePath) methodsFor: 'restricted-double dispatching' !
 
 
@@ -212,59 +243,28 @@ deletePathIfFail: blk <[Symbol]>
 		ifTrue: [ self deleteDirectoryIfFail: blk ]
 		ifFalse: [ self deleteFileIfFail: blk ]! !
 
-! (Delta mirrorFor: #Win32FilePath) methodsFor: 'copying-moving' !
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'testing' !
 
 
-copyAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+exists ^<Boolean>
 
-	| csrc <CString> cdest <CString> |
-	csrc := CString for: self name.
-	cdest := CString for: newPath name.
-	[	{{<kernel ExternalProxy CopyFileA>
-				source: csrc
-				dest: cdest
-				failIfExists: false asExternalData
-		}} asBoolean
-			ifFalse: [	fail value:
-								('Error copying file: ', Win32 getLastError printString) asSymbol ]
-	] ensure:
-		[	csrc free.
-			cdest free	]!
+	self win32FileAttributesIfFail: [ ^false ].
+	^true!
 
-moveAs: newPath <FilePath> ifFail: fail <[ExternalError]>
+isDirectory ^<Boolean>
 
-	| csrc <CString> cdest <CString> |
-	csrc := CString for: self name.
-	cdest := CString for: newPath name.
-	[	{{<kernel ExternalProxy MoveFileA>
-				source: csrc
-				dest: cdest
-		}} asBoolean
-			ifFalse: [	| err <ExternalData> |
-							err := Win32 getLastError.
-							err @= Win32 ERROR_ALREADY_EXISTS
-								ifTrue: [	fail value: #AlreadyExists.
-												 ^self.  ].
-							err @= Win32 ERROR_SHARING_VIOLATION
-								ifTrue: [	fail value: #SharingViolation.
-												 ^self.  ].
-							fail value:
-								('Error moving file: ', Win32 getLastError printString) asSymbol ]
-	] ensure:
-		[	csrc free.
-			cdest free	]! !
+	^((self win32FileAttributesIfFail: [ ^false ])
+			externalBitAnd: Win32 FILE_ATTRIBUTE_DIRECTORY
+	  ) @~= 0!
 
-! (Delta mirrorFor: #Win32FilePath) methodsFor: 'accessing' !
+isReadOnly ^<Boolean>
 
+	^((self win32FileAttributesIfFail: [ ^false ])
+			externalBitAnd: Win32 FILE_ATTRIBUTE_READONLY
+	  ) @~= 0!
 
-type ^<Str>
-	"The file type (on most platforms this is the part after the $. at the end)"
+isSyntaxValid ^<Boolean>
 
-	| indices <SeqCltn[Int]> |
-	indices := self name indicesOfSubCollection: '.'.
-	indices isEmpty
-		ifTrue: [ ^'' ].
-	^self name
-			copyFrom: indices last + 1
-			to: self name size! !
+	"Extend inherited version to ensure no wildcard characters"
+	^super isSyntaxValid and: [ self unimplemented ]! !
 

@@ -75,6 +75,79 @@ windowTitle ^ <Str>
 	^self definitionTitle, ' ', self mirror nameWithTypeArgs
 ! !
 
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'control' !
+
+
+closeRequest: toClose <[]>
+
+	Smalltalk removeDependent: self.
+	super closeRequest: toClose.!
+
+fileOutDefinition
+ 
+	self visual
+		userPickSaveFileWithAction: [ :file< FilePath> | self fileOutDefinitionTo: file ]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'Delta files (*.dlt)' ,, '*.dlt' with: 'All files (*.*)' ,, '*.*')
+		defaultFile: (FilePath for: self mirror name, '.dlt')
+		defaultDir: nil
+		title: 'File out ', self definitionTitle, ' ', self mirror name
+!
+
+fileOutDefinitionTo: file <FilePath>
+
+	| out <CharOutputStream> |
+	out := CharacterInputOutputConverter on: file writeStream.
+	[ (DefinitionWriter for: self mirror) fileOutOn: out ] ensure: [ out close ].
+	
+! !
+
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		(aspect = #removeGlobal and: [ self mirror reflectee isNil or: [ self mirror reflectee = value at2 ]])
+			ifTrue: [	self requestCloseIfTopWindow ].
+	
+		"We check if the reflectee isNil since the mirror could be shared. The mirror receiving #removeDefinitionIfFail:
+			will have the reflectee set to nil afterwards."
+	
+		aspect = #typeArguments
+			ifTrue: [	self visual topWindow name: self windowTitle ].
+	]! !
+
+! (Delta mirrorFor: #DefOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+					name: '&File out...';
+					action: [ self fileOutDefinition ] );
+		add: (MenuAction new
+					name: '&Remove';
+					action: [ self removeDefinition: self mirror ] )!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self viewMenu;
+		add: self typecheckingMenu!
+
+popUpMenu ^<Menu>
+
+	^Menu new
+		addAll: self fileMenu removeAll;
+		addSeparator;
+		add: self viewMenu! !
+
 ! (Delta mirrorFor: #DefOutliner) methodsFor: 'private' !
 
 
@@ -123,63 +196,6 @@ showBodyOnlyForTop ^ <Boolean>
 
 	^true! !
 
-! (Delta mirrorFor: #DefOutliner) methodsFor: 'menus' !
-
-
-fileMenu ^ <Menu>
-
-	^super fileMenu
-		add: (MenuAction new
-					name: '&File out...';
-					action: [ self fileOutDefinition ] );
-		add: (MenuAction new
-					name: '&Remove';
-					action: [ self removeDefinition: self mirror ] )!
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^ <Menu>
-
-	^Menu new
-		add: self fileMenu;
-		add: self viewMenu;
-		add: self typecheckingMenu!
-
-popUpMenu ^<Menu>
-
-	^Menu new
-		addAll: self fileMenu removeAll;
-		addSeparator;
-		add: self viewMenu! !
-
-! (Delta mirrorFor: #DefOutliner) methodsFor: 'control' !
-
-
-closeRequest: toClose <[]>
-
-	Smalltalk removeDependent: self.
-	super closeRequest: toClose.!
-
-fileOutDefinition
- 
-	self visual
-		userPickSaveFileWithAction: [ :file< FilePath> | self fileOutDefinitionTo: file ]
-		fileTypes: (Array[Tuple[Str,Str]] with: 'Delta files (*.dlt)' ,, '*.dlt' with: 'All files (*.*)' ,, '*.*')
-		defaultFile: (FilePath for: self mirror name, '.dlt')
-		defaultDir: nil
-		title: 'File out ', self definitionTitle, ' ', self mirror name
-!
-
-fileOutDefinitionTo: file <FilePath>
-
-	| out <CharOutputStream> |
-	out := CharacterInputOutputConverter on: file writeStream.
-	[ (DefinitionWriter for: self mirror) fileOutOn: out ] ensure: [ out close ].
-	
-! !
-
 ! (Delta mirrorFor: #DefOutliner) methodsFor: 'private-initialization' !
 
 
@@ -187,20 +203,4 @@ initializeForMirror: m <M>
 
 	super initializeForMirror: m.
 	Smalltalk addDependent: self.! !
-
-! (Delta mirrorFor: #DefOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		(aspect = #removeGlobal and: [ self mirror reflectee isNil or: [ self mirror reflectee = value at2 ]])
-			ifTrue: [	self requestCloseIfTopWindow ].
-	
-		"We check if the reflectee isNil since the mirror could be shared. The mirror receiving #removeDefinitionIfFail:
-			will have the reflectee set to nil afterwards."
-	
-		aspect = #typeArguments
-			ifTrue: [	self visual topWindow name: self windowTitle ].
-	]! !
 

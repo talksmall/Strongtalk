@@ -16,14 +16,84 @@ Tags:  %User
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
 '!
 
-! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'streaming' !
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'accessing' !
 
 
-readWriteStream ^<ReadWriteStream[E]>
-    ^SeqCltnReadWriteStream[E] on: self!
+at: index <Int> put: el <E> ^<E>
 
-writeStream ^<WriteStream[E]>
-    ^self readWriteStream! !
+	self subclassResponsibility!
+
+atAll: indices <Cltn[Int]> put: val <E>
+
+	indices do:
+		[ :i <Int> |
+			self at: i put: val		].!
+
+atAllPut: val <E>
+
+	1 to: self size do:
+		[ :i <Int> |
+			self at: i put: val		].! !
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'private' !
+
+
+defaultMedianOf: a <Int> and: b <Int> and: c <Int> ^<Int>
+
+	"This is an untypesafe method that only works for VarSeqCltns of elements that
+		have Magnitude relationships with each other.  It is used by the default sorting
+		method."
+
+	| atA <E> atB <E> atC <E> |
+	atA := self at: a.
+	atB := self at: b.
+	atC := self at: c.
+	^ atB <= atA
+		ifFalse: [ atC <= atB
+							ifFalse:[ b ]
+							ifTrue: [	 atC <= atA
+												ifFalse: [ c ]
+												ifTrue: [ a ] 	] ]
+		ifTrue: [ atB <= atC
+							ifFalse:[ b ]
+							ifTrue: [	 atA <= atC
+												ifFalse: [ c ]
+												ifTrue: [ a ] 	] ]
+!
+
+medianOf: a <Int> and: b <Int> and: c <Int> using: compare <[E,E,^Boolean]> ^<Int>
+
+	| atA <E> atB <E> atC <E> |
+	atA := self at: a.
+	atB := self at: b.
+	atC := self at: c.
+	^(compare value: atB value: atA)
+		ifFalse: [	(compare value: atC value: atB)
+							ifFalse:[ b ]
+							ifTrue: [	(compare value: atC value: atA)
+												ifFalse: [ c ]
+												ifTrue: [ a ] 	] ]
+		ifTrue: [	(compare value: atB value: atC)
+							ifFalse:[ b ]
+							ifTrue: [	(compare value: atA value: atC)
+												ifFalse: [ c ]
+												ifTrue: [ a ] 	] ]
+!
+
+swap: i <Int> with: j <Int>
+	| t <E> |
+	t := self at: i.
+	self at: i put: (self at: j).
+	self at: j put: t.!
+
+swap: i1 <Int> with: i2 <Int> count: n <Int>
+
+	| c <Int> |
+	c := 0.
+	[ c < n ]
+		whileTrue: 
+			[	self swap: i1 + c with: i2 + c.
+				c := c + 1.		]! !
 
 ! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'replacing' !
 
@@ -59,24 +129,14 @@ startingAt: repStart <Int>
 						self at: i put: (other at: otheri).
 						otheri := otheri - 1.	]]! !
 
-! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'accessing' !
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'streaming' !
 
 
-at: index <Int> put: el <E> ^<E>
+readWriteStream ^<ReadWriteStream[E]>
+    ^SeqCltnReadWriteStream[E] on: self!
 
-	self subclassResponsibility!
-
-atAll: indices <Cltn[Int]> put: val <E>
-
-	indices do:
-		[ :i <Int> |
-			self at: i put: val		].!
-
-atAllPut: val <E>
-
-	1 to: self size do:
-		[ :i <Int> |
-			self at: i put: val		].! !
+writeStream ^<WriteStream[E]>
+    ^self readWriteStream! !
 
 ! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
 
@@ -173,64 +233,4 @@ sortUsing: compare <[E,E,^Boolean]>
 	  cause the receiver to stay sorted after later changes, unlike a SortedCollection."
 
 	self sort: 1 to: self size using: compare! !
-
-! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'private' !
-
-
-defaultMedianOf: a <Int> and: b <Int> and: c <Int> ^<Int>
-
-	"This is an untypesafe method that only works for VarSeqCltns of elements that
-		have Magnitude relationships with each other.  It is used by the default sorting
-		method."
-
-	| atA <E> atB <E> atC <E> |
-	atA := self at: a.
-	atB := self at: b.
-	atC := self at: c.
-	^ atB <= atA
-		ifFalse: [ atC <= atB
-							ifFalse:[ b ]
-							ifTrue: [	 atC <= atA
-												ifFalse: [ c ]
-												ifTrue: [ a ] 	] ]
-		ifTrue: [ atB <= atC
-							ifFalse:[ b ]
-							ifTrue: [	 atA <= atC
-												ifFalse: [ c ]
-												ifTrue: [ a ] 	] ]
-!
-
-medianOf: a <Int> and: b <Int> and: c <Int> using: compare <[E,E,^Boolean]> ^<Int>
-
-	| atA <E> atB <E> atC <E> |
-	atA := self at: a.
-	atB := self at: b.
-	atC := self at: c.
-	^(compare value: atB value: atA)
-		ifFalse: [	(compare value: atC value: atB)
-							ifFalse:[ b ]
-							ifTrue: [	(compare value: atC value: atA)
-												ifFalse: [ c ]
-												ifTrue: [ a ] 	] ]
-		ifTrue: [	(compare value: atB value: atC)
-							ifFalse:[ b ]
-							ifTrue: [	(compare value: atA value: atC)
-												ifFalse: [ c ]
-												ifTrue: [ a ] 	] ]
-!
-
-swap: i <Int> with: j <Int>
-	| t <E> |
-	t := self at: i.
-	self at: i put: (self at: j).
-	self at: j put: t.!
-
-swap: i1 <Int> with: i2 <Int> count: n <Int>
-
-	| c <Int> |
-	c := 0.
-	[ c < n ]
-		whileTrue: 
-			[	self swap: i1 + c with: i2 + c.
-				c := c + 1.		]! !
 

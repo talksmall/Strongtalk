@@ -22,13 +22,6 @@ Tags: %BlueBook %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.8 $
 '!
 
-! (Delta mirrorFor: #Point) classSide methodsFor: 'creation' !
-
-
-x: xval <Number> y: yval <Number>  ^<Point>
-
-	^HeavyPoint new x: xval y: yval! !
-
 ! (Delta mirrorFor: #Point) classSide methodsFor: 'constants' !
 
 
@@ -36,6 +29,13 @@ origin ^<Point>
 
 	"%todo:  cache this if we don't optimize points"
 	^0@0! !
+
+! (Delta mirrorFor: #Point) classSide methodsFor: 'creation' !
+
+
+x: xval <Number> y: yval <Number>  ^<Point>
+
+	^HeavyPoint new x: xval y: yval! !
 
 ! (Delta mirrorFor: #Point) methodsFor: 'accessing' !
 
@@ -52,13 +52,6 @@ x ^<Number>
 y ^<Number>
 
 	self subclassResponsibility! !
-
-! (Delta mirrorFor: #Point) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	strm print: self x; putAll: ' @ '; print: self y! !
 
 ! (Delta mirrorFor: #Point) methodsFor: 'comparing' !
 
@@ -161,23 +154,12 @@ truncated ^<Point>
 
 	^self x truncated @ self y truncated! !
 
-! (Delta mirrorFor: #Point) methodsFor: 'testing' !
+! (Delta mirrorFor: #Point) methodsFor: 'printing' !
 
 
-isPoint ^<Boolean>
+printOn: strm <CharOutputStream>
 
-	^true! !
-
-! (Delta mirrorFor: #Point) methodsFor: 'utility' !
-
-
-corner: other <Point> ^<Rect>
-
-	^Rectangle origin: self  corner: other!
-
-extent: other <Point> ^<Rect>
-
-	^Rectangle origin: self  extent: other! !
+	strm print: self x; putAll: ' @ '; print: self y! !
 
 ! (Delta mirrorFor: #Point) methodsFor: 'restricted-double dispatching' !
 
@@ -197,4 +179,22 @@ insetRect: r <Rect> ^<Rect>
 		right: r right - self x
 		top: r top + self y
 		bottom: r bottom - self y! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'testing' !
+
+
+isPoint ^<Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #Point) methodsFor: 'utility' !
+
+
+corner: other <Point> ^<Rect>
+
+	^Rectangle origin: self  corner: other!
+
+extent: other <Point> ^<Rect>
+
+	^Rectangle origin: self  extent: other! !
 

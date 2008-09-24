@@ -39,6 +39,16 @@ sortBlock: sort <[E,E,^Boolean]> ^<Instance>
 
 	^self new: self defaultCapacity sortBlock: sort! !
 
+! (Delta mirrorFor: #SortedCollection) classSide methodsFor: 'restricted' !
+
+
+defaultSortBlock ^<[E,E,^Boolean]>
+
+	^[ :el1 <E> :el2 <E> |
+		"The default sort block for SortedCollections is is not typesafe, but is included for
+		 Smalltalk compatibility (that's the way Smalltalk is!!)."
+		(guaranteed <Magnitude[E]> el1) <= el2	].! !
+
 ! (Delta mirrorFor: #SortedCollection) classSide methodsFor: 'testing' !
 
 
@@ -79,45 +89,6 @@ test
 	s add: 5; add: 2; add: 6; add: 8; add: 9; add: 1; add: 123; add: 4321; add: 12.
 	[ s isSorted ] verify.! !
 
-! (Delta mirrorFor: #SortedCollection) classSide methodsFor: 'restricted' !
-
-
-defaultSortBlock ^<[E,E,^Boolean]>
-
-	^[ :el1 <E> :el2 <E> |
-		"The default sort block for SortedCollections is is not typesafe, but is included for
-		 Smalltalk compatibility (that's the way Smalltalk is!!)."
-		(guaranteed <Magnitude[E]> el1) <= el2	].! !
-
-! (Delta mirrorFor: #SortedCollection) methodsFor: 'private' !
-
-
-indexFor: el <E> ^<Int>
-	"This returns an internal index such that if el was inserted before it
-	  the collection would remain sorted"
-
-	^self contents
-		binarySearchFor: el
-		between: self startGap + 1
-		and: self lastIndex
-		toCompare: self sortBlock
-"	| low <Int> high <Int> |
-	low := self startGap + 1.
-	high := self lastIndex.
-	[ low <= high ]
-		whileTrue: [	| mid <Int> |
-					mid := (low + high) // 2.
-	  				(self element: (self contents at: mid) isBefore: el)
-						ifTrue: [ low := mid + 1 ]	
-						ifFalse: [ high := mid - 1 ].	].
-	
-	^low"!
-
-sort
-	usesDefaultSortBlock
-		ifTrue: [	self contents defaultSort: self startGap + 1 to: self lastIndex ]
-		ifFalse: [ self contents sort: self startGap + 1 to: self lastIndex using: self sortBlock ]! !
-
 ! (Delta mirrorFor: #SortedCollection) methodsFor: 'accessing' !
 
 
@@ -157,6 +128,13 @@ sortBlock: sort <[E,E,^Boolean]>
 usesDefaultSortBlock ^<Boolean>
 	^usesDefaultSortBlock! !
 
+! (Delta mirrorFor: #SortedCollection) methodsFor: 'converting' !
+
+
+asSortedCollection ^<SeqCltn[Object]>
+
+	^self! !
+
 ! (Delta mirrorFor: #SortedCollection) methodsFor: 'initialization' !
 
 
@@ -166,12 +144,34 @@ initCapacity: cap <Int>
 	sortBlock := self actualClass defaultSortBlock.
 	usesDefaultSortBlock := true.! !
 
-! (Delta mirrorFor: #SortedCollection) methodsFor: 'converting' !
+! (Delta mirrorFor: #SortedCollection) methodsFor: 'private' !
 
 
-asSortedCollection ^<SeqCltn[Object]>
+indexFor: el <E> ^<Int>
+	"This returns an internal index such that if el was inserted before it
+	  the collection would remain sorted"
 
-	^self! !
+	^self contents
+		binarySearchFor: el
+		between: self startGap + 1
+		and: self lastIndex
+		toCompare: self sortBlock
+"	| low <Int> high <Int> |
+	low := self startGap + 1.
+	high := self lastIndex.
+	[ low <= high ]
+		whileTrue: [	| mid <Int> |
+					mid := (low + high) // 2.
+	  				(self element: (self contents at: mid) isBefore: el)
+						ifTrue: [ low := mid + 1 ]	
+						ifFalse: [ high := mid - 1 ].	].
+	
+	^low"!
+
+sort
+	usesDefaultSortBlock
+		ifTrue: [	self contents defaultSort: self startGap + 1 to: self lastIndex ]
+		ifFalse: [ self contents sort: self startGap + 1 to: self lastIndex using: self sortBlock ]! !
 
 ! (Delta mirrorFor: #SortedCollection) methodsFor: 'testing' !
 

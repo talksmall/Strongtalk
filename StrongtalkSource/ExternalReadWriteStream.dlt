@@ -91,17 +91,6 @@ there'.
     self test: 14 is: [ in contentsRemaining = s ].
     in close.! !
 
-! (Delta mirrorFor: #ExternalReadWriteStream) methodsFor: 'private' !
-
-
-updateBufferLocationAfterFlush
-
-	"We don't advance the buffer here because we need to preserve the read semantics"!
-
-writeIfNeededBeforePositionChange
-    self dirty
-        ifTrue: [ self writeBuffer; dirty: false. ].! !
-
 ! (Delta mirrorFor: #ExternalReadWriteStream) methodsFor: 'accessing' !
 
 
@@ -131,4 +120,15 @@ size ^<Int>
 
 	self flush.
 	^super size! !
+
+! (Delta mirrorFor: #ExternalReadWriteStream) methodsFor: 'private' !
+
+
+updateBufferLocationAfterFlush
+
+	"We don't advance the buffer here because we need to preserve the read semantics"!
+
+writeIfNeededBeforePositionChange
+    self dirty
+        ifTrue: [ self writeBuffer; dirty: false. ].! !
 

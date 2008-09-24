@@ -50,40 +50,24 @@ forText ^<CodeView>
 				].
 	^inst! !
 
-! (Delta mirrorFor: #CodeView) methodsFor: 'menus' !
+! (Delta mirrorFor: #CodeView) methodsFor: 'accessing' !
 
 
-menuBar ^<Menu>
+evalBlock ^ <[]>
 
-	^super menuBar add: self smalltalkMenu!
+	^evalBlock!
 
-popUpMenu ^<Menu>
+evalBlock: blk <[]>
 
-	^super popUpMenu
-		add: self smalltalkMenu!
+	evalBlock := blk!
 
-smalltalkMenu ^ <Menu>
+receiver ^ <Object>
 
-	^Menu new name: '&Smalltalk';
-		add: (MenuAction new
-					name: '&Do It';
-					action: [ self doIt ]);
-		add: (MenuAction new
-					name: '&Show It';
-					action: [ self showIt ]);
-		add: (MenuAction new
-					name: '&Inspect It';
-					action: [ self inspectIt ]);
-		add: (MenuAction new
-					name: '&File It In';
-					action: [ self fileItIn ]);
-		add: (MenuAction new
-					name: 'Build Doit &Button';
-					action: [ self buildDoItButton ]);
-		add: (MenuAction new
-						name: 'Open definition';
-						active: [ Smalltalk includesKey: self selectionString asSymbol ];
-						action: [ self openDefinition ])! !
+	^receiver!
+
+receiver: oop <Object>
+
+	receiver := oop! !
 
 ! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
 
@@ -159,6 +143,40 @@ showIt
 	self selection: self selectionEnd ,, self selectionEnd.
 ! !
 
+! (Delta mirrorFor: #CodeView) methodsFor: 'event processing' !
+
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	(super keyDown: key focus: focus event: ev)
+		ifTrue: [	^true ].
+		
+	(key = #D and: [ ev ctrlPressed ])
+		ifTrue: [	self doIt.
+						^true ].
+	(key = #I and: [ ev ctrlPressed ])
+		ifTrue: [	self inspectIt.
+						^true ].
+	(key = #F and: [ ev ctrlPressed ])
+		ifTrue: [	self fileItIn.
+						^true ].
+	(key = #O and: [ ev ctrlPressed ])
+		ifTrue: [	self openDefinition.
+						^true ].
+	
+	self isReadOnly
+		ifTrue: [ ^false ].
+	
+	(key = #S and: [ ev ctrlPressed ])
+		ifTrue: [	self showIt.
+						^true ].
+	(key = #B and: [ ev ctrlPressed ])
+		ifTrue: [	self buildDoItButton.
+						^true ].
+
+	^false
+! !
+
 ! (Delta mirrorFor: #CodeView) methodsFor: 'indexing' !
 
 
@@ -225,57 +243,40 @@ convert the result into a point"
 ^self 	linearSpotAt: (self linearViewIndexFromSourceIndex: i) 
 			ifAbsent: [self error: 'Invalid source index ', i printString].! !
 
-! (Delta mirrorFor: #CodeView) methodsFor: 'selection' !
+! (Delta mirrorFor: #CodeView) methodsFor: 'menus' !
 
 
-sourceSelection ^ <Tuple[Integer, Integer]>
-"Return the range of characters currently selected"
-^	(self sourceIndexFromViewIndex: self selection at1) ,,
-	(self sourceIndexFromViewIndex: self selection at2)!
+menuBar ^<Menu>
 
-sourceSelection: selection <Tuple[Integer, Integer]>
-" Select  the range of characters given by selection. "
+	^super menuBar add: self smalltalkMenu!
 
-| stop <Point>  |
+popUpMenu ^<Menu>
 
-stop := self 	linearSpotAt: ((self linearViewIndexFromSourceIndex: selection at2))
-						ifAbsent:[self shouldNotHappen].
-self selection: (self viewIndexFromSourceIndex: selection at1) ,, stop.
-! !
+	^super popUpMenu
+		add: self smalltalkMenu!
 
-! (Delta mirrorFor: #CodeView) methodsFor: 'event processing' !
+smalltalkMenu ^ <Menu>
 
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	(super keyDown: key focus: focus event: ev)
-		ifTrue: [	^true ].
-		
-	(key = #D and: [ ev ctrlPressed ])
-		ifTrue: [	self doIt.
-						^true ].
-	(key = #I and: [ ev ctrlPressed ])
-		ifTrue: [	self inspectIt.
-						^true ].
-	(key = #F and: [ ev ctrlPressed ])
-		ifTrue: [	self fileItIn.
-						^true ].
-	(key = #O and: [ ev ctrlPressed ])
-		ifTrue: [	self openDefinition.
-						^true ].
-	
-	self isReadOnly
-		ifTrue: [ ^false ].
-	
-	(key = #S and: [ ev ctrlPressed ])
-		ifTrue: [	self showIt.
-						^true ].
-	(key = #B and: [ ev ctrlPressed ])
-		ifTrue: [	self buildDoItButton.
-						^true ].
-
-	^false
-! !
+	^Menu new name: '&Smalltalk';
+		add: (MenuAction new
+					name: '&Do It';
+					action: [ self doIt ]);
+		add: (MenuAction new
+					name: '&Show It';
+					action: [ self showIt ]);
+		add: (MenuAction new
+					name: '&Inspect It';
+					action: [ self inspectIt ]);
+		add: (MenuAction new
+					name: '&File It In';
+					action: [ self fileItIn ]);
+		add: (MenuAction new
+					name: 'Build Doit &Button';
+					action: [ self buildDoItButton ]);
+		add: (MenuAction new
+						name: 'Open definition';
+						active: [ Smalltalk includesKey: self selectionString asSymbol ];
+						action: [ self openDefinition ])! !
 
 ! (Delta mirrorFor: #CodeView) methodsFor: 'private' !
 
@@ -344,25 +345,6 @@ showItMenuFor: v <Visual> text: t <Str> ^ <Menu>
 		)
 ! !
 
-! (Delta mirrorFor: #CodeView) methodsFor: 'accessing' !
-
-
-evalBlock ^ <[]>
-
-	^evalBlock!
-
-evalBlock: blk <[]>
-
-	evalBlock := blk!
-
-receiver ^ <Object>
-
-	^receiver!
-
-receiver: oop <Object>
-
-	receiver := oop! !
-
 ! (Delta mirrorFor: #CodeView) methodsFor: 'private-initialization' !
 
 
@@ -370,4 +352,22 @@ initialize
 
 	super initialize.
 	self evalBlock: []! !
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'selection' !
+
+
+sourceSelection ^ <Tuple[Integer, Integer]>
+"Return the range of characters currently selected"
+^	(self sourceIndexFromViewIndex: self selection at1) ,,
+	(self sourceIndexFromViewIndex: self selection at2)!
+
+sourceSelection: selection <Tuple[Integer, Integer]>
+" Select  the range of characters given by selection. "
+
+| stop <Point>  |
+
+stop := self 	linearSpotAt: ((self linearViewIndexFromSourceIndex: selection at2))
+						ifAbsent:[self shouldNotHappen].
+self selection: (self viewIndexFromSourceIndex: selection at1) ,, stop.
+! !
 

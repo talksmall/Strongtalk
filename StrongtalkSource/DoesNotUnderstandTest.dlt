@@ -1,0 +1,32 @@
+Delta define: #DoesNotUnderstandTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #DoesNotUnderstandTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #DoesNotUnderstandTest) group: 'system test'!
+
+(Delta mirrorFor: #DoesNotUnderstandTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #DoesNotUnderstandTest) methodsFor: 'Testing' !
+
+
+testUnknownNoArgMethodReturnsResultFromDoesNotUnderstand
+
+	| message |
+	message := DoesNotUnderstandFixture new zork: 1.
+	self assert: #zork: == message selector
+			description: 'Wrong selector returned'.
+	self assert: 1 == message arguments size
+			description: 'Wrong number of arguments'.
+	self assert: 1 == message arguments first
+			description: 'Wrong argument returned'!
+
+testUnknownOneArgMethodReturnsResultFromDoesNotUnderstand
+
+	| message |
+	message := DoesNotUnderstandFixture new zork.
+	self assert: #zork == message selector
+			description: 'Wrong selector returned'! !
+

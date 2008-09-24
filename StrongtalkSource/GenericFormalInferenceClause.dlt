@@ -46,6 +46,27 @@ allInvocations := self 	allInvocationsOf: self generic
 						]) actuals at: self typeArgNumber
 ! !
 
+! (Delta mirrorFor: #GenericFormalInferenceClause) methodsFor: 'private' !
+
+
+allInvocationsOf: g <DeltaGeneric> in: types <Cltn[ObjectType]> ^ <Cltn[GenericApplicationType]>
+
+^types select:[:t <ObjectType> | t isGenericInvocation and:[t generic = g]]!
+
+generic ^ <DeltaGeneric>
+
+^(Type for: (Smalltalk at: self genericId ifAbsent:[self error: self genericId, ' not found'])) asGeneric!
+
+minimalTypeOf: types <Cltn[GenericApplicationType]> ifNone: fb <[^DoesNotMatter]> ^ <GenericApplicationType>
+
+^types 	inject: types anElement
+				into: [: t <GenericApplicationType> :g <GenericApplicationType> |  
+							(t subtypeOf: g assuming: DeltaGlobalTrail)
+								 ifTrue:[t] 
+								 ifFalse:[(g subtypeOf: t assuming: DeltaGlobalTrail) ifTrue:[g] ifFalse:[^fb value]]
+						]
+			! !
+
 ! (Delta mirrorFor: #GenericFormalInferenceClause) methodsFor: 'private-accessing' !
 
 
@@ -72,25 +93,4 @@ typeArgNumber ^ <Integer>
 typeArgNumber: n <Integer>
 
 typeArgNumber := n! !
-
-! (Delta mirrorFor: #GenericFormalInferenceClause) methodsFor: 'private' !
-
-
-allInvocationsOf: g <DeltaGeneric> in: types <Cltn[ObjectType]> ^ <Cltn[GenericApplicationType]>
-
-^types select:[:t <ObjectType> | t isGenericInvocation and:[t generic = g]]!
-
-generic ^ <DeltaGeneric>
-
-^(Type for: (Smalltalk at: self genericId ifAbsent:[self error: self genericId, ' not found'])) asGeneric!
-
-minimalTypeOf: types <Cltn[GenericApplicationType]> ifNone: fb <[^DoesNotMatter]> ^ <GenericApplicationType>
-
-^types 	inject: types anElement
-				into: [: t <GenericApplicationType> :g <GenericApplicationType> |  
-							(t subtypeOf: g assuming: DeltaGlobalTrail)
-								 ifTrue:[t] 
-								 ifFalse:[(g subtypeOf: t assuming: DeltaGlobalTrail) ifTrue:[g] ifFalse:[^fb value]]
-						]
-			! !
 

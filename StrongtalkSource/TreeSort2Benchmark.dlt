@@ -11,17 +11,6 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #TreeSort2Benchmark) methodsFor: 'misc' !
-
-
-run
-	| tree |
-	self initarr.
-	tree := TreeSort2Node new contents: (sortlist at: 1).
-	2 to: self n do: [:i | tree insert: (sortlist at: i)].
-	tree checkTree or: [self error: 'error'].
-	"TreeSort2Benchmark new run"! !
-
 ! (Delta mirrorFor: #TreeSort2Benchmark) methodsFor: 'admin' !
 
 
@@ -36,4 +25,15 @@ name
 
 parcplaceTime
 	^159! !
+
+! (Delta mirrorFor: #TreeSort2Benchmark) methodsFor: 'misc' !
+
+
+run
+	| tree |
+	self initarr.
+	tree := TreeSort2Node new contents: (sortlist at: 1).
+	2 to: self n do: [:i | tree insert: (sortlist at: i)].
+	tree checkTree or: [self error: 'error'].
+	"TreeSort2Benchmark new run"! !
 

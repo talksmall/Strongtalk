@@ -15,6 +15,21 @@ Instance variables:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #UnaryConstraint) methodsFor: 'add/remove' !
+
+
+addToGraph
+	"Add myself to the constraint graph."
+
+	output addConstraint: self.
+	satisfied := false.!
+
+removeFromGraph
+	"Remove myself from the constraint graph."
+
+	(output == nil) ifFalse: [output removeConstraint: self].
+	satisfied := false.! !
+
 ! (Delta mirrorFor: #UnaryConstraint) methodsFor: 'initialize-release' !
 
 
@@ -31,29 +46,6 @@ var: aVariable strength: strengthSymbol
 	output := aVariable.
 	satisfied := false.
 	self addConstraint.! !
-
-! (Delta mirrorFor: #UnaryConstraint) methodsFor: 'queries' !
-
-
-isSatisfied
-	"Answer true if this constraint is satisfied in the current solution."
-
-	^satisfied! !
-
-! (Delta mirrorFor: #UnaryConstraint) methodsFor: 'add/remove' !
-
-
-addToGraph
-	"Add myself to the constraint graph."
-
-	output addConstraint: self.
-	satisfied := false.!
-
-removeFromGraph
-	"Remove myself from the constraint graph."
-
-	(output == nil) ifFalse: [output removeConstraint: self].
-	satisfied := false.! !
 
 ! (Delta mirrorFor: #UnaryConstraint) methodsFor: 'planning' !
 
@@ -89,4 +81,12 @@ recalculate
 	output walkStrength: strength.
 	output stay: (self isInput not).
 	(output stay) ifTrue: [self execute].	"stay optimization"! !
+
+! (Delta mirrorFor: #UnaryConstraint) methodsFor: 'queries' !
+
+
+isSatisfied
+	"Answer true if this constraint is satisfied in the current solution."
+
+	^satisfied! !
 

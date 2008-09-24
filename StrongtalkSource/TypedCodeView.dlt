@@ -11,28 +11,16 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #TypedCodeView) methodsFor: 'menus' !
+! (Delta mirrorFor: #TypedCodeView) methodsFor: 'accessing' !
 
 
-acceptMenu ^<Menu>
+codeManager ^ <CodeApp>
 
-	^super acceptMenu
-		addSeparator;
-		addAll: self typecheckingMenu removeAll!
+^codeManager!
 
-menuBar ^<Menu>
+codeManager: cm   <CodeApp>
 
-	^super menuBar add: self typecheckingMenu!
-
-typecheckingMenu  ^<Menu>
-
-^Menu new name: 'Typecheck';
-    add: (MenuAction new
-                  name: 'Typecheck and Accept';
-                  action: [self  typecheck]);
-    add: (MenuAction new
-                  name: 'Show type';
-                  action: [self showType])! !
+codeManager := cm! !
 
 ! (Delta mirrorFor: #TypedCodeView) methodsFor: 'control' !
 
@@ -79,16 +67,40 @@ typecheck
 		self session inProcessDo: [ self codeManager typecheck ]
 	]! !
 
-! (Delta mirrorFor: #TypedCodeView) methodsFor: 'accessing' !
+! (Delta mirrorFor: #TypedCodeView) methodsFor: 'event processing' !
 
 
-codeManager ^ <CodeApp>
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
 
-^codeManager!
+	key = #RETURN
+		ifTrue: [	(ev shiftPressed and: [ev ctrlPressed or: [ self isMultiLine not and: [ self autoAccept not ] ]])
+							ifTrue: [ self typecheck.
+											^true ].
+					 ].
+	^super keyDown: key focus: focus event: ev! !
 
-codeManager: cm   <CodeApp>
+! (Delta mirrorFor: #TypedCodeView) methodsFor: 'menus' !
 
-codeManager := cm! !
+
+acceptMenu ^<Menu>
+
+	^super acceptMenu
+		addSeparator;
+		addAll: self typecheckingMenu removeAll!
+
+menuBar ^<Menu>
+
+	^super menuBar add: self typecheckingMenu!
+
+typecheckingMenu  ^<Menu>
+
+^Menu new name: 'Typecheck';
+    add: (MenuAction new
+                  name: 'Typecheck and Accept';
+                  action: [self  typecheck]);
+    add: (MenuAction new
+                  name: 'Show type';
+                  action: [self showType])! !
 
 ! (Delta mirrorFor: #TypedCodeView) methodsFor: 'private-utility' !
 
@@ -108,16 +120,4 @@ self visual promptYesNo: s
                          											  title: title
                          								]
                          			].! !
-
-! (Delta mirrorFor: #TypedCodeView) methodsFor: 'event processing' !
-
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	key = #RETURN
-		ifTrue: [	(ev shiftPressed and: [ev ctrlPressed or: [ self isMultiLine not and: [ self autoAccept not ] ]])
-							ifTrue: [ self typecheck.
-											^true ].
-					 ].
-	^super keyDown: key focus: focus event: ev! !
 

@@ -26,53 +26,6 @@ Tags: %BlueBook %User
 Use and distribution of this software is subject to the terms of the attached source license.
 '!
 
-! (Delta mirrorFor: #Collection) methodsFor: 'testing' !
-
-
-= other <Object> ^<Boolean>
-
-	^self == other
-		or: [ self class = other class
-				and: [ "We have the same class, so we can guarantee other is a collection"
-					  self hasSameElementsAs: (guaranteed <Cltn[Object]> other)   ]]!
-
-hasSameElementsAs: other <Cltn[Object]>  ^<Boolean>
-	"Like =, but doesn't care whether the receiver and other are the same kind of collection or not"
-
-	^self size = other size  and:
-		[ self asBag = other asBag ]!
-
-includes: o <Object> ^<Boolean>
-
-	self do: [ :e <E> | e = o ifTrue: [ ^true ] ].
-	^false!
-
-isEmpty ^<Boolean>
-
-	^self size = 0! !
-
-! (Delta mirrorFor: #Collection) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	| count <Int> first <Boolean> |
-	strm	nextPutAll: self class name;
-			nextPut: $(.
-	count := 0.
-	first := true.
-	self printElementsDo:
-		[ :el <Object> |
-			first
-				ifTrue: [ first := false ]
-				ifFalse: [ strm space ].
-			el printOn: strm.
-			count := count + 1.
-			count >= self maxPrintElements
-				ifTrue: [ strm nextPut: $<; print: self size - count; nextPutAll: ' more elements>)'.
-						^self	].	].
-	strm nextPut: $).! !
-
 ! (Delta mirrorFor: #Collection) methodsFor: 'accessing' !
 
 
@@ -114,6 +67,65 @@ size ^<Integer>
 species ^<Collection[E] class>
 
 	^Set[E]! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'converting' !
+
+
+asArray ^<Array[EX]>
+			{where EX is returnType of #anElement message of receiverType }
+	"Return a new array holding the elements of this collection.  The element type of the array is whatever the
+	 static type of the receiver is at the point of send."
+
+	| a <Array[EX]> i <Int> |
+	a := Array[EX] new: self size.
+	i := 1.
+	(guaranteed <Collection[EX]> self)
+		do: [ :el <EX> |
+					a at: i put: el.
+					i := i + 1. ].
+	^a!
+
+asBag ^<Bag[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+	"Return a new Bag holding the elements of this collection.  The element type of the bag is whatever the
+	 static type of the receiver is at the point of send."
+
+	^Bag[EX] withAll: (guaranteed <Cltn[EX]> self)!
+
+asOrderedCollection ^<OrdCltn[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+	"Return a new OrdCltn holding the elements of this collection.  The element type of the ordered collection
+       is whatever the static type of the receiver is at the point of send."
+
+	^OrderedCollection[EX] withAll: (guaranteed <Cltn[EX]> self)!
+
+asSet ^<Extensible[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+	"Return a new extensible collection holding the elements of this collection.  The element type of the set
+       is whatever the static type of the receiver is at the point of send."
+
+	^Set[EX] withAll: (guaranteed <Cltn[EX]> self)!
+
+asSortedCollection ^<SeqCltn[Object]>
+	"This message is NOT typesafe, and should only be used for compatibility reasons, since there is
+ 	 no way of knowing whether the elements of this collection support #< or not.  You should use
+	 #asSortedCollection: instead, if possible"
+
+	^SortedCollection[Object] withAll: self!
+
+asSortedCollection: sortPredicate <[E,EX, ^Boolean]>	^<SortedCollection[EX]>
+			{ where EX is  arg 1 of #value:value: message of arg 1 }
+
+	"Return a new sorted collection ordered by the given sortPredicate.  Note that Magnitude
+	 supports the defaultSort message for convenience, so that for example if you have a collection
+	 of strings strc, you can say:
+		strc asSortedCollection: String defaultSort
+	"
+
+	"This is typesafe despite the guarantee because the inference clause requires that E = EX at the
+          call site"
+	^(SortedCollection[EX] new: self size sortBlock: (guaranteed <[EX,EX,^Boolean]> sortPredicate))
+		addAll: (guaranteed <Cltn[EX]> self); yourself! !
 
 ! (Delta mirrorFor: #Collection) methodsFor: 'iterating' !
 
@@ -200,64 +212,27 @@ select: predicate <[E,^Boolean]> ^<SeqCltn[E]>
 			ifTrue: [ c add: e ].	].
 	^c! !
 
-! (Delta mirrorFor: #Collection) methodsFor: 'converting' !
+! (Delta mirrorFor: #Collection) methodsFor: 'printing' !
 
 
-asArray ^<Array[EX]>
-			{where EX is returnType of #anElement message of receiverType }
-	"Return a new array holding the elements of this collection.  The element type of the array is whatever the
-	 static type of the receiver is at the point of send."
+printOn: strm <CharOutputStream>
 
-	| a <Array[EX]> i <Int> |
-	a := Array[EX] new: self size.
-	i := 1.
-	(guaranteed <Collection[EX]> self)
-		do: [ :el <EX> |
-					a at: i put: el.
-					i := i + 1. ].
-	^a!
-
-asBag ^<Bag[EX]>
-		{where EX is returnType of #anElement message of receiverType}
-	"Return a new Bag holding the elements of this collection.  The element type of the bag is whatever the
-	 static type of the receiver is at the point of send."
-
-	^Bag[EX] withAll: (guaranteed <Cltn[EX]> self)!
-
-asOrderedCollection ^<OrdCltn[EX]>
-		{where EX is returnType of #anElement message of receiverType}
-	"Return a new OrdCltn holding the elements of this collection.  The element type of the ordered collection
-       is whatever the static type of the receiver is at the point of send."
-
-	^OrderedCollection[EX] withAll: (guaranteed <Cltn[EX]> self)!
-
-asSet ^<Extensible[EX]>
-		{where EX is returnType of #anElement message of receiverType}
-	"Return a new extensible collection holding the elements of this collection.  The element type of the set
-       is whatever the static type of the receiver is at the point of send."
-
-	^Set[EX] withAll: (guaranteed <Cltn[EX]> self)!
-
-asSortedCollection ^<SeqCltn[Object]>
-	"This message is NOT typesafe, and should only be used for compatibility reasons, since there is
- 	 no way of knowing whether the elements of this collection support #< or not.  You should use
-	 #asSortedCollection: instead, if possible"
-
-	^SortedCollection[Object] withAll: self!
-
-asSortedCollection: sortPredicate <[E,EX, ^Boolean]>	^<SortedCollection[EX]>
-			{ where EX is  arg 1 of #value:value: message of arg 1 }
-
-	"Return a new sorted collection ordered by the given sortPredicate.  Note that Magnitude
-	 supports the defaultSort message for convenience, so that for example if you have a collection
-	 of strings strc, you can say:
-		strc asSortedCollection: String defaultSort
-	"
-
-	"This is typesafe despite the guarantee because the inference clause requires that E = EX at the
-          call site"
-	^(SortedCollection[EX] new: self size sortBlock: (guaranteed <[EX,EX,^Boolean]> sortPredicate))
-		addAll: (guaranteed <Cltn[EX]> self); yourself! !
+	| count <Int> first <Boolean> |
+	strm	nextPutAll: self class name;
+			nextPut: $(.
+	count := 0.
+	first := true.
+	self printElementsDo:
+		[ :el <Object> |
+			first
+				ifTrue: [ first := false ]
+				ifFalse: [ strm space ].
+			el printOn: strm.
+			count := count + 1.
+			count >= self maxPrintElements
+				ifTrue: [ strm nextPut: $<; print: self size - count; nextPutAll: ' more elements>)'.
+						^self	].	].
+	strm nextPut: $).! !
 
 ! (Delta mirrorFor: #Collection) methodsFor: 'private' !
 
@@ -289,20 +264,30 @@ printElementsDo: f <[Object]>
 
 	self do: f! !
 
-! (Delta mirrorFor: #Collection) methodsFor: 'virtual operations' !
+! (Delta mirrorFor: #Collection) methodsFor: 'testing' !
 
 
-virtualCollect: blk <[E, ^X def]> ^<Object>
+= other <Object> ^<Boolean>
 
-	^VirtualCollector[X] on: self map: blk!
+	^self == other
+		or: [ self class = other class
+				and: [ "We have the same class, so we can guarantee other is a collection"
+					  self hasSameElementsAs: (guaranteed <Cltn[Object]> other)   ]]!
 
-virtualSelect: blk <[E, ^Boolean]> ^<Object>
+hasSameElementsAs: other <Cltn[Object]>  ^<Boolean>
+	"Like =, but doesn't care whether the receiver and other are the same kind of collection or not"
 
-	^self virtualSelectorClass on: self filter: blk!
+	^self size = other size  and:
+		[ self asBag = other asBag ]!
 
-virtualSelectorClass ^ <Object>
+includes: o <Object> ^<Boolean>
 
-	^VirtualSelector[E] ! !
+	self do: [ :e <E> | e = o ifTrue: [ ^true ] ].
+	^false!
+
+isEmpty ^<Boolean>
+
+	^self size = 0! !
 
 ! (Delta mirrorFor: #Collection) methodsFor: 'utility' !
 
@@ -320,4 +305,19 @@ do: blk <[E]> andBetweenDo: betweenBlk <[]>
 				ifFalse: [	betweenBlk value ].
 			blk value: el.
 		]! !
+
+! (Delta mirrorFor: #Collection) methodsFor: 'virtual operations' !
+
+
+virtualCollect: blk <[E, ^X def]> ^<Object>
+
+	^VirtualCollector[X] on: self map: blk!
+
+virtualSelect: blk <[E, ^Boolean]> ^<Object>
+
+	^self virtualSelectorClass on: self filter: blk!
+
+virtualSelectorClass ^ <Object>
+
+	^VirtualSelector[E] ! !
 

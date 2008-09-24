@@ -28,6 +28,22 @@ arguments: args <SeqCltn[Object]>
 
 	^self new receiver: r selector: sel arguments: args! !
 
+! (Delta mirrorFor: #Message) methodsFor: 'accessing' !
+
+
+arguments ^<Array[Object]>
+	^arguments!
+
+receiver ^<Object>
+	^receiver!
+
+selector ^<Symbol>
+	^selector!
+
+value ^<Object>
+
+	^self perform! !
+
 ! (Delta mirrorFor: #Message) methodsFor: 'control' !
 
 
@@ -47,20 +63,4 @@ arguments: args <SeqCltn[Object]>
 	receiver := r.
 	selector := sel.
 	arguments := args asArray.! !
-
-! (Delta mirrorFor: #Message) methodsFor: 'accessing' !
-
-
-arguments ^<Array[Object]>
-	^arguments!
-
-receiver ^<Object>
-	^receiver!
-
-selector ^<Symbol>
-	^selector!
-
-value ^<Object>
-
-	^self perform! !
 

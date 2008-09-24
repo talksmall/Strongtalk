@@ -130,6 +130,147 @@ pacified: b <Boolean>
 						b ifTrue: [ self open: false ] ].
 ! !
 
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'accessing child/parent' !
+
+
+addChild: o <OutlinerApp> ^ <OutlinerApp>
+
+	o hasParent
+		ifTrue: [ self error: 'Attempt to set parent twice' ]
+		ifFalse: [ 	self children add: o.
+						o parent: self ].
+	^o!
+
+childrenDo: blk <[OutlinerApp]>
+
+	self children do: blk!
+
+hasParent ^ <Boolean>
+
+	^self parent notNil!
+
+parent ^ <OutlinerApp>
+
+	^parent!
+
+parent: o <OutlinerApp>
+
+	parent := o!
+
+removeAllChildren
+
+	self childrenDo: [ :o <OutlinerApp> |
+		self removeChild: o ifAbsent: [ self shouldNotHappen ] ]!
+
+removeChild: o <OutlinerApp> ifAbsent: blk <[]>
+
+	self children remove: o ifAbsent: [ ^blk value ].
+	o parent: nil.
+!
+
+topParent ^ <OutlinerApp>
+
+	^self hasParent
+		ifTrue: [ self parent topParent ]
+		ifFalse: [ self ]! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'control' !
+
+
+closeChildrenAllLevels
+
+	self childrenDo: [ :o <OutlinerApp> | 
+		o open: false.
+		o closeChildrenAllLevels ]
+!
+
+closeChildrenOneLevel
+
+	self childrenDo: [ :o <OutlinerApp> | 
+		o open: false ]!
+
+closeRequest: toClose <[]>
+
+	self sendCloseRequest: toClose toAll: self children.
+	super closeRequest: toClose.!
+
+openChildrenAllLevels
+
+	self body.													"Force body to be built, otherwise children may not be computed"
+	self childrenDo: [ :o <OutlinerApp> | 
+		o body.													"Force body to be built again"
+		o openChildrenAllLevels ].
+	self open: true.!
+
+openChildrenOneLevel
+
+	self body.												"Force body to be built, otherwise children may not be computed"
+	self childrenDo: [ :o <OutlinerApp> | 
+		o open: true ].
+	self open: true.! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'default constants' !
+
+
+defaultClosedGlyph ^<Glyph>
+
+	DefaultClosedGlyph isNil
+		ifTrue: [ DefaultClosedGlyph :=
+						(Image fromFile: (FilePath for: 'resources\closedItem.bmp'))
+							alignLowerLeft. 	].
+	^DefaultClosedGlyph!
+
+defaultIndent ^<Int>
+
+	^20!
+
+defaultOpenGlyph ^<Glyph>
+
+	DefaultOpenGlyph isNil
+		ifTrue: [ DefaultOpenGlyph :=
+						(Image fromFile: (FilePath for: 'resources\openItem.bmp'))
+							alignLowerLeft. 	].
+	^DefaultOpenGlyph! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'frames' !
+
+
+bracketFrameForBody: body <Visual> ^ <Frame>
+
+	^(Frame for: body) border: Border leftBracket!
+
+frameForBody: body <Visual> ^ <Frame>
+
+	^(Frame for: body) border: (Border withRigidInset: (self indent @ 0 corner: Point origin))
+!
+
+threeDframeForBody: body <Visual> ^ <Frame>
+
+	^(Frame for: 
+		((Frame for: body)
+			border: (Border standard3DWithColor: Paint gray extraInteriorSpace: 2 raised: false)))
+		border: (Border withRigidInset: (self indent @ 0 corner: Point origin))
+! !
+
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'menus' !
+
+
+viewMenu ^<Menu>
+
+	^Menu new name: '&View';
+		add: (MenuAction new
+					name: '&Expand one level';
+					action: [ self openChildrenOneLevel ] );
+		add: (MenuAction new
+					name: 'Expand all levels';
+					action: [ self openChildrenAllLevels ] );
+		add: (MenuAction new
+					name: '&Collapse one level';
+    					action: [ self closeChildrenOneLevel ] );
+		add: (MenuAction new
+					name: 'Collapse all levels';
+					action: [ self closeChildrenAllLevels ] )! !
+
 ! (Delta mirrorFor: #OutlinerApp) methodsFor: 'private' !
 
 
@@ -263,6 +404,36 @@ wrapper: w <VisualWrapper>
 
 	wrapper := w! !
 
+! (Delta mirrorFor: #OutlinerApp) methodsFor: 'toolbar' !
+
+
+buildOpenCloseChildrenButtons
+
+	self toolBar
+			addButtonWithImageFrom: 'resources/openSomewhat.bmp'
+					action: [ :b <Button> |	self openChildrenOneLevel ];
+			addButtonWithImageFrom: 'resources/openAll.bmp'
+					action: [ :b <Button> |	self openChildrenAllLevels ];
+			addButtonWithImageFrom: 'resources/closeAll.bmp'
+					action: [ :b <Button> |	self closeChildrenAllLevels ];
+			yourself!
+
+buildToolBar
+
+	self	buildOpenCloseChildrenButtons.!
+
+hasToolBar ^<Boolean>
+
+	^true!
+
+toolBar ^<ToolBar>
+
+	toolBar isNil
+		ifTrue: [	toolBar := ToolBar new.
+						self buildToolBar. 	].
+
+	^toolBar! !
+
 ! (Delta mirrorFor: #OutlinerApp) methodsFor: 'updating' !
 
 
@@ -299,175 +470,4 @@ updateOpenHeader
 	openHeader := nil.
 	self open ifTrue: [ self buildPart ].
 ! !
-
-! (Delta mirrorFor: #OutlinerApp) methodsFor: 'default constants' !
-
-
-defaultClosedGlyph ^<Glyph>
-
-	DefaultClosedGlyph isNil
-		ifTrue: [ DefaultClosedGlyph :=
-						(Image fromFile: (FilePath for: 'resources\closedItem.bmp'))
-							alignLowerLeft. 	].
-	^DefaultClosedGlyph!
-
-defaultIndent ^<Int>
-
-	^20!
-
-defaultOpenGlyph ^<Glyph>
-
-	DefaultOpenGlyph isNil
-		ifTrue: [ DefaultOpenGlyph :=
-						(Image fromFile: (FilePath for: 'resources\openItem.bmp'))
-							alignLowerLeft. 	].
-	^DefaultOpenGlyph! !
-
-! (Delta mirrorFor: #OutlinerApp) methodsFor: 'frames' !
-
-
-bracketFrameForBody: body <Visual> ^ <Frame>
-
-	^(Frame for: body) border: Border leftBracket!
-
-frameForBody: body <Visual> ^ <Frame>
-
-	^(Frame for: body) border: (Border withRigidInset: (self indent @ 0 corner: Point origin))
-!
-
-threeDframeForBody: body <Visual> ^ <Frame>
-
-	^(Frame for: 
-		((Frame for: body)
-			border: (Border standard3DWithColor: Paint gray extraInteriorSpace: 2 raised: false)))
-		border: (Border withRigidInset: (self indent @ 0 corner: Point origin))
-! !
-
-! (Delta mirrorFor: #OutlinerApp) methodsFor: 'accessing child/parent' !
-
-
-addChild: o <OutlinerApp> ^ <OutlinerApp>
-
-	o hasParent
-		ifTrue: [ self error: 'Attempt to set parent twice' ]
-		ifFalse: [ 	self children add: o.
-						o parent: self ].
-	^o!
-
-childrenDo: blk <[OutlinerApp]>
-
-	self children do: blk!
-
-hasParent ^ <Boolean>
-
-	^self parent notNil!
-
-parent ^ <OutlinerApp>
-
-	^parent!
-
-parent: o <OutlinerApp>
-
-	parent := o!
-
-removeAllChildren
-
-	self childrenDo: [ :o <OutlinerApp> |
-		self removeChild: o ifAbsent: [ self shouldNotHappen ] ]!
-
-removeChild: o <OutlinerApp> ifAbsent: blk <[]>
-
-	self children remove: o ifAbsent: [ ^blk value ].
-	o parent: nil.
-!
-
-topParent ^ <OutlinerApp>
-
-	^self hasParent
-		ifTrue: [ self parent topParent ]
-		ifFalse: [ self ]! !
-
-! (Delta mirrorFor: #OutlinerApp) methodsFor: 'control' !
-
-
-closeChildrenAllLevels
-
-	self childrenDo: [ :o <OutlinerApp> | 
-		o open: false.
-		o closeChildrenAllLevels ]
-!
-
-closeChildrenOneLevel
-
-	self childrenDo: [ :o <OutlinerApp> | 
-		o open: false ]!
-
-closeRequest: toClose <[]>
-
-	self sendCloseRequest: toClose toAll: self children.
-	super closeRequest: toClose.!
-
-openChildrenAllLevels
-
-	self body.													"Force body to be built, otherwise children may not be computed"
-	self childrenDo: [ :o <OutlinerApp> | 
-		o body.													"Force body to be built again"
-		o openChildrenAllLevels ].
-	self open: true.!
-
-openChildrenOneLevel
-
-	self body.												"Force body to be built, otherwise children may not be computed"
-	self childrenDo: [ :o <OutlinerApp> | 
-		o open: true ].
-	self open: true.! !
-
-! (Delta mirrorFor: #OutlinerApp) methodsFor: 'menus' !
-
-
-viewMenu ^<Menu>
-
-	^Menu new name: '&View';
-		add: (MenuAction new
-					name: '&Expand one level';
-					action: [ self openChildrenOneLevel ] );
-		add: (MenuAction new
-					name: 'Expand all levels';
-					action: [ self openChildrenAllLevels ] );
-		add: (MenuAction new
-					name: '&Collapse one level';
-    					action: [ self closeChildrenOneLevel ] );
-		add: (MenuAction new
-					name: 'Collapse all levels';
-					action: [ self closeChildrenAllLevels ] )! !
-
-! (Delta mirrorFor: #OutlinerApp) methodsFor: 'toolbar' !
-
-
-buildOpenCloseChildrenButtons
-
-	self toolBar
-			addButtonWithImageFrom: 'resources/openSomewhat.bmp'
-					action: [ :b <Button> |	self openChildrenOneLevel ];
-			addButtonWithImageFrom: 'resources/openAll.bmp'
-					action: [ :b <Button> |	self openChildrenAllLevels ];
-			addButtonWithImageFrom: 'resources/closeAll.bmp'
-					action: [ :b <Button> |	self closeChildrenAllLevels ];
-			yourself!
-
-buildToolBar
-
-	self	buildOpenCloseChildrenButtons.!
-
-hasToolBar ^<Boolean>
-
-	^true!
-
-toolBar ^<ToolBar>
-
-	toolBar isNil
-		ifTrue: [	toolBar := ToolBar new.
-						self buildToolBar. 	].
-
-	^toolBar! !
 

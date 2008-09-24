@@ -16,6 +16,13 @@ Tags: %BlueBook
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
 '!
 
+! (Delta mirrorFor: #LargeInteger) classSide methodsFor: 'restricted-to floats' !
+
+
+forFloat: f <Float> ^<LargeInteger>
+
+	^{{self primitiveIndexedByteLargeIntegerFromFloat: f ifFail: [ :err <Symbol> | self error: err ] }}	 	 ! !
+
 ! (Delta mirrorFor: #LargeInteger) classSide methodsFor: 'restricted-to integers' !
 
 
@@ -56,25 +63,26 @@ test
 	[ 20 factorial =  (Integer readFrom: '2432902008176640000' readStream) ] verify.
 ! !
 
-! (Delta mirrorFor: #LargeInteger) classSide methodsFor: 'restricted-to floats' !
+! (Delta mirrorFor: #LargeInteger) methodsFor: 'converting' !
 
 
-forFloat: f <Float> ^<LargeInteger>
+asFloat ^ <Float>
 
-	^{{self primitiveIndexedByteLargeIntegerFromFloat: f ifFail: [ :err <Symbol> | self error: err ] }}	 	 ! !
+	^{{ self primitiveIndexedByteLargeIntegerAsFloatIfFail: [ :err <Symbol> | self error: err ] }}
+! !
 
-! (Delta mirrorFor: #LargeInteger) methodsFor: 'restricted-to large integers' !
+! (Delta mirrorFor: #LargeInteger) methodsFor: 'operations' !
 
 
-asLargeInteger ^<LargeInteger>
+// arg <Number> ^<Int>
 
-	^self!
-
-subtractLargeInteger: li <LargeInteger> ^<Integer>
-
-	^{{self primitiveIndexedByteLargeIntegerSubtract: li
-		ifFail: [ :err <Symbol> | self error: err ]
-	}}! !
+	^{{self primitiveIndexedByteLargeIntegerDiv: arg
+			ifFail: [ :err <Symbol> |
+							^err == #FirstArgumentHasWrongType
+								ifTrue: [ super // arg ]
+								ifFalse: [ self error: 'LargeInteger //: ', err ]
+					  ]
+		}}! !
 
 ! (Delta mirrorFor: #LargeInteger) methodsFor: 'printing' !
 
@@ -94,6 +102,22 @@ printString ^<Str>
 	size := ba size.
 	[ 0 = (ba at: size) and: [ size > 1] ] whileTrue: [ size := size - 1 ].
 	^(ba copyWithSize: size) asString! !
+
+! (Delta mirrorFor: #LargeInteger) methodsFor: 'private' !
+
+
+compareToLargeInteger: li <LargeInteger> ^<Int>
+
+	| result <Int> |
+	result := {{self primitiveIndexedByteLargeIntegerCompare: li
+						ifFail: [ :err <Symbol> | self error: err ]
+				   }}.
+	^result > 0
+		ifTrue: [ 1 ]
+		ifFalse: [ result < 0
+							ifTrue: [ -1 ]
+							ifFalse: [ 0 ]
+					 ]! !
 
 ! (Delta mirrorFor: #LargeInteger) methodsFor: 'restricted-double dispatching' !
 
@@ -127,40 +151,16 @@ subtractFromInteger: o <Integer> ^<Integer>
 
 	^o asLargeInteger subtractLargeInteger: self! !
 
-! (Delta mirrorFor: #LargeInteger) methodsFor: 'private' !
+! (Delta mirrorFor: #LargeInteger) methodsFor: 'restricted-to large integers' !
 
 
-compareToLargeInteger: li <LargeInteger> ^<Int>
+asLargeInteger ^<LargeInteger>
 
-	| result <Int> |
-	result := {{self primitiveIndexedByteLargeIntegerCompare: li
-						ifFail: [ :err <Symbol> | self error: err ]
-				   }}.
-	^result > 0
-		ifTrue: [ 1 ]
-		ifFalse: [ result < 0
-							ifTrue: [ -1 ]
-							ifFalse: [ 0 ]
-					 ]! !
+	^self!
 
-! (Delta mirrorFor: #LargeInteger) methodsFor: 'operations' !
+subtractLargeInteger: li <LargeInteger> ^<Integer>
 
-
-// arg <Number> ^<Int>
-
-	^{{self primitiveIndexedByteLargeIntegerDiv: arg
-			ifFail: [ :err <Symbol> |
-							^err == #FirstArgumentHasWrongType
-								ifTrue: [ super // arg ]
-								ifFalse: [ self error: 'LargeInteger //: ', err ]
-					  ]
-		}}! !
-
-! (Delta mirrorFor: #LargeInteger) methodsFor: 'converting' !
-
-
-asFloat ^ <Float>
-
-	^{{ self primitiveIndexedByteLargeIntegerAsFloatIfFail: [ :err <Symbol> | self error: err ] }}
-! !
+	^{{self primitiveIndexedByteLargeIntegerSubtract: li
+		ifFail: [ :err <Symbol> | self error: err ]
+	}}! !
 

@@ -146,6 +146,21 @@ testCollectionProtocol
 		[ ('Hello Dudes' select: [ :e <Character> | e isUppercase ]) hasSameElementsAndOrderAs: 'HD' ] verify.
 		[ ('Hello Dudes' reject: [ :e <Character> | e isLowercase ]) hasSameElementsAndOrderAs: 'H D' ] verify.! !
 
+! (Delta mirrorFor: #String) methodsFor: 'Camp Smalltalk' !
+
+
+sunitAsSymbol
+ 
+        ^self asSymbol!
+
+sunitMatch: aString
+ 
+        ^self match: aString!
+
+sunitSubStrings
+ 
+        ^self substrings! !
+
 ! (Delta mirrorFor: #String) methodsFor: 'accessing' !
 
 
@@ -159,6 +174,20 @@ at: index <Int> putUnicode: unicode <Int> ^<Int>
 	self primitiveAt: index put: unicode.
 	^unicode! !
 
+! (Delta mirrorFor: #String) methodsFor: 'converting' !
+
+
+asString ^<String>
+
+	^self! !
+
+! (Delta mirrorFor: #String) methodsFor: 'hashing' !
+
+
+hash ^<Int>
+
+	^{{self primitiveIndexedDoubleByteHash}}! !
+
 ! (Delta mirrorFor: #String) methodsFor: 'streaming' !
 
 
@@ -169,18 +198,4 @@ readWriteStream ^<CharReadWriteStream>
 writeStream ^<CharReadWriteStream>
 
 	^self readWriteStream! !
-
-! (Delta mirrorFor: #String) methodsFor: 'hashing' !
-
-
-hash ^<Int>
-
-	^{{self primitiveIndexedDoubleByteHash}}! !
-
-! (Delta mirrorFor: #String) methodsFor: 'converting' !
-
-
-asString ^<String>
-
-	^self! !
 

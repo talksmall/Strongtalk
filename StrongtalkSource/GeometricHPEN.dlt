@@ -48,33 +48,6 @@ geometricPens ^<VarDict[GeometricHPEN,GeometricHPEN]>
 
 	^GeometricPens! !
 
-! (Delta mirrorFor: #GeometricHPEN) methodsFor: 'private' !
-
-
-equalsInstance:  other <Object> ^<Boolean>
-	"compare to another instance guaranteed by the caller to be of the same class as self"
-
-	^(super equalsInstance: other)
-		and: [	| otherPen <GeometricHPEN> |
-					otherPen := guaranteed <GeometricHPEN> other.
-					self lineWidth = otherPen lineWidth
-						and: [ self endStyle = otherPen endStyle
-						and: [ self joinStyle = otherPen joinStyle ]	] ]! !
-
-! (Delta mirrorFor: #GeometricHPEN) methodsFor: 'initialization' !
-
-
-buildCanonicalGeometricHPEN
-
-	self unimplemented!
-
-initPaint: p <Paint> width: w <Int> style: s <Symbol> joinStyle: join <Symbol> endStyle: end <Symbol>
-
-	super initPaint: p style: s.
-	lineWidth := w.
-	endStyle := end.
-	joinStyle := join.! !
-
 ! (Delta mirrorFor: #GeometricHPEN) methodsFor: 'accessing' !
 
 
@@ -93,4 +66,31 @@ joinStyle ^<Symbol>
 lineWidth ^<Int>
 
 	^lineWidth! !
+
+! (Delta mirrorFor: #GeometricHPEN) methodsFor: 'initialization' !
+
+
+buildCanonicalGeometricHPEN
+
+	self unimplemented!
+
+initPaint: p <Paint> width: w <Int> style: s <Symbol> joinStyle: join <Symbol> endStyle: end <Symbol>
+
+	super initPaint: p style: s.
+	lineWidth := w.
+	endStyle := end.
+	joinStyle := join.! !
+
+! (Delta mirrorFor: #GeometricHPEN) methodsFor: 'private' !
+
+
+equalsInstance:  other <Object> ^<Boolean>
+	"compare to another instance guaranteed by the caller to be of the same class as self"
+
+	^(super equalsInstance: other)
+		and: [	| otherPen <GeometricHPEN> |
+					otherPen := guaranteed <GeometricHPEN> other.
+					self lineWidth = otherPen lineWidth
+						and: [ self endStyle = otherPen endStyle
+						and: [ self joinStyle = otherPen joinStyle ]	] ]! !
 

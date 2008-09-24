@@ -10,6 +10,18 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #HGLOBAL) methodsFor: 'accessing' !
+
+
+withPointer: proxy <P> do: blk <[P,^X def]> ^<X>
+		{where P <ExternalProxy> is arg 1}
+
+	proxy setFromProxy: {{<kernel ExternalProxy GlobalLock> hnd: self}}.
+	proxy isNull
+		ifTrue: [ Win32 handleError ].
+	[ ^blk value: proxy ]
+		ensure: [	{{<kernel ExternalProxy GlobalUnlock> hnd: self}} ]! !
+
 ! (Delta mirrorFor: #HGLOBAL) methodsFor: 'allocation' !
 
 
@@ -29,16 +41,4 @@ free
 	self setFromProxy: {{<kernel ExternalProxy GlobalFree> hnd: self}}.
 	self isNull
 		ifFalse: [ Win32 handleError ]! !
-
-! (Delta mirrorFor: #HGLOBAL) methodsFor: 'accessing' !
-
-
-withPointer: proxy <P> do: blk <[P,^X def]> ^<X>
-		{where P <ExternalProxy> is arg 1}
-
-	proxy setFromProxy: {{<kernel ExternalProxy GlobalLock> hnd: self}}.
-	proxy isNull
-		ifTrue: [ Win32 handleError ].
-	[ ^blk value: proxy ]
-		ensure: [	{{<kernel ExternalProxy GlobalUnlock> hnd: self}} ]! !
 

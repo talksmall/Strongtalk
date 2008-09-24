@@ -33,15 +33,12 @@ test
 
 	Set[Str] test: (KeyedSet[Str,Str] newKeyedBy: [ :s <Str> | s ])! !
 
-! (Delta mirrorFor: #KeyedSet) methodsFor: 'testing' !
+! (Delta mirrorFor: #KeyedSet) methodsFor: 'initialization' !
 
 
-includes: o <Object> ^<Boolean>
-	"For keyed sets, this message is inefficient, since we don't know if o is the right kind of
-	object to extract a key from, so the elements must be tested sequentially.  Use includesElement: 
-	for an efficient implementation"
+initExtractKey: kf <[E,^K]>
 
-	^super includes: o! !
+	extractKey := kf! !
 
 ! (Delta mirrorFor: #KeyedSet) methodsFor: 'restricted - table decoding' !
 
@@ -74,10 +71,13 @@ objToIncludeFor: new <E> withExisting: existing <E> ^<E>
 
 	^new! !
 
-! (Delta mirrorFor: #KeyedSet) methodsFor: 'initialization' !
+! (Delta mirrorFor: #KeyedSet) methodsFor: 'testing' !
 
 
-initExtractKey: kf <[E,^K]>
+includes: o <Object> ^<Boolean>
+	"For keyed sets, this message is inefficient, since we don't know if o is the right kind of
+	object to extract a key from, so the elements must be tested sequentially.  Use includesElement: 
+	for an efficient implementation"
 
-	extractKey := kf! !
+	^super includes: o! !
 

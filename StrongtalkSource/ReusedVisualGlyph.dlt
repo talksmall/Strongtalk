@@ -17,29 +17,6 @@ rapid switching of the glyph information.
 (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $'!
 
-! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'initialization' !
-
-
-cramGlyph: sub <Glyph>
-id: myd <Int>
-xPosition: x <Int>
-
-	glyph := sub.
-	id := myd.
-	self xPosition: x.!
-
-cramGlyph: sub <Glyph>
-id: myd <Int>
-yPosition: y <Int>
-
-	glyph := sub.
-	id := myd.
-	self yPosition: y.!
-
-cramParent: p <VisualParent>
-
-	parent := p! !
-
 ! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'accessing' !
 
 
@@ -91,6 +68,42 @@ yPosition: y <Int>
 	position := nil.
 	yPosition := y.! !
 
+! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'geometry-local' !
+
+
+allocation: a <Region> at: pos <Point>
+	
+	self setPosition: pos.
+	allocation := a.
+
+	self layout.
+"%remove: why did we put the following in?
+	self layoutStatus ~= Visual valid
+		ifTrue: [ self layout. ]"! !
+
+! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'initialization' !
+
+
+cramGlyph: sub <Glyph>
+id: myd <Int>
+xPosition: x <Int>
+
+	glyph := sub.
+	id := myd.
+	self xPosition: x.!
+
+cramGlyph: sub <Glyph>
+id: myd <Int>
+yPosition: y <Int>
+
+	glyph := sub.
+	id := myd.
+	self yPosition: y.!
+
+cramParent: p <VisualParent>
+
+	parent := p! !
+
 ! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'private' !
 
 
@@ -106,17 +119,4 @@ layout
 	"MUST access the inst var directly below, since the method gets it from the
 		glyph, which is circular"
 	self glyph allocation: allocation at: pos for: self.! !
-
-! (Delta mirrorFor: #ReusedVisualGlyph) methodsFor: 'geometry-local' !
-
-
-allocation: a <Region> at: pos <Point>
-	
-	self setPosition: pos.
-	allocation := a.
-
-	self layout.
-"%remove: why did we put the following in?
-	self layoutStatus ~= Visual valid
-		ifTrue: [ self layout. ]"! !
 

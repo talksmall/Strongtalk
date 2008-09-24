@@ -22,11 +22,12 @@ new ^<Instance>
 
 	self shouldNotImplement! !
 
-! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'copying' !
+! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'comparing' !
 
 
-copy ^<Instance>
-	^self! !
+equalsSymbol: other <Symbol> ^<Boolean>
+
+	^self == other! !
 
 ! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'converting' !
 
@@ -39,20 +40,11 @@ asSymbol ^<Symbol>
 
 	^self! !
 
-! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'printing' !
+! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'copying' !
 
 
-printOn: strm <CharOutputStream>
-
-	strm nextPut: $#.
-	super printOn: strm.! !
-
-! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'comparing' !
-
-
-equalsSymbol: other <Symbol> ^<Boolean>
-
-	^self == other! !
+copy ^<Instance>
+	^self! !
 
 ! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'hashing' !
 
@@ -60,4 +52,12 @@ equalsSymbol: other <Symbol> ^<Boolean>
 hash ^<Int>
 
 	^self identityHash! !
+
+! (Delta mirrorFor: #UncompressedSymbol) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm nextPut: $#.
+	super printOn: strm.! !
 

@@ -32,11 +32,19 @@ c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
 AbstractClassMirror flushSubclassHierarchyCache.
 ^c! !
 
-! (Delta mirrorFor: #Class) methodsFor: 'file out' !
+! (Delta mirrorFor: #Class) methodsFor: 'Camp Smalltalk' !
 
 
-fileOutSignature ^<Integer>
-    ^67! !
+allSubclasses
+
+	^((ClassMirror on: self) subclasses
+		collect: [:mirror| mirror reflectee])
+		remove: self;
+		yourself!
+
+sunitName
+ 
+        ^self name! !
 
 ! (Delta mirrorFor: #Class) methodsFor: 'accessing' !
 
@@ -50,8 +58,22 @@ name ^ <Symbol>
 name: n <Symbol> ifFail: fb <[]>
 	name := n! !
 
+! (Delta mirrorFor: #Class) methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^67! !
+
 ! (Delta mirrorFor: #Class) methodsFor: 'file-in compatibility' !
 
+
+comment:  aString
+
+	(ClassMirror on: self) comment: aString!
+
+commentStamp: ignore prior: ignore2
+
+	^(CommentReader for: (ClassMirror on: self))!
 
 subclass: clsName <Symbol>
 instanceVariableNames: iVars <Str>
@@ -75,6 +97,7 @@ category: cat <Str>
 	| mirror <ClassMirror> |
 	[ pVars isEmpty ] verify.
 	mirror := Class subclassOf: self name instanceVariables: iVars.
+	mirror classVariables: cVars.
 	Delta define: clsName as: mirror.
 	^mirror reflectee! !
 

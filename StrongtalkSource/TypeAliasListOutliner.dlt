@@ -10,20 +10,16 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'private' !
+! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'accessing' !
 
 
-computeWorldList ^ <OrdCltn[TypeAliasMirror]>
+entryName ^ <Str>
 
-	| result <SortedCollection[TypeAliasMirror]> |
-	result := SortedCollection[TypeAliasMirror] 
-					sortBlock: [ :m1 <TypeAliasMirror> :m2 <TypeAliasMirror> | m1 name <= m2 name ].
-	Smalltalk typeAliasesDo: [ :m <TypeAlias> | result add: (TypeAliasMirror on: m) ].
-	^result asOrderedCollection!
+	^'alias'!
 
-labelPainter ^<Painter>
+windowTitle ^ <Str>
 
-	^self typeAliasPainter! !
+	^'Aliases'! !
 
 ! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'control' !
 
@@ -50,6 +46,15 @@ typecheckAllDefs
 
 self typecheckAll
 ! !
+
+! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		((aspect = #addGlobal or: [aspect = #removeGlobal]) and: [ TypeAlias = value at2 class ])
+			ifTrue: [	self update ] ]! !
 
 ! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'menus' !
 
@@ -79,23 +84,18 @@ typecheckingMenu ^ <Menu>
                   action: [self typecheckAll])
 ! !
 
-! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'accessing' !
+! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'private' !
 
 
-entryName ^ <Str>
+computeWorldList ^ <OrdCltn[TypeAliasMirror]>
 
-	^'alias'!
+	| result <SortedCollection[TypeAliasMirror]> |
+	result := SortedCollection[TypeAliasMirror] 
+					sortBlock: [ :m1 <TypeAliasMirror> :m2 <TypeAliasMirror> | m1 name <= m2 name ].
+	Smalltalk typeAliasesDo: [ :m <TypeAlias> | result add: (TypeAliasMirror on: m) ].
+	^result asOrderedCollection!
 
-windowTitle ^ <Str>
+labelPainter ^<Painter>
 
-	^'Aliases'! !
-
-! (Delta mirrorFor: #TypeAliasListOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		((aspect = #addGlobal or: [aspect = #removeGlobal]) and: [ TypeAlias = value at2 class ])
-			ifTrue: [	self update ] ]! !
+	^self typeAliasPainter! !
 

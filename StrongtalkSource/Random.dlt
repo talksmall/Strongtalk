@@ -34,17 +34,6 @@ newWithSeed: f <Float> ^<Instance>
 	self assert: [ f between: 1.0 and: self modulus ].
 	^super new seed: f! !
 
-! (Delta mirrorFor: #Random) classSide methodsFor: 'testing' !
-
-
-test
-
-	| s <Random> |
-	s := self newWithSeed: 1.0.
-	10000 timesRepeat: [ s next ].
-"%todo: fix all the hacks like below when have bigints"
-	[ s seed = (10436180 asFloat * 100.0 + 65 asFloat) "1043618065" ] verify.! !
-
 ! (Delta mirrorFor: #Random) classSide methodsFor: 'private' !
 
 
@@ -56,6 +45,17 @@ modulus ^<Float>
 multiplier ^<Float>
 
 	^16807 asFloat! !
+
+! (Delta mirrorFor: #Random) classSide methodsFor: 'testing' !
+
+
+test
+
+	| s <Random> |
+	s := self newWithSeed: 1.0.
+	10000 timesRepeat: [ s next ].
+"%todo: fix all the hacks like below when have bigints"
+	[ s seed = (10436180 asFloat * 100.0 + 65 asFloat) "1043618065" ] verify.! !
 
 ! (Delta mirrorFor: #Random) methodsFor: 'accessing' !
 

@@ -10,6 +10,13 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #SelectableTypeError) classSide methodsFor: 'instance creation' !
+
+
+onTypeError: e <TypeError> inView: cv <CodeView>  ^ <Instance>
+
+^self new initialize te: e ; codeView: cv! !
+
 ! (Delta mirrorFor: #SelectableTypeError) classSide methodsFor: 'looks' !
 
 
@@ -33,13 +40,6 @@ rightButtonTrueLook ^ <Visual>
 
 ^(Image fromFile: (FilePath for: 'resources\rdel.bmp'))
 							alignLowerLeft asVisual! !
-
-! (Delta mirrorFor: #SelectableTypeError) classSide methodsFor: 'instance creation' !
-
-
-onTypeError: e <TypeError> inView: cv <CodeView>  ^ <Instance>
-
-^self new initialize te: e ; codeView: cv! !
 
 ! (Delta mirrorFor: #SelectableTypeError) methodsFor: 'accessing' !
 

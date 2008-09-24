@@ -61,6 +61,14 @@ parameters
 parameters: p
     parameters := p! !
 
+! (Delta mirrorFor: #CallBack) methodsFor: 'deleting' !
+
+
+free
+
+  {{primitiveCallBackUnregister: self ifFail: [:err| self error: err]}}.
+  CallBackArray at: self index put: nil.! !
+
 ! (Delta mirrorFor: #CallBack) methodsFor: 'evaluating' !
 
 
@@ -85,12 +93,4 @@ evaluate: stack
     nofArgs = 5 ifTrue: [^block value: a value: b value: c value: d value: e].
 
     self error: 'too many arguments for callBack'! !
-
-! (Delta mirrorFor: #CallBack) methodsFor: 'deleting' !
-
-
-free
-
-  {{primitiveCallBackUnregister: self ifFail: [:err| self error: err]}}.
-  CallBackArray at: self index put: nil.! !
 

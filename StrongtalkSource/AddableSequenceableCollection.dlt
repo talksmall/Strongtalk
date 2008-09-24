@@ -182,6 +182,68 @@ size: s <Int>
 		ifTrue: [ self needSpaceAtEnd: delta ].
 	self lastIndex: self lastIndex + delta.! !
 
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'adding/removing' !
+
+
+include: e <E> ^<E>
+
+	^self include: e ifNew: []!
+
+include: e <E> ifNew: blk <[]> ^<E>
+
+	(self includes: e)
+		ifFalse: [	self add: e.
+						blk value. ].
+	^e!
+
+remove: el <E> ^<E>
+
+	^self remove: el
+		ifAbsent: [ self error: 'element not found' ]!
+
+removeAllSuchThat: test <[E,^Boolean]> 
+
+	| i <Int> |
+	i := 1.
+	[ i <= self size ]
+		whileTrue:
+			[	(test value: (self at: i))
+					ifTrue: [ self removeAt: i ]
+					ifFalse: [ i := i + 1 ]	]! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'copying' !
+
+
+copyWithSize: s <Int> ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	| safeself <SeqCltn[EX]> |
+
+	"This guarantee is safe because the inference clause guarantees
+		that E < EX at each call site"
+	safeself := guaranteed <SeqCltn[EX]> self.
+
+	^(Array[EX] new: s)
+		replaceFrom: 1 to: (s min: self size) with: safeself! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'initialization-private' !
+
+
+initCapacity: c <Int>
+
+	contents := AbsoluteArray[E] new: c.
+	self startGap: 0.
+	self lastIndex: 0.! !
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'iterating' !
+
+
+do: f <[E]>
+
+	self startGap + 1 to: self lastIndex do:
+		[ :i <Int> |
+			f value: (self contents at: i)	]! !
+
 ! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private' !
 
 
@@ -294,39 +356,6 @@ startGap: s <Int>
 
 	startGap := s! !
 
-! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'initialization-private' !
-
-
-initCapacity: c <Int>
-
-	contents := AbsoluteArray[E] new: c.
-	self startGap: 0.
-	self lastIndex: 0.! !
-
-! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'copying' !
-
-
-copyWithSize: s <Int> ^<VarSeqCltn[EX]>
-	{where EX is returnType of #anElement message of receiverType}
-
-	| safeself <SeqCltn[EX]> |
-
-	"This guarantee is safe because the inference clause guarantees
-		that E < EX at each call site"
-	safeself := guaranteed <SeqCltn[EX]> self.
-
-	^(Array[EX] new: s)
-		replaceFrom: 1 to: (s min: self size) with: safeself! !
-
-! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'iterating' !
-
-
-do: f <[E]>
-
-	self startGap + 1 to: self lastIndex do:
-		[ :i <Int> |
-			f value: (self contents at: i)	]! !
-
 ! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private-internal accessing' !
 
 
@@ -352,33 +381,4 @@ with: el <E>
 withAll: els <Cltn[E]>
 
 	self subclassResponsibility! !
-
-! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'adding/removing' !
-
-
-include: e <E> ^<E>
-
-	^self include: e ifNew: []!
-
-include: e <E> ifNew: blk <[]> ^<E>
-
-	(self includes: e)
-		ifFalse: [	self add: e.
-						blk value. ].
-	^e!
-
-remove: el <E> ^<E>
-
-	^self remove: el
-		ifAbsent: [ self error: 'element not found' ]!
-
-removeAllSuchThat: test <[E,^Boolean]> 
-
-	| i <Int> |
-	i := 1.
-	[ i <= self size ]
-		whileTrue:
-			[	(test value: (self at: i))
-					ifTrue: [ self removeAt: i ]
-					ifFalse: [ i := i + 1 ]	]! !
 

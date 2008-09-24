@@ -1,0 +1,47 @@
+Delta define: #WinPOINT as: (
+(Class subclassOf: 'Win32Structure' instanceVariables: '')) !
+
+(Delta mirrorFor: #WinPOINT) revision: '$Revision: 1.1 $'!
+
+(Delta mirrorFor: #WinPOINT) group: 'base'!
+
+(Delta mirrorFor: #WinPOINT)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.1 $
+'!
+
+! (Delta mirrorFor: #WinPOINT) methodsFor: 'accessing' !
+
+
+asPoint ^<Point>
+	^self x @ self y!
+
+structureSize ^<Int>
+	^8!
+
+x ^<SmallInteger>
+
+	^self smallIntegerAt: self xOffset!
+
+x: v <SmallInteger>
+
+	self smallIntegerAt: self xOffset put: v!
+
+y ^<SmallInteger>
+
+	^self smallIntegerAt: self yOffset!
+
+y: v <SmallInteger>
+
+	self smallIntegerAt: self yOffset put: v! !
+
+! (Delta mirrorFor: #WinPOINT) methodsFor: 'offsets' !
+
+
+xOffset ^<Int>
+	^0!
+
+yOffset ^<Int>
+	^4! !
+

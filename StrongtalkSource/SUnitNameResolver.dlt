@@ -1,0 +1,32 @@
+Delta define: #SUnitNameResolver as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #SUnitNameResolver) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SUnitNameResolver) group: 'SUnit-Preloads'!
+
+(Delta mirrorFor: #SUnitNameResolver)
+comment: 
+''!
+
+! (Delta mirrorFor: #SUnitNameResolver) classSide methodsFor: 'Camp Smalltalk' !
+
+
+classNamed: aSymbol
+
+        ^Smalltalk
+                at: aSymbol
+                ifAbsent: [nil].!
+
+defaultLogDevice
+	^ Transcript!
+
+errorObject
+	^Error!
+
+mnuExceptionObject
+	^MessageNotUnderstood!
+
+notificationObject
+	^Notification! !
+

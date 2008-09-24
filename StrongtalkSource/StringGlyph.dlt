@@ -37,34 +37,6 @@ for: s <Str> painter: p <Painter>  ^<Instance>
 	
 	^super new initFor: s painter: p! !
 
-! (Delta mirrorFor: #StringGlyph) methodsFor: 'initialization' !
-
-
-initFor: s <Str> painter: p <Painter>
-
-	string := s.
-	self painter: p.
-	self stretchy: false.! !
-
-! (Delta mirrorFor: #StringGlyph) methodsFor: 'geometry-local' !
-
-
-allocationFor: context <VisualGlyph>  ^<Region>
-
-	^self allocationIn: context medium!
-
-maxIn: m <Medium> ^<Region>
-
-	| r <Rect> |
-	r := self allocationIn: m.
-	self stretchy
-		ifTrue: [ r := r origin corner: UI huge @ r bottom ].
-	^r!
-
-naturalIn: m <Medium> ^<Region>
-
-	^self allocationIn: m! !
-
 ! (Delta mirrorFor: #StringGlyph) methodsFor: 'accessing' !
 
 
@@ -92,6 +64,16 @@ string ^<Str>
 
 	^string! !
 
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream> indent: level <Int>
+
+	level timesRepeat: [ strm show: '    ' ].
+	strm show: self class name.
+	strm show: '('; print: self string; show: ')'.
+	strm cr.! !
+
 ! (Delta mirrorFor: #StringGlyph) methodsFor: 'displaying' !
 
 
@@ -99,6 +81,34 @@ localDisplayOn: can <Canvas> for: context <VisualGlyph>
 
 	can withPainter: self painter
 		do: [ can displayString: self string allocation: (self allocationFor: context) enclosingRect ]! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'geometry-local' !
+
+
+allocationFor: context <VisualGlyph>  ^<Region>
+
+	^self allocationIn: context medium!
+
+maxIn: m <Medium> ^<Region>
+
+	| r <Rect> |
+	r := self allocationIn: m.
+	self stretchy
+		ifTrue: [ r := r origin corner: UI huge @ r bottom ].
+	^r!
+
+naturalIn: m <Medium> ^<Region>
+
+	^self allocationIn: m! !
+
+! (Delta mirrorFor: #StringGlyph) methodsFor: 'initialization' !
+
+
+initFor: s <Str> painter: p <Painter>
+
+	string := s.
+	self painter: p.
+	self stretchy: false.! !
 
 ! (Delta mirrorFor: #StringGlyph) methodsFor: 'private' !
 
@@ -145,14 +155,4 @@ isRectangularAndOpaque ^<Boolean>
 isSurelyRigid ^<Boolean>
 
 	^self stretchy not! !
-
-! (Delta mirrorFor: #StringGlyph) methodsFor: 'debugging' !
-
-
-dumpOn: strm <CharOutputStream> indent: level <Int>
-
-	level timesRepeat: [ strm show: '    ' ].
-	strm show: self class name.
-	strm show: '('; print: self string; show: ')'.
-	strm cr.! !
 

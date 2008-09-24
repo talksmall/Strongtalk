@@ -27,31 +27,12 @@ new ^<Instance>
 
 	self shouldNotImplement! !
 
-! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
+! (Delta mirrorFor: #Symbol) methodsFor: 'Camp Smalltalk' !
 
 
-asString ^<String>
-
-	^String withAll: self!
-
-asSymbol ^<Symbol>
-
-	^self! !
-
-! (Delta mirrorFor: #Symbol) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	strm nextPut: $#.
-	super printOn: strm.! !
-
-! (Delta mirrorFor: #Symbol) methodsFor: 'hashing' !
-
-
-hash ^<Int>
-
-	^self identityHash! !
+sunitAsClass
+ 
+        ^SUnitNameResolver classNamed: self! !
 
 ! (Delta mirrorFor: #Symbol) methodsFor: 'comparing' !
 
@@ -63,4 +44,30 @@ equalsSymbol: other <Symbol> ^<Boolean>
 	  == since it doesn't reveal any reflective stuff at the call site."
 
 	^self == other! !
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
+
+
+asString ^<String>
+
+	^String withAll: self!
+
+asSymbol ^<Symbol>
+
+	^self! !
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'hashing' !
+
+
+hash ^<Int>
+
+	^self identityHash! !
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm nextPut: $#.
+	super printOn: strm.! !
 

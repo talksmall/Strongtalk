@@ -11,19 +11,6 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #NestedLoopBenchmark) methodsFor: 'misc' !
-
-
-nestedLoopTest
-	| sum |
-	sum := 0.
-	1 to: 100 do: [ :i | 1 to: 100 do: [ :j | sum := sum + 1 ] ].
-	^ sum!
-
-run
-	"NestedLoopBenchmark new run"
-	100 timesRepeat: [ self nestedLoopTest ]! !
-
 ! (Delta mirrorFor: #NestedLoopBenchmark) methodsFor: 'admin' !
 
 
@@ -38,4 +25,17 @@ name
 
 parcplaceTime
 	^191! !
+
+! (Delta mirrorFor: #NestedLoopBenchmark) methodsFor: 'misc' !
+
+
+nestedLoopTest
+	| sum |
+	sum := 0.
+	1 to: 100 do: [ :i | 1 to: 100 do: [ :j | sum := sum + 1 ] ].
+	^ sum!
+
+run
+	"NestedLoopBenchmark new run"
+	100 timesRepeat: [ self nestedLoopTest ]! !
 

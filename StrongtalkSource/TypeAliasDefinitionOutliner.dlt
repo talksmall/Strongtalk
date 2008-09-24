@@ -10,6 +10,29 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #TypeAliasDefinitionOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <TypeAliasLocator>
+
+^TypeAliasLocator new id: self mirror name
+!
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+^self! !
+
+! (Delta mirrorFor: #TypeAliasDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #aliasString
+			ifTrue: [	self aliasView notNil 
+								ifTrue: [	self aliasView model: self aliasStringAsCharGlyphs ] ]
+	]! !
+
 ! (Delta mirrorFor: #TypeAliasDefinitionOutliner) methodsFor: 'private' !
 
 
@@ -58,27 +81,4 @@ storeAliasAndOnSuccess: blk <[]>
 	self mirror alias: as.
 	blk value.
 ! !
-
-! (Delta mirrorFor: #TypeAliasDefinitionOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		aspect = #aliasString
-			ifTrue: [	self aliasView notNil 
-								ifTrue: [	self aliasView model: self aliasStringAsCharGlyphs ] ]
-	]! !
-
-! (Delta mirrorFor: #TypeAliasDefinitionOutliner) methodsFor: 'accessing' !
-
-
-locator ^ <TypeAliasLocator>
-
-^TypeAliasLocator new id: self mirror name
-!
-
-outlinerForLocator: loc <DeltaLocator[Mirror]> 
-
-^self! !
 

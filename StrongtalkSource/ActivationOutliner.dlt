@@ -64,7 +64,7 @@ buildClosedHeader ^ <Visual>
 							args do: [ :arg <Object> |
 								row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
 								row add: (self
-									buildLabel: arg printString 
+									buildLabel: (self safePrintString: arg)
 									painter: self codePainter
 									action: [ (Inspector on: arg) launch ]) ].
 							row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
@@ -73,7 +73,7 @@ buildClosedHeader ^ <Visual>
 							| receiver <Object> |
 							receiver := self activation receiver.
 							row add: (self
-								buildLabel: receiver printString 
+								buildLabel: (self safePrintString: receiver)
 								painter: self codePainter
 								action: [ (Inspector on: receiver) launch ]).
 							row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
@@ -85,7 +85,7 @@ buildClosedHeader ^ <Visual>
 													args do: [ :arg <Object> |
 														row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
 														row add: (self
-															buildLabel: arg printString 
+															buildLabel: (self safePrintString: arg)
 															painter: self codePainter
 															action: [ (Inspector on: arg) launch ]) ]
 												]
@@ -99,7 +99,13 @@ currentByteCodeSeparatorCharacter ^ <Character>
 
 initialPacifiedState ^ <Boolean>
 
-	^self activation isSmalltalk not! !
+	^self activation isSmalltalk not!
+
+safePrintString: aValue
+
+	^[aValue printString]
+		on: Error
+		do: [:ex|'??instance of ', aValue class name]! !
 
 ! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
 

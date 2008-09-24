@@ -10,24 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #AbstractClassMirror) classSide methodsFor: 'Unclassified' !
-
-
-classFor: e <Class> ^ <AbstractClassMirror class>
-"Private"
-"This is not at all object-oriented. However, it maintains the complete separation of
-Mirrors  and is quite simple "
-
-^(ClassVMMirror on: e) isMixinInvocation
-	ifTrue: [InvocationMirror]
-	ifFalse: [ClassMirror]
- 
-!
-
-on: class<Class> ^ <Instance> 
-
- ^(self classFor: class) on: class! !
-
 ! (Delta mirrorFor: #AbstractClassMirror) classSide methodsFor: 'Subclass hierarchy' !
 
 
@@ -55,6 +37,24 @@ subclassHierarchy ^ <Dict[Class, Cltn[Class]]>
 SubclassHierarchy isNil
 	ifTrue:[SubclassHierarchy := self computeSubclassHierarchy].
 ^SubclassHierarchy! !
+
+! (Delta mirrorFor: #AbstractClassMirror) classSide methodsFor: 'Unclassified' !
+
+
+classFor: e <Class> ^ <AbstractClassMirror class>
+"Private"
+"This is not at all object-oriented. However, it maintains the complete separation of
+Mirrors  and is quite simple "
+
+^(ClassVMMirror on: e) isMixinInvocation
+	ifTrue: [InvocationMirror]
+	ifFalse: [ClassMirror]
+ 
+!
+
+on: class<Class> ^ <Instance> 
+
+ ^(self classFor: class) on: class! !
 
 ! (Delta mirrorFor: #AbstractClassMirror) methodsFor: 'Unclassified' !
 

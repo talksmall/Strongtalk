@@ -10,6 +10,13 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #TypeArgumentOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <TypeArgumentLocator>
+
+^TypeArgumentLocator ofDefinition: self mirror basicLocator! !
+
 ! (Delta mirrorFor: #TypeArgumentOutliner) methodsFor: 'private' !
 
 
@@ -62,11 +69,4 @@ typecheck
 self typecheckAction:[self mirror typecheckTypeArguments]
 		title: 'Typechecking ', self mirror name, ' type arguments'.
 ! !
-
-! (Delta mirrorFor: #TypeArgumentOutliner) methodsFor: 'accessing' !
-
-
-locator ^ <TypeArgumentLocator>
-
-^TypeArgumentLocator ofDefinition: self mirror basicLocator! !
 

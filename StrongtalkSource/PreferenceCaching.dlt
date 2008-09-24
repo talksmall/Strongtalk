@@ -44,6 +44,17 @@ natural ^<Region>
 		ifTrue: [  self computeNatural ].
 	^natural! !
 
+! (Delta mirrorFor: #PreferenceCaching) methodsFor: 'control' !
+
+
+changing
+
+	super changing.
+
+	self skipCheckLayout
+		ifTrue: [	"flush our preferences"
+						min := max := natural := nil.	].! !
+
 ! (Delta mirrorFor: #PreferenceCaching) methodsFor: 'private' !
 
 
@@ -112,15 +123,4 @@ checkLayout: oldPrefs <SeqCltn[Region]>
 		"We must flush the caches so that when we we compute new prefs when they are asked for."
 	min := max := natural := nil.
 	super checkLayout: oldPrefs.! !
-
-! (Delta mirrorFor: #PreferenceCaching) methodsFor: 'control' !
-
-
-changing
-
-	super changing.
-
-	self skipCheckLayout
-		ifTrue: [	"flush our preferences"
-						min := max := natural := nil.	].! !
 

@@ -1,0 +1,38 @@
+Delta define: #ZeroDivideTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #ZeroDivideTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ZeroDivideTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ZeroDivideTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ZeroDivideTest) methodsFor: 'Testing' !
+
+
+testDivideByZeroShouldSignalZeroDivide
+
+	| wasSignalled |
+	wasSignalled := false.
+	[1/0]
+		on: ZeroDivide
+		do: [:ex| wasSignalled := true.
+						self assert: 1 = ex dividend
+								description: 'Wrong dividend:', ex dividend printString.
+						self assert: 'divide by zero' = ex messageText
+								description: 'Wrong message: ', ex messageText printString].
+	self assert: wasSignalled
+			description: 'Should have signalled'!
+
+testDividendShouldReturnDividendThatCreatedException
+
+	[(ZeroDivide dividend: 1) signal]
+		on: ZeroDivide
+		do: [:ex| self assert: 1 = ex dividend]!
+
+testShouldBeResumable
+
+	self assert: ZeroDivide new isResumable! !
+

@@ -1,0 +1,50 @@
+Delta define: #MessageNotUnderstood as: (
+(Class subclassOf: 'Error' instanceVariables: 'message')) !
+
+(Delta mirrorFor: #MessageNotUnderstood) revision: '$Revision:$'!
+
+(Delta mirrorFor: #MessageNotUnderstood) group: 'Unclassified'!
+
+(Delta mirrorFor: #MessageNotUnderstood)
+comment: 
+''!
+
+! (Delta mirrorFor: #MessageNotUnderstood) classSide methodsFor: 'instance creation' !
+
+
+message: aMessage
+
+	^self new message: aMessage; yourself! !
+
+! (Delta mirrorFor: #MessageNotUnderstood) methodsFor: 'accessing' !
+
+
+message
+
+	^message!
+
+receiver
+
+	^message receiver! !
+
+! (Delta mirrorFor: #MessageNotUnderstood) methodsFor: 'exception descriptor' !
+
+
+isResumable
+
+	^true! !
+
+! (Delta mirrorFor: #MessageNotUnderstood) methodsFor: 'priv handling' !
+
+
+defaultAction
+
+	Processor stopWithError: (ProcessDoesNotUnderstandError new message: message)! !
+
+! (Delta mirrorFor: #MessageNotUnderstood) methodsFor: 'private initialization' !
+
+
+message: aMessage
+
+	message := aMessage! !
+

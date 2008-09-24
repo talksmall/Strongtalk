@@ -93,140 +93,19 @@ new ^ <Instance>
 
 	^super new initialize! !
 
-! (Delta mirrorFor: #DeltaScanner) methodsFor: 'scanning' !
+! (Delta mirrorFor: #DeltaScanner) methodsFor: 'initialization' !
 
 
-aDigit: aChar <Character> ^ <Boolean>
-    ^ (self classOf: aChar) == #digit!
+initialize
+	buffer := String new: 100.
+	self commentPositions:  (OrderedCollection[Tuple[Int,Int]] new).!
 
-aLetter: aChar <Character> ^ <Boolean>
-    ^ (self classOf: aChar) == #letter!
-
-aSpecial: aChar <Character> ^ <Boolean>
-    ^ (self classOf: aChar) == #special!
-
-aWhitespace: aChar <Character> ^ <Boolean>
-    ^ (self classOf: aChar) == #whitespace!
-
-classOf: aChar <Character> ^ <Symbol>
-    "Answers classification code of aChar
-    according to the Classifier character table."
-    | i <Int> |
-    i := aChar asInteger.
-    (1 <= i and: [i <= Classifier size]) ifTrue: [^ Classifier at: i].
-    ^#eos!
-
-commentPositions ^ <SeqCltn[Tuple[Int,Int]]>
-
-	^commentPositions!
-
-copy
-    "Answers a copy of the scanner that may be used
-    to scan arbitrary many tokens ahead."
-    | c <Self> |
-    c := self shallowCopy.
-    c buffer: buffer shallowCopy.
-    c commentPositions:  (OrderedCollection[Tuple[Int,Int]] new).
-    ^c!
-
-error: aString <Str>^ <DoesNotMatter>
-    error isNil
-        ifTrue: [super error: aString]
-        ifFalse: [error value: aString value: tokenBeg]!
-
-mergeMinusAndNumber ^ <Boolean>
-    "
-    Heuristics used to get 'correct' minus and number parsing.
-    Note: When mergeMinusAndNumber is called, token and tokenEnd still are the values for the
-    previous token, while tokenBeg has already the value of the current token. Thus, if tokenEnd
-    is less than tokenBeg, there is white space between the previous and the current token.
-    "
-    ^ tokenEnd < tokenBeg
-        ifTrue: [
-            "If there is white space before the minus, merge"
-            true
-        ]
-        ifFalse: [
-            "Otherwise merge if the previous token wasn't either an identifier,
-            a number or closing parentheses."
-            ((token ~= #identifier) and: [token ~= #number]) and: [token ~= #rparen]
-        ]!
-
-notifier: aBlock <[Str,^Object] > ^ <Self>
-
-	self halt.
-	"notifier := aBlock"
-!
-
-scan: code <Symbol> ^ <Symbol>
-    tokenVal := nil.
-    code = #letter ifTrue: [
-        tokenVal := self identifierOrKeyword.
-        (tokenVal at: tokenVal size) = $:
-            ifTrue: [^ #keyword]
-            ifFalse: [^ #identifier]
-    ].
-    code = #digit ifTrue: [tokenVal := self number. ^ #number].
-    code = #special ifTrue: [
-        (((char = $-) and: [self aDigit: char2]) and: [self mergeMinusAndNumber]) ifTrue: [tokenVal := self number. ^ #number].
-        ((char = $<) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #<. ^ #less].
-        ((char = $>) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #>. ^ #greater].
-	   ((char = $>) and: [ char2 = $, ]) ifTrue: [ self nextChar. tokenVal := #>. ^ #greater ]. self deltaHack.
-        ((char = $|) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #|. ^ #vbar].
-        ((char = $/) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #/. ^ #slash].
-        ((char = $,) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #,. ^ #comma].
-        tokenVal := self binarySel. ^ #binarySel
-    ].
-    code = #quote ifTrue: [tokenVal := self string. ^ #string].
-    code = #dollar ifTrue: [tokenVal := self character. ^ #character].
-    code = #colon ifTrue: [
-        self nextChar.
-        char = $=
-            ifTrue: [self nextChar. ^ #becomes]
-            ifFalse: [^ #colon]
-    ].
-    code = #lbrace ifTrue: [
-        self nextChar.
-        char = ${
-            ifTrue: [self nextChar. ^ #dlbrace]
-            ifFalse: [^ #lbrace]
-    ].
-    code = #rbrace ifTrue: [
-        self nextChar.
-        char = $}
-            ifTrue: [self nextChar. ^ #drbrace]
-            ifFalse: [^ #rbrace]
-    ].
-    self nextChar. ^ code!
-
-source ^ <Str>
-    ^ source!
-
-token ^ <Symbol>
-    "Returns next source token."
-    self skipWhitespaceAndComments.
-    tokenBeg := sourcePos - 2.
-    token := self scan: (self classOf: char).
-    tokenEnd := sourcePos - 2.
-    ^ token!
-
-tokenBeg ^ <Int>
-    ^ tokenBeg!
-
-tokenEnd ^ <Int>
-    ^ tokenEnd!
-
-tokenVal ^ <Object>
-    ^ tokenVal!
-
-valueOf: aDigit <Character> ^ <Integer>
-    "
-    Answers a number corresponding to the digit value of aDigit.
-    Answers a negative value if aDigit cannot be interpreted as a digit.
-    "
-    (($0 <= aDigit) and: [aDigit <= $9]) ifTrue: [^ (aDigit asInteger - $0 asInteger)].
-    (($A <= aDigit) and: [aDigit <= $Z]) ifTrue: [^ (aDigit asInteger - $A asInteger + 10)].
-    ^ -1! !
+open: aString <Str>  ifError: aBlock <[Str, Int, ^DoesNotMatter]>
+    error := aBlock.
+    source := aString. 
+    sourcePos := 1.
+    token := #undefined.
+    self nextChar ; nextChar. "two chars lookahead"! !
 
 ! (Delta mirrorFor: #DeltaScanner) methodsFor: 'private' !
 
@@ -451,17 +330,138 @@ string ^ <Str>
     self check: $'.
     ^ self bufferContents! !
 
-! (Delta mirrorFor: #DeltaScanner) methodsFor: 'initialization' !
+! (Delta mirrorFor: #DeltaScanner) methodsFor: 'scanning' !
 
 
-initialize
-	buffer := String new: 100.
-	self commentPositions:  (OrderedCollection[Tuple[Int,Int]] new).!
+aDigit: aChar <Character> ^ <Boolean>
+    ^ (self classOf: aChar) == #digit!
 
-open: aString <Str>  ifError: aBlock <[Str, Int, ^DoesNotMatter]>
-    error := aBlock.
-    source := aString. 
-    sourcePos := 1.
-    token := #undefined.
-    self nextChar ; nextChar. "two chars lookahead"! !
+aLetter: aChar <Character> ^ <Boolean>
+    ^ (self classOf: aChar) == #letter!
+
+aSpecial: aChar <Character> ^ <Boolean>
+    ^ (self classOf: aChar) == #special!
+
+aWhitespace: aChar <Character> ^ <Boolean>
+    ^ (self classOf: aChar) == #whitespace!
+
+classOf: aChar <Character> ^ <Symbol>
+    "Answers classification code of aChar
+    according to the Classifier character table."
+    | i <Int> |
+    i := aChar asInteger.
+    (1 <= i and: [i <= Classifier size]) ifTrue: [^ Classifier at: i].
+    ^#eos!
+
+commentPositions ^ <SeqCltn[Tuple[Int,Int]]>
+
+	^commentPositions!
+
+copy
+    "Answers a copy of the scanner that may be used
+    to scan arbitrary many tokens ahead."
+    | c <Self> |
+    c := self shallowCopy.
+    c buffer: buffer shallowCopy.
+    c commentPositions:  (OrderedCollection[Tuple[Int,Int]] new).
+    ^c!
+
+error: aString <Str>^ <DoesNotMatter>
+    error isNil
+        ifTrue: [super error: aString]
+        ifFalse: [error value: aString value: tokenBeg]!
+
+mergeMinusAndNumber ^ <Boolean>
+    "
+    Heuristics used to get 'correct' minus and number parsing.
+    Note: When mergeMinusAndNumber is called, token and tokenEnd still are the values for the
+    previous token, while tokenBeg has already the value of the current token. Thus, if tokenEnd
+    is less than tokenBeg, there is white space between the previous and the current token.
+    "
+    ^ tokenEnd < tokenBeg
+        ifTrue: [
+            "If there is white space before the minus, merge"
+            true
+        ]
+        ifFalse: [
+            "Otherwise merge if the previous token wasn't either an identifier,
+            a number or closing parentheses."
+            ((token ~= #identifier) and: [token ~= #number]) and: [token ~= #rparen]
+        ]!
+
+notifier: aBlock <[Str,^Object] > ^ <Self>
+
+	self halt.
+	"notifier := aBlock"
+!
+
+scan: code <Symbol> ^ <Symbol>
+    tokenVal := nil.
+    code = #letter ifTrue: [
+        tokenVal := self identifierOrKeyword.
+        (tokenVal at: tokenVal size) = $:
+            ifTrue: [^ #keyword]
+            ifFalse: [^ #identifier]
+    ].
+    code = #digit ifTrue: [tokenVal := self number. ^ #number].
+    code = #special ifTrue: [
+        (((char = $-) and: [self aDigit: char2]) and: [self mergeMinusAndNumber]) ifTrue: [tokenVal := self number. ^ #number].
+        ((char = $<) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #<. ^ #less].
+        ((char = $>) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #>. ^ #greater].
+	   ((char = $>) and: [ char2 = $, ]) ifTrue: [ self nextChar. tokenVal := #>. ^ #greater ]. self deltaHack.
+        ((char = $|) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #|. ^ #vbar].
+        ((char = $/) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #/. ^ #slash].
+        ((char = $,) and: [(self aSpecial: char2) not]) ifTrue: [self nextChar. tokenVal := #,. ^ #comma].
+        tokenVal := self binarySel. ^ #binarySel
+    ].
+    code = #quote ifTrue: [tokenVal := self string. ^ #string].
+    code = #dollar ifTrue: [tokenVal := self character. ^ #character].
+    code = #colon ifTrue: [
+        self nextChar.
+        char = $=
+            ifTrue: [self nextChar. ^ #becomes]
+            ifFalse: [^ #colon]
+    ].
+    code = #lbrace ifTrue: [
+        self nextChar.
+        char = ${
+            ifTrue: [self nextChar. ^ #dlbrace]
+            ifFalse: [^ #lbrace]
+    ].
+    code = #rbrace ifTrue: [
+        self nextChar.
+        char = $}
+            ifTrue: [self nextChar. ^ #drbrace]
+            ifFalse: [^ #rbrace]
+    ].
+    self nextChar. ^ code!
+
+source ^ <Str>
+    ^ source!
+
+token ^ <Symbol>
+    "Returns next source token."
+    self skipWhitespaceAndComments.
+    tokenBeg := sourcePos - 2.
+    token := self scan: (self classOf: char).
+    tokenEnd := sourcePos - 2.
+    ^ token!
+
+tokenBeg ^ <Int>
+    ^ tokenBeg!
+
+tokenEnd ^ <Int>
+    ^ tokenEnd!
+
+tokenVal ^ <Object>
+    ^ tokenVal!
+
+valueOf: aDigit <Character> ^ <Integer>
+    "
+    Answers a number corresponding to the digit value of aDigit.
+    Answers a negative value if aDigit cannot be interpreted as a digit.
+    "
+    (($0 <= aDigit) and: [aDigit <= $9]) ifTrue: [^ (aDigit asInteger - $0 asInteger)].
+    (($A <= aDigit) and: [aDigit <= $Z]) ifTrue: [^ (aDigit asInteger - $A asInteger + 10)].
+    ^ -1! !
 

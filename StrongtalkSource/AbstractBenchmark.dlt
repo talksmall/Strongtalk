@@ -81,25 +81,6 @@ allLoopDo: blk
 	blk value: LivermoreBenchmark.
 ! !
 
-! (Delta mirrorFor: #AbstractBenchmark) methodsFor: 'initialization' !
-
-
-initialize
-    seed := 0!
-
-initrand
-    seed := 74755!
-
-rand
-    seed := seed * 1309 + 13849 bitAnd: 65535.
-    ^seed!
-
-time
-	| t |
-	t := Time millisecondsToRun: [self run].
-	Transcript showBenchmarkLine: self name delta: t digitalk: self digitalkTime parcplace: self parcplaceTime.
-	^t! !
-
 ! (Delta mirrorFor: #AbstractBenchmark) methodsFor: 'admin' !
 
 
@@ -122,4 +103,23 @@ runBenchmark
 		;	cr.
 	^time
 ! !
+
+! (Delta mirrorFor: #AbstractBenchmark) methodsFor: 'initialization' !
+
+
+initialize
+    seed := 0!
+
+initrand
+    seed := 74755!
+
+rand
+    seed := seed * 1309 + 13849 bitAnd: 65535.
+    ^seed!
+
+time
+	| t |
+	t := Time millisecondsToRun: [self run].
+	Transcript showBenchmarkLine: self name delta: t digitalk: self digitalkTime parcplace: self parcplaceTime.
+	^t! !
 

@@ -79,35 +79,6 @@ test
 	bag remove: 1.
 	self test: 12  is: [ (bag includes: 1) not ].! !
 
-! (Delta mirrorFor: #Bag) methodsFor: 'restricted' !
-
-
-contents ^<VarDict[E,Int]>
-
-	^contents! !
-
-! (Delta mirrorFor: #Bag) methodsFor: 'testing' !
-
-
-= other <Object> ^<Boolean>
-
-	^self == other
-		or: [ self equalsBag: (Bag[Object] coerce: other else: [ ^false ]) ]!
-
-includes: el <Object> ^<Boolean>
-
-	^self contents includesKey: el! !
-
-! (Delta mirrorFor: #Bag) methodsFor: 'iterating' !
-
-
-do: f <[E]>
-
-	self contents keysAndValuesDo:
-		[ :el <E> :occurrences <Int> |
-			occurrences timesRepeat:
-				[ f value: el ]		].! !
-
 ! (Delta mirrorFor: #Bag) methodsFor: 'accessing' !
 
 
@@ -120,13 +91,6 @@ size ^<Int>
 	^self contents inject: 0 into:
 		[ :tot <Int> :occurrences <Int> |
 			tot + occurrences	]! !
-
-! (Delta mirrorFor: #Bag) methodsFor: 'initialization' !
-
-
-initCapacity: cap <Int>
-
-	self contents: (Dictionary[E,Int] new: cap).! !
 
 ! (Delta mirrorFor: #Bag) methodsFor: 'adding/removing' !
 
@@ -202,6 +166,32 @@ removeEvery: el <E> ^<E>
 	self contents removeKey: el ifAbsent: [].
 	^el! !
 
+! (Delta mirrorFor: #Bag) methodsFor: 'converting' !
+
+
+asBag ^<Bag[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+
+	"The guaranteed is safe because of the inference clause"
+	^guaranteed <Bag[EX]> self! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'initialization' !
+
+
+initCapacity: cap <Int>
+
+	self contents: (Dictionary[E,Int] new: cap).! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'iterating' !
+
+
+do: f <[E]>
+
+	self contents keysAndValuesDo:
+		[ :el <E> :occurrences <Int> |
+			occurrences timesRepeat:
+				[ f value: el ]		].! !
+
 ! (Delta mirrorFor: #Bag) methodsFor: 'private' !
 
 
@@ -228,12 +218,22 @@ postCopy
 	super postCopy.
 	self contents: self contents copy.! !
 
-! (Delta mirrorFor: #Bag) methodsFor: 'converting' !
+! (Delta mirrorFor: #Bag) methodsFor: 'restricted' !
 
 
-asBag ^<Bag[EX]>
-		{where EX is returnType of #anElement message of receiverType}
+contents ^<VarDict[E,Int]>
 
-	"The guaranteed is safe because of the inference clause"
-	^guaranteed <Bag[EX]> self! !
+	^contents! !
+
+! (Delta mirrorFor: #Bag) methodsFor: 'testing' !
+
+
+= other <Object> ^<Boolean>
+
+	^self == other
+		or: [ self equalsBag: (Bag[Object] coerce: other else: [ ^false ]) ]!
+
+includes: el <Object> ^<Boolean>
+
+	^self contents includesKey: el! !
 

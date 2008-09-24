@@ -36,70 +36,24 @@ onTypeError: te <TypeError>
 	^inst
 ! !
 
-! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'private' !
+! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'accessing' !
 
 
-innerBuildBody: col <Column[Visual]>
+classSide ^ <SideOutliner>
 
-	self instanceSide: (self sideOutlinerClass for: self mirror).
-	self classSide: (self sideOutlinerClass for: self mirror classSide).
-	col add: (self addChild: self instanceSide) imbeddedVisual.
-	col add: (self addChild: self classSide) imbeddedVisual.
-!
+	^classSide!
 
-sideOutlinerClass ^ <SideOutliner class>
+classSide: s <SideOutliner>
 
-^SideOutliner! !
+	classSide := s!
 
-! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'menus' !
+instanceSide ^ <SideOutliner>
 
+	^instanceSide!
 
-fileMenu ^ <Menu>
+instanceSide: s <SideOutliner>
 
-	^super fileMenu
-		addSeparator;
-		add: (MenuAction new
-					name: '&Spawn';
-					action: [ self spawn ] )
-!
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^ <Menu>
-
-	^Menu new
-		add: self fileMenu;
-		add: self viewMenu;
-		add: self typecheckingMenu!
-
-popUpMenu ^<Menu>
-
-	^Menu new
-		addAll: self fileMenu removeAll;
-		addSeparator;
-		add: self viewMenu!
-
-typecheckingMenu ^ <Menu>
-
-^Menu new name: 'Typecheck';
-    add: (MenuAction new
-                  name: 'Typecheck interface';
-                  action: [self typecheckInterface])
-!
-
-viewMenu ^ <Menu>
-
-	^super viewMenu
-		addSeparator;
-		add: (MenuAction new
-					name: 'Expand public interface';
-					action: [ self expandPublicInterface ] );
-		add: (MenuAction new
-					name: 'Expand interface';
-					action: [ self expandInterface ] )
-! !
+	instanceSide := s! !
 
 ! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'control' !
 
@@ -149,25 +103,6 @@ typecheckInterface
 											self mirror classSide typecheckInterface.
 											]
 		title: 'Typechecking interface of ', self mirror name.! !
-
-! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'accessing' !
-
-
-classSide ^ <SideOutliner>
-
-	^classSide!
-
-classSide: s <SideOutliner>
-
-	classSide := s!
-
-instanceSide ^ <SideOutliner>
-
-	^instanceSide!
-
-instanceSide: s <SideOutliner>
-
-	instanceSide := s! !
 
 ! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'launching' !
 
@@ -236,6 +171,71 @@ outlinerForLocator: loc <DeltaLocator> ^ <CommonProgEnvOutliner>
  					ifFalse: [	self instanceSide outlinerForLocator: loc ]
 				]
 	ifFalse:[self definitionOutliner outlinerForLocator: loc]! !
+
+! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		addSeparator;
+		add: (MenuAction new
+					name: '&Spawn';
+					action: [ self spawn ] )
+!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self viewMenu;
+		add: self typecheckingMenu!
+
+popUpMenu ^<Menu>
+
+	^Menu new
+		addAll: self fileMenu removeAll;
+		addSeparator;
+		add: self viewMenu!
+
+typecheckingMenu ^ <Menu>
+
+^Menu new name: 'Typecheck';
+    add: (MenuAction new
+                  name: 'Typecheck interface';
+                  action: [self typecheckInterface])
+!
+
+viewMenu ^ <Menu>
+
+	^super viewMenu
+		addSeparator;
+		add: (MenuAction new
+					name: 'Expand public interface';
+					action: [ self expandPublicInterface ] );
+		add: (MenuAction new
+					name: 'Expand interface';
+					action: [ self expandInterface ] )
+! !
+
+! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'private' !
+
+
+innerBuildBody: col <Column[Visual]>
+
+	self instanceSide: (self sideOutlinerClass for: self mirror).
+	self classSide: (self sideOutlinerClass for: self mirror classSide).
+	col add: (self addChild: self instanceSide) imbeddedVisual.
+	col add: (self addChild: self classSide) imbeddedVisual.
+!
+
+sideOutlinerClass ^ <SideOutliner class>
+
+^SideOutliner! !
 
 ! (Delta mirrorFor: #DefWithMsgOutliner) methodsFor: 'toolbars' !
 

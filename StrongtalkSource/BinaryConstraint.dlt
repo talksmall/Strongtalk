@@ -18,6 +18,23 @@ Instance variables:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #BinaryConstraint) methodsFor: 'add/remove' !
+
+
+addToGraph
+	"Add myself to the constraint graph."
+
+	v1 addConstraint: self.
+	v2 addConstraint: self.
+	direction := nil.!
+
+removeFromGraph
+	"Remove myself from the constraint graph."
+
+	(v1 == nil) ifFalse: [v1 removeConstraint: self].
+	(v2 == nil) ifFalse: [v2 removeConstraint: self].
+	direction := nil.! !
+
 ! (Delta mirrorFor: #BinaryConstraint) methodsFor: 'initialize-release' !
 
 
@@ -36,31 +53,6 @@ var: variable1 var: variable2 strength: strengthSymbol
 	v2 := variable2.
 	direction := nil.
 	self addConstraint.! !
-
-! (Delta mirrorFor: #BinaryConstraint) methodsFor: 'queries' !
-
-
-isSatisfied
-	"Answer true if this constraint is satisfied in the current solution."
-
-	^direction notNil! !
-
-! (Delta mirrorFor: #BinaryConstraint) methodsFor: 'add/remove' !
-
-
-addToGraph
-	"Add myself to the constraint graph."
-
-	v1 addConstraint: self.
-	v2 addConstraint: self.
-	direction := nil.!
-
-removeFromGraph
-	"Remove myself from the constraint graph."
-
-	(v1 == nil) ifFalse: [v1 removeConstraint: self].
-	(v2 == nil) ifFalse: [v2 removeConstraint: self].
-	direction := nil.! !
 
 ! (Delta mirrorFor: #BinaryConstraint) methodsFor: 'planning' !
 
@@ -123,4 +115,12 @@ recalculate
 	out walkStrength: (strength weakest: in walkStrength).
 	out stay: (in stay).
 	(out stay) ifTrue: [self execute].		"stay optimization"! !
+
+! (Delta mirrorFor: #BinaryConstraint) methodsFor: 'queries' !
+
+
+isSatisfied
+	"Answer true if this constraint is satisfied in the current solution."
+
+	^direction notNil! !
 

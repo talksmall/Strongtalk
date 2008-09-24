@@ -250,6 +250,35 @@ typename := self body typeNameForNode: n inMethod: m.
 self retractTypeAssumptions.
 ^typename! !
 
+! (Delta mirrorFor: #DeltaGeneric) methodsFor: 'private typechecking' !
+
+
+retractTypeAssumptions ^ <Self>
+    self formals do:[ :f <FormalType>  |
+                        f typeVar retractBoundFromTrail: DeltaGlobalTrail.
+                        f typeVar dual retractBoundFromTrail: DeltaGlobalTrail.
+                        ].!
+
+setupTypeAssumptions ^ <Self>
+    self formals do:[ :f <FormalType>  |
+                        f typeVar declareBoundToTrail: DeltaGlobalTrail.
+                        f typeVar dual declareBoundToTrail: DeltaGlobalTrail.
+                        ].!
+
+testFormals ^ <Self>
+
+self formals do: [: f <TypeFormal>  |
+   self  errorHandler pushDefinition: (TypeArgumentLocator onTypeArgument: f typeVar name ofDefinition: self basicLocator).
+	f typeVar wellFormed.
+	f variance = #covar 
+		ifTrue:[(self body monotonicIn: f typeVar)
+			ifFalse:[self reportError: (DeltaTypeCovarianceError new id: self name; typeVarName: f typeVar name)]]
+		ifFalse:[f variance = #contra 
+			ifTrue:[(self body antimonotonicIn: f typeVar)
+				ifFalse:[self reportError:  (DeltaTypeContravarianceError new id: self name; typeVarName: f typeVar name)]]].
+	self errorHandler popDefinition.
+]! !
+
 ! (Delta mirrorFor: #DeltaGeneric) methodsFor: 'typechecking' !
 
 
@@ -301,33 +330,4 @@ self setupTypeAssumptions.
 self testFormals.
 self retractTypeAssumptions.
 self errorHandler popDefinition.! !
-
-! (Delta mirrorFor: #DeltaGeneric) methodsFor: 'private typechecking' !
-
-
-retractTypeAssumptions ^ <Self>
-    self formals do:[ :f <FormalType>  |
-                        f typeVar retractBoundFromTrail: DeltaGlobalTrail.
-                        f typeVar dual retractBoundFromTrail: DeltaGlobalTrail.
-                        ].!
-
-setupTypeAssumptions ^ <Self>
-    self formals do:[ :f <FormalType>  |
-                        f typeVar declareBoundToTrail: DeltaGlobalTrail.
-                        f typeVar dual declareBoundToTrail: DeltaGlobalTrail.
-                        ].!
-
-testFormals ^ <Self>
-
-self formals do: [: f <TypeFormal>  |
-   self  errorHandler pushDefinition: (TypeArgumentLocator onTypeArgument: f typeVar name ofDefinition: self basicLocator).
-	f typeVar wellFormed.
-	f variance = #covar 
-		ifTrue:[(self body monotonicIn: f typeVar)
-			ifFalse:[self reportError: (DeltaTypeCovarianceError new id: self name; typeVarName: f typeVar name)]]
-		ifFalse:[f variance = #contra 
-			ifTrue:[(self body antimonotonicIn: f typeVar)
-				ifFalse:[self reportError:  (DeltaTypeContravarianceError new id: self name; typeVarName: f typeVar name)]]].
-	self errorHandler popDefinition.
-]! !
 

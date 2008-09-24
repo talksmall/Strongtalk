@@ -110,6 +110,31 @@ test: s <Extensible[Str]>
 		"loop must end with empty collections, so we can do it again with shrunken state"	]
 ! !
 
+! (Delta mirrorFor: #Set) methodsFor: 'adding' !
+
+
+include: anElement ifNew: ifNew
+"workaround for problem with adding nil to a set"
+self deltaHack.
+	anElement isNil ifTrue: [^anElement].
+	^super include: anElement ifNew: ifNew! !
+
+! (Delta mirrorFor: #Set) methodsFor: 'converting' !
+
+
+asSet ^<Extensible[EX]>
+		{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is safe because of the inference clause"
+	^guaranteed <Set[EX]> self! !
+
+! (Delta mirrorFor: #Set) methodsFor: 'private' !
+
+
+newForCollect: size <Int> ^<Extensible[Object]>
+
+	^Set[Object] new: size! !
+
 ! (Delta mirrorFor: #Set) methodsFor: 'restricted- table decoding' !
 
 
@@ -163,20 +188,4 @@ hasSameElementsAs: other <Cltn[Object]>  ^<Boolean>
 includes: o <Object> ^<Boolean>
 
 	^self includesKey: o! !
-
-! (Delta mirrorFor: #Set) methodsFor: 'private' !
-
-
-newForCollect: size <Int> ^<Extensible[Object]>
-
-	^Set[Object] new: size! !
-
-! (Delta mirrorFor: #Set) methodsFor: 'converting' !
-
-
-asSet ^<Extensible[EX]>
-		{where EX is returnType of #anElement message of receiverType}
-
-	"The guarantee is safe because of the inference clause"
-	^guaranteed <Set[EX]> self! !
 

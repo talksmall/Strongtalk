@@ -100,6 +100,215 @@ winBackdrop ^<Painter>
 
 	^Painter new paint: Paint backgroundGray! !
 
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'control' !
+
+
+addSubclassTo: m <AbstractClassMirror>
+
+	self
+		launchDefinitionDialogWithPainter: self classPainter
+		title: 'Add new subclass of ', m name
+		constructor: [ :name <Symbol> |
+			Smalltalk define: name as:  (Class subclassOf: m name asString instanceVariables: '').
+			self launchDefinitionsMatching: name ]!
+
+findDefinition
+	
+	self 
+		launchSingleLineTextDialogWithPainter: Painter default
+		title: 'Open definition'
+		caption: 'Matching expression' 
+		default: '*'
+		action: [ :s <Str> | self launchDefinitionsMatching: s ]
+!
+
+launchDefinitionsMatching: s <Str>
+
+	| definitions <AddableSequenceableCollection[Symbol]> mirror <Mirror> |
+	definitions := OrderedCollection[Symbol] new.
+	Smalltalk keysDo: [ :key <Symbol> | 
+		(s platformMatch: key)
+			ifTrue: [	definitions add: key ]
+	].
+	definitions isEmpty
+		ifTrue: [	| pattern <Str> |
+					pattern := s, Platform multipleMatchWildcardCharacter asString.
+					Smalltalk keysDo: [ :key <Symbol> | 
+						(pattern platformMatch: key)
+							ifTrue: [	definitions add: key ]
+					]
+	].
+	definitions := definitions asSortedCollection: [ :a <Symbol> :b <Symbol> | a <= b ].
+	definitions isEmpty
+		ifTrue: [		(Workspace coerce: Transcript) visual
+								promptOk: 'No definitions matching ''', s, ''''
+								title: 'Information'
+								type: #info
+								action: [] ].
+	definitions size = 1
+		ifTrue: [	mirror := Smalltalk mirrorFor: (definitions at: 1) ifAbsent: [ ^self ].
+						(DefOutliner on: mirror) launch ]
+		ifFalse: [	self 
+								launchListDialogWithPainter: Painter default
+								title: 'Definitions matching ', s
+								modal: false
+								contents: definitions
+								multi: true
+								action: [ :indices <Cltn[Int]> |
+												indices do:
+													[ :index <Int> |
+														mirror := Smalltalk mirrorFor: (definitions at: index)
+																			ifAbsent: [ ^self ].
+														(DefOutliner on: mirror) launch 	]	].
+							]!
+
+removeDefinition: m <Mirror>
+
+	self visual
+		promptOkCancel: 'Remove ', m name asString printString, ' from system'
+		title: 'Please confirm'
+		type: #question
+		default: 2
+		action: [ :b <Boolean> | 
+			b ifTrue: [ 	self session noInputFocus.	"To get around library input focus bug"
+								m removeDefinitionIfFail: [ self unimplemented ] ] ].	"Fix this shortly"! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^Menu new name: '&Browse';
+		add: (MenuAction new
+					name: '&Open...';
+					action: [ self findDefinition ] );
+		add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self])! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private' !
+
+
+buildVisualTop: forTop <Boolean> ^ <Visual>
+
+	| v <Visual> |
+	v := super buildVisualTop: forTop.
+	forTop ifTrue: [
+		v := (Scroller viewportFor: v) useContinuousGrid.
+		v viewport
+			constrainX: false;
+			minScrollExtentBlock:
+				[ :v <Viewport> |
+					self maxTopWidth @ self maxTopHeight	].
+		v := v withBorder: (Border standard3DWithColor: Paint gray raised: false).
+		].
+	^v!
+
+requestCloseIfTopWindow
+
+	self visual parent = self visual topWindow
+		ifTrue: [	self visual topWindow requestClose ]! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - font spec constants' !
+
+
+largeBoldness ^ <Float>
+
+	^0.75!
+
+largePoints ^ <Int>
+
+	^12!
+
+largeTypeface ^ <Str>
+
+	^'Times Roman'!
+
+smallBoldness ^ <Float>
+
+	^0.75!
+
+smallPoints ^ <Int>
+
+	^10		" For Win95 use 11"!
+
+smallTypeface ^ <Str>
+
+	^'Lucida Sans'		" For Win95 use 'Times Roman' "! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - font specs' !
+
+
+largeBoldFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self largePoints; typeface: self largeTypeface; boldness: self largeBoldness!
+
+largeFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self largePoints; typeface: self largeTypeface!
+
+largeItalicBoldFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self largePoints; typeface: self largeTypeface; italic: true; boldness: self largeBoldness!
+
+largeItalicFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self largePoints; typeface: self largeTypeface; italic: true!
+
+smallBoldFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self smallPoints; typeface: self smallTypeface; boldness: self smallBoldness!
+
+smallFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self smallPoints; typeface: self smallTypeface!
+
+smallItalicBoldFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self smallPoints; typeface: self smallTypeface; italic: true; boldness: self smallBoldness!
+
+smallItalicFontSpec ^ <FontSpec>
+
+	^FontSpec new points: self smallPoints; typeface: self smallTypeface; italic: true! !
+
+! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - rich text' !
+
+
+richTextForParseTree: pt <ParseTree[ASTNode]>
+
+	^(self richTextTool parseTree: pt) compute!
+
+richTextForParseTrees: pts <Cltn[ParseTree[ASTNode]]>
+
+	^(self richTextTool parseTrees: pts) compute!
+
+richTextTool ^ <ASTtoRichTextTool[CharGlyph]>
+
+	RichTextTool isNil
+		ifTrue: [	RichTextTool := ASTtoRichTextTool[CharGlyph] new
+							codeBuilder: [ :c <Character> | self codePainter charGlyphFor: c ];
+							selectorBuilder: [ :c <Character> | self selectorPainter charGlyphFor: c ];
+							commentBuilder: [ :c <Character> | self commentPainter charGlyphFor: c ];
+							typeexpressionBuilder: [ :c <Character> | self typeExpressionPainter charGlyphFor: c ];
+							inferenceclauseBuilder: [ :c <Character> | self inferenceClausePainter charGlyphFor: c ] ].
+	^RichTextTool!
+
+showRichTextSignatures ^ <Boolean>
+
+	^true!
+
+standardTextForString: s <Str> painter: p <Painter> ^ <CharGlyphs> 
+
+	| gls <CharGlyphs> |
+	gls := OrderedCollection[CharGlyphs] new: s size.
+	s do: [ :c <Character> | gls add: (p charGlyphFor: c) ].
+	^gls
+!
+
+useRichTextForSources ^ <Boolean>
+
+	^true! !
+
 ! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private-painters' !
 
 
@@ -633,215 +842,6 @@ typecheckAction: blk <[]> title: t <Str>
 eh := Type doChecks: blk.
 self launchTypeErrorList: eh reportedErrors
  		title: t.! !
-
-! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - rich text' !
-
-
-richTextForParseTree: pt <ParseTree[ASTNode]>
-
-	^(self richTextTool parseTree: pt) compute!
-
-richTextForParseTrees: pts <Cltn[ParseTree[ASTNode]]>
-
-	^(self richTextTool parseTrees: pts) compute!
-
-richTextTool ^ <ASTtoRichTextTool[CharGlyph]>
-
-	RichTextTool isNil
-		ifTrue: [	RichTextTool := ASTtoRichTextTool[CharGlyph] new
-							codeBuilder: [ :c <Character> | self codePainter charGlyphFor: c ];
-							selectorBuilder: [ :c <Character> | self selectorPainter charGlyphFor: c ];
-							commentBuilder: [ :c <Character> | self commentPainter charGlyphFor: c ];
-							typeexpressionBuilder: [ :c <Character> | self typeExpressionPainter charGlyphFor: c ];
-							inferenceclauseBuilder: [ :c <Character> | self inferenceClausePainter charGlyphFor: c ] ].
-	^RichTextTool!
-
-showRichTextSignatures ^ <Boolean>
-
-	^true!
-
-standardTextForString: s <Str> painter: p <Painter> ^ <CharGlyphs> 
-
-	| gls <CharGlyphs> |
-	gls := OrderedCollection[CharGlyphs] new: s size.
-	s do: [ :c <Character> | gls add: (p charGlyphFor: c) ].
-	^gls
-!
-
-useRichTextForSources ^ <Boolean>
-
-	^true! !
-
-! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - font spec constants' !
-
-
-largeBoldness ^ <Float>
-
-	^0.75!
-
-largePoints ^ <Int>
-
-	^12!
-
-largeTypeface ^ <Str>
-
-	^'Times Roman'!
-
-smallBoldness ^ <Float>
-
-	^0.75!
-
-smallPoints ^ <Int>
-
-	^10		" For Win95 use 11"!
-
-smallTypeface ^ <Str>
-
-	^'Lucida Sans'		" For Win95 use 'Times Roman' "! !
-
-! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'menus' !
-
-
-fileMenu ^ <Menu>
-
-	^Menu new name: '&Browse';
-		add: (MenuAction new
-					name: '&Open...';
-					action: [ self findDefinition ] );
-		add: (MenuAction new
-		            name:'Meta';
-		            action:[Inspector launchOn: self])! !
-
-! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private - font specs' !
-
-
-largeBoldFontSpec ^ <FontSpec>
-
-	^FontSpec new points: self largePoints; typeface: self largeTypeface; boldness: self largeBoldness!
-
-largeFontSpec ^ <FontSpec>
-
-	^FontSpec new points: self largePoints; typeface: self largeTypeface!
-
-largeItalicBoldFontSpec ^ <FontSpec>
-
-	^FontSpec new points: self largePoints; typeface: self largeTypeface; italic: true; boldness: self largeBoldness!
-
-largeItalicFontSpec ^ <FontSpec>
-
-	^FontSpec new points: self largePoints; typeface: self largeTypeface; italic: true!
-
-smallBoldFontSpec ^ <FontSpec>
-
-	^FontSpec new points: self smallPoints; typeface: self smallTypeface; boldness: self smallBoldness!
-
-smallFontSpec ^ <FontSpec>
-
-	^FontSpec new points: self smallPoints; typeface: self smallTypeface!
-
-smallItalicBoldFontSpec ^ <FontSpec>
-
-	^FontSpec new points: self smallPoints; typeface: self smallTypeface; italic: true; boldness: self smallBoldness!
-
-smallItalicFontSpec ^ <FontSpec>
-
-	^FontSpec new points: self smallPoints; typeface: self smallTypeface; italic: true! !
-
-! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'private' !
-
-
-buildVisualTop: forTop <Boolean> ^ <Visual>
-
-	| v <Visual> |
-	v := super buildVisualTop: forTop.
-	forTop ifTrue: [
-		v := (Scroller viewportFor: v) useContinuousGrid.
-		v viewport
-			constrainX: false;
-			minScrollExtentBlock:
-				[ :v <Viewport> |
-					self maxTopWidth @ self maxTopHeight	].
-		v := v withBorder: (Border standard3DWithColor: Paint gray raised: false).
-		].
-	^v!
-
-requestCloseIfTopWindow
-
-	self visual parent = self visual topWindow
-		ifTrue: [	self visual topWindow requestClose ]! !
-
-! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'control' !
-
-
-addSubclassTo: m <AbstractClassMirror>
-
-	self
-		launchDefinitionDialogWithPainter: self classPainter
-		title: 'Add new subclass of ', m name
-		constructor: [ :name <Symbol> |
-			Smalltalk define: name as:  (Class subclassOf: m name asString instanceVariables: '').
-			self launchDefinitionsMatching: name ]!
-
-findDefinition
-	
-	self 
-		launchSingleLineTextDialogWithPainter: Painter default
-		title: 'Open definition'
-		caption: 'Matching expression' 
-		default: '*'
-		action: [ :s <Str> | self launchDefinitionsMatching: s ]
-!
-
-launchDefinitionsMatching: s <Str>
-
-	| definitions <AddableSequenceableCollection[Symbol]> mirror <Mirror> |
-	definitions := OrderedCollection[Symbol] new.
-	Smalltalk keysDo: [ :key <Symbol> | 
-		(s platformMatch: key)
-			ifTrue: [	definitions add: key ]
-	].
-	definitions isEmpty
-		ifTrue: [	| pattern <Str> |
-					pattern := s, Platform multipleMatchWildcardCharacter asString.
-					Smalltalk keysDo: [ :key <Symbol> | 
-						(pattern platformMatch: key)
-							ifTrue: [	definitions add: key ]
-					]
-	].
-	definitions := definitions asSortedCollection: [ :a <Symbol> :b <Symbol> | a <= b ].
-	definitions isEmpty
-		ifTrue: [		(Workspace coerce: Transcript) visual
-								promptOk: 'No definitions matching ''', s, ''''
-								title: 'Information'
-								type: #info
-								action: [] ].
-	definitions size = 1
-		ifTrue: [	mirror := Smalltalk mirrorFor: (definitions at: 1) ifAbsent: [ ^self ].
-						(DefOutliner on: mirror) launch ]
-		ifFalse: [	self 
-								launchListDialogWithPainter: Painter default
-								title: 'Definitions matching ', s
-								modal: false
-								contents: definitions
-								multi: true
-								action: [ :indices <Cltn[Int]> |
-												indices do:
-													[ :index <Int> |
-														mirror := Smalltalk mirrorFor: (definitions at: index)
-																			ifAbsent: [ ^self ].
-														(DefOutliner on: mirror) launch 	]	].
-							]!
-
-removeDefinition: m <Mirror>
-
-	self visual
-		promptOkCancel: 'Remove ', m name asString printString, ' from system'
-		title: 'Please confirm'
-		type: #question
-		default: 2
-		action: [ :b <Boolean> | 
-			b ifTrue: [ 	self session noInputFocus.	"To get around library input focus bug"
-								m removeDefinitionIfFail: [ self unimplemented ] ] ].	"Fix this shortly"! !
 
 ! (Delta mirrorFor: #ProgrammingEnvironment) methodsFor: 'restricted-utility' !
 

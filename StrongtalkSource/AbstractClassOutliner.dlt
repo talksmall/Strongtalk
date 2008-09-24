@@ -10,16 +10,25 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'private' !
+! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'control' !
 
 
-definitionOutlinerClass ^ <ClassDefinitionOutliner class>
+spawnHierarchy
 
-	^ClassDefinitionOutliner!
+	(ClassHierarchyOutliner for: self mirror) launch!
 
-sideOutlinerClass ^ <SideWithMethodsOutliner class>
+spawnSuperclass
 
-	^SideWithMethodsOutliner! !
+	"Change this once we have a good way of browsing anonymous invocations"
+	| sc <AbstractClassMirror> |
+	sc := self mirror superclass.
+	[ sc isMixinInvocation ] whileTrue: [ 
+		sc := sc superclass ].
+	(DefWithMsgOutliner on: sc) launch!
+
+typecheckMethods
+
+	Transcript show: 'AbstractClassOutliner>>typecheck methods unimplemented'; cr! !
 
 ! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'menus' !
 
@@ -47,25 +56,16 @@ fileMenu ^ <Menu>
 					action: [ self addSubclassTo: self mirror ] )
 ! !
 
-! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'control' !
+! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'private' !
 
 
-spawnHierarchy
+definitionOutlinerClass ^ <ClassDefinitionOutliner class>
 
-	(ClassHierarchyOutliner for: self mirror) launch!
+	^ClassDefinitionOutliner!
 
-spawnSuperclass
+sideOutlinerClass ^ <SideWithMethodsOutliner class>
 
-	"Change this once we have a good way of browsing anonymous invocations"
-	| sc <AbstractClassMirror> |
-	sc := self mirror superclass.
-	[ sc isMixinInvocation ] whileTrue: [ 
-		sc := sc superclass ].
-	(DefWithMsgOutliner on: sc) launch!
-
-typecheckMethods
-
-	Transcript show: 'AbstractClassOutliner>>typecheck methods unimplemented'; cr! !
+	^SideWithMethodsOutliner! !
 
 ! (Delta mirrorFor: #AbstractClassOutliner) methodsFor: 'toolbar' !
 

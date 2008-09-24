@@ -38,6 +38,49 @@ onCancel: c <[^Object]>
 		onCancel: c;
 		button: but! !
 
+! (Delta mirrorFor: #PressHandler) methodsFor: 'accessing' !
+
+
+pressing ^<Boolean>
+
+	^pressing! !
+
+! (Delta mirrorFor: #PressHandler) methodsFor: 'event handling' !
+
+
+mouseEvent: type <Symbol>
+at: loc <Point>
+event: ev <UIEvent>
+^<Boolean>
+
+	| result <Boolean> |
+
+	result := super mouseEvent: type at: loc event: ev.
+	(self inside and: [ ev isGrabbed not ])
+		ifTrue: [	((type == #primaryButtonDown
+									or: [ type == #primaryButtonDoubleClick ])
+								and: [ button == #primary ])
+							ifTrue: [  self press. 	^true ].
+						((type == #secondaryButtonDown
+									or: [ type == #secondaryButtonDoubleClick ])
+								and: [ button == #secondary ])
+							ifTrue: [ self press.	^true ].
+						((type == #middleButtonDown
+									or: [ type == #middleButtonDoubleClick ])
+								and: [ button == #middle ])
+							ifTrue: [ self press.	^true ].
+
+						self pressing
+							ifTrue: [	(type = #primaryButtonUp and: [ button = #primary ])
+												ifTrue: [ self action. ^true ].
+											(type = #secondaryButtonUp and: [ button = #secondary ])
+												ifTrue: [ self action. ^true ].
+											(type = #middleButtonUp and: [ button = #middle ])
+												ifTrue: [ self action. ^true ].
+										].
+						].
+	^result! !
+
 ! (Delta mirrorFor: #PressHandler) methodsFor: 'initialization' !
 
 
@@ -105,47 +148,4 @@ recordLeave
 	super recordLeave.
 	pressing
 		ifTrue: [ self cancel ]! !
-
-! (Delta mirrorFor: #PressHandler) methodsFor: 'event handling' !
-
-
-mouseEvent: type <Symbol>
-at: loc <Point>
-event: ev <UIEvent>
-^<Boolean>
-
-	| result <Boolean> |
-
-	result := super mouseEvent: type at: loc event: ev.
-	(self inside and: [ ev isGrabbed not ])
-		ifTrue: [	((type == #primaryButtonDown
-									or: [ type == #primaryButtonDoubleClick ])
-								and: [ button == #primary ])
-							ifTrue: [  self press. 	^true ].
-						((type == #secondaryButtonDown
-									or: [ type == #secondaryButtonDoubleClick ])
-								and: [ button == #secondary ])
-							ifTrue: [ self press.	^true ].
-						((type == #middleButtonDown
-									or: [ type == #middleButtonDoubleClick ])
-								and: [ button == #middle ])
-							ifTrue: [ self press.	^true ].
-
-						self pressing
-							ifTrue: [	(type = #primaryButtonUp and: [ button = #primary ])
-												ifTrue: [ self action. ^true ].
-											(type = #secondaryButtonUp and: [ button = #secondary ])
-												ifTrue: [ self action. ^true ].
-											(type = #middleButtonUp and: [ button = #middle ])
-												ifTrue: [ self action. ^true ].
-										].
-						].
-	^result! !
-
-! (Delta mirrorFor: #PressHandler) methodsFor: 'accessing' !
-
-
-pressing ^<Boolean>
-
-	^pressing! !
 

@@ -10,6 +10,14 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #SideWithMethodsOutliner) methodsFor: 'control' !
+
+
+typecheckInterface
+
+	self typecheckAction:[self mirror typecheckInterface]
+		title: 'Typechecking interface of ', self mirror name! !
+
 ! (Delta mirrorFor: #SideWithMethodsOutliner) methodsFor: 'menus' !
 
 
@@ -27,12 +35,4 @@ typeCheckMenu ^<Menu>
 categoryOutlinerClass ^ <CategoryWithMethodsOutliner class>
 
 	^CategoryWithMethodsOutliner! !
-
-! (Delta mirrorFor: #SideWithMethodsOutliner) methodsFor: 'control' !
-
-
-typecheckInterface
-
-	self typecheckAction:[self mirror typecheckInterface]
-		title: 'Typechecking interface of ', self mirror name! !
 

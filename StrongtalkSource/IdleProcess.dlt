@@ -17,6 +17,26 @@ similarly.
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'accessing' !
+
+
+hasIdleActions
+
+	^self theIdleProcess hasIdleActions!
+
+theIdleProcess ^<IdleProcess>
+
+	^TheIdleProcess
+	! !
+
+! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	TheIdleProcess := nil.
+	TheIdleProcess := IdleProcess new.! !
+
 ! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'instance creation' !
 
 
@@ -46,30 +66,6 @@ unregister: idleAction <[]>
 	  
 	self theIdleProcess unregister: idleAction! !
 
-! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'initialization' !
-
-
-initialize
-
-	TheIdleProcess := nil.
-	TheIdleProcess := IdleProcess new.! !
-
-! (Delta mirrorFor: #IdleProcess) classSide methodsFor: 'accessing' !
-
-
-theIdleProcess ^<IdleProcess>
-
-	^TheIdleProcess
-	! !
-
-! (Delta mirrorFor: #IdleProcess) methodsFor: 'private-initialization' !
-
-
-initFor: block <[]>
-
-	super initFor: block.
-	idleActions := Queue[[]] new.! !
-
 ! (Delta mirrorFor: #IdleProcess) methodsFor: 'accessing' !
 
 
@@ -80,17 +76,6 @@ hasIdleActions ^<Boolean>
 idleActions ^<Queue[[]]>
 
 	^idleActions! !
-
-! (Delta mirrorFor: #IdleProcess) methodsFor: 'restricted-registering' !
-
-
-register: idleAction <[]>
-
-	self critical: [ self idleActions nextPut: idleAction ]!
-
-unregister: idleAction <[]>
-
-	self critical: [ self idleActions remove: idleAction ]! !
 
 ! (Delta mirrorFor: #IdleProcess) methodsFor: 'control' !
 
@@ -126,4 +111,23 @@ register
 
 	"We override this to do nothing because this process should
 		not be registered"! !
+
+! (Delta mirrorFor: #IdleProcess) methodsFor: 'private-initialization' !
+
+
+initFor: block <[]>
+
+	super initFor: block.
+	idleActions := Queue[[]] new.! !
+
+! (Delta mirrorFor: #IdleProcess) methodsFor: 'restricted-registering' !
+
+
+register: idleAction <[]>
+
+	self critical: [ self idleActions nextPut: idleAction ]!
+
+unregister: idleAction <[]>
+
+	self critical: [ self idleActions remove: idleAction ]! !
 

@@ -1,0 +1,84 @@
+Delta define: #TM as: (
+(Class subclassOf: 'CStructure' instanceVariables: '')) !
+
+(Delta mirrorFor: #TM) revision: '$Revision:$'!
+
+(Delta mirrorFor: #TM) group: 'Unclassified'!
+
+(Delta mirrorFor: #TM)
+comment: 
+''!
+
+! (Delta mirrorFor: #TM) methodsFor: 'accessing' !
+
+
+mDay
+
+	^self doubleByteAt: self mDayOffset!
+
+mHour
+
+	^self doubleByteAt: self mHourOffset!
+
+mMinute
+
+	^self doubleByteAt: self mMinuteOffset!
+
+mMonth
+
+	^self doubleByteAt: self mMonthOffset!
+
+mSecond
+
+	^self doubleByteAt: self mSecondOffset!
+
+mYear
+
+	^self doubleByteAt: self mYearOffset!
+
+structureSize
+
+	^64! !
+
+! (Delta mirrorFor: #TM) methodsFor: 'converting' !
+
+
+asSYSTEMTIME
+
+	| st |
+	st := SYSTEMTIME new allocate.
+	st doubleByteAt: st wSecondOffset put: self mSecond.
+	st doubleByteAt: st wMinuteOffset put: self mMinute.
+	st doubleByteAt: st wHourOffset put: self mHour.
+	st doubleByteAt: st wDayOffset put: self mDay.
+	st doubleByteAt: st wMonthOffset put: self mMonth + 1.
+	st doubleByteAt: st wYearOffset put: self mYear + 1900.
+	^st! !
+
+! (Delta mirrorFor: #TM) methodsFor: 'offsets' !
+
+
+mDayOffset
+
+	^12!
+
+mHourOffset
+
+	^8!
+
+mMinuteOffset
+
+	^4!
+
+mMonthOffset
+
+	^16!
+
+mSecondOffset
+
+	^0!
+
+mYearOffset
+
+	^20! !
+

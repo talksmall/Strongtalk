@@ -25,26 +25,6 @@ var: src var: scale var: offset var: dst strength: strengthSymbol
 
 	^(self new) src: src scale: scale offset: offset dst: dst strength: strengthSymbol! !
 
-! (Delta mirrorFor: #ScaleConstraint) methodsFor: 'initialize-release' !
-
-
-release
-
-	super release.
-	scale := nil.
-	offset := nil.!
-
-src: srcVar scale: scaleVar offset: offsetVar dst: dstVar strength: strengthSymbol
-	"Initialize myself with the given variables and strength."
-
-	strength := Strength of: strengthSymbol.
-	v1 := srcVar.
-	v2 := dstVar.
-	scale := scaleVar.
-	offset := offsetVar.
-	direction := nil.
-	self addConstraint.! !
-
 ! (Delta mirrorFor: #ScaleConstraint) methodsFor: 'add/remove' !
 
 
@@ -65,6 +45,26 @@ removeFromGraph
 	(scale == nil) ifFalse: [scale removeConstraint: self].
 	(offset == nil) ifFalse: [offset removeConstraint: self].
 	direction := nil.! !
+
+! (Delta mirrorFor: #ScaleConstraint) methodsFor: 'initialize-release' !
+
+
+release
+
+	super release.
+	scale := nil.
+	offset := nil.!
+
+src: srcVar scale: scaleVar offset: offsetVar dst: dstVar strength: strengthSymbol
+	"Initialize myself with the given variables and strength."
+
+	strength := Strength of: strengthSymbol.
+	v1 := srcVar.
+	v2 := dstVar.
+	scale := scaleVar.
+	offset := offsetVar.
+	direction := nil.
+	self addConstraint.! !
 
 ! (Delta mirrorFor: #ScaleConstraint) methodsFor: 'planning' !
 

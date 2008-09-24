@@ -24,6 +24,15 @@ palette: p <Palette>
 		ifTrue: [ self installPalette ].
 	palette := p! !
 
+! (Delta mirrorFor: #PaletteModifier) methodsFor: 'geometry-local' !
+
+
+allocation: a <Region> at: pos <Point>
+
+	super allocation: a at: pos.
+	self isAttached
+		ifTrue: [ self installPalette ].! !
+
 ! (Delta mirrorFor: #PaletteModifier) methodsFor: 'initialization' !
 
 
@@ -51,13 +60,4 @@ nativePositionChanged
 installPalette
 
 	self nativeWindow palette: self palette.! !
-
-! (Delta mirrorFor: #PaletteModifier) methodsFor: 'geometry-local' !
-
-
-allocation: a <Region> at: pos <Point>
-
-	super allocation: a at: pos.
-	self isAttached
-		ifTrue: [ self installPalette ].! !
 

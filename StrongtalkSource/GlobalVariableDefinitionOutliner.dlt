@@ -10,6 +10,28 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #GlobalVariableDefinitionOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <GlobalVariableLocator>
+
+^GlobalVariableLocator new id: self mirror name!
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+^self! !
+
+! (Delta mirrorFor: #GlobalVariableDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #declaredType
+			ifTrue: [	self declaredTypeView notNil 
+								ifTrue: [	self declaredTypeView model: self declaredTypeAsCharGlyphs ] ]
+	]! !
+
 ! (Delta mirrorFor: #GlobalVariableDefinitionOutliner) methodsFor: 'private' !
 
 
@@ -61,26 +83,4 @@ storeDeclaredTypeAndOnSuccess: blk <[]>
 									].
 	blk value.
 ! !
-
-! (Delta mirrorFor: #GlobalVariableDefinitionOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		aspect = #declaredType
-			ifTrue: [	self declaredTypeView notNil 
-								ifTrue: [	self declaredTypeView model: self declaredTypeAsCharGlyphs ] ]
-	]! !
-
-! (Delta mirrorFor: #GlobalVariableDefinitionOutliner) methodsFor: 'accessing' !
-
-
-locator ^ <GlobalVariableLocator>
-
-^GlobalVariableLocator new id: self mirror name!
-
-outlinerForLocator: loc <DeltaLocator[Mirror]> 
-
-^self! !
 

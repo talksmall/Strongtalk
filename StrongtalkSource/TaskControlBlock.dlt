@@ -25,21 +25,6 @@ link: link create: identity priority: priority initialWorkQueue: initialWorkQueu
         privateData: privateData
 ! !
 
-! (Delta mirrorFor: #TaskControlBlock) methodsFor: 'initialize' !
-
-
-link: aLink identity: anIdentity priority: aPriority initialWorkQueue: anInitialWorkQueue initialState: anInitialState function: aBlock privateData: aPrivateData
-    link := aLink.
-    identity := anIdentity.
-    priority := aPriority.
-    input := anInitialWorkQueue.
-    packetPending := anInitialState isPacketPending.
-    taskWaiting := anInitialState isTaskWaiting.
-    taskHolding := anInitialState isTaskHolding.
-    function := aBlock.
-    handle := aPrivateData
-! !
-
 ! (Delta mirrorFor: #TaskControlBlock) methodsFor: 'accessing' !
 
 
@@ -53,6 +38,21 @@ link
 
 priority
     ^priority
+! !
+
+! (Delta mirrorFor: #TaskControlBlock) methodsFor: 'initialize' !
+
+
+link: aLink identity: anIdentity priority: aPriority initialWorkQueue: anInitialWorkQueue initialState: anInitialState function: aBlock privateData: aPrivateData
+    link := aLink.
+    identity := anIdentity.
+    priority := aPriority.
+    input := anInitialWorkQueue.
+    packetPending := anInitialState isPacketPending.
+    taskWaiting := anInitialState isTaskWaiting.
+    taskHolding := anInitialState isTaskHolding.
+    function := aBlock.
+    handle := aPrivateData
 ! !
 
 ! (Delta mirrorFor: #TaskControlBlock) methodsFor: 'scheduling' !

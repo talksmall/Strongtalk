@@ -22,140 +22,20 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #Mandelbrot) methodsFor: 'private' !
+! (Delta mirrorFor: #Mandelbrot) methodsFor: 'accessing' !
 
 
-buildBareVisualTop: top <Boolean> ^ <Visual>
+maxIters: m <Int>
 
-	image := Image tempWithExtent: self extent in: Screen default.
-	self image renderingCanvas: self image newCanvas.
-	self computing: false.
-	self clear.
+	maxIters := m!
 
-	^"(PaletteModifier for:" image asVisual")
-		palette: self palette."!
+mode ^<Symbol>
 
-canvas ^<Canvas>
+	^mode!
 
-	canvas isNil
-		ifTrue: [	canvas := self image renderingCanvas.
-						"canvas win32Palette: self palette win32Handle."	].
-	^canvas!
+mode: m <Symbol>
 
-clear
-
-	self imageCritical:
-		[	self canvas withPainter: (Painter new paint: Paint white)
-				do: [	self canvas displayFilledRectangle: (0@0 extent: self extent) ]
-		]!
-
-colors ^<Array[SolidPaint]>
-
-	colors isNil
-		ifTrue: [	|	c <SolidPaint>
-							rincr <Float> gincr <Float> bincr <Float>
-							r <Float> g <Float> b <Float> |
-						rincr := 0.0.
-						gincr := 0.0.
-						bincr := 255.0 / maxIters asFloat.
-						colors := Array[SolidPaint] new: self maxIters.
-						r := g := b := 0.0.
-						self maxIters to: 1 by: -1 do:
-							[ :i <Int> |
-								c := SolidPaint
-											red: r floor
-											green: g floor
-											blue: b floor.
-								colors at: i put: c.
-								r := r + rincr.
-								g := g + gincr.
-								b := 0.0 max: (255.0 min: b + bincr).		].	
-					].
-	^colors!
-
-computeProcess ^<Process>
-
-	^computeProcess!
-
-computeProcess: p <Process>
-
-	computeProcess := p!
-
-computing ^<Boolean>
-
-	^computing!
-
-computing: f <Boolean>
-
-	computing := f!
-
-extent ^<Point>
-
-	^300@300!
-
-image ^<Image>
-
-	^image!
-
-imageCritical: blk <[]>
-
-	self hasVisual
-		ifFalse: [ blk value ]
-		ifTrue: [  self session visualCritical: blk ]!
-
-maxIters ^<Int>
-
-	^maxIters!
-
-palette ^<Palette>
-
-	palette isNil
-		ifTrue: [ palette := Palette for: self colors.	].
-	^palette!
-
-profiling ^<Boolean>
-
-	^profiling!
-
-profiling: f <Boolean>
-
-	profiling := f!
-
-refreshInterval ^<Float>
-
-	^1.0!
-
-refreshTimer ^<Timer>
-
-	^refreshTimer!
-
-refreshTimer: t <Timer>
-
-	refreshTimer := t!
-
-resultAtX: x <Int> y: y <Int> is: n <Int>
-
-	"self imageCritical:
-		["	self canvas pixelAtX: x y: y putPaletteIndex: n	"]"!
-
-startRefreshing
-
-	| t <Timer> |
-	t := self session atIntervals: self refreshInterval
-		do: [	self computing
-					ifTrue: [ self imageCritical: [ self visual invalidate ] ]
-			  ].
-	self refreshTimer: t.!
-
-yieldCheckInterval ^<Int>
-	"how often to check for yield, in iterations"
-
-	^500!
-
-yieldInterval ^<Int>
-	"how often to yield, in milliseconds"
-
-	^100! !
+	mode := m! !
 
 ! (Delta mirrorFor: #Mandelbrot) methodsFor: 'computation' !
 
@@ -564,20 +444,140 @@ menuBar ^<Menu>
 								action: [ self maxIters: 2000 ])
 			)	! !
 
-! (Delta mirrorFor: #Mandelbrot) methodsFor: 'accessing' !
+! (Delta mirrorFor: #Mandelbrot) methodsFor: 'private' !
 
 
-maxIters: m <Int>
+buildBareVisualTop: top <Boolean> ^ <Visual>
 
-	maxIters := m!
+	image := Image tempWithExtent: self extent in: Screen default.
+	self image renderingCanvas: self image newCanvas.
+	self computing: false.
+	self clear.
 
-mode ^<Symbol>
+	^"(PaletteModifier for:" image asVisual")
+		palette: self palette."!
 
-	^mode!
+canvas ^<Canvas>
 
-mode: m <Symbol>
+	canvas isNil
+		ifTrue: [	canvas := self image renderingCanvas.
+						"canvas win32Palette: self palette win32Handle."	].
+	^canvas!
 
-	mode := m! !
+clear
+
+	self imageCritical:
+		[	self canvas withPainter: (Painter new paint: Paint white)
+				do: [	self canvas displayFilledRectangle: (0@0 extent: self extent) ]
+		]!
+
+colors ^<Array[SolidPaint]>
+
+	colors isNil
+		ifTrue: [	|	c <SolidPaint>
+							rincr <Float> gincr <Float> bincr <Float>
+							r <Float> g <Float> b <Float> |
+						rincr := 0.0.
+						gincr := 0.0.
+						bincr := 255.0 / maxIters asFloat.
+						colors := Array[SolidPaint] new: self maxIters.
+						r := g := b := 0.0.
+						self maxIters to: 1 by: -1 do:
+							[ :i <Int> |
+								c := SolidPaint
+											red: r floor
+											green: g floor
+											blue: b floor.
+								colors at: i put: c.
+								r := r + rincr.
+								g := g + gincr.
+								b := 0.0 max: (255.0 min: b + bincr).		].	
+					].
+	^colors!
+
+computeProcess ^<Process>
+
+	^computeProcess!
+
+computeProcess: p <Process>
+
+	computeProcess := p!
+
+computing ^<Boolean>
+
+	^computing!
+
+computing: f <Boolean>
+
+	computing := f!
+
+extent ^<Point>
+
+	^300@300!
+
+image ^<Image>
+
+	^image!
+
+imageCritical: blk <[]>
+
+	self hasVisual
+		ifFalse: [ blk value ]
+		ifTrue: [  self session visualCritical: blk ]!
+
+maxIters ^<Int>
+
+	^maxIters!
+
+palette ^<Palette>
+
+	palette isNil
+		ifTrue: [ palette := Palette for: self colors.	].
+	^palette!
+
+profiling ^<Boolean>
+
+	^profiling!
+
+profiling: f <Boolean>
+
+	profiling := f!
+
+refreshInterval ^<Float>
+
+	^1.0!
+
+refreshTimer ^<Timer>
+
+	^refreshTimer!
+
+refreshTimer: t <Timer>
+
+	refreshTimer := t!
+
+resultAtX: x <Int> y: y <Int> is: n <Int>
+
+	"self imageCritical:
+		["	self canvas pixelAtX: x y: y putPaletteIndex: n	"]"!
+
+startRefreshing
+
+	| t <Timer> |
+	t := self session atIntervals: self refreshInterval
+		do: [	self computing
+					ifTrue: [ self imageCritical: [ self visual invalidate ] ]
+			  ].
+	self refreshTimer: t.!
+
+yieldCheckInterval ^<Int>
+	"how often to check for yield, in iterations"
+
+	^500!
+
+yieldInterval ^<Int>
+	"how often to yield, in milliseconds"
+
+	^100! !
 
 ! (Delta mirrorFor: #Mandelbrot) methodsFor: 'private-initialization' !
 

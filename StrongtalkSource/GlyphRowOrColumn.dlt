@@ -46,6 +46,289 @@ withAll: subs <Cltn[Glyph]> ^<Instance>
 
 	^self holding: (OrderedCollection[Glyph] withAll: subs)! !
 
+! (Delta mirrorFor: #GlyphRowOrColumn) methodsFor: 'accessing' !
+
+
+add: g <Glyph>
+
+	self changing.
+	self glyphs: (self glyphs with: g).
+	self positions: (self positions with: nil).
+
+	g parent: self id: self glyphs size.!
+
+addAll: els <SeqCltn[Glyph]>
+
+	self replaceFrom: self size + 1 to: self size with: els!
+
+alignFirst ^<Boolean>
+
+	^alignFirst!
+
+alignFirst: align <Boolean>
+
+	self changing.
+	alignFirst := align.!
+
+at: childId <Int> ^<VisualGlyph>
+
+	^self at: childId ifAbsent: [ self error: 'invalid child id' ]!
+
+at: childId <Int> ifAbsent: blk <[^X def]> ^<VisualGlyph | X>
+
+	self subclassResponsibility!
+
+glyphAt: childId <Int> ^<Glyph>
+
+	^self glyphs at: childId!
+
+glyphAt: childId <Int> ifAbsent: blk <[^X def]>  ^<Glyph | X>
+
+	^self glyphs at: childId ifAbsent: blk!
+
+glyphsFrom: start <Int> to: stop <Int> ^<VarSeqCltn[Glyph]>
+	"return a collection of the specified range of elements."
+
+	^self glyphs copyFrom: start to: stop!
+
+gridFor: p <Point> ^<Rect>
+
+	| pmaj <Int> default <Rect> r <Rect> l <Visual> |
+
+	default := super gridFor: p.
+	pmaj := self majorOf: p.
+	
+	l := self at: (self indexBounding: pmaj ifFail: [ ^default ]).
+	r := l allocationInParent enclosingRect.
+	^self rectWithLowMajor: (self majorLowOf: r)
+			lowMinor: (self minorLowOf: default)
+			highMajor: (self majorHighOf: r)
+			highMinor: (self minorHighOf: default).
+!
+
+indexBounding: majorPos <Int> ifFail: fail <[^X def]> ^<Int | X>
+	"Return the index of the element whose major dimensions majorPos intersects,
+		or the fail block value if none"
+
+	| p <Point> s |
+	p := self pointWithMinor: 0 major: majorPos.
+	self indicesBounding: (p corner: (p x + 1) @ (p y + 1))
+		do: [ :start <Int> :end <Int> |
+					^start	].
+	^fail value!
+
+indicesBounding: r <Region> do: blk <[Int,Int]>
+	"Evaluate blk with the start and stop indices that bound the major component of r."
+
+	| rStartMajor <Int> rEndMajor <Int> rct <Rect> i <Int> sz <Int> start <Int> end <Int>
+		alloc <Rect>
+		ahigh <Int> alow <Int>
+		|
+	rct := r enclosingRect.
+	rStartMajor := self majorLowOf: rct.
+	rEndMajor := self majorHighOf: rct.
+	sz := self size.
+	sz = 0
+		ifTrue: [ ^self ].
+	i := 1.
+
+	"Find starting index"
+	[	i > sz
+			ifTrue: [	start := i - 1.
+							alloc := (self at: start) allocationInParent enclosingRect.
+							alow := self majorLowOf: alloc.
+							ahigh := self majorHighOf: alloc.
+							(rStartMajor < ahigh and: [ alow < rEndMajor ])
+								ifTrue: [ blk value: start value: start ].
+							^self		].
+		rStartMajor > (self positions at: i)
+		] whileTrue:
+			[ i := i + 1 ].
+	start :=  i - 1 max: 1.
+	alloc := (self at: start) allocationInParent enclosingRect.
+	alow := self majorLowOf: alloc.
+	ahigh := self majorHighOf: alloc.
+	(rStartMajor < ahigh and: [ alow < rEndMajor ])
+		ifFalse: [	i > sz
+							ifTrue: [ ^self ].
+						start := i ]. 
+
+	"Find the ending index"
+	[	i > sz
+			ifTrue: [	"We probably wouldn't be asked this question if some part of us
+								didn't intersect the region, so conservatively assume the last
+								element hits it"
+							end := i - 1.
+							alloc := (self at: end) allocationInParent enclosingRect.
+							alow := self majorLowOf: alloc.
+							ahigh := self majorHighOf: alloc.
+							(rStartMajor < ahigh and: [ alow < rEndMajor ])
+								ifTrue: [ blk value: start value: end ]
+								ifFalse: [ blk value: start value: (end - 1 max: start) ].
+							^self		].
+		rEndMajor > (self positions at: i)
+		] whileTrue:
+			[ i := i + 1 ].
+	end := i min: sz.
+	alloc := (self at: end) allocationInParent enclosingRect.
+	alow := self majorLowOf: alloc.
+	ahigh := self majorHighOf: alloc.
+	(rStartMajor < ahigh and: [ alow < rEndMajor ])
+		ifFalse: [ end := end - 1 max: start ]. 
+
+	blk value: start value: end!
+
+insert: els <SeqCltn[Glyph]> before: index <Int>   ^<OrdCltn[Glyph]>
+
+	^self replaceFrom: index to: index - 1 with: els!
+
+newgridFor: p <Point> ^<Rect>
+
+	| pmaj <Int> default <Rect> r <Rect> l <Visual> |
+
+	default := super gridFor: p.
+	pmaj := self majorOf: p.
+	
+	l := self at: (self indexBounding: pmaj ifFail: [ ^default ]).
+	r := l allocationInParent enclosingRect.
+	^self rectWithLowMajor: (self majorLowOf: r)
+			lowMinor: (self minorLowOf: default)
+			highMajor: (self majorHighOf: r)
+			highMinor: (self minorHighOf: default).
+!
+
+oldgridFor: p <Point> ^<Rect>
+"%remove"
+	| pmaj <Int> default <Rect> |
+
+	default := super gridFor: p.
+	pmaj := self majorOf: p.
+	self doFromFront:
+		[ :l <SUB> |
+			| r <Rect> |
+			r := l allocationInParent enclosingRect.
+			((self majorHighOf: r) > pmaj and: [(self majorLowOf: r) <= pmaj ])
+				ifTrue: [ ^self rectWithLowMajor: (self majorLowOf: r)
+									lowMinor: (self minorLowOf: default)
+									highMajor: (self majorHighOf: r)
+									highMinor: (self minorHighOf: default) ] ].
+	^default!
+
+oldindicesBounding: r <Region> do: blk <[Int,Int]>
+	"Evaluate blk with the start and stop indices that bound the major component of r."
+"%remove"
+	| rStartMajor <Int> rEndMajor <Int> rct <Rect> i <Int> sz <Int> start <Int> end <Int> |
+	rct := r enclosingRect.
+	rStartMajor := self majorLowOf: rct.
+	rEndMajor := self majorHighOf: rct.
+	sz := self size.
+	sz = 0
+		ifTrue: [ ^self ].
+	i := 1.
+
+	"Find starting index"
+	[	i > sz
+			ifTrue: [	start := i - 1.
+							((self at: start) inParentMightIntersect: rct)
+								ifTrue: [ blk value: start value: start ]. 
+							^self		].
+		rStartMajor > (self positions at: i)
+		] whileTrue:
+			[ i := i + 1 ].
+	start :=  i - 1 max: 1.
+	((self at: start) inParentMightIntersect: rct)
+		ifFalse: [	i > sz
+							ifTrue: [ ^self ].
+						start := i ]. 
+
+	"Find the ending index"
+	[	i > sz
+			ifTrue: [	"We probably wouldn't be asked this question if some part of us
+								didn't intersect the region, so conservatively assume the last
+								element hits it"
+							end := i - 1.
+							((self at: end) inParentMightIntersect: rct)
+								ifTrue: [ blk value: start value: end ]
+								ifFalse: [ blk value: start value: (end - 1 max: start) ].
+							^self		].
+		rEndMajor > (self positions at: i)
+		] whileTrue:
+			[ i := i + 1 ].
+	end := i min: sz.
+	((self at: end) inParentMightIntersect: rct)
+		ifFalse: [ end := end - 1 max: start ]. 
+
+	blk value: start value: end!
+
+remove: numEls <Int> at: index <Int>  ^<OrdCltn[Glyph]>
+	"Remove the specified number of elements starting with index, and return them"
+
+	^self replaceFrom: index to: index + numEls - 1 with: #()!
+
+removeAll
+
+	self remove: self size at: 1!
+
+replaceFrom: start <Int> to: stop <Int> with: els <SeqCltn[Glyph]> ^<OrdCltn[Glyph]>
+	"replace the specified range of elements with the els.  The old elements
+	  are returned."
+
+	| old <OrdCltn[Glyph]> |
+	old := OrderedCollection[Glyph] new: stop - start + 1.
+	"if we added elements, our prefs have almost certainly changed, so bounce to higher level"
+	self changing.
+	start to: stop do:
+		[ :index <Int> |
+			old add: (self at: index) noParent glyph. ].
+	self glyphs: (self glyphs copyReplaceFrom: start to: stop with: els).
+	self positions: (self positions copyReplaceFrom: start to: stop with: (Array[Int] new: els size)).
+	(els isEmpty and: [ start <= self size ])
+		ifTrue: [	"This is a hack to leave behind some information for the incremental
+								layout algorithm about where to start laying out, in the case when
+								all we are doing is removing elements"
+						self positions at: start put: nil.	].
+	els keysAndValuesDo:
+		[ :index <Int> :el <Glyph> |
+			el parent: self id: index + start - 1	].
+	start + els size to: self glyphs size do:
+		[ :index <Int> |
+			(self glyphs at: index) id: index ].
+
+	^old!
+
+size ^<Int>
+
+	^self glyphs size!
+
+slack ^<Int>
+
+	^self slackBlock value!
+
+slackBlock ^<[^Int]>
+
+	^slackBlock!
+
+slackBlock: b <[^Int]>
+
+	slackBlock := b! !
+
+! (Delta mirrorFor: #GlyphRowOrColumn) methodsFor: 'control' !
+
+
+changing
+
+	super changing.
+	layoutAlloc := nil.!
+
+relayoutAndInvalidate
+
+	"We override this to avoid complete invalidation, since the incremental
+		algorithm will do the entire job and invalidate what is needed"
+
+	self layout: true.
+	self layoutComplete.
+	self layoutStatus: Visual valid.! !
+
 ! (Delta mirrorFor: #GlyphRowOrColumn) methodsFor: 'initialization' !
 
 
@@ -368,287 +651,4 @@ shouldStartLayingOut: gl at: i incremental: incremental
 tryIncrementalLayout ^<Boolean>
 
 	^self layout: true! !
-
-! (Delta mirrorFor: #GlyphRowOrColumn) methodsFor: 'accessing' !
-
-
-add: g <Glyph>
-
-	self changing.
-	self glyphs: (self glyphs with: g).
-	self positions: (self positions with: nil).
-
-	g parent: self id: self glyphs size.!
-
-addAll: els <SeqCltn[Glyph]>
-
-	self replaceFrom: self size + 1 to: self size with: els!
-
-alignFirst ^<Boolean>
-
-	^alignFirst!
-
-alignFirst: align <Boolean>
-
-	self changing.
-	alignFirst := align.!
-
-at: childId <Int> ^<VisualGlyph>
-
-	^self at: childId ifAbsent: [ self error: 'invalid child id' ]!
-
-at: childId <Int> ifAbsent: blk <[^X def]> ^<VisualGlyph | X>
-
-	self subclassResponsibility!
-
-glyphAt: childId <Int> ^<Glyph>
-
-	^self glyphs at: childId!
-
-glyphAt: childId <Int> ifAbsent: blk <[^X def]>  ^<Glyph | X>
-
-	^self glyphs at: childId ifAbsent: blk!
-
-glyphsFrom: start <Int> to: stop <Int> ^<VarSeqCltn[Glyph]>
-	"return a collection of the specified range of elements."
-
-	^self glyphs copyFrom: start to: stop!
-
-gridFor: p <Point> ^<Rect>
-
-	| pmaj <Int> default <Rect> r <Rect> l <Visual> |
-
-	default := super gridFor: p.
-	pmaj := self majorOf: p.
-	
-	l := self at: (self indexBounding: pmaj ifFail: [ ^default ]).
-	r := l allocationInParent enclosingRect.
-	^self rectWithLowMajor: (self majorLowOf: r)
-			lowMinor: (self minorLowOf: default)
-			highMajor: (self majorHighOf: r)
-			highMinor: (self minorHighOf: default).
-!
-
-indexBounding: majorPos <Int> ifFail: fail <[^X def]> ^<Int | X>
-	"Return the index of the element whose major dimensions majorPos intersects,
-		or the fail block value if none"
-
-	| p <Point> s |
-	p := self pointWithMinor: 0 major: majorPos.
-	self indicesBounding: (p corner: (p x + 1) @ (p y + 1))
-		do: [ :start <Int> :end <Int> |
-					^start	].
-	^fail value!
-
-indicesBounding: r <Region> do: blk <[Int,Int]>
-	"Evaluate blk with the start and stop indices that bound the major component of r."
-
-	| rStartMajor <Int> rEndMajor <Int> rct <Rect> i <Int> sz <Int> start <Int> end <Int>
-		alloc <Rect>
-		ahigh <Int> alow <Int>
-		|
-	rct := r enclosingRect.
-	rStartMajor := self majorLowOf: rct.
-	rEndMajor := self majorHighOf: rct.
-	sz := self size.
-	sz = 0
-		ifTrue: [ ^self ].
-	i := 1.
-
-	"Find starting index"
-	[	i > sz
-			ifTrue: [	start := i - 1.
-							alloc := (self at: start) allocationInParent enclosingRect.
-							alow := self majorLowOf: alloc.
-							ahigh := self majorHighOf: alloc.
-							(rStartMajor < ahigh and: [ alow < rEndMajor ])
-								ifTrue: [ blk value: start value: start ].
-							^self		].
-		rStartMajor > (self positions at: i)
-		] whileTrue:
-			[ i := i + 1 ].
-	start :=  i - 1 max: 1.
-	alloc := (self at: start) allocationInParent enclosingRect.
-	alow := self majorLowOf: alloc.
-	ahigh := self majorHighOf: alloc.
-	(rStartMajor < ahigh and: [ alow < rEndMajor ])
-		ifFalse: [	i > sz
-							ifTrue: [ ^self ].
-						start := i ]. 
-
-	"Find the ending index"
-	[	i > sz
-			ifTrue: [	"We probably wouldn't be asked this question if some part of us
-								didn't intersect the region, so conservatively assume the last
-								element hits it"
-							end := i - 1.
-							alloc := (self at: end) allocationInParent enclosingRect.
-							alow := self majorLowOf: alloc.
-							ahigh := self majorHighOf: alloc.
-							(rStartMajor < ahigh and: [ alow < rEndMajor ])
-								ifTrue: [ blk value: start value: end ]
-								ifFalse: [ blk value: start value: (end - 1 max: start) ].
-							^self		].
-		rEndMajor > (self positions at: i)
-		] whileTrue:
-			[ i := i + 1 ].
-	end := i min: sz.
-	alloc := (self at: end) allocationInParent enclosingRect.
-	alow := self majorLowOf: alloc.
-	ahigh := self majorHighOf: alloc.
-	(rStartMajor < ahigh and: [ alow < rEndMajor ])
-		ifFalse: [ end := end - 1 max: start ]. 
-
-	blk value: start value: end!
-
-insert: els <SeqCltn[Glyph]> before: index <Int>   ^<OrdCltn[Glyph]>
-
-	^self replaceFrom: index to: index - 1 with: els!
-
-newgridFor: p <Point> ^<Rect>
-
-	| pmaj <Int> default <Rect> r <Rect> l <Visual> |
-
-	default := super gridFor: p.
-	pmaj := self majorOf: p.
-	
-	l := self at: (self indexBounding: pmaj ifFail: [ ^default ]).
-	r := l allocationInParent enclosingRect.
-	^self rectWithLowMajor: (self majorLowOf: r)
-			lowMinor: (self minorLowOf: default)
-			highMajor: (self majorHighOf: r)
-			highMinor: (self minorHighOf: default).
-!
-
-oldgridFor: p <Point> ^<Rect>
-"%remove"
-	| pmaj <Int> default <Rect> |
-
-	default := super gridFor: p.
-	pmaj := self majorOf: p.
-	self doFromFront:
-		[ :l <SUB> |
-			| r <Rect> |
-			r := l allocationInParent enclosingRect.
-			((self majorHighOf: r) > pmaj and: [(self majorLowOf: r) <= pmaj ])
-				ifTrue: [ ^self rectWithLowMajor: (self majorLowOf: r)
-									lowMinor: (self minorLowOf: default)
-									highMajor: (self majorHighOf: r)
-									highMinor: (self minorHighOf: default) ] ].
-	^default!
-
-oldindicesBounding: r <Region> do: blk <[Int,Int]>
-	"Evaluate blk with the start and stop indices that bound the major component of r."
-"%remove"
-	| rStartMajor <Int> rEndMajor <Int> rct <Rect> i <Int> sz <Int> start <Int> end <Int> |
-	rct := r enclosingRect.
-	rStartMajor := self majorLowOf: rct.
-	rEndMajor := self majorHighOf: rct.
-	sz := self size.
-	sz = 0
-		ifTrue: [ ^self ].
-	i := 1.
-
-	"Find starting index"
-	[	i > sz
-			ifTrue: [	start := i - 1.
-							((self at: start) inParentMightIntersect: rct)
-								ifTrue: [ blk value: start value: start ]. 
-							^self		].
-		rStartMajor > (self positions at: i)
-		] whileTrue:
-			[ i := i + 1 ].
-	start :=  i - 1 max: 1.
-	((self at: start) inParentMightIntersect: rct)
-		ifFalse: [	i > sz
-							ifTrue: [ ^self ].
-						start := i ]. 
-
-	"Find the ending index"
-	[	i > sz
-			ifTrue: [	"We probably wouldn't be asked this question if some part of us
-								didn't intersect the region, so conservatively assume the last
-								element hits it"
-							end := i - 1.
-							((self at: end) inParentMightIntersect: rct)
-								ifTrue: [ blk value: start value: end ]
-								ifFalse: [ blk value: start value: (end - 1 max: start) ].
-							^self		].
-		rEndMajor > (self positions at: i)
-		] whileTrue:
-			[ i := i + 1 ].
-	end := i min: sz.
-	((self at: end) inParentMightIntersect: rct)
-		ifFalse: [ end := end - 1 max: start ]. 
-
-	blk value: start value: end!
-
-remove: numEls <Int> at: index <Int>  ^<OrdCltn[Glyph]>
-	"Remove the specified number of elements starting with index, and return them"
-
-	^self replaceFrom: index to: index + numEls - 1 with: #()!
-
-removeAll
-
-	self remove: self size at: 1!
-
-replaceFrom: start <Int> to: stop <Int> with: els <SeqCltn[Glyph]> ^<OrdCltn[Glyph]>
-	"replace the specified range of elements with the els.  The old elements
-	  are returned."
-
-	| old <OrdCltn[Glyph]> |
-	old := OrderedCollection[Glyph] new: stop - start + 1.
-	"if we added elements, our prefs have almost certainly changed, so bounce to higher level"
-	self changing.
-	start to: stop do:
-		[ :index <Int> |
-			old add: (self at: index) noParent glyph. ].
-	self glyphs: (self glyphs copyReplaceFrom: start to: stop with: els).
-	self positions: (self positions copyReplaceFrom: start to: stop with: (Array[Int] new: els size)).
-	(els isEmpty and: [ start <= self size ])
-		ifTrue: [	"This is a hack to leave behind some information for the incremental
-								layout algorithm about where to start laying out, in the case when
-								all we are doing is removing elements"
-						self positions at: start put: nil.	].
-	els keysAndValuesDo:
-		[ :index <Int> :el <Glyph> |
-			el parent: self id: index + start - 1	].
-	start + els size to: self glyphs size do:
-		[ :index <Int> |
-			(self glyphs at: index) id: index ].
-
-	^old!
-
-size ^<Int>
-
-	^self glyphs size!
-
-slack ^<Int>
-
-	^self slackBlock value!
-
-slackBlock ^<[^Int]>
-
-	^slackBlock!
-
-slackBlock: b <[^Int]>
-
-	slackBlock := b! !
-
-! (Delta mirrorFor: #GlyphRowOrColumn) methodsFor: 'control' !
-
-
-changing
-
-	super changing.
-	layoutAlloc := nil.!
-
-relayoutAndInvalidate
-
-	"We override this to avoid complete invalidation, since the incremental
-		algorithm will do the entire job and invalidate what is needed"
-
-	self layout: true.
-	self layoutComplete.
-	self layoutStatus: Visual valid.! !
 

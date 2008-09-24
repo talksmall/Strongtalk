@@ -1,810 +1,193 @@
 
-"September 6, 2008 -> 16:10:32"!
+"September 23, 2008 -> 19:6:47"!
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
-start
-    | workQ mark1 mark2 mark3 mark4 |
-    RBObject initialize: self.
-    self initTrace; initScheduler.
-    mark1 := Time millisecondClockValue.
-    Transcript show: 'Bench mark starting'; cr.
-    self
-        createIdler: Idler
-        priority: 0
-        work: NoWork
-        state: TaskState running.
-    workQ := self
-                createPacket: NoWork
-                identity: Worker
-                kind: WorkPacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: Worker
-                kind: WorkPacketKind.
-    self
-        createWorker: Worker
-        priority: 1000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerA
-        priority: 2000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerB
-        priority: 3000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    self
-        createDevice: DeviceA
-        priority: 4000
-        work: NoWork
-        state: TaskState waiting.
-    self
-        createDevice: DeviceB
-        priority: 5000
-        work: NoWork
-        state: TaskState waiting.
-    Transcript show: 'Starting'; cr.
-    mark2 := Time millisecondClockValue.
-    self schedule.
-    mark3 := Time millisecondClockValue.
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+new ^<Instance>
+	"Create and return an initialized instance of this class."
 
-    Transcript show: 'Finished'; cr.
-    Transcript show: 'QueuePacket count = ' , queuePacketCount printString , ' HoldCount = ' , holdCount printString; cr; show: 'These results are' , (queuePacketCount = 23246 & (holdCount = 9297)
-                ifTrue: ['correct']
-                ifFalse: ['wrong']) printString.
-    Transcript cr; show: 'End of run'; cr.
-    mark4 := Time millisecondClockValue.
+	"%remove when inlining working:"
+	|failureBlock|
+	failureBlock := [ :err <Symbol> |
+		VM scavengeGarbage.
+		{{self primitiveNewIfFail: [:err <Symbol> |
+			Transcript show: err; cr.
+			VM isGCPending
+				ifTrue: [VM waitForGC.
+							{{self primitiveNewIfFail: [:err <Symbol> |
+								VM expand: (VMMirror on: self) instanceSize.
+								VM deferredGC.
+								{{self primitiveNewIfFail: [:err <Symbol> |
+																		self error: err]}}]}}]
+				ifFalse: [VM expand: (VMMirror on: self) instanceSize.
+							VM deferredGC.
+							{{self primitiveNewIfFail: [:err <Symbol> |
+																	self error: err]}}].
+			]}}
+		].
+	^{{self primitiveNewIfFail: [:e| failureBlock value: e]}}
+"
+	^guaranteed <Instance> (super new)
+"! !
 
-	TempTranscript
-					showBenchmarkLine: 	'Scheduler time' 
-					delta:							mark3 - mark2 
-					digitalk:						self digitalkSchedulerTime 
-					parcplace: 					self parcplaceSchedulerTime.
+"September 24, 2008 -> 0:1:20"!
 
-	TempTranscript
-					showBenchmarkLine:	'Total time' 
-					delta: 							mark4 - mark1
-					digitalk:						self digitalkTotalTime 
-					parcplace: 					self parcplaceTotalTime.
-! !
+Delta define: #SortedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
 
-"September 6, 2008 -> 16:10:55"!
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
-start
-    | workQ mark1 mark2 mark3 mark4 |
-    RBObject initialize: self.
-    self initTrace; initScheduler.
-    mark1 := Time millisecondClockValue.
-    Transcript show: 'Bench mark starting'; cr.
-    self
-        createIdler: Idler
-        priority: 0
-        work: NoWork
-        state: TaskState running.
-    workQ := self
-                createPacket: NoWork
-                identity: Worker
-                kind: WorkPacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: Worker
-                kind: WorkPacketKind.
-    self
-        createWorker: Worker
-        priority: 1000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerA
-        priority: 2000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerB
-        priority: 3000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    self
-        createDevice: DeviceA
-        priority: 4000
-        work: NoWork
-        state: TaskState waiting.
-    self
-        createDevice: DeviceB
-        priority: 5000
-        work: NoWork
-        state: TaskState waiting.
-    Transcript show: 'Starting'; cr.
-    mark2 := Time millisecondClockValue.
-    self schedule.
-    mark3 := Time millisecondClockValue.
+"September 24, 2008 -> 0:2:41"!
 
-    Transcript show: 'Finished'; cr.
-    Transcript show: 'QueuePacket count = ' , queuePacketCount printString , ' HoldCount = ' , holdCount printString; cr; show: 'These results are' , (queuePacketCount = 23246 & (holdCount = 9297)
-                ifTrue: ['correct']
-                ifFalse: ['wrong']) printString.
-    Transcript cr; show: 'End of run'; cr.
-    mark4 := Time millisecondClockValue.
+(Delta mirrorFor: #SortedCollectionTest) removeDefinitionIfFail: [] !
 
-	TempTranscript new
-					showBenchmarkLine: 	'Scheduler time' 
-					delta:							mark3 - mark2 
-					digitalk:						self digitalkSchedulerTime 
-					parcplace: 					self parcplaceSchedulerTime.
 
-	TempTranscript new
-					showBenchmarkLine:	'Total time' 
-					delta: 							mark4 - mark1
-					digitalk:						self digitalkTotalTime 
-					parcplace: 					self parcplaceTotalTime.
-! !
+"September 24, 2008 -> 0:3:0"!
 
-"September 6, 2008 -> 16:36:12"!
+Delta define: #SequenceableCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
-start
-    | workQ mark1 mark2 mark3 mark4 |
-    RBObject initialize: self.
-    self initTrace; initScheduler.
-    mark1 := Time millisecondClockValue.
-    Transcript show: 'Bench mark starting'; cr.
-    self
-        createIdler: Idler
-        priority: 0
-        work: NoWork
-        state: TaskState running.
-    workQ := self
-                createPacket: NoWork
-                identity: Worker
-                kind: WorkPacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: Worker
-                kind: WorkPacketKind.
-    self
-        createWorker: Worker
-        priority: 1000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerA
-        priority: 2000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerB
-        priority: 3000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    self
-        createDevice: DeviceA
-        priority: 4000
-        work: NoWork
-        state: TaskState waiting.
-    self
-        createDevice: DeviceB
-        priority: 5000
-        work: NoWork
-        state: TaskState waiting.
-    Transcript show: 'Starting'; cr.
-    mark2 := Time millisecondClockValue.
-    self schedule.
-    mark3 := Time millisecondClockValue.
 
-    Transcript show: 'Finished'; cr.
-    Transcript show: 'QueuePacket count = ' , queuePacketCount printString , ' HoldCount = ' , holdCount printString; cr; show: 'These results are' , (queuePacketCount = 23246 & (holdCount = 9297)
-                ifTrue: ['correct']
-                ifFalse: ['wrong']) printString.
-    Transcript cr; show: 'End of run'; cr.
-    mark4 := Time millisecondClockValue.
+"September 24, 2008 -> 0:5:40"!
 
-	TempTranscript
-					showBenchmarkLine: 	'Scheduler time' 
-					delta:							mark3 - mark2 
-					digitalk:						self digitalkSchedulerTime 
-					parcplace: 					self parcplaceSchedulerTime.
+! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
+testIsSortedBy
 
-	TempTranscript
-					showBenchmarkLine:	'Total time' 
-					delta: 							mark4 - mark1
-					digitalk:						self digitalkTotalTime 
-					parcplace: 					self parcplaceTotalTime.
-! !
 
-"September 6, 2008 -> 16:36:12"!
+	self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]].
+	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
-start
-    | workQ mark1 mark2 mark3 mark4 |
-    RBObject initialize: self.
-    self initTrace; initScheduler.
-    mark1 := Time millisecondClockValue.
-    Transcript show: 'Bench mark starting'; cr.
-    self
-        createIdler: Idler
-        priority: 0
-        work: NoWork
-        state: TaskState running.
-    workQ := self
-                createPacket: NoWork
-                identity: Worker
-                kind: WorkPacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: Worker
-                kind: WorkPacketKind.
-    self
-        createWorker: Worker
-        priority: 1000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerA
-        priority: 2000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerB
-        priority: 3000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    self
-        createDevice: DeviceA
-        priority: 4000
-        work: NoWork
-        state: TaskState waiting.
-    self
-        createDevice: DeviceB
-        priority: 5000
-        work: NoWork
-        state: TaskState waiting.
-    Transcript show: 'Starting'; cr.
-    mark2 := Time millisecondClockValue.
-    self schedule.
-    mark3 := Time millisecondClockValue.
+"September 24, 2008 -> 0:8:14"!
 
-    Transcript show: 'Finished'; cr.
-    Transcript show: 'QueuePacket count = ' , queuePacketCount printString , ' HoldCount = ' , holdCount printString; cr; show: 'These results are' , (queuePacketCount = 23246 & (holdCount = 9297)
-                ifTrue: ['correct']
-                ifFalse: ['wrong']) printString.
-    Transcript cr; show: 'End of run'; cr.
-    mark4 := Time millisecondClockValue.
+! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
+testIsSortedBy
 
-	TempTranscript new
-					showBenchmarkLine: 	'Scheduler time' 
-					delta:							mark3 - mark2 
-					digitalk:						self digitalkSchedulerTime 
-					parcplace: 					self parcplaceSchedulerTime.
 
-	TempTranscript new
-					showBenchmarkLine:	'Total time' 
-					delta: 							mark4 - mark1
-					digitalk:						self digitalkTotalTime 
-					parcplace: 					self parcplaceTotalTime.
-! !
+	"self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]]."
+	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
 
-"September 6, 2008 -> 16:39:23"!
+"September 24, 2008 -> 0:8:24"!
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
-start
-    | workQ mark1 mark2 mark3 mark4 |
-    RBObject initialize: self.
-    self initTrace; initScheduler.
-    mark1 := Time millisecondClockValue.
-    Transcript show: 'Bench mark starting'; cr.
-    self
-        createIdler: Idler
-        priority: 0
-        work: NoWork
-        state: TaskState running.
-    workQ := self
-                createPacket: NoWork
-                identity: Worker
-                kind: WorkPacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: Worker
-                kind: WorkPacketKind.
-    self
-        createWorker: Worker
-        priority: 1000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerA
-        priority: 2000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerB
-        priority: 3000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    self
-        createDevice: DeviceA
-        priority: 4000
-        work: NoWork
-        state: TaskState waiting.
-    self
-        createDevice: DeviceB
-        priority: 5000
-        work: NoWork
-        state: TaskState waiting.
-    Transcript show: 'Starting'; cr.
-    mark2 := Time millisecondClockValue.
-    self schedule.
-    mark3 := Time millisecondClockValue.
+! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
+testIsSortedBy
 
-    Transcript show: 'Finished'; cr.
-    Transcript show: 'QueuePacket count = ' , queuePacketCount printString , ' HoldCount = ' , holdCount printString; cr; show: 'These results are' , (queuePacketCount = 23246 & (holdCount = 9297)
-                ifTrue: ['correct']
-                ifFalse: ['wrong']) printString.
-    Transcript cr; show: 'End of run'; cr.
-    mark4 := Time millisecondClockValue.
 
-	TempTranscript
-					showBenchmarkLine: 	'Scheduler time' 
-					delta:							mark3 - mark2 
-					digitalk:						self digitalkSchedulerTime 
-					parcplace: 					self parcplaceSchedulerTime.
+	self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]].
+	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
 
-	TempTranscript
-					showBenchmarkLine:	'Total time' 
-					delta: 							mark4 - mark1
-					digitalk:						self digitalkTotalTime 
-					parcplace: 					self parcplaceTotalTime.
-! !
+"September 24, 2008 -> 0:10:5"!
 
-"September 6, 2008 -> 16:39:23"!
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'testing' !
+isSortedBy: compare <[E,E,^Boolean]> ^<Boolean>
+	"Returns true if the receiver is in sorted order, using the specified comparison"
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
-start
-    | workQ mark1 mark2 mark3 mark4 |
-    RBObject initialize: self.
-    self initTrace; initScheduler.
-    mark1 := Time millisecondClockValue.
-    Transcript show: 'Bench mark starting'; cr.
-    self
-        createIdler: Idler
-        priority: 0
-        work: NoWork
-        state: TaskState running.
-    workQ := self
-                createPacket: NoWork
-                identity: Worker
-                kind: WorkPacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: Worker
-                kind: WorkPacketKind.
-    self
-        createWorker: Worker
-        priority: 1000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerA
-        priority: 2000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerB
-        priority: 3000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    self
-        createDevice: DeviceA
-        priority: 4000
-        work: NoWork
-        state: TaskState waiting.
-    self
-        createDevice: DeviceB
-        priority: 5000
-        work: NoWork
-        state: TaskState waiting.
-    Transcript show: 'Starting'; cr.
-    mark2 := Time millisecondClockValue.
-    self schedule.
-    mark3 := Time millisecondClockValue.
+	| last <E> |
+	self size < 2
+		ifTrue: [ ^true ].
+	last := self at: 1.
+	2 to: self size do:
+		[ :i <Int> | |current|
+			(compare value: last value: (current := self at: i))
+				ifFalse: [ ^false ].
+			last := current].
+	^true! !
 
-    Transcript show: 'Finished'; cr.
-    Transcript show: 'QueuePacket count = ' , queuePacketCount printString , ' HoldCount = ' , holdCount printString; cr; show: 'These results are' , (queuePacketCount = 23246 & (holdCount = 9297)
-                ifTrue: ['correct']
-                ifFalse: ['wrong']) printString.
-    Transcript cr; show: 'End of run'; cr.
-    mark4 := Time millisecondClockValue.
+"September 24, 2008 -> 0:10:48"!
 
-	TempTranscript new
-					showBenchmarkLine: 	'Scheduler time' 
-					delta:							mark3 - mark2 
-					digitalk:						self digitalkSchedulerTime 
-					parcplace: 					self parcplaceSchedulerTime.
+Delta define: #SortedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
 
-	TempTranscript new
-					showBenchmarkLine:	'Total time' 
-					delta: 							mark4 - mark1
-					digitalk:						self digitalkTotalTime 
-					parcplace: 					self parcplaceTotalTime.
-! !
 
-"September 6, 2008 -> 16:39:23"!
+"September 24, 2008 -> 0:11:57"!
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
-start
-    | workQ mark1 mark2 mark3 mark4 |
-    RBObject initialize: self.
-    self initTrace; initScheduler.
-    mark1 := Time millisecondClockValue.
-    Transcript show: 'Bench mark starting'; cr.
-    self
-        createIdler: Idler
-        priority: 0
-        work: NoWork
-        state: TaskState running.
-    workQ := self
-                createPacket: NoWork
-                identity: Worker
-                kind: WorkPacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: Worker
-                kind: WorkPacketKind.
-    self
-        createWorker: Worker
-        priority: 1000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerA
-        priority: 2000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerB
-        priority: 3000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    self
-        createDevice: DeviceA
-        priority: 4000
-        work: NoWork
-        state: TaskState waiting.
-    self
-        createDevice: DeviceB
-        priority: 5000
-        work: NoWork
-        state: TaskState waiting.
-    Transcript show: 'Starting'; cr.
-    mark2 := Time millisecondClockValue.
-    self schedule.
-    mark3 := Time millisecondClockValue.
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]].! !
 
-    Transcript show: 'Finished'; cr.
-    Transcript show: 'QueuePacket count = ' , queuePacketCount printString , ' HoldCount = ' , holdCount printString; cr; show: 'These results are' , (queuePacketCount = 23246 & (holdCount = 9297)
-                ifTrue: ['correct']
-                ifFalse: ['wrong']) printString.
-    Transcript cr; show: 'End of run'; cr.
-    mark4 := Time millisecondClockValue.
+"September 24, 2008 -> 0:13:36"!
 
-	TempTranscript
-					showBenchmarkLine: 	'Scheduler time' 
-					delta:							mark3 - mark2 
-					digitalk:						self digitalkSchedulerTime 
-					parcplace: 					self parcplaceSchedulerTime.
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
+				description: 'collection should be sorted'].! !
 
-	TempTranscript
-					showBenchmarkLine:	'Total time' 
-					delta: 							mark4 - mark1
-					digitalk:						self digitalkTotalTime 
-					parcplace: 					self parcplaceTotalTime.
-! !
+"September 24, 2008 -> 0:17:56"!
 
-"September 6, 2008 -> 16:39:23"!
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self shouldnt: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
+				description: 'collection should be sorted'].! !
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
-start
-    | workQ mark1 mark2 mark3 mark4 |
-    RBObject initialize: self.
-    self initTrace; initScheduler.
-    mark1 := Time millisecondClockValue.
-    Transcript show: 'Bench mark starting'; cr.
-    self
-        createIdler: Idler
-        priority: 0
-        work: NoWork
-        state: TaskState running.
-    workQ := self
-                createPacket: NoWork
-                identity: Worker
-                kind: WorkPacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: Worker
-                kind: WorkPacketKind.
-    self
-        createWorker: Worker
-        priority: 1000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceA
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerA
-        priority: 2000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    workQ := self
-                createPacket: NoWork
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    workQ := self
-                createPacket: workQ
-                identity: DeviceB
-                kind: DevicePacketKind.
-    self
-        createHandler: HandlerB
-        priority: 3000
-        work: workQ
-        state: TaskState waitingWithPacket.
-    self
-        createDevice: DeviceA
-        priority: 4000
-        work: NoWork
-        state: TaskState waiting.
-    self
-        createDevice: DeviceB
-        priority: 5000
-        work: NoWork
-        state: TaskState waiting.
-    Transcript show: 'Starting'; cr.
-    mark2 := Time millisecondClockValue.
-    self schedule.
-    mark3 := Time millisecondClockValue.
+"September 24, 2008 -> 0:18:10"!
 
-    Transcript show: 'Finished'; cr.
-    Transcript show: 'QueuePacket count = ' , queuePacketCount printString , ' HoldCount = ' , holdCount printString; cr; show: 'These results are' , (queuePacketCount = 23246 & (holdCount = 9297)
-                ifTrue: ['correct']
-                ifFalse: ['wrong']) printString.
-    Transcript cr; show: 'End of run'; cr.
-    mark4 := Time millisecondClockValue.
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
+				description: 'collection should be sorted'].! !
 
-	TempTranscript new
-					showBenchmarkLine: 	'Scheduler time' 
-					delta:							mark3 - mark2 
-					digitalk:						self digitalkSchedulerTime 
-					parcplace: 					self parcplaceSchedulerTime.
+"September 24, 2008 -> 0:19:13"!
 
-	TempTranscript new
-					showBenchmarkLine:	'Total time' 
-					delta: 							mark4 - mark1
-					digitalk:						self digitalkTotalTime 
-					parcplace: 					self parcplaceTotalTime.
-! !
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortSimpleCollection
 
-"September 7, 2008 -> 20:58:22"!
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)]! !
 
-! (Delta mirrorFor: #RichardsBenchmarks) classSide methodsFor: 'instance creation' !
-loop
+"September 24, 2008 -> 0:22:1"!
 
-	|start elapsed count|
-start := Time millisecondClockValue.
-count := 0.
-[(elapsed := Time millisecondClockValue - start) < 1000]
-	whileTrue: [
-		self new run.
-		count := count + 1].
-elapsed * 1000.0/ count printOn: Transcript cr; yourself! !
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortSimpleCollection
 
-"September 8, 2008 -> 2:20:4"!
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].! !
 
-! (Delta mirrorFor: #RichardsBenchmarks) classSide methodsFor: 'instance creation' !
-loop
+"September 24, 2008 -> 0:23:11"!
 
-	|start elapsed count|
-start := Time millisecondClockValue.
-count := 0.
-[(elapsed := Time millisecondClockValue - start) < 1000]
-	whileTrue: [
-		self new run.
-		count := count + 1].
-elapsed * 1000.0/ count printOn: Transcript cr; yourself! !
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortSimpleCollection
 
-"September 8, 2008 -> 2:37:51"!
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 2 1)asSortedCollection asArray = #(1 1 2)].! !
 
-! (Delta mirrorFor: #RichardsBenchmarks) classSide methodsFor: 'instance creation' !
-loop
+"September 24, 2008 -> 0:23:37"!
 
-	|start elapsed count|
-start := Time millisecondClockValue.
-count := 0.
-[(elapsed := Time millisecondClockValue - start) < 1000]
-	whileTrue: [
-		self new run.
-		count := count + 1].
-elapsed * 1000.0/ count printOn: Transcript cr; yourself! !
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortSimpleCollection
+
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 2 1)asSortedCollection asArray = #(1 1 2)].
+	self should: [#(1 2 1 2)asSortedCollection asArray = #(1 1 2 2)].! !

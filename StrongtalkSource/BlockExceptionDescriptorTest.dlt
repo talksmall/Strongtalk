@@ -1,0 +1,42 @@
+Delta define: #BlockExceptionDescriptorTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: 'exception')) !
+
+(Delta mirrorFor: #BlockExceptionDescriptorTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BlockExceptionDescriptorTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #BlockExceptionDescriptorTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #BlockExceptionDescriptorTest) methodsFor: 'Running' !
+
+
+setUp
+
+	super setUp.
+	exception := BlockExceptionDescriptor new! !
+
+! (Delta mirrorFor: #BlockExceptionDescriptorTest) methodsFor: 'testing' !
+
+
+testDefaultActionShouldInvokeDefaultActionBlock
+
+	|wasInvoked|
+	exception := BlockExceptionDescriptor new.
+	wasInvoked := false.
+	exception defaultActionBlock: [wasInvoked := true].
+	exception defaultAction.
+	self assert: wasInvoked!
+
+testDefaultDefault
+
+	self assert: exception defaultAction isNil!
+
+testHandlerShouldDelegateToHandlerBlock
+
+	|actualHandler|
+	exception handlerBlock: [:handler| actualHandler := handler].
+	exception handler: #handler.
+	self assert: (actualHandler == #handler)! !
+

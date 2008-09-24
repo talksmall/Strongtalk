@@ -26,6 +26,17 @@ exitFrom: blk <[[RET def,^BottomType], ^FALLOFF def]>  ^<RET | FALLOFF>
 fileOutSignature ^<Integer>
     ^75! !
 
+! (Delta mirrorFor: #Block) methodsFor: 'debugging' !
+
+
+blockIsOptimized ^ <Boolean>
+
+	^{{self primitiveBlockIsOptimized}}!
+
+blockMethod ^ <Method>
+
+	^{{self primitiveBlockMethod}}! !
+
 ! (Delta mirrorFor: #Block) methodsFor: 'evaluating' !
 
 
@@ -38,15 +49,4 @@ value ^<Object>
 
 fileOutOn: d <Dumper>
 	self error: 'should not file out blocks'! !
-
-! (Delta mirrorFor: #Block) methodsFor: 'debugging' !
-
-
-blockIsOptimized ^ <Boolean>
-
-	^{{self primitiveBlockIsOptimized}}!
-
-blockMethod ^ <Method>
-
-	^{{self primitiveBlockMethod}}! !
 

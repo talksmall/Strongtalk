@@ -1,0 +1,31 @@
+Delta define: #TestException as: (
+(Class subclassOf: 'Exception' instanceVariables: 'defaultActionBlock resumable')) !
+
+(Delta mirrorFor: #TestException) revision: '$Revision$'!
+
+(Delta mirrorFor: #TestException) group: 'exceptions'!
+
+(Delta mirrorFor: #TestException)
+comment: 
+'Concrete exception class that can be used for testing'!
+
+! (Delta mirrorFor: #TestException) classSide methodsFor: 'test support' !
+
+
+defaultActionBlock: block
+
+	^self new
+			defaultActionBlock: block;
+			yourself! !
+
+! (Delta mirrorFor: #TestException) methodsFor: 'test support' !
+
+
+defaultAction	^defaultActionBlock value!
+
+defaultActionBlock: block	defaultActionBlock := block!
+
+isResumable	^resumable isNil		ifTrue: [false]		ifFalse: [resumable]!
+
+resumable: boolean	^resumable := boolean! !
+

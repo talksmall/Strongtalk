@@ -19,13 +19,6 @@ Tags: %BlueBook
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.9 $
 '!
 
-! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'instance creation' !
-
-
-primitiveNew ^<Instance>
-
-	self shouldNotImplement! !
-
 ! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'constants' !
 
 
@@ -36,6 +29,27 @@ maxVal ^<Integer>
 minVal ^<Integer>
 
 	^MinVal! !
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^66! !
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	MaxVal := self computedMaxVal.
+	MinVal := MaxVal negated - 1.! !
+
+! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'instance creation' !
+
+
+primitiveNew ^<Instance>
+
+	self shouldNotImplement! !
 
 ! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'private' !
 
@@ -48,20 +62,6 @@ computedMaxVal ^<SmallInteger>
 		newV := v times: 2 ifFail: [ ^v ].
 		v := newV +!! 1.	"Set the low bit"
 		] repeat! !
-
-! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'initialization' !
-
-
-initialize
-
-	MaxVal := self computedMaxVal.
-	MinVal := MaxVal negated - 1.! !
-
-! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'file out' !
-
-
-fileOutSignature ^<Integer>
-    ^66! !
 
 ! (Delta mirrorFor: #SmallInteger) classSide methodsFor: 'testing' !
 
@@ -79,6 +79,54 @@ test
 			norm := strm contentsWritten.
 			[ ps = strm contentsWritten ] verify.
 		].! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'accessing' !
+
+
+identityHash ^<Int>
+
+	^self! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'bit operations' !
+
+
+bitAnd: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^guaranteed <Self|X>
+		{{self primitiveBitAnd: o ifFail: [ :err <Symbol> |  super bitAnd: o ]}}!
+
+bitOr: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^guaranteed <Self|X>
+		{{self primitiveBitOr: o ifFail: [ :err <Symbol> |  super bitOr: o ]}}!
+
+bitShift: numBits <Int> ^<Int>
+
+	^{{self primitiveBitShift: numBits
+		ifFail: [ :err <Symbol> | super bitShift: numBits ]}}!
+
+bitXor: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^guaranteed <Self|X>
+		{{self primitiveBitXor: o ifFail: [ :err <Symbol> |  super bitOr: o ]}}!
+
+rawBitShift: numBits <Int> ^<Int>
+
+	^{{self primitiveRawBitShift: numBits
+		ifFail: [ :err <Symbol> | super rawBitShift: numBits ]}}! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'bit operations-un-mixed-mode' !
+
+
+bareBitShift: numBits <SmallInt> ^<SmallInt>
+	"Like bitShift:, but drops bits off the high end if needed
+	 rather than overflow into a large integer."
+
+	^{{self primitiveBitShift: numBits
+		ifFail: [ :err <Symbol> | self error: 'SmallInteger bareBitShift: ', err  ]}}! !
 
 ! (Delta mirrorFor: #SmallInteger) methodsFor: 'comparison' !
 
@@ -125,6 +173,37 @@ test
 	^{{self primitiveSmallIntegerNotEqual: a 
 		ifFail: [ :err <Symbol> | super ~= a ]}}! !
 
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'converting' !
+
+
+asFloat ^<Float>
+
+	^{{self primitiveAsFloat}}!
+
+asSmallInteger ^<SmallInt>
+
+	^self! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'debugging' !
+
+
+asObject ^<Object>
+	"Returns the object in object id table at index 'self'"
+	
+	^{{self primitiveAsObjectIfFail: [ :err <Symbol> | self error: err]}}! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'file out' !
+
+
+fileOutOn:  d <Dumper>
+    self >= 0 ifTrue: [
+		d putByte: 48.
+		d putInteger: self.
+    ] ifFalse: [
+		d putByte: 45.
+		d putInteger: self abs.
+    ]! !
+
 ! (Delta mirrorFor: #SmallInteger) methodsFor: 'operations' !
 
 
@@ -169,48 +248,6 @@ quo: arg <Number> ^<Int>
 	^{{self primitiveQuo: arg
 		ifFail: [ :err <Symbol> |
 				self nonPrimitiveQuo: arg error: err	]}}! !
-
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'converting' !
-
-
-asFloat ^<Float>
-
-	^{{self primitiveAsFloat}}!
-
-asSmallInteger ^<SmallInt>
-
-	^self! !
-
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'restricted-double dispatching' !
-
-
-addFromSmallInteger: o <SmallInteger> ^<Int>
-	self error: 'can''t happen because of double dispatching, but need for typing'!
-
-equalFromSmallInteger: o <SmallInteger> ^<Boolean>
-	self error: 'can''t happen because of double dispatching'!
-
-lessFromSmallInteger: o <SmallInteger> ^<Boolean>
-	self error: 'can''t happen because of double dispatching'!
-
-moduloFromSmallInteger: o <SmallInteger> ^<SmallInteger>
-	self error: 'can''t happen because of double dispatching'!
-
-multiplyFromSmallInteger: o <SmallInteger> ^<Int>
-	self error: 'can''t happen because of double dispatching, but need for typing'!
-
-subtractFromSmallInteger: o <SmallInteger> ^<Int>
-	self error: 'can''t happen because of double dispatching, but need for typing'! !
-
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'bit operations-un-mixed-mode' !
-
-
-bareBitShift: numBits <SmallInt> ^<SmallInt>
-	"Like bitShift:, but drops bits off the high end if needed
-	 rather than overflow into a large integer."
-
-	^{{self primitiveBitShift: numBits
-		ifFail: [ :err <Symbol> | self error: 'SmallInteger bareBitShift: ', err  ]}}! !
 
 ! (Delta mirrorFor: #SmallInteger) methodsFor: 'operations-un-mixed-mode' !
 
@@ -259,37 +296,6 @@ times: a <SmallInt> ifFail: f <[^X def]> ^<SmallInt | X>
 								ifTrue: [ f value ]
 								ifFalse: [ self error: err ] 		]}}! !
 
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'bit operations' !
-
-
-bitAnd: o <X> ^<Self|X>
-		{where X <Integer> is arg 1}
-
-	^guaranteed <Self|X>
-		{{self primitiveBitAnd: o ifFail: [ :err <Symbol> |  super bitAnd: o ]}}!
-
-bitOr: o <X> ^<Self|X>
-		{where X <Integer> is arg 1}
-
-	^guaranteed <Self|X>
-		{{self primitiveBitOr: o ifFail: [ :err <Symbol> |  super bitOr: o ]}}!
-
-bitShift: numBits <Int> ^<Int>
-
-	^{{self primitiveBitShift: numBits
-		ifFail: [ :err <Symbol> | super bitShift: numBits ]}}!
-
-bitXor: o <X> ^<Self|X>
-		{where X <Integer> is arg 1}
-
-	^guaranteed <Self|X>
-		{{self primitiveBitXor: o ifFail: [ :err <Symbol> |  super bitOr: o ]}}!
-
-rawBitShift: numBits <Int> ^<Int>
-
-	^{{self primitiveRawBitShift: numBits
-		ifFail: [ :err <Symbol> | super rawBitShift: numBits ]}}! !
-
 ! (Delta mirrorFor: #SmallInteger) methodsFor: 'patch' !
 
 
@@ -298,6 +304,33 @@ printCharacter
 
     {{self primitivePrintCharacterIfFail: [:err <Symbol> | self error: err ]}}
 ! !
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'printing' !
+
+
+printString ^<Str>
+
+	| digits <Int> abs <Int> s <String> zeroCode <Int> i <Int> |
+	self negative
+		ifTrue: [	abs := self negated. ]
+		ifFalse: [	abs := self. ].
+	digits := self digitsForAbs: abs.
+
+	abs == self
+		ifFalse: [	i := 1.
+						digits := digits + 1.
+						s := String new: digits.
+						s at: 1 put: $-.
+						]
+		ifTrue: [	i := 0.
+						s := String new: digits. ].
+
+	zeroCode := $0 unicodeValue.
+	[	s at: digits putUnicode: zeroCode + (abs \\ 10).
+		digits := digits - 1.
+		digits > i
+		]	whileTrue: [ abs := abs // 10 ].
+	^s! !
 
 ! (Delta mirrorFor: #SmallInteger) methodsFor: 'private' !
 
@@ -389,6 +422,17 @@ nonPrimitiveSubtract: a <Number> error: err <Symbol> ^<Number>
 							ifTrue:  [ a subtractFromInteger: self ]
 							ifFalse: [ self error: 'SmallInteger subtraction: ', err]	]! !
 
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'private-proxy double dispatching' !
+
+
+bitAndFromProxy: other <ExternalProxy> ^<ExternalProxy>
+
+	^other bitAndFromProxy: self asExternalProxy!
+
+bitOrFromProxy: other <ExternalProxy> ^<ExternalProxy>
+
+	^other bitOrFromProxy: self asExternalProxy! !
+
 ! (Delta mirrorFor: #SmallInteger) methodsFor: 'proxy operations' !
 
 
@@ -404,62 +448,26 @@ hasBitsSet: mask <ExternalData> ^<Boolean>
 
 	^(self externalBitAnd: mask) @= mask! !
 
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'private-proxy double dispatching' !
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'restricted-double dispatching' !
 
 
-bitAndFromProxy: other <ExternalProxy> ^<ExternalProxy>
+addFromSmallInteger: o <SmallInteger> ^<Int>
+	self error: 'can''t happen because of double dispatching, but need for typing'!
 
-	^other bitAndFromProxy: self asExternalProxy!
+equalFromSmallInteger: o <SmallInteger> ^<Boolean>
+	self error: 'can''t happen because of double dispatching'!
 
-bitOrFromProxy: other <ExternalProxy> ^<ExternalProxy>
+lessFromSmallInteger: o <SmallInteger> ^<Boolean>
+	self error: 'can''t happen because of double dispatching'!
 
-	^other bitOrFromProxy: self asExternalProxy! !
+moduloFromSmallInteger: o <SmallInteger> ^<SmallInteger>
+	self error: 'can''t happen because of double dispatching'!
 
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'accessing' !
+multiplyFromSmallInteger: o <SmallInteger> ^<Int>
+	self error: 'can''t happen because of double dispatching, but need for typing'!
 
-
-identityHash ^<Int>
-
-	^self! !
-
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'file out' !
-
-
-fileOutOn:  d <Dumper>
-    self >= 0 ifTrue: [
-		d putByte: 48.
-		d putInteger: self.
-    ] ifFalse: [
-		d putByte: 45.
-		d putInteger: self abs.
-    ]! !
-
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'printing' !
-
-
-printString ^<Str>
-
-	| digits <Int> abs <Int> s <String> zeroCode <Int> i <Int> |
-	self negative
-		ifTrue: [	abs := self negated. ]
-		ifFalse: [	abs := self. ].
-	digits := self digitsForAbs: abs.
-
-	abs == self
-		ifFalse: [	i := 1.
-						digits := digits + 1.
-						s := String new: digits.
-						s at: 1 put: $-.
-						]
-		ifTrue: [	i := 0.
-						s := String new: digits. ].
-
-	zeroCode := $0 unicodeValue.
-	[	s at: digits putUnicode: zeroCode + (abs \\ 10).
-		digits := digits - 1.
-		digits > i
-		]	whileTrue: [ abs := abs // 10 ].
-	^s! !
+subtractFromSmallInteger: o <SmallInteger> ^<Int>
+	self error: 'can''t happen because of double dispatching, but need for typing'! !
 
 ! (Delta mirrorFor: #SmallInteger) methodsFor: 'restricted-to large integers' !
 
@@ -467,12 +475,4 @@ printString ^<Str>
 asLargeInteger ^<LargeInteger>
 
 	^LargeInteger forSmallInteger: self! !
-
-! (Delta mirrorFor: #SmallInteger) methodsFor: 'debugging' !
-
-
-asObject ^<Object>
-	"Returns the object in object id table at index 'self'"
-	
-	^{{self primitiveAsObjectIfFail: [ :err <Symbol> | self error: err]}}! !
 

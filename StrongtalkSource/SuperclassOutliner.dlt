@@ -10,6 +10,13 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #SuperclassOutliner) methodsFor: 'accessing' !
+
+
+locator ^ <SuperclassClauseLocator>
+
+^SuperclassClauseLocator ofDefinition: self mirror basicLocator! !
+
 ! (Delta mirrorFor: #SuperclassOutliner) methodsFor: 'private' !
 
 
@@ -61,11 +68,4 @@ typecheck
 self typecheckAction:[self mirror typecheckSuperclassClause]
 		title: 'Typechecking ', self mirror name, ' superclass clause'.
 ! !
-
-! (Delta mirrorFor: #SuperclassOutliner) methodsFor: 'accessing' !
-
-
-locator ^ <SuperclassClauseLocator>
-
-^SuperclassClauseLocator ofDefinition: self mirror basicLocator! !
 

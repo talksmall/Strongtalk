@@ -58,15 +58,6 @@ returnStatNode: node <DeltaReturnStat>
 			scope: node scope copy
 	)! !
 
-! (Delta mirrorFor: #ASTCompilerCopyTool) methodsFor: 'private - helpers' !
-
-
-copy: node <N> ^ <N>
-	{ where N <DeltaASTNode> is arg 1 }
-	node apply: self.
-	self assert: [ node class == self result class ].
-	^ guaranteed <N> (self result)! !
-
 ! (Delta mirrorFor: #ASTCompilerCopyTool) methodsFor: 'private - accessing' !
 
 
@@ -75,4 +66,13 @@ result ^ <DeltaASTNode>
 
 result: node <DeltaASTNode>
 	result := result! !
+
+! (Delta mirrorFor: #ASTCompilerCopyTool) methodsFor: 'private - helpers' !
+
+
+copy: node <N> ^ <N>
+	{ where N <DeltaASTNode> is arg 1 }
+	node apply: self.
+	self assert: [ node class == self result class ].
+	^ guaranteed <N> (self result)! !
 

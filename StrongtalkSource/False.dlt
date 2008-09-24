@@ -13,21 +13,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.6 $
 '!
 
-! (Delta mirrorFor: #False) methodsFor: 'operations' !
-
-
-& other <Boolean>	^<Boolean>
-
-	^false!
-
-not ^<Boolean>
-
-	^true!
-
-| other <Boolean>	^<Boolean>
-
-	^other! !
-
 ! (Delta mirrorFor: #False) methodsFor: 'control' !
 
 
@@ -68,6 +53,28 @@ asExternalData ^<Int>
 
 	^0! !
 
+! (Delta mirrorFor: #False) methodsFor: 'operations' !
+
+
+& other <Boolean>	^<Boolean>
+
+	^false!
+
+not ^<Boolean>
+
+	^true!
+
+| other <Boolean>	^<Boolean>
+
+	^other! !
+
+! (Delta mirrorFor: #False) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm nextPutAll: 'false'! !
+
 ! (Delta mirrorFor: #False) methodsFor: 'utility' !
 
 
@@ -79,11 +86,4 @@ onFalse: blk <[^Object]>  ^<Boolean>
 onTrue: blk <[^Object]>  ^<Boolean>
 
 	^self! !
-
-! (Delta mirrorFor: #False) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	strm nextPutAll: 'false'! !
 

@@ -25,6 +25,257 @@ Tags: %User %UI %HTML
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
+! (Delta mirrorFor: #HTMLView) methodsFor: 'accessing' !
+
+
+firstLinkIfAbsent: blk <AbortBlock> ^<URL>
+
+	self html linksDo:
+		[ :link <ElementA> |
+			^link url	].
+	^blk value!
+
+hasHistory ^<Boolean>
+
+	^history notNil and: [ history isEmpty not ]!
+
+hasWinBackdrop ^<Boolean>
+
+	^true!
+
+history ^<OrdCltn[URL]>
+
+	history isNil
+		ifTrue: [ history := OrderedCollection[URL] new ].
+	^history!
+
+history: h <OrdCltn[URL]>
+
+	history := h!
+
+home ^<URL>
+
+	^home!
+
+home: h <URL>
+
+	home := h!
+
+html ^<HTMLNode>
+
+	html isNil
+		ifTrue: [ html := self model loadHTML ].
+	^html!
+
+lastLinkIfAbsent: blk <AbortBlock> ^<URL>
+
+	| l <ElementA> |
+	self html linksDo:
+		[ :link <ElementA> |
+			l := link	].
+	^l isNil
+		ifFalse: [ l url ]
+		ifTrue: [ blk value ]!
+
+model: m <URL>
+
+	| abs <URL> newHtml <HTMLNode> oldModel <URL> |
+	
+	self home isNil
+		ifTrue: [ self home: m ].
+	
+	"If the url is relative, we use the current model as its base url"
+	m isRelative
+		ifTrue: [	self assert: [ self model notNil ].
+						abs := m absoluteURLInContext: self model.	]
+		ifFalse: [ abs := m ].
+	
+	oldModel := self model.
+
+	self bareModel: abs ifFail: [ ^self ].
+
+	self forwardURLs removeAll.
+
+	(oldModel notNil and: [ self model ~= oldModel
+				and: [ (self history includes: self model) not ]])
+		ifTrue: [	self history addLast: oldModel ].
+!
+
+scaleFactor ^<Float>
+
+	^scaleFactor!
+
+scaleFactor: f <Float>
+
+	scaleFactor := f.
+	self rebuildPageIfNeeded.!
+
+showToolBar ^<Boolean>
+
+	^self toolBar visible
+!
+
+showToolBar: f <Boolean>
+
+	self toolBar visible: f!
+
+showUrl ^<Boolean>
+
+	^showUrl
+!
+
+showUrl: f <Boolean>
+
+	showUrl := f.
+	self hasVisual
+		ifTrue: [ self rebuildColumn ].!
+
+winBackdrop ^<Painter>
+
+	^Painter new paint: Paint backgroundGray! !
+
+! (Delta mirrorFor: #HTMLView) methodsFor: 'control' !
+
+
+clone ^<HTMLView>
+
+	| v <HTMLView> |
+	v := HTMLView new model: self model.
+	v	history: self history;
+		home: self home.
+	v  launch.
+	^v!
+
+editSource
+
+	self model isLocal
+		ifFalse: [	self visual promptOk: 'This URL is not local, and cannot be edited.'
+									title: 'Error'
+									type: #stop
+									action: [].
+							^self  ].
+	(TextEditor on: self model filePath) launch!
+
+goBack
+
+	| current <URL> |
+	self hasHistory
+		ifFalse: [ ^self ].
+	current := self model.
+	self bareModel: self history removeLast.
+	self forwardURLs addLast: current.!
+
+goHome
+
+	self model: self home!
+
+open
+
+	| defile <FilePath> |
+	self model isLocal
+		ifTrue: [ defile := self model filePath ].
+	self visual
+		userPickOpenFileWithAction:
+			[ :f <FilePath> :writeable <Boolean> |
+				self model: (URL forFilePath: f)	]
+		fileTypes: (Array[Tuple[Str,Str]] with: 'HTML Files' ,, '*.html' )
+		defaultFile: defile
+		defaultDir: nil
+		title: 'Open HTML File'
+		allowReadOnly: true
+		mustExist: true!
+
+scaleDown
+
+	self scaleFactor: self scaleFactor - 0.1!
+
+scaleUp
+
+	self scaleFactor: self scaleFactor + 0.1! !
+
+! (Delta mirrorFor: #HTMLView) methodsFor: 'link handling' !
+
+
+activateLink: element <ElementA> at: loc <Point>
+
+	self model: element url!
+
+doitAction: doit <Str>
+
+	Smalltalk evaluate: doit ifError:
+		[ :err <Str> :spot <Int> |
+			 Transcript show: 'Error in HTML doit: ''',
+			 	(doit stringCopyReplaceFrom: spot to: spot with: '<<',err,'>>'), ''''; cr.
+			  ]! !
+
+! (Delta mirrorFor: #HTMLView) methodsFor: 'menus' !
+
+
+editMenu ^<Menu>
+
+	^Menu new name: '&Edit';
+			add: (MenuAction new
+					name: '&HTML source';
+					action: [ self editSource ])!
+
+fileMenu ^<Menu>
+
+	^Menu new name: '&File';
+			add: (MenuAction new
+					name: '&Open...';
+					action: [ self open ]);
+			add: (MenuAction new
+					name: '&Back';
+					active: [ self hasHistory ];
+					action: [ self goBack ]);
+		 addSeparator;
+		 add: (MenuAction new
+		            name:'Meta';
+		            action:[Inspector launchOn: self])!
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new 
+			add: self fileMenu;
+			add: self editMenu;
+			add: self viewMenu;
+			add: self optionsMenu
+!
+
+optionsMenu ^<Menu>
+
+	^Menu new name: '&Options';
+			add: (MenuAction new
+					name: 'Show Tool Bar';
+					checked: [ self showToolBar ];
+					action: [ self showToolBar: self showToolBar not ]);
+			add: (MenuAction new
+					name: 'Show Location';
+					checked: [ self showUrl ];
+					action: [ self showUrl: self showUrl not ])!
+
+viewMenu ^<Menu>
+
+	^Menu new name: '&View';
+			add: (MenuAction new
+					name: '&Bigger Text';
+					action: [ self scaleUp ]);
+			add: (MenuAction new
+					name: '&Smaller Text';
+					action: [ self scaleDown ]);
+			add: (MenuAction new
+					name: '&Default Text Size';
+					action: [ self scaleFactor: 1.0 ]);
+			addSeparator;
+			add: (MenuAction new
+					name: '&Clone';
+					action: [ self clone ])
+! !
+
 ! (Delta mirrorFor: #HTMLView) methodsFor: 'private' !
 
 
@@ -206,256 +457,31 @@ urlView ^<Visual>
 					) with3DBorder
 	   ) withBorderInset: (5@ 5 corner: 0 @ 5)! !
 
-! (Delta mirrorFor: #HTMLView) methodsFor: 'accessing' !
+! (Delta mirrorFor: #HTMLView) methodsFor: 'private-forward' !
 
 
-firstLinkIfAbsent: blk <AbortBlock> ^<URL>
+forwardURLs ^<OrdCltn[URL]>
 
-	self html linksDo:
-		[ :link <ElementA> |
-			^link url	].
-	^blk value!
+	forwardURLs isNil
+		ifTrue: [ forwardURLs := OrderedCollection[URL] new. ].
+	^forwardURLs!
 
-hasHistory ^<Boolean>
+popNextURLOrIfAbsent: blk <[^X def]>  ^<URL | X>
 
-	^history notNil and: [ history isEmpty not ]!
+	^self forwardURLs isEmpty
+		ifFalse: [ self forwardURLs removeLast ]
+		ifTrue: [ blk value ]! !
 
-hasWinBackdrop ^<Boolean>
-
-	^true!
-
-history ^<OrdCltn[URL]>
-
-	history isNil
-		ifTrue: [ history := OrderedCollection[URL] new ].
-	^history!
-
-history: h <OrdCltn[URL]>
-
-	history := h!
-
-home ^<URL>
-
-	^home!
-
-home: h <URL>
-
-	home := h!
-
-html ^<HTMLNode>
-
-	html isNil
-		ifTrue: [ html := self model loadHTML ].
-	^html!
-
-lastLinkIfAbsent: blk <AbortBlock> ^<URL>
-
-	| l <ElementA> |
-	self html linksDo:
-		[ :link <ElementA> |
-			l := link	].
-	^l isNil
-		ifFalse: [ l url ]
-		ifTrue: [ blk value ]!
-
-model: m <URL>
-
-	| abs <URL> newHtml <HTMLNode> oldModel <URL> |
-	
-	self home isNil
-		ifTrue: [ self home: m ].
-	
-	"If the url is relative, we use the current model as its base url"
-	m isRelative
-		ifTrue: [	self assert: [ self model notNil ].
-						abs := m absoluteURLInContext: self model.	]
-		ifFalse: [ abs := m ].
-	
-	oldModel := self model.
-
-	self bareModel: abs ifFail: [ ^self ].
-
-	self forwardURLs removeAll.
-
-	(oldModel notNil and: [ self model ~= oldModel
-				and: [ (self history includes: self model) not ]])
-		ifTrue: [	self history addLast: oldModel ].
-!
-
-scaleFactor ^<Float>
-
-	^scaleFactor!
-
-scaleFactor: f <Float>
-
-	scaleFactor := f.
-	self rebuildPageIfNeeded.!
-
-showToolBar ^<Boolean>
-
-	^self toolBar visible
-!
-
-showToolBar: f <Boolean>
-
-	self toolBar visible: f!
-
-showUrl ^<Boolean>
-
-	^showUrl
-!
-
-showUrl: f <Boolean>
-
-	showUrl := f.
-	self hasVisual
-		ifTrue: [ self rebuildColumn ].!
-
-winBackdrop ^<Painter>
-
-	^Painter new paint: Paint backgroundGray! !
-
-! (Delta mirrorFor: #HTMLView) methodsFor: 'menus' !
+! (Delta mirrorFor: #HTMLView) methodsFor: 'private-initialization' !
 
 
-editMenu ^<Menu>
+initialize
 
-	^Menu new name: '&Edit';
-			add: (MenuAction new
-					name: '&HTML source';
-					action: [ self editSource ])!
-
-fileMenu ^<Menu>
-
-	^Menu new name: '&File';
-			add: (MenuAction new
-					name: '&Open...';
-					action: [ self open ]);
-			add: (MenuAction new
-					name: '&Back';
-					active: [ self hasHistory ];
-					action: [ self goBack ]);
-		 addSeparator;
-		 add: (MenuAction new
-		            name:'Meta';
-		            action:[Inspector launchOn: self])!
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^<Menu>
-
-	^Menu new 
-			add: self fileMenu;
-			add: self editMenu;
-			add: self viewMenu;
-			add: self optionsMenu
-!
-
-optionsMenu ^<Menu>
-
-	^Menu new name: '&Options';
-			add: (MenuAction new
-					name: 'Show Tool Bar';
-					checked: [ self showToolBar ];
-					action: [ self showToolBar: self showToolBar not ]);
-			add: (MenuAction new
-					name: 'Show Location';
-					checked: [ self showUrl ];
-					action: [ self showUrl: self showUrl not ])!
-
-viewMenu ^<Menu>
-
-	^Menu new name: '&View';
-			add: (MenuAction new
-					name: '&Bigger Text';
-					action: [ self scaleUp ]);
-			add: (MenuAction new
-					name: '&Smaller Text';
-					action: [ self scaleDown ]);
-			add: (MenuAction new
-					name: '&Default Text Size';
-					action: [ self scaleFactor: 1.0 ]);
-			addSeparator;
-			add: (MenuAction new
-					name: '&Clone';
-					action: [ self clone ])
+	super initialize.
+	self scaleFactor: 1.0.
+	htmlVisual := HTMLVisual for: self.
+	self showUrl: false.
 ! !
-
-! (Delta mirrorFor: #HTMLView) methodsFor: 'control' !
-
-
-clone ^<HTMLView>
-
-	| v <HTMLView> |
-	v := HTMLView new model: self model.
-	v	history: self history;
-		home: self home.
-	v  launch.
-	^v!
-
-editSource
-
-	self model isLocal
-		ifFalse: [	self visual promptOk: 'This URL is not local, and cannot be edited.'
-									title: 'Error'
-									type: #stop
-									action: [].
-							^self  ].
-	(TextEditor on: self model filePath) launch!
-
-goBack
-
-	| current <URL> |
-	self hasHistory
-		ifFalse: [ ^self ].
-	current := self model.
-	self bareModel: self history removeLast.
-	self forwardURLs addLast: current.!
-
-goHome
-
-	self model: self home!
-
-open
-
-	| defile <FilePath> |
-	self model isLocal
-		ifTrue: [ defile := self model filePath ].
-	self visual
-		userPickOpenFileWithAction:
-			[ :f <FilePath> :writeable <Boolean> |
-				self model: (URL forFilePath: f)	]
-		fileTypes: (Array[Tuple[Str,Str]] with: 'HTML Files' ,, '*.html' )
-		defaultFile: defile
-		defaultDir: nil
-		title: 'Open HTML File'
-		allowReadOnly: true
-		mustExist: true!
-
-scaleDown
-
-	self scaleFactor: self scaleFactor - 0.1!
-
-scaleUp
-
-	self scaleFactor: self scaleFactor + 0.1! !
-
-! (Delta mirrorFor: #HTMLView) methodsFor: 'link handling' !
-
-
-activateLink: element <ElementA> at: loc <Point>
-
-	self model: element url!
-
-doitAction: doit <Str>
-
-	Smalltalk evaluate: doit ifError:
-		[ :err <Str> :spot <Int> |
-			 Transcript show: 'Error in HTML doit: ''',
-			 	(doit stringCopyReplaceFrom: spot to: spot with: '<<',err,'>>'), ''''; cr.
-			  ]! !
 
 ! (Delta mirrorFor: #HTMLView) methodsFor: 'toolbar' !
 
@@ -481,31 +507,5 @@ toolBar ^<ToolBar>
 							yourself.
 					].
 	^toolBar
-! !
-
-! (Delta mirrorFor: #HTMLView) methodsFor: 'private-forward' !
-
-
-forwardURLs ^<OrdCltn[URL]>
-
-	forwardURLs isNil
-		ifTrue: [ forwardURLs := OrderedCollection[URL] new. ].
-	^forwardURLs!
-
-popNextURLOrIfAbsent: blk <[^X def]>  ^<URL | X>
-
-	^self forwardURLs isEmpty
-		ifFalse: [ self forwardURLs removeLast ]
-		ifTrue: [ blk value ]! !
-
-! (Delta mirrorFor: #HTMLView) methodsFor: 'private-initialization' !
-
-
-initialize
-
-	super initialize.
-	self scaleFactor: 1.0.
-	htmlVisual := HTMLVisual for: self.
-	self showUrl: false.
 ! !
 

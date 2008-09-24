@@ -31,6 +31,18 @@ for: vis <Visual>
 	^super new initSession: sess visual: vis name: nm
 ! !
 
+! (Delta mirrorFor: #StandardWindow) methodsFor: 'accessing' !
+
+
+name ^<Str>
+
+	^name!
+
+name: nm <Str>
+
+	name := nm.
+	self setName: nm! !
+
 ! (Delta mirrorFor: #StandardWindow) methodsFor: 'initialization' !
 
 
@@ -141,16 +153,4 @@ winClassName ^<CString>
 						 	 after StandardWindowClassName is set"
 							self registerWindowClass. ].  ].
 	^StandardWindowClassName! !
-
-! (Delta mirrorFor: #StandardWindow) methodsFor: 'accessing' !
-
-
-name ^<Str>
-
-	^name!
-
-name: nm <Str>
-
-	name := nm.
-	self setName: nm! !
 

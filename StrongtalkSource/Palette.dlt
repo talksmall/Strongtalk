@@ -14,6 +14,17 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
+! (Delta mirrorFor: #Palette) classSide methodsFor: 'debugging' !
+
+
+debugging ^<Boolean>
+
+	^PaletteDebug == true!
+
+debugging: f <Boolean>
+
+	PaletteDebug := f! !
+
 ! (Delta mirrorFor: #Palette) classSide methodsFor: 'instance creation' !
 
 
@@ -37,16 +48,16 @@ background: b <Boolean>
 			background: b asExternalData
 		}}! !
 
-! (Delta mirrorFor: #Palette) classSide methodsFor: 'debugging' !
+! (Delta mirrorFor: #Palette) methodsFor: 'control' !
 
 
-debugging ^<Boolean>
+release
 
-	^PaletteDebug == true!
-
-debugging: f <Boolean>
-
-	PaletteDebug := f! !
+	win32Handle notNil
+		ifTrue: [	Palette debugging
+							ifTrue: [ Platform errorStream show: 'Palette>>releasing'; cr.	].
+						win32Handle win32DeleteObject.
+						win32Handle := nil	]! !
 
 ! (Delta mirrorFor: #Palette) methodsFor: 'private-initialization' !
 
@@ -72,17 +83,6 @@ initFor: colors <SeqCltn[SolidPaint]>
 	win32Handle := {{<gdi Win32Handle CreatePalette> struct: lp}}.
 	win32Handle isNull
 		ifTrue: [ Win32 handleError ].! !
-
-! (Delta mirrorFor: #Palette) methodsFor: 'control' !
-
-
-release
-
-	win32Handle notNil
-		ifTrue: [	Palette debugging
-							ifTrue: [ Platform errorStream show: 'Palette>>releasing'; cr.	].
-						win32Handle win32DeleteObject.
-						win32Handle := nil	]! !
 
 ! (Delta mirrorFor: #Palette) methodsFor: 'restricted-win32' !
 

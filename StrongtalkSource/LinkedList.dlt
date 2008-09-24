@@ -130,6 +130,14 @@ size ^<Int>
 
 	^self first size! !
 
+! (Delta mirrorFor: #LinkedList) methodsFor: 'iterating' !
+
+
+do: fn <[L]>
+
+	self isEmpty
+		ifFalse: [ self first linksDo: fn ]! !
+
 ! (Delta mirrorFor: #LinkedList) methodsFor: 'private' !
 
 
@@ -140,12 +148,4 @@ first: link <L>
 last: link <L>
 
 	last := link! !
-
-! (Delta mirrorFor: #LinkedList) methodsFor: 'iterating' !
-
-
-do: fn <[L]>
-
-	self isEmpty
-		ifFalse: [ self first linksDo: fn ]! !
 

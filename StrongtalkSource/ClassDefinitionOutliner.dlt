@@ -10,6 +10,26 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'accessing' !
+
+
+outlinerForLocator: loc <DeltaLocator[Mirror]> 
+
+^SuperclassClauseLocator coerce: loc
+	do:[: l <SuperclassClauseLocator> | self superclassOutliner]
+	else:[super outlinerForLocator: loc]! !
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	super update: aspect with: value.
+	self inSessionProcessDo: [
+		aspect = #superclassType
+			ifTrue: [	self updateHeaders ].
+	]! !
+
 ! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
 
 
@@ -28,24 +48,4 @@ superclassOutliner ^ <SuperclassOutliner>
 superclassOutliner: o <SuperclassOutliner>
 
 	superclassOutliner := o! !
-
-! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	super update: aspect with: value.
-	self inSessionProcessDo: [
-		aspect = #superclassType
-			ifTrue: [	self updateHeaders ].
-	]! !
-
-! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'accessing' !
-
-
-outlinerForLocator: loc <DeltaLocator[Mirror]> 
-
-^SuperclassClauseLocator coerce: loc
-	do:[: l <SuperclassClauseLocator> | self superclassOutliner]
-	else:[super outlinerForLocator: loc]! !
 

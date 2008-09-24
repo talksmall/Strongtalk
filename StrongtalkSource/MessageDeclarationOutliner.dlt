@@ -66,6 +66,92 @@ selector ^ <Symbol>
 		ifTrue: [ 	selector ]
 		ifFalse: [	self defaultSelector ]! !
 
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'control' !
+
+
+implementors
+
+	self launchImplementorsOf: self selector!
+
+move
+
+	self assert: [ self hasSelector ].
+	self 
+		launchSingleLineTextDialogWithPainter: self classPainter 
+		title: 'Move method ', self selector
+		caption: 'New category' 
+		default: (CategoryOutliner coerce: self parent) lastCategoryMove
+		action: [ :s <Str> | 
+			(CategoryOutliner coerce: self parent) lastCategoryMove: s.
+			self mirror sourceInfo category: s forSelector: self selector ]
+!
+
+remove
+
+	self hasSelector
+		ifTrue: [	self mirror removeMethod: self selector ifAbsent: [ self halt ]]
+		ifFalse: [	(CategoryOutliner coerce: self parent) removeMethodOutliner: self ifAbsent: [self halt] ]
+!
+
+senders
+
+	self launchSendersOf: self selector!
+
+typecheck
+
+self typecheckAction: [self mirror typecheckSelector: self selector]
+		title: 'Typechecking ', self mirror name, '>>', self selector.! !
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #selector 
+			ifTrue: [	self hasSelector
+								ifTrue: [	value = self selector 
+													ifTrue: [	self updateHeaders.
+																	self codeView notNil
+																		ifTrue: [	self codeView model: self sourceAsCharGlyphs ] 
+																  ] 
+											  ]
+						 ]
+	]
+! !
+
+! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'Move to category ...';
+					active: [ self hasSelector ];
+					action: [ self move ]);
+		add: (MenuAction new
+					name: 'Remove';
+					action: [ self remove ]);
+		add: (MenuAction new
+					name: 'Senders';
+					active: [ self hasSelector ];
+					action: [ self senders ]);
+		add: (MenuAction new
+					name: 'Implementors';
+					active: [ self hasSelector ];
+					action: [ self implementors ]);
+		add: (MenuAction new
+					name: 'Typecheck';
+					active: [ self hasSelector ];
+					action: [ self typecheck ])
+
+		! !
+
 ! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'private' !
 
 
@@ -207,92 +293,6 @@ storeAndOnSuccess: blk <[]>
 		self codeView sourceSelection: currentSelection ].		"Restore selection"
  	blk value.
 ! !
-
-! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'menus' !
-
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^<Menu>
-
-	^Menu new
-		add: (MenuAction new
-					name: 'Move to category ...';
-					active: [ self hasSelector ];
-					action: [ self move ]);
-		add: (MenuAction new
-					name: 'Remove';
-					action: [ self remove ]);
-		add: (MenuAction new
-					name: 'Senders';
-					active: [ self hasSelector ];
-					action: [ self senders ]);
-		add: (MenuAction new
-					name: 'Implementors';
-					active: [ self hasSelector ];
-					action: [ self implementors ]);
-		add: (MenuAction new
-					name: 'Typecheck';
-					active: [ self hasSelector ];
-					action: [ self typecheck ])
-
-		! !
-
-! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		aspect = #selector 
-			ifTrue: [	self hasSelector
-								ifTrue: [	value = self selector 
-													ifTrue: [	self updateHeaders.
-																	self codeView notNil
-																		ifTrue: [	self codeView model: self sourceAsCharGlyphs ] 
-																  ] 
-											  ]
-						 ]
-	]
-! !
-
-! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'control' !
-
-
-implementors
-
-	self launchImplementorsOf: self selector!
-
-move
-
-	self assert: [ self hasSelector ].
-	self 
-		launchSingleLineTextDialogWithPainter: self classPainter 
-		title: 'Move method ', self selector
-		caption: 'New category' 
-		default: (CategoryOutliner coerce: self parent) lastCategoryMove
-		action: [ :s <Str> | 
-			(CategoryOutliner coerce: self parent) lastCategoryMove: s.
-			self mirror sourceInfo category: s forSelector: self selector ]
-!
-
-remove
-
-	self hasSelector
-		ifTrue: [	self mirror removeMethod: self selector ifAbsent: [ self halt ]]
-		ifFalse: [	(CategoryOutliner coerce: self parent) removeMethodOutliner: self ifAbsent: [self halt] ]
-!
-
-senders
-
-	self launchSendersOf: self selector!
-
-typecheck
-
-self typecheckAction: [self mirror typecheckSelector: self selector]
-		title: 'Typechecking ', self mirror name, '>>', self selector.! !
 
 ! (Delta mirrorFor: #MessageDeclarationOutliner) methodsFor: 'selection' !
 

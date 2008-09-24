@@ -49,19 +49,6 @@ Tags: %HTML %UI
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
-! (Delta mirrorFor: #HTMLBuilder) classSide methodsFor: 'instance creation' !
-
-
-for: app <HTMLView>
-rows: rs <OrdCltn[GlyphRow]>
-pageWidth: width <Int>
-topWindow: win <Window>
-visualRegistry: reg <VarDict[HTMLElement,Visual]>
-scaleFactor: s <Float>
-^<Instance>
-
-	^self new initFor: app rows: rs pageWidth: width topWindow: win visualRegistry: reg scaleFactor: s! !
-
 ! (Delta mirrorFor: #HTMLBuilder) classSide methodsFor: 'constants' !
 
 
@@ -76,6 +63,19 @@ alignLeft ^<Symbol>
 alignRight ^<Symbol>
 
 	^#alignRight! !
+
+! (Delta mirrorFor: #HTMLBuilder) classSide methodsFor: 'instance creation' !
+
+
+for: app <HTMLView>
+rows: rs <OrdCltn[GlyphRow]>
+pageWidth: width <Int>
+topWindow: win <Window>
+visualRegistry: reg <VarDict[HTMLElement,Visual]>
+scaleFactor: s <Float>
+^<Instance>
+
+	^self new initFor: app rows: rs pageWidth: width topWindow: win visualRegistry: reg scaleFactor: s! !
 
 ! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'accessing' !
 
@@ -212,6 +212,282 @@ visualRegistry: r <VarDict[HTMLElement,Visual]>
 
 	visualRegistry := r
 ! !
+
+! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'accessing-private' !
+
+
+current ^<OrdCltn[Glyph]>
+
+	^current!
+
+currentWidth: w <Int>
+
+	currentWidth := w!
+
+defaultLineHeight ^<Int>
+
+	^defaultLineHeight!
+
+glyphTransformer ^<[Glyph,^Glyph]>
+
+	^glyphTransformer!
+
+glyphTransformer: t <[Glyph,^Glyph]>
+
+	glyphTransformer := t!
+
+lastBreak ^<Int>
+
+	^lastBreak!
+
+lastBreak: b <Int>
+
+	lastBreak := b!
+
+previous ^<OrdCltn[Glyph]>
+
+	^previous!
+
+previous: p <OrdCltn[Glyph]>
+
+	previous := p!
+
+rows ^<OrdCltn[GlyphRow]>
+
+	^rows!
+
+topWindow ^<Window>
+
+	^topWindow! !
+
+! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'adding-private' !
+
+
+doAdd: g <Glyph>
+	"Add a glyph, breaking the line if needed."
+
+	| w <Int> afterBreak <SeqCltn[Glyph]> |
+	self insertLeftMarginIfNeeded.
+	w := self widthOf: g.
+	self atParagraphStart: false.
+	(self wouldBreak: w)
+		ifFalse: [	self current addLast: g.
+							self currentWidth: self currentWidth + w.
+							^self ].
+	"must break line"
+	self lastBreak isNil
+		ifTrue: [	self enterCurrent.
+						"recursively add, since the line is now empty"
+						self doAdd: g.
+						^self ].
+
+	"Use the previous break point"
+	afterBreak := self current copyFrom: self lastBreak + 1 to: self current size.
+	"subtract the width of the break"
+	self currentWidth: self currentWidth - (self widthOf: (self current at: self lastBreak)).
+	"subtract the widths of the things after the break"
+	afterBreak do:
+		[ :gl <Glyph> |
+			self currentWidth: self currentWidth - (self widthOf: gl).	].
+
+	self current remove: (self current size - self  lastBreak) + 1 at: self lastBreak.
+	
+	self enterCurrent.
+
+	"now put the remaining ones on the next line, and then add g recursively"
+	afterBreak
+		do: [ :el <Glyph> |
+					self doAdd: el ].
+	self doAdd: g.!
+
+doAddBreak: g <Glyph>
+	"Add a glyph that is a good place to break a line, and which can be
+		removed if the break is  taken.  Break chars are discarded if they
+		are at the beginning or end of a line.  Also, consecutive ones are
+		collapsed to one."
+
+	| w <Int> |
+	self atLeftMargin
+		ifTrue: [ ^self ].
+	"We don't check to see if we must insert a left margin because if we 
+		were at the start of a line, we would have not inserted this anyway"
+	w := self widthOf: g.
+	(self wouldBreak: w)
+		ifTrue: [	"must break line.  Is easy since this is a break glyph; just discard it."
+						self enterCurrent.
+						^self ].
+
+	"See if it is redundant"
+	self lastBreak = self current size
+		ifTrue: [ ^self ].
+
+	self current addLast: g.
+	self currentWidth: self currentWidth + w.
+	self lastBreak: self current size.!
+
+doAddWithoutBreaking: g <Glyph>
+	"Add a glyph, without breaking the line regardless of margins.  Everything
+			past the right margin is just discarded. "
+
+	| w <Int> afterBreak <SeqCltn[Glyph]> |
+	self insertLeftMarginIfNeeded.
+	w := (g naturalIn: self medium) enclosingRect width.
+	(self wouldBreak: w)
+		ifFalse: [	self current addLast: g.
+							self currentWidth: self currentWidth + w.
+							^self ].
+	^self! !
+
+! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'constants' !
+
+
+alignCenter ^<Symbol>
+
+	^HTMLBuilder alignCenter!
+
+alignLeft ^<Symbol>
+
+	^HTMLBuilder alignLeft!
+
+alignRight ^<Symbol>
+
+	^HTMLBuilder alignRight!
+
+defaultPainter ^<Painter>
+
+	^Painter new
+			font: (Font default newSpec
+							typeface: 'Times New Roman';
+							points: 12
+						) font!
+
+initialLeftMargin ^<Int>
+
+	^30! !
+
+! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'control' !
+
+
+add: g <Glyph>
+	"Add a glyph, breaking the line if needed."
+
+	"Make sure the glyph has a session, since
+		we are going to compute preferences before
+		it is put in any heirarchy"
+	
+	self doAdd: (self transform: g)!
+
+addBreak: g <Glyph>
+	"Add a glyph that is a good place to break a line, and which can be
+		removed if the break is  taken.  Break chars are discarded if they
+		are at the beginning or end of a line.  Also, consecutive ones are
+		collapsed to one."
+
+	self doAddBreak: (self transform: g)!
+
+addBreakChar: c <Character>
+
+	self addBreak: (self scaledPainter charGlyphFor: c)!
+
+addChar: c <Character>
+
+	self add: (self scaledPainter charGlyphFor: c).
+	self lineHasNothingSubstantial: false.!
+
+addCharWithoutBreaking: c <Character>
+
+	self addWithoutBreaking: (self scaledPainter charGlyphFor: c).
+	self lineHasNothingSubstantial: false.!
+
+addVisual: visualBlock <[^Visual]> for: element <HTMLElement>
+	"This should be used rather than add: to insert imbedded visuals
+		that have state, or that might change their preferences, so
+		that they can be associated with their element and reused
+		across relayouts"
+	
+	self add:
+		(self visualRegistry
+			at: element
+			ifPresent: [ :e <Visual> |
+										e noParent	]
+			ifAbsentPut: [ visualBlock value ]
+		).
+	self lineHasNothingSubstantial: false.!
+
+addWithoutBreaking: g <Glyph>
+	"Add a glyph, without breaking the line regardless of margins.  Everything
+			past the right margin is just discarded. "
+
+	self doAddWithoutBreaking: (self transform: g)!
+
+breakLine
+	"Break if necessary to ensure that we are at the start of a new line."
+	
+	self atLeftMargin
+		ifFalse: [ self enterCurrent ].!
+
+build: n <HTMLNode>
+	"This is the entry point for page building"
+
+	n buildFor: self.
+
+	"flush last line if it has anything on it"
+	self lineIsEmpty
+		ifFalse: [	self enterCurrent ]!
+
+emptyLine
+	"enter an empty line"
+	
+	self breakLine; enterCurrent.!
+
+forceBreakLine
+	"Break to the beginning of the next line regardless of whether
+	  the current line is empty"
+	
+	self atLeftMargin
+		ifTrue: [ self current addLast: self lineSpacer. ].
+	self enterCurrent.!
+
+indented: width <Int> do: blk <[]>
+	"evaluate blk with the left margin indented width pixels, and restore
+		the left margin when done"
+
+	self indentedAfterScaling: (self scale: width) do: blk!
+
+verticalWhitespace
+	"enter a blank line if needed to make sure that we are on a line that has
+		nothing on the previous line"
+
+	| needSpace <Boolean> |
+	needSpace := self previousLineHadNothingSubstantial.
+	self breakLine.
+	needSpace
+		ifFalse: [	"The previous line is not whitespace, so we need white space.
+								Insert a vertical spacer so the line
+								has some height"
+							self current addLast: self lineSpacer.
+							self enterCurrent.	]!
+
+withGlyphTransformer: t <[Glyph,^Glyph]> do: blk <[]>
+
+	| old <[Glyph,^Glyph]> |
+	old := self glyphTransformer.
+	self glyphTransformer: t.
+	blk ensure: [ self glyphTransformer: old ]!
+
+withPaint: p <Paint> do: blk <[]>
+
+	| old <Painter> |
+	old := self painter.
+	self painter: (old copy paint: p).
+	blk ensure: [ self painter: old ]!
+
+withPainter: p <Painter> do: blk <[]>
+
+	| old <Painter> |
+	old := self painter.
+	self painter: p.
+	blk ensure: [ self painter: old ]! !
 
 ! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'initialization-private' !
 
@@ -375,204 +651,6 @@ wouldBreak: glyphWidth <Int>	 ^<Boolean>
 	^((self currentWidth + glyphWidth + self scaledRightMargin) > self pageWidth)
 			and: [ self atLeftMargin not ]! !
 
-! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'control' !
-
-
-add: g <Glyph>
-	"Add a glyph, breaking the line if needed."
-
-	"Make sure the glyph has a session, since
-		we are going to compute preferences before
-		it is put in any heirarchy"
-	
-	self doAdd: (self transform: g)!
-
-addBreak: g <Glyph>
-	"Add a glyph that is a good place to break a line, and which can be
-		removed if the break is  taken.  Break chars are discarded if they
-		are at the beginning or end of a line.  Also, consecutive ones are
-		collapsed to one."
-
-	self doAddBreak: (self transform: g)!
-
-addBreakChar: c <Character>
-
-	self addBreak: (self scaledPainter charGlyphFor: c)!
-
-addChar: c <Character>
-
-	self add: (self scaledPainter charGlyphFor: c).
-	self lineHasNothingSubstantial: false.!
-
-addCharWithoutBreaking: c <Character>
-
-	self addWithoutBreaking: (self scaledPainter charGlyphFor: c).
-	self lineHasNothingSubstantial: false.!
-
-addVisual: visualBlock <[^Visual]> for: element <HTMLElement>
-	"This should be used rather than add: to insert imbedded visuals
-		that have state, or that might change their preferences, so
-		that they can be associated with their element and reused
-		across relayouts"
-	
-	self add:
-		(self visualRegistry
-			at: element
-			ifPresent: [ :e <Visual> |
-										e noParent	]
-			ifAbsentPut: [ visualBlock value ]
-		).
-	self lineHasNothingSubstantial: false.!
-
-addWithoutBreaking: g <Glyph>
-	"Add a glyph, without breaking the line regardless of margins.  Everything
-			past the right margin is just discarded. "
-
-	self doAddWithoutBreaking: (self transform: g)!
-
-breakLine
-	"Break if necessary to ensure that we are at the start of a new line."
-	
-	self atLeftMargin
-		ifFalse: [ self enterCurrent ].!
-
-build: n <HTMLNode>
-	"This is the entry point for page building"
-
-	n buildFor: self.
-
-	"flush last line if it has anything on it"
-	self lineIsEmpty
-		ifFalse: [	self enterCurrent ]!
-
-emptyLine
-	"enter an empty line"
-	
-	self breakLine; enterCurrent.!
-
-forceBreakLine
-	"Break to the beginning of the next line regardless of whether
-	  the current line is empty"
-	
-	self atLeftMargin
-		ifTrue: [ self current addLast: self lineSpacer. ].
-	self enterCurrent.!
-
-indented: width <Int> do: blk <[]>
-	"evaluate blk with the left margin indented width pixels, and restore
-		the left margin when done"
-
-	self indentedAfterScaling: (self scale: width) do: blk!
-
-verticalWhitespace
-	"enter a blank line if needed to make sure that we are on a line that has
-		nothing on the previous line"
-
-	| needSpace <Boolean> |
-	needSpace := self previousLineHadNothingSubstantial.
-	self breakLine.
-	needSpace
-		ifFalse: [	"The previous line is not whitespace, so we need white space.
-								Insert a vertical spacer so the line
-								has some height"
-							self current addLast: self lineSpacer.
-							self enterCurrent.	]!
-
-withGlyphTransformer: t <[Glyph,^Glyph]> do: blk <[]>
-
-	| old <[Glyph,^Glyph]> |
-	old := self glyphTransformer.
-	self glyphTransformer: t.
-	blk ensure: [ self glyphTransformer: old ]!
-
-withPaint: p <Paint> do: blk <[]>
-
-	| old <Painter> |
-	old := self painter.
-	self painter: (old copy paint: p).
-	blk ensure: [ self painter: old ]!
-
-withPainter: p <Painter> do: blk <[]>
-
-	| old <Painter> |
-	old := self painter.
-	self painter: p.
-	blk ensure: [ self painter: old ]! !
-
-! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'accessing-private' !
-
-
-current ^<OrdCltn[Glyph]>
-
-	^current!
-
-currentWidth: w <Int>
-
-	currentWidth := w!
-
-defaultLineHeight ^<Int>
-
-	^defaultLineHeight!
-
-glyphTransformer ^<[Glyph,^Glyph]>
-
-	^glyphTransformer!
-
-glyphTransformer: t <[Glyph,^Glyph]>
-
-	glyphTransformer := t!
-
-lastBreak ^<Int>
-
-	^lastBreak!
-
-lastBreak: b <Int>
-
-	lastBreak := b!
-
-previous ^<OrdCltn[Glyph]>
-
-	^previous!
-
-previous: p <OrdCltn[Glyph]>
-
-	previous := p!
-
-rows ^<OrdCltn[GlyphRow]>
-
-	^rows!
-
-topWindow ^<Window>
-
-	^topWindow! !
-
-! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'constants' !
-
-
-alignCenter ^<Symbol>
-
-	^HTMLBuilder alignCenter!
-
-alignLeft ^<Symbol>
-
-	^HTMLBuilder alignLeft!
-
-alignRight ^<Symbol>
-
-	^HTMLBuilder alignRight!
-
-defaultPainter ^<Painter>
-
-	^Painter new
-			font: (Font default newSpec
-							typeface: 'Times New Roman';
-							points: 12
-						) font!
-
-initialLeftMargin ^<Int>
-
-	^30! !
-
 ! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'testing' !
 
 
@@ -583,82 +661,4 @@ atLeftMargin ^<Boolean>
 lineIsEmpty ^<Boolean>
 
 	^self current size <= 1! !
-
-! (Delta mirrorFor: #HTMLBuilder) methodsFor: 'adding-private' !
-
-
-doAdd: g <Glyph>
-	"Add a glyph, breaking the line if needed."
-
-	| w <Int> afterBreak <SeqCltn[Glyph]> |
-	self insertLeftMarginIfNeeded.
-	w := self widthOf: g.
-	self atParagraphStart: false.
-	(self wouldBreak: w)
-		ifFalse: [	self current addLast: g.
-							self currentWidth: self currentWidth + w.
-							^self ].
-	"must break line"
-	self lastBreak isNil
-		ifTrue: [	self enterCurrent.
-						"recursively add, since the line is now empty"
-						self doAdd: g.
-						^self ].
-
-	"Use the previous break point"
-	afterBreak := self current copyFrom: self lastBreak + 1 to: self current size.
-	"subtract the width of the break"
-	self currentWidth: self currentWidth - (self widthOf: (self current at: self lastBreak)).
-	"subtract the widths of the things after the break"
-	afterBreak do:
-		[ :gl <Glyph> |
-			self currentWidth: self currentWidth - (self widthOf: gl).	].
-
-	self current remove: (self current size - self  lastBreak) + 1 at: self lastBreak.
-	
-	self enterCurrent.
-
-	"now put the remaining ones on the next line, and then add g recursively"
-	afterBreak
-		do: [ :el <Glyph> |
-					self doAdd: el ].
-	self doAdd: g.!
-
-doAddBreak: g <Glyph>
-	"Add a glyph that is a good place to break a line, and which can be
-		removed if the break is  taken.  Break chars are discarded if they
-		are at the beginning or end of a line.  Also, consecutive ones are
-		collapsed to one."
-
-	| w <Int> |
-	self atLeftMargin
-		ifTrue: [ ^self ].
-	"We don't check to see if we must insert a left margin because if we 
-		were at the start of a line, we would have not inserted this anyway"
-	w := self widthOf: g.
-	(self wouldBreak: w)
-		ifTrue: [	"must break line.  Is easy since this is a break glyph; just discard it."
-						self enterCurrent.
-						^self ].
-
-	"See if it is redundant"
-	self lastBreak = self current size
-		ifTrue: [ ^self ].
-
-	self current addLast: g.
-	self currentWidth: self currentWidth + w.
-	self lastBreak: self current size.!
-
-doAddWithoutBreaking: g <Glyph>
-	"Add a glyph, without breaking the line regardless of margins.  Everything
-			past the right margin is just discarded. "
-
-	| w <Int> afterBreak <SeqCltn[Glyph]> |
-	self insertLeftMarginIfNeeded.
-	w := (g naturalIn: self medium) enclosingRect width.
-	(self wouldBreak: w)
-		ifFalse: [	self current addLast: g.
-							self currentWidth: self currentWidth + w.
-							^self ].
-	^self! !
 

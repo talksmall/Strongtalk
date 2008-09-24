@@ -23,13 +23,6 @@ origin ^<Point>
 
 	^origin! !
 
-! (Delta mirrorFor: #RectangleWithOriginAndCorner) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	strm put: $(; print: self origin; putAll: ' corner: '; print: self corner; put: $)! !
-
 ! (Delta mirrorFor: #RectangleWithOriginAndCorner) methodsFor: 'initialization' !
 
 
@@ -37,4 +30,11 @@ origin: o <Point> corner: c <Point>
 
 	origin := o.
 	corner := c.! !
+
+! (Delta mirrorFor: #RectangleWithOriginAndCorner) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	strm put: $(; print: self origin; putAll: ' corner: '; print: self corner; put: $)! !
 

@@ -10,16 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #SuperclassClauseLocator) methodsFor: 'locator matching' !
-
-
-matchesLocator: l <DeltaLocator[Mirror]> ^ <Boolean>
-	^l matchesSuperclassLocator: self!
-
-matchesSuperclassLocator: l  <SuperclassClauseLocator> ^ <Boolean>
-
-^self matchesDefinitionLocator: l! !
-
 ! (Delta mirrorFor: #SuperclassClauseLocator) methodsFor: 'accessing' !
 
 
@@ -40,4 +30,14 @@ parseTree  ^ <ParseTree[ClassId | GenericApplicationClassType]>
 source ^ <Str>
 
 ^self mirror superclassTypeString! !
+
+! (Delta mirrorFor: #SuperclassClauseLocator) methodsFor: 'locator matching' !
+
+
+matchesLocator: l <DeltaLocator[Mirror]> ^ <Boolean>
+	^l matchesSuperclassLocator: self!
+
+matchesSuperclassLocator: l  <SuperclassClauseLocator> ^ <Boolean>
+
+^self matchesDefinitionLocator: l! !
 

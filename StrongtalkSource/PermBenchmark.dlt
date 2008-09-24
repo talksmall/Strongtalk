@@ -16,17 +16,20 @@ Use and distribution of this software is subject to the terms of the attached so
 
 initialize Permcount := 5. Permrange := 10 "PermBenchmark initialize"! !
 
-! (Delta mirrorFor: #PermBenchmark) methodsFor: 'running' !
+! (Delta mirrorFor: #PermBenchmark) methodsFor: 'admin' !
 
 
-run
-	
-	pctr := 0.
-	Permcount
-		timesRepeat: 
-			[self initialize.
-			self permute: 7].
-	pctr ~= (8660 *  Permcount) ifTrue: [self error: 'Error in perm']! !
+digitalkTime
+	^111!
+
+factor
+	^14!
+
+name
+	^#Perm!
+
+parcplaceTime
+	^148! !
 
 ! (Delta mirrorFor: #PermBenchmark) methodsFor: 'initialization' !
 
@@ -59,18 +62,15 @@ swap: a with: b
 	permarray at: a put: (permarray at: b).
 	permarray at: b put: t! !
 
-! (Delta mirrorFor: #PermBenchmark) methodsFor: 'admin' !
+! (Delta mirrorFor: #PermBenchmark) methodsFor: 'running' !
 
 
-digitalkTime
-	^111!
-
-factor
-	^14!
-
-name
-	^#Perm!
-
-parcplaceTime
-	^148! !
+run
+	
+	pctr := 0.
+	Permcount
+		timesRepeat: 
+			[self initialize.
+			self permute: 7].
+	pctr ~= (8660 *  Permcount) ifTrue: [self error: 'Error in perm']! !
 

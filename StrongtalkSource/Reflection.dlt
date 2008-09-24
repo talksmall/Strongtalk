@@ -10,6 +10,36 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #Reflection) classSide methodsFor: 'browsing' !
+
+
+allObjects ^<Array[Object]>
+	^self allObjectsLimit: self maxLimit!
+
+allObjectsLimit: limit <Integer> ^<Array[Object]>
+	^{{primitiveAllObjectsLimit: limit  ifFail: [ :err <Symbol> | self error: err]}}!
+
+instancesOf: class <Class> ^<Array[Object]>
+	^self instancesOf: class limit: self maxLimit!
+
+instancesOf: class <Class> limit: limit <Integer> ^<Array[Object]>
+	^{{primitiveInstancesOf: class limit: limit ifFail: [ :err <Symbol> | self error: err]}}!
+
+maxLimit	^<SmallInteger>
+	^SmallInteger maxVal!
+
+referencesTo: obj <Object> ^<Array[Object]>
+	^self referencesTo: obj limit: self maxLimit!
+
+referencesTo: obj <Object> limit: limit <Integer> ^<Array[Object]>
+	^{{primitiveReferencesTo: obj limit: limit ifFail: [ :err <Symbol> | self error: err]}}!
+
+referencesToInstancesOf: class <Class> ^<Array[Object]>
+	^self referencesToInstancesOf: class limit: self maxLimit!
+
+referencesToInstancesOf: class <Class> limit: limit <Integer> ^<Array[Object]>
+	^{{primitiveReferencesToInstancesOf: class limit: limit ifFail: [ :err <Symbol> | self error: err]}}! !
+
 ! (Delta mirrorFor: #Reflection) classSide methodsFor: 'reflection' !
 
 
@@ -68,34 +98,4 @@ sizeOf: o <Object> ^<SmallInt>
 superclassOf: class <Behavior> ^<Behavior | Nil>
 
 	^{{primitiveSuperclassOf: class ifFail: [:err <Symbol> | self error: err]}}! !
-
-! (Delta mirrorFor: #Reflection) classSide methodsFor: 'browsing' !
-
-
-allObjects ^<Array[Object]>
-	^self allObjectsLimit: self maxLimit!
-
-allObjectsLimit: limit <Integer> ^<Array[Object]>
-	^{{primitiveAllObjectsLimit: limit  ifFail: [ :err <Symbol> | self error: err]}}!
-
-instancesOf: class <Class> ^<Array[Object]>
-	^self instancesOf: class limit: self maxLimit!
-
-instancesOf: class <Class> limit: limit <Integer> ^<Array[Object]>
-	^{{primitiveInstancesOf: class limit: limit ifFail: [ :err <Symbol> | self error: err]}}!
-
-maxLimit	^<SmallInteger>
-	^SmallInteger maxVal!
-
-referencesTo: obj <Object> ^<Array[Object]>
-	^self referencesTo: obj limit: self maxLimit!
-
-referencesTo: obj <Object> limit: limit <Integer> ^<Array[Object]>
-	^{{primitiveReferencesTo: obj limit: limit ifFail: [ :err <Symbol> | self error: err]}}!
-
-referencesToInstancesOf: class <Class> ^<Array[Object]>
-	^self referencesToInstancesOf: class limit: self maxLimit!
-
-referencesToInstancesOf: class <Class> limit: limit <Integer> ^<Array[Object]>
-	^{{primitiveReferencesToInstancesOf: class limit: limit ifFail: [ :err <Symbol> | self error: err]}}! !
 

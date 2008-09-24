@@ -1,0 +1,119 @@
+Delta define: #LinkedExceptionHandler as: (
+(Class subclassOf: 'Object' instanceVariables: 'exceptionSelector handleBlock nextHandler returnBlock protectee retryBlock')) !
+
+(Delta mirrorFor: #LinkedExceptionHandler) revision: '$Revision$'!
+
+(Delta mirrorFor: #LinkedExceptionHandler) group: 'exceptions'!
+
+(Delta mirrorFor: #LinkedExceptionHandler)
+comment: 
+'Exception handler for an exception. Invokes its handleBlock when asked to handle an exceptionthat matches its exceptionSelector. If the exception does not match its exceptionSelector it passesthe exception on to the nextHandler. If the nextHandler is undefined signal an UnhandledExceptionError.This class is internal to the exception handling framework. There should be no need for code outside of thisframework to interact with instances of ExceptionHandler.'!
+
+! (Delta mirrorFor: #LinkedExceptionHandler) classSide methodsFor: 'exceptionBuilder' !
+
+
+on: anExceptionSelector do: handleBlock
+
+	^self new
+		on: anExceptionSelector
+		do: handleBlock
+		return: [:value|]
+		outer: nil;
+		yourself!
+
+on: anExceptionSelector do: handleBlock return: returnBlock
+
+	^self new
+		on: anExceptionSelector
+		do: handleBlock
+		return: returnBlock
+		outer: nil;
+		yourself!
+
+on: anExceptionSelector do: handleBlock return: returnBlock outer: outerBlock
+
+	^self new
+		on: anExceptionSelector
+		do: handleBlock
+		return: returnBlock
+		outer: outerBlock;
+		yourself! !
+
+! (Delta mirrorFor: #LinkedExceptionHandler) methodsFor: 'exception handler' !
+
+
+canHandleSignal: exception
+
+	^(exceptionSelector handles: exception)
+		or: [nextHandler notNil
+			and: [nextHandler canHandleSignal: exception]]!
+
+evaluateProtectee: aBlock
+
+	|result|
+	protectee := aBlock.
+	retryBlock := [^[self evaluateProtectee: protectee]]."fix this - should evaluate the returned block"
+	result := protectee value.
+	^[result]!
+
+handle: exception
+
+	self handle: exception
+		return: returnBlock!
+
+handle: exception return: aReturnBlock
+
+	Processor activeProcess popHandler.
+	[^(exceptionSelector handles: exception)
+		ifTrue: [	exception handler: self.
+						returnBlock value: (handleBlock value: exception)]
+		ifFalse: [nextHandler handle: exception return: aReturnBlock]]
+			ensure: [Processor activeProcess pushHandler: self]!
+
+nextHandler
+
+	^nextHandler!
+
+outer: exception return: aReturnBlock
+
+	exception
+		withResume: [:value| ^value]
+		do: [nextHandler handle: exception return: aReturnBlock]!
+
+pass: exception
+
+	^nextHandler handle: exception!
+
+protect: aBlock
+
+	Processor activeProcess pushHandler: self.
+	^[(self evaluateProtectee: aBlock) value]
+		ensure: [Processor activeProcess popHandler]!
+
+retry
+
+	retryBlock value!
+
+retryUsing: aBlock
+
+	protectee := aBlock.
+	retryBlock value!
+
+return: aValue
+
+	returnBlock value: aValue! !
+
+! (Delta mirrorFor: #LinkedExceptionHandler) methodsFor: 'private - initialization' !
+
+
+nextHandler: exceptionHandler
+
+	nextHandler := exceptionHandler !
+
+on: anExceptionSelector do: block return: aReturnBlock outer: outerBlock
+
+	exceptionSelector := anExceptionSelector.
+	handleBlock := block.
+	returnBlock := aReturnBlock.
+	nextHandler := BlockExceptionHandler default! !
+

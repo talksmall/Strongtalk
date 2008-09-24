@@ -63,6 +63,17 @@ size ^<Int>
 		size := size + 1.
 		] repeat.! !
 
+! (Delta mirrorFor: #Link) methodsFor: 'iterating' !
+
+
+linksDo: fun <[Instance]>
+
+	| link <Instance> |
+	link := self.
+	[ fun value: link.
+	  link := link nextLinkIfFail: [ ^self ].
+	] repeat.! !
+
 ! (Delta mirrorFor: #Link) methodsFor: 'private' !
 
 
@@ -78,15 +89,4 @@ length ^<Int>
 postCopy
 
 	self nextLink: (self nextLink copy)! !
-
-! (Delta mirrorFor: #Link) methodsFor: 'iterating' !
-
-
-linksDo: fun <[Instance]>
-
-	| link <Instance> |
-	link := self.
-	[ fun value: link.
-	  link := link nextLinkIfFail: [ ^self ].
-	] repeat.! !
 

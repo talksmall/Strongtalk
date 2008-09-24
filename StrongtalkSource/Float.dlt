@@ -28,14 +28,6 @@ maxVal ^<Float>
 fileOutSignature ^<Integer>
     ^72! !
 
-! (Delta mirrorFor: #Float) methodsFor: 'testing' !
-
-
-isNil ^<Boolean>
-
-	"%todo: this should return true if the value is IEEE Not A Number"
-	^false ! !
-
 ! (Delta mirrorFor: #Float) methodsFor: 'comparison' !
 
 
@@ -71,6 +63,76 @@ isNil ^<Boolean>
 
 	^{{self primitiveFloatGreaterThanOrEqual: a
 		ifFail: [ :err <Symbol> |	super >= a	]}}! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'constants' !
+
+
+unit ^<Float>
+
+	^1.0!
+
+zero ^<Float>
+
+	^0.0! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'converting' !
+
+
+asFloat ^<Float>
+
+	^self!
+
+asInteger ^<Integer>
+
+	^{{self primitiveFloatRoundedAsSmallIntegerIfFail: [ :err <Symbol> |
+		LargeInteger forFloat: self]}}! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'file out' !
+
+
+fileOutHeaderOn: d <Dumper>
+	super fileOutHeaderOn: d.
+	self fileOutStoreString do: [ :byte <Int> |
+		d putByte: byte
+	]!
+
+fileOutSignature ^<Integer>
+    ^104!
+
+fileOutStoreString ^<SeqCltn[Int]>
+	^{{self primitiveFloatStoreString}}! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'iteration' !
+
+
+to: stop <Float> by: step <Float> do: f <[Float]> ^<Object>
+
+	| v <Float> |
+	v := self.
+	step < 0.0
+		ifFalse: [ [ v <= stop ]
+					whileTrue: [	f value: v.
+								v := v + step  ]]
+		ifTrue: [ [ v >= stop ]
+					whileTrue: [ f value: v.
+								v := v + step  ]].
+	^nil!
+
+to: stop <Float> do: f <[Float]> ^<Object>
+
+	| v <Float> |
+	v := self.
+	[ v <= stop ]
+		whileTrue: [	f value: v.
+					v := v + 1.0  ].
+	^nil! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'mathematical functions' !
+
+
+sqrt ^<Float>
+
+	^{{self primitiveFloatSqrtIfFail: [ :err <Symbol> | self error: err ]}}! !
 
 ! (Delta mirrorFor: #Float) methodsFor: 'operations' !
 
@@ -108,78 +170,6 @@ truncated ^<Int>
 
 	"%todo: change the primitive to return an integer"
 	^{{self primitiveFloatTruncated}} asInteger! !
-
-! (Delta mirrorFor: #Float) methodsFor: 'restricted-double dispatching' !
-
-
-addFromFloat: o <Float> ^<Float>
-	self error: 'can''t happen because of double dispatching, but need for typing'.!
-
-divideFromFloat: o <Float> ^<Float>
-	self error: 'can''t happen because of double dispatching, but need for typing'.!
-
-equalFromFloat: o <Float>  ^<Boolean>
-	self error: 'can''t happen because of double dispatching'!
-
-lessFromFloat: o <Float>  ^<Boolean>
-	self error: 'can''t happen because of double dispatching'!
-
-moduloFromFloat: o <Float> ^<Number>
-	^o - ((o // self) * self)!
-
-multiplyFromFloat: o <Float> ^<Float>
-	self error: 'can''t happen because of double dispatching, but need for typing'.!
-
-subtractFromFloat: o <Float> ^<Float>
-	self error: 'can''t happen because of double dispatching, but need for typing'.! !
-
-! (Delta mirrorFor: #Float) methodsFor: 'converting' !
-
-
-asFloat ^<Float>
-
-	^self!
-
-asInteger ^<Integer>
-
-	^{{self primitiveFloatRoundedAsSmallIntegerIfFail: [ :err <Symbol> |
-		LargeInteger forFloat: self]}}! !
-
-! (Delta mirrorFor: #Float) methodsFor: 'constants' !
-
-
-unit ^<Float>
-
-	^1.0!
-
-zero ^<Float>
-
-	^0.0! !
-
-! (Delta mirrorFor: #Float) methodsFor: 'iteration' !
-
-
-to: stop <Float> by: step <Float> do: f <[Float]> ^<Object>
-
-	| v <Float> |
-	v := self.
-	step < 0.0
-		ifFalse: [ [ v <= stop ]
-					whileTrue: [	f value: v.
-								v := v + step  ]]
-		ifTrue: [ [ v >= stop ]
-					whileTrue: [ f value: v.
-								v := v + step  ]].
-	^nil!
-
-to: stop <Float> do: f <[Float]> ^<Object>
-
-	| v <Float> |
-	v := self.
-	[ v <= stop ]
-		whileTrue: [	f value: v.
-					v := v + 1.0  ].
-	^nil! !
 
 ! (Delta mirrorFor: #Float) methodsFor: 'printing' !
 
@@ -228,25 +218,35 @@ nonPrimitiveSubtract: a <Number> error: err <Symbol> ^<Number>
 			ifTrue: [ a subtractFromFloat: self ]
 			ifFalse: [	self error: 'double subtraction error: ', err.	 ]! !
 
-! (Delta mirrorFor: #Float) methodsFor: 'mathematical functions' !
+! (Delta mirrorFor: #Float) methodsFor: 'restricted-double dispatching' !
 
 
-sqrt ^<Float>
+addFromFloat: o <Float> ^<Float>
+	self error: 'can''t happen because of double dispatching, but need for typing'.!
 
-	^{{self primitiveFloatSqrtIfFail: [ :err <Symbol> | self error: err ]}}! !
+divideFromFloat: o <Float> ^<Float>
+	self error: 'can''t happen because of double dispatching, but need for typing'.!
 
-! (Delta mirrorFor: #Float) methodsFor: 'file out' !
+equalFromFloat: o <Float>  ^<Boolean>
+	self error: 'can''t happen because of double dispatching'!
+
+lessFromFloat: o <Float>  ^<Boolean>
+	self error: 'can''t happen because of double dispatching'!
+
+moduloFromFloat: o <Float> ^<Number>
+	^o - ((o // self) * self)!
+
+multiplyFromFloat: o <Float> ^<Float>
+	self error: 'can''t happen because of double dispatching, but need for typing'.!
+
+subtractFromFloat: o <Float> ^<Float>
+	self error: 'can''t happen because of double dispatching, but need for typing'.! !
+
+! (Delta mirrorFor: #Float) methodsFor: 'testing' !
 
 
-fileOutHeaderOn: d <Dumper>
-	super fileOutHeaderOn: d.
-	self fileOutStoreString do: [ :byte <Int> |
-		d putByte: byte
-	]!
+isNil ^<Boolean>
 
-fileOutSignature ^<Integer>
-    ^104!
-
-fileOutStoreString ^<SeqCltn[Int]>
-	^{{self primitiveFloatStoreString}}! !
+	"%todo: this should return true if the value is IEEE Not A Number"
+	^false ! !
 

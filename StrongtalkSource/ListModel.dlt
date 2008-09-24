@@ -1,0 +1,53 @@
+Delta define: #ListModel as: (
+(Class subclassOf: 'Object' instanceVariables: 'view " the list box displaying the list items "
+model " the model that provides the list items "
+itemAspect " a selector used to retrieve the item strings from the model "
+selectionAspect " a selector used to retrieve the selection from the model "')) !
+
+(Delta mirrorFor: #ListModel) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ListModel) group: 'Unclassified'!
+
+(Delta mirrorFor: #ListModel)
+comment: 
+''!
+
+! (Delta mirrorFor: #ListModel) classSide methodsFor: 'instance creation' !
+
+
+on: model items: itemSelector selected: accessor select: mutator
+
+	^self new
+			on: model
+			items: itemSelector
+			selected: accessor
+			select: mutator
+	! !
+
+! (Delta mirrorFor: #ListModel) methodsFor: 'initialization' !
+
+
+on: aModel items: selector selected: accessor select: mutator
+
+	view := ListBox forSingleSelection.
+	model := aModel.
+	model addDependent: self.
+	itemAspect := selector.
+	selectionAspect := accessor.
+	view onSelChange: [:lb | aModel	
+														perform: mutator
+														with: lb selections anElement].
+	^view
+	! !
+
+! (Delta mirrorFor: #ListModel) methodsFor: 'notification' !
+
+
+update: aspect
+
+	aspect == itemAspect
+		ifTrue: [^view stringList: (model perform: itemAspect)].
+	aspect == selectionAspect
+		ifTrue: [^view selections: (OrderedCollection
+																with: (model perform: selectionAspect))]! !
+

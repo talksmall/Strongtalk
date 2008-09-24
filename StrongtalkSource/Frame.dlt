@@ -57,6 +57,32 @@ hasBorder ^<Boolean>
 
 	^border notNil! !
 
+! (Delta mirrorFor: #Frame) methodsFor: 'control' !
+
+
+relayoutAndInvalidate
+
+	super relayoutAndInvalidate.
+
+	"We invalidate again because the border may have changed.  The inherited
+		method may invalidate only the child if nothing but the border changed."
+	self invalidate.! !
+
+! (Delta mirrorFor: #Frame) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	self hasBackdrop
+		ifTrue: [  can withPainter: self backdrop
+							do: [ can displayFilledRectangle: self allocation enclosedRect ] ].
+
+	(self border isNil or: [ can pruningRegion surelyContainedBy: self part allocation ])
+		ifFalse: [ 	"Then we have to display the border"
+						self border displayOn: can allocation: self allocation.	].
+
+	super localDisplayOn: can! !
+
 ! (Delta mirrorFor: #Frame) methodsFor: 'geometry-local' !
 
 
@@ -96,30 +122,4 @@ layoutPart
 skipCheckLayout ^<Boolean>
 
 	^false! !
-
-! (Delta mirrorFor: #Frame) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas>
-
-	self hasBackdrop
-		ifTrue: [  can withPainter: self backdrop
-							do: [ can displayFilledRectangle: self allocation enclosedRect ] ].
-
-	(self border isNil or: [ can pruningRegion surelyContainedBy: self part allocation ])
-		ifFalse: [ 	"Then we have to display the border"
-						self border displayOn: can allocation: self allocation.	].
-
-	super localDisplayOn: can! !
-
-! (Delta mirrorFor: #Frame) methodsFor: 'control' !
-
-
-relayoutAndInvalidate
-
-	super relayoutAndInvalidate.
-
-	"We invalidate again because the border may have changed.  The inherited
-		method may invalidate only the child if nothing but the border changed."
-	self invalidate.! !
 

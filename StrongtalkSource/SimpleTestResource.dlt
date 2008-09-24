@@ -1,0 +1,68 @@
+Delta define: #SimpleTestResource as: (
+(Class subclassOf: 'TestResource' instanceVariables: 'runningState hasRun hasSetup hasRanOnce')) !
+
+(Delta mirrorFor: #SimpleTestResource) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SimpleTestResource) group: 'SUnitTests'!
+
+(Delta mirrorFor: #SimpleTestResource)
+comment: 
+''!
+
+! (Delta mirrorFor: #SimpleTestResource) methodsFor: 'accessing' !
+
+
+runningState
+
+	^runningState
+			!
+
+runningState: aSymbol
+
+	runningState := aSymbol
+			! !
+
+! (Delta mirrorFor: #SimpleTestResource) methodsFor: 'running' !
+
+
+setRun
+	hasRun := true
+			!
+
+setUp
+	
+	self runningState: self startedStateSymbol.
+	hasSetup := true
+			!
+
+startedStateSymbol
+
+	^#started
+			!
+
+stoppedStateSymbol
+
+	^#stopped
+			!
+
+tearDown
+
+	self runningState: self stoppedStateSymbol
+			! !
+
+! (Delta mirrorFor: #SimpleTestResource) methodsFor: 'testing' !
+
+
+hasRun
+	^hasRun
+			!
+
+hasSetup
+	^hasSetup
+			!
+
+isAvailable
+	
+	^self runningState == self startedStateSymbol
+			! !
+

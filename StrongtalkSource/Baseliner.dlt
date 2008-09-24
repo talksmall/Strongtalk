@@ -15,6 +15,69 @@ comment:
 '(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $'!
 
+! (Delta mirrorFor: #Baseliner) methodsFor: 'accessing' !
+
+
+offset ^<Point>
+
+	^self offsetBlock value!
+
+offsetBlock ^<[^Point]>
+
+	^offsetBlock!
+
+offsetBlock: b <[^Point]>
+
+	offsetBlock := b!
+
+xSide ^<Symbol>
+
+	^xSide!
+
+xSide: xs <Symbol>
+
+	self assert: [ xs == nil or: [ xs == #right or: [ xs == #left ]]].
+	xSide := xs!
+
+ySide ^<Symbol>
+
+	^ySide!
+
+ySide: ys <Symbol>
+
+	self assert: [ ys == nil or: [ ys == #top or: [ ys == #bottom ]]].
+	ySide := ys! !
+
+! (Delta mirrorFor: #Baseliner) methodsFor: 'geometry' !
+
+
+max ^<Region>
+
+	^self adjust: (self part max enclosingRect)
+!
+
+min ^<Region>
+
+	^self adjust: (self part min enclosingRect)
+!
+
+natural ^<Region>
+
+	^self adjust: (self part natural enclosingRect)
+! !
+
+! (Delta mirrorFor: #Baseliner) methodsFor: 'initialization' !
+
+
+initialize
+	
+	super initialize.
+	self
+		ySide: #bottom;
+		xSide: #left.
+	self offsetBlock: [ Point origin ]
+! !
+
 ! (Delta mirrorFor: #Baseliner) methodsFor: 'private' !
 
 
@@ -51,69 +114,6 @@ childIsSameSize ^<Boolean>
 layoutPart
 
 	self part allocationInParent: self allocation! !
-
-! (Delta mirrorFor: #Baseliner) methodsFor: 'geometry' !
-
-
-max ^<Region>
-
-	^self adjust: (self part max enclosingRect)
-!
-
-min ^<Region>
-
-	^self adjust: (self part min enclosingRect)
-!
-
-natural ^<Region>
-
-	^self adjust: (self part natural enclosingRect)
-! !
-
-! (Delta mirrorFor: #Baseliner) methodsFor: 'accessing' !
-
-
-offset ^<Point>
-
-	^self offsetBlock value!
-
-offsetBlock ^<[^Point]>
-
-	^offsetBlock!
-
-offsetBlock: b <[^Point]>
-
-	offsetBlock := b!
-
-xSide ^<Symbol>
-
-	^xSide!
-
-xSide: xs <Symbol>
-
-	self assert: [ xs == nil or: [ xs == #right or: [ xs == #left ]]].
-	xSide := xs!
-
-ySide ^<Symbol>
-
-	^ySide!
-
-ySide: ys <Symbol>
-
-	self assert: [ ys == nil or: [ ys == #top or: [ ys == #bottom ]]].
-	ySide := ys! !
-
-! (Delta mirrorFor: #Baseliner) methodsFor: 'initialization' !
-
-
-initialize
-	
-	super initialize.
-	self
-		ySide: #bottom;
-		xSide: #left.
-	self offsetBlock: [ Point origin ]
-! !
 
 ! (Delta mirrorFor: #Baseliner) methodsFor: 'utility' !
 

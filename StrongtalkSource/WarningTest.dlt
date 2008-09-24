@@ -1,0 +1,33 @@
+Delta define: #WarningTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #WarningTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #WarningTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #WarningTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #WarningTest) methodsFor: 'Testing' !
+
+
+testDefaultActionShouldProvokeHalt
+
+	| wasHalted wasSignalled |
+	wasHalted := wasSignalled := false.
+	[[Warning signal]
+		on: Halt
+		do: [:ex| wasHalted := true]]
+				on: Warning
+				do: [:ex| wasSignalled := true.
+								ex outer].
+	self assert: wasSignalled
+			description: 'Should have signalled Warning'.	
+	self assert: wasHalted
+			description: 'Default action should have halted'!
+
+testShouldBeResumable
+
+	self assert: Warning new isResumable! !
+

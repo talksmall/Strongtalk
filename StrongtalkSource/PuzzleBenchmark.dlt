@@ -11,6 +11,32 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'admin' !
+
+
+digitalkTime
+	^2712!
+
+factor
+	^1!
+
+name
+	^#Puzzle!
+
+parcplaceTime
+	^1886! !
+
+! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'constants' !
+
+
+classmax ^3!
+
+d ^8!
+
+puzzleSize ^511!
+
+typemax ^12! !
+
 ! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'private' !
 
 
@@ -121,17 +147,6 @@ trial: j
 						ifFalse: [self removeI: i J: j]]]].
 	^false! !
 
-! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'constants' !
-
-
-classmax ^3!
-
-d ^8!
-
-puzzleSize ^511!
-
-typemax ^12! !
-
 ! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'run' !
 
 
@@ -149,19 +164,4 @@ run
 	(self fitI: 0 J: m) ifTrue: [n := self placeI: 0 J: m] ifFalse: [self error: 'error1 in puzzle'].
 	(self trial: n ) ifFalse: [self error: 'error2 in puzzle'].
 	kount = 2005 ifFalse: [self error: 'error3 in puzzle']! !
-
-! (Delta mirrorFor: #PuzzleBenchmark) methodsFor: 'admin' !
-
-
-digitalkTime
-	^2712!
-
-factor
-	^1!
-
-name
-	^#Puzzle!
-
-parcplaceTime
-	^1886! !
 

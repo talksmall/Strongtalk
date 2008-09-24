@@ -16,16 +16,6 @@ Use and distribution of this software is subject to the terms of the attached so
 
 initialize Permcount := 5. Permrange := 10 "Perm2Benchmark initialize"! !
 
-! (Delta mirrorFor: #Perm2Benchmark) methodsFor: 'misc' !
-
-
-run | permarray |
-	permarray :=  PermArray new: Permrange.
-	permarray pctr: 0.
-	Permcount timesRepeat: [permarray permInitialize. permarray permute: 7].
-	permarray pctr ~= (8660 * Permcount) ifTrue: [ self error: 'error'].
-	"Perm2Benchmark new run"! !
-
 ! (Delta mirrorFor: #Perm2Benchmark) methodsFor: 'admin' !
 
 
@@ -40,4 +30,14 @@ name
 
 parcplaceTime
 	^135! !
+
+! (Delta mirrorFor: #Perm2Benchmark) methodsFor: 'misc' !
+
+
+run | permarray |
+	permarray :=  PermArray new: Permrange.
+	permarray pctr: 0.
+	Permcount timesRepeat: [permarray permInitialize. permarray permute: 7].
+	permarray pctr ~= (8660 * Permcount) ifTrue: [ self error: 'error'].
+	"Perm2Benchmark new run"! !
 

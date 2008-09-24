@@ -14,21 +14,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.
 '!
 
-! (Delta mirrorFor: #Time) classSide methodsFor: 'instance creation' !
-
-
-fromSeconds: s <Int> ^<Instance>
-
-	^self new initSeconds: s!
-
-now ^<Instance>
-
-	| t <SYSTEMTIME> |
-	t := Time localSYSTEMTIME.
-	^[	self fromSeconds: (t wHour * 3600) + (t wMinute * 60) + t wSecond
-	 ] ensure: [ t free ]
-! !
-
 ! (Delta mirrorFor: #Time) classSide methodsFor: 'inquiries' !
 
 
@@ -97,28 +82,28 @@ userMillisecondsToRun: f <[]> ^<Int>
 	f value.
 	^self millisecondUserClockValue - t! !
 
+! (Delta mirrorFor: #Time) classSide methodsFor: 'instance creation' !
+
+
+fromSeconds: s <Int> ^<Instance>
+
+	^self new initSeconds: s!
+
+now ^<Instance>
+
+	| t <SYSTEMTIME> |
+	t := Time localSYSTEMTIME.
+	^[	self fromSeconds: (t wHour * 3600) + (t wMinute * 60) + t wSecond
+	 ] ensure: [ t free ]
+! !
+
 ! (Delta mirrorFor: #Time) classSide methodsFor: 'restricted-win32' !
 
 
 localSYSTEMTIME ^<SYSTEMTIME>
 
-	| t <SYSTEMTIME> |
-	t := SYSTEMTIME new allocate.
-	{{<kernel ExternalProxy GetLocalTime> struct: t}}.
-	^t
+	^Platform localSYSTEMTIME
 ! !
-
-! (Delta mirrorFor: #Time) methodsFor: 'comparing' !
-
-
-< other <Time> ^<Boolean>
-
-	^self asSeconds < other asSeconds!
-
-= other <Object> ^<Boolean>
-
-	^self == other or:
-		[ (Time coerce: other else: [ ^false ]) asSeconds = self asSeconds ]! !
 
 ! (Delta mirrorFor: #Time) methodsFor: 'accessing' !
 
@@ -149,25 +134,41 @@ second ^<Int>
 
 	^self asSeconds \\ 60! !
 
-! (Delta mirrorFor: #Time) methodsFor: 'initialization' !
-
-
-initSeconds: s <Int>
-
-	seconds := s! !
-
 ! (Delta mirrorFor: #Time) methodsFor: 'arithmetic' !
 
 
 addTime: amt <Date|Time> ^<Instance>
 
-	^self actualClass fromSeconds: self asSeconds + amt asSeconds! !
+	^self actualClass fromSeconds: self asSeconds + amt asSeconds!
+
+subtractTime: amt <Date|Time> ^<Instance>
+
+	^self actualClass fromSeconds: self asSeconds - amt asSeconds! !
+
+! (Delta mirrorFor: #Time) methodsFor: 'comparing' !
+
+
+< other <Time> ^<Boolean>
+
+	^self asSeconds < other asSeconds!
+
+= other <Object> ^<Boolean>
+
+	^self == other or:
+		[ (Time coerce: other else: [ ^false ]) asSeconds = self asSeconds ]! !
 
 ! (Delta mirrorFor: #Time) methodsFor: 'copying' !
 
 
 copy ^<Instance>
 	^self! !
+
+! (Delta mirrorFor: #Time) methodsFor: 'initialization' !
+
+
+initSeconds: s <Int>
+
+	seconds := s! !
 
 ! (Delta mirrorFor: #Time) methodsFor: 'printing' !
 

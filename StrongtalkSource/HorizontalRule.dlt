@@ -52,6 +52,21 @@ naturalWidth: w <Int>
 
 	naturalWidth := w! !
 
+! (Delta mirrorFor: #HorizontalRule) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas> for: context <VisualGlyph>
+
+	| left <Number> right <Number> |
+	left := context allocation enclosedRect left.
+	right := context allocation enclosedRect right.
+	can withPainter: (Painter new paint: Paint gray)
+		do: [	can displayLineFrom: left @0
+							to: right @ 0	].
+	can withPainter: (Painter new paint: Paint white)
+		do: [	can displayLineFrom: left@1
+							to: right @ 1	].! !
+
 ! (Delta mirrorFor: #HorizontalRule) methodsFor: 'geometry-local' !
 
 
@@ -75,21 +90,6 @@ naturalIn: m <Medium>  ^<Region>
 		ifTrue: [ w := 0 ]
 		ifFalse: [ w := w negated ].
 	^w @ self ascent  negated corner: 0 @ (self descent + 2)! !
-
-! (Delta mirrorFor: #HorizontalRule) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas> for: context <VisualGlyph>
-
-	| left <Number> right <Number> |
-	left := context allocation enclosedRect left.
-	right := context allocation enclosedRect right.
-	can withPainter: (Painter new paint: Paint gray)
-		do: [	can displayLineFrom: left @0
-							to: right @ 0	].
-	can withPainter: (Painter new paint: Paint white)
-		do: [	can displayLineFrom: left@1
-							to: right @ 1	].! !
 
 ! (Delta mirrorFor: #HorizontalRule) methodsFor: 'testing' !
 

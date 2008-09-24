@@ -16,6 +16,20 @@ Tags: %User %UI %BlueBook
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
 '!
 
+! (Delta mirrorFor: #Rectangle) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	InfiniteRect := Rectangle
+		left: UI huge negated
+		right: UI huge
+		top: UI huge negated
+		bottom: UI huge.
+	NullRect := 0@0 corner: 0@0.
+
+! !
+
 ! (Delta mirrorFor: #Rectangle) classSide methodsFor: 'instance creation' !
 
 
@@ -60,20 +74,6 @@ origin: o <Point> extent: c <Point> ^<Rect>
 	  If you cannot guarantee that, use #corner:corner:"
 
 	^self origin: o corner: c + o! !
-
-! (Delta mirrorFor: #Rectangle) classSide methodsFor: 'initialization' !
-
-
-initialize
-
-	InfiniteRect := Rectangle
-		left: UI huge negated
-		right: UI huge
-		top: UI huge negated
-		bottom: UI huge.
-	NullRect := 0@0 corner: 0@0.
-
-! !
 
 ! (Delta mirrorFor: #Rectangle) methodsFor: 'accessing' !
 
@@ -154,6 +154,29 @@ yCenter ^<Number>
 
 	^(self top + self bottom) // 2! !
 
+! (Delta mirrorFor: #Rectangle) methodsFor: 'comparing' !
+
+
+= other <Object>  ^<Boolean>
+
+	"%todo: use coerce here when is fast"
+	^(Reflection classOf: other) == (Reflection classOf: self)
+		and: [	| otherRect <Rect> |
+					otherRect := guaranteed <Rectangle> other.
+					otherRect origin = self origin and: [ otherRect corner = self corner ]	]!
+
+hash ^<Int>
+
+	^self origin hash bitXor: self corner hash! !
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'compatibility' !
+
+
+translateBy: p <Point> ^<Instance>
+	"A synonym for #translatedBy: for bluebook compatiblity"
+
+	^self translatedBy: p! !
+
 ! (Delta mirrorFor: #Rectangle) methodsFor: 'operations' !
 
 
@@ -215,13 +238,49 @@ translatedBy: p <Point> mightIntersect: r <Region>  ^<Boolean>
 
 	^r relativeTo: p mightIntersectRect: self! !
 
-! (Delta mirrorFor: #Rectangle) methodsFor: 'compatibility' !
+! (Delta mirrorFor: #Rectangle) methodsFor: 'restricted-double dispatching' !
 
 
-translateBy: p <Point> ^<Instance>
-	"A synonym for #translatedBy: for bluebook compatiblity"
+expandRect: r <Rect> ^<Rect>
 
-	^self translatedBy: p! !
+	^Rectangle
+		left: r left - self left
+		right: r right + self right
+		top: r top - self top
+		bottom: r bottom + self bottom!
+
+insetRect: r <Rect> ^<Rect>
+
+	^Rectangle
+		left: r left + self left
+		right: r right - self right
+		top: r top + self top
+		bottom: r bottom - self bottom!
+
+relativeTo: p <Point> mightIntersectRect: other <Rect> ^<Boolean>
+	"A faster form of ((self relativeTo: p) mightIntersect: other)"
+
+	| orig <Point> corn <Point> oorig <Point> ocorn <Point> x <Number> y <Number> |
+	orig := self origin.
+	corn := self corner.
+	oorig := other origin.
+	ocorn := other corner.
+	x := p x.
+	y := p y.
+	^orig x - x < ocorn x and: [ orig y - y < ocorn y
+		and: [ oorig x < (corn x - x) and: [ oorig y < (corn y - y) ]]  ]!
+
+translatedBy: p <Point> surelyContainedByRect: other <Rect> ^<Boolean>
+
+	| orig <Point> corn <Point> oorig <Point> ocorn <Point> x <Number> y <Number> |
+	orig := self origin.
+	corn := self corner.
+	oorig := other origin.
+	ocorn := other corner.
+	x := p x.
+	y := p y.
+	^oorig x <= (orig x + x) and: [ oorig y <= (orig y + y)
+		and: [ ocorn x >= (corn x + x) and: [ ocorn y >= (corn y + y) ]]]! !
 
 ! (Delta mirrorFor: #Rectangle) methodsFor: 'testing' !
 
@@ -271,63 +330,4 @@ ySameAs: other <Rect> ^<Boolean>
 	"convenience function to see if the y components of the receiver are the same as other's"
 
 	^self top = other top  and: [ self bottom = other bottom ]! !
-
-! (Delta mirrorFor: #Rectangle) methodsFor: 'comparing' !
-
-
-= other <Object>  ^<Boolean>
-
-	"%todo: use coerce here when is fast"
-	^(Reflection classOf: other) == (Reflection classOf: self)
-		and: [	| otherRect <Rect> |
-					otherRect := guaranteed <Rectangle> other.
-					otherRect origin = self origin and: [ otherRect corner = self corner ]	]!
-
-hash ^<Int>
-
-	^self origin hash bitXor: self corner hash! !
-
-! (Delta mirrorFor: #Rectangle) methodsFor: 'restricted-double dispatching' !
-
-
-expandRect: r <Rect> ^<Rect>
-
-	^Rectangle
-		left: r left - self left
-		right: r right + self right
-		top: r top - self top
-		bottom: r bottom + self bottom!
-
-insetRect: r <Rect> ^<Rect>
-
-	^Rectangle
-		left: r left + self left
-		right: r right - self right
-		top: r top + self top
-		bottom: r bottom - self bottom!
-
-relativeTo: p <Point> mightIntersectRect: other <Rect> ^<Boolean>
-	"A faster form of ((self relativeTo: p) mightIntersect: other)"
-
-	| orig <Point> corn <Point> oorig <Point> ocorn <Point> x <Number> y <Number> |
-	orig := self origin.
-	corn := self corner.
-	oorig := other origin.
-	ocorn := other corner.
-	x := p x.
-	y := p y.
-	^orig x - x < ocorn x and: [ orig y - y < ocorn y
-		and: [ oorig x < (corn x - x) and: [ oorig y < (corn y - y) ]]  ]!
-
-translatedBy: p <Point> surelyContainedByRect: other <Rect> ^<Boolean>
-
-	| orig <Point> corn <Point> oorig <Point> ocorn <Point> x <Number> y <Number> |
-	orig := self origin.
-	corn := self corner.
-	oorig := other origin.
-	ocorn := other corner.
-	x := p x.
-	y := p y.
-	^oorig x <= (orig x + x) and: [ oorig y <= (orig y + y)
-		and: [ ocorn x >= (corn x + x) and: [ ocorn y >= (corn y + y) ]]]! !
 

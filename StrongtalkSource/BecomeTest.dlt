@@ -1,0 +1,36 @@
+Delta define: #BecomeTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #BecomeTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BecomeTest) group: 'system test'!
+
+(Delta mirrorFor: #BecomeTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #BecomeTest) methodsFor: 'testing' !
+
+
+testBecome
+
+	|first second source target|
+	first := Array with: 1.
+	second := Array with: 2.
+	source := first copy.
+	target := second copy.
+	
+	self assert: (source = first).
+	self assert: (target = second).
+	source become: target.
+	self assert: (source = second).
+	self assert: (target = first)!
+
+testBecomeShouldReportErrorWhenReceiverIsSmallInteger
+
+	[1 become: ''.
+	TestFailure signal]
+		on: Error
+		do: [:error| self assert: ('FirstArgumentHasWrongType' = error messageText)]
+! !
+

@@ -32,6 +32,14 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
 '!
 
+! (Delta mirrorFor: #Painter) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	DefaultPainter := self new freeze.
+	DefaultBackgroundPainter := self new paint: Paint white; freeze.! !
+
 ! (Delta mirrorFor: #Painter) classSide methodsFor: 'instance creation' !
 
 
@@ -52,14 +60,6 @@ defaultBackground ^<Painter>
 new ^<Instance>
 
 	^super new initialize! !
-
-! (Delta mirrorFor: #Painter) classSide methodsFor: 'initialization' !
-
-
-initialize
-
-	DefaultPainter := self new freeze.
-	DefaultBackgroundPainter := self new paint: Paint white; freeze.! !
 
 ! (Delta mirrorFor: #Painter) methodsFor: 'accessing' !
 
@@ -132,6 +132,54 @@ paint: p <Paint>
 	paint := p.
 	self penStateChanged; brushStateChanged.! !
 
+! (Delta mirrorFor: #Painter) methodsFor: 'control' !
+
+
+freeze
+	"A frozen painter can never be changed again.  Glyphs, and other things that require
+		a painter whose state will not change use frozen painters."
+
+	version := nil.! !
+
+! (Delta mirrorFor: #Painter) methodsFor: 'initialization' !
+
+
+initialize
+
+		version := 0.
+		paint := Paint default.
+		font := Font default.
+
+		"edge properties"
+		lineWidth := 1.
+		lineStyle := #solid.
+	"	endStyle := 
+		joinStyle <Symbol>
+"! !
+
+! (Delta mirrorFor: #Painter) methodsFor: 'private' !
+
+
+brushStateChanged
+
+	 win32Brush := nil!
+
+penStateChanged
+
+	 win32Pen := nil!
+
+postCopy
+
+	super postCopy.
+
+	"The new copy should be unfrozen"
+	version := 0.!
+
+stateChanged
+
+	"This will crash and burn if the painter is frozen (version = nil), which is what we want"
+	 version := version + 1! !
+
 ! (Delta mirrorFor: #Painter) methodsFor: 'restricted-win32 accessing' !
 
 
@@ -178,52 +226,4 @@ win32Pen ^<HPEN>
 win32TextColor ^<Int | Nil>
 
 	^self paint win32Color! !
-
-! (Delta mirrorFor: #Painter) methodsFor: 'private' !
-
-
-brushStateChanged
-
-	 win32Brush := nil!
-
-penStateChanged
-
-	 win32Pen := nil!
-
-postCopy
-
-	super postCopy.
-
-	"The new copy should be unfrozen"
-	version := 0.!
-
-stateChanged
-
-	"This will crash and burn if the painter is frozen (version = nil), which is what we want"
-	 version := version + 1! !
-
-! (Delta mirrorFor: #Painter) methodsFor: 'initialization' !
-
-
-initialize
-
-		version := 0.
-		paint := Paint default.
-		font := Font default.
-
-		"edge properties"
-		lineWidth := 1.
-		lineStyle := #solid.
-	"	endStyle := 
-		joinStyle <Symbol>
-"! !
-
-! (Delta mirrorFor: #Painter) methodsFor: 'control' !
-
-
-freeze
-	"A frozen painter can never be changed again.  Glyphs, and other things that require
-		a painter whose state will not change use frozen painters."
-
-	version := nil.! !
 

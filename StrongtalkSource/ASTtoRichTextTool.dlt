@@ -40,6 +40,117 @@ which will be used if one of the above mentioned are not specified.
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'accessing' !
+
+
+compute ^ <SeqCltn[E]>	
+	
+	| value <SeqCltn[E]> |
+	self insertCommentIntervals.								"Add comment intervals from scanner"
+	self parseTrees do: [ :pt <ParseTree> |
+		self currentParseTree: pt.
+		pt body apply: self ].											"Add AST based intervals"
+	self insertSelectorAndCodeIntervals.			"Add remaining intervals"
+	self sortResult.
+
+	value := OrderedCollection[E] new: self source size.
+	self result do: [ :e <Tuple[[Character,^E], Tuple[Int,Int]]> | 
+		e at2 at1 to: e at2 at2 - 1 do: [ :index <Int> |
+			value add: (e at1 value: (self source at: index)) ] ].
+
+	self assert: [ value size = self source size ].
+	^value
+!
+
+parseTree: pt <ParseTree[ASTNode]>
+
+	self parseTrees: (OrderedCollection[ParseTree[ASTNode]] with: pt).
+!
+
+parseTrees ^ <Cltn[ParseTree[ASTNode]]>
+
+	^parseTrees!
+
+parseTrees: pts <Cltn[ParseTree[ASTNode]]>
+
+	| src <Str> |
+	self initialize.
+
+	"Verify that the source pointers in the list of parse trees are identical"
+	self assert: [ pts size > 0 ].
+	src := pts first source.
+	2 to: pts size do: [ :i <Int> | self assert: [ (pts at: i) source = src ] ].
+	
+	parseTrees := pts! !
+
+! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'builders' !
+
+
+codeBuilder ^ <[Character,^E]>
+
+	^codeBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	codeBuilder ]
+		!
+
+codeBuilder: b <[Character,^E]>
+
+	codeBuilder := b!
+
+commentBuilder ^ <[Character,^E]>
+
+	^commentBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	commentBuilder ]
+		!
+
+commentBuilder: b <[Character,^E]>
+
+	commentBuilder := b!
+
+defaultBuilder ^ <[Character,^E]>
+
+	defaultBuilder isNil
+		ifTrue: [	self error: 'Default builder not specified' ].
+	^defaultBuilder!
+
+defaultBuilder: b <[Character,^E]>
+
+	defaultBuilder := b!
+
+inferenceclauseBuilder ^ <[Character,^E]>
+
+	^inferenceclauseBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	inferenceclauseBuilder ]
+		!
+
+inferenceclauseBuilder: b <[Character,^E]>
+
+	inferenceclauseBuilder := b!
+
+selectorBuilder ^ <[Character,^E]>
+
+	^selectorBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	selectorBuilder ]
+		!
+
+selectorBuilder: b <[Character,^E]>
+
+	selectorBuilder := b!
+
+typeexpressionBuilder ^ <[Character,^E]>
+
+	^typeexpressionBuilder isNil
+		ifTrue: [		self defaultBuilder ]
+		ifFalse: [	typeexpressionBuilder ]
+		!
+
+typeexpressionBuilder: b <[Character,^E]>
+
+	typeexpressionBuilder := b! !
+
 ! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'node traversal' !
 
 
@@ -358,115 +469,4 @@ initialize
 	self selectorEnd: nil.
 	self currentParseTree: nil.
 	! !
-
-! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'builders' !
-
-
-codeBuilder ^ <[Character,^E]>
-
-	^codeBuilder isNil
-		ifTrue: [		self defaultBuilder ]
-		ifFalse: [	codeBuilder ]
-		!
-
-codeBuilder: b <[Character,^E]>
-
-	codeBuilder := b!
-
-commentBuilder ^ <[Character,^E]>
-
-	^commentBuilder isNil
-		ifTrue: [		self defaultBuilder ]
-		ifFalse: [	commentBuilder ]
-		!
-
-commentBuilder: b <[Character,^E]>
-
-	commentBuilder := b!
-
-defaultBuilder ^ <[Character,^E]>
-
-	defaultBuilder isNil
-		ifTrue: [	self error: 'Default builder not specified' ].
-	^defaultBuilder!
-
-defaultBuilder: b <[Character,^E]>
-
-	defaultBuilder := b!
-
-inferenceclauseBuilder ^ <[Character,^E]>
-
-	^inferenceclauseBuilder isNil
-		ifTrue: [		self defaultBuilder ]
-		ifFalse: [	inferenceclauseBuilder ]
-		!
-
-inferenceclauseBuilder: b <[Character,^E]>
-
-	inferenceclauseBuilder := b!
-
-selectorBuilder ^ <[Character,^E]>
-
-	^selectorBuilder isNil
-		ifTrue: [		self defaultBuilder ]
-		ifFalse: [	selectorBuilder ]
-		!
-
-selectorBuilder: b <[Character,^E]>
-
-	selectorBuilder := b!
-
-typeexpressionBuilder ^ <[Character,^E]>
-
-	^typeexpressionBuilder isNil
-		ifTrue: [		self defaultBuilder ]
-		ifFalse: [	typeexpressionBuilder ]
-		!
-
-typeexpressionBuilder: b <[Character,^E]>
-
-	typeexpressionBuilder := b! !
-
-! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'accessing' !
-
-
-compute ^ <SeqCltn[E]>	
-	
-	| value <SeqCltn[E]> |
-	self insertCommentIntervals.								"Add comment intervals from scanner"
-	self parseTrees do: [ :pt <ParseTree> |
-		self currentParseTree: pt.
-		pt body apply: self ].											"Add AST based intervals"
-	self insertSelectorAndCodeIntervals.			"Add remaining intervals"
-	self sortResult.
-
-	value := OrderedCollection[E] new: self source size.
-	self result do: [ :e <Tuple[[Character,^E], Tuple[Int,Int]]> | 
-		e at2 at1 to: e at2 at2 - 1 do: [ :index <Int> |
-			value add: (e at1 value: (self source at: index)) ] ].
-
-	self assert: [ value size = self source size ].
-	^value
-!
-
-parseTree: pt <ParseTree[ASTNode]>
-
-	self parseTrees: (OrderedCollection[ParseTree[ASTNode]] with: pt).
-!
-
-parseTrees ^ <Cltn[ParseTree[ASTNode]]>
-
-	^parseTrees!
-
-parseTrees: pts <Cltn[ParseTree[ASTNode]]>
-
-	| src <Str> |
-	self initialize.
-
-	"Verify that the source pointers in the list of parse trees are identical"
-	self assert: [ pts size > 0 ].
-	src := pts first source.
-	2 to: pts size do: [ :i <Int> | self assert: [ (pts at: i) source = src ] ].
-	
-	parseTrees := pts! !
 

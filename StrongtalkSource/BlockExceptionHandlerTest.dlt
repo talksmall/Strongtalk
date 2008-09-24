@@ -1,0 +1,39 @@
+Delta define: #BlockExceptionHandlerTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #BlockExceptionHandlerTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BlockExceptionHandlerTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #BlockExceptionHandlerTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #BlockExceptionHandlerTest) methodsFor: 'Testing' !
+
+
+testDefaultHandlerShouldReportErrorAfterReturnFromNonResumableDefaultAction
+
+	| handler exception wasHandled |
+	handler := BlockExceptionHandler default.
+	exception := TestException defaultActionBlock: [].
+	exception resumable: false.
+	[exception signal.
+	self signalFailure: 'Handler should not return']
+		on: Error
+		do: [:error| self assert: 'Return from non-resumable default action is not supported' = error messageText
+									description: error messageText.
+				wasHandled := true].
+	self assert: wasHandled description: 'Handler should report error'!
+
+testShouldInvokeHandlerBlockWithException
+
+	|handled exception|
+	handled := false.
+	exception = Object new.
+	(BlockExceptionHandler
+		handleBlock: [:ex| self assert: (ex == exception).
+									handled := true])
+		handle: exception.
+	self assert: handled! !
+

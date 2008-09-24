@@ -61420,3 +61420,158 @@ elapsed * 1000.0/ count printOn: Transcript cr; yourself! !
 "September 8, 2008 -> 9:45:57"!
 
 "System saved" !
+"September 24, 2008 -> 1:24:11"!
+
+Delta define: #SequenceableCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
+testIsSortedBy
+
+
+	self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]].
+	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
+testIsSortedBy
+
+
+	"self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]]."
+	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
+testIsSortedBy
+
+
+	self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]].
+	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'testing' !
+isSortedBy: compare <[E,E,^Boolean]> ^<Boolean>
+	"Returns true if the receiver is in sorted order, using the specified comparison"
+
+	| last <E> |
+	self size < 2
+		ifTrue: [ ^true ].
+	last := self at: 1.
+	2 to: self size do:
+		[ :i <Int> | |current|
+			(compare value: last value: (current := self at: i))
+				ifFalse: [ ^false ].
+			last := current].
+	^true! !
+
+"September 24, 2008 -> 1:24:12"!
+
+Delta define: #SortedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]].! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
+				description: 'collection should be sorted'].! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self shouldnt: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
+				description: 'collection should be sorted'].! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
+				description: 'collection should be sorted'].! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortSimpleCollection
+
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)]! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortSimpleCollection
+
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortSimpleCollection
+
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 2 1)asSortedCollection asArray = #(1 1 2)].! !
+
+"September 24, 2008 -> 1:24:12"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortSimpleCollection
+
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 2 1)asSortedCollection asArray = #(1 1 2)].
+	self should: [#(1 2 1 2)asSortedCollection asArray = #(1 1 2 2)].! !
+
+"September 24, 2008 -> 1:38:52"!
+
+"System saved" !

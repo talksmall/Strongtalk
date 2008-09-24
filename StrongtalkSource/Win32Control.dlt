@@ -145,6 +145,484 @@ debugNotifications ^<Boolean>
 
 	^false! !
 
+! (Delta mirrorFor: #Win32Control) methodsFor: 'accessing' !
+
+
+backgroundPainter ^<Painter>
+
+	backgroundPainter isNil
+		ifTrue: [ ^super backgroundPainter ].
+	^backgroundPainter!
+
+enabled ^<Boolean>
+
+	^enabled!
+
+enabled: flag <Boolean>
+
+	self enabled = flag
+		ifFalse: [	self setEnabled: flag ].!
+
+fullyEnabled ^<Boolean>
+
+	"is true if we are enabled and all parents are enabled"
+	^self enabled and: [ super enabled ]!
+
+nativeWindow ^<Window | Win32Control>
+
+	^self!
+
+redraw ^<Boolean>
+
+	^redraw! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'control' !
+
+
+changing
+
+	"flush the cached background painter so that it updates"
+	backgroundPainter := nil.
+	
+	super changing!
+
+deferringRedrawDo: blk <[^Object]>
+	"defer redrawing during evaluation of blk.  If these calls are nested recursively,
+	   redrawing is deferred until the outermost returns, at which point the entire control
+	   is invalidated.  This can be used to surround a large number of changes to the receiver
+	   that would otherwise cause redundant redrawing."
+
+	| oldFlag <Boolean> |
+	oldFlag := self redraw.
+	self redraw: false.
+	blk value.
+	self redraw: oldFlag.
+	oldFlag
+		ifTrue: [ self invalidate ]!
+
+ignoreNextFocusSet: flag <Boolean>
+
+	ignoreNextFocusSet := flag!
+
+release
+
+	self hasWin32Handle
+		ifTrue: [ self destroyWin32Handle ].
+	super release.!
+
+visible: flag <Boolean>
+
+	| data <ExternalData> |
+	self assert: [ self hasWin32Handle ].
+
+	data := flag ifTrue: [ Win32 SW_SHOW ] ifFalse: [ Win32 SW_HIDE ].
+	{{<user ExternalProxy ShowWindow> hwnd: self win32Handle flag: data}}.! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'debugging' !
+
+
+printAllocOn: strm <CharOutputStream>
+
+	super printAllocOn: strm.
+	self hasWin32Handle
+		ifTrue: [	strm show: ' hwnd: '; print: self win32Handle ]
+		ifFalse: [ strm show: ' (no hwnd)' ]! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	can subwindowsToDisplay add: self! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^(self callOrigWndProcFor: ev msg) = 0!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^(self callOrigWndProcFor: ev msg) = 0!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^(self callOrigWndProcFor: ev msg) = 0!
+
+mouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
+
+	| orig <Point> |
+
+	"Translate location back into native window coordinates"
+	orig := self allocation enclosingRect origin.
+	^(self callOrigWndProcFor: ev msg withLParam: (ExternalProxy forHigh: loc y - orig y low: loc x - orig x)) = 0! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'geometry-local' !
+
+
+allocation: r <Region> at: pos <Point>
+
+	| oldAlloc <Region> alloc <Rect> oldLayoutStatus <Int> |
+	oldLayoutStatus := self layoutStatus.
+	oldAlloc := allocation.
+	alloc := r enclosingRect.
+	super allocation: r at: pos.
+
+	oldAlloc isNil
+		ifTrue: [ self win32Handle.		"Make sure window is created with the current allocation & position" ]
+		ifFalse: [	| oldNativePos <Point> old <Rect> | 
+						"We need to use a variable since pos...Window changes nativePos"
+						old := oldAlloc enclosingRect.
+						oldNativePos := nativePosition.
+						self hasWin32Handle
+							ifTrue: [	(old width ~= alloc width
+													or: [ old height ~= alloc height
+													or: [ oldNativePos ~= self nativePosition ]  ] )
+												ifTrue: [  self updateWindowDimensions  ]	 ]
+							ifFalse: [	self isAttached
+												ifTrue: [ self win32Handle ]	] ].
+	"Invalidate if we are relaying out as a %hack to solve the problems that a higher level
+		relayoutAndInvalidate doesn't invalidate contained native windows like this one"
+	oldLayoutStatus = Visual needsRelayout
+		ifTrue: [ self invalidate ]! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'geometry-nonlocal' !
+
+
+moveBy: positionDelta <Point>
+
+	"We override this since moving a native visual will generate any needed invalidations
+	  automatically."
+
+	self adjustPositionBy: positionDelta! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	redraw := true.
+	enabled := true.
+	isFocus := false.
+	self addNonLocalCount: 1.		"Receiver is non-local"
+	ignoreNextFocusSet := false.
+
+	self refreshInterval: self defaultRefreshInterval.
+	self paintPending: false.
+	self useDisplayBuffering: true.
+	controls := IdentitySet[Win32Control] new.! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'methods copied from Window' !
+
+
+checkPaintTime: t <Float>
+	"If we have reached our refresh time, paint"
+
+	(self hasWin32Handle and: [ self paintPending ])
+		ifTrue: [ self nextPaintTime <= t
+						ifTrue: [ self display ]
+						ifFalse: [ self session needPaintAtTime: self nextPaintTime ]	 ]!
+
+controls ^<Extensible[Win32Control]>
+
+	^controls!
+
+cursor ^<Cursor>
+
+	^cursor!
+
+cursor: c <Cursor>
+
+	cursor := c.!
+
+defaultRefreshInterval ^<Float>
+
+	^0.25!
+
+globalFromLocalPosition: p <WinPOINT> ^<WinPOINT>
+
+	| wp <WinPOINT> result <WinPOINT> |
+	wp := WinPOINT new allocate.
+	wp x: p x; y: p y.
+	{{<user ExternalProxy ClientToScreen>
+			handle: self win32Handle
+			point: wp
+	}} asBoolean
+		ifFalse: [ Win32 handleError ].
+	result := wp x @ wp y.
+	wp free.
+	^result!
+
+handleMouseEvent: type <Symbol> at: loc <Point> ^<Boolean>
+
+	| ev <UIEvent> |
+
+	"%todo: remove the dispatch block for all events; isn't needed anymore"
+	ev := UIEvent
+			forMsg: self session currentMsg
+			dispatch:
+				[ :e <UIEvent> :h <UIEventHandler> |
+					h mouseEvent: type at: loc event: e ].
+	Sampler notNil
+		ifTrue: [ Sampler 
+						in: self topWindow visual 
+						sampleEvent: type 
+						at: (loc translatedBy: self positionInTopWindow)
+						event: ev ].
+	^self mouseEvent: type at: loc event: ev!
+
+localFromGlobalPosition: p <WinPOINT> ^<WinPOINT>
+
+	| wp <WinPOINT> result <WinPOINT> |
+	wp := WinPOINT new allocate.
+	wp x: p x; y: p y.
+	{{<user ExternalProxy ScreenToClient>
+			handle: self win32Handle
+			point: wp
+	}} asBoolean
+		ifFalse: [ Win32 handleError ].
+	result := wp x @ wp y.
+	wp free.
+	^result translatedBy: self allocation enclosingRect origin!
+
+nextPaintTime ^<Float>
+
+	^nextPaintTime!
+
+nextPaintTime: t <Float>
+
+	nextPaintTime := t!
+
+noPalette
+
+	palette := nil!
+
+paintOccuring
+
+	self nextPaintTime: Time clockValue + self refreshInterval.
+	self paintPending: false.
+	self session paintOccuredFor: self.!
+
+paintPending ^<Boolean>
+
+	^paintPending!
+
+paintPending: b <Boolean>
+
+	paintPending := b!
+
+palette ^<Palette>
+
+	^palette!
+
+palette: p <Palette>
+
+	p == palette
+		ifTrue: [ ^self ].
+	self assert: [ palette isNil ].
+	palette := p!
+
+paletteChangedMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	wParam @= self win32Handle
+		ifFalse: [ self recursiveRealizePaletteForeground: false updateColors: true.
+						self palette isNil
+							ifTrue: [ ^self callDefWndProcFor: hwnd
+											msgCode: msg
+											wParam: wParam
+											lParam: lParam	].
+					 ].
+	^0!
+
+queryPaletteMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	self recursiveRealizePaletteForeground: true updateColors: false.
+	self palette isNil
+		ifTrue: [ ^self callDefWndProcFor: hwnd
+						msgCode: msg
+						wParam: wParam
+						lParam: lParam	].
+	^0!
+
+recursiveRealizePaletteForeground: fore <Boolean> updateColors: update <Boolean>
+
+	self palette isNil
+		ifFalse: [	self withDCDo:
+							[ :hdc <HDC> |
+								| oldpal <Win32Handle> |
+								oldpal := Palette select: self palette win32Handle into: hdc background: fore not.
+								self palette unrealize.
+								self palette realizeFor: hdc.
+								Palette debugging
+									ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
+								Palette select: oldpal win32Handle into: hdc background: fore not.
+							 ].
+						self invalidate.
+						].
+	self controls do:
+		[ :c <Win32Control> |
+			c recursiveRealizePaletteForeground: fore updateColors: update ].!
+
+refreshInterval ^<Float>
+
+	^refreshInterval!
+
+refreshInterval: d <Float>
+	"Wait no longer than this amount of time (in seconds) between
+		paint operations, if possible"
+
+	refreshInterval := d!
+
+registerControl: c <Win32Control>
+
+	self controls include: c!
+
+registerPaintTime
+
+	self paintPending
+		ifFalse: [	self paintPending: true.
+						self nextPaintTime: Time clockValue + self refreshInterval.
+						self session schedulePaintFor: self at: self nextPaintTime.	].!
+
+setCursor ^<ExternalData>
+
+	^cursor isNil
+		ifFalse: [	{{<user ExternalProxy SetCursor> handle: cursor win32Handle}}.
+						1 ]
+		ifTrue: [ 0 ]!
+
+setCursorMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<ExternalData>
+
+	^(cursor notNil
+			and: [	| hitcode <Int> |
+						hitcode := lParam asExternalProxy low.
+						hitcode = 1 or: [ hitcode = 65534 ] "client area or disabled"  ])
+		ifTrue: [ 	self setCursor.
+						1 ]
+		ifFalse: [ self callOrigWndProc: msg wParam: wParam lParam: lParam ]
+!
+
+showTimes ^<Boolean>
+	"Report preference, layout, and painting times on the transcript"
+
+	^false!
+
+unregisterControl: c <Win32Control>
+
+	self controls removeEvery: c!
+
+useDisplayBuffering ^<Boolean>
+
+	^useDisplayBuffering!
+
+useDisplayBuffering: f <Boolean>
+
+	useDisplayBuffering := f!
+
+withBufferedCanvasDo: drawing <[Canvas,^X def]> ^<X>
+
+	^self withDirectCanvasDo:
+		[ :directCanvas <Canvas> |
+			| invalid <Rect> oldpal <Win32Handle> |
+			invalid := directCanvas clippingRect.
+
+			self session
+				withBufferCanvasFor: invalid
+				do: [ :bufferCanvas <Canvas> :buffer <HBITMAP> |
+							self palette isNil
+								ifFalse: [ oldpal := bufferCanvas win32Palette: self palette win32Handle ].
+
+							"draw on the buffer canvas"
+							drawing value: bufferCanvas.
+							bufferCanvas shallowFlush.
+
+							"Now, copy the buffer bits onto the screen"
+							directCanvas atOffset: invalid origin
+								do: [ bufferCanvas atOffset: invalid origin 
+									do: [	directCanvas
+													bitBlt: bufferCanvas
+												extent: invalid extent
+												op: UI ropCopy.		].	].
+							oldpal notNil
+								ifTrue: [ 	Palette debugging
+													ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
+												bufferCanvas win32Palette: oldpal ]. 
+						].	
+		]!
+
+withCanvasDo: drawing <[Canvas,^X def]> ^<X>
+
+	^(self useDisplayBuffering and: [ Window bufferingPossible ])
+		ifFalse: [	self withDirectCanvasDo: drawing ]
+		ifTrue: [	self withBufferedCanvasDo: drawing ]!
+
+withDCDo: blk <[HDC]>
+	"With the window's device context do the block (not for painting)"
+
+	| hdc <HDC> |
+	hdc := {{<user HDC GetDC> hwnd: self win32Handle}}.
+	[ blk value: hdc ]
+		ensure: [ hdc releaseDCFor: self win32Handle ]!
+
+withDirectCanvasDo: drawing <[Canvas,^X def]> ^<X>
+
+	|	can <Canvas>
+		ps <PAINTSTRUCT>
+		paintBlk <[^Object]>
+		result <X>
+		oldpal <Win32Handle>  |
+
+	"use a critical region to paint, since background painting might reuse the
+	  same device context in the UI thread"
+	^self critical:
+		[	ps := PAINTSTRUCT new allocateZeroed.
+			can := self beginPaint: self win32Handle paintStructure: ps.
+			can isNull
+				ifTrue: [ Win32 handleError ].
+			can	initialize;
+				toRelease: [ :dc <HDC> | "End paint will release the context" ];
+				initClippingRectBeforeTranslation: ps rcPaint asRectangle;
+				window: self.
+			self palette isNil
+				ifFalse: [ oldpal := can win32Palette: self palette win32Handle ].
+
+			Session debugInvalidation
+				ifTrue: [	can withPainter: (Painter new paint: Paint red)
+									do: [ can displayFilledRectangle: ps rcPaint asRectangle; flush. ].
+								Platform errorStream show: self class name, ' rendering: '; print: ps rcPaint asRectangle; cr.	].
+
+			result := drawing value: can.
+			oldpal notNil
+				ifTrue: [ 	Palette debugging
+									ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
+								can win32Palette: oldpal ]. 
+			can release. 
+
+			self endPaint: self win32Handle paintStructure: ps.
+			ps free.
+			result	]! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'methods copied from Windows with mods' !
+
+
+display
+
+	"win32 controls do no Smalltalk level painting by default"! !
+
 ! (Delta mirrorFor: #Win32Control) methodsFor: 'notification' !
 
 
@@ -411,6 +889,55 @@ wndProc: wp <ExternalProxy>
 
 	Window wndProcOf: self win32Handle put: wp! !
 
+! (Delta mirrorFor: #Win32Control) methodsFor: 'private-message handling' !
+
+
+beforeKillFocus
+
+	(self session hasInputFocus and: [ self session inputFocus nativeWindow = self ])
+		ifTrue: [ self session noInputFocus ].!
+
+beforeSetFocus
+
+	ignoreNextFocusSet
+		ifTrue: [	"We requested the focus, and have already recorded it, so
+							ignore this."
+						ignoreNextFocusSet := false.	]
+		ifFalse: [	"We didn't request this, so windows must be requesting it, so
+							record it"
+						"We don't use becomeFocus here because that would cause another
+							windows setFocus message"
+						self session inputFocus: self.		]!
+
+contextMenuMsg: msg <ExternalData>
+hwnd: hwnd <HWND>
+wParam: wParam <ExternalData>
+lParam: lParam <ExternalData>
+^<Boolean>
+
+	^self displayUpwardPopUpMenuAt:
+			(self localFromGlobalPosition: lParam low @ lParam high)! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'private-testing' !
+
+
+isFocusCandidate ^<Boolean>
+
+	^self canBeFocusCandidate
+		and: [ self hasWin32Handle
+		and: [ self enabled ] ]!
+
+isRectangularAndOpaque ^<Boolean>
+
+	^true! !
+
+! (Delta mirrorFor: #Win32Control) methodsFor: 'restricted-to session' !
+
+
+blinkFocus: shown <Boolean>
+	
+! !
+
 ! (Delta mirrorFor: #Win32Control) methodsFor: 'restricted-win32' !
 
 
@@ -562,537 +1089,10 @@ win32Handle ^<HWND>
 		ifTrue: [ self createNativeWindow ].
 	^win32Handle! !
 
-! (Delta mirrorFor: #Win32Control) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas>
-
-	can subwindowsToDisplay add: self! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'geometry-local' !
-
-
-allocation: r <Region> at: pos <Point>
-
-	| oldAlloc <Region> alloc <Rect> oldLayoutStatus <Int> |
-	oldLayoutStatus := self layoutStatus.
-	oldAlloc := allocation.
-	alloc := r enclosingRect.
-	super allocation: r at: pos.
-
-	oldAlloc isNil
-		ifTrue: [ self win32Handle.		"Make sure window is created with the current allocation & position" ]
-		ifFalse: [	| oldNativePos <Point> old <Rect> | 
-						"We need to use a variable since pos...Window changes nativePos"
-						old := oldAlloc enclosingRect.
-						oldNativePos := nativePosition.
-						self hasWin32Handle
-							ifTrue: [	(old width ~= alloc width
-													or: [ old height ~= alloc height
-													or: [ oldNativePos ~= self nativePosition ]  ] )
-												ifTrue: [  self updateWindowDimensions  ]	 ]
-							ifFalse: [	self isAttached
-												ifTrue: [ self win32Handle ]	] ].
-	"Invalidate if we are relaying out as a %hack to solve the problems that a higher level
-		relayoutAndInvalidate doesn't invalidate contained native windows like this one"
-	oldLayoutStatus = Visual needsRelayout
-		ifTrue: [ self invalidate ]! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'accessing' !
-
-
-backgroundPainter ^<Painter>
-
-	backgroundPainter isNil
-		ifTrue: [ ^super backgroundPainter ].
-	^backgroundPainter!
-
-enabled ^<Boolean>
-
-	^enabled!
-
-enabled: flag <Boolean>
-
-	self enabled = flag
-		ifFalse: [	self setEnabled: flag ].!
-
-fullyEnabled ^<Boolean>
-
-	"is true if we are enabled and all parents are enabled"
-	^self enabled and: [ super enabled ]!
-
-nativeWindow ^<Window | Win32Control>
-
-	^self!
-
-redraw ^<Boolean>
-
-	^redraw! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'initialization' !
-
-
-initialize
-
-	super initialize.
-	redraw := true.
-	enabled := true.
-	isFocus := false.
-	self addNonLocalCount: 1.		"Receiver is non-local"
-	ignoreNextFocusSet := false.
-
-	self refreshInterval: self defaultRefreshInterval.
-	self paintPending: false.
-	self useDisplayBuffering: true.
-	controls := IdentitySet[Win32Control] new.! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'control' !
-
-
-changing
-
-	"flush the cached background painter so that it updates"
-	backgroundPainter := nil.
-	
-	super changing!
-
-deferringRedrawDo: blk <[^Object]>
-	"defer redrawing during evaluation of blk.  If these calls are nested recursively,
-	   redrawing is deferred until the outermost returns, at which point the entire control
-	   is invalidated.  This can be used to surround a large number of changes to the receiver
-	   that would otherwise cause redundant redrawing."
-
-	| oldFlag <Boolean> |
-	oldFlag := self redraw.
-	self redraw: false.
-	blk value.
-	self redraw: oldFlag.
-	oldFlag
-		ifTrue: [ self invalidate ]!
-
-ignoreNextFocusSet: flag <Boolean>
-
-	ignoreNextFocusSet := flag!
-
-release
-
-	self hasWin32Handle
-		ifTrue: [ self destroyWin32Handle ].
-	super release.!
-
-visible: flag <Boolean>
-
-	| data <ExternalData> |
-	self assert: [ self hasWin32Handle ].
-
-	data := flag ifTrue: [ Win32 SW_SHOW ] ifFalse: [ Win32 SW_HIDE ].
-	{{<user ExternalProxy ShowWindow> hwnd: self win32Handle flag: data}}.! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'private-testing' !
-
-
-isFocusCandidate ^<Boolean>
-
-	^self canBeFocusCandidate
-		and: [ self hasWin32Handle
-		and: [ self enabled ] ]!
-
-isRectangularAndOpaque ^<Boolean>
-
-	^true! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'private-message handling' !
-
-
-beforeKillFocus
-
-	(self session hasInputFocus and: [ self session inputFocus nativeWindow = self ])
-		ifTrue: [ self session noInputFocus ].!
-
-beforeSetFocus
-
-	ignoreNextFocusSet
-		ifTrue: [	"We requested the focus, and have already recorded it, so
-							ignore this."
-						ignoreNextFocusSet := false.	]
-		ifFalse: [	"We didn't request this, so windows must be requesting it, so
-							record it"
-						"We don't use becomeFocus here because that would cause another
-							windows setFocus message"
-						self session inputFocus: self.		]!
-
-contextMenuMsg: msg <ExternalData>
-hwnd: hwnd <HWND>
-wParam: wParam <ExternalData>
-lParam: lParam <ExternalData>
-^<Boolean>
-
-	^self displayUpwardPopUpMenuAt:
-			(self localFromGlobalPosition: lParam low @ lParam high)! !
-
 ! (Delta mirrorFor: #Win32Control) methodsFor: 'testing' !
 
 
 isFocus ^<Boolean>
 
 	^isFocus! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'event handling' !
-
-
-character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	^(self callOrigWndProcFor: ev msg) = 0!
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	^(self callOrigWndProcFor: ev msg) = 0!
-
-keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	^(self callOrigWndProcFor: ev msg) = 0!
-
-mouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
-
-	| orig <Point> |
-
-	"Translate location back into native window coordinates"
-	orig := self allocation enclosingRect origin.
-	^(self callOrigWndProcFor: ev msg withLParam: (ExternalProxy forHigh: loc y - orig y low: loc x - orig x)) = 0! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'geometry-nonlocal' !
-
-
-moveBy: positionDelta <Point>
-
-	"We override this since moving a native visual will generate any needed invalidations
-	  automatically."
-
-	self adjustPositionBy: positionDelta! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'methods copied from Window' !
-
-
-checkPaintTime: t <Float>
-	"If we have reached our refresh time, paint"
-
-	(self hasWin32Handle and: [ self paintPending ])
-		ifTrue: [ self nextPaintTime <= t
-						ifTrue: [ self display ]
-						ifFalse: [ self session needPaintAtTime: self nextPaintTime ]	 ]!
-
-controls ^<Extensible[Win32Control]>
-
-	^controls!
-
-cursor ^<Cursor>
-
-	^cursor!
-
-cursor: c <Cursor>
-
-	cursor := c.!
-
-defaultRefreshInterval ^<Float>
-
-	^0.25!
-
-globalFromLocalPosition: p <Point> ^<Point>
-
-	| wp <POINT> result <Point> |
-	wp := POINT new allocate.
-	wp x: p x; y: p y.
-	{{<user ExternalProxy ClientToScreen>
-			handle: self win32Handle
-			point: wp
-	}} asBoolean
-		ifFalse: [ Win32 handleError ].
-	result := wp x @ wp y.
-	wp free.
-	^result!
-
-handleMouseEvent: type <Symbol> at: loc <Point> ^<Boolean>
-
-	| ev <UIEvent> |
-
-	"%todo: remove the dispatch block for all events; isn't needed anymore"
-	ev := UIEvent
-			forMsg: self session currentMsg
-			dispatch:
-				[ :e <UIEvent> :h <UIEventHandler> |
-					h mouseEvent: type at: loc event: e ].
-	Sampler notNil
-		ifTrue: [ Sampler 
-						in: self topWindow visual 
-						sampleEvent: type 
-						at: (loc translatedBy: self positionInTopWindow)
-						event: ev ].
-	^self mouseEvent: type at: loc event: ev!
-
-localFromGlobalPosition: p <Point> ^<Point>
-
-	| wp <POINT> result <Point> |
-	wp := POINT new allocate.
-	wp x: p x; y: p y.
-	{{<user ExternalProxy ScreenToClient>
-			handle: self win32Handle
-			point: wp
-	}} asBoolean
-		ifFalse: [ Win32 handleError ].
-	result := wp x @ wp y.
-	wp free.
-	^result translatedBy: self allocation enclosingRect origin!
-
-nextPaintTime ^<Float>
-
-	^nextPaintTime!
-
-nextPaintTime: t <Float>
-
-	nextPaintTime := t!
-
-noPalette
-
-	palette := nil!
-
-paintOccuring
-
-	self nextPaintTime: Time clockValue + self refreshInterval.
-	self paintPending: false.
-	self session paintOccuredFor: self.!
-
-paintPending ^<Boolean>
-
-	^paintPending!
-
-paintPending: b <Boolean>
-
-	paintPending := b!
-
-palette ^<Palette>
-
-	^palette!
-
-palette: p <Palette>
-
-	p == palette
-		ifTrue: [ ^self ].
-	self assert: [ palette isNil ].
-	palette := p!
-
-paletteChangedMsg: msg <ExternalData>
-hwnd: hwnd <HWND>
-wParam: wParam <ExternalData>
-lParam: lParam <ExternalData>
-^<ExternalData>
-
-	wParam @= self win32Handle
-		ifFalse: [ self recursiveRealizePaletteForeground: false updateColors: true.
-						self palette isNil
-							ifTrue: [ ^self callDefWndProcFor: hwnd
-											msgCode: msg
-											wParam: wParam
-											lParam: lParam	].
-					 ].
-	^0!
-
-queryPaletteMsg: msg <ExternalData>
-hwnd: hwnd <HWND>
-wParam: wParam <ExternalData>
-lParam: lParam <ExternalData>
-^<ExternalData>
-
-	self recursiveRealizePaletteForeground: true updateColors: false.
-	self palette isNil
-		ifTrue: [ ^self callDefWndProcFor: hwnd
-						msgCode: msg
-						wParam: wParam
-						lParam: lParam	].
-	^0!
-
-recursiveRealizePaletteForeground: fore <Boolean> updateColors: update <Boolean>
-
-	self palette isNil
-		ifFalse: [	self withDCDo:
-							[ :hdc <HDC> |
-								| oldpal <Win32Handle> |
-								oldpal := Palette select: self palette win32Handle into: hdc background: fore not.
-								self palette unrealize.
-								self palette realizeFor: hdc.
-								Palette debugging
-									ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
-								Palette select: oldpal win32Handle into: hdc background: fore not.
-							 ].
-						self invalidate.
-						].
-	self controls do:
-		[ :c <Win32Control> |
-			c recursiveRealizePaletteForeground: fore updateColors: update ].!
-
-refreshInterval ^<Float>
-
-	^refreshInterval!
-
-refreshInterval: d <Float>
-	"Wait no longer than this amount of time (in seconds) between
-		paint operations, if possible"
-
-	refreshInterval := d!
-
-registerControl: c <Win32Control>
-
-	self controls include: c!
-
-registerPaintTime
-
-	self paintPending
-		ifFalse: [	self paintPending: true.
-						self nextPaintTime: Time clockValue + self refreshInterval.
-						self session schedulePaintFor: self at: self nextPaintTime.	].!
-
-setCursor ^<ExternalData>
-
-	^cursor isNil
-		ifFalse: [	{{<user ExternalProxy SetCursor> handle: cursor win32Handle}}.
-						1 ]
-		ifTrue: [ 0 ]!
-
-setCursorMsg: msg <ExternalData>
-hwnd: hwnd <HWND>
-wParam: wParam <ExternalData>
-lParam: lParam <ExternalData>
-^<ExternalData>
-
-	^(cursor notNil
-			and: [	| hitcode <Int> |
-						hitcode := lParam asExternalProxy low.
-						hitcode = 1 or: [ hitcode = 65534 ] "client area or disabled"  ])
-		ifTrue: [ 	self setCursor.
-						1 ]
-		ifFalse: [ self callOrigWndProc: msg wParam: wParam lParam: lParam ]
-!
-
-showTimes ^<Boolean>
-	"Report preference, layout, and painting times on the transcript"
-
-	^false!
-
-unregisterControl: c <Win32Control>
-
-	self controls removeEvery: c!
-
-useDisplayBuffering ^<Boolean>
-
-	^useDisplayBuffering!
-
-useDisplayBuffering: f <Boolean>
-
-	useDisplayBuffering := f!
-
-withBufferedCanvasDo: drawing <[Canvas,^X def]> ^<X>
-
-	^self withDirectCanvasDo:
-		[ :directCanvas <Canvas> |
-			| invalid <Rect> oldpal <Win32Handle> |
-			invalid := directCanvas clippingRect.
-
-			self session
-				withBufferCanvasFor: invalid
-				do: [ :bufferCanvas <Canvas> :buffer <HBITMAP> |
-							self palette isNil
-								ifFalse: [ oldpal := bufferCanvas win32Palette: self palette win32Handle ].
-
-							"draw on the buffer canvas"
-							drawing value: bufferCanvas.
-							bufferCanvas shallowFlush.
-
-							"Now, copy the buffer bits onto the screen"
-							directCanvas atOffset: invalid origin
-								do: [ bufferCanvas atOffset: invalid origin 
-									do: [	directCanvas
-													bitBlt: bufferCanvas
-												extent: invalid extent
-												op: UI ropCopy.		].	].
-							oldpal notNil
-								ifTrue: [ 	Palette debugging
-													ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
-												bufferCanvas win32Palette: oldpal ]. 
-						].	
-		]!
-
-withCanvasDo: drawing <[Canvas,^X def]> ^<X>
-
-	^(self useDisplayBuffering and: [ Window bufferingPossible ])
-		ifFalse: [	self withDirectCanvasDo: drawing ]
-		ifTrue: [	self withBufferedCanvasDo: drawing ]!
-
-withDCDo: blk <[HDC]>
-	"With the window's device context do the block (not for painting)"
-
-	| hdc <HDC> |
-	hdc := {{<user HDC GetDC> hwnd: self win32Handle}}.
-	[ blk value: hdc ]
-		ensure: [ hdc releaseDCFor: self win32Handle ]!
-
-withDirectCanvasDo: drawing <[Canvas,^X def]> ^<X>
-
-	|	can <Canvas>
-		ps <PAINTSTRUCT>
-		paintBlk <[^Object]>
-		result <X>
-		oldpal <Win32Handle>  |
-
-	"use a critical region to paint, since background painting might reuse the
-	  same device context in the UI thread"
-	^self critical:
-		[	ps := PAINTSTRUCT new allocateZeroed.
-			can := self beginPaint: self win32Handle paintStructure: ps.
-			can isNull
-				ifTrue: [ Win32 handleError ].
-			can	initialize;
-				toRelease: [ :dc <HDC> | "End paint will release the context" ];
-				initClippingRectBeforeTranslation: ps rcPaint asRectangle;
-				window: self.
-			self palette isNil
-				ifFalse: [ oldpal := can win32Palette: self palette win32Handle ].
-
-			Session debugInvalidation
-				ifTrue: [	can withPainter: (Painter new paint: Paint red)
-									do: [ can displayFilledRectangle: ps rcPaint asRectangle; flush. ].
-								Platform errorStream show: self class name, ' rendering: '; print: ps rcPaint asRectangle; cr.	].
-
-			result := drawing value: can.
-			oldpal notNil
-				ifTrue: [ 	Palette debugging
-									ifTrue: [ Platform errorStream show: '(Restoring old palette)'.	].
-								can win32Palette: oldpal ]. 
-			can release. 
-
-			self endPaint: self win32Handle paintStructure: ps.
-			ps free.
-			result	]! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'methods copied from Windows with mods' !
-
-
-display
-
-	"win32 controls do no Smalltalk level painting by default"! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'debugging' !
-
-
-printAllocOn: strm <CharOutputStream>
-
-	super printAllocOn: strm.
-	self hasWin32Handle
-		ifTrue: [	strm show: ' hwnd: '; print: self win32Handle ]
-		ifFalse: [ strm show: ' (no hwnd)' ]! !
-
-! (Delta mirrorFor: #Win32Control) methodsFor: 'restricted-to session' !
-
-
-blinkFocus: shown <Boolean>
-	
-! !
 

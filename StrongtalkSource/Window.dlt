@@ -75,6 +75,31 @@ Tags: %User %UI
 Use and distribution of this software is subject to the terms of the attached source license.
 '!
 
+! (Delta mirrorFor: #Window) classSide methodsFor: 'custom messages' !
+
+
+LAYOUT ^<ExternalData>
+	"This is by the UI thread to tell a window's session process to layout a window.  This has
+	  to be done through the message queue so that the layout code runs in the window's session
+	  process.  lParam low is width, and lParam high is height."
+
+	^16r400! !
+
+! (Delta mirrorFor: #Window) classSide methodsFor: 'debugging' !
+
+
+bufferingPossible ^<Boolean>
+
+	BufferingPossible isNil
+		ifTrue: [ BufferingPossible := true ].
+	^BufferingPossible!
+
+bufferingPossible: f <Boolean>
+	"If this is set to false, all double buffering will be disabled, usually for debugging
+		purposes."
+
+	BufferingPossible := f! !
+
 ! (Delta mirrorFor: #Window) classSide methodsFor: 'restricted-win32 functions' !
 
 
@@ -105,30 +130,118 @@ wndProcOf: w <HWND> put: newWinProc <HWND> ^<HWND>
 
 	^{{<user ExternalProxy SetWindowLongA> wnd: w attr: Win32 GWL_WNDPROC value: newWinProc}}! !
 
-! (Delta mirrorFor: #Window) classSide methodsFor: 'custom messages' !
+! (Delta mirrorFor: #Window) methodsFor: 'VisualParent impl' !
 
 
-LAYOUT ^<ExternalData>
-	"This is by the UI thread to tell a window's session process to layout a window.  This has
-	  to be done through the message queue so that the layout code runs in the window's session
-	  process.  lParam low is width, and lParam high is height."
+addNonLocalCount: delta <Int>
+	
+	!
 
-	^16r400! !
+containerBackgroundPainter ^<Painter>
 
-! (Delta mirrorFor: #Window) classSide methodsFor: 'debugging' !
+	^Painter defaultBackground!
+
+containsFocus: flag <Boolean>
+
+	flag
+		ifTrue: [	self session activeWindow: self.
+						self mostRecentInputFocus: session inputFocus.	].
+	"We don't need to remove the active window ifFalse because the session does that"!
+
+displayNowIfInvalid
+	"Redraw any invalid areas before proceeded"
+
+	self display!
+
+displayPopUpMenu: menu <Menu> at: loc <Point> forButton: button <Symbol>
+
+	| gloc <Point> flags <ExternalData> |
+	popUpMenu := menu.
+
+	flags := Win32 TPM_LEFTALIGN.
+	button = #left
+		ifTrue: [ flags := flags externalBitOr: Win32 TPM_LEFTBUTTON ]
+		ifFalse: [ flags := flags externalBitOr: Win32 TPM_RIGHTBUTTON ].
+
+	gloc := self globalFromLocalPosition: loc.
+	{{<user ExternalProxy TrackPopupMenu>
+		handle: menu win32Handle
+		flags: flags
+		x: gloc x
+		y: gloc y
+		reserved: 0
+		window: self win32Handle
+		rect: Win32 NULL
+	}} asBoolean
+		ifFalse: [ Win32 getLastError @= Win32 ERROR_POPUP_ALREADY_ACTIVE
+							ifFalse: [ Win32 handleError ].
+						].
+
+	popUpMenu := nil.
+!
+
+invalidate: r <Region> forChild: child <Visual>
+
+	self invalidate: (r enclosingRect translatedBy: child position)!
+
+isAttached ^<Boolean>
+
+	^true!
+
+nativeWindow ^<Window | Win32Control>
+
+	^self!
+
+parentVisualOfChild ^<Visual>
+
+	self shouldNotHappen!
+
+popUpMenuIfAbsent: f <[^X def]> ^<Menu | X>
+
+	^f value!
+
+positionInContainingNativeWindowOf: child <Visual> ^<Point>
+
+	^child position!
+
+positionInTopWindowOf: child <Visual>
+
+	^child position!
+
+scrollIfNeededToMakeVisible: area <Rect>
+relativeTo: v <Visual>
+minimizeMotion: minimizeMotion <Boolean>
 
 
-bufferingPossible ^<Boolean>
+	!
 
-	BufferingPossible isNil
-		ifTrue: [ BufferingPossible := true ].
-	^BufferingPossible!
+scrollMeOrAParentBy: distance <Int> vertical: vertical <Boolean>
 
-bufferingPossible: f <Boolean>
-	"If this is set to false, all double buffering will be disabled, usually for debugging
-		purposes."
+	"do nothing"!
 
-	BufferingPossible := f! !
+topWindow ^<Window>
+
+	^self!
+
+translate: p <Point> fromChild: child <Visual> ^<Point>
+
+	"Translate p from the child's coordinates to ours"
+	^p translatedBy: child position!
+
+translate: p <Point> toChild: child <Visual> ^<Point>
+
+	"Translate p from our coordinates to the child's"
+	^p relativeTo: child position!
+
+translateRect: r <Rect> fromChild: child <Visual> ^<Rect>
+
+	"Translate p from the child's coordinates to ours"
+	^r translatedBy: child position!
+
+translateRect: r <Rect> toChild: child <Visual> ^<Rect>
+
+	"Translate p from the child's coordinates to ours"
+	^r relativeTo: child position! !
 
 ! (Delta mirrorFor: #Window) methodsFor: 'accessing' !
 
@@ -302,6 +415,136 @@ useDisplayBuffering: f <Boolean>
 visual ^<Visual>
 
 	^visual! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'control' !
+
+
+close
+	"Close and destroy the window.  This causes release to be sent to the window and its visual"
+
+	self session aboutToDestroyWindow: self.
+	{{<user ExternalProxy DestroyWindow> arg: win32Handle}}.
+!
+
+ignoreNextFocusSet: flag <Boolean>
+
+	ignoreNextFocusSet := flag!
+
+invalidate
+
+	self visual layoutStatus > Visual invalid
+		ifTrue: [ self invalidate: self allocation enclosingRect	].!
+
+invalidate: r <Region>
+
+	| rect <Rect> |
+
+	self registerPaintTime.
+	rect := r enclosingRect.
+	(self scratchRECT)
+		left: rect left asInteger;
+		right: rect right asInteger;
+		top: rect top asInteger;
+		bottom: rect bottom asInteger.
+	{{<user ExternalProxy InvalidateRect>
+		hwnd: self win32Handle
+		RECT: self scratchRECT
+		erase: false asExternalData}}!
+
+makeActive
+	"Make this the active window"
+
+	{{<user ExternalProxy SetForegroundWindow> hwnd: self win32Handle }}.!
+
+release
+
+	scratchRECT free.
+
+	self session unregisterWindow: self.
+
+	visual notNil
+		ifTrue: [	visual detaching; release.
+						visual := nil.	].
+
+	win32Handle := nil.
+
+	self hasMenu
+		ifTrue: [ self menu release ].
+	mostRecentInputFocus := nil.
+	menu := nil.
+	popUpMenu := nil.
+	toClose := nil.
+	controls := nil.
+!
+
+requestClose
+
+	self toClose value: self.!
+
+show
+	"Make the window visible"
+
+	{{<user ExternalProxy ShowWindow>
+			window: self win32Handle
+			nCmdShow: self nCmdShow}}.
+	!
+
+showModal
+	"Make the window visible as a modal window"
+
+	self session addModalWindow: self.
+	self show.
+	! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'debugging' !
+
+
+dumpOn: strm <CharOutputStream>
+
+Transcript show: self class name, ' extent: '; print: self extent; show: ' hwnd: '; print: self win32Handle; cr.
+	self visual dumpOn: strm indent: 1.! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'event handling' !
+
+
+character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^(self visual character: c focus: focus event: ev)
+		or: [	c = Character tab
+					onTrue: [ self handleTabEvent: ev ] ]!
+
+keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	(self visual keyDown: key focus: focus event: ev)
+		ifTrue: [ ^true ].
+		
+	(key = #TAB and: [ ev ctrlPressed ])
+		ifTrue: [ self handleTabEvent: ev.	^true ].
+	key = #F1 ifTrue: [ Profiler start.	^true ].
+	key = #F2 ifTrue: [ Profiler stop.	^true ].
+	^false	!
+
+keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
+
+	^self visual keyUp: key focus: focus event: ev
+!
+
+mouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
+
+	^self visual layoutStatus = Visual valid
+		and: [ 	| grabGotIt <Boolean> |
+						grabGotIt := self session
+												mouseEvent: type
+												at: loc
+												event: ev.
+						grabGotIt or: [	(self visual renderingRegion inParentContainsPoint: loc)
+												and: [	Sampler notNil
+																ifTrue: [ Sampler in: self visual sampleEvent: type at: loc - self visual position event: ev ].
+															self visual
+																mouseEvent: type
+																at: loc - self visual position
+																event: ev	] ] ]
+! !
 
 ! (Delta mirrorFor: #Window) methodsFor: 'initialization' !
 
@@ -543,10 +786,10 @@ getPosition ^<Point>
 		ifFalse: [ Win32 handleError ].
 	^self scratchRECT left @ self scratchRECT top!
 
-globalFromLocalPosition: p <Point> ^<Point>
+globalFromLocalPosition: p <WinPOINT> ^<WinPOINT>
 
-	| wp <POINT> result <Point> |
-	wp := POINT new allocate.
+	| wp <WinPOINT> result <WinPOINT> |
+	wp := WinPOINT new allocate.
 	wp x: p x; y: p y.
 	{{<user ExternalProxy ClientToScreen>
 			handle: self win32Handle
@@ -711,10 +954,10 @@ layout: extent <Point>
 							ifFalse: [	self findInputFocus ]
 					  ]!
 
-localFromGlobalPosition: p <Point> ^<Point>
+localFromGlobalPosition: p <WinPOINT> ^<WinPOINT>
 
-	| wp <POINT> result <Point> |
-	wp := POINT new allocate.
+	| wp <WinPOINT> result <WinPOINT> |
+	wp := WinPOINT new allocate.
 	wp x: p x; y: p y.
 	{{<user ExternalProxy ScreenToClient>
 			handle: self win32Handle
@@ -1004,6 +1247,110 @@ wndProc ^<APICallback>
 
 	^self session wndProc! !
 
+! (Delta mirrorFor: #Window) methodsFor: 'private-testing' !
+
+
+paintPending ^<Boolean>
+
+	^paintPending!
+
+paintPending: b <Boolean>
+
+	paintPending := b! !
+
+! (Delta mirrorFor: #Window) methodsFor: 'restricted-to session' !
+
+
+changing
+
+	self session changing: self.
+	self session recordPrefsFor: self.
+	natural := min := max := nil.!
+
+checkLayout: oldPrefs <SeqCltn[Region]>
+
+	| oldNat <Rect> alloc <Rect> nat <Rect> ext <Point> |
+	oldNat := (oldPrefs at: 2) enclosingRect.
+	self computePreferences.
+	nat := self natural enclosingRect.
+	alloc := self allocation enclosingRect.
+
+	"We have to do the relayout eagerly, even before the size message
+			comes back, because the caller assumes that layout is then done."
+
+	((alloc contains: self min enclosingRect)
+			and: [ self max enclosedRect contains: alloc ]
+	)	ifFalse: [	"We definitely have to change our size"
+							self relayoutIfNeededForExtent: nat extent.
+							self extent: nat extent.
+							^self	].
+
+	(self optimizeIncrementalLayout
+			or: [ nat = oldNat
+			or: [	alloc contains: nat ] ])
+		ifTrue: [	self relayoutIfNeededForExtent: self extent.
+						^self ].
+
+	ext := (nat width max: alloc width) @ (nat height max: alloc height).
+	self relayoutIfNeededForExtent: ext.
+	self extent: ext.!
+
+checkPaintTime: t <Float>
+	"If we have reached our refresh time, paint"
+	
+"%todo: figure out how to remove the following %hack
+		this should not be sent after the receiver is released)"	
+visual isNil ifTrue: [ ^self ].
+
+	(self hasWin32Handle and: [ self paintPending ])
+		ifTrue: [ self nextPaintTime <= t
+						ifTrue: [ self display ]
+						ifFalse: [ self session needPaintAtTime: self nextPaintTime ]	 ]!
+
+oldcheckLayout: oldPrefs <SeqCltn[Region]>
+
+	| oldNat <Rect> alloc <Rect> nat <Rect> |
+	oldNat := (oldPrefs at: 2) enclosingRect.
+	self computePreferences.
+	nat := self natural enclosingRect.
+	alloc := self allocation enclosingRect.
+
+	"We have to do the relayout eagerly, even before the size message
+			comes back, because the caller assumes that layout is then done."
+	self relayoutIfNeeded.
+
+	((alloc contains: self min enclosingRect)
+			and: [ (self max enclosedRect contains: alloc)
+			and: [ self optimizeIncrementalLayout
+							or: [ nat = oldNat
+							or: [	alloc contains: nat ] ] ] ]
+	)	ifFalse: [	"We definitely have to change our size"
+						self setExtent: nat extent.	].
+!
+
+prefs ^<SeqCltn[Region]>
+
+	^Array[Region] with: self min with: self natural with: self max!
+
+prefsStatus ^<Int>
+
+	^Visual valid!
+
+prerecordPrefsIfNeeded
+
+	"nothing to do"!
+
+processDeferredPainting
+
+	self deferredPaintRegion notNil
+		ifTrue: [	self invalidate: self deferredPaintRegion.
+						self deferredPaintRegion: nil.		]!
+
+removeParentsFrom: leaves <Set[RelayoutTarget]>
+alreadyChecked: checked <Set[RelayoutTarget]>
+
+	"nothing to do"! !
+
 ! (Delta mirrorFor: #Window) methodsFor: 'restricted-win32' !
 
 
@@ -1096,241 +1443,6 @@ win32Handle ^<HWND>
 		ifTrue: [	self session creatingWindow: self do:
 							[	self buildWin32Handle; recordExtent. ].  ].
 	^win32Handle! !
-
-! (Delta mirrorFor: #Window) methodsFor: 'control' !
-
-
-close
-	"Close and destroy the window.  This causes release to be sent to the window and its visual"
-
-	self session aboutToDestroyWindow: self.
-	{{<user ExternalProxy DestroyWindow> arg: win32Handle}}.
-!
-
-ignoreNextFocusSet: flag <Boolean>
-
-	ignoreNextFocusSet := flag!
-
-invalidate
-
-	self visual layoutStatus > Visual invalid
-		ifTrue: [ self invalidate: self allocation enclosingRect	].!
-
-invalidate: r <Region>
-
-	| rect <Rect> |
-
-	self registerPaintTime.
-	rect := r enclosingRect.
-	(self scratchRECT)
-		left: rect left asInteger;
-		right: rect right asInteger;
-		top: rect top asInteger;
-		bottom: rect bottom asInteger.
-	{{<user ExternalProxy InvalidateRect>
-		hwnd: self win32Handle
-		RECT: self scratchRECT
-		erase: false asExternalData}}!
-
-makeActive
-	"Make this the active window"
-
-	{{<user ExternalProxy SetForegroundWindow> hwnd: self win32Handle }}.!
-
-release
-
-	scratchRECT free.
-
-	self session unregisterWindow: self.
-
-	visual notNil
-		ifTrue: [	visual detaching; release.
-						visual := nil.	].
-
-	win32Handle := nil.
-
-	self hasMenu
-		ifTrue: [ self menu release ].
-	mostRecentInputFocus := nil.
-	menu := nil.
-	popUpMenu := nil.
-	toClose := nil.
-	controls := nil.
-!
-
-requestClose
-
-	self toClose value: self.!
-
-show
-	"Make the window visible"
-
-	{{<user ExternalProxy ShowWindow>
-			window: self win32Handle
-			nCmdShow: self nCmdShow}}.
-	!
-
-showModal
-	"Make the window visible as a modal window"
-
-	self session addModalWindow: self.
-	self show.
-	! !
-
-! (Delta mirrorFor: #Window) methodsFor: 'VisualParent impl' !
-
-
-addNonLocalCount: delta <Int>
-	
-	!
-
-containerBackgroundPainter ^<Painter>
-
-	^Painter defaultBackground!
-
-containsFocus: flag <Boolean>
-
-	flag
-		ifTrue: [	self session activeWindow: self.
-						self mostRecentInputFocus: session inputFocus.	].
-	"We don't need to remove the active window ifFalse because the session does that"!
-
-displayNowIfInvalid
-	"Redraw any invalid areas before proceeded"
-
-	self display!
-
-displayPopUpMenu: menu <Menu> at: loc <Point> forButton: button <Symbol>
-
-	| gloc <Point> flags <ExternalData> |
-	popUpMenu := menu.
-
-	flags := Win32 TPM_LEFTALIGN.
-	button = #left
-		ifTrue: [ flags := flags externalBitOr: Win32 TPM_LEFTBUTTON ]
-		ifFalse: [ flags := flags externalBitOr: Win32 TPM_RIGHTBUTTON ].
-
-	gloc := self globalFromLocalPosition: loc.
-	{{<user ExternalProxy TrackPopupMenu>
-		handle: menu win32Handle
-		flags: flags
-		x: gloc x
-		y: gloc y
-		reserved: 0
-		window: self win32Handle
-		rect: Win32 NULL
-	}} asBoolean
-		ifFalse: [ Win32 getLastError @= Win32 ERROR_POPUP_ALREADY_ACTIVE
-							ifFalse: [ Win32 handleError ].
-						].
-
-	popUpMenu := nil.
-!
-
-invalidate: r <Region> forChild: child <Visual>
-
-	self invalidate: (r enclosingRect translatedBy: child position)!
-
-isAttached ^<Boolean>
-
-	^true!
-
-nativeWindow ^<Window | Win32Control>
-
-	^self!
-
-parentVisualOfChild ^<Visual>
-
-	self shouldNotHappen!
-
-popUpMenuIfAbsent: f <[^X def]> ^<Menu | X>
-
-	^f value!
-
-positionInContainingNativeWindowOf: child <Visual> ^<Point>
-
-	^child position!
-
-positionInTopWindowOf: child <Visual>
-
-	^child position!
-
-scrollIfNeededToMakeVisible: area <Rect>
-relativeTo: v <Visual>
-minimizeMotion: minimizeMotion <Boolean>
-
-
-	!
-
-scrollMeOrAParentBy: distance <Int> vertical: vertical <Boolean>
-
-	"do nothing"!
-
-topWindow ^<Window>
-
-	^self!
-
-translate: p <Point> fromChild: child <Visual> ^<Point>
-
-	"Translate p from the child's coordinates to ours"
-	^p translatedBy: child position!
-
-translate: p <Point> toChild: child <Visual> ^<Point>
-
-	"Translate p from our coordinates to the child's"
-	^p relativeTo: child position!
-
-translateRect: r <Rect> fromChild: child <Visual> ^<Rect>
-
-	"Translate p from the child's coordinates to ours"
-	^r translatedBy: child position!
-
-translateRect: r <Rect> toChild: child <Visual> ^<Rect>
-
-	"Translate p from the child's coordinates to ours"
-	^r relativeTo: child position! !
-
-! (Delta mirrorFor: #Window) methodsFor: 'event handling' !
-
-
-character: c <Character> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	^(self visual character: c focus: focus event: ev)
-		or: [	c = Character tab
-					onTrue: [ self handleTabEvent: ev ] ]!
-
-keyDown: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	(self visual keyDown: key focus: focus event: ev)
-		ifTrue: [ ^true ].
-		
-	(key = #TAB and: [ ev ctrlPressed ])
-		ifTrue: [ self handleTabEvent: ev.	^true ].
-	key = #F1 ifTrue: [ Profiler start.	^true ].
-	key = #F2 ifTrue: [ Profiler stop.	^true ].
-	^false	!
-
-keyUp: key <Symbol> focus: focus <Visual> event: ev <UIEvent> ^<Boolean>
-
-	^self visual keyUp: key focus: focus event: ev
-!
-
-mouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
-
-	^self visual layoutStatus = Visual valid
-		and: [ 	| grabGotIt <Boolean> |
-						grabGotIt := self session
-												mouseEvent: type
-												at: loc
-												event: ev.
-						grabGotIt or: [	(self visual renderingRegion inParentContainsPoint: loc)
-												and: [	Sampler notNil
-																ifTrue: [ Sampler in: self visual sampleEvent: type at: loc - self visual position event: ev ].
-															self visual
-																mouseEvent: type
-																at: loc - self visual position
-																event: ev	] ] ]
-! !
 
 ! (Delta mirrorFor: #Window) methodsFor: 'restricted-win32 queued message handling' !
 
@@ -1663,118 +1775,6 @@ lParam: lParam <ExternalData>
 							]
 		 ].
 	^0! !
-
-! (Delta mirrorFor: #Window) methodsFor: 'restricted-to session' !
-
-
-changing
-
-	self session changing: self.
-	self session recordPrefsFor: self.
-	natural := min := max := nil.!
-
-checkLayout: oldPrefs <SeqCltn[Region]>
-
-	| oldNat <Rect> alloc <Rect> nat <Rect> ext <Point> |
-	oldNat := (oldPrefs at: 2) enclosingRect.
-	self computePreferences.
-	nat := self natural enclosingRect.
-	alloc := self allocation enclosingRect.
-
-	"We have to do the relayout eagerly, even before the size message
-			comes back, because the caller assumes that layout is then done."
-
-	((alloc contains: self min enclosingRect)
-			and: [ self max enclosedRect contains: alloc ]
-	)	ifFalse: [	"We definitely have to change our size"
-							self relayoutIfNeededForExtent: nat extent.
-							self extent: nat extent.
-							^self	].
-
-	(self optimizeIncrementalLayout
-			or: [ nat = oldNat
-			or: [	alloc contains: nat ] ])
-		ifTrue: [	self relayoutIfNeededForExtent: self extent.
-						^self ].
-
-	ext := (nat width max: alloc width) @ (nat height max: alloc height).
-	self relayoutIfNeededForExtent: ext.
-	self extent: ext.!
-
-checkPaintTime: t <Float>
-	"If we have reached our refresh time, paint"
-	
-"%todo: figure out how to remove the following %hack
-		this should not be sent after the receiver is released)"	
-visual isNil ifTrue: [ ^self ].
-
-	(self hasWin32Handle and: [ self paintPending ])
-		ifTrue: [ self nextPaintTime <= t
-						ifTrue: [ self display ]
-						ifFalse: [ self session needPaintAtTime: self nextPaintTime ]	 ]!
-
-oldcheckLayout: oldPrefs <SeqCltn[Region]>
-
-	| oldNat <Rect> alloc <Rect> nat <Rect> |
-	oldNat := (oldPrefs at: 2) enclosingRect.
-	self computePreferences.
-	nat := self natural enclosingRect.
-	alloc := self allocation enclosingRect.
-
-	"We have to do the relayout eagerly, even before the size message
-			comes back, because the caller assumes that layout is then done."
-	self relayoutIfNeeded.
-
-	((alloc contains: self min enclosingRect)
-			and: [ (self max enclosedRect contains: alloc)
-			and: [ self optimizeIncrementalLayout
-							or: [ nat = oldNat
-							or: [	alloc contains: nat ] ] ] ]
-	)	ifFalse: [	"We definitely have to change our size"
-						self setExtent: nat extent.	].
-!
-
-prefs ^<SeqCltn[Region]>
-
-	^Array[Region] with: self min with: self natural with: self max!
-
-prefsStatus ^<Int>
-
-	^Visual valid!
-
-prerecordPrefsIfNeeded
-
-	"nothing to do"!
-
-processDeferredPainting
-
-	self deferredPaintRegion notNil
-		ifTrue: [	self invalidate: self deferredPaintRegion.
-						self deferredPaintRegion: nil.		]!
-
-removeParentsFrom: leaves <Set[RelayoutTarget]>
-alreadyChecked: checked <Set[RelayoutTarget]>
-
-	"nothing to do"! !
-
-! (Delta mirrorFor: #Window) methodsFor: 'private-testing' !
-
-
-paintPending ^<Boolean>
-
-	^paintPending!
-
-paintPending: b <Boolean>
-
-	paintPending := b! !
-
-! (Delta mirrorFor: #Window) methodsFor: 'debugging' !
-
-
-dumpOn: strm <CharOutputStream>
-
-Transcript show: self class name, ' extent: '; print: self extent; show: ' hwnd: '; print: self win32Handle; cr.
-	self visual dumpOn: strm indent: 1.! !
 
 ! (Delta mirrorFor: #Window) methodsFor: 'testing' !
 

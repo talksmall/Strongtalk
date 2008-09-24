@@ -19,160 +19,6 @@ checkNotification
 		{{primitiveNotificationQueueGetIfFail: [ :err |^self]}}  notify.
 	] repeat.! !
 
-! (Delta mirrorFor: #Bootstrap) methodsFor: 'private' !
-
-
-cpuBenchmark
-
-	Transcript print: [ 3 timesRepeat: [ self testBlueBookCPUBoundClasses ] ] time; cr.!
-
-newListBox
-	| lb |
-	lb := ListBox forMultipleSelections" forSingleSelection".
-													lb xStretchy: true; variableItemHeight: false.
-													lb stringList: #(hello goodbye atest andanotherstring 'Hi Urs' lsdfsdfsdfsdfsd sdkfljsdlkfjsdlkjf lksdfjlksdjfklsdjfklsdf lksdfj kksdlf lksdfj sdflj lsdjflksjdkfjlk ksldfjlksdfjklsjdf sdkfjl sdklfjkljlksdj lksdjfl ksdjf sdfsdfsf sdfsdfsdfsf sdfsdfsdfsf) .
-													lb onSelChange: [ :lb | Transcript print: lb selections; cr. ].
-													lb onDoubleClick: [ :lb | Transcript show: 'DOUBLE!!'; print: lb selections; cr. ].
-													lb simpleMultiple: false.
-													lb resetNaturalHeight: 10.
-													lb selections: (Set withAll: #(2)).
-	^lb withBorder: (Border standard3DRaised: false)
-!
-
-newWidget
-
-	^self newListBox!
-
-streamRead
-
-	| p s c |
-	p := FilePath for: 'foo.dat'.
-	Transcript print: [
-	s := p charInputStream.
-	c := 0.
-	[ s atEnd ]
-		whileFalse: [ self assert: [ s next == $a ].
-								c := c + 1. ].
-	self assert: [ c = 1000000 ].
-	s close. ] time; cr.!
-
-streamRead2
-
-	| p s c v |
-	p := FilePath for: 'foo.dat'.
-	Transcript print: [
-	s := p charInputStream.
-	c := 0.
-	[ s atEnd ]
-		whileFalse: [ c = 10000 ifTrue: [ self halt. ].	v := s upTo: Character cr.
-								self assert: [  v size = 98 ].
-								c := c + 1. ].
-	self assert: [ c = 10000 ].
-	s close. ] time; cr.!
-
-streamWrite
-
-	| p s |
-	p := FilePath for: 'foo.dat'.
-	Transcript print: [
-	s := p charOutputStream.
-	1000000 timesRepeat:
-		[ s put: $a ].
-	s close. ] time; cr.!
-
-streamWrite2
-
-	| p s |
-	p := FilePath for: 'foo.dat'.
-	Transcript print: [
-	s := p charOutputStream.
-	10000 timesRepeat:
-		[	98 timesRepeat: [ s put: $a ].
-			s cr. ].
-	s close. ] time; cr.! !
-
-! (Delta mirrorFor: #Bootstrap) methodsFor: 'utilities' !
-
-
-clearLookupCache
-	{{primitiveClearLookupCache}}!
-
-decodeAllMethods
-	{{primitiveDecodeAllMethods}}.!
-
-printObjectHistogram
-	{{primitivePrintObjectHistogram}}!
-
-setupInlining
-	"Set inlining flags for helping the inlining compiler. Experimental"
-	
-	((Mirror on: HashedCollection) 	compiledMethodAt: #at: 					ifFail: []) neverInline.
-	((Mirror on: Dictionary) 					compiledMethodAt: #at:put:				ifFail: []) neverInline.
-	((Mirror on: Dictionary) 					compiledMethodAt: #at:put:ifNew:	ifFail: []) alwaysInline.
-	((Mirror on: OutputStreamView) 	compiledMethodAt: #cr						ifFail: []) neverInline.
-	((Mirror on: Object) 							compiledMethodAt: #assert:				ifFail: []) alwaysInline.
-! !
-
-! (Delta mirrorFor: #Bootstrap) methodsFor: 'test code' !
-
-
-doubleOverflowCheck
-	| number |
-	number := 2.0.
-	[ number isFinite ] whileTrue: [
-		Transcript print: number; cr.
-		number := number * number.
-	]!
-
-indexTest
-	   'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
-        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1!
-
-testContext
-	self testContext: 1 and: 2 and: 3!
-
-testContext: a and: b and: c
-	[ (a + b) printString. self deoptimize ] value!
-
-testNLR
-	| f |
-	f := self testNLRBlock.
-	f value.
-	
-!
-
-testNLRBlock
-	^[^self]! !
-
-! (Delta mirrorFor: #Bootstrap) methodsFor: 'typechecker tests' !
-
-
-displayErrorsFromHandler: eh  <DeltaTypeErrorHandler>  
-
-eh reportedErrors isEmpty 
-   ifTrue:[Transcript  show: 'No type errors'; cr.]
-   ifFalse:[eh reportedErrors do:[: e <TypeError> | Transcript show: e errorMessage; cr.]].!
-
-tryNewClass!
-
-tryNewMixin!
-
-typecheckMinWorld!
-
-typecheckMirror: m <Mirror>
-
-m typecheck. 
-m classSide typecheck
-! !
-
 ! (Delta mirrorFor: #Bootstrap) methodsFor: 'dave''s benchmarks' !
 
 
@@ -220,6 +66,13 @@ Transcript show: '-------------------------------------- starting Set>>includes:
 
 ! (Delta mirrorFor: #Bootstrap) methodsFor: 'library testing' !
 
+
+deterministicallyTestSystem
+	"As many tests as we can do deterministically (i.e. without requiring UI interaction, for now)."
+
+	self testLibrary.
+	"Smalltalk recompileAllMethods."
+	Transcript show: 'Testing completed.'; cr.!
 
 testBlueBookCPUBoundClasses
 
@@ -476,6 +329,78 @@ uiMenu ^<Menu>
 							checked: [ Session debugIncrementalLayout ];
 							action: [	Session debugIncrementalLayout: Session debugIncrementalLayout not]	)! !
 
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'private' !
+
+
+cpuBenchmark
+
+	Transcript print: [ 3 timesRepeat: [ self testBlueBookCPUBoundClasses ] ] time; cr.!
+
+newListBox
+	| lb |
+	lb := ListBox forMultipleSelections" forSingleSelection".
+													lb xStretchy: true; variableItemHeight: false.
+													lb stringList: #(hello goodbye atest andanotherstring 'Hi Urs' lsdfsdfsdfsdfsd sdkfljsdlkfjsdlkjf lksdfjlksdjfklsdjfklsdf lksdfj kksdlf lksdfj sdflj lsdjflksjdkfjlk ksldfjlksdfjklsjdf sdkfjl sdklfjkljlksdj lksdjfl ksdjf sdfsdfsf sdfsdfsdfsf sdfsdfsdfsf) .
+													lb onSelChange: [ :lb | Transcript print: lb selections; cr. ].
+													lb onDoubleClick: [ :lb | Transcript show: 'DOUBLE!!'; print: lb selections; cr. ].
+													lb simpleMultiple: false.
+													lb resetNaturalHeight: 10.
+													lb selections: (Set withAll: #(2)).
+	^lb withBorder: (Border standard3DRaised: false)
+!
+
+newWidget
+
+	^self newListBox!
+
+streamRead
+
+	| p s c |
+	p := FilePath for: 'foo.dat'.
+	Transcript print: [
+	s := p charInputStream.
+	c := 0.
+	[ s atEnd ]
+		whileFalse: [ self assert: [ s next == $a ].
+								c := c + 1. ].
+	self assert: [ c = 1000000 ].
+	s close. ] time; cr.!
+
+streamRead2
+
+	| p s c v |
+	p := FilePath for: 'foo.dat'.
+	Transcript print: [
+	s := p charInputStream.
+	c := 0.
+	[ s atEnd ]
+		whileFalse: [ c = 10000 ifTrue: [ self halt. ].	v := s upTo: Character cr.
+								self assert: [  v size = 98 ].
+								c := c + 1. ].
+	self assert: [ c = 10000 ].
+	s close. ] time; cr.!
+
+streamWrite
+
+	| p s |
+	p := FilePath for: 'foo.dat'.
+	Transcript print: [
+	s := p charOutputStream.
+	1000000 timesRepeat:
+		[ s put: $a ].
+	s close. ] time; cr.!
+
+streamWrite2
+
+	| p s |
+	p := FilePath for: 'foo.dat'.
+	Transcript print: [
+	s := p charOutputStream.
+	10000 timesRepeat:
+		[	98 timesRepeat: [ s put: $a ].
+			s cr. ].
+	s close. ] time; cr.! !
+
 ! (Delta mirrorFor: #Bootstrap) methodsFor: 'startup' !
 
 
@@ -569,5 +494,87 @@ test: class title: title
     Transcript show: 'Testing '; show: title; cr.
     class test.
     Transcript show: 'end'; cr
+! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'test code' !
+
+
+doubleOverflowCheck
+	| number |
+	number := 2.0.
+	[ number isFinite ] whileTrue: [
+		Transcript print: number; cr.
+		number := number * number.
+	]!
+
+indexTest
+	   'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1.
+        'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1. 'a' at: 1!
+
+testContext
+	self testContext: 1 and: 2 and: 3!
+
+testContext: a and: b and: c
+	[ (a + b) printString. self deoptimize ] value!
+
+testNLR
+	| f |
+	f := self testNLRBlock.
+	f value.
+	
+!
+
+testNLRBlock
+	^[^self]! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'typechecker tests' !
+
+
+displayErrorsFromHandler: eh  <DeltaTypeErrorHandler>  
+
+eh reportedErrors isEmpty 
+   ifTrue:[Transcript  show: 'No type errors'; cr.]
+   ifFalse:[eh reportedErrors do:[: e <TypeError> | Transcript show: e errorMessage; cr.]].!
+
+tryNewClass!
+
+tryNewMixin!
+
+typecheckMinWorld!
+
+typecheckMirror: m <Mirror>
+
+m typecheck. 
+m classSide typecheck
+! !
+
+! (Delta mirrorFor: #Bootstrap) methodsFor: 'utilities' !
+
+
+clearLookupCache
+	{{primitiveClearLookupCache}}!
+
+decodeAllMethods
+	{{primitiveDecodeAllMethods}}.!
+
+printObjectHistogram
+	{{primitivePrintObjectHistogram}}!
+
+setupInlining
+	"Set inlining flags for helping the inlining compiler. Experimental"
+	
+	((Mirror on: HashedCollection) 	compiledMethodAt: #at: 					ifFail: []) neverInline.
+	((Mirror on: Dictionary) 					compiledMethodAt: #at:put:				ifFail: []) neverInline.
+	((Mirror on: Dictionary) 					compiledMethodAt: #at:put:ifNew:	ifFail: []) alwaysInline.
+	((Mirror on: OutputStreamView) 	compiledMethodAt: #cr						ifFail: []) neverInline.
+	((Mirror on: Object) 							compiledMethodAt: #assert:				ifFail: []) alwaysInline.
 ! !
 

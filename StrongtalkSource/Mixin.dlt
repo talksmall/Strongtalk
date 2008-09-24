@@ -10,12 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #Mixin) classSide methodsFor: 'file out' !
-
-
-fileOutSignature ^<Integer>
-    ^78! !
-
 ! (Delta mirrorFor: #Mixin) classSide methodsFor: 'Unclassified' !
 
 
@@ -24,45 +18,11 @@ superclassType: superString  <Str> body: body  <ClassMirror> ^ <MixinDeclMirror>
 
 ^MixinDeclMirror  superclassType: superString body: body! !
 
-! (Delta mirrorFor: #Mixin) methodsFor: 'file out' !
+! (Delta mirrorFor: #Mixin) classSide methodsFor: 'file out' !
 
-
-fileOutClassMixin ^<Mixin>
-	^{{primitiveMixinClassMixinOf: self ifFail: [:err | self error: err]}}!
-
-fileOutClassVarsNames ^<Array[Symbol]>
-	^{{primitiveMixin: self classVariablesIfFail: [:err <Symbol> | self error: err]}}!
-
-fileOutHeaderOn: d <Dumper>
-	super	fileOutHeaderOn: d.
-	self		fileOutMethods						fileOutOn: d.
-	self		fileOutInstVars							fileOutOn: d.
-	self		fileOutClassVarsNames			fileOutOn: d.
-	self		fileOutPrimaryInvocation		fileOutOn: d.
-	self		fileOutClassMixin					fileOutOn: d.
-	self		fileOutIsInstalled						fileOutOn: d!
-
-fileOutInstVars ^<Array[Symbol]>
-	^{{primitiveMixin: self  instanceVariablesIfFail: [:err <Symbol> | self error: err]}}!
-
-fileOutIsInstalled ^<Boolean>
-	^{{primitiveMixinIsInstalled: self ifFail: [ :err <Symbol> | self error: err]}}!
-
-fileOutMethods ^<Array[Method]>
-	| size method methods |
-	size := {{primitiveMixinNumberOfMethodsOf: self  ifFail: [:err | self error: err]}}.
-	methods := Array new: size.
-	1 to: size do: [ :index |
-		method  := {{primitiveMixin: self methodAt: index ifFail: [:err | self error: err]}}.
-		methods at: index put: method.
-	].
-	^methods!
-
-fileOutPrimaryInvocation ^<Class>
-	^{{primitiveMixinPrimaryInvocationOf: self ifFail: [ :err <Symbol> | self error: err]}}!
 
 fileOutSignature ^<Integer>
-    ^110! !
+    ^78! !
 
 ! (Delta mirrorFor: #Mixin) methodsFor: 'Unclassified' !
 
@@ -116,4 +76,44 @@ methods ^<Array[Method]>
 		result at: index put: element.
 	].
 	^result! !
+
+! (Delta mirrorFor: #Mixin) methodsFor: 'file out' !
+
+
+fileOutClassMixin ^<Mixin>
+	^{{primitiveMixinClassMixinOf: self ifFail: [:err | self error: err]}}!
+
+fileOutClassVarsNames ^<Array[Symbol]>
+	^{{primitiveMixin: self classVariablesIfFail: [:err <Symbol> | self error: err]}}!
+
+fileOutHeaderOn: d <Dumper>
+	super	fileOutHeaderOn: d.
+	self		fileOutMethods						fileOutOn: d.
+	self		fileOutInstVars							fileOutOn: d.
+	self		fileOutClassVarsNames			fileOutOn: d.
+	self		fileOutPrimaryInvocation		fileOutOn: d.
+	self		fileOutClassMixin					fileOutOn: d.
+	self		fileOutIsInstalled						fileOutOn: d!
+
+fileOutInstVars ^<Array[Symbol]>
+	^{{primitiveMixin: self  instanceVariablesIfFail: [:err <Symbol> | self error: err]}}!
+
+fileOutIsInstalled ^<Boolean>
+	^{{primitiveMixinIsInstalled: self ifFail: [ :err <Symbol> | self error: err]}}!
+
+fileOutMethods ^<Array[Method]>
+	| size method methods |
+	size := {{primitiveMixinNumberOfMethodsOf: self  ifFail: [:err | self error: err]}}.
+	methods := Array new: size.
+	1 to: size do: [ :index |
+		method  := {{primitiveMixin: self methodAt: index ifFail: [:err | self error: err]}}.
+		methods at: index put: method.
+	].
+	^methods!
+
+fileOutPrimaryInvocation ^<Class>
+	^{{primitiveMixinPrimaryInvocationOf: self ifFail: [ :err <Symbol> | self error: err]}}!
+
+fileOutSignature ^<Integer>
+    ^110! !
 

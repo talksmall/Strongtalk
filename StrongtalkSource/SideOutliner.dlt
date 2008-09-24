@@ -10,6 +10,125 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'accessing' !
+
+
+defaultNewCategoryName ^ <Str>
+
+	^'a new category'
+!
+
+nextNewCategoryName ^ <Str>
+
+	| name <Str> index <Int> |
+	name := self defaultNewCategoryName.
+	index := 2.
+	[ self mirror sourceInfo categories includes: name ] whileTrue: [	
+		name := self defaultNewCategoryName, ' ', index printString.
+		index := index + 1 ].
+	^name!
+
+openCategory: cat <Str> selector: sel <Symbol> ^ <Visual>
+
+	| co <CategoryOutliner> |
+	self body.			"Ensure body is created"
+	self childrenDo: [ :o <OutlinerApp> |
+		co := self categoryOutlinerClass coerce: o.
+		co category = cat
+			ifTrue: [	self open: true.
+							^co openSelector: sel ] ].
+	^nil!
+
+openOnTypeError: te <TypeError>
+
+	| co <CategoryOutliner> cat <Str> |
+	self body.			"Ensure body is created"
+	cat := self mirror sourceInfo categoryForSelector: te loc selector.
+	self childrenDo: [ :o <OutlinerApp> |
+		co := self categoryOutlinerClass coerce: o.
+		co category = cat
+			ifTrue: [	self open: true.
+							^co openOnTypeError: te] ].
+	^nil
+
+!
+
+outlinerForLocator: loc <DeltaLocator> ^ <MethodOutliner>
+
+	| co <CategoryOutliner> cat <Str> |
+	self body.			"Ensure body is created"
+	cat := self mirror sourceInfo categoryForSelector:  loc selector.
+	self childrenDo: [ :o <OutlinerApp> |
+		co := self categoryOutlinerClass coerce: o.
+		co category = cat
+			ifTrue: [	^co outlinerForLocator: loc] ].
+! !
+
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'control' !
+
+
+expandInterface
+
+	self open: true.
+	self childrenDo: [ :o <OutlinerApp> |
+		(self categoryOutlinerClass coerce: o) open: true ]
+!
+
+expandPublicInterface
+
+	self open: true.
+	self childrenDo: [ :o <OutlinerApp> |
+		(self categoryOutlinerClass coerce: o) expandIfPublic ]
+!
+
+newCategory
+
+	self open: true.
+	self mirror sourceInfo addCategory: self nextNewCategoryName.
+!
+
+typecheck
+
+	self typecheckAction:[self mirror typecheck]
+		title: 'Typechecking ', self mirror name! !
+
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		aspect = #categories
+			ifTrue: [	self update ] ]
+! !
+
+! (Delta mirrorFor: #SideOutliner) methodsFor: 'menus' !
+
+
+hasMenu ^<Boolean>
+
+	^true!
+
+menuBar ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'New category';
+					action: [ self newCategory ]);
+        addSeparator;
+		addAll: self typeCheckMenu removeAll;
+		addSeparator;
+		add: self viewMenu
+		!
+
+typeCheckMenu ^<Menu>
+
+	^Menu new
+		add: (MenuAction new
+					name: 'Typecheck';
+					action: [self typecheck])
+		! !
+
 ! (Delta mirrorFor: #SideOutliner) methodsFor: 'private' !
 
 
@@ -115,123 +234,4 @@ update
 								self bodyColumn insert: (Array[Visual] with: (self categoryOutlinerVisualFor: currentCategory)) before: visualIndex.
 								visualIndex := visualIndex + 1.
 								categoryIndex := categoryIndex + 1 ] ] ] ]! !
-
-! (Delta mirrorFor: #SideOutliner) methodsFor: 'menus' !
-
-
-hasMenu ^<Boolean>
-
-	^true!
-
-menuBar ^<Menu>
-
-	^Menu new
-		add: (MenuAction new
-					name: 'New category';
-					action: [ self newCategory ]);
-        addSeparator;
-		addAll: self typeCheckMenu removeAll;
-		addSeparator;
-		add: self viewMenu
-		!
-
-typeCheckMenu ^<Menu>
-
-	^Menu new
-		add: (MenuAction new
-					name: 'Typecheck';
-					action: [self typecheck])
-		! !
-
-! (Delta mirrorFor: #SideOutliner) methodsFor: 'control' !
-
-
-expandInterface
-
-	self open: true.
-	self childrenDo: [ :o <OutlinerApp> |
-		(self categoryOutlinerClass coerce: o) open: true ]
-!
-
-expandPublicInterface
-
-	self open: true.
-	self childrenDo: [ :o <OutlinerApp> |
-		(self categoryOutlinerClass coerce: o) expandIfPublic ]
-!
-
-newCategory
-
-	self open: true.
-	self mirror sourceInfo addCategory: self nextNewCategoryName.
-!
-
-typecheck
-
-	self typecheckAction:[self mirror typecheck]
-		title: 'Typechecking ', self mirror name! !
-
-! (Delta mirrorFor: #SideOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		aspect = #categories
-			ifTrue: [	self update ] ]
-! !
-
-! (Delta mirrorFor: #SideOutliner) methodsFor: 'accessing' !
-
-
-defaultNewCategoryName ^ <Str>
-
-	^'a new category'
-!
-
-nextNewCategoryName ^ <Str>
-
-	| name <Str> index <Int> |
-	name := self defaultNewCategoryName.
-	index := 2.
-	[ self mirror sourceInfo categories includes: name ] whileTrue: [	
-		name := self defaultNewCategoryName, ' ', index printString.
-		index := index + 1 ].
-	^name!
-
-openCategory: cat <Str> selector: sel <Symbol> ^ <Visual>
-
-	| co <CategoryOutliner> |
-	self body.			"Ensure body is created"
-	self childrenDo: [ :o <OutlinerApp> |
-		co := self categoryOutlinerClass coerce: o.
-		co category = cat
-			ifTrue: [	self open: true.
-							^co openSelector: sel ] ].
-	^nil!
-
-openOnTypeError: te <TypeError>
-
-	| co <CategoryOutliner> cat <Str> |
-	self body.			"Ensure body is created"
-	cat := self mirror sourceInfo categoryForSelector: te loc selector.
-	self childrenDo: [ :o <OutlinerApp> |
-		co := self categoryOutlinerClass coerce: o.
-		co category = cat
-			ifTrue: [	self open: true.
-							^co openOnTypeError: te] ].
-	^nil
-
-!
-
-outlinerForLocator: loc <DeltaLocator> ^ <MethodOutliner>
-
-	| co <CategoryOutliner> cat <Str> |
-	self body.			"Ensure body is created"
-	cat := self mirror sourceInfo categoryForSelector:  loc selector.
-	self childrenDo: [ :o <OutlinerApp> |
-		co := self categoryOutlinerClass coerce: o.
-		co category = cat
-			ifTrue: [	^co outlinerForLocator: loc] ].
-! !
 

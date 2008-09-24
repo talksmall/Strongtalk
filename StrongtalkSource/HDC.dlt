@@ -77,53 +77,6 @@ newLike: master <Canvas> ^<HDC>
 
 	^can! !
 
-! (Delta mirrorFor: #HDC) methodsFor: 'state modification' !
-
-
-atOffset: p <Point> do: drawing <[^Object]>
-
-	| oldOffset <Point> |
-	oldOffset := self offset.
-	self offset: oldOffset + p.
-	drawing value.
-	self offset: oldOffset.!
-
-clipping: clip <Rect> do: drawing <[^Object]>
-
-	| oldClip <Painter> transclip <Rect> |
-	oldClip := clippingRectBeforeTranslation.
-	transclip := clip translatedBy: self offset.
-	self clippingRectBeforeTranslation:
-		(oldClip isNil
-			ifTrue: [ transclip ]
-			ifFalse: [ oldClip intersect: transclip ]).
-	drawing value.
-	self clippingRectBeforeTranslation: oldClip.
-!
-
-doWithCopy: blk <[Canvas]>
-	"Evaluate the specified block with a copy of the receiver.  The receiver is guaranteed to
-	  be in the same (external) state afterwards as before.  RESTRICTION: the receiver MAY NOT BE USED or
-	  modified while the block is being evaluated."
-
-	"%todo: add unwind protection to this"
-	| id <ExternalData> copy <HDC> |
-	self flushText.
-	id := {{<gdi ExternalProxy SaveDC> hdc: self}}.
-	copy := self shallowCopy.
-	blk value: copy.
-	copy flushText.
-	{{<gdi ExternalProxy RestoreDC> hdc: self id: id}} asBoolean
-		ifFalse: [ self error: 'Error restoring device context' ].!
-
-withPainter: p <Painter> do: drawing <[]>
-
-	| oldPainter <Painter> |
-	oldPainter := self painter.
-	self painter: p.
-	drawing value.
-	self painter: oldPainter.! !
-
 ! (Delta mirrorFor: #HDC) methodsFor: 'accessing' !
 
 
@@ -203,6 +156,31 @@ yOffset ^<Int>
 yOffset: o <Int>
 
 	yOffset := o! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'control' !
+
+
+flush
+	"Flush completely, all the way down to the OS"
+
+	self shallowFlush.
+	{{<gdi ExternalProxy GdiFlush> doit}}!
+
+release
+
+	self flushText.
+	textBuffer free.
+	scratchRECT isNil
+		ifFalse: [ scratchRECT free ].
+	bitmapDC isNil
+		ifFalse: [ bitmapDC release ].
+	self toRelease value: self.
+!
+
+shallowFlush
+	"Flush anything buffered in Smalltalk, but don't flush at the OS level"
+
+	self flushText.! !
 
 ! (Delta mirrorFor: #HDC) methodsFor: 'displaying' !
 
@@ -350,186 +328,6 @@ invertRectangle: r <Rect>
 pixelAtX: x <Int> y: y <Int> putPaletteIndex: i <Int>
 
 	self pixelAtX: x y: y putWin32Color: (16r01000000 bitXor: i)! !
-
-! (Delta mirrorFor: #HDC) methodsFor: 'region ops' !
-
-
-intersects: other <Region> ^<Boolean>
-
-	^self isPruning
-		ifTrue: [ super intersects: other ]
-		ifFalse: [ true ]!
-
-intersectsRect: other <Region> ^<Boolean>
-
-	^self isPruning
-		ifTrue: [ super intersectsRect: other ]
-		ifFalse: [ true ]!
-
-mightIntersect: other <Region> ^<Boolean>
-
-	^self isPruning
-		ifTrue: [ super mightIntersect: other ]
-		ifFalse: [ true ]!
-
-relativeTo: p <Point> mightIntersect: r <Region>  ^<Boolean>
-
-	^self isPruning
-		ifTrue: [ super relativeTo: p mightIntersect: r ]
-		ifFalse: [ true ]!
-
-surelyContainedBy: other <Region> ^<Boolean>
-
-	^self isPruning
-		ifTrue: [ super surelyContainedBy: other ]
-		ifFalse: [ false ]!
-
-surelyContains: other <Region> ^<Boolean>
-
-	^self isPruning
-		ifTrue: [ super surelyContains: other ]
-		ifFalse: [ true ]!
-
-translatedBy: p <Point> mightIntersect: r <Region>  ^<Boolean>
-
-	^self isPruning
-		ifTrue: [ super relativeTo: p mightIntersect: r ]
-		ifFalse: [ true ]! !
-
-! (Delta mirrorFor: #HDC) methodsFor: 'testing' !
-
-
-isPruning ^<Boolean>
-
-	^clippingRectBeforeTranslation notNil! !
-
-! (Delta mirrorFor: #HDC) methodsFor: 'control' !
-
-
-flush
-	"Flush completely, all the way down to the OS"
-
-	self shallowFlush.
-	{{<gdi ExternalProxy GdiFlush> doit}}!
-
-release
-
-	self flushText.
-	textBuffer free.
-	scratchRECT isNil
-		ifFalse: [ scratchRECT free ].
-	bitmapDC isNil
-		ifFalse: [ bitmapDC release ].
-	self toRelease value: self.
-!
-
-shallowFlush
-	"Flush anything buffered in Smalltalk, but don't flush at the OS level"
-
-	self flushText.! !
-
-! (Delta mirrorFor: #HDC) methodsFor: 'restricted-win32' !
-
-
-backgroundOpaque
-
-	{{<gdi ExternalProxy SetBkMode>
-		hdc: self mode: Win32 OPAQUE}}.!
-
-backgroundTransparent
-
-	{{<gdi ExternalProxy SetBkMode>
-		hdc: self mode: Win32 TRANSPARENT}}.!
-
-deleteDC
-
-	{{<gdi ExternalProxy DeleteDC> dc: self}}!
-
-displayRawFilledRectangle: r <Rect>
-
-	| offx <Number> offy <Number> |
-
-	self	checkPainter;
-			checkBrush;
-			flushText.
-	offx := self xOffset.
-	offy := self yOffset.
-
-	self win32Pen: self nullPen.		"Don't draw edge"
-
-	"%note: Windows both fills rectangles, and draws their edges with the same routine.  The standard way
-      to fill only is to use a null pen.  But there seems to be a windows bug such that a rectangle with a null
-	  pen doesn't draw the
-	  right&bottom edges.  This is NOT the standard off-by-one error!!  Also, if the painter's lineWidth is > 1,
-	  the pen will draw half of the edge outside the rectangle.  To solve this, we use a null pen when
-	  drawing rectangles, & add one to the bottom & right coords.  The alternative is to do checkPen
-	  above, and then inset by half the pen width.  But then drawing rects might be really slow if the painter
-	  has a pen width > 1.  The drawback of the current fix is that the pen gets temporarily set to the null rect
-	  EVERY time a rectangle is drawn, regardless of the previous pen.  With more state, this could be avoided."
-
-	{{<gdi ExternalProxy Rectangle>
-			hdc: self
-			xLeft: (r left + offx) asInteger
-			yTop: (r top + offy) asInteger
-			xRight: (r right + offx + 1) asInteger
-			yBottom: (r bottom + offy + 1) asInteger
-		}} asBoolean
-				ifFalse: [ Win32 handleError ].
-
-	win32Pen := nil.		"Force pen to be reset next time needed"	!
-
-displayRawWin32Image: i <HBITMAP> rasterOp: op <Int>
-
-	self bitmapDC drawIntoBitmap: i.
-	self	bitBlt: self bitmapDC
-			extent: i extent
-			op: op.
-	self bitmapDC restoreBitmap!
-
-drawIntoBitmap: b <HBITMAP>
-
-	oldBitmap := {{<gdi HBITMAP SelectObject>
-							hdc: self
-							bitmap: b }}.
-	oldBitmap isNull
-		ifTrue: [ Win32 handleError ]!
-
-mungeFont: f <ExternalData>
-	"A kludge used by fonts to set the font quickly in a temporary HDC
-	  before requesting font metrics. (There is no public interface to do this, normally)"
-
-	self win32Font: f!
-
-offset: p <Point>
-
-	xOffset := p x.
-	yOffset := p y.!
-
-pixelAtX: x <Int> y: y <Int> putWin32Color: c <Int>
-
-	{{<gdi ExternalProxy SetPixelV>
-		hdc: self
-		x: x asInteger
-		y: y asInteger
-		color: c
-	}} asBoolean
-		ifFalse: [ Win32 handleError ]!
-
-releaseDCFor: hwnd <HWND>
-
-	{{<user ExternalProxy ReleaseDC> hwnd: hwnd dc: self}}!
-
-restoreBitmap
-
-	self drawIntoBitmap: oldBitmap!
-
-win32Palette: p <Win32Handle> ^<Win32Handle>
-
-	| oldpal <Win32Handle> |
-	oldpal := Palette select: p into: self background: false.
-	oldpal isNull
-		ifTrue: [ Win32 handleError ].
-	^oldpal! !
 
 ! (Delta mirrorFor: #HDC) methodsFor: 'initialization' !
 
@@ -728,4 +526,206 @@ win32TextColor: color <Int>
 	win32TextColor := color.
 	{{<gdi ExternalProxy SetTextColor>
 		hdc: self color: color}}! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'region ops' !
+
+
+intersects: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super intersects: other ]
+		ifFalse: [ true ]!
+
+intersectsRect: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super intersectsRect: other ]
+		ifFalse: [ true ]!
+
+mightIntersect: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super mightIntersect: other ]
+		ifFalse: [ true ]!
+
+relativeTo: p <Point> mightIntersect: r <Region>  ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super relativeTo: p mightIntersect: r ]
+		ifFalse: [ true ]!
+
+surelyContainedBy: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super surelyContainedBy: other ]
+		ifFalse: [ false ]!
+
+surelyContains: other <Region> ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super surelyContains: other ]
+		ifFalse: [ true ]!
+
+translatedBy: p <Point> mightIntersect: r <Region>  ^<Boolean>
+
+	^self isPruning
+		ifTrue: [ super relativeTo: p mightIntersect: r ]
+		ifFalse: [ true ]! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'restricted-win32' !
+
+
+backgroundOpaque
+
+	{{<gdi ExternalProxy SetBkMode>
+		hdc: self mode: Win32 OPAQUE}}.!
+
+backgroundTransparent
+
+	{{<gdi ExternalProxy SetBkMode>
+		hdc: self mode: Win32 TRANSPARENT}}.!
+
+deleteDC
+
+	{{<gdi ExternalProxy DeleteDC> dc: self}}!
+
+displayRawFilledRectangle: r <Rect>
+
+	| offx <Number> offy <Number> |
+
+	self	checkPainter;
+			checkBrush;
+			flushText.
+	offx := self xOffset.
+	offy := self yOffset.
+
+	self win32Pen: self nullPen.		"Don't draw edge"
+
+	"%note: Windows both fills rectangles, and draws their edges with the same routine.  The standard way
+      to fill only is to use a null pen.  But there seems to be a windows bug such that a rectangle with a null
+	  pen doesn't draw the
+	  right&bottom edges.  This is NOT the standard off-by-one error!!  Also, if the painter's lineWidth is > 1,
+	  the pen will draw half of the edge outside the rectangle.  To solve this, we use a null pen when
+	  drawing rectangles, & add one to the bottom & right coords.  The alternative is to do checkPen
+	  above, and then inset by half the pen width.  But then drawing rects might be really slow if the painter
+	  has a pen width > 1.  The drawback of the current fix is that the pen gets temporarily set to the null rect
+	  EVERY time a rectangle is drawn, regardless of the previous pen.  With more state, this could be avoided."
+
+	{{<gdi ExternalProxy Rectangle>
+			hdc: self
+			xLeft: (r left + offx) asInteger
+			yTop: (r top + offy) asInteger
+			xRight: (r right + offx + 1) asInteger
+			yBottom: (r bottom + offy + 1) asInteger
+		}} asBoolean
+				ifFalse: [ Win32 handleError ].
+
+	win32Pen := nil.		"Force pen to be reset next time needed"	!
+
+displayRawWin32Image: i <HBITMAP> rasterOp: op <Int>
+
+	self bitmapDC drawIntoBitmap: i.
+	self	bitBlt: self bitmapDC
+			extent: i extent
+			op: op.
+	self bitmapDC restoreBitmap!
+
+drawIntoBitmap: b <HBITMAP>
+
+	oldBitmap := {{<gdi HBITMAP SelectObject>
+							hdc: self
+							bitmap: b }}.
+	oldBitmap isNull
+		ifTrue: [ Win32 handleError ]!
+
+mungeFont: f <ExternalData>
+	"A kludge used by fonts to set the font quickly in a temporary HDC
+	  before requesting font metrics. (There is no public interface to do this, normally)"
+
+	self win32Font: f!
+
+offset: p <Point>
+
+	xOffset := p x.
+	yOffset := p y.!
+
+pixelAtX: x <Int> y: y <Int> putWin32Color: c <Int>
+
+	{{<gdi ExternalProxy SetPixelV>
+		hdc: self
+		x: x asInteger
+		y: y asInteger
+		color: c
+	}} asBoolean
+		ifFalse: [ Win32 handleError ]!
+
+releaseDCFor: hwnd <HWND>
+
+	{{<user ExternalProxy ReleaseDC> hwnd: hwnd dc: self}}!
+
+restoreBitmap
+
+	self drawIntoBitmap: oldBitmap!
+
+win32Palette: p <Win32Handle> ^<Win32Handle>
+
+	| oldpal <Win32Handle> |
+	oldpal := Palette select: p into: self background: false.
+	oldpal isNull
+		ifTrue: [ Win32 handleError ].
+	^oldpal! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'state modification' !
+
+
+atOffset: p <Point> do: drawing <[^Object]>
+
+	| oldOffset <Point> |
+	oldOffset := self offset.
+	self offset: oldOffset + p.
+	drawing value.
+	self offset: oldOffset.!
+
+clipping: clip <Rect> do: drawing <[^Object]>
+
+	| oldClip <Painter> transclip <Rect> |
+	oldClip := clippingRectBeforeTranslation.
+	transclip := clip translatedBy: self offset.
+	self clippingRectBeforeTranslation:
+		(oldClip isNil
+			ifTrue: [ transclip ]
+			ifFalse: [ oldClip intersect: transclip ]).
+	drawing value.
+	self clippingRectBeforeTranslation: oldClip.
+!
+
+doWithCopy: blk <[Canvas]>
+	"Evaluate the specified block with a copy of the receiver.  The receiver is guaranteed to
+	  be in the same (external) state afterwards as before.  RESTRICTION: the receiver MAY NOT BE USED or
+	  modified while the block is being evaluated."
+
+	"%todo: add unwind protection to this"
+	| id <ExternalData> copy <HDC> |
+	self flushText.
+	id := {{<gdi ExternalProxy SaveDC> hdc: self}}.
+	copy := self shallowCopy.
+	blk value: copy.
+	copy flushText.
+	{{<gdi ExternalProxy RestoreDC> hdc: self id: id}} asBoolean
+		ifFalse: [ self error: 'Error restoring device context' ].!
+
+withPainter: p <Painter> do: drawing <[]>
+
+	| oldPainter <Painter> |
+	oldPainter := self painter.
+	self painter: p.
+	drawing value.
+	self painter: oldPainter.! !
+
+! (Delta mirrorFor: #HDC) methodsFor: 'testing' !
+
+
+isPruning ^<Boolean>
+
+	^clippingRectBeforeTranslation notNil! !
 

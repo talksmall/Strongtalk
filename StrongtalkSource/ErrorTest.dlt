@@ -1,0 +1,46 @@
+Delta define: #ErrorTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: 'handlers')) !
+
+(Delta mirrorFor: #ErrorTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ErrorTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ErrorTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ErrorTest) methodsFor: 'testing' !
+
+
+testDefaultActionShouldPassToStopHandler
+
+	| wasHandled processError |
+	wasHandled := false.
+	self withStopHandler: [:p| wasHandled := true.
+													processError := p processError]
+			do: 	[[self error: 'this is an error'] fork.
+					Processor yield].
+	self assert: wasHandled
+			description: 'defaultAction should invoke the stopHandler'.
+	self assert: (processError isKindOf: ProcessExplicitError)
+			description: 'Process stopped with wrong kind of error', processError printString.
+	self assert: 'this is an error' = processError msg
+			description: 'Process stopped with wrong message: ', processError msg!
+
+testErrorShouldSignalError
+
+	| wasSignalled |
+	wasSignalled := true.
+	[self error: 'error message'.
+	self signalFailure: 'should not return']
+		on: Error
+		do: [:ex| wasSignalled := true.
+				self assert: 'error message' = ex messageText
+						description: ex messageText printString].
+	self assert: wasSignalled
+			description: 'Error should be signalled'!
+
+testShouldNotBeResumable
+
+	self deny: Error new isResumable! !
+

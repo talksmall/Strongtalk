@@ -11,16 +11,20 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #TreeSortBenchmark) methodsFor: 'run' !
+! (Delta mirrorFor: #TreeSortBenchmark) methodsFor: 'admin' !
 
 
-run
-	self initarr.
-	tree := TreeSortNodeBenchmark new val: (sortlist at: 1).
-	2 to: QSortelements do: [:i | self insert: (sortlist at: i)
-			Into: tree].
-	(self checkTree: tree)
-		ifFalse: [self error: ' Error in Tree.']! !
+digitalkTime
+	^144!
+
+factor
+	^11!
+
+name
+	^#TreeSort!
+
+parcplaceTime
+	^241! !
 
 ! (Delta mirrorFor: #TreeSortBenchmark) methodsFor: 'private' !
 
@@ -50,18 +54,14 @@ insert: n Into: t
 					ifTrue: [t right: (self createNode: n)]
 					ifFalse: [self insert: n Into: t right]]]! !
 
-! (Delta mirrorFor: #TreeSortBenchmark) methodsFor: 'admin' !
+! (Delta mirrorFor: #TreeSortBenchmark) methodsFor: 'run' !
 
 
-digitalkTime
-	^144!
-
-factor
-	^11!
-
-name
-	^#TreeSort!
-
-parcplaceTime
-	^241! !
+run
+	self initarr.
+	tree := TreeSortNodeBenchmark new val: (sortlist at: 1).
+	2 to: QSortelements do: [:i | self insert: (sortlist at: i)
+			Into: tree].
+	(self checkTree: tree)
+		ifFalse: [self error: ' Error in Tree.']! !
 

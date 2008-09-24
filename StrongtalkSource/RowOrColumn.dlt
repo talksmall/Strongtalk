@@ -35,33 +35,6 @@ withAll: subs <Cltn[SUB]> ^<Instance>
 
 	^self holding: (OrderedCollection[SUB] withAll: subs)! !
 
-! (Delta mirrorFor: #RowOrColumn) methodsFor: 'initialization' !
-
-
-initWithAll: subs <WithableVarSeqCltn[SUB]>
-
-	parts := subs.
-	1 to: subs size do:
-		 [ :index <Int> |
-				(subs at: index) parent: self id: index	]! !
-
-! (Delta mirrorFor: #RowOrColumn) methodsFor: 'iteration' !
-
-
-do: f <[SUB]>
-
-	self doFromBack: f!
-
-doFromBack: f <[SUB]>
-
-	"We consider the first one to be in the back because we want the painter's algorithm to
-	  draw from left to right, so that character optimizations work"
-	self parts do: f!
-
-doFromFront: f <[SUB]>
-
-	self parts reverseDo: f! !
-
 ! (Delta mirrorFor: #RowOrColumn) methodsFor: 'accessing' !
 
 
@@ -142,6 +115,33 @@ replaceFrom: start <Int> to: stop <Int> with: els <SeqCltn[SUB]> ^<OrdCltn[SUB]>
 size ^<Int>
 
 	^self parts size! !
+
+! (Delta mirrorFor: #RowOrColumn) methodsFor: 'initialization' !
+
+
+initWithAll: subs <WithableVarSeqCltn[SUB]>
+
+	parts := subs.
+	1 to: subs size do:
+		 [ :index <Int> |
+				(subs at: index) parent: self id: index	]! !
+
+! (Delta mirrorFor: #RowOrColumn) methodsFor: 'iteration' !
+
+
+do: f <[SUB]>
+
+	self doFromBack: f!
+
+doFromBack: f <[SUB]>
+
+	"We consider the first one to be in the back because we want the painter's algorithm to
+	  draw from left to right, so that character optimizations work"
+	self parts do: f!
+
+doFromFront: f <[SUB]>
+
+	self parts reverseDo: f! !
 
 ! (Delta mirrorFor: #RowOrColumn) methodsFor: 'private' !
 

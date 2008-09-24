@@ -11,6 +11,12 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.6 $
 '!
 
+! (Delta mirrorFor: #ExternalProxy) classSide methodsFor: 'file out' !
+
+
+fileOutSignature ^<Integer>
+    ^77! !
+
 ! (Delta mirrorFor: #ExternalProxy) classSide methodsFor: 'instance creation' !
 
 
@@ -26,12 +32,6 @@ forInt: i <Int> ^<Instance>
 forProxy: proxy <ExternalProxy> ^<Instance>
 
     ^self new setHigh: proxy high low: proxy low; yourself! !
-
-! (Delta mirrorFor: #ExternalProxy) classSide methodsFor: 'file out' !
-
-
-fileOutSignature ^<Integer>
-    ^77! !
 
 ! (Delta mirrorFor: #ExternalProxy) methodsFor: 'accessing' !
 
@@ -180,12 +180,51 @@ subProxyAt: offset <Int> result: p <P> ^<P>
 	^{{self primitiveProxySubProxyAt: offset result: p
 		ifFail: [ :error <Symbol> | self error: error ]}}! !
 
-! (Delta mirrorFor: #ExternalProxy) methodsFor: 'converting' !
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'allocation' !
 
 
-asExternalProxy ^<ExternalProxy>
+calloc: size <Int>
 
-	^self! !
+	self malloc: size.
+	0 to: size - 1 do: 
+		[ :i <Int> |
+			self byteAt: i put: 0 ].
+	"%todo: use a calloc primitive"
+!
+
+free
+
+	self assert: [ self isNull not ].
+
+	self debugAllocation
+		ifFalse: [ {{self primitiveProxyFree}} ].
+	self setHigh: 0 low: 0.!
+
+malloc: size <Int>
+
+	| adjsize <Int> |
+	adjsize := self debugAllocation
+		ifTrue: [ size + self extraForDebugMalloc ]
+		ifFalse: [ size ].
+    {{self primitiveProxyMalloc: adjsize ifFail: [:error <Symbol> | self error: error]}}.
+	self debugAllocation
+		ifTrue: [	0 to: adjsize - 1 do:
+							[ :i <Int> |		self byteAt: i put: 16r55 ]  ]. !
+
+mallocInts: nInts <Int>
+
+	self malloc: nInts * Platform wordSize! !
+
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'bit operations' !
+
+
+externalBitAnd: other <ExternalData> ^<ExternalData>
+
+	^other bitAndFromProxy: self!
+
+externalBitOr: other <ExternalData> ^<ExternalData>
+
+	^other bitOrFromProxy: self! !
 
 ! (Delta mirrorFor: #ExternalProxy) methodsFor: 'comparing' !
 
@@ -218,25 +257,31 @@ hash ^<Int>
 
 	^self low bitXor: self high! !
 
-! (Delta mirrorFor: #ExternalProxy) methodsFor: 'printing' !
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'converting' !
 
 
-printOn: strm <CharOutStream>
+asExternalProxy ^<ExternalProxy>
 
-	strm nextPutAll: self class name,'('.
-	self printValueOn: strm.
-	strm nextPut: $)
-!
+	^self! !
 
-printValueOn: strm <CharOutStream>
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'double-dispatching' !
 
-	strm show: '16r'.
-	4 to: 1 by: -1
-		do: [ :i <Int> |
-				strm put: (self high hexDigitAt: i) ].
-	4 to: 1 by: -1
-		do: [ :i <Int> |
-				strm put: (self low hexDigitAt: i) ].! !
+
+bitAndFromProxy: other <ExternalProxy> ^<ExternalProxy>
+
+	^ExternalProxy forHigh: (self high bitAnd: other high) low: (self low bitAnd: other low)!
+
+bitAndFromSmallInteger: other <SmallInteger> ^<ExternalData>
+
+	^self bitAndFromProxy: other asExternalProxy!
+
+bitOrFromProxy: other <ExternalProxy> ^<ExternalProxy>
+
+	^ExternalProxy forHigh: (self high bitOr: other high) low: (self low bitOr: other low)!
+
+bitOrFromSmallInteger: other <SmallInteger> ^<ExternalProxy>
+
+	^self bitOrFromProxy: other asExternalProxy! !
 
 ! (Delta mirrorFor: #ExternalProxy) methodsFor: 'evaluating' !
 
@@ -307,77 +352,32 @@ result: result <X>
 	^{{self primitiveAPICallValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 result: result
 		ifFail: [ :err <Symbol> | self error: err ]	}}! !
 
-! (Delta mirrorFor: #ExternalProxy) methodsFor: 'bit operations' !
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'file out' !
 
 
-externalBitAnd: other <ExternalData> ^<ExternalData>
+fileOutSignature ^<Integer>
+	self error: 'should not file out a proxy'.
+	^0! !
 
-	^other bitAndFromProxy: self!
-
-externalBitOr: other <ExternalData> ^<ExternalData>
-
-	^other bitOrFromProxy: self! !
-
-! (Delta mirrorFor: #ExternalProxy) methodsFor: 'double-dispatching' !
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'printing' !
 
 
-bitAndFromProxy: other <ExternalProxy> ^<ExternalProxy>
+printOn: strm <CharOutStream>
 
-	^ExternalProxy forHigh: (self high bitAnd: other high) low: (self low bitAnd: other low)!
-
-bitAndFromSmallInteger: other <SmallInteger> ^<ExternalData>
-
-	^self bitAndFromProxy: other asExternalProxy!
-
-bitOrFromProxy: other <ExternalProxy> ^<ExternalProxy>
-
-	^ExternalProxy forHigh: (self high bitOr: other high) low: (self low bitOr: other low)!
-
-bitOrFromSmallInteger: other <SmallInteger> ^<ExternalProxy>
-
-	^self bitOrFromProxy: other asExternalProxy! !
-
-! (Delta mirrorFor: #ExternalProxy) methodsFor: 'testing' !
-
-
-hasBitsSet: mask <ExternalData> ^<Boolean>
-
-	^(self externalBitAnd: mask) @= mask! !
-
-! (Delta mirrorFor: #ExternalProxy) methodsFor: 'allocation' !
-
-
-calloc: size <Int>
-
-	self malloc: size.
-	0 to: size - 1 do: 
-		[ :i <Int> |
-			self byteAt: i put: 0 ].
-	"%todo: use a calloc primitive"
+	strm nextPutAll: self class name,'('.
+	self printValueOn: strm.
+	strm nextPut: $)
 !
 
-free
+printValueOn: strm <CharOutStream>
 
-	self assert: [ self isNull not ].
-
-	self debugAllocation
-		ifFalse: [ {{self primitiveProxyFree}} ].
-	self setHigh: 0 low: 0.!
-
-malloc: size <Int>
-
-	| adjsize <Int> |
-	adjsize := self debugAllocation
-		ifTrue: [ size + self extraForDebugMalloc ]
-		ifFalse: [ size ].
-    {{self primitiveProxyMalloc: adjsize ifFail: [:error <Symbol> | self error: error]}}.
-	self debugAllocation
-		ifTrue: [	0 to: adjsize - 1 do:
-							[ :i <Int> |		self byteAt: i put: 16r55 ]  ]. !
-
-mallocInts: nInts <Int>
-
-	self malloc: nInts * Platform wordSize! !
+	strm show: '16r'.
+	4 to: 1 by: -1
+		do: [ :i <Int> |
+				strm put: (self high hexDigitAt: i) ].
+	4 to: 1 by: -1
+		do: [ :i <Int> |
+				strm put: (self low hexDigitAt: i) ].! !
 
 ! (Delta mirrorFor: #ExternalProxy) methodsFor: 'private' !
 
@@ -395,10 +395,10 @@ extraForDebugMalloc ^<Int>
 
 	^100! !
 
-! (Delta mirrorFor: #ExternalProxy) methodsFor: 'file out' !
+! (Delta mirrorFor: #ExternalProxy) methodsFor: 'testing' !
 
 
-fileOutSignature ^<Integer>
-	self error: 'should not file out a proxy'.
-	^0! !
+hasBitsSet: mask <ExternalData> ^<Boolean>
+
+	^(self externalBitAnd: mask) @= mask! !
 

@@ -16,6 +16,17 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
 '!
 
+! (Delta mirrorFor: #Date) classSide methodsFor: 'constants' !
+
+
+daysOfWeek ^<SeqCltn[Symbol]>
+	"%todo: internationalize"
+	^#(Monday Tuesday Wednesday Thursday Friday Saturday Sunday)!
+
+monthsOfYear ^<SeqCltn[Symbol]>
+	"%todo: internationalize"
+	^#(January February March April May June July August September October November December)! !
+
 ! (Delta mirrorFor: #Date) classSide methodsFor: 'inquiries' !
 
 
@@ -60,17 +71,6 @@ nameOfMonth: index <Int> ^<Symbol>
 	"return the month of the year for the given index, where 1 -> #January"
 
 	^self monthsOfYear at: index! !
-
-! (Delta mirrorFor: #Date) classSide methodsFor: 'constants' !
-
-
-daysOfWeek ^<SeqCltn[Symbol]>
-	"%todo: internationalize"
-	^#(Monday Tuesday Wednesday Thursday Friday Saturday Sunday)!
-
-monthsOfYear ^<SeqCltn[Symbol]>
-	"%todo: internationalize"
-	^#(January February March April May June July August September October November December)! !
 
 ! (Delta mirrorFor: #Date) classSide methodsFor: 'instance creation' !
 
@@ -180,16 +180,6 @@ subtractDays: days <Int> ^<Date>
 
 	^Date julian: self julian - days! !
 
-! (Delta mirrorFor: #Date) methodsFor: 'private-initialization' !
-
-
-initDayOfMonth: d <Int> monthIndex: m <Int> year: y <Int>
-
-
-	dayOfMonth := d.
-	monthIndex := m.
-	year := y.! !
-
 ! (Delta mirrorFor: #Date) methodsFor: 'printing' !
 
 
@@ -200,4 +190,14 @@ printOn: strm <CharOutputStream>
 			print: self dayOfMonth;
 			putAll: ', ';
 			print: self year.! !
+
+! (Delta mirrorFor: #Date) methodsFor: 'private-initialization' !
+
+
+initDayOfMonth: d <Int> monthIndex: m <Int> year: y <Int>
+
+
+	dayOfMonth := d.
+	monthIndex := m.
+	year := y.! !
 

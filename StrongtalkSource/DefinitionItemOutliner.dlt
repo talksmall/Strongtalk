@@ -10,6 +10,26 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	| cgs <CharGlyphs> |
+	self inSessionProcessDo: [
+		aspect = self aspectForUpdate
+			ifTrue: [	self codeView model: self modelAsCharGlyphs ]
+	]! !
+
+! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'input focus' !
+
+
+becomeFocusIfFail: blk <[]>
+
+	self codeView isNil
+		ifTrue: [		super becomeFocusIfFail: blk ]
+		ifFalse: [	self codeView becomeFocusIfFail: [ super becomeFocusIfFail: blk ] ]! !
+
 ! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'private' !
 
 
@@ -45,26 +65,6 @@ setCodeView
 storeAndOnSuccess: blk <[]>
 
 	self subclassResponsibility! !
-
-! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'input focus' !
-
-
-becomeFocusIfFail: blk <[]>
-
-	self codeView isNil
-		ifTrue: [		super becomeFocusIfFail: blk ]
-		ifFalse: [	self codeView becomeFocusIfFail: [ super becomeFocusIfFail: blk ] ]! !
-
-! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	| cgs <CharGlyphs> |
-	self inSessionProcessDo: [
-		aspect = self aspectForUpdate
-			ifTrue: [	self codeView model: self modelAsCharGlyphs ]
-	]! !
 
 ! (Delta mirrorFor: #DefinitionItemOutliner) methodsFor: 'typechecking' !
 

@@ -43,6 +43,66 @@ new ^<Instance>
 
 	^super new initialize! !
 
+! (Delta mirrorFor: #Equalizer) methodsFor: 'accessing' !
+
+
+rigid ^<Boolean>
+
+	^rigid!
+
+rigid: f <Boolean>
+
+	rigid := f.
+	self changing!
+
+xEqualize ^<Boolean>
+
+	^xEqualize!
+
+xEqualize: f <Boolean>
+
+	xEqualize := f.
+	self changing!
+
+yEqualize ^<Boolean>
+
+	^yEqualize!
+
+yEqualize: f <Boolean>
+
+	yEqualize := f.
+	self changing! !
+
+! (Delta mirrorFor: #Equalizer) methodsFor: 'control' !
+
+
+changing
+
+	self prefsUpToDate
+		ifTrue: [ 	self flushPrefs.
+						self modifiers
+							do: [ :m <EqualizerWrapper> |
+									m equalizerChanging	]
+					]! !
+
+! (Delta mirrorFor: #Equalizer) methodsFor: 'preferences' !
+
+
+max ^<Rect>
+
+	self ensurePrefsUpToDate.
+	^max!
+
+min ^<Rect>
+
+	self ensurePrefsUpToDate.
+	^min!
+
+natural ^<Rect>
+
+	self ensurePrefsUpToDate.
+	^natural! !
+
 ! (Delta mirrorFor: #Equalizer) methodsFor: 'private' !
 
 
@@ -142,36 +202,6 @@ initialize
 	self xEqualize: true; yEqualize: true.
 	self rigid: false.! !
 
-! (Delta mirrorFor: #Equalizer) methodsFor: 'accessing' !
-
-
-rigid ^<Boolean>
-
-	^rigid!
-
-rigid: f <Boolean>
-
-	rigid := f.
-	self changing!
-
-xEqualize ^<Boolean>
-
-	^xEqualize!
-
-xEqualize: f <Boolean>
-
-	xEqualize := f.
-	self changing!
-
-yEqualize ^<Boolean>
-
-	^yEqualize!
-
-yEqualize: f <Boolean>
-
-	yEqualize := f.
-	self changing! !
-
 ! (Delta mirrorFor: #Equalizer) methodsFor: 'wrapping' !
 
 
@@ -194,34 +224,4 @@ remove: w <EqualizerWrapper>
 
 	self modifiers remove: w.
 	w equalizer: nil.! !
-
-! (Delta mirrorFor: #Equalizer) methodsFor: 'control' !
-
-
-changing
-
-	self prefsUpToDate
-		ifTrue: [ 	self flushPrefs.
-						self modifiers
-							do: [ :m <EqualizerWrapper> |
-									m equalizerChanging	]
-					]! !
-
-! (Delta mirrorFor: #Equalizer) methodsFor: 'preferences' !
-
-
-max ^<Rect>
-
-	self ensurePrefsUpToDate.
-	^max!
-
-min ^<Rect>
-
-	self ensurePrefsUpToDate.
-	^min!
-
-natural ^<Rect>
-
-	self ensurePrefsUpToDate.
-	^natural! !
 

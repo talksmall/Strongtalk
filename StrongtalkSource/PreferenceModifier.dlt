@@ -62,17 +62,6 @@ prefsBlock: blk <[PreferenceModifier]>
 
 	prefsBlock := blk! !
 
-! (Delta mirrorFor: #PreferenceModifier) methodsFor: 'private' !
-
-
-computePreferences
-
-	self prefsBlock value: self!
-
-skipCheckLayout ^<Boolean>
-
-	^false! !
-
 ! (Delta mirrorFor: #PreferenceModifier) methodsFor: 'initialization' !
 
 
@@ -87,4 +76,15 @@ initialize
 	self gridBlock:
 		[ :pm <PreferenceModifier> :loc <Point> |
 			pm part gridFor: loc ]! !
+
+! (Delta mirrorFor: #PreferenceModifier) methodsFor: 'private' !
+
+
+computePreferences
+
+	self prefsBlock value: self!
+
+skipCheckLayout ^<Boolean>
+
+	^false! !
 

@@ -31,31 +31,127 @@ use the string forms of these messages (see the ''string copying'' message categ
 (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $.'!
 
-! (Delta mirrorFor: #ReadString) methodsFor: 'private' !
+! (Delta mirrorFor: #ReadString) methodsFor: 'Camp Smalltalk' !
 
 
-caseInsensitiveEqualsStr: s <Str> ^<Boolean>
+sunitAsSymbol
+ 
+        ^self asSymbol!
 
-	"We check the size first as an optimization, since compare: must scan even if the sizes
-	 aren't equal"
-	^self size = s size
-		and: [ (self caseInsensitiveCompare: s) = 0 ]!
+sunitMatch: aString
+ 
+        ^self match: aString!
 
-equalsStr: s <Str> ^<Boolean>
+sunitSubStrings
+ 
+        ^self substrings! !
 
-	"We check the size first as an optimization, since compare: must scan even if the sizes
-	 aren't equal"
-	^self size = s size
-		and: [ (self compare: s) = 0 ]!
-
-hashAt: index <Int> ^<Int>
-
-	^self unicodeAt: index! !
-
-! (Delta mirrorFor: #ReadString) methodsFor: 'fake brands' !
+! (Delta mirrorFor: #ReadString) methodsFor: 'accessing' !
 
 
-Str ^<Boolean> ^true! !
+unicodeAt: index <Int> ^<Int>
+	"Like at:, but returns a unicode integer rather than a character"
+
+	"Subclasses should reimplement this for speed"
+	^(self at: index) unicodeValue! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case insensitive' !
+
+
+@< other <Str> ^<Boolean>
+	"Case insensitive <"
+
+	^(self caseInsensitiveCompare: other) == -1!
+
+@<= other <Str> ^<Boolean>
+	"Case insensitive <="
+
+	^(other @< self) not!
+
+@= other <Str> ^<Boolean>
+	"Case insensitive ="
+
+	^self sameAs: other!
+
+@> other <Str> ^<Boolean>
+	"Case insensitive >"
+
+	^other @< self!
+
+@>= other <Str> ^<Boolean>
+	"Case insensitive >="
+
+	^(self @< other) not!
+
+@~= other <Str> ^<Boolean>
+	"Case insensitive ~="
+
+	^(self @= other) not!
+
+caseInsensitiveCompare: other <Str>  ^<Int>
+
+	| mySize <Int> otherSize <Int> diff <Int> c1 <Character> c2 <Character> |
+	mySize := self size.
+	otherSize := other size.
+	1 to: (mySize min: otherSize) do:
+		[ :i <Int> |
+			c1 := self at: i.
+			c2 := other at: i.
+			c1 == c2
+				ifFalse: [	diff := c1 asLowercase asInteger - c2 asLowercase asInteger.
+								0 < diff
+									ifTrue: [ ^-1 ]
+									ifFalse: [ 0 == diff
+													ifFalse: [ ^1 ]		]]].
+	^mySize compare: otherSize!
+
+sameAs: other <Str> ^<Boolean>
+	"Case insensitive ="
+
+	^0 == (self caseInsensitiveCompare: other)! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case sensitive' !
+
+
+< other <Str> ^<Boolean>
+
+	^(self compare: other) == -1!
+
+<= other <Str> ^<Boolean>
+	"%todo: remove when using inherited types"
+	^(self compare: other) <= 0!
+
+= other <Object> ^<Boolean>
+
+	^self == other
+"%todo: use when coerce works:
+		or: [	self equalsStr: (Str coerce: other else: [ ^false ])   ]
+"
+		or: [ other Str ifFalse: [ ^false ].
+			self equalsStr: (guaranteed <Str> other)	]!
+
+> other <Str> ^<Boolean>
+	"%todo: remove when using inherited types"
+	^(self compare: other) == 1!
+
+>= other <Str> ^<Boolean>
+	"%todo: remove when using inherited types"
+	^(self compare: other) >= 0!
+
+compare: other <Str>  ^<Int>
+
+	| mySize <Int> otherSize <Int> |
+		
+	mySize := self size.
+	otherSize := other size.
+	1 to: (mySize min: otherSize) do:
+		[ :i <Int> |
+			| diff <Int> |
+			diff := (self at: i) compare: (other at: i).
+			diff == 0
+				ifFalse: [ ^diff ]
+		].
+	^mySize compare: otherSize! !
 
 ! (Delta mirrorFor: #ReadString) methodsFor: 'converting' !
 
@@ -148,123 +244,10 @@ stringCopyWithSize: s <Int> ^<String>
 	a replaceFrom: 1 to: (self size min: s) with: self.
 	^a! !
 
-! (Delta mirrorFor: #ReadString) methodsFor: 'printing' !
+! (Delta mirrorFor: #ReadString) methodsFor: 'fake brands' !
 
 
-printOn: strm <CharOutputStream>
-
-	strm nextPut: $'.
-	1 to: self size do:
-		[ :i <Int> |
-			| c <Character> |
-			strm nextPut: (c := self at: i).
-			c = $' ifTrue: [ strm nextPut: c ].	].
-	strm nextPut: $'.! !
-
-! (Delta mirrorFor: #ReadString) methodsFor: 'streaming' !
-
-
-readStream ^<CharacterReadStream>
-
-	^CharacterReadStream over: self! !
-
-! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case sensitive' !
-
-
-< other <Str> ^<Boolean>
-
-	^(self compare: other) == -1!
-
-<= other <Str> ^<Boolean>
-	"%todo: remove when using inherited types"
-	^(self compare: other) <= 0!
-
-= other <Object> ^<Boolean>
-
-	^self == other
-"%todo: use when coerce works:
-		or: [	self equalsStr: (Str coerce: other else: [ ^false ])   ]
-"
-		or: [ other Str ifFalse: [ ^false ].
-			self equalsStr: (guaranteed <Str> other)	]!
-
-> other <Str> ^<Boolean>
-	"%todo: remove when using inherited types"
-	^(self compare: other) == 1!
-
->= other <Str> ^<Boolean>
-	"%todo: remove when using inherited types"
-	^(self compare: other) >= 0!
-
-compare: other <Str>  ^<Int>
-
-	| mySize <Int> otherSize <Int> |
-		
-	mySize := self size.
-	otherSize := other size.
-	1 to: (mySize min: otherSize) do:
-		[ :i <Int> |
-			| diff <Int> |
-			diff := (self at: i) compare: (other at: i).
-			diff == 0
-				ifFalse: [ ^diff ]
-		].
-	^mySize compare: otherSize! !
-
-! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case insensitive' !
-
-
-@< other <Str> ^<Boolean>
-	"Case insensitive <"
-
-	^(self caseInsensitiveCompare: other) == -1!
-
-@<= other <Str> ^<Boolean>
-	"Case insensitive <="
-
-	^(other @< self) not!
-
-@= other <Str> ^<Boolean>
-	"Case insensitive ="
-
-	^self sameAs: other!
-
-@> other <Str> ^<Boolean>
-	"Case insensitive >"
-
-	^other @< self!
-
-@>= other <Str> ^<Boolean>
-	"Case insensitive >="
-
-	^(self @< other) not!
-
-@~= other <Str> ^<Boolean>
-	"Case insensitive ~="
-
-	^(self @= other) not!
-
-caseInsensitiveCompare: other <Str>  ^<Int>
-
-	| mySize <Int> otherSize <Int> diff <Int> c1 <Character> c2 <Character> |
-	mySize := self size.
-	otherSize := other size.
-	1 to: (mySize min: otherSize) do:
-		[ :i <Int> |
-			c1 := self at: i.
-			c2 := other at: i.
-			c1 == c2
-				ifFalse: [	diff := c1 asLowercase asInteger - c2 asLowercase asInteger.
-								0 < diff
-									ifTrue: [ ^-1 ]
-									ifFalse: [ 0 == diff
-													ifFalse: [ ^1 ]		]]].
-	^mySize compare: otherSize!
-
-sameAs: other <Str> ^<Boolean>
-	"Case insensitive ="
-
-	^0 == (self caseInsensitiveCompare: other)! !
+Str ^<Boolean> ^true! !
 
 ! (Delta mirrorFor: #ReadString) methodsFor: 'pattern matching' !
 
@@ -337,14 +320,59 @@ platformMatch: str <Str> ignoreCase: b <Boolean> ^ <Boolean>
 			single: Platform singleMatchWildcardCharacter
 			multiple: Platform multipleMatchWildcardCharacter! !
 
-! (Delta mirrorFor: #ReadString) methodsFor: 'accessing' !
+! (Delta mirrorFor: #ReadString) methodsFor: 'printing' !
 
 
-unicodeAt: index <Int> ^<Int>
-	"Like at:, but returns a unicode integer rather than a character"
+printOn: strm <CharOutputStream>
 
-	"Subclasses should reimplement this for speed"
-	^(self at: index) unicodeValue! !
+	strm nextPut: $'.
+	1 to: self size do:
+		[ :i <Int> |
+			| c <Character> |
+			strm nextPut: (c := self at: i).
+			c = $' ifTrue: [ strm nextPut: c ].	].
+	strm nextPut: $'.! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'private' !
+
+
+caseInsensitiveEqualsStr: s <Str> ^<Boolean>
+
+	"We check the size first as an optimization, since compare: must scan even if the sizes
+	 aren't equal"
+	^self size = s size
+		and: [ (self caseInsensitiveCompare: s) = 0 ]!
+
+equalsStr: s <Str> ^<Boolean>
+
+	"We check the size first as an optimization, since compare: must scan even if the sizes
+	 aren't equal"
+	^self size = s size
+		and: [ (self compare: s) = 0 ]!
+
+hashAt: index <Int> ^<Int>
+
+	^self unicodeAt: index! !
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'restricted' !
+
+
+newCopyOfSize: size <Int>
+thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
+^<VarSeqCltn[EX | X]>
+		{where X is returnType of #anElement message of arg 2;
+		     where EX is returnType of #anElement message of receiverType}
+
+	"%todo: use Str instead of ReadString below when have first class protocols & typecase"
+	other Str
+		ifFalse: [ 	"The guarantee is safe because the super call returns <VarSeqCltn[Character|X]>, and
+							EX = Character for strings.  This is only necessary because the current typechecker
+							impl. can't deal with a <Character> bound on EX for some reason"
+						^guaranteed <VarSeqCltn[EX | X]>
+								(super newCopyOfSize: size thatCanAlsoHoldElementsOf: other) ].
+
+	"We can make the guarantee below because we know that both the receiver and the other hold only characters"
+	^guaranteed <VarSeqCltn[EX | X]> (String new: size)! !
 
 ! (Delta mirrorFor: #ReadString) methodsFor: 'searching' !
 
@@ -380,25 +408,12 @@ ifAbsent: f <[^X def]>
 				ifTrue: [ ^i ]		].
 	^f value! !
 
-! (Delta mirrorFor: #ReadString) methodsFor: 'restricted' !
+! (Delta mirrorFor: #ReadString) methodsFor: 'streaming' !
 
 
-newCopyOfSize: size <Int>
-thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
-^<VarSeqCltn[EX | X]>
-		{where X is returnType of #anElement message of arg 2;
-		     where EX is returnType of #anElement message of receiverType}
+readStream ^<CharacterReadStream>
 
-	"%todo: use Str instead of ReadString below when have first class protocols & typecase"
-	other Str
-		ifFalse: [ 	"The guarantee is safe because the super call returns <VarSeqCltn[Character|X]>, and
-							EX = Character for strings.  This is only necessary because the current typechecker
-							impl. can't deal with a <Character> bound on EX for some reason"
-						^guaranteed <VarSeqCltn[EX | X]>
-								(super newCopyOfSize: size thatCanAlsoHoldElementsOf: other) ].
-
-	"We can make the guarantee below because we know that both the receiver and the other hold only characters"
-	^guaranteed <VarSeqCltn[EX | X]> (String new: size)! !
+	^CharacterReadStream over: self! !
 
 ! (Delta mirrorFor: #ReadString) methodsFor: 'string copying' !
 

@@ -4,7 +4,9 @@ body <[]>
 win32Handle <Win32Handle>
 	"the thread id"
 processError <ProcessError>
-	"Description of why process stopped running"')) !
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
 
 (Delta mirrorFor: #Process) revision: '$Revision: 1.7 $'!
 
@@ -105,6 +107,54 @@ waitUntilDead
 	[ self running ]
 		whileTrue: [ Processor yield ]! !
 
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+
+
+handle: exception
+
+	^self handlerChain handle: exception!
+
+handlerChain
+
+	handlerChain isNil
+		ifTrue: [handlerChain := BlockExceptionHandler default].
+	^handlerChain!
+
+handlerChain: aHandler
+
+	handlerChain := aHandler!
+
+inEnvironment: aHandler do: block
+
+	| oldHandler |
+	oldHandler := self handlerChain.
+	handlerChain := aHandler.
+	block
+		ensure: [handlerChain := oldHandler]!
+
+popHandler
+
+	| poppedHandler |
+	handlerChain := (poppedHandler := self handlerChain) nextHandler.
+	^poppedHandler!
+
+pushHandler: handler
+
+	handler nextHandler: self handlerChain.
+	handlerChain := handler !
+
+resetExceptionEnvironment
+
+	handlerChain := nil
+
+!
+
+resetHandlers
+
+	handlerChain := nil
+
+! !
+
 ! (Delta mirrorFor: #Process) methodsFor: 'file out' !
 
 
@@ -135,7 +185,7 @@ initFor: block <[]>
 
 recordId
 
-	win32Handle := {{<kernel Win32Handle GetCurrentThreadId> call}}! !
+	win32Handle := Platform currentThreadId! !
 
 ! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
 

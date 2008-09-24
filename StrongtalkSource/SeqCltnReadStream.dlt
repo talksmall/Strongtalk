@@ -33,48 +33,6 @@ test
 	"self test"
 	self test: (CharacterReadStream on: 'hello there folks') containing: 'hello there folks'.! !
 
-! (Delta mirrorFor: #SeqCltnReadStream) methodsFor: 'private' !
-
-
-accumulateUntil: predicate <[^Boolean]>  ^<SeqCltn[E]>
-
-	| start <Int> |
-
-	start := self position.
-	[ predicate value ]
-		whileFalse: [ self position: self position + 1 ].
-	^self collection copyFrom: start + 1 to: self position!
-
-actualNext ^<E>
-
-	| pos <Int> |
-	pos := self actualPosition.
-	pos := pos + 1.
-	pos > self size
-		ifTrue: [ self error: 'Attempt to read past the end of a stream' ].
-	self actualPosition: pos.
-	^self collection at: pos!
-
-collection ^<SeqCltn[E]>
-
-	^collection!
-
-nextFromPeek ^<E>
-
-	"If this happens, you should have overridden the calling method"
-	self shouldNotHappen!
-
-peekVal ^<E>
-
-	self shouldNotHappen! !
-
-! (Delta mirrorFor: #SeqCltnReadStream) methodsFor: 'initialization' !
-
-
-initCollection: sc <SeqCltn[E]>
-
-	collection := sc.! !
-
 ! (Delta mirrorFor: #SeqCltnReadStream) methodsFor: 'accessing' !
 
 
@@ -131,6 +89,13 @@ size ^<Int>
 
 	^self collection size! !
 
+! (Delta mirrorFor: #SeqCltnReadStream) methodsFor: 'initialization' !
+
+
+initCollection: sc <SeqCltn[E]>
+
+	collection := sc.! !
+
 ! (Delta mirrorFor: #SeqCltnReadStream) methodsFor: 'printing' !
 
 
@@ -141,4 +106,39 @@ printOn: strm <CharOutputStream>
 			nextPutAll: ' collection=';  print: self collection;
 			nextPut: $)
 			! !
+
+! (Delta mirrorFor: #SeqCltnReadStream) methodsFor: 'private' !
+
+
+accumulateUntil: predicate <[^Boolean]>  ^<SeqCltn[E]>
+
+	| start <Int> |
+
+	start := self position.
+	[ predicate value ]
+		whileFalse: [ self position: self position + 1 ].
+	^self collection copyFrom: start + 1 to: self position!
+
+actualNext ^<E>
+
+	| pos <Int> |
+	pos := self actualPosition.
+	pos := pos + 1.
+	pos > self size
+		ifTrue: [ self error: 'Attempt to read past the end of a stream' ].
+	self actualPosition: pos.
+	^self collection at: pos!
+
+collection ^<SeqCltn[E]>
+
+	^collection!
+
+nextFromPeek ^<E>
+
+	"If this happens, you should have overridden the calling method"
+	self shouldNotHappen!
+
+peekVal ^<E>
+
+	self shouldNotHappen! !
 

@@ -34,26 +34,6 @@ visualForLocator: loc <DeltaLocator> ^ <Visual>
 
 ^(self outlinerForLocator: loc) visual! !
 
-! (Delta mirrorFor: #MirrorOutliner) methodsFor: 'private-initialization' !
-
-
-initializeForMirror: m <M>
-
-	mirror := m.
-	m sourceInfo addDependent: self.
-! !
-
-! (Delta mirrorFor: #MirrorOutliner) methodsFor: 'menus' !
-
-
-typecheckingMenu ^ <Menu>
-
-^Menu new name: 'Typechecking';
-    add: (MenuAction new
-                  name: 'Typecheck';
-                  action: [self typecheck])
- ! !
-
 ! (Delta mirrorFor: #MirrorOutliner) methodsFor: 'control' !
 
 
@@ -67,6 +47,26 @@ typecheck
 self typecheckAction: [self mirror typecheck]
  		title: 'Typechecking ', mirror name.
  				
+! !
+
+! (Delta mirrorFor: #MirrorOutliner) methodsFor: 'menus' !
+
+
+typecheckingMenu ^ <Menu>
+
+^Menu new name: 'Typechecking';
+    add: (MenuAction new
+                  name: 'Typecheck';
+                  action: [self typecheck])
+ ! !
+
+! (Delta mirrorFor: #MirrorOutliner) methodsFor: 'private-initialization' !
+
+
+initializeForMirror: m <M>
+
+	mirror := m.
+	m sourceInfo addDependent: self.
 ! !
 
 ! (Delta mirrorFor: #MirrorOutliner) methodsFor: 'type errors' !

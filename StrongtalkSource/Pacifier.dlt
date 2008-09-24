@@ -26,30 +26,6 @@ for: v <Visual> pacified: b <Boolean> ^<Instance>
 
 	^self new initializePart: v pacified: b! !
 
-! (Delta mirrorFor: #Pacifier) methodsFor: 'displaying' !
-
-
-localDisplayOn: can <Canvas>
-
-	self pacified 
-		ifFalse: [ super localDisplayOn: can ]! !
-
-! (Delta mirrorFor: #Pacifier) methodsFor: 'initialization' !
-
-
-initialize
-
-	super initialize.
-	pacified := false!
-
-initializePart: v <Visual> pacified: b  <Boolean>
-
-	pacified := b.
-	self part: v.
-
-
-	! !
-
 ! (Delta mirrorFor: #Pacifier) methodsFor: 'accessing' !
 
 
@@ -70,6 +46,14 @@ pacified: b <Boolean>
 		self hasPart 
 			ifTrue: [ self part: self removePart ] ]
 ! !
+
+! (Delta mirrorFor: #Pacifier) methodsFor: 'displaying' !
+
+
+localDisplayOn: can <Canvas>
+
+	self pacified 
+		ifFalse: [ super localDisplayOn: can ]! !
 
 ! (Delta mirrorFor: #Pacifier) methodsFor: 'event handling' !
 
@@ -101,6 +85,22 @@ mouseEvent: type <Symbol> at: loc <Point> event: ev <UIEvent> ^<Boolean>
 		ifTrue: [ false ]
 		ifFalse: [ super mouseEvent: type at: loc event: ev ]
 ! !
+
+! (Delta mirrorFor: #Pacifier) methodsFor: 'initialization' !
+
+
+initialize
+
+	super initialize.
+	pacified := false!
+
+initializePart: v <Visual> pacified: b  <Boolean>
+
+	pacified := b.
+	self part: v.
+
+
+	! !
 
 ! (Delta mirrorFor: #Pacifier) methodsFor: 'input focus' !
 

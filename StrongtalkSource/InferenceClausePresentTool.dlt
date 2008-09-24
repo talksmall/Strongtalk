@@ -20,6 +20,13 @@ new ^ <Instance>
 
 	^super new initialize! !
 
+! (Delta mirrorFor: #InferenceClausePresentTool) methodsFor: 'accessing' !
+
+
+hasInferenceClausePresent ^ <Boolean>
+
+	^self formalNames isEmpty not! !
+
 ! (Delta mirrorFor: #InferenceClausePresentTool) methodsFor: 'node traversal' !
 
 
@@ -74,13 +81,6 @@ formalNames ^ <Set[Symbol]>
 formalNames: d <Set[Symbol]>
 
 	formalNames := d! !
-
-! (Delta mirrorFor: #InferenceClausePresentTool) methodsFor: 'accessing' !
-
-
-hasInferenceClausePresent ^ <Boolean>
-
-	^self formalNames isEmpty not! !
 
 ! (Delta mirrorFor: #InferenceClausePresentTool) methodsFor: 'private - initialization' !
 

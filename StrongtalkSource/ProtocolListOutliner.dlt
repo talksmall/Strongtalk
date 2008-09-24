@@ -10,21 +10,6 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
-! (Delta mirrorFor: #ProtocolListOutliner) methodsFor: 'private' !
-
-
-computeWorldList ^ <OrdCltn[ProtocolMirror]>
-
-	| result <SortedCollection[ProtocolMirror]> |
-	result := SortedCollection[ProtocolMirror] 
-					sortBlock: [ :m1 <ProtocolMirror> :m2 <ProtocolMirror> | m1 name <= m2 name ].
-	Smalltalk protocolsDo: [ :m <Protocol> | result add: (ProtocolMirror on: m) ].
-	^result asOrderedCollection!
-
-labelPainter ^<Painter>
-
-	^self protocolPainter! !
-
 ! (Delta mirrorFor: #ProtocolListOutliner) methodsFor: 'accessing' !
 
 
@@ -35,6 +20,36 @@ entryName ^ <Str>
 windowTitle ^ <Str>
 
 	^'Protocols'! !
+
+! (Delta mirrorFor: #ProtocolListOutliner) methodsFor: 'control' !
+
+
+addNewProtocol
+
+	self
+		launchDefinitionDialogWithPainter: self protocolPainter
+		title: 'Add new protocol'
+		constructor: [ :name <Symbol> |
+			Smalltalk define: name as:  (Protocol superProtocol: '<Object>') ]!
+
+typecheckAll
+
+self typecheckAction:[
+											self list do:[: m <ProtocolMirror> |
+											 					m typecheck.
+																m classSide typecheck.
+																].
+											]
+title: 'Typechecking all protocols'.! !
+
+! (Delta mirrorFor: #ProtocolListOutliner) methodsFor: 'dependencies' !
+
+
+update: aspect <Object> with: value <Object>
+
+	self inSessionProcessDo: [
+		((aspect = #addGlobal or: [aspect = #removeGlobal]) and: [ Protocol = value at2 class ])
+			ifTrue: [	self update ] ]! !
 
 ! (Delta mirrorFor: #ProtocolListOutliner) methodsFor: 'menus' !
 
@@ -67,33 +82,18 @@ typecheckingMenu ^ <Menu>
                   action: [self typecheckAllDefs])
 ! !
 
-! (Delta mirrorFor: #ProtocolListOutliner) methodsFor: 'control' !
+! (Delta mirrorFor: #ProtocolListOutliner) methodsFor: 'private' !
 
 
-addNewProtocol
+computeWorldList ^ <OrdCltn[ProtocolMirror]>
 
-	self
-		launchDefinitionDialogWithPainter: self protocolPainter
-		title: 'Add new protocol'
-		constructor: [ :name <Symbol> |
-			Smalltalk define: name as:  (Protocol superProtocol: '<Object>') ]!
+	| result <SortedCollection[ProtocolMirror]> |
+	result := SortedCollection[ProtocolMirror] 
+					sortBlock: [ :m1 <ProtocolMirror> :m2 <ProtocolMirror> | m1 name <= m2 name ].
+	Smalltalk protocolsDo: [ :m <Protocol> | result add: (ProtocolMirror on: m) ].
+	^result asOrderedCollection!
 
-typecheckAll
+labelPainter ^<Painter>
 
-self typecheckAction:[
-											self list do:[: m <ProtocolMirror> |
-											 					m typecheck.
-																m classSide typecheck.
-																].
-											]
-title: 'Typechecking all protocols'.! !
-
-! (Delta mirrorFor: #ProtocolListOutliner) methodsFor: 'dependencies' !
-
-
-update: aspect <Object> with: value <Object>
-
-	self inSessionProcessDo: [
-		((aspect = #addGlobal or: [aspect = #removeGlobal]) and: [ Protocol = value at2 class ])
-			ifTrue: [	self update ] ]! !
+	^self protocolPainter! !
 

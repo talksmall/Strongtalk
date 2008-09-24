@@ -31,28 +31,6 @@ forMsg: m <MSG> dispatch: d <[UIEvent, UIEventHandler]> ^<Instance>
 
 	^super new initialize msg: m; dispatch: d! !
 
-! (Delta mirrorFor: #UIEvent) methodsFor: 'initialization' !
-
-
-dispatch: d <[UIEvent, UIEventHandler]>
-	dispatch := d!
-
-initialize
-
-	isGrabbed := false.
-	repeatCount := 1.!
-
-msg: m <MSG>
-
-	msg := m! !
-
-! (Delta mirrorFor: #UIEvent) methodsFor: 'control' !
-
-
-dispatchTo: h <UIEventHandler> ^<Boolean>
-
-	^self dispatch value: self value: h! !
-
 ! (Delta mirrorFor: #UIEvent) methodsFor: 'accessing' !
 
 
@@ -83,6 +61,28 @@ repeatCount: c ^<Int>
 time ^<Int>
 
 	^self msg time asInteger! !
+
+! (Delta mirrorFor: #UIEvent) methodsFor: 'control' !
+
+
+dispatchTo: h <UIEventHandler> ^<Boolean>
+
+	^self dispatch value: self value: h! !
+
+! (Delta mirrorFor: #UIEvent) methodsFor: 'initialization' !
+
+
+dispatch: d <[UIEvent, UIEventHandler]>
+	dispatch := d!
+
+initialize
+
+	isGrabbed := false.
+	repeatCount := 1.!
+
+msg: m <MSG>
+
+	msg := m! !
 
 ! (Delta mirrorFor: #UIEvent) methodsFor: 'input device state' !
 

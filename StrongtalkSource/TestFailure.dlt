@@ -1,0 +1,22 @@
+Delta define: #TestFailure as: (
+(Class subclassOf: 'Exception' instanceVariables: '')) !
+
+(Delta mirrorFor: #TestFailure) revision: '$Revision:$'!
+
+(Delta mirrorFor: #TestFailure) group: 'SUnit-Preloads'!
+
+(Delta mirrorFor: #TestFailure)
+comment: 
+'Signaled in case of a failed test (failure). The test framework distinguishes between failures and errors. A failure is anticipated and checked for with assertions. Errors are unanticipated problems like a division by 0 or an index out of bounds ...'!
+
+! (Delta mirrorFor: #TestFailure) methodsFor: 'Camp Smalltalk' !
+
+
+defaultAction
+
+self halt.
+        "Debugger
+                openContext: initialContext
+                label: messageText
+                contents: initialContext shortStack"! !
+

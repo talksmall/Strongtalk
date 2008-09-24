@@ -32,6 +32,20 @@ at: childId <Int> ifAbsent: blk <[^X def]> ^<VisualGlyph | X>
 		id: childId
 		xPosition: (self positions at: childId)! !
 
+! (Delta mirrorFor: #GlyphRow) methodsFor: 'iteration' !
+
+
+near: r <Region> doFromBack: f <[Visual]>
+
+	"We modify the inherited method slightly to draw an extra element before the clipping region
+		to fix kerning display bugs when characters are in the row"
+
+	self indicesBounding: r enclosingRect do:
+		[ :start <Int> :stop <Int> |
+			(start - 1 max: 1) to: stop do:
+				[ :i <Int> |
+					f value: (self at: i)	]	]! !
+
 ! (Delta mirrorFor: #GlyphRow) methodsFor: 'private' !
 
 
@@ -74,18 +88,4 @@ highMinor: highMinor <Dist>
 ^<Rect>
 
 	^lowMajor @ lowMinor corner: highMajor @ highMinor! !
-
-! (Delta mirrorFor: #GlyphRow) methodsFor: 'iteration' !
-
-
-near: r <Region> doFromBack: f <[Visual]>
-
-	"We modify the inherited method slightly to draw an extra element before the clipping region
-		to fix kerning display bugs when characters are in the row"
-
-	self indicesBounding: r enclosingRect do:
-		[ :start <Int> :stop <Int> |
-			(start - 1 max: 1) to: stop do:
-				[ :i <Int> |
-					f value: (self at: i)	]	]! !
 

@@ -1,0 +1,66 @@
+Delta define: #SimpleTestResourceTestCase as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'resource')) !
+
+(Delta mirrorFor: #SimpleTestResourceTestCase) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SimpleTestResourceTestCase) group: 'SUnitTests'!
+
+(Delta mirrorFor: #SimpleTestResourceTestCase)
+comment: 
+''!
+
+! (Delta mirrorFor: #SimpleTestResourceTestCase) classSide methodsFor: 'Not categorized' !
+
+
+resources
+	^Set new add: SimpleTestResource current; yourself
+			! !
+
+! (Delta mirrorFor: #SimpleTestResourceTestCase) methodsFor: 'Not categorized' !
+
+
+dummy
+	self assert: true
+			!
+
+error
+	'foo' odd
+			!
+
+fail
+	self assert: false
+			!
+
+setRun
+	resource setRun
+			!
+
+setUp
+	resource := SimpleTestResource current
+			!
+
+testRan
+	| case |
+
+	case := self class selector: #setRun.
+	case run.
+	self assert: resource hasSetup.
+	self assert: resource hasRun
+			!
+
+testResourceInitRelease
+	| result suite error failure |
+	suite := TestSuite new.
+	suite addTest: (error := self class selector: #error).
+	suite addTest: (failure := self class selector: #fail).
+	suite addTest: (self class selector: #dummy).
+	result := suite run.
+	self assert: resource hasSetup
+			!
+
+testResourcesCollection
+	| collection |
+	collection := self resources.
+	self assert: collection size = 1
+			! !
+

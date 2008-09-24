@@ -13,6 +13,13 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
 '!
 
+! (Delta mirrorFor: #Number) classSide methodsFor: 'instance creation' !
+
+
+new ^<Instance>
+
+	self shouldNotImplement! !
+
 ! (Delta mirrorFor: #Number) classSide methodsFor: 'testing' !
 
 
@@ -143,41 +150,69 @@ testRelationals
 
 ! !
 
-! (Delta mirrorFor: #Number) classSide methodsFor: 'instance creation' !
+! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
 
 
-new ^<Instance>
+higherOf: aNumber <Number> ^<Number>
+    ^(self min: aNumber)!
 
-	self shouldNotImplement! !
+isAbove: aNumber <Number> ^<Boolean>
+    ^self < aNumber!
 
-! (Delta mirrorFor: #Number) methodsFor: 'testing' !
+isLeftOf: aNumber <Number> ^<Boolean>
+    ^self < aNumber!
+
+leftMost: aNumber <Number> ^<Number>
+    ^(self min: aNumber)!
+
+lowerOf: aNumber <Number> ^<Number>
+    ^(self max: aNumber)!
+
+rightMost: aNumber <Number> ^<Number>
+    ^(self max: aNumber)! !
+
+! (Delta mirrorFor: #Number) methodsFor: 'constants' !
 
 
-even ^<Boolean>
+unit ^<Number>
+	"The unit value, in whatever representation is appropriate for each subclass"
 
-	^(self \\ 2) = 0!
+	self subclassResponsibility!
 
-negative ^<Boolean>
+zero ^<Number>
+	"zero, in whatever representation is appropriate for each subclass"
 
-	^self < self zero!
+	self subclassResponsibility! !
 
-odd ^<Boolean>
+! (Delta mirrorFor: #Number) methodsFor: 'converting' !
 
-	^(self \\ 2) ~= 0!
 
-positive ^<Boolean>
+@ yval <Number>  ^<Point>
+	"return a point with the receiver as x, and yval as y"
 
-	^self >= self zero!
+	^Point x: self y: yval!
 
-sign ^<Number>
+asFloat ^<Float>
 
-	^self > self zero
-		ifTrue: [ self unit ]
-		ifFalse: [ self < self zero ifTrue: [ self unit negated ] ifFalse: [ self zero ] ]!
+	self subclassResponsibility!
 
-strictlyPositive ^<Boolean>
+asInteger ^<Integer>
 
-	^self > self zero! !
+	self subclassResponsibility!
+
+degreesToRadians ^<Number>
+
+	self unimplemented!
+
+radiansToDegrees ^<Number>
+
+	self unimplemented! !
+
+! (Delta mirrorFor: #Number) methodsFor: 'copying' !
+
+
+copy ^<Instance>
+	^self! !
 
 ! (Delta mirrorFor: #Number) methodsFor: 'fake brands' !
 
@@ -186,50 +221,16 @@ Number ^<Boolean>
 
 	^true! !
 
-! (Delta mirrorFor: #Number) methodsFor: 'truncation and rounding' !
+! (Delta mirrorFor: #Number) methodsFor: 'iteration' !
 
 
-ceiling ^<Int>
-	"Return the receiver truncated to the nearest integer towards positive infinity"
+to: stop <Number> ^<Interval>
 
-	self unimplemented!
+	^Interval from: self to: stop!
 
-floor ^<Int>
-	"Return the receiver truncated to the nearest integral value towards negative infinity"
+to: stop <Number> by: step <Number> ^<Interval>
 
-	| t <Int> |
-	^self < self zero
-		ifFalse: [ self truncated ]
-		ifTrue: [	
-				t := self truncated.
-				t = self
-					ifTrue: [ t ]
-					ifFalse: [ t - 1 ]	]!
-
-roundTo: n <Number> ^<Number>
-
-	self unimplemented!
-
-rounded ^<Int>
-	"The nearest integral value to the receiver.  When this is ambiguous (e.g. -1.5), choose the
-		integral value farthest away from 0 (in the above example, -2)."
-
-"%todo: use the version below when quo: is implemented for doubles
-	^((self + self + self sign) quo: (self unit + self unit)) asInteger
-"
-
-	^self negative
-		ifFalse: [ (self + 0.5d) truncated ]
-		ifTrue: [ (self - 0.5d) truncated ]!
-
-truncateTo: grid <Number> ^<Number>
-
-	^(self quo: grid) * grid!
-
-truncated ^<Int>
-	"Return the receiver truncated to the nearest integral value towards 0."
-
-	self subclassResponsibility! !
+	^Interval from: self to: stop by: step! !
 
 ! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
 
@@ -347,30 +348,6 @@ rem: n <Number> ^<Number>
 squared ^<Number>
 
 	^self * self! !
-
-! (Delta mirrorFor: #Number) methodsFor: 'converting' !
-
-
-@ yval <Number>  ^<Point>
-	"return a point with the receiver as x, and yval as y"
-
-	^Point x: self y: yval!
-
-asFloat ^<Float>
-
-	self subclassResponsibility!
-
-asInteger ^<Integer>
-
-	self subclassResponsibility!
-
-degreesToRadians ^<Number>
-
-	self unimplemented!
-
-radiansToDegrees ^<Number>
-
-	self unimplemented! !
 
 ! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
 
@@ -503,54 +480,77 @@ subtractFromSmallInteger: o <SmallInteger> ^<Number>
 	"%generated code- do not modify"
 	^o asFloat - self! !
 
-! (Delta mirrorFor: #Number) methodsFor: 'constants' !
+! (Delta mirrorFor: #Number) methodsFor: 'testing' !
 
 
-unit ^<Number>
-	"The unit value, in whatever representation is appropriate for each subclass"
+even ^<Boolean>
 
-	self subclassResponsibility!
+	^(self \\ 2) = 0!
 
-zero ^<Number>
-	"zero, in whatever representation is appropriate for each subclass"
+negative ^<Boolean>
+
+	^self < self zero!
+
+odd ^<Boolean>
+
+	^(self \\ 2) ~= 0!
+
+positive ^<Boolean>
+
+	^self >= self zero!
+
+sign ^<Number>
+
+	^self > self zero
+		ifTrue: [ self unit ]
+		ifFalse: [ self < self zero ifTrue: [ self unit negated ] ifFalse: [ self zero ] ]!
+
+strictlyPositive ^<Boolean>
+
+	^self > self zero! !
+
+! (Delta mirrorFor: #Number) methodsFor: 'truncation and rounding' !
+
+
+ceiling ^<Int>
+	"Return the receiver truncated to the nearest integer towards positive infinity"
+
+	self unimplemented!
+
+floor ^<Int>
+	"Return the receiver truncated to the nearest integral value towards negative infinity"
+
+	| t <Int> |
+	^self < self zero
+		ifFalse: [ self truncated ]
+		ifTrue: [	
+				t := self truncated.
+				t = self
+					ifTrue: [ t ]
+					ifFalse: [ t - 1 ]	]!
+
+roundTo: n <Number> ^<Number>
+
+	self unimplemented!
+
+rounded ^<Int>
+	"The nearest integral value to the receiver.  When this is ambiguous (e.g. -1.5), choose the
+		integral value farthest away from 0 (in the above example, -2)."
+
+"%todo: use the version below when quo: is implemented for doubles
+	^((self + self + self sign) quo: (self unit + self unit)) asInteger
+"
+
+	^self negative
+		ifFalse: [ (self + 0.5d) truncated ]
+		ifTrue: [ (self - 0.5d) truncated ]!
+
+truncateTo: grid <Number> ^<Number>
+
+	^(self quo: grid) * grid!
+
+truncated ^<Int>
+	"Return the receiver truncated to the nearest integral value towards 0."
 
 	self subclassResponsibility! !
-
-! (Delta mirrorFor: #Number) methodsFor: 'copying' !
-
-
-copy ^<Instance>
-	^self! !
-
-! (Delta mirrorFor: #Number) methodsFor: 'iteration' !
-
-
-to: stop <Number> ^<Interval>
-
-	^Interval from: self to: stop!
-
-to: stop <Number> by: step <Number> ^<Interval>
-
-	^Interval from: self to: stop by: step! !
-
-! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
-
-
-higherOf: aNumber <Number> ^<Number>
-    ^(self min: aNumber)!
-
-isAbove: aNumber <Number> ^<Boolean>
-    ^self < aNumber!
-
-isLeftOf: aNumber <Number> ^<Boolean>
-    ^self < aNumber!
-
-leftMost: aNumber <Number> ^<Number>
-    ^(self min: aNumber)!
-
-lowerOf: aNumber <Number> ^<Number>
-    ^(self max: aNumber)!
-
-rightMost: aNumber <Number> ^<Number>
-    ^(self max: aNumber)! !
 

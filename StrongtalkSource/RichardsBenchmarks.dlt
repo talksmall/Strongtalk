@@ -14,9 +14,47 @@ Use and distribution of this software is subject to the terms of the attached so
 ! (Delta mirrorFor: #RichardsBenchmarks) classSide methodsFor: 'instance creation' !
 
 
+loop
+
+	|start elapsed count|
+start := Time millisecondClockValue.
+count := 0.
+[(elapsed := Time millisecondClockValue - start) < 1000]
+	whileTrue: [
+		self new run.
+		count := count + 1].
+elapsed * 1000.0/ count printOn: Transcript cr; yourself!
+
 start
     super new start
 ! !
+
+! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'admin' !
+
+
+digitalkSchedulerTime
+	^625!
+
+digitalkTime
+	^626!
+
+digitalkTotalTime
+	^626!
+
+factor
+	^1!
+
+name
+	^'Richards'!
+
+parcplaceSchedulerTime
+	^1014!
+
+parcplaceTime
+	^1015!
+
+parcplaceTotalTime
+	^1015! !
 
 ! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'creation' !
 
@@ -117,85 +155,6 @@ createWorker: identity priority: priority work: work state: state
                 privateData:   (WorkerTaskDataRecord create).
     taskList := t.
     taskTable at: identity put: t! !
-
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'private' !
-
-
-findTask: identity
-    | t |
-    t := taskTable at: identity.
-    NoTask == t ifTrue: [self error: 'findTask failed'].
-    ^t
-!
-
-holdSelf
-    holdCount := holdCount + 1.
-    currentTask taskHolding: true.
-    ^currentTask link
-!
-
-initScheduler
-    queuePacketCount := holdCount := 0.
-    taskTable := Array new: 6 withAll: NoTask.
-    taskList := NoTask
-!
-
-initTrace
-    tracing := false.
-    layout := 0
-!
-
-queuePacket: packet
-    | t |
-    t := self findTask: packet identity.
-    NoTask == t ifTrue: [^NoTask].
-    queuePacketCount := queuePacketCount + 1.
-    packet link: NoWork.
-    packet identity: currentTaskIdentity.
-    ^t addInput: packet checkPriority: currentTask
-!
-
-release: identity
-    | t |
-    t := self findTask: identity.
-    NoTask == t ifTrue: [^NoTask].
-    t taskHolding: false.
-    t priority > currentTask priority
-        ifTrue: [^t]
-        ifFalse: [^currentTask]
-!
-
-trace: id
-    layout := layout - 1.
-    0 >= layout
-        ifTrue:
-            [Transcript cr.
-            layout := 50].
-    Transcript show: id printString
-!
-
-tracing
-	^tracing!
-
-wait
-    currentTask taskWaiting: true.
-    ^currentTask
-! !
-
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'scheduling' !
-
-
-schedule
-    currentTask := taskList.
-    [NoTask == currentTask]
-        whileFalse:
-            [currentTask isTaskHoldingOrWaiting
-                ifTrue: [currentTask := currentTask link]
-                ifFalse:
-                    [currentTaskIdentity := currentTask identity.
-                    tracing ifTrue: [self trace: currentTaskIdentity].
-                    currentTask := currentTask runTask]]
-! !
 
 ! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'initialize' !
 
@@ -367,30 +326,82 @@ start
 					parcplace: 					self parcplaceTotalTime.
 ! !
 
-! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'admin' !
+! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'private' !
 
 
-digitalkSchedulerTime
-	^625!
+findTask: identity
+    | t |
+    t := taskTable at: identity.
+    NoTask == t ifTrue: [self error: 'findTask failed'].
+    ^t
+!
 
-digitalkTime
-	^626!
+holdSelf
+    holdCount := holdCount + 1.
+    currentTask taskHolding: true.
+    ^currentTask link
+!
 
-digitalkTotalTime
-	^626!
+initScheduler
+    queuePacketCount := holdCount := 0.
+    taskTable := Array new: 6 withAll: NoTask.
+    taskList := NoTask
+!
 
-factor
-	^1!
+initTrace
+    tracing := false.
+    layout := 0
+!
 
-name
-	^'Richards'!
+queuePacket: packet
+    | t |
+    t := self findTask: packet identity.
+    NoTask == t ifTrue: [^NoTask].
+    queuePacketCount := queuePacketCount + 1.
+    packet link: NoWork.
+    packet identity: currentTaskIdentity.
+    ^t addInput: packet checkPriority: currentTask
+!
 
-parcplaceSchedulerTime
-	^1014!
+release: identity
+    | t |
+    t := self findTask: identity.
+    NoTask == t ifTrue: [^NoTask].
+    t taskHolding: false.
+    t priority > currentTask priority
+        ifTrue: [^t]
+        ifFalse: [^currentTask]
+!
 
-parcplaceTime
-	^1015!
+trace: id
+    layout := layout - 1.
+    0 >= layout
+        ifTrue:
+            [Transcript cr.
+            layout := 50].
+    Transcript show: id printString
+!
 
-parcplaceTotalTime
-	^1015! !
+tracing
+	^tracing!
+
+wait
+    currentTask taskWaiting: true.
+    ^currentTask
+! !
+
+! (Delta mirrorFor: #RichardsBenchmarks) methodsFor: 'scheduling' !
+
+
+schedule
+    currentTask := taskList.
+    [NoTask == currentTask]
+        whileFalse:
+            [currentTask isTaskHoldingOrWaiting
+                ifTrue: [currentTask := currentTask link]
+                ifFalse:
+                    [currentTaskIdentity := currentTask identity.
+                    tracing ifTrue: [self trace: currentTaskIdentity].
+                    currentTask := currentTask runTask]]
+! !
 

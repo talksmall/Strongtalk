@@ -18,6 +18,80 @@ on: p <Process> ^ <Instance>
 
 	^self new initProcess: p! !
 
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'accessing' !
+
+
+process ^ <Process>
+
+	^process!
+
+windowTitle ^ <Str>
+
+	self process processError isNil ifTrue: [^''].
+	^self process processError name! !
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+
+
+abortProcess
+
+	"Process get aborted by default when stack trace inspector is closed"
+	self requestCloseIfTopWindow.
+
+!
+
+closeRequest: toClose <[]>
+
+	"Abort inspected process when window closes"
+	self process isNil
+		ifFalse: [	self process terminate ].
+	super closeRequest: toClose!
+
+continueProcess
+
+	|topWindow|
+	self process resume.
+	self process: nil.		"Don't terminate process when window closes"
+	topWindow := self visual topWindow.
+	topWindow isNil
+		ifFalse: [topWindow requestClose]!
+
+transferToConsoleDebugger
+
+	self process stopInEvaluator.
+	self process: nil.		"Don't terminate process when window closes"
+	self requestCloseIfTopWindow.
+! !
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'menus' !
+
+
+hasMenu ^ <Boolean>
+
+	^true!
+
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self processMenu!
+
+processMenu ^ <Menu>
+
+	^Menu new
+		name: '&Process';
+		add: (MenuAction new
+					name: '&Abort';
+					action: [ self abortProcess ] );
+		add: (MenuAction new
+					name: '&Continue';
+					active: [ self process processError continuable ];
+					action: [ self continueProcess ] );
+		add: (MenuAction new
+					name: '&Transfer to console debugger';
+					action: [ self transferToConsoleDebugger ] )
+! !
+
 ! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
 
 
@@ -51,76 +125,5 @@ initProcess: p <Process>
 
 	self assert: [ p processError notNil ].
 	self process: p.
-! !
-
-! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'accessing' !
-
-
-process ^ <Process>
-
-	^process!
-
-windowTitle ^ <Str>
-
-	^self process processError name! !
-
-! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'menus' !
-
-
-hasMenu ^ <Boolean>
-
-	^true!
-
-menuBar ^ <Menu>
-
-	^Menu new
-		add: self fileMenu;
-		add: self processMenu!
-
-processMenu ^ <Menu>
-
-	^Menu new
-		name: '&Process';
-		add: (MenuAction new
-					name: '&Abort';
-					action: [ self abortProcess ] );
-		add: (MenuAction new
-					name: '&Continue';
-					active: [ self process processError continuable ];
-					action: [ self continueProcess ] );
-		add: (MenuAction new
-					name: '&Transfer to console debugger';
-					action: [ self transferToConsoleDebugger ] )
-! !
-
-! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
-
-
-abortProcess
-
-	"Process get aborted by default when stack trace inspector is closed"
-	self requestCloseIfTopWindow.
-
-!
-
-closeRequest: toClose <[]>
-
-	"Abort inspected process when window closes"
-	self process isNil
-		ifFalse: [	self process terminate ].
-	super closeRequest: toClose!
-
-continueProcess
-
-	self process resume.
-	self process: nil.		"Don't terminate process when window closes"
-	self requestCloseIfTopWindow.
-!
-
-transferToConsoleDebugger
-
-	self process stopInEvaluator.
-	self process: nil.		"Don't terminate process when window closes"
-	self requestCloseIfTopWindow.
 ! !
 

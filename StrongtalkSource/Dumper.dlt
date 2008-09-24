@@ -64,29 +64,6 @@ saveSystemToFile: file <FilePath>
 							tempFile moveAs: file ].
 ! !
 
-! (Delta mirrorFor: #Dumper) methodsFor: 'initialize' !
-
-
-initialize: aStream <OutputStream[Integer]>
-	stream							:= aStream.
-	marked							:= IdentityDictionary[Object,Integer] new: 42  * 1024.
-	emptyMethodArray	:= Array[Method] new: 0.! !
-
-! (Delta mirrorFor: #Dumper) methodsFor: 'testing' !
-
-
-at: obj <Object> ifPresent: pBlk <[Integer]> ifAbsentPut: aBlk <[Integer]>
-
-	aBlk value:
-		(marked at: obj
-			ifPresent:
-				[ :id <Int> |
-					pBlk value: id.
-					^self ]
-			ifAbsentPut:
-				[	marked size	]
-		)! !
-
 ! (Delta mirrorFor: #Dumper) methodsFor: 'accessing' !
 
 
@@ -153,6 +130,14 @@ version
 	  bytecode generation"
 	^102! !
 
+! (Delta mirrorFor: #Dumper) methodsFor: 'initialize' !
+
+
+initialize: aStream <OutputStream[Integer]>
+	stream							:= aStream.
+	marked							:= IdentityDictionary[Object,Integer] new: 42  * 1024.
+	emptyMethodArray	:= Array[Method] new: 0.! !
+
 ! (Delta mirrorFor: #Dumper) methodsFor: 'private' !
 
 
@@ -175,4 +160,19 @@ methodsForClass: class <Class> ^<Array[Methods]>
 
 systemDictionary
 	^{{primitiveSmalltalkArray}}! !
+
+! (Delta mirrorFor: #Dumper) methodsFor: 'testing' !
+
+
+at: obj <Object> ifPresent: pBlk <[Integer]> ifAbsentPut: aBlk <[Integer]>
+
+	aBlk value:
+		(marked at: obj
+			ifPresent:
+				[ :id <Int> |
+					pBlk value: id.
+					^self ]
+			ifAbsentPut:
+				[	marked size	]
+		)! !
 

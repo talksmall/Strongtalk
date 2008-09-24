@@ -25,13 +25,6 @@ Tags: %UI
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $
 '!
 
-! (Delta mirrorFor: #ScrollState) classSide methodsFor: 'instance creation' !
-
-
-new ^<Instance>
-
-	^super new initialize! !
-
 ! (Delta mirrorFor: #ScrollState) classSide methodsFor: 'control' !
 
 
@@ -45,14 +38,12 @@ smoothScroll: f <Boolean>
 
 	SmoothScroll := f! !
 
-! (Delta mirrorFor: #ScrollState) methodsFor: 'initialization' !
+! (Delta mirrorFor: #ScrollState) classSide methodsFor: 'instance creation' !
 
 
-initialize
+new ^<Instance>
 
-	self useContinuousGrid.
-	scrollPosition := shown := range := 0.
-	self redrawImmediately: false.! !
+	^super new initialize! !
 
 ! (Delta mirrorFor: #ScrollState) methodsFor: 'accessing' !
 
@@ -138,6 +129,21 @@ useContinuousGrid
 
 	self gridBlock: [ :index <Int> |  index ,, (index + 1) ].
 ! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'constants' !
+
+
+arrowScrollDist ^<Int>
+	"when clicking on the scroll down/up arrow on a scrollbar, this is the
+	 number of pixels the scroll is considered to be)"
+	 
+	 ^10!
+
+minArrowScrollDist ^<Int>
+	"when clicking on the scroll down/up arrow on a scrollbar, we try to move at least
+	  this many pixels, subject to the grid)"
+	 
+	 ^10! !
 
 ! (Delta mirrorFor: #ScrollState) methodsFor: 'control' !
 
@@ -272,6 +278,24 @@ smoothScrollTo: target <Int>
 	self redrawImmediately: oldRedraw.
 	self adjustedScrollPosition: target.! !
 
+! (Delta mirrorFor: #ScrollState) methodsFor: 'initialization' !
+
+
+initialize
+
+	self useContinuousGrid.
+	scrollPosition := shown := range := 0.
+	self redrawImmediately: false.! !
+
+! (Delta mirrorFor: #ScrollState) methodsFor: 'printing' !
+
+
+printOn: strm <CharOutputStream>
+
+	super printOn: strm.
+	strm show: '(pos = '; print: self scrollPosition; show: ' shown = '; print: self shown; 
+			show: ' range = '; print: self range; show: ')'! !
+
 ! (Delta mirrorFor: #ScrollState) methodsFor: 'private' !
 
 
@@ -351,34 +375,10 @@ nearestForwardFor: pos <Int> ^<Int>
 		ifTrue: [ pos ]
 		ifFalse: [ grid at2 ]! !
 
-! (Delta mirrorFor: #ScrollState) methodsFor: 'printing' !
-
-
-printOn: strm <CharOutputStream>
-
-	super printOn: strm.
-	strm show: '(pos = '; print: self scrollPosition; show: ' shown = '; print: self shown; 
-			show: ' range = '; print: self range; show: ')'! !
-
 ! (Delta mirrorFor: #ScrollState) methodsFor: 'testing' !
 
 
 isFullyVisible ^<Boolean>
 
 	^self shown >= self range! !
-
-! (Delta mirrorFor: #ScrollState) methodsFor: 'constants' !
-
-
-arrowScrollDist ^<Int>
-	"when clicking on the scroll down/up arrow on a scrollbar, this is the
-	 number of pixels the scroll is considered to be)"
-	 
-	 ^10!
-
-minArrowScrollDist ^<Int>
-	"when clicking on the scroll down/up arrow on a scrollbar, we try to move at least
-	  this many pixels, subject to the grid)"
-	 
-	 ^10! !
 

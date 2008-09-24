@@ -1243,6 +1243,39 @@ token = #identifier
                self error: ' covar, contra or unrelated expected'.
                ].! !
 
+! (Delta mirrorFor: #DeltaParser) methodsFor: 'node location - private' !
+
+
+node: n <ASTNode> begin: b <Int> end: e <Int> ^<ASTNode>
+
+	self assert: [(nodePositions includesKey: n) not].
+	nodePositions at: n put: (b ,, e).
+	^n!
+
+node: n <ASTNode> begin: b <Int> endNode: en <ASTNode> ^<ASTNode>
+
+	^self node: n begin: b end: ((nodePositions at: en) at2)!
+
+node: n <ASTNode> beginNode: bn <ASTNode> end: e  <Int> ^<ASTNode>
+
+	^self node: n begin: ((nodePositions at: bn) at1) end: e!
+
+node: n <ASTNode> beginNode: bn <ASTNode> endNode: en <ASTNode> ^<ASTNode>
+
+	^self node: n begin: ((nodePositions at: bn) at1) end: ((nodePositions at: en) at2)!
+
+nodeBeginFor: n <ASTNode>  ^<Integer>
+
+	self assert: [(nodePositions includesKey: n)].
+	^(nodePositions at: n) at1
+!
+
+nodeEndFor: n <ASTNode>  ^<Integer>
+
+	self assert: [(nodePositions includesKey: n)].
+	^(nodePositions at: n) at2
+! !
+
 ! (Delta mirrorFor: #DeltaParser) methodsFor: 'parsing' !
 
 
@@ -1580,38 +1613,5 @@ undeclaredVariableHandler: name <Symbol>  ^ <[^BottomType]>
                             DeltaGlobals at: name.
                             ]
     ].
-! !
-
-! (Delta mirrorFor: #DeltaParser) methodsFor: 'node location - private' !
-
-
-node: n <ASTNode> begin: b <Int> end: e <Int> ^<ASTNode>
-
-	self assert: [(nodePositions includesKey: n) not].
-	nodePositions at: n put: (b ,, e).
-	^n!
-
-node: n <ASTNode> begin: b <Int> endNode: en <ASTNode> ^<ASTNode>
-
-	^self node: n begin: b end: ((nodePositions at: en) at2)!
-
-node: n <ASTNode> beginNode: bn <ASTNode> end: e  <Int> ^<ASTNode>
-
-	^self node: n begin: ((nodePositions at: bn) at1) end: e!
-
-node: n <ASTNode> beginNode: bn <ASTNode> endNode: en <ASTNode> ^<ASTNode>
-
-	^self node: n begin: ((nodePositions at: bn) at1) end: ((nodePositions at: en) at2)!
-
-nodeBeginFor: n <ASTNode>  ^<Integer>
-
-	self assert: [(nodePositions includesKey: n)].
-	^(nodePositions at: n) at1
-!
-
-nodeEndFor: n <ASTNode>  ^<Integer>
-
-	self assert: [(nodePositions includesKey: n)].
-	^(nodePositions at: n) at2
 ! !
 

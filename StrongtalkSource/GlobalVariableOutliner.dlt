@@ -10,6 +10,16 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #GlobalVariableOutliner) methodsFor: 'menus' !
+
+
+fileMenu ^ <Menu>
+
+	^super fileMenu
+		add: (MenuAction new
+						name: 'Re&ferences to global';
+						action: [ self launchReferencesToGlobalName: self mirror name])! !
+
 ! (Delta mirrorFor: #GlobalVariableOutliner) methodsFor: 'private' !
 
 
@@ -25,14 +35,4 @@ definitionTitle ^ <Str>
 entryPainter ^ <Painter>
 
 	^self globalVariablePainter! !
-
-! (Delta mirrorFor: #GlobalVariableOutliner) methodsFor: 'menus' !
-
-
-fileMenu ^ <Menu>
-
-	^super fileMenu
-		add: (MenuAction new
-						name: 'Re&ferences to global';
-						action: [ self launchReferencesToGlobalName: self mirror name])! !
 

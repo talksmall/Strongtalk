@@ -45,6 +45,13 @@ logicalFlush
                     ifTrue: [    self writeBuffer; updateBufferLocationAfterFlush.     ].
                 self dirty: false.    ].! !
 
+! (Delta mirrorFor: #ExternalOutputStream) methodsFor: 'initialization' !
+
+
+initDescriptor: d <DESCRIPTOR> 
+    super initDescriptor: d.
+    self dirty: false.! !
+
 ! (Delta mirrorFor: #ExternalOutputStream) methodsFor: 'private' !
 
 
@@ -92,11 +99,4 @@ writeBuffer
         write: self bufferNumElements 
         at: self bufferOrigin
         ifFail: [ :err |  self error: err ]! !
-
-! (Delta mirrorFor: #ExternalOutputStream) methodsFor: 'initialization' !
-
-
-initDescriptor: d <DESCRIPTOR> 
-    super initDescriptor: d.
-    self dirty: false.! !
 

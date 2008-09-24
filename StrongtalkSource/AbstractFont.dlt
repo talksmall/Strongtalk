@@ -89,31 +89,6 @@ underline ^<Boolean>
 
 	^underline! !
 
-! (Delta mirrorFor: #AbstractFont) methodsFor: 'private' !
-
-
-familyCodeFor: fam <Symbol> ^<ExternalData>
-
-	fam = #Swiss
-		ifTrue: [ ^Win32 FF_SWISS ].
-	fam = #Roman
-		ifTrue: [ ^Win32 FF_ROMAN ].
-	fam = #Modern
-		ifTrue: [ ^Win32 FF_MODERN ].
-	fam = #Script
-		ifTrue: [ ^Win32 FF_SCRIPT ].
-	fam = #Decorative
-		ifTrue: [ ^Win32 FF_DECORATIVE ].
-	self error: 'Unknown font family: ', fam!
-
-sameBoldnessAs: other <AbstractFont> ^<Boolean>
-
-	self boldness = other boldness
-		ifTrue: [ ^true ].
-	self hasBoldness = other hasBoldness
-		ifFalse: [ ^false ].
-	^self boldness isWithin: 0.01 of: other boldness! !
-
 ! (Delta mirrorFor: #AbstractFont) methodsFor: 'comparing' !
 
 
@@ -141,4 +116,29 @@ hash ^<Int>
 	hash := hash bitXor: self underline hash.
 	hash := hash bitXor: self typeface hash.
 	^hash! !
+
+! (Delta mirrorFor: #AbstractFont) methodsFor: 'private' !
+
+
+familyCodeFor: fam <Symbol> ^<ExternalData>
+
+	fam = #Swiss
+		ifTrue: [ ^Win32 FF_SWISS ].
+	fam = #Roman
+		ifTrue: [ ^Win32 FF_ROMAN ].
+	fam = #Modern
+		ifTrue: [ ^Win32 FF_MODERN ].
+	fam = #Script
+		ifTrue: [ ^Win32 FF_SCRIPT ].
+	fam = #Decorative
+		ifTrue: [ ^Win32 FF_DECORATIVE ].
+	self error: 'Unknown font family: ', fam!
+
+sameBoldnessAs: other <AbstractFont> ^<Boolean>
+
+	self boldness = other boldness
+		ifTrue: [ ^true ].
+	self hasBoldness = other hasBoldness
+		ifFalse: [ ^false ].
+	^self boldness isWithin: 0.01 of: other boldness! !
 

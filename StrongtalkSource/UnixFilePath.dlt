@@ -60,39 +60,24 @@ createDirectoryIfFail: fail <[Symbol]>
 
 copyAs: newPath <FilePath> ifFail: fail <[ExternalError]>
 
-    | csrc <CString> cdest <CString> |
-    csrc := CString for: self name.
-    cdest := CString for: newPath name.
-    [   {{<kernel ExternalProxy CopyFileA>
-                source: csrc
-                dest: cdest
-                failIfExists: false asExternalData
-        }} asBoolean
-            ifFalse: [  fail value:
-                                ('Error copying file: ', Win32 getLastError printString) asSymbol ]
-    ] ensure:
-        [   csrc free.
-            cdest free  ]!
+    | source target	|
+	source := self readStream.
+	target := newPath writeStream.
+	[[source atEnd]	 whileFalse: [
+		target nextPut: source next]]
+			ensure: [source close.
+							target close]!
 
 moveAs: newPath <FilePath> ifFail: fail <[ExternalError]>
 
     | csrc <CString> cdest <CString> |
     csrc := CString for: self name.
     cdest := CString for: newPath name.
-    [   {{<kernel ExternalProxy MoveFileA>
+    [   {{<libc ExternalProxy rename>
                 source: csrc
                 dest: cdest
-        }} asBoolean
-            ifFalse: [  | err <ExternalData> |
-                            err := Win32 getLastError.
-                            err @= Win32 ERROR_ALREADY_EXISTS
-                                ifTrue: [   fail value: #AlreadyExists.
-                                                 ^self.  ].
-                            err @= Win32 ERROR_SHARING_VIOLATION
-                                ifTrue: [   fail value: #SharingViolation.
-                                                 ^self.  ].
-                            fail value:
-                                ('Error moving file: ', Win32 getLastError printString) asSymbol ]
+        }} isAllOnes
+            ifTrue: [ fail value: 'Error moving file.' asSymbol ]
     ] ensure:
         [   csrc free.
             cdest free  ]! !
@@ -260,21 +245,7 @@ stat: testBlock ifFail: failBlock
 		ifTrue: [ failBlock value ]
 		ifFalse: [ ^testBlock value: statBuffer ]]
 		ensure: [ statBuffer free.
-						name free]!
-
-win32FileAttributesIfFail: blk <[^X def]> ^<ExternalProxy | X>
-
-    | name <CString> |
-    self halt.
-    name := CString for: self name.
-    ^[  | result <ExternalProxy> |
-        result := {{<kernel ExternalProxy GetFileAttributesA>
-                            name: name
-                        }}.
-        result @= (ExternalProxy forHigh: 16rFFFF low: 16rFFFF)
-            ifTrue: [ blk value ]
-            ifFalse: [ result ]
-     ] ensure: [ name free ]! !
+						name free]! !
 
 ! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted' !
 

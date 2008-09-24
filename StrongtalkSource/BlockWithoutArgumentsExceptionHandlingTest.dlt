@@ -1,0 +1,70 @@
+Delta define: #BlockWithoutArgumentsExceptionHandlingTest as: (
+(Class subclassOf: 'AbstractExceptionHandlingTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #BlockWithoutArgumentsExceptionHandlingTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BlockWithoutArgumentsExceptionHandlingTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #BlockWithoutArgumentsExceptionHandlingTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #BlockWithoutArgumentsExceptionHandlingTest) methodsFor: 'testing' !
+
+
+testOnDoShouldInvokeDoWhenExceptionSignalled
+
+	|wasHandled|
+	wasHandled := false.
+	[Exception signal]
+		on: Exception
+		do: [:ex| wasHandled := true].
+	self assert: wasHandled
+			description: 'Signalled exception should be handled'!
+
+testOnDoShouldInvokeNestedHandler
+
+	|innerInvoked outerInvoked|
+	innerInvoked := false.
+	outerInvoked := false.
+	[[Exception signal]
+		on: BlockExceptionSelector falseSelector
+		do: [:ex| innerInvoked := true]]
+			on: Exception
+			do: [:ex| outerInvoked := true].
+	self deny: innerInvoked
+			description: 'Inner handler should not be invoked'.
+	self assert: outerInvoked
+			description: 'Outer handler should be invoked'!
+
+testOnDoShouldPopHandler
+
+	|handlerInvoked descriptor defaultInvoked|
+	descriptor := BlockExceptionDescriptor new.
+	descriptor
+		defaultActionBlock: [defaultInvoked := true];
+		resumeBlock: [:value| ^self " force NLR"].
+	[Exception signal]
+		on: BlockExceptionSelector trueSelector
+		do: [:ex| handlerInvoked := true].
+	defaultInvoked := false.
+	handlerInvoked := false.
+	[Processor activeProcess handle: descriptor]
+		ensure: [self deny: handlerInvoked
+								description: 'Handler should have been popped'.
+						self assert: defaultInvoked
+								description: 'Default action should have been invoked']!
+
+testShouldUnwindExceptionHandlersWhenHandlingException
+
+	| wasInvoked |
+	wasInvoked := false.
+	[[[Notification signal]
+			on: Error
+			do: [:ex| self signalFailure: 'Should be caught by outer handler']]
+				on: Notification
+				do: [:ex| self error: 'Provoke outer handler']]
+					on: Error
+					do: [:ex| wasInvoked:= true].
+	self assert: wasInvoked description: 'Outer handler should be invoked'! !
+

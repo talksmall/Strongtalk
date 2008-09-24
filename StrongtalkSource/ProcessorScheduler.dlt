@@ -32,73 +32,62 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
-! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'restricted- to processes' !
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'accessing' !
 
 
-isRunning: p <Process> ^<Boolean>
+activePriority ^<Int>
 
-	^self uninterruptablyDo:
-		[ self activeProcess = p or: [ self tryingToRun includes: p ] ]!
+	^self activeProcess priority!
 
-register: p <Process>
-	"This is called outside the scheduler to register a new process"
+activeProcess ^<Process>
 
+	^{{primitiveProcessActiveProcess}}!
+
+quiescent ^<Boolean>
+quiescent isNil ifTrue: [ quiescent := false ].  "%remove"
+	^quiescent!
+
+stopHandler ^<[Process]>
+
+	^stopHandler!
+
+stopHandler: h <[Process]>
+
+	stopHandler := h! !
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'constants' !
+
+
+quiescenceDelay ^<Float>
+	"# of seconds before the system thinks it is quiescent, and will do idle actions"
+	
+	^0.1! !
+
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'control' !
+
+
+signal: s <Semaphore> atTime: millisecondClockValue <Int>
+
+	| micro <Float> |
+	micro := millisecondClockValue asFloat / 1000.0.
 	self uninterruptablyDo:
-		[ self processes add: p ]!
+		[	self delayed add: micro ,, s.
+			self nextDelayedTime: micro ].
+!
 
-resume: p <Process>
+stopWithError: e <ProcessError> ^<BottomType>
 
-	self assert: [ p ~~ IdleProcess theIdleProcess ].
-	self assert: [ p suspended ].
-	self uninterruptablyDo:
-		[ self tryingToRun addLast: p. ]!
+	self activeProcess processError: e.
+	{{primitiveProcessStop}}.
+!
 
-stopInEvaluator: p <Process>
+terminateActive
 
-	self uninterruptablyDo:
-		[ self toBeStoppedInEvaluator add: p ]!
+	self activeProcess terminate!
 
-suspend: p <Process>
-	"make sure s isn't on the list of runnables.  This does not stop the active
-		process if it is p"
+yield
 
-	self uninterruptablyDo:
-		[	| index <Int> |
-			index := self tryingToRun indexOf: p ifAbsent: [ ^self ].
-			self tryingToRun removeAt: index.
-			index <= self next
-				ifTrue: [ self next: (self next - 1 max: 1). ].
-		]!
-
-terminating: p <Process>
-
-	p running
-		ifFalse: [	p suspended
-								ifTrue: [ p resume ]
-								ifFalse: [ "self error: 'Process must be running or suspended to be terminated' " ].
-							self uninterruptablyDo:
-								[	self removeFromDelayedIfNeeded: p	].
-
-							"self unimplemented."
-							"%todo: do cleanup here:
-								- if waiting for delay, remove from delayed queue (and
-										fiddle if was next)
-								- if was waiting for semaphore, remove from semaphore list
-								"
-						]!
-
-uninterruptablyDo: blk <[^X def]> ^<X>
-	"Don't allow any preemption during the execution of blk.
-		If the current process suspends itself during blk,
-		then the critical region is terminated at that point.
-		These can be nested."
-
-	^blk value!
-
-unregister: p <Process>
-
-	self uninterruptablyDo:
-		[ self processes remove: p ]! !
+	self activeProcess yield! !
 
 ! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'private' !
 
@@ -143,7 +132,7 @@ handleStopOnCommandLine: p <Process>
 
 hasIdleActions ^<Boolean>
 
-	^IdleProcess theIdleProcess hasIdleActions!
+	^IdleProcess hasIdleActions!
 
 isRunningStatus: s <Symbol>  ^<Boolean>
 
@@ -331,31 +320,20 @@ waitForAsyncDLLReturnOrTimeout: timeoutSeconds <Float> ^<Boolean>
 	millis := (timeoutSeconds * 1000.0) asInteger.
 	^{{self primitiveProcessSchedulerWait: millis ifFail: [ :err <Symbol> | self error: err] }}! !
 
-! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'control' !
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'private-initialization' !
 
 
-signal: s <Semaphore> atTime: millisecondClockValue <Int>
-
-	| micro <Float> |
-	micro := millisecondClockValue asFloat / 1000.0.
-	self uninterruptablyDo:
-		[	self delayed add: micro ,, s.
-			self nextDelayedTime: micro ].
-!
-
-stopWithError: e <ProcessError> ^<BottomType>
-
-	self activeProcess processError: e.
-	{{primitiveProcessStop}}.
-!
-
-terminateActive
-
-	self activeProcess terminate!
-
-yield
-
-	self activeProcess yield! !
+initialize
+	"sent by #start"
+	
+	processes := Set[Process] new.
+	tryingToRun := OrderedCollection[Process] new.
+	delayed := SortedCollection[Tuple[Int,Semaphore]]
+						sortBlock: [ :a1 <Tuple[Int,Semaphore]> :a2 <Tuple[Int,Semaphore]> |
+												a1 at1 <= a2 at1	].
+	self next: 1.
+	self quiescent: false.
+	toBeStoppedInEvaluator := OrderedCollection[Process] new.! !
 
 ! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'restricted' !
 
@@ -375,49 +353,71 @@ start
 	self run.
 	VM quit.! !
 
-! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'accessing' !
+! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'restricted- to processes' !
 
 
-activePriority ^<Int>
+isRunning: p <Process> ^<Boolean>
 
-	^self activeProcess priority!
+	^self uninterruptablyDo:
+		[ self activeProcess = p or: [ self tryingToRun includes: p ] ]!
 
-activeProcess ^<Process>
+register: p <Process>
+	"This is called outside the scheduler to register a new process"
 
-	^{{primitiveProcessActiveProcess}}!
+	self uninterruptablyDo:
+		[ self processes add: p ]!
 
-quiescent ^<Boolean>
-quiescent isNil ifTrue: [ quiescent := false ].  "%remove"
-	^quiescent!
+resume: p <Process>
 
-stopHandler ^<[Process]>
+	self assert: [ p ~~ IdleProcess theIdleProcess ].
+	self assert: [ p suspended ].
+	self uninterruptablyDo:
+		[ self tryingToRun addLast: p. ]!
 
-	^stopHandler!
+stopInEvaluator: p <Process>
 
-stopHandler: h <[Process]>
+	self uninterruptablyDo:
+		[ self toBeStoppedInEvaluator add: p ]!
 
-	stopHandler := h! !
+suspend: p <Process>
+	"make sure s isn't on the list of runnables.  This does not stop the active
+		process if it is p"
 
-! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'private-initialization' !
+	self uninterruptablyDo:
+		[	| index <Int> |
+			index := self tryingToRun indexOf: p ifAbsent: [ ^self ].
+			self tryingToRun removeAt: index.
+			index <= self next
+				ifTrue: [ self next: (self next - 1 max: 1). ].
+		]!
 
+terminating: p <Process>
 
-initialize
-	"sent by #start"
-	
-	processes := Set[Process] new.
-	tryingToRun := OrderedCollection[Process] new.
-	delayed := SortedCollection[Tuple[Int,Semaphore]]
-						sortBlock: [ :a1 <Tuple[Int,Semaphore]> :a2 <Tuple[Int,Semaphore]> |
-												a1 at1 <= a2 at1	].
-	self next: 1.
-	self quiescent: false.
-	toBeStoppedInEvaluator := OrderedCollection[Process] new.! !
+	p running
+		ifFalse: [	p suspended
+								ifTrue: [ p resume ]
+								ifFalse: [ "self error: 'Process must be running or suspended to be terminated' " ].
+							self uninterruptablyDo:
+								[	self removeFromDelayedIfNeeded: p	].
 
-! (Delta mirrorFor: #ProcessorScheduler) methodsFor: 'constants' !
+							"self unimplemented."
+							"%todo: do cleanup here:
+								- if waiting for delay, remove from delayed queue (and
+										fiddle if was next)
+								- if was waiting for semaphore, remove from semaphore list
+								"
+						]!
 
+uninterruptablyDo: blk <[^X def]> ^<X>
+	"Don't allow any preemption during the execution of blk.
+		If the current process suspends itself during blk,
+		then the critical region is terminated at that point.
+		These can be nested."
 
-quiescenceDelay ^<Float>
-	"# of seconds before the system thinks it is quiescent, and will do idle actions"
-	
-	^0.1! !
+	^blk value!
+
+unregister: p <Process>
+
+	self uninterruptablyDo:
+		[ self processes remove: p ]! !
 

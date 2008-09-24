@@ -1,0 +1,45 @@
+Delta define: #TextModel as: (
+(Class subclassOf: 'Object' instanceVariables: 'model " the model that provides the contents "
+aspect "  the aspect of the model "
+view " the view to be updated with the contents "')) !
+
+(Delta mirrorFor: #TextModel) revision: '$Revision:$'!
+
+(Delta mirrorFor: #TextModel) group: 'Unclassified'!
+
+(Delta mirrorFor: #TextModel)
+comment: 
+''!
+
+! (Delta mirrorFor: #TextModel) classSide methodsFor: 'instance creation' !
+
+
+on: aModel aspect: aspect
+
+	^self new
+			on: aModel
+			aspect: aspect! !
+
+! (Delta mirrorFor: #TextModel) methodsFor: 'initialization' !
+
+
+on: aModel aspect: anAspect
+
+	view := TextView forString.
+	view
+		isMultiLine: true;
+		model: '';
+		paint: Paint black.
+	model := aModel.
+	aspect := anAspect.
+	model addDependent: self.
+	^view! !
+
+! (Delta mirrorFor: #TextModel) methodsFor: 'notification' !
+
+
+update: anAspect
+
+	anAspect == aspect
+		ifTrue: [view model: (model perform: aspect)]! !
+

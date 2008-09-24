@@ -19,7 +19,7 @@ numerator: n <Int> denominator: d <Int> ^<RationalNumber>
 	| gcd <Int> num <Int> denom <Int> |
 	d < 0
 		ifFalse: [ d == 0
-					ifTrue: [ self error: 'division by 0' ]
+					ifTrue: [ (ZeroDivide dividend: n) signal ]
 					ifFalse: [ num := n. denom := d ]	]
 		ifTrue: [ num := n negated. denom := d negated ].
 	gcd := num gcd: denom.
@@ -39,13 +39,6 @@ denominator ^<Int>
 numerator ^<Int>
 	self subclassResponsibility! !
 
-! (Delta mirrorFor: #RationalNumber) methodsFor: 'converting' !
-
-
-asFloat ^<Float>
-
-	^self numerator asFloat / self denominator asFloat! !
-
 ! (Delta mirrorFor: #RationalNumber) methodsFor: 'comparison' !
 
 
@@ -58,6 +51,24 @@ asFloat ^<Float>
 	^self == a or:
 		[ (Number coerce: a else: [ ^false ]) equalFromRationalNumber: self ]
 ! !
+
+! (Delta mirrorFor: #RationalNumber) methodsFor: 'constants' !
+
+
+unit ^<Int>
+
+	^1!
+
+zero ^<RationalNumber>
+
+	^0! !
+
+! (Delta mirrorFor: #RationalNumber) methodsFor: 'converting' !
+
+
+asFloat ^<Float>
+
+	^self numerator asFloat / self denominator asFloat! !
 
 ! (Delta mirrorFor: #RationalNumber) methodsFor: 'operations' !
 
@@ -191,15 +202,4 @@ subtractFromRationalNumber: o <RationalNumber> ^<RationalNumber>
 subtractFromSmallInteger: o <SmallInteger> ^<RationalNumber>
 	"%generated code- do not modify"
 	^self subtractFromRationalNumber: o! !
-
-! (Delta mirrorFor: #RationalNumber) methodsFor: 'constants' !
-
-
-unit ^<Int>
-
-	^1!
-
-zero ^<RationalNumber>
-
-	^0! !
 

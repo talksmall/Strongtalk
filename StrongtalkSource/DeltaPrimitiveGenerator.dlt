@@ -12,6 +12,12 @@ a file and parses them using DeltaPrimitiveParser
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) classSide methodsFor: 'HTML' !
+
+
+generateHTML ^ <Instance>
+  ^self new generateHTML! !
+
 ! (Delta mirrorFor: #DeltaPrimitiveGenerator) classSide methodsFor: 'action' !
 
 
@@ -20,12 +26,6 @@ doit
 	DeltaPrimitives := DeltaPrimitiveTypeInfo new.
 	self setPrimitives: DeltaPrimitives.
 ! !
-
-! (Delta mirrorFor: #DeltaPrimitiveGenerator) classSide methodsFor: 'HTML' !
-
-
-generateHTML ^ <Instance>
-  ^self new generateHTML! !
 
 ! (Delta mirrorFor: #DeltaPrimitiveGenerator) classSide methodsFor: 'instance creation' !
 
@@ -157,13 +157,6 @@ generateHTML
 	self fileIn.
 	self fileOutHTML! !
 
-! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'private' !
-
-
-initialize
-  self primitives: OrderedCollection[DeltaPrim] new
-! !
-
 ! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'accessing' !
 
 
@@ -174,6 +167,13 @@ primitives ^ <OrderedCollection[DeltaPrim]>
 primitives: pl  <OrderedCollection[DeltaPrim]>
 
 primitives := pl.! !
+
+! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'private' !
+
+
+initialize
+  self primitives: OrderedCollection[DeltaPrim] new
+! !
 
 ! (Delta mirrorFor: #DeltaPrimitiveGenerator) methodsFor: 'private file in' !
 

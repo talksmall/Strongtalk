@@ -1,0 +1,34 @@
+Delta define: #SortedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #SortedCollectionTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SortedCollectionTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #SortedCollectionTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+
+
+testSortSimpleCollection
+
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 2 1)asSortedCollection asArray = #(1 1 2)].
+	self should: [#(1 2 1 2)asSortedCollection asArray = #(1 1 2 2)].!
+
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
+				description: 'collection should be sorted'].! !
+

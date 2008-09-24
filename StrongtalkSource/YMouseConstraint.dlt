@@ -23,14 +23,6 @@ var: aVariable offset: yOffset strength: strengthSymbol
 
 	^(self new) var: aVariable offset: yOffset strength: strengthSymbol! !
 
-! (Delta mirrorFor: #YMouseConstraint) methodsFor: 'queries' !
-
-
-isInput
-	"I depend on the state of the mouse."
-
-	^true! !
-
 ! (Delta mirrorFor: #YMouseConstraint) methodsFor: 'initialize-release' !
 
 
@@ -39,4 +31,12 @@ var: aVariable offset: aNumber strength: strengthSymbol
 
 	yOffset := aNumber.
 	self var: aVariable strength: strengthSymbol.! !
+
+! (Delta mirrorFor: #YMouseConstraint) methodsFor: 'queries' !
+
+
+isInput
+	"I depend on the state of the mouse."
+
+	^true! !
 

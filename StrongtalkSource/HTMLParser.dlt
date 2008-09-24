@@ -18,13 +18,6 @@ comment:
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
-! (Delta mirrorFor: #HTMLParser) classSide methodsFor: 'instance creation' !
-
-
-on: strm <CharInputStream>  ^<Instance>
-
-	^self new initOn: strm! !
-
 ! (Delta mirrorFor: #HTMLParser) classSide methodsFor: 'initialization' !
 
 
@@ -159,6 +152,13 @@ initialize
 		include:  (HTMLProduction named:
 				#tt
 							  elementHolds: #(phrase) )! !
+
+! (Delta mirrorFor: #HTMLParser) classSide methodsFor: 'instance creation' !
+
+
+on: strm <CharInputStream>  ^<Instance>
+
+	^self new initOn: strm! !
 
 ! (Delta mirrorFor: #HTMLParser) methodsFor: 'initialization-private' !
 
@@ -360,21 +360,6 @@ stringBuilder ^<CharReadWriteStream>
 	^stringBuilder
 ! !
 
-! (Delta mirrorFor: #HTMLParser) methodsFor: 'private-accessing' !
-
-
-chars ^<CharInputStream>
-
-	^chars!
-
-grammar ^<KeyedSet[Str,HTMLProduction]>
-
-	^Grammar!
-
-tokens ^<InputStream[Str | HTMLTag]>
-
-	^tokens! !
-
 ! (Delta mirrorFor: #HTMLParser) methodsFor: 'parsing' !
 
 
@@ -476,6 +461,21 @@ skipToStartToken
 						].
 		self tokens next
 	] repeat! !
+
+! (Delta mirrorFor: #HTMLParser) methodsFor: 'private-accessing' !
+
+
+chars ^<CharInputStream>
+
+	^chars!
+
+grammar ^<KeyedSet[Str,HTMLProduction]>
+
+	^Grammar!
+
+tokens ^<InputStream[Str | HTMLTag]>
+
+	^tokens! !
 
 ! (Delta mirrorFor: #HTMLParser) methodsFor: 'testing' !
 
