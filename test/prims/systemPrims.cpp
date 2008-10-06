@@ -1,5 +1,7 @@
 # include "incls/_precompiled.incl"
 # include "incls/_system_prims.cpp.incl"
+#include "handle.hpp"
+#include "behavior_prims.hpp"
 #include "test.h"
 
 using namespace easyunit;
@@ -9,7 +11,7 @@ TEST(SystemPrims, expansionShouldExpandOldGenerationCapacity)
   char msg[100];
   int oldSize = Universe::old_gen.capacity();
   ASSERT_EQUALS_M(trueObj, systemPrimitives::expandMemory(as_smiOop(1000 * K)), "Wrong result");
-  int expectedSize = oldSize + 1000 * K;
+  int expectedSize = oldSize + ReservedSpace::align_size(1000 * K, ObjectHeapExpandSize * K);
   int actualSize = Universe::old_gen.capacity();
   sprintf(msg, "Generation has wrong capacity. Expected: %d, but was: %d", expectedSize, actualSize);
   ASSERT_EQUALS_M(expectedSize, actualSize, msg);

@@ -28,6 +28,7 @@ int Handles::_top   = 0;
 int Handles::_size  = 10;
 oop Handles::_array[10];
 
+
 oop Handles::oop_at(int index) {
   assert(index >= 0 && index < top(), "index check");
   return _array[index];

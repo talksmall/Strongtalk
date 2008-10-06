@@ -127,8 +127,8 @@ class oldGeneration: public generation {
  public:
   int expand(int size);
 
-  oop* allocate(int size) {
-    return current_space->allocate(size);
+  oop* allocate(int size, bool allow_expansion=true) {
+    return current_space->allocate(size, allow_expansion);
   }
 
   // called by Universe

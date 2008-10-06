@@ -44,7 +44,7 @@ class klassKlass: public memOopKlass {
   int  oop_scavenge_tenured_contents(oop obj);
   void oop_follow_contents(oop obj);
 
-  oop oop_primitive_allocate(oop obj);
+  oop oop_primitive_allocate(oop obj, bool allow_scavenge=true);
   oop oop_primitive_allocate_size(oop obj, int size);
 
   oop oop_shallow_copy(oop obj, bool tenured);

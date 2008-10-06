@@ -1,193 +1,100 @@
 
-"September 23, 2008 -> 19:6:47"!
+"September 25, 2008 -> 0:59:46"!
 
-! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
-new ^<Instance>
-	"Create and return an initialized instance of this class."
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class ifFail: failureBlock
 
-	"%remove when inlining working:"
-	|failureBlock|
-	failureBlock := [ :err <Symbol> |
-		VM scavengeGarbage.
-		{{self primitiveNewIfFail: [:err <Symbol> |
-			Transcript show: err; cr.
-			VM isGCPending
-				ifTrue: [VM waitForGC.
-							{{self primitiveNewIfFail: [:err <Symbol> |
-								VM expand: (VMMirror on: self) instanceSize.
-								VM deferredGC.
-								{{self primitiveNewIfFail: [:err <Symbol> |
-																		self error: err]}}]}}]
-				ifFalse: [VM expand: (VMMirror on: self) instanceSize.
-							VM deferredGC.
-							{{self primitiveNewIfFail: [:err <Symbol> |
-																	self error: err]}}].
-			]}}
-		].
-	^{{self primitiveNewIfFail: [:e| failureBlock value: e]}}
-"
-	^guaranteed <Instance> (super new)
-"! !
+	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}! !
 
-"September 24, 2008 -> 0:1:20"!
+"September 25, 2008 -> 1:16:50"!
 
-Delta define: #SortedCollectionTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: '')) !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
 
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| self freeSpace > 2 * self survivorSpaceSize
+									ifTrue: [self scavengeGarbage
+														ifTrue: [self collectGarbage]
+														ifFalse: [allocateBlock
+																			value: [:e2| self collectGarbage]]]]
+						! !
 
-"September 24, 2008 -> 0:2:41"!
+"September 25, 2008 -> 1:17:24"!
 
-(Delta mirrorFor: #SortedCollectionTest) removeDefinitionIfFail: [] !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+spaceToScavenge
 
+	^self freeSpace > 2 * self survivorSpaceSize					! !
 
-"September 24, 2008 -> 0:3:0"!
+"September 25, 2008 -> 1:17:42"!
 
-Delta define: #SequenceableCollectionTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: '')) !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
 
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| self spaceToScavenge
+									ifTrue: [self scavengeGarbage
+														ifTrue: [self collectGarbage]
+														ifFalse: [allocateBlock
+																			value: [:e2| self collectGarbage]]]]
+						! !
 
-"September 24, 2008 -> 0:5:40"!
+"September 25, 2008 -> 1:19:0"!
 
-! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
-testIsSortedBy
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
 
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| self spaceToScavenge
+									ifTrue: [self scavengeAndAllocate: allocateBlock]]! !
 
-	self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]].
-	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
+"September 25, 2008 -> 1:25:9"!
 
-"September 24, 2008 -> 0:8:14"!
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+scavengeAndAllocate: allocateBlock
 
-! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
-testIsSortedBy
+	^self scavengeGarbage
+			ifTrue: [self collectGarbage.
+							allocateBlock
+								value: [:e| self expand.
+													allocateBlock value: [:e2| self error: e2]]]
+			ifFalse: [allocateBlock
+								value: [:e3| self collectGarbage.
+														allocateBlock
+															value: [:e4| self expand.
+																				allocateBlock value: [:e5| self error: e5]]]]! !
 
+"September 25, 2008 -> 12:36:59"!
 
-	"self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]]."
-	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+survivorSpaceSize
 
-"September 24, 2008 -> 0:8:24"!
+	^self smallIntegerAt: #SurvivorSize! !
 
-! (Delta mirrorFor: #SequenceableCollectionTest) methodsFor: 'testing' !
-testIsSortedBy
+"September 25, 2008 -> 12:38:2"!
 
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+freeSpace
 
-	self shouldnt: [#(1 5 3) isSortedBy: [:a :b| a < b]].
-	self should: [#(1 3 5) isSortedBy: [:a :b| a < b]]! !
+	^{{freeSpace}}! !
 
-"September 24, 2008 -> 0:10:5"!
+"September 25, 2008 -> 12:38:28"!
 
-! (Delta mirrorFor: #SequenceableCollection) methodsFor: 'testing' !
-isSortedBy: compare <[E,E,^Boolean]> ^<Boolean>
-	"Returns true if the receiver is in sorted order, using the specified comparison"
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+spaceToScavenge
 
-	| last <E> |
-	self size < 2
-		ifTrue: [ ^true ].
-	last := self at: 1.
-	2 to: self size do:
-		[ :i <Int> | |current|
-			(compare value: last value: (current := self at: i))
-				ifFalse: [ ^false ].
-			last := current].
-	^true! !
+	^self freeSpace > (2 * self survivorSpaceSize)	! !
 
-"September 24, 2008 -> 0:10:48"!
+"September 25, 2008 -> 12:41:9"!
 
-Delta define: #SortedCollectionTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: '')) !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'integer flags' !
+survivorSpaceSize
 
-
-"September 24, 2008 -> 0:11:57"!
-
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
-testSortedCollection
-	|r c s index|
-	r := Random new.
-	1 to: 500 do:
-		[:j|	c := Array[Int] new: j.
-			1 to: j do:
-				[ :i <Int> |
-					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
-			"Transcript show: 'c size = '; print: c size; cr."
-			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]].! !
-
-"September 24, 2008 -> 0:13:36"!
-
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
-testSortedCollection
-	|r c s index|
-	r := Random new.
-	1 to: 500 do:
-		[:j|	c := Array[Int] new: j.
-			1 to: j do:
-				[ :i <Int> |
-					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
-			"Transcript show: 'c size = '; print: c size; cr."
-			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
-				description: 'collection should be sorted'].! !
-
-"September 24, 2008 -> 0:17:56"!
-
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
-testSortedCollection
-	|r c s index|
-	r := Random new.
-	1 to: 500 do:
-		[:j|	c := Array[Int] new: j.
-			1 to: j do:
-				[ :i <Int> |
-					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
-			"Transcript show: 'c size = '; print: c size; cr."
-			self shouldnt: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
-				description: 'collection should be sorted'].! !
-
-"September 24, 2008 -> 0:18:10"!
-
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
-testSortedCollection
-	|r c s index|
-	r := Random new.
-	1 to: 500 do:
-		[:j|	c := Array[Int] new: j.
-			1 to: j do:
-				[ :i <Int> |
-					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
-			"Transcript show: 'c size = '; print: c size; cr."
-			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
-				description: 'collection should be sorted'].! !
-
-"September 24, 2008 -> 0:19:13"!
-
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
-testSortSimpleCollection
-
-	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)]! !
-
-"September 24, 2008 -> 0:22:1"!
-
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
-testSortSimpleCollection
-
-	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
-	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
-	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].! !
-
-"September 24, 2008 -> 0:23:11"!
-
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
-testSortSimpleCollection
-
-	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
-	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
-	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].
-	self should: [#(1 2 1)asSortedCollection asArray = #(1 1 2)].! !
-
-"September 24, 2008 -> 0:23:37"!
-
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
-testSortSimpleCollection
-
-	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
-	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
-	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].
-	self should: [#(1 2 1)asSortedCollection asArray = #(1 1 2)].
-	self should: [#(1 2 1 2)asSortedCollection asArray = #(1 1 2 2)].! !
+	^(self smallIntegerAt: #SurvivorSize) * 1024! !

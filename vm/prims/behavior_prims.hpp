@@ -30,6 +30,14 @@ class behaviorPrimitives : AllStatic {
   static int number_of_calls;
 
   //%prim
+  // <NoReceiver> primitiveNew: class <Behavior> ifFail: failBlock <PrimFailBlock> ^<Instance> =
+  //   Internal { error = #(ReceiverIsIndexable)
+  //              name  = 'behaviorPrimitives::allocate3'
+  //              flags = #Allocate }
+  //%
+  static PRIM_DECL_1(allocate3, oop receiver);
+
+  //%prim
   // <Behavior> primitiveNew2IfFail: failBlock <PrimFailBlock> ^<Instance> =
   //   Internal { error = #(ReceiverIsIndexable)
   //              name  = 'behaviorPrimitives::allocate2'

@@ -243,7 +243,12 @@ primitive_desc* primitives::lookup(char* s, int len) {
     else return element;
   } while (first < last);
 
-  assert(first == last, "check for one element");
+  // This should not be an assertion as it is possible to compile a reference
+  // to a non-existent primitive (for an example see 
+  // ProcessPrimitiveLookupError>>provoke), in which case the lookup should
+  // fail and signal a PrimitiveLookupError - slr 24/09/2008
+
+  // assert(first == last, "check for one element");
   element = primitive_table[first];
 
   return element->compare(s, len) == 0 ? element : NULL;

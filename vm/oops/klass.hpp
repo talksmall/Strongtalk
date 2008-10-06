@@ -248,7 +248,7 @@ class Klass : ValueObj {
   virtual bool oop_is_indexable()        const { return false; }
 
   // Dispatched primitives
-  virtual oop oop_primitive_allocate(oop obj);
+  virtual oop oop_primitive_allocate(oop obj, bool allow_scavenge=true);
   virtual oop oop_primitive_allocate_size(oop obj, int size);
   virtual oop oop_shallow_copy(oop obj, bool tenured);
 

@@ -1529,9 +1529,13 @@ void MacroAssembler::store_check(Register obj, Register tmp) {
   // in the code - however relocation would be necessary whenever the
   // base changes. Advantage: only one instead of two instructions.
   assert(obj != tmp, "registers must be different");
+  Label no_store;
+  cmpl(obj, (int)Universe::new_gen.boundary());        // assumes boundary between new_gen and old_gen is fixed
+  jcc(Assembler::less, no_store);                      // avoid marking dirty if target is a new object
   movl(tmp, Address((int)&byte_map_base, relocInfo::external_word_type));
   shrl(obj, card_shift);
   movb(Address(tmp, obj, Address::times_1), 0);
+  bind(no_store);
 }
 
 

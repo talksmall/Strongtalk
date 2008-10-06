@@ -30,6 +30,7 @@ inline smi memOopDesc::identity_hash() {
 inline void memOopDesc::scavenge_header() { 
   // Not needed since klas is in old space
   //   scavenge_oop(klass_addr());
+  // this may not be correct if running with the recompiler. Investigate. slr 29/09/2008
 }
 
 inline void memOopDesc::scavenge_body(int begin, int end) { 

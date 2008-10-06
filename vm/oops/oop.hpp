@@ -91,7 +91,7 @@ class oopDesc {
   inline bool is_nil() const { return this == nilObj; }
 
   // Primitives
-  inline oop primitive_allocate();
+  inline oop primitive_allocate(bool allow_scavenge=true);
   inline oop primitive_allocate_size(int size);
 
   inline oop shallow_copy(bool tenured);

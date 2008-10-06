@@ -103,6 +103,13 @@ class systemPrimitives : AllStatic {
   static PRIM_DECL_0(oopSize);
 
   //%prim
+  // <NoReceiver> primitiveFreeSpace ^<SmallInteger> =
+  //   Internal { name  = 'systemPrimitives::freeSpace' 
+  //              doc   = 'Returns the number of unused bytes in the old generation' }
+  //%
+  static PRIM_DECL_0(freeSpace);
+
+  //%prim
   // <NoReceiver> primitiveBreakpoint ^<Object> =
   //   Internal { name  = 'systemPrimitives::breakpoint' }
   //%

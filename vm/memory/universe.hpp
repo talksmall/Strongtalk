@@ -207,7 +207,7 @@ class Universe: AllStatic {
   
   // allocators
   static oop* allocate(int size, memOop* p = NULL, bool permit_scavenge = true) {
-    if (_scavenge_blocked && can_scavenge())
+    if (_scavenge_blocked && can_scavenge() && permit_scavenge)
       return scavenge_and_allocate(size, (oop*) p);
     oop* obj = new_gen.allocate(size);
     if (!permit_scavenge) return obj;

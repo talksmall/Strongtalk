@@ -34,7 +34,7 @@ oop vframeKlass::allocateObject(bool permit_scavenge) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate
-  vframeOop obj = as_vframeOop(Universe::allocate(size, (memOop*)&k));
+  vframeOop obj = as_vframeOop(Universe::allocate(size, (memOop*)&k, permit_scavenge));
   // header
   memOop(obj)->initialize_header(true, k);
  

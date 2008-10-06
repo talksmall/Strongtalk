@@ -27,7 +27,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 oop doubleKlass::allocateObject(bool permit_scavenge) {
   assert(!can_inline_allocation(), "using nonstandard allocation");
   // allocate
-  doubleOop obj = as_doubleOop(Universe::allocate(doubleOopDesc::object_size(), (memOop*)&doubleKlassObj));
+  doubleOop obj = as_doubleOop(Universe::allocate(doubleOopDesc::object_size(), (memOop*)&doubleKlassObj, permit_scavenge));
   // header
   memOop(obj)->initialize_header(false, doubleKlassObj);
   obj->set_value(0.0);

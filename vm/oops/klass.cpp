@@ -427,7 +427,7 @@ void Klass::bootstrap_klass_part_two(bootstrap* st) {
   st->read_oop((oop*)&_mixin);
 }  
 
-oop Klass::oop_primitive_allocate(oop obj) {
+oop Klass::oop_primitive_allocate(oop obj, bool allow_scavenge) {
   return markSymbol(vmSymbols::not_klass()); }
 
 oop Klass::oop_primitive_allocate_size(oop obj, int size) {

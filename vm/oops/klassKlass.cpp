@@ -146,8 +146,8 @@ void klassKlass::oop_oop_iterate(oop obj, OopClosure* blk) {
   memOop(obj)->oop_iterate_body(blk, klassOopDesc::header_size(), non_indexable_size());
 }
 
-oop klassKlass::oop_primitive_allocate(oop obj) {
-  return klassOop(obj)->klass_part()->allocateObject(false);
+oop klassKlass::oop_primitive_allocate(oop obj, bool allow_scavenge) {
+  return klassOop(obj)->klass_part()->allocateObject(allow_scavenge);
 }
 
 oop klassKlass::oop_primitive_allocate_size(oop obj, int size) {

@@ -33,7 +33,7 @@ oop mixinKlass::allocateObject(bool permit_scavenge) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate
-  mixinOop obj = as_mixinOop(Universe::allocate(size, (memOop*)&k));
+  mixinOop obj = as_mixinOop(Universe::allocate(size, (memOop*)&k, permit_scavenge));
   // header + instance variables
   memOop(obj)->initialize_header(true, k);
   memOop(obj)->initialize_body(memOopDesc::header_size(), size);

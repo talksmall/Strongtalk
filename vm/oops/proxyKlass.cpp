@@ -33,7 +33,7 @@ oop proxyKlass::allocateObject(bool permit_scavenge) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate
-  proxyOop obj = as_proxyOop(Universe::allocate(size, (memOop*)&k));
+  proxyOop obj = as_proxyOop(Universe::allocate(size, (memOop*)&k, permit_scavenge));
   // header
   memOop(obj)->initialize_header(true, k);
   obj->set_pointer(NULL);

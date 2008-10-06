@@ -32,9 +32,6 @@ class processKlass: public memOopKlass {
   bool can_inline_allocation() const { return false; }
 
   // allocation operations
-  oop allocateProcess(int stack_size);
-
-  // allocation operations
   oop allocateObject(bool permit_scavenge = true);
 
   // creates invocation

@@ -923,3 +923,8 @@ PRIM_DECL_0(systemPrimitives::object_memory_size) {
   PROLOGUE_0("object_memory_size");
   return oopFactory::new_double(double(Universe::old_gen.used()) / Universe::old_gen.capacity());
 }
+
+PRIM_DECL_0(systemPrimitives::freeSpace) {
+  PROLOGUE_0("freeSpace");
+  return as_smiOop(Universe::old_gen.free());
+}

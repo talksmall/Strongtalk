@@ -56,7 +56,7 @@ oop blockClosureKlass::allocateObject(bool permit_scavenge) {
   klassOop k    = as_klassOop();
   // allocate
   blockClosureOop obj =
-    as_blockClosureOop(Universe::allocate(blockClosureOopDesc::object_size(), (memOop*)&k));
+    as_blockClosureOop(Universe::allocate(blockClosureOopDesc::object_size(), (memOop*)&k, permit_scavenge));
   // header
   obj->initialize_header(false, k);
   // %not initialized by the interpreter

@@ -197,7 +197,7 @@ void oldGeneration::switch_pointers(oop from, oop to) {
 }
     
 int oldGeneration::expand(int size) {
-  return first_space->expand(size);
+  return current_space->expand(size);
 }
 
 void oldGeneration::prepare_for_compaction(OldWaterMark* mark) {

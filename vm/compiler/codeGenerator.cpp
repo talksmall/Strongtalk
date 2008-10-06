@@ -507,10 +507,14 @@ void CodeGenerator::storeCheck(Register obj) {
   // base changes. Advantage: only one instead of two instructions.
   Temporary base(_currentMapping);
   Temporary indx(_currentMapping);
+  Label no_store;
+  _masm->cmpl(obj, (int)Universe::new_gen.boundary());                  // assumes boundary between new_gen and old_gen is unchanging
+  _masm->jcc(Assembler::less, no_store);                                // avoid marking dirty if target is a new object
   _masm->movl(base.reg(), Address(int(&byte_map_base), relocInfo::external_word_type));
   _masm->movl(indx.reg(), obj);						// do not destroy obj (a preg may be mapped to it)
   _masm->shrl(indx.reg(), card_shift);					// divide obj by card_size
   _masm->movb(Address(base.reg(), indx.reg(), Address::times_1), 0);	// clear entry
+  _masm->bind(no_store);
 }
 
 

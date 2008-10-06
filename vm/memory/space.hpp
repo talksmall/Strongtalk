@@ -231,7 +231,7 @@ class oldSpace: public space {
   oop*    next_offset_treshold;
   int     next_offset_index;
 
-  oop* allocate(int size) {
+  oop* allocate(int size, bool allow_expansion=true) {
     oop* p  = _top;
     oop* p1 = p + size;
     if (p1 < _end) {
@@ -239,6 +239,7 @@ class oldSpace: public space {
       update_offsets(p, p1);
       return p;
     } else {
+      if (!allow_expansion) return NULL;
       return expand_and_allocate(size);
     }
   }

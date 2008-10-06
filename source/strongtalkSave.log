@@ -61575,3 +61575,131 @@ testSortSimpleCollection
 "September 24, 2008 -> 1:38:52"!
 
 "System saved" !
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class ifFail: failureBlock
+
+	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| self freeSpace > 2 * self survivorSpaceSize
+									ifTrue: [self scavengeGarbage
+														ifTrue: [self collectGarbage]
+														ifFalse: [allocateBlock
+																			value: [:e2| self collectGarbage]]]]
+						! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+spaceToScavenge
+
+	^self freeSpace > 2 * self survivorSpaceSize					! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| self spaceToScavenge
+									ifTrue: [self scavengeGarbage
+														ifTrue: [self collectGarbage]
+														ifFalse: [allocateBlock
+																			value: [:e2| self collectGarbage]]]]
+						! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| self spaceToScavenge
+									ifTrue: [self scavengeAndAllocate: allocateBlock]]! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+scavengeAndAllocate: allocateBlock
+
+	^self scavengeGarbage
+			ifTrue: [self collectGarbage.
+							allocateBlock
+								value: [:e| self expand.
+													allocateBlock value: [:e2| self error: e2]]]
+			ifFalse: [allocateBlock
+								value: [:e3| self collectGarbage.
+														allocateBlock
+															value: [:e4| self expand.
+																				allocateBlock value: [:e5| self error: e5]]]]! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+survivorSpaceSize
+
+	^self smallIntegerAt: #SurvivorSize! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+freeSpace
+
+	^{{freeSpace}}! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+spaceToScavenge
+
+	^self freeSpace > (2 * self survivorSpaceSize)	! !
+
+"September 25, 2008 -> 17:44:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'integer flags' !
+survivorSpaceSize
+
+	^(self smallIntegerAt: #SurvivorSize) * 1024! !
+
+"September 25, 2008 -> 17:44:34"!
+
+"System saved" !
+"September 25, 2008 -> 17:44:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+freeSpace
+
+	^{{primitiveFreeSpace}}! !
+
+"September 25, 2008 -> 17:49:9"!
+
+"System saved" !
+"September 27, 2008 -> 15:22:51"!
+
+! (Delta mirrorFor: #Method) methodsFor: 'debugging' !
+debugInfo
+
+	^{{self primitiveMethodDebugInfo}}! !
+
+"September 27, 2008 -> 15:24:31"!
+
+(Delta mirrorFor: #Method) removeMethod: #debugInfo ifAbsent: [] !
+
+
+"September 28, 2008 -> 21:33:34"!
+
+"System saved" !

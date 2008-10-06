@@ -9,7 +9,7 @@ TEST(OldGeneration, expansionShouldExpandOldGenerationCapacity)
   char msg[100];
   int oldSize = Universe::old_gen.capacity();
   Universe::old_gen.expand(1000 * K);
-  int expectedSize = oldSize + 1000 * K;
+  int expectedSize = oldSize + ReservedSpace::align_size(1000 * K, ObjectHeapExpandSize * K);
   int actualSize = Universe::old_gen.capacity();
   sprintf(msg, "Generation has wrong capacity. Expected: %d, but was: %d", expectedSize, actualSize);
   ASSERT_EQUALS_M(expectedSize, actualSize, msg);
