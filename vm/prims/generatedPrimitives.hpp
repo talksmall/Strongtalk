@@ -42,6 +42,7 @@ class PrimitivesGenerator: StackObj {
   Address doubleKlass_addr()	{ return Address(int(&doubleKlassObj), relocInfo::external_word_type); }
   Address contextKlass_addr()	{ return Address(int(&contextKlassObj), relocInfo::external_word_type); }
 
+  Label error_receiver_has_wrong_type;
   Label error_first_argument_has_wrong_type;
   Label error_division_by_zero;
   Label error_overflow;

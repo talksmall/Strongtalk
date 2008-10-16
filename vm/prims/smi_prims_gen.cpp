@@ -215,16 +215,23 @@ char* PrimitivesGenerator::smiOopPrimitives_quo() {
 
   masm->movl(ecx, argument);
   masm->movl(eax, receiver);
+
+  masm->testb(eax, 0x03);
+  masm->jcc(Assembler::notEqual, error_receiver_has_wrong_type);
+
   masm->testl(ecx, ecx);
   masm->jcc(Assembler::equal, error_division_by_zero);
+
   masm->testb(ecx, 0x03);
   masm->jcc(Assembler::notEqual, error_first_argument_has_wrong_type);
+
   masm->sarl(ecx, 2);
   masm->sarl(eax, 2);
   masm->cdq();
   masm->idivl(ecx);
+
   masm->jcc(Assembler::overflow, error_overflow);
-  masm->sarl(eax, 2);
+  masm->shll(eax, 2);
   masm->ret(8);
 
   return entry_point;

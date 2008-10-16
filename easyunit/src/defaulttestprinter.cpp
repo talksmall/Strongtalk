@@ -47,8 +47,8 @@ void DefaultTestPrinter::print(const TestResult *testResult)
 	SimpleString name;
 	TestCase *testCase = testResult->getTestCases();
 	int size = testResult->getTestCaseCount();
-	
-	printHeader(testResult);
+
+        fprintf(output_ , "\nDETAILS");
 
 	if (testResult->getTestCaseRanCount() == 0) {
 		fprintf(output_,"\nNo test ran\n");
@@ -77,6 +77,8 @@ void DefaultTestPrinter::print(const TestResult *testResult)
 		
 		testCase = testCase->getNext();
 	}
+	
+	printHeader(testResult);
 }
 
 void DefaultTestPrinter::setHeaderLevel(headerLevel level)
@@ -118,7 +120,6 @@ void DefaultTestPrinter::printHeader(const TestResult *testResult)
 	}
 	
 	fprintf(output_ , "\n");
-	fprintf(output_ , "\nDETAILS");
 }
 
 void DefaultTestPrinter::printCompleteHeader(const TestResult *testResult)

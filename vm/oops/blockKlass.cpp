@@ -140,7 +140,7 @@ void set_contextKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop contextKlass::allocateObjectSize(int num_of_temps) {
+oop contextKlass::allocateObjectSize(int num_of_temps, bool permit_scavenge, bool permit_tenured) {
   klassOop k        = as_klassOop();
   int      obj_size = contextOopDesc::header_size() + num_of_temps;
   // allocate

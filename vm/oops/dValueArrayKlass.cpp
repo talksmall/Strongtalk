@@ -30,7 +30,7 @@ oop doubleValueArrayKlass::allocateObject(bool permit_scavenge) {
   return badOop;
 }
 
-oop doubleValueArrayKlass::allocateObjectSize(int size) {
+oop doubleValueArrayKlass::allocateObjectSize(int size, bool permit_scavenge, bool permit_tenured) {
   klassOop k        = as_klassOop();
   int      ni_size  = non_indexable_size();
   int      obj_size = ni_size + 1 + roundTo(size * sizeof(double), oopSize) / oopSize;

@@ -61703,3 +61703,638 @@ debugInfo
 "September 28, 2008 -> 21:33:34"!
 
 "System saved" !
+"October 12, 2008 -> 14:14:14"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+scavengeAndAllocate: allocateBlock
+
+	|expansions|
+	expansions := {{primitiveExpansions}}
+	self scavengeGarbage.
+	^(expansions ~~ {{primitiveExpansions}})
+			ifTrue: [self collectGarbage.
+							allocateBlock
+								value: [:e| self expand.
+													allocateBlock value: [:e2| self error: e2]]]
+			ifFalse: [allocateBlock
+								value: [:e3| self collectGarbage.
+														allocateBlock
+															value: [:e4| self expand.
+																				allocateBlock value: [:e5| self error: e5]]]]! !
+
+"October 12, 2008 -> 15:26:25"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| e == #FailedAllocation
+									ifTrue: [self spaceToScavenge
+														ifTrue: [self scavengeAndAllocate: allocateBlock]]
+									ifFalse: [self error: e]]! !
+
+"October 12, 2008 -> 15:29:31"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+scavengeAndAllocate: allocateBlock
+
+	|expansions|
+	expansions := {{primitiveExpansions}}
+	self scavengeGarbage.
+	^(expansions ~~ {{primitiveExpansions}})
+			ifTrue: [self collectGarbage.
+							allocateBlock
+								value: [:e| 
+												self expand.
+												allocateBlock value: [:e2| self error: e2]]]
+			ifFalse: [allocateBlock
+								value: [:e3|
+												self collectGarbage.
+												allocateBlock
+													value: [:e4|
+																	self expand.
+																	allocateBlock value: [:e5| self error: e5]]]]! !
+
+"October 12, 2008 -> 15:31:58"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+expand
+
+	|expansionSize|
+	expansionSize := (self smallIntegerAt: #ObjectHeapExpandSize) * self K.
+	{{primitiveExpand: expansionSize}}! !
+
+"October 12, 2008 -> 15:36:17"!
+
+"System saved" !
+"October 12, 2008 -> 16:47:45"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| e == #FailedAllocation
+									ifTrue: [self spaceToScavenge
+														ifTrue: [self scavengeAndAllocate: allocateBlock]]
+									ifFalse: [nil error: e]]! !
+
+"October 12, 2008 -> 16:48:5"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+scavengeAndAllocate: allocateBlock
+
+	|expansions|
+	expansions := {{primitiveExpansions}}
+	self scavengeGarbage.
+	^(expansions ~~ {{primitiveExpansions}})
+			ifTrue: [self collectGarbage.
+							allocateBlock
+								value: [:e| 
+												self expand.
+												allocateBlock value: [:e2| nil error: e2]]]
+			ifFalse: [allocateBlock
+								value: [:e3|
+												self collectGarbage.
+												allocateBlock
+													value: [:e4|
+																	self expand.
+																	allocateBlock value: [:e5| nil error: e5]]]]! !
+
+"October 12, 2008 -> 17:5:47"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+K
+
+	^1024! !
+
+"October 12, 2008 -> 17:6:44"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+expand
+
+	|expansionSize|
+	expansionSize := (self smallIntegerAt: #ObjectHeapExpandSize) * self K.
+	{{primitiveExpandMemory: expansionSize}}! !
+
+"October 12, 2008 -> 17:46:8"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+hasExpandedBlock
+	|expansions|
+	expansions := {{primitiveExpansions}}.
+	^[expansions ~~ {{primitiveExpansions}}]! !
+
+"October 12, 2008 -> 17:47:16"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeAndAllocate: allocateBlock
+
+	|hasExpanded|
+	hasExpanded := self hasExpandedBlock.
+	self scavengeGarbage.
+	^hasExpanded value
+			ifTrue: [self collectGarbage.
+							allocateBlock
+								value: [:e| 
+												self expand.
+												allocateBlock value: [:e2| nil error: e2]]]
+			ifFalse: [allocateBlock
+								value: [:e3|
+												self collectGarbage.
+												allocateBlock
+													value: [:e4|
+																	self expand.
+																	allocateBlock value: [:e5| nil error: e5]]]]! !
+
+"October 12, 2008 -> 17:50:52"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocated: allocateBlock
+
+	^self collectGarbage.
+	allocateBlock
+		value: [:e| 
+						self expand.
+						allocateBlock value: [:e2| nil error: e2]]! !
+
+"October 12, 2008 -> 17:52:15"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeAndAllocate: allocateBlock
+
+	|hasExpanded|
+	hasExpanded := self hasExpandedBlock.
+	self scavengeGarbage.
+	^hasExpanded value
+			ifTrue: [self collectAndAllocate: allocateBlock]
+			ifFalse: [allocateBlock
+								value: [:e3| self collectAndAllocate: allocateBlock]]! !
+
+"October 12, 2008 -> 17:54:27"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	|allocateBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	^allocateBlock
+			value: [:e| e == #FailedAllocation
+									ifTrue: [self spaceToScavenge
+														ifTrue: [self scavengeAndAllocate: allocateBlock]
+														ifFalse: [self collectAndAllocate: allocateBlock]]
+									ifFalse: [nil error: e]]! !
+
+"October 12, 2008 -> 17:55:9"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeAndAllocate: allocateBlock
+
+	|hasExpandedBlock|
+	hasExpandedBlock := self hasExpandedBlock.
+	self scavengeGarbage.
+	^hasExpandedBlock value
+			ifTrue: [self collectAndAllocate: allocateBlock]
+			ifFalse: [allocateBlock
+								value: [:e3| self collectAndAllocate: allocateBlock]]! !
+
+"October 12, 2008 -> 17:56:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expand: expansionSize
+
+	{{primitiveExpandMemory: expansionSize}}! !
+
+"October 12, 2008 -> 17:57:11"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expand
+
+	|expansionSize|
+	expansionSize := (self smallIntegerAt: #ObjectHeapExpandSize) * self K.
+	self expand: expansionSize! !
+
+"October 12, 2008 -> 17:58:13"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	|hasExpandedBlock|
+	hasExpandedBlock := self hasExpandedBlock.
+	self scavengeGarbage.
+	^hasExpandedBlock value
+			ifTrue: [self collectAndAllocate: allocateBlock]
+			ifFalse: [allocateBlock
+								value: [:e3| self collectAndAllocate: allocateBlock]]! !
+
+"October 12, 2008 -> 17:58:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock
+
+	^self collectGarbage.
+	allocateBlock
+		value: [:e| 
+						self expand.
+						allocateBlock value: [:e2| nil error: e2]]! !
+
+"October 12, 2008 -> 17:58:26"!
+
+(Delta mirrorFor: #VM) classSide removeMethod: #collectAndAllocated: ifAbsent: [] !
+
+
+"October 12, 2008 -> 17:59:9"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	^self collectGarbage.
+	allocateBlock
+		value: [:e| 
+						expansionBlock value.
+						allocateBlock value: [:e2| nil error: e2]]! !
+
+"October 12, 2008 -> 17:59:51"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	|hasExpandedBlock|
+	hasExpandedBlock := self hasExpandedBlock.
+	self scavengeGarbage.
+	^hasExpandedBlock value
+			ifTrue: [self collectAndAllocate: allocateBlock
+								ifExpand: expansionBlock]
+			ifFalse: [allocateBlock
+								value: [:e3| self collectAndAllocate: allocateBlock
+															ifExpand: expansionBlock]]! !
+
+"October 12, 2008 -> 18:1:52"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	|allocateBlock expansionBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	expansionBlock := [self expand].
+	^allocateBlock
+			value: [:e| e == #FailedAllocation
+									ifTrue: [self spaceToScavenge
+														ifTrue: [self scavengeAndAllocate: allocateBlock
+																			ifExpand: expansionBlock]
+														ifFalse: [self collectAndAllocate: allocateBlock
+																			ifExpand: expansionBlock]]
+									ifFalse: [nil error: e]]! !
+
+"October 12, 2008 -> 18:2:12"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	self collectGarbage.
+	^allocateBlock
+		value: [:e| 
+						expansionBlock value.
+						allocateBlock value: [:e2| nil error: e2]]! !
+
+"October 12, 2008 -> 18:2:48"!
+
+(Delta mirrorFor: #VM) classSide removeMethod: #scavengeAndAllocate: ifAbsent: [] !
+
+
+"October 12, 2008 -> 18:3:8"!
+
+(Delta mirrorFor: #VM) classSide removeMethod: #collectAndAllocate: ifAbsent: [] !
+
+
+"October 12, 2008 -> 18:4:26"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+allocate: allocateBlock ifExpand: expansionBlock
+
+	^allocateBlock
+			value: [:e| e == #FailedAllocation
+									ifTrue: [self spaceToScavenge
+														ifTrue: [self scavengeAndAllocate: allocateBlock
+																			ifExpand: expansionBlock]
+														ifFalse: [self collectAndAllocate: allocateBlock
+																			ifExpand: expansionBlock]]
+									ifFalse: [nil error: e]]! !
+
+"October 12, 2008 -> 18:5:19"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	|allocateBlock expansionBlock|
+	allocateBlock := [:failBlock| self new: class ifFail: failBlock].
+	expansionBlock := [self expand].
+	^self allocate: allocateBlock ifExpand: expansionBlock! !
+
+"October 12, 2008 -> 18:6:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	^self allocate: [:failBlock| self new: class ifFail: failBlock]
+			ifExpand: [self expand]! !
+
+"October 12, 2008 -> 18:12:6"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newBytes: byteClass size: size
+
+	^self allocate: [:failBlock| self newBytes: byteClass size: size ifFail: failBlock]
+			ifExpand: [self expand: size]! !
+
+"October 12, 2008 -> 18:12:26"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newBytes: class size: size ifFail: failureBlock
+
+	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"October 12, 2008 -> 18:13:16"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: indexableClass size: size
+
+	^self allocate: [:failBlock| self new: indexableClass size: size ifFail: failBlock]
+			ifExpand: [self expand: size]! !
+
+"October 12, 2008 -> 18:13:26"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+new: class size: size ifFail: failureBlock
+
+	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"October 12, 2008 -> 18:23:47"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: indexableClass size: size
+
+	^self allocate: [:failBlock|
+								self new: indexableClass
+										size: size
+										ifFail: failBlock]
+			ifExpand: [self expand: size]! !
+
+"October 12, 2008 -> 18:24:3"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newBytes: byteClass size: size
+
+	^self allocate: [:failBlock|
+								self newBytes: byteClass
+										size: size
+										ifFail: failBlock]
+			ifExpand: [self expand: size]! !
+
+"October 12, 2008 -> 18:24:26"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: indexableClass size: size
+
+	^self allocate: [:failBlock|
+								self new: indexableClass
+										size: size
+										ifFail: failBlock]
+			ifExpand: [self expand: size / self oopSize]! !
+
+"October 12, 2008 -> 18:43:36"!
+
+"System saved" !
+"October 12, 2008 -> 20:4:9"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newBytes: class size: size ifFail: failureBlock
+
+	^{{primitiveIndexedByteNew: class
+			size: size
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"October 12, 2008 -> 20:4:18"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: indexableClass size: size
+
+	^self allocate: [:failBlock|
+								self new: indexableClass
+										size: size
+										ifFail: failBlock]
+			ifExpand: [self expand: size * self oopSize]! !
+
+"October 12, 2008 -> 20:21:2"!
+
+"System saved" !
+"October 12, 2008 -> 23:38:45"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newBytes: byteClass size: size
+
+	^self allocate: [:failBlock :tenured|
+								self newBytes: byteClass
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expand: size]! !
+
+"October 12, 2008 -> 23:39:12"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newBytes: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedByteNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"October 12, 2008 -> 23:40:7"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+allocate: allocateBlock ifExpand: expansionBlock
+
+	^allocateBlock
+			value: false
+			value: [:e| e == #FailedAllocation
+									ifTrue: [self spaceToScavenge
+														ifTrue: [self scavengeAndAllocate: allocateBlock
+																			ifExpand: expansionBlock]
+														ifFalse: [self collectAndAllocate: allocateBlock
+																			ifExpand: expansionBlock]]
+									ifFalse: [nil error: e]]! !
+
+"October 12, 2008 -> 23:40:33"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newBytes: byteClass size: size
+
+	^self allocate: [:tenured :failBlock|
+								self newBytes: byteClass
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expand: size]! !
+
+"October 12, 2008 -> 23:40:41"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: indexableClass size: size
+
+	^self allocate: [:tenured :failBlock|
+								self new: indexableClass
+										size: size
+										ifFail: failBlock]
+			ifExpand: [self expand: size * self oopSize]! !
+
+"October 12, 2008 -> 23:43:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	|hasExpandedBlock|
+	hasExpandedBlock := self hasExpandedBlock.
+	self scavengeGarbage.
+	^hasExpandedBlock value
+			ifTrue: [self collectAndAllocate: allocateBlock
+								ifExpand: expansionBlock]
+			ifFalse: [allocateBlock
+								value: true
+								value: [:e3| self collectAndAllocate: allocateBlock
+															ifExpand: expansionBlock]]! !
+
+"October 12, 2008 -> 23:43:48"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	self collectGarbage.
+	^allocateBlock
+			value: true
+			value: [:e| 
+						expansionBlock value.
+						allocateBlock value: true value: [:e2| nil error: e2]]! !
+
+"October 12, 2008 -> 23:44:4"!
+
+(Delta mirrorFor: #VM) classSide removeMethod: #newBytes:size:ifFail: ifAbsent: [] !
+
+
+"October 12, 2008 -> 23:45:30"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	self collectGarbage.
+	^allocateBlock
+			value: true
+			value: [:e| 
+						expansionBlock value.
+						allocateBlock
+							value: true
+							value: [:e2| nil error: e2]]! !
+
+"October 12, 2008 -> 23:45:55"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	^self allocate: [:tenured :failBlock| self new: class ifFail: failBlock]
+			ifExpand: [self expand]! !
+
+"October 12, 2008 -> 23:46:28"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+allocate: allocateBlock ifExpand: expansionBlock
+
+	^allocateBlock
+			value: false
+			value: [:e| e == #FailedAllocation
+									ifTrue: [self spaceToScavenge
+														ifTrue: [self scavengeAndAllocate: allocateBlock
+																				ifExpand: expansionBlock]
+														ifFalse: [self collectAndAllocate: allocateBlock
+																				ifExpand: expansionBlock]]
+									ifFalse: [nil error: e]]! !
+
+"October 12, 2008 -> 23:51:0"!
+
+"System saved" !
+"October 16, 2008 -> 17:41:9"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrinkIfPossible
+
+	self freeSpace > (self smallIntegerAt: #ObjectHeapExpandSize) * 3
+		ifTrue: [|amountToShrink|
+						amountToShrink := self freeSpace - ((self smallIntegerAt: #ObjectHeapExpandSize) * 3).
+						self shrink: amountToShrink]! !
+
+"October 16, 2008 -> 17:41:32"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrink: size
+
+	{{primitiveShrinkMemory: size}}! !
+
+"October 16, 2008 -> 17:42:26"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	self collectGarbage.
+	^[allocateBlock
+			value: true
+			value: [:e| 
+						expansionBlock value.
+						allocateBlock
+							value: true
+							value: [:e2| nil error: e2]]]
+			ensure: [self shrinkIfPossible]! !
+
+"October 16, 2008 -> 17:43:30"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrinkIfPossible
+
+	self freeSpace > ((self smallIntegerAt: #ObjectHeapExpandSize) * 3)
+		ifTrue: [|amountToShrink|
+						amountToShrink := self freeSpace - ((self smallIntegerAt: #ObjectHeapExpandSize) * 3).
+						self shrink: amountToShrink]! !
+
+"October 16, 2008 -> 17:49:31"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrinkIfPossible
+
+	self freeSpace > ((self smallIntegerAt: #ObjectHeapExpandSize) * 3)
+		ifTrue: [|amountToShrink|
+						amountToShrink := self freeSpace - ((self smallIntegerAt: #ObjectHeapExpandSize) * 3 * VM K).
+						self shrink: amountToShrink]! !
+
+"October 16, 2008 -> 17:50:4"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrinkBarrier
+
+	^(self smallIntegerAt: #ObjectHeapExpandSize) * 3 * VM K! !
+
+"October 16, 2008 -> 17:50:45"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrinkIfPossible
+
+	self freeSpace > self shrinkBarrier
+		ifTrue: [|amountToShrink|
+						amountToShrink := self freeSpace - self shrinkBarrier.
+						self shrink: amountToShrink]! !
+
+"October 16, 2008 -> 17:53:7"!
+
+"System saved" !

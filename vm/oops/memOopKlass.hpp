@@ -34,7 +34,7 @@ class memOopKlass: public Klass {
 
   // allocation operations
   oop allocateObject(bool permit_scavenge = true);
-  oop allocateObjectSize(int size);
+  oop allocateObjectSize(int size, bool permit_scavenge = true, bool permit_tenured = true);
 
   // invocation creation
   klassOop create_subclass(mixinOop mixin, Format format);

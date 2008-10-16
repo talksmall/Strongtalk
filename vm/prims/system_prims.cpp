@@ -150,6 +150,21 @@ PRIM_DECL_1(systemPrimitives::expandMemory, oop sizeOop) {
   return trueObj;
 }
 
+PRIM_DECL_1(systemPrimitives::shrinkMemory, oop sizeOop) {
+  PROLOGUE_1("shrinkMemory", sizeOop);
+  if (!sizeOop->is_smi())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (smiOop(sizeOop)->value() < 0 || smiOop(sizeOop)->value() > Universe::old_gen.free())
+    return markSymbol(vmSymbols::value_out_of_range());
+  Universe::old_gen.shrink(smiOop(sizeOop)->value());
+  return trueObj;
+}
+
+extern "C" int expansion_count;
+PRIM_DECL_0(systemPrimitives::expansions) {
+  PROLOGUE_0("expansions")
+  return as_smiOop(expansion_count);
+}
 PRIM_DECL_0(systemPrimitives::breakpoint) {
   PROLOGUE_0("breakpoint")
   {
@@ -927,4 +942,9 @@ PRIM_DECL_0(systemPrimitives::object_memory_size) {
 PRIM_DECL_0(systemPrimitives::freeSpace) {
   PROLOGUE_0("freeSpace");
   return as_smiOop(Universe::old_gen.free());
+}
+
+PRIM_DECL_0(systemPrimitives::nurseryFreeSpace) {
+  PROLOGUE_0("nurseryFreeSpace");
+  return as_smiOop(Universe::new_gen.eden()->free());
 }

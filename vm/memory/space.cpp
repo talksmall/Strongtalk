@@ -228,16 +228,27 @@ void oldSpace::update_offset_array(oop* p, oop* p_end) {
   }
 }
 
+extern "C" int expansion_count = 0;
+
 int oldSpace::expand(int size) {
   int min_size = ReservedSpace::page_align_size(size);
   int expand_size = ReservedSpace::align_size(min_size, ObjectHeapExpandSize * K);
   Universe::old_gen.virtual_space.expand(expand_size);
   set_end((oop*) Universe::old_gen.virtual_space.high());
+  expansion_count++;
   return expand_size;
 }
 
+int oldSpace::shrink(int size) {
+  int shrink_size = ReservedSpace::align_size(size, ObjectHeapExpandSize * K);
+  if (shrink_size > free()) return 0;
+  Universe::old_gen.virtual_space.shrink(shrink_size);
+  set_end((oop*) Universe::old_gen.virtual_space.high());
+  return shrink_size;
+}
+
 oop* oldSpace::expand_and_allocate(int size) {
-  expand(size);
+  expand(size * oopSize);
   return allocate(size);
 }
 

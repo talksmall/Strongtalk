@@ -117,7 +117,7 @@ class InterpretedDLL_Cache;
 class   Heap;
 
 // type of runtime functions
-typedef oop     (*fntype)(...);
+typedef oop     (* fntype) (...);
 typedef void    (*oopsDoFn)(oop* p);
 typedef void    (*doFn)();
 

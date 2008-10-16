@@ -10,6 +10,31 @@ comment:
 '(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+
+
+new: class
+
+	^self allocate: [:tenured :failBlock| self new: class ifFail: failBlock]
+			ifExpand: [self expand]!
+
+new: indexableClass size: size
+
+	^self allocate: [:tenured :failBlock|
+								self new: indexableClass
+										size: size
+										ifFail: failBlock]
+			ifExpand: [self expand: size * self oopSize]!
+
+newBytes: byteClass size: size
+
+	^self allocate: [:tenured :failBlock|
+								self newBytes: byteClass
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expand: size]! !
+
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
 
 
@@ -99,10 +124,6 @@ deferredGC
 	[self collectGarbage.
 	GCSemaphore signal] fork!
 
-expand: size
-
-	{{primitiveExpandMemory: (size * self oopSize)}}!
-
 initializeGCProcess
 
 GCProcess := [| delay |
@@ -155,7 +176,11 @@ numberOfBlockAllocations
 	^self smallIntegerAt: #NumberOfBlockAllocations!
 
 numberOfContextAllocations
-	^self smallIntegerAt: #NumberOfContextAllocations! !
+	^self smallIntegerAt: #NumberOfContextAllocations!
+
+survivorSpaceSize
+
+	^(self smallIntegerAt: #SurvivorSize) * 1024! !
 
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'integer operations' !
 
@@ -194,10 +219,6 @@ error: msg <Symbol> ^ <Boolean>
 	"ignore flags that are not defined in product version"
 	^ false!
 
-oopSize
-
-	^{{primitiveSizeOfOop}}!
-
 smallIntegerAt: name <Symbol> ^<SmallInteger>
 	^{{primitiveSmallIntegerFlagAt: name ifFail: [:err | self error: self]}}!
 
@@ -213,6 +234,109 @@ vmFlagAt: name <Symbol> put:  flag <Boolean>
 
 	{{primitiveBooleanFlagAt: name put: flag
 			ifFail: [ :err <Symbol> | self error: err ]}}! !
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+
+
+K
+
+	^1024!
+
+allocate: allocateBlock ifExpand: expansionBlock
+
+	^allocateBlock
+			value: false
+			value: [:e| e == #FailedAllocation
+									ifTrue: [self spaceToScavenge
+														ifTrue: [self scavengeAndAllocate: allocateBlock
+																				ifExpand: expansionBlock]
+														ifFalse: [self collectAndAllocate: allocateBlock
+																				ifExpand: expansionBlock]]
+									ifFalse: [nil error: e]]!
+
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	self collectGarbage.
+	^[allocateBlock
+			value: true
+			value: [:e| 
+						expansionBlock value.
+						allocateBlock
+							value: true
+							value: [:e2| nil error: e2]]]
+			ensure: [self shrinkIfPossible]!
+
+expand
+
+	|expansionSize|
+	expansionSize := (self smallIntegerAt: #ObjectHeapExpandSize) * self K.
+	self expand: expansionSize!
+
+expand: expansionSize
+
+	{{primitiveExpandMemory: expansionSize}}!
+
+freeSpace
+
+	^{{primitiveFreeSpace}}!
+
+hasExpandedBlock
+	|expansions|
+	expansions := {{primitiveExpansions}}.
+	^[expansions ~~ {{primitiveExpansions}}]!
+
+new: class ifFail: failureBlock
+
+	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}!
+
+new: class size: size ifFail: failureBlock
+
+	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}!
+
+newBytes: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedByteNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}!
+
+oopSize
+
+	^{{primitiveSizeOfOop}}!
+
+scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	|hasExpandedBlock|
+	hasExpandedBlock := self hasExpandedBlock.
+	self scavengeGarbage.
+	^hasExpandedBlock value
+			ifTrue: [self collectAndAllocate: allocateBlock
+								ifExpand: expansionBlock]
+			ifFalse: [allocateBlock
+								value: true
+								value: [:e3| self collectAndAllocate: allocateBlock
+															ifExpand: expansionBlock]]!
+
+shrink: size
+
+	{{primitiveShrinkMemory: size}}!
+
+shrinkBarrier
+
+	^(self smallIntegerAt: #ObjectHeapExpandSize) * 3 * VM K!
+
+shrinkIfPossible
+
+	self freeSpace > self shrinkBarrier
+		ifTrue: [|amountToShrink|
+						amountToShrink := self freeSpace - self shrinkBarrier.
+						self shrink: amountToShrink]!
+
+spaceToScavenge
+
+	^self freeSpace > (2 * self survivorSpaceSize)	! !
 
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'system control' !
 

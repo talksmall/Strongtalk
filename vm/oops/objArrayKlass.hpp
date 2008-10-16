@@ -27,7 +27,7 @@ class objArrayKlass: public memOopKlass {
   bool can_inline_allocation() const { return false; }
 
   // creation operation
-  oop allocateObjectSize(int size);
+  oop allocateObjectSize(int size, bool permit_scavenge=true, bool permit_tenured = true);
 
   // creates invocation
   klassOop create_subclass(mixinOop mixin, Format format);

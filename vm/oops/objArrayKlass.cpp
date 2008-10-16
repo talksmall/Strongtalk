@@ -24,7 +24,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_precompiled.incl"
 # include "incls/_objArrayKlass.cpp.incl"
 
-oop objArrayKlass::allocateObjectSize(int size) {
+oop objArrayKlass::allocateObjectSize(int size, bool permit_scavenge, bool permit_tenured) {
   klassOop k        = as_klassOop();
   int      ni_size  = non_indexable_size();
   int      obj_size = ni_size + 1 + size;

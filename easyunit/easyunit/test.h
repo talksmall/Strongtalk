@@ -248,7 +248,7 @@ class Test: public CHeap
 { if (expected == actual) {\
 	addTestPartResult(new easyunit::TestPartResult(this, __FILE__,__LINE__,TO_STRING_EQUALS_S(#expected,#actual),success));\
 	} else {\
-	addTestPartResult(new easyunit::TestPartResult(this, __FILE__,__LINE__,TO_STRING_EQUALS_F(#expected,#actual),failure)); return;\
+	addTestPartResult(new easyunit::TestPartResult(this, __FILE__,__LINE__,TO_STRING_EQUALS_F(expected,actual),failure)); return;\
 	}}
 	
 /**

@@ -108,7 +108,7 @@ oop memOopKlass::allocateObject(bool permit_scavenge) {
   return obj;
 }
 
-oop memOopKlass::allocateObjectSize(int size) {
+oop memOopKlass::allocateObjectSize(int size, bool permit_scavenge, bool permit_tenured) {
   return markSymbol(vmSymbols::not_indexable());
 }
 

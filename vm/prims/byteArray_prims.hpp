@@ -40,6 +40,18 @@ class byteArrayPrimitives : AllStatic {
   //%
   static PRIM_DECL_2(allocateSize, oop receiver, oop argument);
 
+    //%prim
+  // <NoReceiver>
+  //   primitiveIndexedByteNew:  class     <IndexedByteInstanceVariables class>
+  //                    size:    size      <SmallInteger>
+  //                    tenured: tenured   <Boolean>
+  //                    ifFail:  failBlock <PrimFailBlock> ^<Object> =
+  //   Internal { error = #(NegativeSize)
+  //              flags = #(Allocate)
+  //              name  = 'byteArrayPrimitives::allocateSize2' }
+  //%
+  static PRIM_DECL_3(allocateSize2, oop receiver, oop argument, oop tenured);
+
   //%prim
   // <IndexedByteInstanceVariables>
   //   primitiveIndexedByteSize ^<SmallInteger> =

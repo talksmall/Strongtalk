@@ -49,7 +49,7 @@ TEST(longint, subtraction)
 	long_int minuend(5, 10);
 	long_int subtrahend(2, 3);
 	long_int expected(3, 7);
-	ASSERT_EQUALS(expected, minuend - subtrahend);
+	ASSERT_TRUE(expected == minuend - subtrahend);
 }
 
 TEST(longint, addition)
@@ -57,5 +57,5 @@ TEST(longint, addition)
 	long_int augend(5, 10);
 	long_int addend(2, 3);
 	long_int expected(7, 13);
-	ASSERT_EQUALS(expected, augend + addend);
+	ASSERT_TRUE(expected == augend + addend);
 }

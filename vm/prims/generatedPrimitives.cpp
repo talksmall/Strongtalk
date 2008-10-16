@@ -81,6 +81,10 @@ void PrimitivesGenerator::error_jumps() {
 #undef  VMSYMBOL_POSTFIX
 #undef  VMSYMBOL_ENUM_NAME
   
+  masm->bind(error_receiver_has_wrong_type);
+  masm->movl(eax, _receiver_has_wrong_type);
+  masm->addl(eax, 2);
+  masm->ret(8);
   masm->bind(error_first_argument_has_wrong_type);
   masm->movl(eax, _first_argument_has_wrong_type);
   masm->addl(eax, 2);

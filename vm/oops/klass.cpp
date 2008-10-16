@@ -35,7 +35,7 @@ void Klass::initialize() {
 oop Klass::allocateObject(bool permit_scavenge) {
   return markSymbol(vmSymbols::not_oops());
 }
-oop Klass::allocateObjectSize(int size) {
+oop Klass::allocateObjectSize(int size, bool permit_scavenge, bool permit_tenured) {
   return markSymbol(vmSymbols::not_oops());
 }
 

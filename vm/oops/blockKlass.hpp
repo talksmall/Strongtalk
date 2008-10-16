@@ -82,7 +82,7 @@ class contextKlass: public memOopKlass {
   bool can_be_subclassed()           const { return false; }
 
   // allocation
-  oop allocateObjectSize(int num_of_temps);
+  oop allocateObjectSize(int num_of_temps, bool permit_scavenge=true, bool permit_tenured = true);
   static contextOop allocate_context(int num_of_temps);
 
   // creates invocation

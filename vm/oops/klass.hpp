@@ -132,7 +132,7 @@ class Klass : ValueObj {
   int size() const {  return sizeof(Klass)/sizeof(oop); }
 
   virtual oop allocateObject(bool permit_scavenge = true);
-  virtual oop allocateObjectSize(int size);
+  virtual oop allocateObjectSize(int size, bool permit_scavenge=true, bool permit_tenured = true);
 
   enum Format {	// Format of a vm klass
     no_klass,

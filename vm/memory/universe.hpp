@@ -219,8 +219,8 @@ class Universe: AllStatic {
     return obj ? obj : allocate_tenured(size);
   }
 
-  static oop* allocate_tenured(int size) {
-    return old_gen.allocate(size); 
+  static oop* allocate_tenured(int size, bool permit_expansion=true) {
+    return old_gen.allocate(size, permit_expansion); 
   }
 
   // Tells whether we should force a garbage collection

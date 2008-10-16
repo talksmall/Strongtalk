@@ -192,9 +192,11 @@ class survivorSpace : public newSpace {
   // Scavenge support
   void scavenge_contents_from(NewWaterMark* mark);
 };
-
+class OldSpaceMark;
 class oldSpace: public space {
  friend class space;
+ friend class OldSpaceMark;
+
  private:
   oop* _bottom;
   oop* _top;
@@ -225,6 +227,7 @@ class oldSpace: public space {
 
   int expand(int size);
   oop* expand_and_allocate(int size);
+  int shrink(int size);
 
   // Keeps offset for retrieving object start given a card_page
   u_char* offset_array;
@@ -270,3 +273,17 @@ class oldSpace: public space {
   }
 };
 
+// This is primarily intended for testing to allow
+// temporary allocations to be reset easily.
+class OldSpaceMark: public ValueObj {
+private:
+  oldSpace* theSpace;
+  oop*      oldTop;
+public:
+  OldSpaceMark(oldSpace* aSpace): theSpace(aSpace) {
+    oldTop = theSpace->top();
+  }
+  ~OldSpaceMark() {
+    theSpace->set_top(oldTop);
+  }
+};

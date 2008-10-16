@@ -200,6 +200,10 @@ int oldGeneration::expand(int size) {
   return current_space->expand(size);
 }
 
+int oldGeneration::shrink(int size) {
+  return current_space->shrink(size);
+}
+
 void oldGeneration::prepare_for_compaction(OldWaterMark* mark) {
   // %note same order as in compact
   FOR_EACH_OLD_SPACE(s) s->prepare_for_compaction(mark);

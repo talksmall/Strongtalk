@@ -1,0 +1,5 @@
+#!/bin/sh -f
+export DeltaDir=`pwd .`
+tools/primDefFilter.pl > prims.src
+./strongtalk-main.exe -f tools/strongtalkrc-forinterpretedtests -script tools/primGen.dlt
+cp prims.inc vm/prims

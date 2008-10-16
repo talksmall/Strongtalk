@@ -16,6 +16,7 @@ TEARDOWN(BehaviorPrimitives){
 }
 
 TESTF(BehaviorPrimitives, allocateForMemOopShouldReportFailureWhenNoSpace) {
+  HandleMark mark;
   Handle objectClass(Universe::find_global("Object"));
   int freeSpace = Universe::new_gen.eden()->free();
   oopFactory::new_byteArray(max(1, freeSpace - (4 * oopSize)));
@@ -24,9 +25,13 @@ TESTF(BehaviorPrimitives, allocateForMemOopShouldReportFailureWhenNoSpace) {
 }
 
 TESTF(BehaviorPrimitives, allocateForMemOopShouldScavengeAndAllocateWhenAllowed) {
+  HandleMark mark;
   Handle objectClass(Universe::find_global("Object"));
   int freeSpace = Universe::new_gen.eden()->free();
   oopFactory::new_byteArray(max(1, freeSpace - (4 * oopSize)));
   ASSERT_TRUE_M(Universe::new_gen.eden()->free() < (2 * oopSize), "Too much free space");
-  ASSERT_EQUALS_M(markSymbol(vmSymbols::failed_allocation()), behaviorPrimitives::allocate(objectClass.as_oop()), "Allocation should fail");
+  oop object = behaviorPrimitives::allocate(objectClass.as_oop());
+  ASSERT_TRUE_M(!object->is_mark(), "result should not be marked");
+  ASSERT_TRUE_M(object->is_mem(), "result should be mem");
+  ASSERT_EQUALS_M(memOop(object)->klass(), objectClass.as_memOop(), "wrong class");
 }

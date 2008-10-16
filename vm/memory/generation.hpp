@@ -126,6 +126,7 @@ class oldGeneration: public generation {
 
  public:
   int expand(int size);
+  int shrink(int size);
 
   oop* allocate(int size, bool allow_expansion=true) {
     return current_space->allocate(size, allow_expansion);
