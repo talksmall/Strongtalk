@@ -29,7 +29,7 @@ void set_klassKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop klassKlass::allocateObject(bool permit_scavenge) {
+oop klassKlass::allocateObject(bool permit_scavenge, bool tenured) {
   // allocate
   memOop obj = as_memOop(Universe::allocate_tenured(non_indexable_size()));
   // header + instance variables
@@ -146,8 +146,8 @@ void klassKlass::oop_oop_iterate(oop obj, OopClosure* blk) {
   memOop(obj)->oop_iterate_body(blk, klassOopDesc::header_size(), non_indexable_size());
 }
 
-oop klassKlass::oop_primitive_allocate(oop obj, bool allow_scavenge) {
-  return klassOop(obj)->klass_part()->allocateObject(allow_scavenge);
+oop klassKlass::oop_primitive_allocate(oop obj, bool allow_scavenge, bool tenured) {
+  return klassOop(obj)->klass_part()->allocateObject(allow_scavenge, tenured);
 }
 
 oop klassKlass::oop_primitive_allocate_size(oop obj, int size) {

@@ -131,8 +131,8 @@ class Klass : ValueObj {
   // allocation operations
   int size() const {  return sizeof(Klass)/sizeof(oop); }
 
-  virtual oop allocateObject(bool permit_scavenge = true);
-  virtual oop allocateObjectSize(int size, bool permit_scavenge=true, bool permit_tenured = true);
+  virtual oop allocateObject(bool permit_scavenge = true, bool tenured = false);
+  virtual oop allocateObjectSize(int size, bool permit_scavenge=true, bool tenured = false);
 
   enum Format {	// Format of a vm klass
     no_klass,
@@ -248,7 +248,7 @@ class Klass : ValueObj {
   virtual bool oop_is_indexable()        const { return false; }
 
   // Dispatched primitives
-  virtual oop oop_primitive_allocate(oop obj, bool allow_scavenge=true);
+  virtual oop oop_primitive_allocate(oop obj, bool allow_scavenge=true, bool tenured=false);
   virtual oop oop_primitive_allocate_size(oop obj, int size);
   virtual oop oop_shallow_copy(oop obj, bool tenured);
 

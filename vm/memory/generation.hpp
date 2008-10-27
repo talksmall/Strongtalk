@@ -162,7 +162,7 @@ class oldGeneration: public generation {
 
   OldWaterMark top_mark()    { return current_space->top_mark(); }
   OldWaterMark bottom_mark() { return first_space->bottom_mark(); }
-
+  OldSpaceMark memo() { return OldSpaceMark(current_space); }
  private:
   void scavenge_contents_from(OldWaterMark* mark);
 

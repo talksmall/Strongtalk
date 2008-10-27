@@ -52,11 +52,13 @@ void set_blockClosureKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop blockClosureKlass::allocateObject(bool permit_scavenge) {
+oop blockClosureKlass::allocateObject(bool permit_scavenge, bool tenured) {
   klassOop k    = as_klassOop();
   // allocate
-  blockClosureOop obj =
-    as_blockClosureOop(Universe::allocate(blockClosureOopDesc::object_size(), (memOop*)&k, permit_scavenge));
+  oop* result = basicAllocate(blockClosureOopDesc::object_size(), &k, permit_scavenge, tenured);
+  if (result == NULL)
+    return NULL;
+  blockClosureOop obj = as_blockClosureOop(result);
   // header
   obj->initialize_header(false, k);
   // %not initialized by the interpreter
@@ -140,7 +142,7 @@ void set_contextKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop contextKlass::allocateObjectSize(int num_of_temps, bool permit_scavenge, bool permit_tenured) {
+oop contextKlass::allocateObjectSize(int num_of_temps, bool permit_scavenge, bool tenured) {
   klassOop k        = as_klassOop();
   int      obj_size = contextOopDesc::header_size() + num_of_temps;
   // allocate

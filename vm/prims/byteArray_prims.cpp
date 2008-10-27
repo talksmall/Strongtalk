@@ -75,8 +75,13 @@ PRIM_DECL_3(byteArrayPrimitives::allocateSize2, oop receiver, oop argument, oop 
   if (smiOop(argument)->value() < 0)
     return markSymbol(vmSymbols::negative_size());
 
+  if (tenured != Universe::trueObj() && tenured != Universe::falseObj())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+
   memOopKlass* theKlass = (memOopKlass*)klassOop(receiver)->klass_part();
-  return theKlass->allocateObjectSize(smiOop(argument)->value(), false, tenured == trueObj);
+  oop result = theKlass->allocateObjectSize(smiOop(argument)->value(), false, tenured == trueObj);
+  if (result == NULL) return markSymbol(vmSymbols::failed_allocation());
+  return result;
 }
 
 PRIM_DECL_1(byteArrayPrimitives::size, oop receiver) {

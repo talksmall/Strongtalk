@@ -33,8 +33,8 @@ class doubleByteArrayKlass: public memOopKlass {
   }
  
   // creation operations
-  oop allocateObject(bool permit_scavenge = true);
-  oop allocateObjectSize(int bytes, bool permit_scavenge=true, bool permit_tenured = true);
+  oop allocateObject(bool permit_scavenge = true, bool tenured = false);
+  oop allocateObjectSize(int bytes, bool permit_scavenge=true, bool tenured = false);
 
   // creates invocation
   klassOop create_subclass(mixinOop mixin, Format format);

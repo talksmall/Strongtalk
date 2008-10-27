@@ -24,6 +24,13 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 // super class for all heap objects
 
 class memOopKlass: public Klass {
+ protected:
+  oop* basicAllocate(int size, klassOop* klass, bool permit_scavenge, bool tenured) {
+    return tenured ?
+      Universe::allocate_tenured(size, permit_scavenge) :
+      Universe::allocate(size, (memOop*) klass, permit_scavenge);
+  }
+
  public:
   // allocation properties
   bool can_inline_allocation()       const { return true; }
@@ -33,8 +40,8 @@ class memOopKlass: public Klass {
   bool can_be_subclassed()           const { return true; }
 
   // allocation operations
-  oop allocateObject(bool permit_scavenge = true);
-  oop allocateObjectSize(int size, bool permit_scavenge = true, bool permit_tenured = true);
+  oop allocateObject(bool permit_scavenge = true, bool tenured = false);
+  oop allocateObjectSize(int size, bool permit_scavenge = true, bool tenured = false);
 
   // invocation creation
   klassOop create_subclass(mixinOop mixin, Format format);

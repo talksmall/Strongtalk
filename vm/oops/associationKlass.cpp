@@ -29,11 +29,13 @@ void set_associationKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop associationKlass::allocateObject(bool permit_scavenge) {
+oop associationKlass::allocateObject(bool permit_scavenge, bool tenured) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate
-  associationOop obj = as_associationOop(Universe::allocate_tenured(size));
+  oop* result = Universe::allocate_tenured(size, permit_scavenge);
+  if (result == NULL && !permit_scavenge) return NULL;
+  associationOop obj = as_associationOop(result);
   // header
   memOop(obj)->initialize_header(has_untagged_contents(), k);
   obj->set_key(symbolOop(nilObj));

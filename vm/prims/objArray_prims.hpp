@@ -30,6 +30,18 @@ class objArrayPrimitives : AllStatic {
   static int number_of_calls;
 
   //%prim
+  // <NoReceiver>
+  //   primitiveIndexedObjectNew: class <IndexedInstanceVariables class>
+  //                        size: size <SmallInteger> 
+  //                     tenured: tenured <Boolean>
+  //                      ifFail: failBlock <PrimFailBlock> ^<Object> =
+  //   Internal { error = #(NegativeSize)
+  //              flags = #(Allocate)
+  //              name  = 'objArrayPrimitives::allocateSize2' }
+  //%
+  static PRIM_DECL_3(allocateSize2, oop receiver, oop argument, oop tenured);
+
+  //%prim
   // <IndexedInstanceVariables class>
   //   primitiveIndexedObjectNew: size <SmallInteger> 
   //                      ifFail: failBlock <PrimFailBlock> ^<Object> =

@@ -24,10 +24,13 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_precompiled.incl"
 # include "incls/_doubleKlass.cpp.incl"
 
-oop doubleKlass::allocateObject(bool permit_scavenge) {
+oop doubleKlass::allocateObject(bool permit_scavenge, bool tenured) {
   assert(!can_inline_allocation(), "using nonstandard allocation");
   // allocate
-  doubleOop obj = as_doubleOop(Universe::allocate(doubleOopDesc::object_size(), (memOop*)&doubleKlassObj, permit_scavenge));
+  oop* result = basicAllocate(doubleOopDesc::object_size(), &doubleKlassObj, permit_scavenge, tenured);
+  if (result == NULL)
+    return NULL;
+  doubleOop obj = as_doubleOop(result);
   // header
   memOop(obj)->initialize_header(false, doubleKlassObj);
   obj->set_value(0.0);

@@ -30,10 +30,15 @@ int behaviorPrimitives::number_of_calls;
 
 #define ASSERT_RECEIVER assert(receiver->is_klass(), "receiver must klass")
 
-PRIM_DECL_1(behaviorPrimitives::allocate3, oop receiver) {
-  PROLOGUE_1("allocate3", receiver)
+PRIM_DECL_2(behaviorPrimitives::allocate3, oop receiver, oop tenured) {
+  PROLOGUE_2("allocate3", receiver, tenured)
   ASSERT_RECEIVER;
-  return receiver->primitive_allocate(false);
+  if (tenured != Universe::trueObj() && tenured != Universe::falseObj())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  oop result = receiver->primitive_allocate(false, tenured == Universe::trueObj());
+  if (NULL == result)
+    return markSymbol(vmSymbols::failed_allocation());
+  return result;
 }
 
 PRIM_DECL_1(behaviorPrimitives::allocate2, oop receiver) {

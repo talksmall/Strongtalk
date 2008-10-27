@@ -666,7 +666,7 @@ Expr* PrimInliner::obj_new() {
       default:  ; // use generic primitives
     }
   }
-  Expr* u = genCall(false);
+  Expr* u = genCall(true);
   return new KlassExpr(klass->as_klassOop(), u->preg(), u->node());
 }
 

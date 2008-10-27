@@ -46,6 +46,7 @@ class PrimitivesGenerator: StackObj {
   Label error_first_argument_has_wrong_type;
   Label error_division_by_zero;
   Label error_overflow;
+  Label allocation_failure;
 
   void scavenge(int size);
   void test_for_scavenge(Register dst, int size, Label& need_scavenge);

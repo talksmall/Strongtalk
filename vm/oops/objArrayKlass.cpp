@@ -24,12 +24,16 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_precompiled.incl"
 # include "incls/_objArrayKlass.cpp.incl"
 
-oop objArrayKlass::allocateObjectSize(int size, bool permit_scavenge, bool permit_tenured) {
+oop objArrayKlass::allocateObjectSize(int size, bool permit_scavenge, bool tenured) {
   klassOop k        = as_klassOop();
   int      ni_size  = non_indexable_size();
   int      obj_size = ni_size + 1 + size;
   // allocate
-  objArrayOop obj = as_objArrayOop(Universe::allocate(obj_size, (memOop*)&k));
+  oop* result = tenured ?
+    Universe::allocate_tenured(obj_size, permit_scavenge):
+    Universe::allocate(obj_size, (memOop*)&k, permit_scavenge);
+  if (!result) return NULL;
+  objArrayOop obj = as_objArrayOop(result);
   // header
   memOop(obj)->initialize_header(has_untagged_contents(), k);
   // instance variables

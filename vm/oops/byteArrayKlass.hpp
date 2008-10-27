@@ -37,8 +37,8 @@ class byteArrayKlass: public memOopKlass {
   int array_offset() const		{ return non_indexable_size() + 1; }
 
   // creation operations
-  oop allocateObject(bool permit_scavenge = true);
-  oop allocateObjectSize(int bytes, bool permit_scavenge=true, bool permit_tenured = true);
+  oop allocateObject(bool permit_scavenge = true, bool tenured = false);
+  oop allocateObjectSize(int bytes, bool permit_scavenge=true, bool tenured = false);
 
   // creates invocation
   klassOop create_subclass(mixinOop mixin, Format format);

@@ -29,12 +29,13 @@ void set_vframeKlass_vtbl(Klass* k) {
   vframeKlass o;
   k->set_vtbl_value(o.vtbl_value());
 }
-
-oop vframeKlass::allocateObject(bool permit_scavenge) {
+oop vframeKlass::allocateObject(bool permit_scavenge, bool tenured) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate
-  vframeOop obj = as_vframeOop(Universe::allocate(size, (memOop*)&k, permit_scavenge));
+  oop* result = basicAllocate(size, &k, permit_scavenge, tenured);
+  if (!result) return NULL;
+  vframeOop obj = as_vframeOop(result);
   // header
   memOop(obj)->initialize_header(true, k);
  

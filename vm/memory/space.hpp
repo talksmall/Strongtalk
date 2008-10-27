@@ -277,9 +277,9 @@ class oldSpace: public space {
 // temporary allocations to be reset easily.
 class OldSpaceMark: public ValueObj {
 private:
-  oldSpace* theSpace;
   oop*      oldTop;
 public:
+  oldSpace* theSpace;
   OldSpaceMark(oldSpace* aSpace): theSpace(aSpace) {
     oldTop = theSpace->top();
   }

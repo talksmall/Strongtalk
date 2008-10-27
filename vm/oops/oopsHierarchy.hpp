@@ -26,48 +26,51 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 // of B, A's representation is a prefix of B's representation.
 
 typedef class  oopDesc*                       oop;
-typedef class    smiOopDesc*                  smiOop;
 typedef class    markOopDesc*                 markOop;
 typedef class    memOopDesc*                  memOop;
 typedef class      associationOopDesc*        associationOop;
-typedef class      methodOopDesc*             methodOop;
-typedef class      doubleOopDesc*             doubleOop;
-typedef class      objArrayOopDesc*           objArrayOop;
-typedef class        weakArrayOopDesc*        weakArrayOop;
-typedef class      doubleByteArrayOopDesc*    doubleByteArrayOop;
-typedef class      doubleValueArrayOopDesc*   doubleValueArrayOop;
+typedef class      blockClosureOopDesc*       blockClosureOop;
 typedef class      byteArrayOopDesc*          byteArrayOop;
 typedef class        symbolOopDesc*           symbolOop;
-typedef class      blockClosureOopDesc*       blockClosureOop;
 typedef class      contextOopDesc*            contextOop;
+typedef class      doubleByteArrayOopDesc*    doubleByteArrayOop;
+typedef class      doubleOopDesc*             doubleOop;
+typedef class      doubleValueArrayOopDesc*   doubleValueArrayOop;
+typedef class      klassOopDesc*              klassOop;
+typedef class      methodOopDesc*             methodOop;
+typedef class      mixinOopDesc*              mixinOop;
+typedef class      objArrayOopDesc*           objArrayOop;
+typedef class        weakArrayOopDesc*        weakArrayOop;
 typedef class      processOopDesc*            processOop;
 typedef class      proxyOopDesc*              proxyOop;
 typedef class      vframeOopDesc*             vframeOop;
-typedef class      systemDictionaryDesc*      systemDictionaryOop;
-typedef class      klassOopDesc*              klassOop;
-typedef class      mixinOopDesc*              mixinOop;
-typedef class      messageOopDesc*            messageOop;
+typedef class    smiOopDesc*                  smiOop;
+
+// The following were not used anywhere - slr 18/10/2008
+// They appeared under memOopDesc
+//typedef class      systemDictionaryDesc*      systemDictionaryOop;
+//typedef class      messageOopDesc*            messageOop;
 
 
 // The klass hierarchy is separate from the oop hierarchy.
 
 class      Klass;
 class        memOopKlass;
-class          klassKlass;
 class          associationKlass;
-class          doubleKlass;
-class          objArrayKlass;
-class            weakArrayKlass;
-class          doubleByteArrayKlass;
-class          doubleValueArrayKlass;
+class          blockClosureKlass;
 class          byteArrayKlass;
 class            symbolKlass;
-class          methodKlass;
-class          blockClosureKlass;
 class          contextKlass;
+class          doubleByteArrayKlass;
+class          doubleKlass;
+class          doubleValueArrayKlass;
+class          klassKlass;
+class          methodKlass;
+class          mixinKlass;
+class          objArrayKlass;
+class            weakArrayKlass;
 class          processKlass;
 class          proxyKlass;
-class          mixinKlass;
 class          vframeKlass;
 class        smiKlass;
 

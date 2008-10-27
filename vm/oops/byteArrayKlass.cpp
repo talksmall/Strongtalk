@@ -25,7 +25,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_byteArrayKlass.cpp.incl"
 # include <ctype.h>
 
-oop byteArrayKlass::allocateObject(bool permit_scavenge) {
+oop byteArrayKlass::allocateObject(bool permit_scavenge, bool tenured) {
   assert(!can_inline_allocation(), "using nonstandard allocation");
   // This should not be fatal! This could be called erroneously from ST in which
   // case it should result in an ST level error. Instead return a marked symbol
@@ -39,13 +39,13 @@ oop byteArrayKlass::allocateObjectSize(int size, bool permit_scavenge, bool perm
   int      ni_size  = non_indexable_size();
   int      obj_size = ni_size + 1 + roundTo(size, oopSize) / oopSize;
   // allocate
-  void* chunk = Universe::allocate(obj_size, (memOop*)&k, permit_scavenge);
-  if (chunk == NULL && permit_tenured) {
-    chunk = Universe::allocate_tenured(obj_size, false);
-  }
-  if (chunk == NULL) return markSymbol(vmSymbols::failed_allocation());
+  oop* result = permit_tenured ?
+    Universe::allocate_tenured(obj_size, false):
+    Universe::allocate(obj_size, (memOop*)&k, permit_scavenge);
+  
+  if (!result) return NULL;
 
-  byteArrayOop obj = as_byteArrayOop(chunk);
+  byteArrayOop obj = as_byteArrayOop(result);
   // header
   memOop(obj)->initialize_header(true, k);
   // instance variables

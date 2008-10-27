@@ -1938,172 +1938,172 @@ static primitive_desc primitive_193 = {
 	errors_193
 };
 
-static char* signature_194[] = { "Self", "IndexedInstanceVariables", "SmallInteger", "SmallInteger", "IndexedInstanceVariables", "SmallInteger"};
-static char* errors_194[] = { "OutOfBounds", NULL};
+static char* signature_194[] = { "Object", "IndexedInstanceVariables class", "SmallInteger", "Boolean"};
+static char* errors_194[] = { "NegativeSize", NULL};
 static primitive_desc primitive_194 = {
-	"primitiveIndexedObjectReplaceFrom:to:with:startingAt:ifFail:", 
-	fntype(&objArrayPrimitives::replace_from_to), 
-	1377541, 
+	"primitiveIndexedObjectNew:size:tenured:ifFail:", 
+	fntype(&objArrayPrimitives::allocateSize2), 
+	327683, 
 	signature_194, 
 	errors_194
 };
 
-static char* signature_195[] = { "Self", "IndexedInstanceVariables"};
-static char* errors_195[] = {NULL};
+static char* signature_195[] = { "Self", "IndexedInstanceVariables", "SmallInteger", "SmallInteger", "IndexedInstanceVariables", "SmallInteger"};
+static char* errors_195[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_195 = {
-	"primitiveIndexedObjectSize", 
-	fntype(&objArrayPrimitives::size), 
-	1574145, 
+	"primitiveIndexedObjectReplaceFrom:to:with:startingAt:ifFail:", 
+	fntype(&objArrayPrimitives::replace_from_to), 
+	1377541, 
 	signature_195, 
 	errors_195
 };
 
-static char* signature_196[] = { "Boolean", "Behavior", "Symbol"};
+static char* signature_196[] = { "Self", "IndexedInstanceVariables"};
 static char* errors_196[] = {NULL};
 static primitive_desc primitive_196 = {
-	"primitiveInliningDatabaseAddLookupEntryClass:selector:ifFail:", 
-	fntype(&systemPrimitives::inlining_database_add_entry), 
-	327682, 
+	"primitiveIndexedObjectSize", 
+	fntype(&objArrayPrimitives::size), 
+	1574145, 
 	signature_196, 
 	errors_196
 };
 
-static char* signature_197[] = { "Boolean"};
+static char* signature_197[] = { "Boolean", "Behavior", "Symbol"};
 static char* errors_197[] = {NULL};
 static primitive_desc primitive_197 = {
-	"primitiveInliningDatabaseCompile", 
-	fntype(&systemPrimitives::inlining_database_compile_next), 
-	65536, 
+	"primitiveInliningDatabaseAddLookupEntryClass:selector:ifFail:", 
+	fntype(&systemPrimitives::inlining_database_add_entry), 
+	327682, 
 	signature_197, 
 	errors_197
 };
 
-static char* signature_198[] = { "Object", "String"};
+static char* signature_198[] = { "Boolean"};
 static char* errors_198[] = {NULL};
 static primitive_desc primitive_198 = {
-	"primitiveInliningDatabaseCompile:ifFail:", 
-	fntype(&systemPrimitives::inlining_database_compile), 
-	327681, 
+	"primitiveInliningDatabaseCompile", 
+	fntype(&systemPrimitives::inlining_database_compile_next), 
+	65536, 
 	signature_198, 
 	errors_198
 };
 
-static char* signature_199[] = { "IndexedByteInstanceVariables", "String"};
+static char* signature_199[] = { "Object", "String"};
 static char* errors_199[] = {NULL};
 static primitive_desc primitive_199 = {
-	"primitiveInliningDatabaseCompileDemangled:ifFail:", 
-	fntype(&systemPrimitives::inlining_database_demangle), 
+	"primitiveInliningDatabaseCompile:ifFail:", 
+	fntype(&systemPrimitives::inlining_database_compile), 
 	327681, 
 	signature_199, 
 	errors_199
 };
 
-static char* signature_200[] = { "Symbol"};
+static char* signature_200[] = { "IndexedByteInstanceVariables", "String"};
 static char* errors_200[] = {NULL};
 static primitive_desc primitive_200 = {
-	"primitiveInliningDatabaseDirectory", 
-	fntype(&systemPrimitives::inlining_database_directory), 
-	65536, 
+	"primitiveInliningDatabaseCompileDemangled:ifFail:", 
+	fntype(&systemPrimitives::inlining_database_demangle), 
+	327681, 
 	signature_200, 
 	errors_200
 };
 
-static char* signature_201[] = { "SmallInteger"};
+static char* signature_201[] = { "Symbol"};
 static char* errors_201[] = {NULL};
 static primitive_desc primitive_201 = {
-	"primitiveInliningDatabaseFileOutAllIfFail:", 
-	fntype(&systemPrimitives::inlining_database_file_out_all), 
-	327680, 
+	"primitiveInliningDatabaseDirectory", 
+	fntype(&systemPrimitives::inlining_database_directory), 
+	65536, 
 	signature_201, 
 	errors_201
 };
 
-static char* signature_202[] = { "SmallInteger", "Behavior"};
+static char* signature_202[] = { "SmallInteger"};
 static char* errors_202[] = {NULL};
 static primitive_desc primitive_202 = {
-	"primitiveInliningDatabaseFileOutClass:ifFail:", 
-	fntype(&systemPrimitives::inlining_database_file_out_class), 
-	327681, 
+	"primitiveInliningDatabaseFileOutAllIfFail:", 
+	fntype(&systemPrimitives::inlining_database_file_out_all), 
+	327680, 
 	signature_202, 
 	errors_202
 };
 
-static char* signature_203[] = { "IndexedByteInstanceVariables", "String"};
+static char* signature_203[] = { "SmallInteger", "Behavior"};
 static char* errors_203[] = {NULL};
 static primitive_desc primitive_203 = {
-	"primitiveInliningDatabaseMangle:ifFail:", 
-	fntype(&systemPrimitives::inlining_database_mangle), 
+	"primitiveInliningDatabaseFileOutClass:ifFail:", 
+	fntype(&systemPrimitives::inlining_database_file_out_class), 
 	327681, 
 	signature_203, 
 	errors_203
 };
 
-static char* signature_204[] = { "Symbol", "Symbol"};
+static char* signature_204[] = { "IndexedByteInstanceVariables", "String"};
 static char* errors_204[] = {NULL};
 static primitive_desc primitive_204 = {
-	"primitiveInliningDatabaseSetDirectory:ifFail:", 
-	fntype(&systemPrimitives::inlining_database_set_directory), 
+	"primitiveInliningDatabaseMangle:ifFail:", 
+	fntype(&systemPrimitives::inlining_database_mangle), 
 	327681, 
 	signature_204, 
 	errors_204
 };
 
-static char* signature_205[] = { "Object", "Object", "SmallInteger"};
-static char* errors_205[] = { "OutOfBounds", NULL};
+static char* signature_205[] = { "Symbol", "Symbol"};
+static char* errors_205[] = {NULL};
 static primitive_desc primitive_205 = {
-	"primitiveInstVarAt:ifFail:", 
-	fntype(&oopPrimitives::instVarAt), 
-	1376258, 
+	"primitiveInliningDatabaseSetDirectory:ifFail:", 
+	fntype(&systemPrimitives::inlining_database_set_directory), 
+	327681, 
 	signature_205, 
 	errors_205
 };
 
-static char* signature_206[] = { "Object", "Object", "SmallInteger", "Object"};
+static char* signature_206[] = { "Object", "Object", "SmallInteger"};
 static char* errors_206[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_206 = {
-	"primitiveInstVarAt:put:ifFail:", 
-	fntype(&oopPrimitives::instVarAtPut), 
-	1376259, 
+	"primitiveInstVarAt:ifFail:", 
+	fntype(&oopPrimitives::instVarAt), 
+	1376258, 
 	signature_206, 
 	errors_206
 };
 
-static char* signature_207[] = { "Symbol", "Reciever", "Object", "SmallInteger"};
+static char* signature_207[] = { "Object", "Object", "SmallInteger", "Object"};
 static char* errors_207[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_207 = {
-	"primitiveInstVarNameFor:at:ifFail:", 
-	fntype(&oopPrimitives::instance_variable_name_at), 
+	"primitiveInstVarAt:put:ifFail:", 
+	fntype(&oopPrimitives::instVarAtPut), 
 	1376259, 
 	signature_207, 
 	errors_207
 };
 
-static char* signature_208[] = { "IndexedInstanceVariables", "Class", "SmallInteger"};
-static char* errors_208[] = {NULL};
+static char* signature_208[] = { "Symbol", "Reciever", "Object", "SmallInteger"};
+static char* errors_208[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_208 = {
-	"primitiveInstancesOf:limit:ifFail:", 
-	fntype(&systemPrimitives::instances_of), 
-	327682, 
+	"primitiveInstVarNameFor:at:ifFail:", 
+	fntype(&oopPrimitives::instance_variable_name_at), 
+	1376259, 
 	signature_208, 
 	errors_208
 };
 
-static char* signature_209[] = { "SmallInteger"};
+static char* signature_209[] = { "IndexedInstanceVariables", "Class", "SmallInteger"};
 static char* errors_209[] = {NULL};
 static primitive_desc primitive_209 = {
-	"primitiveInterpreterInvocationCounterLimit", 
-	fntype(&debugPrimitives::interpreterInvocationCounterLimit), 
-	65536, 
+	"primitiveInstancesOf:limit:ifFail:", 
+	fntype(&systemPrimitives::instances_of), 
+	327682, 
 	signature_209, 
 	errors_209
 };
 
-static char* signature_210[] = { "Boolean", "SmallInteger", "SmallInteger"};
+static char* signature_210[] = { "SmallInteger"};
 static char* errors_210[] = {NULL};
 static primitive_desc primitive_210 = {
-	"primitiveLessThan:ifFail:", 
-	fntype(&smiOopPrimitives::lessThan), 
-	6029570, 
+	"primitiveInterpreterInvocationCounterLimit", 
+	fntype(&debugPrimitives::interpreterInvocationCounterLimit), 
+	65536, 
 	signature_210, 
 	errors_210
 };
@@ -2111,49 +2111,49 @@ static primitive_desc primitive_210 = {
 static char* signature_211[] = { "Boolean", "SmallInteger", "SmallInteger"};
 static char* errors_211[] = {NULL};
 static primitive_desc primitive_211 = {
-	"primitiveLessThanOrEqual:ifFail:", 
-	fntype(&smiOopPrimitives::lessThanOrEqual), 
+	"primitiveLessThan:ifFail:", 
+	fntype(&smiOopPrimitives::lessThan), 
 	6029570, 
 	signature_211, 
 	errors_211
 };
 
-static char* signature_212[] = { "SmallInteger", "Float", "Float", "SmallInteger"};
+static char* signature_212[] = { "Boolean", "SmallInteger", "SmallInteger"};
 static char* errors_212[] = {NULL};
 static primitive_desc primitive_212 = {
-	"primitiveMandelbrotAtRe:im:iterate:ifFail:", 
-	fntype(&doubleOopPrimitives::mandelbrot), 
-	4980739, 
+	"primitiveLessThanOrEqual:ifFail:", 
+	fntype(&smiOopPrimitives::lessThanOrEqual), 
+	6029570, 
 	signature_212, 
 	errors_212
 };
 
-static char* signature_213[] = { "Block", "Method", "Object"};
+static char* signature_213[] = { "SmallInteger", "Float", "Float", "SmallInteger"};
 static char* errors_213[] = {NULL};
 static primitive_desc primitive_213 = {
-	"primitiveMethodAllocateBlock:ifFail:", 
-	fntype(&methodOopPrimitives::allocate_block_self), 
-	1376258, 
+	"primitiveMandelbrotAtRe:im:iterate:ifFail:", 
+	fntype(&doubleOopPrimitives::mandelbrot), 
+	4980739, 
 	signature_213, 
 	errors_213
 };
 
-static char* signature_214[] = { "Block", "Method"};
+static char* signature_214[] = { "Block", "Method", "Object"};
 static char* errors_214[] = {NULL};
 static primitive_desc primitive_214 = {
-	"primitiveMethodAllocateBlockIfFail:", 
-	fntype(&methodOopPrimitives::allocate_block), 
-	1376257, 
+	"primitiveMethodAllocateBlock:ifFail:", 
+	fntype(&methodOopPrimitives::allocate_block_self), 
+	1376258, 
 	signature_214, 
 	errors_214
 };
 
-static char* signature_215[] = { "Object", "Method"};
+static char* signature_215[] = { "Block", "Method"};
 static char* errors_215[] = {NULL};
 static primitive_desc primitive_215 = {
-	"primitiveMethodBody", 
-	fntype(&methodOopPrimitives::fileout_body), 
-	1114113, 
+	"primitiveMethodAllocateBlockIfFail:", 
+	fntype(&methodOopPrimitives::allocate_block), 
+	1376257, 
 	signature_215, 
 	errors_215
 };
@@ -2161,98 +2161,98 @@ static primitive_desc primitive_215 = {
 static char* signature_216[] = { "Object", "Method"};
 static char* errors_216[] = {NULL};
 static primitive_desc primitive_216 = {
-	"primitiveMethodDebugInfo", 
-	fntype(&methodOopPrimitives::debug_info), 
+	"primitiveMethodBody", 
+	fntype(&methodOopPrimitives::fileout_body), 
 	1114113, 
 	signature_216, 
 	errors_216
 };
 
-static char* signature_217[] = { "Method", "Behavior", "CompressedSymbol"};
-static char* errors_217[] = { "NotFound", NULL};
+static char* signature_217[] = { "Object", "Method"};
+static char* errors_217[] = {NULL};
 static primitive_desc primitive_217 = {
-	"primitiveMethodFor:ifFail:", 
-	fntype(&behaviorPrimitives::methodFor), 
-	1376258, 
+	"primitiveMethodDebugInfo", 
+	fntype(&methodOopPrimitives::debug_info), 
+	1114113, 
 	signature_217, 
 	errors_217
 };
 
-static char* signature_218[] = { "Symbol", "Method"};
-static char* errors_218[] = {NULL};
+static char* signature_218[] = { "Method", "Behavior", "CompressedSymbol"};
+static char* errors_218[] = { "NotFound", NULL};
 static primitive_desc primitive_218 = {
-	"primitiveMethodInliningInfo", 
-	fntype(&methodOopPrimitives::inlining_info), 
-	1114113, 
+	"primitiveMethodFor:ifFail:", 
+	fntype(&behaviorPrimitives::methodFor), 
+	1376258, 
 	signature_218, 
 	errors_218
 };
 
-static char* signature_219[] = { "SmallInteger", "Method"};
+static char* signature_219[] = { "Symbol", "Method"};
 static char* errors_219[] = {NULL};
 static primitive_desc primitive_219 = {
-	"primitiveMethodNumberOfArguments", 
-	fntype(&methodOopPrimitives::numberOfArguments), 
+	"primitiveMethodInliningInfo", 
+	fntype(&methodOopPrimitives::inlining_info), 
 	1114113, 
 	signature_219, 
 	errors_219
 };
 
-static char* signature_220[] = { "Symbol", "Method", "Method"};
+static char* signature_220[] = { "SmallInteger", "Method"};
 static char* errors_220[] = {NULL};
 static primitive_desc primitive_220 = {
-	"primitiveMethodOuter:ifFail:", 
-	fntype(&methodOopPrimitives::setOuter), 
-	1376258, 
+	"primitiveMethodNumberOfArguments", 
+	fntype(&methodOopPrimitives::numberOfArguments), 
+	1114113, 
 	signature_220, 
 	errors_220
 };
 
-static char* signature_221[] = { "Method", "Method"};
-static char* errors_221[] = { "ReceiverNotBlockMethod", NULL};
+static char* signature_221[] = { "Symbol", "Method", "Method"};
+static char* errors_221[] = {NULL};
 static primitive_desc primitive_221 = {
-	"primitiveMethodOuterIfFail:", 
-	fntype(&methodOopPrimitives::outer), 
-	1376257, 
+	"primitiveMethodOuter:ifFail:", 
+	fntype(&methodOopPrimitives::setOuter), 
+	1376258, 
 	signature_221, 
 	errors_221
 };
 
-static char* signature_222[] = { "Method", "Method", "Object"};
-static char* errors_222[] = {NULL};
+static char* signature_222[] = { "Method", "Method"};
+static char* errors_222[] = { "ReceiverNotBlockMethod", NULL};
 static primitive_desc primitive_222 = {
-	"primitiveMethodPrettyPrintKlass:ifFail:", 
-	fntype(&methodOopPrimitives::prettyPrint), 
-	1376258, 
+	"primitiveMethodOuterIfFail:", 
+	fntype(&methodOopPrimitives::outer), 
+	1376257, 
 	signature_222, 
 	errors_222
 };
 
-static char* signature_223[] = { "ByteIndexedInstanceVariables", "Method", "Object"};
+static char* signature_223[] = { "Method", "Method", "Object"};
 static char* errors_223[] = {NULL};
 static primitive_desc primitive_223 = {
-	"primitiveMethodPrettyPrintSourceKlass:ifFail:", 
-	fntype(&methodOopPrimitives::prettyPrintSource), 
+	"primitiveMethodPrettyPrintKlass:ifFail:", 
+	fntype(&methodOopPrimitives::prettyPrint), 
 	1376258, 
 	signature_223, 
 	errors_223
 };
 
-static char* signature_224[] = { "Symbol", "Method"};
+static char* signature_224[] = { "ByteIndexedInstanceVariables", "Method", "Object"};
 static char* errors_224[] = {NULL};
 static primitive_desc primitive_224 = {
-	"primitiveMethodPrintCodes", 
-	fntype(&methodOopPrimitives::printCodes), 
-	1114113, 
+	"primitiveMethodPrettyPrintSourceKlass:ifFail:", 
+	fntype(&methodOopPrimitives::prettyPrintSource), 
+	1376258, 
 	signature_224, 
 	errors_224
 };
 
-static char* signature_225[] = { "IndexedInstanceVariables", "Method"};
+static char* signature_225[] = { "Symbol", "Method"};
 static char* errors_225[] = {NULL};
 static primitive_desc primitive_225 = {
-	"primitiveMethodReferencedClassVarNames", 
-	fntype(&methodOopPrimitives::referenced_class_variable_names), 
+	"primitiveMethodPrintCodes", 
+	fntype(&methodOopPrimitives::printCodes), 
 	1114113, 
 	signature_225, 
 	errors_225
@@ -2261,169 +2261,169 @@ static primitive_desc primitive_225 = {
 static char* signature_226[] = { "IndexedInstanceVariables", "Method"};
 static char* errors_226[] = {NULL};
 static primitive_desc primitive_226 = {
-	"primitiveMethodReferencedGlobalNames", 
-	fntype(&methodOopPrimitives::referenced_global_names), 
+	"primitiveMethodReferencedClassVarNames", 
+	fntype(&methodOopPrimitives::referenced_class_variable_names), 
 	1114113, 
 	signature_226, 
 	errors_226
 };
 
-static char* signature_227[] = { "IndexedInstanceVariables", "Method", "Mixin"};
+static char* signature_227[] = { "IndexedInstanceVariables", "Method"};
 static char* errors_227[] = {NULL};
 static primitive_desc primitive_227 = {
-	"primitiveMethodReferencedInstVarNamesMixin:ifFail:", 
-	fntype(&methodOopPrimitives::referenced_instance_variable_names), 
-	1376258, 
+	"primitiveMethodReferencedGlobalNames", 
+	fntype(&methodOopPrimitives::referenced_global_names), 
+	1114113, 
 	signature_227, 
 	errors_227
 };
 
-static char* signature_228[] = { "Symbol", "Method"};
+static char* signature_228[] = { "IndexedInstanceVariables", "Method", "Mixin"};
 static char* errors_228[] = {NULL};
 static primitive_desc primitive_228 = {
-	"primitiveMethodSelector", 
-	fntype(&methodOopPrimitives::selector), 
-	1114113, 
+	"primitiveMethodReferencedInstVarNamesMixin:ifFail:", 
+	fntype(&methodOopPrimitives::referenced_instance_variable_names), 
+	1376258, 
 	signature_228, 
 	errors_228
 };
 
-static char* signature_229[] = { "Symbol", "Method", "Symbol"};
+static char* signature_229[] = { "Symbol", "Method"};
 static char* errors_229[] = {NULL};
 static primitive_desc primitive_229 = {
-	"primitiveMethodSelector:ifFail:", 
-	fntype(&methodOopPrimitives::setSelector), 
-	1376258, 
+	"primitiveMethodSelector", 
+	fntype(&methodOopPrimitives::selector), 
+	1114113, 
 	signature_229, 
 	errors_229
 };
 
-static char* signature_230[] = { "IndexedInstanceVariables", "Method"};
+static char* signature_230[] = { "Symbol", "Method", "Symbol"};
 static char* errors_230[] = {NULL};
 static primitive_desc primitive_230 = {
-	"primitiveMethodSenders", 
-	fntype(&methodOopPrimitives::senders), 
-	1114113, 
+	"primitiveMethodSelector:ifFail:", 
+	fntype(&methodOopPrimitives::setSelector), 
+	1376258, 
 	signature_230, 
 	errors_230
 };
 
-static char* signature_231[] = { "Symbol", "Method", "Symbol"};
-static char* errors_231[] = { "ArgumentIsInvalid", NULL};
+static char* signature_231[] = { "IndexedInstanceVariables", "Method"};
+static char* errors_231[] = {NULL};
 static primitive_desc primitive_231 = {
-	"primitiveMethodSetInliningInfo:ifFail:", 
-	fntype(&methodOopPrimitives::set_inlining_info), 
-	1376258, 
+	"primitiveMethodSenders", 
+	fntype(&methodOopPrimitives::senders), 
+	1114113, 
 	signature_231, 
 	errors_231
 };
 
-static char* signature_232[] = { "Object", "Method"};
-static char* errors_232[] = {NULL};
+static char* signature_232[] = { "Symbol", "Method", "Symbol"};
+static char* errors_232[] = { "ArgumentIsInvalid", NULL};
 static primitive_desc primitive_232 = {
-	"primitiveMethodSizeAndFlags", 
-	fntype(&methodOopPrimitives::size_and_flags), 
-	1114113, 
+	"primitiveMethodSetInliningInfo:ifFail:", 
+	fntype(&methodOopPrimitives::set_inlining_info), 
+	1376258, 
 	signature_232, 
 	errors_232
 };
 
-static char* signature_233[] = { "Mixin", "Mixin", "Symbol"};
-static char* errors_233[] = { "IsInstalled", "OutOfBounds", NULL};
+static char* signature_233[] = { "Object", "Method"};
+static char* errors_233[] = {NULL};
 static primitive_desc primitive_233 = {
-	"primitiveMixin:addClassVariable:ifFail:", 
-	fntype(&mixinOopPrimitives::add_class_variable), 
-	327682, 
+	"primitiveMethodSizeAndFlags", 
+	fntype(&methodOopPrimitives::size_and_flags), 
+	1114113, 
 	signature_233, 
 	errors_233
 };
 
-static char* signature_234[] = { "Symbol", "Mixin", "Symbol"};
+static char* signature_234[] = { "Mixin", "Mixin", "Symbol"};
 static char* errors_234[] = { "IsInstalled", "OutOfBounds", NULL};
 static primitive_desc primitive_234 = {
-	"primitiveMixin:addInstanceVariable:ifFail:", 
-	fntype(&mixinOopPrimitives::add_instance_variable), 
+	"primitiveMixin:addClassVariable:ifFail:", 
+	fntype(&mixinOopPrimitives::add_class_variable), 
 	327682, 
 	signature_234, 
 	errors_234
 };
 
-static char* signature_235[] = { "Method", "Mixin", "Method"};
-static char* errors_235[] = { "IsInstalled", NULL};
+static char* signature_235[] = { "Symbol", "Mixin", "Symbol"};
+static char* errors_235[] = { "IsInstalled", "OutOfBounds", NULL};
 static primitive_desc primitive_235 = {
-	"primitiveMixin:addMethod:ifFail:", 
-	fntype(&mixinOopPrimitives::add_method), 
+	"primitiveMixin:addInstanceVariable:ifFail:", 
+	fntype(&mixinOopPrimitives::add_instance_variable), 
 	327682, 
 	signature_235, 
 	errors_235
 };
 
-static char* signature_236[] = { "Symbol", "Mixin", "SmallInteger"};
-static char* errors_236[] = { "OutOfBounds", NULL};
+static char* signature_236[] = { "Method", "Mixin", "Method"};
+static char* errors_236[] = { "IsInstalled", NULL};
 static primitive_desc primitive_236 = {
-	"primitiveMixin:classVariableAt:ifFail:", 
-	fntype(&mixinOopPrimitives::class_variable_at), 
+	"primitiveMixin:addMethod:ifFail:", 
+	fntype(&mixinOopPrimitives::add_method), 
 	327682, 
 	signature_236, 
 	errors_236
 };
 
-static char* signature_237[] = { "Symbol", "Mixin"};
-static char* errors_237[] = {NULL};
+static char* signature_237[] = { "Symbol", "Mixin", "SmallInteger"};
+static char* errors_237[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_237 = {
-	"primitiveMixin:classVariablesIfFail:", 
-	fntype(&mixinOopPrimitives::class_variables), 
-	327681, 
+	"primitiveMixin:classVariableAt:ifFail:", 
+	fntype(&mixinOopPrimitives::class_variable_at), 
+	327682, 
 	signature_237, 
 	errors_237
 };
 
-static char* signature_238[] = { "Symbol", "Mixin", "SmallInteger"};
-static char* errors_238[] = { "OutOfBounds", NULL};
+static char* signature_238[] = { "Symbol", "Mixin"};
+static char* errors_238[] = {NULL};
 static primitive_desc primitive_238 = {
-	"primitiveMixin:instanceVariableAt:ifFail:", 
-	fntype(&mixinOopPrimitives::instance_variable_at), 
-	327682, 
+	"primitiveMixin:classVariablesIfFail:", 
+	fntype(&mixinOopPrimitives::class_variables), 
+	327681, 
 	signature_238, 
 	errors_238
 };
 
-static char* signature_239[] = { "Symbol", "Mixin"};
-static char* errors_239[] = {NULL};
+static char* signature_239[] = { "Symbol", "Mixin", "SmallInteger"};
+static char* errors_239[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_239 = {
-	"primitiveMixin:instanceVariablesIfFail:", 
-	fntype(&mixinOopPrimitives::instance_variables), 
-	327681, 
+	"primitiveMixin:instanceVariableAt:ifFail:", 
+	fntype(&mixinOopPrimitives::instance_variable_at), 
+	327682, 
 	signature_239, 
 	errors_239
 };
 
-static char* signature_240[] = { "Method", "Mixin", "SmallInteger"};
-static char* errors_240[] = { "OutOfBounds", NULL};
+static char* signature_240[] = { "Symbol", "Mixin"};
+static char* errors_240[] = {NULL};
 static primitive_desc primitive_240 = {
-	"primitiveMixin:methodAt:ifFail:", 
-	fntype(&mixinOopPrimitives::method_at), 
-	327682, 
+	"primitiveMixin:instanceVariablesIfFail:", 
+	fntype(&mixinOopPrimitives::instance_variables), 
+	327681, 
 	signature_240, 
 	errors_240
 };
 
-static char* signature_241[] = { "Symbol", "Mixin"};
-static char* errors_241[] = {NULL};
+static char* signature_241[] = { "Method", "Mixin", "SmallInteger"};
+static char* errors_241[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_241 = {
-	"primitiveMixin:methodsIfFail:", 
-	fntype(&mixinOopPrimitives::methods), 
-	327681, 
+	"primitiveMixin:methodAt:ifFail:", 
+	fntype(&mixinOopPrimitives::method_at), 
+	327682, 
 	signature_241, 
 	errors_241
 };
 
-static char* signature_242[] = { "Symbol", "Mixin", "SmallInteger"};
-static char* errors_242[] = { "IsInstalled", "OutOfBounds", NULL};
+static char* signature_242[] = { "Symbol", "Mixin"};
+static char* errors_242[] = {NULL};
 static primitive_desc primitive_242 = {
-	"primitiveMixin:removeClassVariableAt:ifFail:", 
-	fntype(&mixinOopPrimitives::remove_class_variable_at), 
-	327682, 
+	"primitiveMixin:methodsIfFail:", 
+	fntype(&mixinOopPrimitives::methods), 
+	327681, 
 	signature_242, 
 	errors_242
 };
@@ -2431,48 +2431,48 @@ static primitive_desc primitive_242 = {
 static char* signature_243[] = { "Symbol", "Mixin", "SmallInteger"};
 static char* errors_243[] = { "IsInstalled", "OutOfBounds", NULL};
 static primitive_desc primitive_243 = {
-	"primitiveMixin:removeInstanceVariableAt:ifFail:", 
-	fntype(&mixinOopPrimitives::remove_instance_variable_at), 
+	"primitiveMixin:removeClassVariableAt:ifFail:", 
+	fntype(&mixinOopPrimitives::remove_class_variable_at), 
 	327682, 
 	signature_243, 
 	errors_243
 };
 
-static char* signature_244[] = { "Method", "Mixin", "SmallInteger"};
+static char* signature_244[] = { "Symbol", "Mixin", "SmallInteger"};
 static char* errors_244[] = { "IsInstalled", "OutOfBounds", NULL};
 static primitive_desc primitive_244 = {
-	"primitiveMixin:removeMethodAt:ifFail:", 
-	fntype(&mixinOopPrimitives::remove_method_at), 
+	"primitiveMixin:removeInstanceVariableAt:ifFail:", 
+	fntype(&mixinOopPrimitives::remove_instance_variable_at), 
 	327682, 
 	signature_244, 
 	errors_244
 };
 
-static char* signature_245[] = { "Mixin", "Mixin"};
-static char* errors_245[] = {NULL};
+static char* signature_245[] = { "Method", "Mixin", "SmallInteger"};
+static char* errors_245[] = { "IsInstalled", "OutOfBounds", NULL};
 static primitive_desc primitive_245 = {
-	"primitiveMixinClassMixinOf:ifFail:", 
-	fntype(&mixinOopPrimitives::class_mixin), 
-	327681, 
+	"primitiveMixin:removeMethodAt:ifFail:", 
+	fntype(&mixinOopPrimitives::remove_method_at), 
+	327682, 
 	signature_245, 
 	errors_245
 };
 
-static char* signature_246[] = { "Boolean", "Mixin"};
+static char* signature_246[] = { "Mixin", "Mixin"};
 static char* errors_246[] = {NULL};
 static primitive_desc primitive_246 = {
-	"primitiveMixinIsInstalled:ifFail:", 
-	fntype(&mixinOopPrimitives::is_installed), 
+	"primitiveMixinClassMixinOf:ifFail:", 
+	fntype(&mixinOopPrimitives::class_mixin), 
 	327681, 
 	signature_246, 
 	errors_246
 };
 
-static char* signature_247[] = { "SmallInteger", "Mixin"};
+static char* signature_247[] = { "Boolean", "Mixin"};
 static char* errors_247[] = {NULL};
 static primitive_desc primitive_247 = {
-	"primitiveMixinNumberOfClassVariablesOf:ifFail:", 
-	fntype(&mixinOopPrimitives::number_of_class_variables), 
+	"primitiveMixinIsInstalled:ifFail:", 
+	fntype(&mixinOopPrimitives::is_installed), 
 	327681, 
 	signature_247, 
 	errors_247
@@ -2481,8 +2481,8 @@ static primitive_desc primitive_247 = {
 static char* signature_248[] = { "SmallInteger", "Mixin"};
 static char* errors_248[] = {NULL};
 static primitive_desc primitive_248 = {
-	"primitiveMixinNumberOfInstanceVariablesOf:ifFail:", 
-	fntype(&mixinOopPrimitives::number_of_instance_variables), 
+	"primitiveMixinNumberOfClassVariablesOf:ifFail:", 
+	fntype(&mixinOopPrimitives::number_of_class_variables), 
 	327681, 
 	signature_248, 
 	errors_248
@@ -2491,89 +2491,89 @@ static primitive_desc primitive_248 = {
 static char* signature_249[] = { "SmallInteger", "Mixin"};
 static char* errors_249[] = {NULL};
 static primitive_desc primitive_249 = {
-	"primitiveMixinNumberOfMethodsOf:ifFail:", 
-	fntype(&mixinOopPrimitives::number_of_methods), 
+	"primitiveMixinNumberOfInstanceVariablesOf:ifFail:", 
+	fntype(&mixinOopPrimitives::number_of_instance_variables), 
 	327681, 
 	signature_249, 
 	errors_249
 };
 
-static char* signature_250[] = { "Class", "Mixin"};
+static char* signature_250[] = { "SmallInteger", "Mixin"};
 static char* errors_250[] = {NULL};
 static primitive_desc primitive_250 = {
-	"primitiveMixinPrimaryInvocationOf:ifFail:", 
-	fntype(&mixinOopPrimitives::primary_invocation), 
+	"primitiveMixinNumberOfMethodsOf:ifFail:", 
+	fntype(&mixinOopPrimitives::number_of_methods), 
 	327681, 
 	signature_250, 
 	errors_250
 };
 
-static char* signature_251[] = { "Mixin", "Mixin", "Mixin"};
-static char* errors_251[] = { "IsInstalled", NULL};
+static char* signature_251[] = { "Class", "Mixin"};
+static char* errors_251[] = {NULL};
 static primitive_desc primitive_251 = {
-	"primitiveMixinSetClassMixinOf:to:ifFail:", 
-	fntype(&mixinOopPrimitives::set_class_mixin), 
-	327682, 
+	"primitiveMixinPrimaryInvocationOf:ifFail:", 
+	fntype(&mixinOopPrimitives::primary_invocation), 
+	327681, 
 	signature_251, 
 	errors_251
 };
 
-static char* signature_252[] = { "Boolean", "Mixin"};
-static char* errors_252[] = {NULL};
+static char* signature_252[] = { "Mixin", "Mixin", "Mixin"};
+static char* errors_252[] = { "IsInstalled", NULL};
 static primitive_desc primitive_252 = {
-	"primitiveMixinSetInstalled:ifFail:", 
-	fntype(&mixinOopPrimitives::set_installed), 
-	327681, 
+	"primitiveMixinSetClassMixinOf:to:ifFail:", 
+	fntype(&mixinOopPrimitives::set_class_mixin), 
+	327682, 
 	signature_252, 
 	errors_252
 };
 
-static char* signature_253[] = { "Class", "Mixin", "Class"};
-static char* errors_253[] = { "IsInstalled", NULL};
+static char* signature_253[] = { "Boolean", "Mixin"};
+static char* errors_253[] = {NULL};
 static primitive_desc primitive_253 = {
-	"primitiveMixinSetPrimaryInvocationOf:to:ifFail:", 
-	fntype(&mixinOopPrimitives::set_primary_invocation), 
-	327682, 
+	"primitiveMixinSetInstalled:ifFail:", 
+	fntype(&mixinOopPrimitives::set_installed), 
+	327681, 
 	signature_253, 
 	errors_253
 };
 
-static char* signature_254[] = { "Boolean", "Mixin"};
-static char* errors_254[] = {NULL};
+static char* signature_254[] = { "Class", "Mixin", "Class"};
+static char* errors_254[] = { "IsInstalled", NULL};
 static primitive_desc primitive_254 = {
-	"primitiveMixinSetUnInstalled:ifFail:", 
-	fntype(&mixinOopPrimitives::set_uninstalled), 
-	327681, 
+	"primitiveMixinSetPrimaryInvocationOf:to:ifFail:", 
+	fntype(&mixinOopPrimitives::set_primary_invocation), 
+	327682, 
 	signature_254, 
 	errors_254
 };
 
-static char* signature_255[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
-static char* errors_255[] = { "Overflow", "DivisionByZero", NULL};
+static char* signature_255[] = { "Boolean", "Mixin"};
+static char* errors_255[] = {NULL};
 static primitive_desc primitive_255 = {
-	"primitiveMod:ifFail:", 
-	fntype(&smiOopPrimitives_mod), 
-	6029826, 
+	"primitiveMixinSetUnInstalled:ifFail:", 
+	fntype(&mixinOopPrimitives::set_uninstalled), 
+	327681, 
 	signature_255, 
 	errors_255
 };
 
 static char* signature_256[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
-static char* errors_256[] = { "Overflow", NULL};
+static char* errors_256[] = { "Overflow", "DivisionByZero", NULL};
 static primitive_desc primitive_256 = {
-	"primitiveMultiply:ifFail:", 
-	fntype(&smiOopPrimitives_multiply), 
+	"primitiveMod:ifFail:", 
+	fntype(&smiOopPrimitives_mod), 
 	6029826, 
 	signature_256, 
 	errors_256
 };
 
-static char* signature_257[] = { "Object", "Behavior"};
-static char* errors_257[] = {NULL};
+static char* signature_257[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
+static char* errors_257[] = { "Overflow", NULL};
 static primitive_desc primitive_257 = {
-	"primitiveNew0", 
-	fntype(&primitiveNew0), 
-	7405569, 
+	"primitiveMultiply:ifFail:", 
+	fntype(&smiOopPrimitives_multiply), 
+	6029826, 
 	signature_257, 
 	errors_257
 };
@@ -2581,9 +2581,9 @@ static primitive_desc primitive_257 = {
 static char* signature_258[] = { "Instance", "Behavior"};
 static char* errors_258[] = {NULL};
 static primitive_desc primitive_258 = {
-	"primitiveNew1", 
-	fntype(&primitiveNew1), 
-	7405569, 
+	"primitiveNew0ifFail:", 
+	fntype(&primitiveNew0), 
+	7667713, 
 	signature_258, 
 	errors_258
 };
@@ -2591,9 +2591,9 @@ static primitive_desc primitive_258 = {
 static char* signature_259[] = { "Instance", "Behavior"};
 static char* errors_259[] = {NULL};
 static primitive_desc primitive_259 = {
-	"primitiveNew2", 
-	fntype(&primitiveNew2), 
-	7405569, 
+	"primitiveNew1ifFail:", 
+	fntype(&primitiveNew1), 
+	7667713, 
 	signature_259, 
 	errors_259
 };
@@ -2611,9 +2611,9 @@ static primitive_desc primitive_260 = {
 static char* signature_261[] = { "Instance", "Behavior"};
 static char* errors_261[] = {NULL};
 static primitive_desc primitive_261 = {
-	"primitiveNew3", 
-	fntype(&primitiveNew3), 
-	7405569, 
+	"primitiveNew2ifFail:", 
+	fntype(&primitiveNew2), 
+	7667713, 
 	signature_261, 
 	errors_261
 };
@@ -2621,9 +2621,9 @@ static primitive_desc primitive_261 = {
 static char* signature_262[] = { "Instance", "Behavior"};
 static char* errors_262[] = {NULL};
 static primitive_desc primitive_262 = {
-	"primitiveNew4", 
-	fntype(&primitiveNew4), 
-	7405569, 
+	"primitiveNew3ifFail:", 
+	fntype(&primitiveNew3), 
+	7667713, 
 	signature_262, 
 	errors_262
 };
@@ -2631,9 +2631,9 @@ static primitive_desc primitive_262 = {
 static char* signature_263[] = { "Instance", "Behavior"};
 static char* errors_263[] = {NULL};
 static primitive_desc primitive_263 = {
-	"primitiveNew5", 
-	fntype(&primitiveNew5), 
-	7405569, 
+	"primitiveNew4ifFail:", 
+	fntype(&primitiveNew4), 
+	7667713, 
 	signature_263, 
 	errors_263
 };
@@ -2641,9 +2641,9 @@ static primitive_desc primitive_263 = {
 static char* signature_264[] = { "Instance", "Behavior"};
 static char* errors_264[] = {NULL};
 static primitive_desc primitive_264 = {
-	"primitiveNew6", 
-	fntype(&primitiveNew6), 
-	7405569, 
+	"primitiveNew5ifFail:", 
+	fntype(&primitiveNew5), 
+	7667713, 
 	signature_264, 
 	errors_264
 };
@@ -2651,9 +2651,9 @@ static primitive_desc primitive_264 = {
 static char* signature_265[] = { "Instance", "Behavior"};
 static char* errors_265[] = {NULL};
 static primitive_desc primitive_265 = {
-	"primitiveNew7", 
-	fntype(&primitiveNew7), 
-	7405569, 
+	"primitiveNew6ifFail:", 
+	fntype(&primitiveNew6), 
+	7667713, 
 	signature_265, 
 	errors_265
 };
@@ -2661,9 +2661,9 @@ static primitive_desc primitive_265 = {
 static char* signature_266[] = { "Instance", "Behavior"};
 static char* errors_266[] = {NULL};
 static primitive_desc primitive_266 = {
-	"primitiveNew8", 
-	fntype(&primitiveNew8), 
-	7405569, 
+	"primitiveNew7ifFail:", 
+	fntype(&primitiveNew7), 
+	7667713, 
 	signature_266, 
 	errors_266
 };
@@ -2671,69 +2671,69 @@ static primitive_desc primitive_266 = {
 static char* signature_267[] = { "Instance", "Behavior"};
 static char* errors_267[] = {NULL};
 static primitive_desc primitive_267 = {
-	"primitiveNew9", 
-	fntype(&primitiveNew9), 
-	7405569, 
+	"primitiveNew8ifFail:", 
+	fntype(&primitiveNew8), 
+	7667713, 
 	signature_267, 
 	errors_267
 };
 
 static char* signature_268[] = { "Instance", "Behavior"};
-static char* errors_268[] = { "ReceiverIsIndexable", NULL};
+static char* errors_268[] = {NULL};
 static primitive_desc primitive_268 = {
-	"primitiveNew:ifFail:", 
-	fntype(&behaviorPrimitives::allocate3), 
-	327681, 
+	"primitiveNew9ifFail:", 
+	fntype(&primitiveNew9), 
+	7667713, 
 	signature_268, 
 	errors_268
 };
 
-static char* signature_269[] = { "Instance", "Behavior"};
+static char* signature_269[] = { "Instance", "Behavior", "Boolean"};
 static char* errors_269[] = { "ReceiverIsIndexable", NULL};
 static primitive_desc primitive_269 = {
-	"primitiveNewIfFail:", 
-	fntype(&behaviorPrimitives::allocate), 
-	1376257, 
+	"primitiveNew:tenured:ifFail:", 
+	fntype(&behaviorPrimitives::allocate3), 
+	327682, 
 	signature_269, 
 	errors_269
 };
 
-static char* signature_270[] = { "Boolean", "Object", "Object"};
-static char* errors_270[] = {NULL};
+static char* signature_270[] = { "Instance", "Behavior"};
+static char* errors_270[] = { "ReceiverIsIndexable", NULL};
 static primitive_desc primitive_270 = {
-	"primitiveNotEqual:", 
-	fntype(&oopPrimitives::not_equal), 
-	1572866, 
+	"primitiveNewIfFail:", 
+	fntype(&behaviorPrimitives::allocate), 
+	1376257, 
 	signature_270, 
 	errors_270
 };
 
-static char* signature_271[] = { "Object"};
-static char* errors_271[] = { "EmptyQueue", NULL};
+static char* signature_271[] = { "Boolean", "Object", "Object"};
+static char* errors_271[] = {NULL};
 static primitive_desc primitive_271 = {
-	"primitiveNotificationQueueGetIfFail:", 
-	fntype(&systemPrimitives::notificationQueueGet), 
-	327680, 
+	"primitiveNotEqual:", 
+	fntype(&oopPrimitives::not_equal), 
+	1572866, 
 	signature_271, 
 	errors_271
 };
 
-static char* signature_272[] = { "Object", "Object"};
-static char* errors_272[] = {NULL};
+static char* signature_272[] = { "Object"};
+static char* errors_272[] = { "EmptyQueue", NULL};
 static primitive_desc primitive_272 = {
-	"primitiveNotificationQueuePut:", 
-	fntype(&systemPrimitives::notificationQueuePut), 
-	65537, 
+	"primitiveNotificationQueueGetIfFail:", 
+	fntype(&systemPrimitives::notificationQueueGet), 
+	327680, 
 	signature_272, 
 	errors_272
 };
 
-static char* signature_273[] = { "SmallInteger"};
+static char* signature_273[] = { "Object", "Object"};
 static char* errors_273[] = {NULL};
 static primitive_desc primitive_273 = {
-	"primitiveNumberOfLookupCacheMisses", 
-	fntype(&debugPrimitives::numberOfLookupCacheMisses), 
-	65536, 
+	"primitiveNotificationQueuePut:", 
+	fntype(&systemPrimitives::notificationQueuePut), 
+	65537, 
 	signature_273, 
 	errors_273
 };
@@ -2741,8 +2741,8 @@ static primitive_desc primitive_273 = {
 static char* signature_274[] = { "SmallInteger"};
 static char* errors_274[] = {NULL};
 static primitive_desc primitive_274 = {
-	"primitiveNumberOfMethodInvocations", 
-	fntype(&debugPrimitives::numberOfMethodInvocations), 
+	"primitiveNumberOfLookupCacheMisses", 
+	fntype(&debugPrimitives::numberOfLookupCacheMisses), 
 	65536, 
 	signature_274, 
 	errors_274
@@ -2751,8 +2751,8 @@ static primitive_desc primitive_274 = {
 static char* signature_275[] = { "SmallInteger"};
 static char* errors_275[] = {NULL};
 static primitive_desc primitive_275 = {
-	"primitiveNumberOfNMethodInvocations", 
-	fntype(&debugPrimitives::numberOfNMethodInvocations), 
+	"primitiveNumberOfMethodInvocations", 
+	fntype(&debugPrimitives::numberOfMethodInvocations), 
 	65536, 
 	signature_275, 
 	errors_275
@@ -2761,8 +2761,8 @@ static primitive_desc primitive_275 = {
 static char* signature_276[] = { "SmallInteger"};
 static char* errors_276[] = {NULL};
 static primitive_desc primitive_276 = {
-	"primitiveNumberOfPrimaryLookupCacheHits", 
-	fntype(&debugPrimitives::numberOfPrimaryLookupCacheHits), 
+	"primitiveNumberOfNMethodInvocations", 
+	fntype(&debugPrimitives::numberOfNMethodInvocations), 
 	65536, 
 	signature_276, 
 	errors_276
@@ -2771,8 +2771,8 @@ static primitive_desc primitive_276 = {
 static char* signature_277[] = { "SmallInteger"};
 static char* errors_277[] = {NULL};
 static primitive_desc primitive_277 = {
-	"primitiveNumberOfSecondaryLookupCacheHits", 
-	fntype(&debugPrimitives::numberOfSecondaryLookupCacheHits), 
+	"primitiveNumberOfPrimaryLookupCacheHits", 
+	fntype(&debugPrimitives::numberOfPrimaryLookupCacheHits), 
 	65536, 
 	signature_277, 
 	errors_277
@@ -2781,129 +2781,129 @@ static primitive_desc primitive_277 = {
 static char* signature_278[] = { "SmallInteger"};
 static char* errors_278[] = {NULL};
 static primitive_desc primitive_278 = {
-	"primitiveNurseryFreeSpace", 
-	fntype(&systemPrimitives::nurseryFreeSpace), 
+	"primitiveNumberOfSecondaryLookupCacheHits", 
+	fntype(&debugPrimitives::numberOfSecondaryLookupCacheHits), 
 	65536, 
 	signature_278, 
 	errors_278
 };
 
-static char* signature_279[] = { "Float"};
+static char* signature_279[] = { "SmallInteger"};
 static char* errors_279[] = {NULL};
 static primitive_desc primitive_279 = {
-	"primitiveObjectMemorySize", 
-	fntype(&systemPrimitives::object_memory_size), 
+	"primitiveNurseryFreeSpace", 
+	fntype(&systemPrimitives::nurseryFreeSpace), 
 	65536, 
 	signature_279, 
 	errors_279
 };
 
-static char* signature_280[] = { "SmallInteger", "Object"};
+static char* signature_280[] = { "Float"};
 static char* errors_280[] = {NULL};
 static primitive_desc primitive_280 = {
-	"primitiveOopSize", 
-	fntype(&oopPrimitives::oop_size), 
-	1572865, 
+	"primitiveObjectMemorySize", 
+	fntype(&systemPrimitives::object_memory_size), 
+	65536, 
 	signature_280, 
 	errors_280
 };
 
-static char* signature_281[] = { "Object", "Object", "Symbol"};
-static char* errors_281[] = { "NotFound", NULL};
+static char* signature_281[] = { "SmallInteger", "Object"};
+static char* errors_281[] = {NULL};
 static primitive_desc primitive_281 = {
-	"primitiveOptimizeMethod:ifFail:", 
-	fntype(&debugPrimitives::optimizeMethod), 
-	1376258, 
+	"primitiveOopSize", 
+	fntype(&oopPrimitives::oop_size), 
+	1572865, 
 	signature_281, 
 	errors_281
 };
 
-static char* signature_282[] = { "Object", "Object", "CompressedSymbol", "Array"};
-static char* errors_282[] = { "SelectorHasWrongNumberOfArguments", NULL};
+static char* signature_282[] = { "Object", "Object", "Symbol"};
+static char* errors_282[] = { "NotFound", NULL};
 static primitive_desc primitive_282 = {
-	"primitivePerform:arguments:ifFail:", 
-	fntype(&oopPrimitives::performArguments), 
-	1507331, 
+	"primitiveOptimizeMethod:ifFail:", 
+	fntype(&debugPrimitives::optimizeMethod), 
+	1376258, 
 	signature_282, 
 	errors_282
 };
 
-static char* signature_283[] = { "Object", "Object", "CompressedSymbol"};
+static char* signature_283[] = { "Object", "Object", "CompressedSymbol", "Array"};
 static char* errors_283[] = { "SelectorHasWrongNumberOfArguments", NULL};
 static primitive_desc primitive_283 = {
-	"primitivePerform:ifFail:", 
-	fntype(&oopPrimitives::perform), 
-	1376258, 
+	"primitivePerform:arguments:ifFail:", 
+	fntype(&oopPrimitives::performArguments), 
+	1507331, 
 	signature_283, 
 	errors_283
 };
 
-static char* signature_284[] = { "Object", "Object", "CompressedSymbol", "Object"};
+static char* signature_284[] = { "Object", "Object", "CompressedSymbol"};
 static char* errors_284[] = { "SelectorHasWrongNumberOfArguments", NULL};
 static primitive_desc primitive_284 = {
-	"primitivePerform:with:ifFail:", 
-	fntype(&oopPrimitives::performWith), 
-	1507331, 
+	"primitivePerform:ifFail:", 
+	fntype(&oopPrimitives::perform), 
+	1376258, 
 	signature_284, 
 	errors_284
 };
 
-static char* signature_285[] = { "Object", "Object", "CompressedSymbol", "Object", "Object"};
+static char* signature_285[] = { "Object", "Object", "CompressedSymbol", "Object"};
 static char* errors_285[] = { "SelectorHasWrongNumberOfArguments", NULL};
 static primitive_desc primitive_285 = {
-	"primitivePerform:with:with:ifFail:", 
-	fntype(&oopPrimitives::performWithWith), 
-	1507332, 
+	"primitivePerform:with:ifFail:", 
+	fntype(&oopPrimitives::performWith), 
+	1507331, 
 	signature_285, 
 	errors_285
 };
 
-static char* signature_286[] = { "Object", "Object", "CompressedSymbol", "Object", "Object", "Object"};
+static char* signature_286[] = { "Object", "Object", "CompressedSymbol", "Object", "Object"};
 static char* errors_286[] = { "SelectorHasWrongNumberOfArguments", NULL};
 static primitive_desc primitive_286 = {
-	"primitivePerform:with:with:with:ifFail:", 
-	fntype(&oopPrimitives::performWithWithWith), 
-	1507333, 
+	"primitivePerform:with:with:ifFail:", 
+	fntype(&oopPrimitives::performWithWith), 
+	1507332, 
 	signature_286, 
 	errors_286
 };
 
-static char* signature_287[] = { "Self", "Object"};
-static char* errors_287[] = {NULL};
+static char* signature_287[] = { "Object", "Object", "CompressedSymbol", "Object", "Object", "Object"};
+static char* errors_287[] = { "SelectorHasWrongNumberOfArguments", NULL};
 static primitive_desc primitive_287 = {
-	"primitivePrint", 
-	fntype(&oopPrimitives::print), 
-	1114113, 
+	"primitivePerform:with:with:with:ifFail:", 
+	fntype(&oopPrimitives::performWithWithWith), 
+	1507333, 
 	signature_287, 
 	errors_287
 };
 
-static char* signature_288[] = { "SmallInteger", "SmallInteger"};
-static char* errors_288[] = { "OutOfBounds", NULL};
+static char* signature_288[] = { "Self", "Object"};
+static char* errors_288[] = {NULL};
 static primitive_desc primitive_288 = {
-	"primitivePrintCharacterIfFail:", 
-	fntype(&smiOopPrimitives::printCharacter), 
-	1310721, 
+	"primitivePrint", 
+	fntype(&oopPrimitives::print), 
+	1114113, 
 	signature_288, 
 	errors_288
 };
 
-static char* signature_289[] = { "Object", "SmallInteger"};
-static char* errors_289[] = {NULL};
+static char* signature_289[] = { "SmallInteger", "SmallInteger"};
+static char* errors_289[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_289 = {
-	"primitivePrintInvocationCounterHistogram:ifFail:", 
-	fntype(&debugPrimitives::printInvocationCounterHistogram), 
-	327681, 
+	"primitivePrintCharacterIfFail:", 
+	fntype(&smiOopPrimitives::printCharacter), 
+	1310721, 
 	signature_289, 
 	errors_289
 };
 
-static char* signature_290[] = { "Object"};
+static char* signature_290[] = { "Object", "SmallInteger"};
 static char* errors_290[] = {NULL};
 static primitive_desc primitive_290 = {
-	"primitivePrintLayout", 
-	fntype(&debugPrimitives::printMemoryLayout), 
-	65536, 
+	"primitivePrintInvocationCounterHistogram:ifFail:", 
+	fntype(&debugPrimitives::printInvocationCounterHistogram), 
+	327681, 
 	signature_290, 
 	errors_290
 };
@@ -2911,8 +2911,8 @@ static primitive_desc primitive_290 = {
 static char* signature_291[] = { "Object"};
 static char* errors_291[] = {NULL};
 static primitive_desc primitive_291 = {
-	"primitivePrintLookupCacheStatistics", 
-	fntype(&debugPrimitives::printLookupCacheStatistics), 
+	"primitivePrintLayout", 
+	fntype(&debugPrimitives::printMemoryLayout), 
 	65536, 
 	signature_291, 
 	errors_291
@@ -2921,49 +2921,49 @@ static primitive_desc primitive_291 = {
 static char* signature_292[] = { "Object"};
 static char* errors_292[] = {NULL};
 static primitive_desc primitive_292 = {
-	"primitivePrintMemory", 
-	fntype(&systemPrimitives::print_memory), 
+	"primitivePrintLookupCacheStatistics", 
+	fntype(&debugPrimitives::printLookupCacheStatistics), 
 	65536, 
 	signature_292, 
 	errors_292
 };
 
-static char* signature_293[] = { "Behavior", "Behavior", "ByteArray"};
+static char* signature_293[] = { "Object"};
 static char* errors_293[] = {NULL};
 static primitive_desc primitive_293 = {
-	"primitivePrintMethod:ifFail:", 
-	fntype(&behaviorPrimitives::printMethod), 
-	1376258, 
+	"primitivePrintMemory", 
+	fntype(&systemPrimitives::print_memory), 
+	65536, 
 	signature_293, 
 	errors_293
 };
 
-static char* signature_294[] = { "Object", "Object", "Symbol"};
-static char* errors_294[] = { "NotFound", NULL};
+static char* signature_294[] = { "Behavior", "Behavior", "ByteArray"};
+static char* errors_294[] = {NULL};
 static primitive_desc primitive_294 = {
-	"primitivePrintMethodCodes:ifFail:", 
-	fntype(&debugPrimitives::printMethodCodes), 
+	"primitivePrintMethod:ifFail:", 
+	fntype(&behaviorPrimitives::printMethod), 
 	1376258, 
 	signature_294, 
 	errors_294
 };
 
-static char* signature_295[] = { "Object", "SmallInteger"};
-static char* errors_295[] = {NULL};
+static char* signature_295[] = { "Object", "Object", "Symbol"};
+static char* errors_295[] = { "NotFound", NULL};
 static primitive_desc primitive_295 = {
-	"primitivePrintNMethodCounterHistogram:ifFail:", 
-	fntype(&debugPrimitives::printNMethodCounterHistogram), 
-	327681, 
+	"primitivePrintMethodCodes:ifFail:", 
+	fntype(&debugPrimitives::printMethodCodes), 
+	1376258, 
 	signature_295, 
 	errors_295
 };
 
-static char* signature_296[] = { "Object"};
+static char* signature_296[] = { "Object", "SmallInteger"};
 static char* errors_296[] = {NULL};
 static primitive_desc primitive_296 = {
-	"primitivePrintObjectHistogram", 
-	fntype(&debugPrimitives::printObjectHistogram), 
-	65536, 
+	"primitivePrintNMethodCounterHistogram:ifFail:", 
+	fntype(&debugPrimitives::printNMethodCounterHistogram), 
+	327681, 
 	signature_296, 
 	errors_296
 };
@@ -2971,8 +2971,8 @@ static primitive_desc primitive_296 = {
 static char* signature_297[] = { "Object"};
 static char* errors_297[] = {NULL};
 static primitive_desc primitive_297 = {
-	"primitivePrintPrimitiveCounters", 
-	fntype(&debugPrimitives::printPrimitiveCounters), 
+	"primitivePrintObjectHistogram", 
+	fntype(&debugPrimitives::printObjectHistogram), 
 	65536, 
 	signature_297, 
 	errors_297
@@ -2981,29 +2981,29 @@ static primitive_desc primitive_297 = {
 static char* signature_298[] = { "Object"};
 static char* errors_298[] = {NULL};
 static primitive_desc primitive_298 = {
-	"primitivePrintPrimitiveTable", 
-	fntype(&systemPrimitives::printPrimitiveTable), 
+	"primitivePrintPrimitiveCounters", 
+	fntype(&debugPrimitives::printPrimitiveCounters), 
 	65536, 
 	signature_298, 
 	errors_298
 };
 
-static char* signature_299[] = { "Self", "Object"};
+static char* signature_299[] = { "Object"};
 static char* errors_299[] = {NULL};
 static primitive_desc primitive_299 = {
-	"primitivePrintValue", 
-	fntype(&oopPrimitives::printValue), 
-	1114113, 
+	"primitivePrintPrimitiveTable", 
+	fntype(&systemPrimitives::printPrimitiveTable), 
+	65536, 
 	signature_299, 
 	errors_299
 };
 
-static char* signature_300[] = { "Object"};
+static char* signature_300[] = { "Self", "Object"};
 static char* errors_300[] = {NULL};
 static primitive_desc primitive_300 = {
-	"primitivePrintZone", 
-	fntype(&systemPrimitives::print_zone), 
-	65536, 
+	"primitivePrintValue", 
+	fntype(&oopPrimitives::printValue), 
+	1114113, 
 	signature_300, 
 	errors_300
 };
@@ -3011,29 +3011,29 @@ static primitive_desc primitive_300 = {
 static char* signature_301[] = { "Object"};
 static char* errors_301[] = {NULL};
 static primitive_desc primitive_301 = {
-	"primitiveProcessActiveProcess", 
-	fntype(&processOopPrimitives::activeProcess), 
+	"primitivePrintZone", 
+	fntype(&systemPrimitives::print_zone), 
 	65536, 
 	signature_301, 
 	errors_301
 };
 
-static char* signature_302[] = { "Process", "Process class", "BlockWithoutArguments"};
-static char* errors_302[] = { "ProcessAllocationFailed", NULL};
+static char* signature_302[] = { "Object"};
+static char* errors_302[] = {NULL};
 static primitive_desc primitive_302 = {
-	"primitiveProcessCreate:ifFail:", 
-	fntype(&processOopPrimitives::create), 
-	1376258, 
+	"primitiveProcessActiveProcess", 
+	fntype(&processOopPrimitives::activeProcess), 
+	65536, 
 	signature_302, 
 	errors_302
 };
 
-static char* signature_303[] = { "Process"};
-static char* errors_303[] = {NULL};
+static char* signature_303[] = { "Process", "Process class", "BlockWithoutArguments"};
+static char* errors_303[] = { "ProcessAllocationFailed", NULL};
 static primitive_desc primitive_303 = {
-	"primitiveProcessEnterCritical", 
-	fntype(&processOopPrimitives::enter_critical), 
-	65536, 
+	"primitiveProcessCreate:ifFail:", 
+	fntype(&processOopPrimitives::create), 
+	1376258, 
 	signature_303, 
 	errors_303
 };
@@ -3041,129 +3041,129 @@ static primitive_desc primitive_303 = {
 static char* signature_304[] = { "Process"};
 static char* errors_304[] = {NULL};
 static primitive_desc primitive_304 = {
-	"primitiveProcessLeaveCritical", 
-	fntype(&processOopPrimitives::leave_critical), 
+	"primitiveProcessEnterCritical", 
+	fntype(&processOopPrimitives::enter_critical), 
 	65536, 
 	signature_304, 
 	errors_304
 };
 
-static char* signature_305[] = { "Boolean", "Process", "SmallInteger"};
+static char* signature_305[] = { "Process"};
 static char* errors_305[] = {NULL};
 static primitive_desc primitive_305 = {
-	"primitiveProcessSchedulerWait:ifFail:", 
-	fntype(&processOopPrimitives::scheduler_wait), 
-	1376258, 
+	"primitiveProcessLeaveCritical", 
+	fntype(&processOopPrimitives::leave_critical), 
+	65536, 
 	signature_305, 
 	errors_305
 };
 
-static char* signature_306[] = { "Symbol", "Process", "Symbol", "Activation", "Object"};
-static char* errors_306[] = { "InScheduler", "Dead", NULL};
+static char* signature_306[] = { "Boolean", "Process", "SmallInteger"};
+static char* errors_306[] = {NULL};
 static primitive_desc primitive_306 = {
-	"primitiveProcessSetMode:activation:returnValue:ifFail:", 
-	fntype(&processOopPrimitives::set_mode), 
-	1376260, 
+	"primitiveProcessSchedulerWait:ifFail:", 
+	fntype(&processOopPrimitives::scheduler_wait), 
+	1376258, 
 	signature_306, 
 	errors_306
 };
 
-static char* signature_307[] = { "IndexedInstanceVariables", "Process", "SmallInteger"};
-static char* errors_307[] = {NULL};
+static char* signature_307[] = { "Symbol", "Process", "Symbol", "Activation", "Object"};
+static char* errors_307[] = { "InScheduler", "Dead", NULL};
 static primitive_desc primitive_307 = {
-	"primitiveProcessStackLimit:ifFail:", 
-	fntype(&processOopPrimitives::stack), 
-	1376258, 
+	"primitiveProcessSetMode:activation:returnValue:ifFail:", 
+	fntype(&processOopPrimitives::set_mode), 
+	1376260, 
 	signature_307, 
 	errors_307
 };
 
-static char* signature_308[] = { "Object", "Process"};
-static char* errors_308[] = { "NotInScheduler", "ProcessCannotContinue", "Dead", NULL};
+static char* signature_308[] = { "IndexedInstanceVariables", "Process", "SmallInteger"};
+static char* errors_308[] = {NULL};
 static primitive_desc primitive_308 = {
-	"primitiveProcessStartEvaluator:ifFail:", 
-	fntype(&processOopPrimitives::start_evaluator), 
-	327681, 
+	"primitiveProcessStackLimit:ifFail:", 
+	fntype(&processOopPrimitives::stack), 
+	1376258, 
 	signature_308, 
 	errors_308
 };
 
-static char* signature_309[] = { "Symbol", "Process"};
-static char* errors_309[] = {NULL};
+static char* signature_309[] = { "Object", "Process"};
+static char* errors_309[] = { "NotInScheduler", "ProcessCannotContinue", "Dead", NULL};
 static primitive_desc primitive_309 = {
-	"primitiveProcessStatus", 
-	fntype(&processOopPrimitives::status), 
-	1114113, 
+	"primitiveProcessStartEvaluator:ifFail:", 
+	fntype(&processOopPrimitives::start_evaluator), 
+	327681, 
 	signature_309, 
 	errors_309
 };
 
-static char* signature_310[] = { "Process"};
+static char* signature_310[] = { "Symbol", "Process"};
 static char* errors_310[] = {NULL};
 static primitive_desc primitive_310 = {
-	"primitiveProcessStop", 
-	fntype(&processOopPrimitives::stop), 
-	65536, 
+	"primitiveProcessStatus", 
+	fntype(&processOopPrimitives::status), 
+	1114113, 
 	signature_310, 
 	errors_310
 };
 
-static char* signature_311[] = { "Float", "Process"};
+static char* signature_311[] = { "Process"};
 static char* errors_311[] = {NULL};
 static primitive_desc primitive_311 = {
-	"primitiveProcessSystemTime", 
-	fntype(&processOopPrimitives::user_time), 
-	1114113, 
+	"primitiveProcessStop", 
+	fntype(&processOopPrimitives::stop), 
+	65536, 
 	signature_311, 
 	errors_311
 };
 
-static char* signature_312[] = { "Self", "Process"};
-static char* errors_312[] = { "Dead", NULL};
+static char* signature_312[] = { "Float", "Process"};
+static char* errors_312[] = {NULL};
 static primitive_desc primitive_312 = {
-	"primitiveProcessTerminateIfFail:", 
-	fntype(&processOopPrimitives::terminate), 
-	1507329, 
+	"primitiveProcessSystemTime", 
+	fntype(&processOopPrimitives::user_time), 
+	1114113, 
 	signature_312, 
 	errors_312
 };
 
-static char* signature_313[] = { "Self", "Process", "SmallInteger"};
-static char* errors_313[] = {NULL};
+static char* signature_313[] = { "Self", "Process"};
+static char* errors_313[] = { "Dead", NULL};
 static primitive_desc primitive_313 = {
-	"primitiveProcessTraceStack:ifFail:", 
-	fntype(&processOopPrimitives::trace_stack), 
-	1376258, 
+	"primitiveProcessTerminateIfFail:", 
+	fntype(&processOopPrimitives::terminate), 
+	1507329, 
 	signature_313, 
 	errors_313
 };
 
-static char* signature_314[] = { "Object", "Process"};
-static char* errors_314[] = { "NotInScheduler", "ProcessCannotContinue", "Dead", NULL};
+static char* signature_314[] = { "Self", "Process", "SmallInteger"};
+static char* errors_314[] = {NULL};
 static primitive_desc primitive_314 = {
-	"primitiveProcessTransferTo:ifFail:", 
-	fntype(&processOopPrimitives::transferTo), 
-	327681, 
+	"primitiveProcessTraceStack:ifFail:", 
+	fntype(&processOopPrimitives::trace_stack), 
+	1376258, 
 	signature_314, 
 	errors_314
 };
 
-static char* signature_315[] = { "Float", "Process"};
-static char* errors_315[] = {NULL};
+static char* signature_315[] = { "Object", "Process"};
+static char* errors_315[] = { "NotInScheduler", "ProcessCannotContinue", "Dead", NULL};
 static primitive_desc primitive_315 = {
-	"primitiveProcessUserTime", 
-	fntype(&processOopPrimitives::user_time), 
-	1114113, 
+	"primitiveProcessTransferTo:ifFail:", 
+	fntype(&processOopPrimitives::transferTo), 
+	327681, 
 	signature_315, 
 	errors_315
 };
 
-static char* signature_316[] = { "Process"};
+static char* signature_316[] = { "Float", "Process"};
 static char* errors_316[] = {NULL};
 static primitive_desc primitive_316 = {
-	"primitiveProcessYield", 
-	fntype(&processOopPrimitives::yield), 
-	65536, 
+	"primitiveProcessUserTime", 
+	fntype(&processOopPrimitives::user_time), 
+	1114113, 
 	signature_316, 
 	errors_316
 };
@@ -3171,128 +3171,128 @@ static primitive_desc primitive_316 = {
 static char* signature_317[] = { "Process"};
 static char* errors_317[] = {NULL};
 static primitive_desc primitive_317 = {
-	"primitiveProcessYieldInCritical", 
-	fntype(&processOopPrimitives::yield_in_critical), 
+	"primitiveProcessYield", 
+	fntype(&processOopPrimitives::yield), 
 	65536, 
 	signature_317, 
 	errors_317
 };
 
-static char* signature_318[] = { "SmallInteger", "Proxy", "SmallInteger"};
+static char* signature_318[] = { "Process"};
 static char* errors_318[] = {NULL};
 static primitive_desc primitive_318 = {
-	"primitiveProxyByteAt:ifFail:", 
-	fntype(&proxyOopPrimitives::byteAt), 
-	5570562, 
+	"primitiveProcessYieldInCritical", 
+	fntype(&processOopPrimitives::yield_in_critical), 
+	65536, 
 	signature_318, 
 	errors_318
 };
 
-static char* signature_319[] = { "SmallInteger", "Proxy", "SmallInteger", "SmallInteger"};
+static char* signature_319[] = { "SmallInteger", "Proxy", "SmallInteger"};
 static char* errors_319[] = {NULL};
 static primitive_desc primitive_319 = {
-	"primitiveProxyByteAt:put:ifFail:", 
-	fntype(&proxyOopPrimitives::byteAtPut), 
-	5570563, 
+	"primitiveProxyByteAt:ifFail:", 
+	fntype(&proxyOopPrimitives::byteAt), 
+	5570562, 
 	signature_319, 
 	errors_319
 };
 
-static char* signature_320[] = { "Self", "Proxy", "SmallInteger"};
+static char* signature_320[] = { "SmallInteger", "Proxy", "SmallInteger", "SmallInteger"};
 static char* errors_320[] = {NULL};
 static primitive_desc primitive_320 = {
-	"primitiveProxyCalloc:ifFail:", 
-	fntype(&proxyOopPrimitives::calloc), 
-	1376258, 
+	"primitiveProxyByteAt:put:ifFail:", 
+	fntype(&proxyOopPrimitives::byteAtPut), 
+	5570563, 
 	signature_320, 
 	errors_320
 };
 
-static char* signature_321[] = { "SmallInteger", "Proxy", "SmallInteger"};
+static char* signature_321[] = { "Self", "Proxy", "SmallInteger"};
 static char* errors_321[] = {NULL};
 static primitive_desc primitive_321 = {
-	"primitiveProxyDoubleByteAt:ifFail:", 
-	fntype(&proxyOopPrimitives::doubleByteAt), 
+	"primitiveProxyCalloc:ifFail:", 
+	fntype(&proxyOopPrimitives::calloc), 
 	1376258, 
 	signature_321, 
 	errors_321
 };
 
-static char* signature_322[] = { "SmallInteger", "Proxy", "SmallInteger", "SmallInteger"};
+static char* signature_322[] = { "SmallInteger", "Proxy", "SmallInteger"};
 static char* errors_322[] = {NULL};
 static primitive_desc primitive_322 = {
-	"primitiveProxyDoubleByteAt:put:ifFail:", 
-	fntype(&proxyOopPrimitives::doubleByteAtPut), 
-	1376259, 
+	"primitiveProxyDoubleByteAt:ifFail:", 
+	fntype(&proxyOopPrimitives::doubleByteAt), 
+	1376258, 
 	signature_322, 
 	errors_322
 };
 
-static char* signature_323[] = { "Float", "Proxy", "SmallInteger"};
+static char* signature_323[] = { "SmallInteger", "Proxy", "SmallInteger", "SmallInteger"};
 static char* errors_323[] = {NULL};
 static primitive_desc primitive_323 = {
-	"primitiveProxyDoublePrecisionFloatAt:ifFail:", 
-	fntype(&proxyOopPrimitives::doublePrecisionFloatAt), 
-	1376258, 
+	"primitiveProxyDoubleByteAt:put:ifFail:", 
+	fntype(&proxyOopPrimitives::doubleByteAtPut), 
+	1376259, 
 	signature_323, 
 	errors_323
 };
 
-static char* signature_324[] = { "Self", "Proxy", "SmallInteger", "Float"};
-static char* errors_324[] = { "ConversionFailed", NULL};
+static char* signature_324[] = { "Float", "Proxy", "SmallInteger"};
+static char* errors_324[] = {NULL};
 static primitive_desc primitive_324 = {
-	"primitiveProxyDoublePrecisionFloatAt:put:ifFail:", 
-	fntype(&proxyOopPrimitives::doublePrecisionFloatAtPut), 
-	1376259, 
+	"primitiveProxyDoublePrecisionFloatAt:ifFail:", 
+	fntype(&proxyOopPrimitives::doublePrecisionFloatAt), 
+	1376258, 
 	signature_324, 
 	errors_324
 };
 
-static char* signature_325[] = { "Self", "Proxy"};
-static char* errors_325[] = {NULL};
+static char* signature_325[] = { "Self", "Proxy", "SmallInteger", "Float"};
+static char* errors_325[] = { "ConversionFailed", NULL};
 static primitive_desc primitive_325 = {
-	"primitiveProxyFree", 
-	fntype(&proxyOopPrimitives::free), 
-	1114113, 
+	"primitiveProxyDoublePrecisionFloatAt:put:ifFail:", 
+	fntype(&proxyOopPrimitives::doublePrecisionFloatAtPut), 
+	1376259, 
 	signature_325, 
 	errors_325
 };
 
-static char* signature_326[] = { "SmallInteger", "Proxy"};
+static char* signature_326[] = { "Self", "Proxy"};
 static char* errors_326[] = {NULL};
 static primitive_desc primitive_326 = {
-	"primitiveProxyGetHigh", 
-	fntype(&proxyOopPrimitives::getHigh), 
+	"primitiveProxyFree", 
+	fntype(&proxyOopPrimitives::free), 
 	1114113, 
 	signature_326, 
 	errors_326
 };
 
 static char* signature_327[] = { "SmallInteger", "Proxy"};
-static char* errors_327[] = { "ConversionFailed", NULL};
+static char* errors_327[] = {NULL};
 static primitive_desc primitive_327 = {
-	"primitiveProxyGetIfFail:", 
-	fntype(&proxyOopPrimitives::getSmi), 
-	1376257, 
+	"primitiveProxyGetHigh", 
+	fntype(&proxyOopPrimitives::getHigh), 
+	1114113, 
 	signature_327, 
 	errors_327
 };
 
 static char* signature_328[] = { "SmallInteger", "Proxy"};
-static char* errors_328[] = {NULL};
+static char* errors_328[] = { "ConversionFailed", NULL};
 static primitive_desc primitive_328 = {
-	"primitiveProxyGetLow", 
-	fntype(&proxyOopPrimitives::getLow), 
-	1114113, 
+	"primitiveProxyGetIfFail:", 
+	fntype(&proxyOopPrimitives::getSmi), 
+	1376257, 
 	signature_328, 
 	errors_328
 };
 
-static char* signature_329[] = { "Boolean", "Proxy"};
+static char* signature_329[] = { "SmallInteger", "Proxy"};
 static char* errors_329[] = {NULL};
 static primitive_desc primitive_329 = {
-	"primitiveProxyIsAllOnes", 
-	fntype(&proxyOopPrimitives::isAllOnes), 
+	"primitiveProxyGetLow", 
+	fntype(&proxyOopPrimitives::getLow), 
 	1114113, 
 	signature_329, 
 	errors_329
@@ -3301,29 +3301,29 @@ static primitive_desc primitive_329 = {
 static char* signature_330[] = { "Boolean", "Proxy"};
 static char* errors_330[] = {NULL};
 static primitive_desc primitive_330 = {
-	"primitiveProxyIsNull", 
-	fntype(&proxyOopPrimitives::isNull), 
+	"primitiveProxyIsAllOnes", 
+	fntype(&proxyOopPrimitives::isAllOnes), 
 	1114113, 
 	signature_330, 
 	errors_330
 };
 
-static char* signature_331[] = { "Self", "Proxy", "SmallInteger"};
+static char* signature_331[] = { "Boolean", "Proxy"};
 static char* errors_331[] = {NULL};
 static primitive_desc primitive_331 = {
-	"primitiveProxyMalloc:ifFail:", 
-	fntype(&proxyOopPrimitives::malloc), 
-	1376258, 
+	"primitiveProxyIsNull", 
+	fntype(&proxyOopPrimitives::isNull), 
+	1114113, 
 	signature_331, 
 	errors_331
 };
 
-static char* signature_332[] = { "Proxy", "Proxy", "SmallInteger", "Proxy"};
+static char* signature_332[] = { "Self", "Proxy", "SmallInteger"};
 static char* errors_332[] = {NULL};
 static primitive_desc primitive_332 = {
-	"primitiveProxyProxyAt:put:ifFail:", 
-	fntype(&proxyOopPrimitives::proxyAtPut), 
-	1376259, 
+	"primitiveProxyMalloc:ifFail:", 
+	fntype(&proxyOopPrimitives::malloc), 
+	1376258, 
 	signature_332, 
 	errors_332
 };
@@ -3331,319 +3331,319 @@ static primitive_desc primitive_332 = {
 static char* signature_333[] = { "Proxy", "Proxy", "SmallInteger", "Proxy"};
 static char* errors_333[] = {NULL};
 static primitive_desc primitive_333 = {
-	"primitiveProxyProxyAt:result:ifFail:", 
-	fntype(&proxyOopPrimitives::proxyAt), 
+	"primitiveProxyProxyAt:put:ifFail:", 
+	fntype(&proxyOopPrimitives::proxyAtPut), 
 	1376259, 
 	signature_333, 
 	errors_333
 };
 
-static char* signature_334[] = { "Self", "Proxy", "SmallInteger|Proxy"};
+static char* signature_334[] = { "Proxy", "Proxy", "SmallInteger", "Proxy"};
 static char* errors_334[] = {NULL};
 static primitive_desc primitive_334 = {
-	"primitiveProxySet:ifFail:", 
-	fntype(&proxyOopPrimitives::set), 
-	1376258, 
+	"primitiveProxyProxyAt:result:ifFail:", 
+	fntype(&proxyOopPrimitives::proxyAt), 
+	1376259, 
 	signature_334, 
 	errors_334
 };
 
-static char* signature_335[] = { "Self", "Proxy", "SmallInteger", "SmallInteger"};
+static char* signature_335[] = { "Self", "Proxy", "SmallInteger|Proxy"};
 static char* errors_335[] = {NULL};
 static primitive_desc primitive_335 = {
-	"primitiveProxySetHigh:low:ifFail:", 
-	fntype(&proxyOopPrimitives::setHighLow), 
-	1376259, 
+	"primitiveProxySet:ifFail:", 
+	fntype(&proxyOopPrimitives::set), 
+	1376258, 
 	signature_335, 
 	errors_335
 };
 
-static char* signature_336[] = { "Float", "Proxy", "SmallInteger"};
+static char* signature_336[] = { "Self", "Proxy", "SmallInteger", "SmallInteger"};
 static char* errors_336[] = {NULL};
 static primitive_desc primitive_336 = {
-	"primitiveProxySinglePrecisionFloatAt:ifFail:", 
-	fntype(&proxyOopPrimitives::singlePrecisionFloatAt), 
-	1376258, 
+	"primitiveProxySetHigh:low:ifFail:", 
+	fntype(&proxyOopPrimitives::setHighLow), 
+	1376259, 
 	signature_336, 
 	errors_336
 };
 
-static char* signature_337[] = { "Self", "Proxy", "SmallInteger", "Float"};
-static char* errors_337[] = { "ConversionFailed", NULL};
+static char* signature_337[] = { "Float", "Proxy", "SmallInteger"};
+static char* errors_337[] = {NULL};
 static primitive_desc primitive_337 = {
-	"primitiveProxySinglePrecisionFloatAt:put:ifFail:", 
-	fntype(&proxyOopPrimitives::singlePrecisionFloatAtPut), 
-	1376259, 
+	"primitiveProxySinglePrecisionFloatAt:ifFail:", 
+	fntype(&proxyOopPrimitives::singlePrecisionFloatAt), 
+	1376258, 
 	signature_337, 
 	errors_337
 };
 
-static char* signature_338[] = { "SmallInteger", "Proxy", "SmallInteger"};
+static char* signature_338[] = { "Self", "Proxy", "SmallInteger", "Float"};
 static char* errors_338[] = { "ConversionFailed", NULL};
 static primitive_desc primitive_338 = {
-	"primitiveProxySmiAt:ifFail:", 
-	fntype(&proxyOopPrimitives::smiAt), 
-	1376258, 
+	"primitiveProxySinglePrecisionFloatAt:put:ifFail:", 
+	fntype(&proxyOopPrimitives::singlePrecisionFloatAtPut), 
+	1376259, 
 	signature_338, 
 	errors_338
 };
 
-static char* signature_339[] = { "SmallInteger", "Proxy", "SmallInteger", "SmallInteger"};
-static char* errors_339[] = {NULL};
+static char* signature_339[] = { "SmallInteger", "Proxy", "SmallInteger"};
+static char* errors_339[] = { "ConversionFailed", NULL};
 static primitive_desc primitive_339 = {
-	"primitiveProxySmiAt:put:ifFail:", 
-	fntype(&proxyOopPrimitives::smiAtPut), 
-	1376259, 
+	"primitiveProxySmiAt:ifFail:", 
+	fntype(&proxyOopPrimitives::smiAt), 
+	1376258, 
 	signature_339, 
 	errors_339
 };
 
-static char* signature_340[] = { "Proxy", "Proxy", "SmallInteger", "Proxy"};
+static char* signature_340[] = { "SmallInteger", "Proxy", "SmallInteger", "SmallInteger"};
 static char* errors_340[] = {NULL};
 static primitive_desc primitive_340 = {
-	"primitiveProxySubProxyAt:result:ifFail:", 
-	fntype(&proxyOopPrimitives::subProxyAt), 
+	"primitiveProxySmiAt:put:ifFail:", 
+	fntype(&proxyOopPrimitives::smiAtPut), 
 	1376259, 
 	signature_340, 
 	errors_340
 };
 
-static char* signature_341[] = { "BottomType"};
+static char* signature_341[] = { "Proxy", "Proxy", "SmallInteger", "Proxy"};
 static char* errors_341[] = {NULL};
 static primitive_desc primitive_341 = {
-	"primitiveQuit", 
-	fntype(&systemPrimitives::quit), 
-	65536, 
+	"primitiveProxySubProxyAt:result:ifFail:", 
+	fntype(&proxyOopPrimitives::subProxyAt), 
+	1376259, 
 	signature_341, 
 	errors_341
 };
 
-static char* signature_342[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
-static char* errors_342[] = { "NotImplementedYet", NULL};
+static char* signature_342[] = { "BottomType"};
+static char* errors_342[] = {NULL};
 static primitive_desc primitive_342 = {
-	"primitiveQuo:ifFail:", 
-	fntype(&smiOopPrimitives_quo), 
-	6029826, 
+	"primitiveQuit", 
+	fntype(&systemPrimitives::quit), 
+	65536, 
 	signature_342, 
 	errors_342
 };
 
 static char* signature_343[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
-static char* errors_343[] = {NULL};
+static char* errors_343[] = { "NotImplementedYet", NULL};
 static primitive_desc primitive_343 = {
-	"primitiveRawBitShift:ifFail:", 
-	fntype(&smiOopPrimitives::rawBitShift), 
+	"primitiveQuo:ifFail:", 
+	fntype(&smiOopPrimitives_quo), 
 	6029826, 
 	signature_343, 
 	errors_343
 };
 
-static char* signature_344[] = { "IndexedInstanceVariables", "Object", "SmallInteger"};
+static char* signature_344[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
 static char* errors_344[] = {NULL};
 static primitive_desc primitive_344 = {
-	"primitiveReferencesTo:limit:ifFail:", 
-	fntype(&systemPrimitives::references_to), 
-	327682, 
+	"primitiveRawBitShift:ifFail:", 
+	fntype(&smiOopPrimitives::rawBitShift), 
+	6029826, 
 	signature_344, 
 	errors_344
 };
 
-static char* signature_345[] = { "IndexedInstanceVariables", "Class", "SmallInteger"};
+static char* signature_345[] = { "IndexedInstanceVariables", "Object", "SmallInteger"};
 static char* errors_345[] = {NULL};
 static primitive_desc primitive_345 = {
-	"primitiveReferencesToInstancesOf:limit:ifFail:", 
-	fntype(&systemPrimitives::references_to_instances_of), 
+	"primitiveReferencesTo:limit:ifFail:", 
+	fntype(&systemPrimitives::references_to), 
 	327682, 
 	signature_345, 
 	errors_345
 };
 
-static char* signature_346[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
-static char* errors_346[] = { "DivisionByZero", NULL};
+static char* signature_346[] = { "IndexedInstanceVariables", "Class", "SmallInteger"};
+static char* errors_346[] = {NULL};
 static primitive_desc primitive_346 = {
-	"primitiveRemainder:ifFail:", 
-	fntype(&smiOopPrimitives_remainder), 
-	6029826, 
+	"primitiveReferencesToInstancesOf:limit:ifFail:", 
+	fntype(&systemPrimitives::references_to_instances_of), 
+	327682, 
 	signature_346, 
 	errors_346
 };
 
-static char* signature_347[] = { "BottomType", "BlockWithoutArguments"};
-static char* errors_347[] = {NULL};
+static char* signature_347[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
+static char* errors_347[] = { "DivisionByZero", NULL};
 static primitive_desc primitive_347 = {
-	"primitiveRepeat", 
-	fntype(&blockRepeat), 
-	1245185, 
+	"primitiveRemainder:ifFail:", 
+	fntype(&smiOopPrimitives_remainder), 
+	6029826, 
 	signature_347, 
 	errors_347
 };
 
-static char* signature_348[] = { "Self", "Object"};
+static char* signature_348[] = { "BottomType", "BlockWithoutArguments"};
 static char* errors_348[] = {NULL};
 static primitive_desc primitive_348 = {
-	"primitiveScavenge", 
-	fntype(&systemPrimitives::scavenge), 
-	1114113, 
+	"primitiveRepeat", 
+	fntype(&blockRepeat), 
+	1245185, 
 	signature_348, 
 	errors_348
 };
 
-static char* signature_349[] = { "Object", "SmallInteger"};
+static char* signature_349[] = { "Self", "Object"};
 static char* errors_349[] = {NULL};
 static primitive_desc primitive_349 = {
-	"primitiveSetInterpreterInvocationCounterLimitTo:ifFail:", 
-	fntype(&debugPrimitives::setInterpreterInvocationCounterLimit), 
-	327681, 
+	"primitiveScavenge", 
+	fntype(&systemPrimitives::scavenge), 
+	1114113, 
 	signature_349, 
 	errors_349
 };
 
-static char* signature_350[] = { "Object", "Object"};
-static char* errors_350[] = { "ReceiverHasWrongType", NULL};
+static char* signature_350[] = { "Object", "SmallInteger"};
+static char* errors_350[] = {NULL};
 static primitive_desc primitive_350 = {
-	"primitiveShallowCopyIfFail:", 
-	fntype(&oopPrimitives::shallowCopy), 
-	1376257, 
+	"primitiveSetInterpreterInvocationCounterLimitTo:ifFail:", 
+	fntype(&debugPrimitives::setInterpreterInvocationCounterLimit), 
+	327681, 
 	signature_350, 
 	errors_350
 };
 
-static char* signature_351[] = { "Object", "SmallInteger"};
-static char* errors_351[] = {NULL};
+static char* signature_351[] = { "Object", "Object"};
+static char* errors_351[] = { "ReceiverHasWrongType", NULL};
 static primitive_desc primitive_351 = {
-	"primitiveShrinkMemory:", 
-	fntype(&systemPrimitives::shrinkMemory), 
-	65537, 
+	"primitiveShallowCopyIfFail:", 
+	fntype(&oopPrimitives::shallowCopy), 
+	1376257, 
 	signature_351, 
 	errors_351
 };
 
-static char* signature_352[] = { "SmallInteger"};
+static char* signature_352[] = { "Object", "SmallInteger"};
 static char* errors_352[] = {NULL};
 static primitive_desc primitive_352 = {
-	"primitiveSizeOfOop", 
-	fntype(&systemPrimitives::oopSize), 
-	65536, 
+	"primitiveShrinkMemory:", 
+	fntype(&systemPrimitives::shrinkMemory), 
+	65537, 
 	signature_352, 
 	errors_352
 };
 
-static char* signature_353[] = { "IndexedInstanceVariables"};
+static char* signature_353[] = { "SmallInteger"};
 static char* errors_353[] = {NULL};
 static primitive_desc primitive_353 = {
-	"primitiveSlidingSystemAverageIfFail:", 
-	fntype(&systemPrimitives::sliding_system_average), 
-	327680, 
+	"primitiveSizeOfOop", 
+	fntype(&systemPrimitives::oopSize), 
+	65536, 
 	signature_353, 
 	errors_353
 };
 
-static char* signature_354[] = { "Boolean", "SmallInteger", "SmallInteger"};
+static char* signature_354[] = { "IndexedInstanceVariables"};
 static char* errors_354[] = {NULL};
 static primitive_desc primitive_354 = {
-	"primitiveSmallIntegerEqual:ifFail:", 
-	fntype(&smiOopPrimitives::equal), 
-	6029570, 
+	"primitiveSlidingSystemAverageIfFail:", 
+	fntype(&systemPrimitives::sliding_system_average), 
+	327680, 
 	signature_354, 
 	errors_354
 };
 
-static char* signature_355[] = { "SmallInteger", "Symbol"};
-static char* errors_355[] = { "NotFound", NULL};
+static char* signature_355[] = { "Boolean", "SmallInteger", "SmallInteger"};
+static char* errors_355[] = {NULL};
 static primitive_desc primitive_355 = {
-	"primitiveSmallIntegerFlagAt:ifFail:", 
-	fntype(&debugPrimitives::smiAt), 
-	327681, 
+	"primitiveSmallIntegerEqual:ifFail:", 
+	fntype(&smiOopPrimitives::equal), 
+	6029570, 
 	signature_355, 
 	errors_355
 };
 
-static char* signature_356[] = { "Boolean", "Symbol", "Boolean"};
+static char* signature_356[] = { "SmallInteger", "Symbol"};
 static char* errors_356[] = { "NotFound", NULL};
 static primitive_desc primitive_356 = {
-	"primitiveSmallIntegerFlagAt:put:ifFail:", 
-	fntype(&debugPrimitives::smiAtPut), 
-	327682, 
+	"primitiveSmallIntegerFlagAt:ifFail:", 
+	fntype(&debugPrimitives::smiAt), 
+	327681, 
 	signature_356, 
 	errors_356
 };
 
-static char* signature_357[] = { "Boolean", "SmallInteger", "SmallInteger"};
-static char* errors_357[] = {NULL};
+static char* signature_357[] = { "Boolean", "Symbol", "Boolean"};
+static char* errors_357[] = { "NotFound", NULL};
 static primitive_desc primitive_357 = {
-	"primitiveSmallIntegerNotEqual:ifFail:", 
-	fntype(&smiOopPrimitives::notEqual), 
-	6029570, 
+	"primitiveSmallIntegerFlagAt:put:ifFail:", 
+	fntype(&debugPrimitives::smiAtPut), 
+	327682, 
 	signature_357, 
 	errors_357
 };
 
-static char* signature_358[] = { "IndexedInstanceVariables"};
+static char* signature_358[] = { "Boolean", "SmallInteger", "SmallInteger"};
 static char* errors_358[] = {NULL};
 static primitive_desc primitive_358 = {
-	"primitiveSmalltalkArray", 
-	fntype(&systemPrimitives::smalltalk_array), 
-	65536, 
+	"primitiveSmallIntegerNotEqual:ifFail:", 
+	fntype(&smiOopPrimitives::notEqual), 
+	6029570, 
 	signature_358, 
 	errors_358
 };
 
-static char* signature_359[] = { "GlobalAssociation", "Symbol", "Object"};
+static char* signature_359[] = { "IndexedInstanceVariables"};
 static char* errors_359[] = {NULL};
 static primitive_desc primitive_359 = {
-	"primitiveSmalltalkAt:Put:ifFail:", 
-	fntype(&systemPrimitives::smalltalk_at_put), 
-	327682, 
+	"primitiveSmalltalkArray", 
+	fntype(&systemPrimitives::smalltalk_array), 
+	65536, 
 	signature_359, 
 	errors_359
 };
 
-static char* signature_360[] = { "GlobalAssociation", "SmallInteger"};
-static char* errors_360[] = { "OutOfBounds", NULL};
+static char* signature_360[] = { "GlobalAssociation", "Symbol", "Object"};
+static char* errors_360[] = {NULL};
 static primitive_desc primitive_360 = {
-	"primitiveSmalltalkAt:ifFail:", 
-	fntype(&systemPrimitives::smalltalk_at), 
-	327681, 
+	"primitiveSmalltalkAt:Put:ifFail:", 
+	fntype(&systemPrimitives::smalltalk_at_put), 
+	327682, 
 	signature_360, 
 	errors_360
 };
 
 static char* signature_361[] = { "GlobalAssociation", "SmallInteger"};
-static char* errors_361[] = {NULL};
+static char* errors_361[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_361 = {
-	"primitiveSmalltalkRemoveAt:ifFail:", 
-	fntype(&systemPrimitives::smalltalk_remove_at), 
+	"primitiveSmalltalkAt:ifFail:", 
+	fntype(&systemPrimitives::smalltalk_at), 
 	327681, 
 	signature_361, 
 	errors_361
 };
 
-static char* signature_362[] = { "SmallInteger"};
+static char* signature_362[] = { "GlobalAssociation", "SmallInteger"};
 static char* errors_362[] = {NULL};
 static primitive_desc primitive_362 = {
-	"primitiveSmalltalkSize", 
-	fntype(&systemPrimitives::smalltalk_size), 
-	65536, 
+	"primitiveSmalltalkRemoveAt:ifFail:", 
+	fntype(&systemPrimitives::smalltalk_remove_at), 
+	327681, 
 	signature_362, 
 	errors_362
 };
 
-static char* signature_363[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
-static char* errors_363[] = { "Overflow", NULL};
+static char* signature_363[] = { "SmallInteger"};
+static char* errors_363[] = {NULL};
 static primitive_desc primitive_363 = {
-	"primitiveSubtract:ifFail:", 
-	fntype(&smiOopPrimitives_subtract), 
-	6029826, 
+	"primitiveSmalltalkSize", 
+	fntype(&systemPrimitives::smalltalk_size), 
+	65536, 
 	signature_363, 
 	errors_363
 };
 
-static char* signature_364[] = { "Behavior|Nil", "Behavior"};
-static char* errors_364[] = {NULL};
+static char* signature_364[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
+static char* errors_364[] = { "Overflow", NULL};
 static primitive_desc primitive_364 = {
-	"primitiveSuperclass", 
-	fntype(&behaviorPrimitives::superclass), 
-	1114113, 
+	"primitiveSubtract:ifFail:", 
+	fntype(&smiOopPrimitives_subtract), 
+	6029826, 
 	signature_364, 
 	errors_364
 };
@@ -3651,28 +3651,28 @@ static primitive_desc primitive_364 = {
 static char* signature_365[] = { "Behavior|Nil", "Behavior"};
 static char* errors_365[] = {NULL};
 static primitive_desc primitive_365 = {
-	"primitiveSuperclassOf:ifFail:", 
-	fntype(&behaviorPrimitives::superclass_of), 
-	327681, 
+	"primitiveSuperclass", 
+	fntype(&behaviorPrimitives::superclass), 
+	1114113, 
 	signature_365, 
 	errors_365
 };
 
-static char* signature_366[] = { "Float"};
+static char* signature_366[] = { "Behavior|Nil", "Behavior"};
 static char* errors_366[] = {NULL};
 static primitive_desc primitive_366 = {
-	"primitiveSystemTime", 
-	fntype(&systemPrimitives::systemTime), 
-	65536, 
+	"primitiveSuperclassOf:ifFail:", 
+	fntype(&behaviorPrimitives::superclass_of), 
+	327681, 
 	signature_366, 
 	errors_366
 };
 
-static char* signature_367[] = { "Object"};
+static char* signature_367[] = { "Float"};
 static char* errors_367[] = {NULL};
 static primitive_desc primitive_367 = {
-	"primitiveTimerPrintBuffer", 
-	fntype(&debugPrimitives::timerPrintBuffer), 
+	"primitiveSystemTime", 
+	fntype(&systemPrimitives::systemTime), 
 	65536, 
 	signature_367, 
 	errors_367
@@ -3681,8 +3681,8 @@ static primitive_desc primitive_367 = {
 static char* signature_368[] = { "Object"};
 static char* errors_368[] = {NULL};
 static primitive_desc primitive_368 = {
-	"primitiveTimerStart", 
-	fntype(&debugPrimitives::timerStart), 
+	"primitiveTimerPrintBuffer", 
+	fntype(&debugPrimitives::timerPrintBuffer), 
 	65536, 
 	signature_368, 
 	errors_368
@@ -3691,8 +3691,8 @@ static primitive_desc primitive_368 = {
 static char* signature_369[] = { "Object"};
 static char* errors_369[] = {NULL};
 static primitive_desc primitive_369 = {
-	"primitiveTimerStop", 
-	fntype(&debugPrimitives::timerStop), 
+	"primitiveTimerStart", 
+	fntype(&debugPrimitives::timerStart), 
 	65536, 
 	signature_369, 
 	errors_369
@@ -3701,149 +3701,149 @@ static primitive_desc primitive_369 = {
 static char* signature_370[] = { "Object"};
 static char* errors_370[] = {NULL};
 static primitive_desc primitive_370 = {
-	"primitiveTraceStack", 
-	fntype(&systemPrimitives::traceStack), 
+	"primitiveTimerStop", 
+	fntype(&debugPrimitives::timerStop), 
 	65536, 
 	signature_370, 
 	errors_370
 };
 
-static char* signature_371[] = { "Object", "BlockWithoutArguments", "BlockWithoutArguments"};
+static char* signature_371[] = { "Object"};
 static char* errors_371[] = {NULL};
 static primitive_desc primitive_371 = {
-	"primitiveUnwindProtect:ifFail:", 
-	fntype(&unwindprotect), 
-	1507330, 
+	"primitiveTraceStack", 
+	fntype(&systemPrimitives::traceStack), 
+	65536, 
 	signature_371, 
 	errors_371
 };
 
-static char* signature_372[] = { "Float"};
+static char* signature_372[] = { "Object", "BlockWithoutArguments", "BlockWithoutArguments"};
 static char* errors_372[] = {NULL};
 static primitive_desc primitive_372 = {
-	"primitiveUserTime", 
-	fntype(&systemPrimitives::userTime), 
-	65536, 
+	"primitiveUnwindProtect:ifFail:", 
+	fntype(&unwindprotect), 
+	1507330, 
 	signature_372, 
 	errors_372
 };
 
-static char* signature_373[] = { "Object", "BlockWithoutArguments"};
+static char* signature_373[] = { "Float"};
 static char* errors_373[] = {NULL};
 static primitive_desc primitive_373 = {
-	"primitiveValue", 
-	fntype(&primitiveValue0), 
-	5441537, 
+	"primitiveUserTime", 
+	fntype(&systemPrimitives::userTime), 
+	65536, 
 	signature_373, 
 	errors_373
 };
 
-static char* signature_374[] = { "Object", "BlockWithOneArgument", "Object"};
+static char* signature_374[] = { "Object", "BlockWithoutArguments"};
 static char* errors_374[] = {NULL};
 static primitive_desc primitive_374 = {
-	"primitiveValue:", 
-	fntype(&primitiveValue1), 
-	5441538, 
+	"primitiveValue", 
+	fntype(&primitiveValue0), 
+	5441537, 
 	signature_374, 
 	errors_374
 };
 
-static char* signature_375[] = { "Object", "BlockWithTwoArguments", "Object", "Object"};
+static char* signature_375[] = { "Object", "BlockWithOneArgument", "Object"};
 static char* errors_375[] = {NULL};
 static primitive_desc primitive_375 = {
-	"primitiveValue:value:", 
-	fntype(&primitiveValue2), 
-	5441539, 
+	"primitiveValue:", 
+	fntype(&primitiveValue1), 
+	5441538, 
 	signature_375, 
 	errors_375
 };
 
-static char* signature_376[] = { "Object", "BlockWithThreeArguments", "Object", "Object", "Object"};
+static char* signature_376[] = { "Object", "BlockWithTwoArguments", "Object", "Object"};
 static char* errors_376[] = {NULL};
 static primitive_desc primitive_376 = {
-	"primitiveValue:value:value:", 
-	fntype(&primitiveValue3), 
-	5441540, 
+	"primitiveValue:value:", 
+	fntype(&primitiveValue2), 
+	5441539, 
 	signature_376, 
 	errors_376
 };
 
-static char* signature_377[] = { "Object", "BlockWithFourArguments", "Object", "Object", "Object", "Object"};
+static char* signature_377[] = { "Object", "BlockWithThreeArguments", "Object", "Object", "Object"};
 static char* errors_377[] = {NULL};
 static primitive_desc primitive_377 = {
-	"primitiveValue:value:value:value:", 
-	fntype(&primitiveValue4), 
-	5441541, 
+	"primitiveValue:value:value:", 
+	fntype(&primitiveValue3), 
+	5441540, 
 	signature_377, 
 	errors_377
 };
 
-static char* signature_378[] = { "Object", "BlockWithFiveArguments", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_378[] = { "Object", "BlockWithFourArguments", "Object", "Object", "Object", "Object"};
 static char* errors_378[] = {NULL};
 static primitive_desc primitive_378 = {
-	"primitiveValue:value:value:value:value:", 
-	fntype(&primitiveValue5), 
-	5441542, 
+	"primitiveValue:value:value:value:", 
+	fntype(&primitiveValue4), 
+	5441541, 
 	signature_378, 
 	errors_378
 };
 
-static char* signature_379[] = { "Object", "BlockWithSixArguments", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_379[] = { "Object", "BlockWithFiveArguments", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_379[] = {NULL};
 static primitive_desc primitive_379 = {
-	"primitiveValue:value:value:value:value:value:", 
-	fntype(&primitiveValue6), 
-	5441543, 
+	"primitiveValue:value:value:value:value:", 
+	fntype(&primitiveValue5), 
+	5441542, 
 	signature_379, 
 	errors_379
 };
 
-static char* signature_380[] = { "Object", "BlockWithSevenArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_380[] = { "Object", "BlockWithSixArguments", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_380[] = {NULL};
 static primitive_desc primitive_380 = {
-	"primitiveValue:value:value:value:value:value:value:", 
-	fntype(&primitiveValue7), 
-	5441544, 
+	"primitiveValue:value:value:value:value:value:", 
+	fntype(&primitiveValue6), 
+	5441543, 
 	signature_380, 
 	errors_380
 };
 
-static char* signature_381[] = { "Object", "BlockWithEightArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_381[] = { "Object", "BlockWithSevenArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_381[] = {NULL};
 static primitive_desc primitive_381 = {
-	"primitiveValue:value:value:value:value:value:value:value:", 
-	fntype(&primitiveValue8), 
-	5441545, 
+	"primitiveValue:value:value:value:value:value:value:", 
+	fntype(&primitiveValue7), 
+	5441544, 
 	signature_381, 
 	errors_381
 };
 
-static char* signature_382[] = { "Object", "BlockWithNineArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_382[] = { "Object", "BlockWithEightArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_382[] = {NULL};
 static primitive_desc primitive_382 = {
-	"primitiveValue:value:value:value:value:value:value:value:value:", 
-	fntype(&primitiveValue9), 
-	5441546, 
+	"primitiveValue:value:value:value:value:value:value:value:", 
+	fntype(&primitiveValue8), 
+	5441545, 
 	signature_382, 
 	errors_382
 };
 
-static char* signature_383[] = { "Object"};
+static char* signature_383[] = { "Object", "BlockWithNineArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_383[] = {NULL};
 static primitive_desc primitive_383 = {
-	"primitiveVerify", 
-	fntype(&debugPrimitives::verify), 
-	65536, 
+	"primitiveValue:value:value:value:value:value:value:value:value:", 
+	fntype(&primitiveValue9), 
+	5441546, 
 	signature_383, 
 	errors_383
 };
 
-static char* signature_384[] = { "Proxy", "Proxy"};
+static char* signature_384[] = { "Object"};
 static char* errors_384[] = {NULL};
 static primitive_desc primitive_384 = {
-	"primitiveWindowsHInstance:ifFail:", 
-	fntype(&systemPrimitives::windowsHInstance), 
-	327681, 
+	"primitiveVerify", 
+	fntype(&debugPrimitives::verify), 
+	65536, 
 	signature_384, 
 	errors_384
 };
@@ -3851,34 +3851,44 @@ static primitive_desc primitive_384 = {
 static char* signature_385[] = { "Proxy", "Proxy"};
 static char* errors_385[] = {NULL};
 static primitive_desc primitive_385 = {
-	"primitiveWindowsHPrevInstance:ifFail:", 
-	fntype(&systemPrimitives::windowsHPrevInstance), 
+	"primitiveWindowsHInstance:ifFail:", 
+	fntype(&systemPrimitives::windowsHInstance), 
 	327681, 
 	signature_385, 
 	errors_385
 };
 
-static char* signature_386[] = { "Object"};
+static char* signature_386[] = { "Proxy", "Proxy"};
 static char* errors_386[] = {NULL};
 static primitive_desc primitive_386 = {
-	"primitiveWindowsNCmdShow", 
-	fntype(&systemPrimitives::windowsNCmdShow), 
-	65536, 
+	"primitiveWindowsHPrevInstance:ifFail:", 
+	fntype(&systemPrimitives::windowsHPrevInstance), 
+	327681, 
 	signature_386, 
 	errors_386
 };
 
-static char* signature_387[] = { "Object", "String"};
+static char* signature_387[] = { "Object"};
 static char* errors_387[] = {NULL};
 static primitive_desc primitive_387 = {
-	"primitiveWriteSnapshot:", 
-	fntype(&systemPrimitives::writeSnapshot), 
-	65537, 
+	"primitiveWindowsNCmdShow", 
+	fntype(&systemPrimitives::windowsNCmdShow), 
+	65536, 
 	signature_387, 
 	errors_387
 };
 
-static int size_of_primitive_table = 388; 
+static char* signature_388[] = { "Object", "String"};
+static char* errors_388[] = {NULL};
+static primitive_desc primitive_388 = {
+	"primitiveWriteSnapshot:", 
+	fntype(&systemPrimitives::writeSnapshot), 
+	65537, 
+	signature_388, 
+	errors_388
+};
+
+static int size_of_primitive_table = 389; 
 static primitive_desc* primitive_table[] = { 
   &primitive_0,
   &primitive_1,
@@ -4267,5 +4277,6 @@ static primitive_desc* primitive_table[] = {
   &primitive_384,
   &primitive_385,
   &primitive_386,
-  &primitive_387
+  &primitive_387,
+  &primitive_388
 }; 

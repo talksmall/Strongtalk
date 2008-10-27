@@ -32,7 +32,7 @@ char* PrimitivesGenerator::primitiveNew(int n) {
 
   char* entry_point = masm->pc();
   
-  test_for_scavenge(eax, size * oopSize, need_scavenge);
+  test_for_scavenge(eax, size * oopSize, allocation_failure);
 
  masm->bind(fill_object);
   masm->movl(ebx, klass_addr);
@@ -47,7 +47,7 @@ char* PrimitivesGenerator::primitiveNew(int n) {
   }
 
   masm->subl(eax, (size * oopSize) - 1);
-  masm->ret(0);
+  masm->ret(oopSize);
   
  masm->bind(need_scavenge);
   scavenge(size);

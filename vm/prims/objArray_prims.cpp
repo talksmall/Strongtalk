@@ -30,6 +30,44 @@ int objArrayPrimitives::number_of_calls;
 
 #define ASSERT_RECEIVER assert(receiver->is_objArray(), "receiver must be object array")
 
+PRIM_DECL_3(objArrayPrimitives::allocateSize2, oop receiver, oop argument, oop tenured) {
+  PROLOGUE_3("allocateSize2", receiver, argument, tenured);
+  //Changed assertion to simple test.
+  //assert(receiver->is_klass() && klassOop(receiver)->klass_part()->oop_is_objArray(),
+  //       "receiver must object array class");
+  if (!receiver->is_klass() || !klassOop(receiver)->klass_part()->oop_is_objArray())
+    return markSymbol(vmSymbols::invalid_klass());
+  if (!argument->is_smi())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+
+  if (smiOop(argument)->value() < 0)
+    return markSymbol(vmSymbols::negative_size());
+
+  if (tenured != Universe::trueObj() && tenured != Universe::falseObj())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+
+  klassOop k        = klassOop(receiver);
+  int      ni_size  = k->klass_part()->non_indexable_size();
+  int      obj_size = ni_size + 1 + smiOop(argument)->value();
+  // allocate
+  oop* result = (tenured == Universe::trueObj()) ?
+    Universe::allocate_tenured(obj_size, false):
+    Universe::allocate(obj_size, (memOop*)&k, false);
+  if (result == NULL)
+    return markSymbol(vmSymbols::failed_allocation());
+
+  objArrayOop obj = as_objArrayOop(result);
+  // header
+  memOop(obj)->initialize_header(k->klass_part()->has_untagged_contents(), k);
+  // instance variables
+  memOop(obj)->initialize_body(memOopDesc::header_size(), ni_size);
+  // %optimized 'obj->set_length(size)'
+  oop* base = (oop*) obj->addr();
+  base[ni_size] = argument;
+  memOop(obj)->initialize_body(ni_size+1, obj_size);
+  return obj;
+}
+
 PRIM_DECL_2(objArrayPrimitives::allocateSize, oop receiver, oop argument) {
   PROLOGUE_2("allocateSize", receiver, argument);
   assert(receiver->is_klass() && klassOop(receiver)->klass_part()->oop_is_objArray(),

@@ -30,7 +30,7 @@ class mixinKlass: public memOopKlass {
   bool can_inline_allocation() const { return false; }
 
   // allocation operations
-  oop allocateObject(bool permit_scavenge = true);
+  oop allocateObject(bool permit_scavenge = true, bool tenured = false);
   oop oop_shallow_copy(oop obj, bool tenured);
   
   // creates invocation

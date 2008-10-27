@@ -25,17 +25,21 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_dByteArrayKlass.cpp.incl"
 # include <ctype.h>
 
-oop doubleByteArrayKlass::allocateObject(bool permit_scavenge) {
+oop doubleByteArrayKlass::allocateObject(bool permit_scavenge, bool tenured) {
   fatal("should never call allocateObject in doubleByteArrayKlass");
   return badOop;
 }
 
-oop doubleByteArrayKlass::allocateObjectSize(int size, bool permit_scavenge, bool permit_tenured) {
+oop doubleByteArrayKlass::allocateObjectSize(int size, bool permit_scavenge, bool tenured) {
   klassOop k        = as_klassOop();
   int      ni_size  = non_indexable_size();
   int      obj_size = ni_size + 1 + roundTo(size * 2, oopSize) / oopSize;
   // allocate
-  doubleByteArrayOop obj = as_doubleByteArrayOop(Universe::allocate(obj_size, (memOop*)&k));
+  oop* result = tenured ?
+    Universe::allocate_tenured(obj_size, permit_scavenge) :
+    Universe::allocate(obj_size, (memOop*)&k, permit_scavenge);
+  if (result == NULL) return NULL;
+  doubleByteArrayOop obj = as_doubleByteArrayOop(result);
   // header
   memOop(obj)->initialize_header(true, k);
   // instance variables

@@ -32,7 +32,7 @@ void Klass::initialize() {
   set_mixin(mixinOop(nilObj));
 }
 
-oop Klass::allocateObject(bool permit_scavenge) {
+oop Klass::allocateObject(bool permit_scavenge, bool tenured) {
   return markSymbol(vmSymbols::not_oops());
 }
 oop Klass::allocateObjectSize(int size, bool permit_scavenge, bool permit_tenured) {
@@ -427,7 +427,7 @@ void Klass::bootstrap_klass_part_two(bootstrap* st) {
   st->read_oop((oop*)&_mixin);
 }  
 
-oop Klass::oop_primitive_allocate(oop obj, bool allow_scavenge) {
+oop Klass::oop_primitive_allocate(oop obj, bool allow_scavenge, bool tenured) {
   return markSymbol(vmSymbols::not_klass()); }
 
 oop Klass::oop_primitive_allocate_size(oop obj, int size) {

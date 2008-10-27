@@ -32,7 +32,7 @@ class associationKlass: public memOopKlass {
   bool can_inline_allocation() const { return false; }
 
   // allocation operations
-  oop allocateObject(bool permit_scavenge = true);
+  oop allocateObject(bool permit_scavenge = true, bool tenured = false);
 
   // creates invocation
   klassOop create_subclass(mixinOop mixin, Format format);

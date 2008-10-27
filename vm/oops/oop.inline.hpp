@@ -77,8 +77,8 @@ inline bool oopDesc::verify() {
   return blueprint()->oop_verify(this);
 }
 
-inline oop oopDesc::primitive_allocate(bool allow_scavenge) {
-  return blueprint()->oop_primitive_allocate(this, allow_scavenge);
+inline oop oopDesc::primitive_allocate(bool allow_scavenge, bool tenured) {
+  return blueprint()->oop_primitive_allocate(this, allow_scavenge, tenured);
 }
 
 inline oop oopDesc::primitive_allocate_size(int size) {

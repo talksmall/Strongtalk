@@ -29,11 +29,13 @@ void set_processKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop processKlass::allocateObject(bool permit_scavenge) {
+oop processKlass::allocateObject(bool permit_scavenge, bool tenured) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate
-  processOop obj = as_processOop(Universe::allocate(size, (memOop*)&k, permit_scavenge));
+  oop* result = basicAllocate(size, &k, permit_scavenge, tenured);
+  if (!result) return NULL;
+  processOop obj = as_processOop(result);
   // header
   memOop(obj)->initialize_header(true, k);
   obj->set_process(NULL);

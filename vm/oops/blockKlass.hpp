@@ -37,7 +37,7 @@ class blockClosureKlass: public memOopKlass {
   int number_of_arguments() const;
 
   // allocation
-  oop allocateObject(bool permit_scavenge = true);
+  oop allocateObject(bool permit_scavenge = true, bool tenured = false);
   static klassOop blockKlassFor(int numberOfArguments);
 
   // creates invocation
@@ -82,7 +82,7 @@ class contextKlass: public memOopKlass {
   bool can_be_subclassed()           const { return false; }
 
   // allocation
-  oop allocateObjectSize(int num_of_temps, bool permit_scavenge=true, bool permit_tenured = true);
+  oop allocateObjectSize(int num_of_temps, bool permit_scavenge=true, bool tenured = false);
   static contextOop allocate_context(int num_of_temps);
 
   // creates invocation

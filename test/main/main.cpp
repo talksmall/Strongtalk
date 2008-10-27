@@ -1,6 +1,7 @@
 #include "incls/_precompiled.incl"
 #include "incls/_shell.cpp.incl"
 #include "testharness.h"
+#include <windows.h>
 
 void ostream_init();
 
@@ -50,6 +51,11 @@ void start_vm_process(DeltaProcess* testProcess) {
 void stop_vm_process() {
   os::terminate_thread(vmThread);
 }
+
+static __declspec( thread ) int val1;
+
+//extern "C" int TlsAlloc();
+//extern "C" bool TlsSetValue(int,void*);
 
 int main(int argc, char* argv[]) {
   parse_arguments(argc, argv);

@@ -481,16 +481,16 @@ primitive_desc* primitives::verified_lookup(char* selector) {
 }
 
 void primitives::initialize() {
-  _new0              = verified_lookup("primitiveNew0");
-  _new1              = verified_lookup("primitiveNew1");
-  _new2              = verified_lookup("primitiveNew2");
-  _new3              = verified_lookup("primitiveNew3");
-  _new4              = verified_lookup("primitiveNew4");
-  _new5              = verified_lookup("primitiveNew5");
-  _new6              = verified_lookup("primitiveNew6");
-  _new7              = verified_lookup("primitiveNew7");
-  _new8              = verified_lookup("primitiveNew8");
-  _new9              = verified_lookup("primitiveNew9");
+  _new0              = verified_lookup("primitiveNew0ifFail:");
+  _new1              = verified_lookup("primitiveNew1ifFail:");
+  _new2              = verified_lookup("primitiveNew2ifFail:");
+  _new3              = verified_lookup("primitiveNew3ifFail:");
+  _new4              = verified_lookup("primitiveNew4ifFail:");
+  _new5              = verified_lookup("primitiveNew5ifFail:");
+  _new6              = verified_lookup("primitiveNew6ifFail:");
+  _new7              = verified_lookup("primitiveNew7ifFail:");
+  _new8              = verified_lookup("primitiveNew8ifFail:");
+  _new9              = verified_lookup("primitiveNew9ifFail:");
 
   _equal             = verified_lookup("primitiveEqual:");
   _not_equal         = verified_lookup("primitiveNotEqual:");

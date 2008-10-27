@@ -29,11 +29,14 @@ void set_mixinKlass_vtbl(Klass* k) {
   k->set_vtbl_value(o.vtbl_value());
 }
 
-oop mixinKlass::allocateObject(bool permit_scavenge) {
+oop mixinKlass::allocateObject(bool permit_scavenge, bool tenured) {
   klassOop k    = as_klassOop();
   int      size = non_indexable_size();
   // allocate
-  mixinOop obj = as_mixinOop(Universe::allocate(size, (memOop*)&k, permit_scavenge));
+  oop* result = basicAllocate(size, &k, permit_scavenge, tenured);
+  if (result == NULL)
+    return NULL;
+  mixinOop obj = as_mixinOop(result);
   // header + instance variables
   memOop(obj)->initialize_header(true, k);
   memOop(obj)->initialize_body(memOopDesc::header_size(), size);
