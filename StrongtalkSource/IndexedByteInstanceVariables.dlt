@@ -22,10 +22,14 @@ fileOutSignature ^<Integer>
 ! (Delta mirrorFor: #IndexedByteInstanceVariables) classSide methodsFor: 'private' !
 
 
-primitiveNew: size <Int> ^<Instance>
+oldprimitiveNew: size <Int> ^<Instance>
 
 	^{{self primitiveIndexedByteNew: size
-		ifFail: [ :err <Symbol> |  self error: err ]}}! !
+		ifFail: [ :err <Symbol> |  self error: err ]}}!
+
+primitiveNew: size <Int> ^<Instance>
+
+	^VM newBytes: self size: size! !
 
 ! (Delta mirrorFor: #IndexedByteInstanceVariables) methodsFor: 'file out' !
 

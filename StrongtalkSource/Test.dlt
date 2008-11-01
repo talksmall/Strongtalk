@@ -29,6 +29,10 @@ benchmark: blk <[]> ^<Int>
 ! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
 
 
+allocations: count
+
+	count  timesRepeat: [Object new]!
+
 evaluateBlock: blk
 
 	^blk value!
@@ -51,7 +55,14 @@ simpleTest: n
 	| a  |
 	a := Array new: 1.
 	n timesRepeat:
-		[ a at: 1 put: 3.]! !
+		[ a at: 1 put: 3.]!
+
+testContexts
+	|value|
+	value := 0.
+	[(1 to: 10) do: [:i|
+		value := value + i]] value.
+	^value! !
 
 ! (Delta mirrorFor: #Test) methodsFor: 'test' !
 

@@ -1104,6 +1104,15 @@ char* InterpreterGenerator::with_context_temp(bool store, int tempNo, int contex
     for (int i = 0; i < contextNo; i++)
       masm->movl(ecx, Address(ecx, contextOopDesc::parent_byte_offset()));
   }
+    //slr debugging
+    //if (!store && tempNo == 1 && contextNo == 1) {
+    //  Label not_frame;
+    //  masm->testl(ecx, 1); // test for a frame in the context
+    //  masm->jcc(Assembler::notZero, not_frame);
+    //  masm->int3();
+    //  masm->bind(not_frame);
+    //}
+    //
 
   Address slot;
   if (tempNo == -1) {

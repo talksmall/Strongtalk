@@ -22,9 +22,9 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 # include "incls/_precompiled.incl"
 # include "incls/_behavior_prims_gen.cpp.incl"
-
+static bool stop = false;
 char* PrimitivesGenerator::primitiveNew(int n) {
-  Address klass_addr =  Address(esp, +oopSize);
+  Address klass_addr =  Address(esp, +2 * oopSize);
   Label need_scavenge, fill_object;
   int size = n+2;
 
@@ -33,8 +33,13 @@ char* PrimitivesGenerator::primitiveNew(int n) {
   char* entry_point = masm->pc();
   
   test_for_scavenge(eax, size * oopSize, allocation_failure);
-
+  Address _stop = Address((int)&stop, relocInfo::external_word_type);
+  Label _break, no_break;
  masm->bind(fill_object);
+  masm->movl(ebx, _stop);
+  masm->testl(ebx, ebx);
+  masm->jcc(Assembler::notEqual, _break);
+ masm->bind(no_break);
   masm->movl(ebx, klass_addr);
   masm->movl(Address(eax, (-size+0)*oopSize), 0x80000003);	// obj->init_mark()
   masm->movl(Address(eax, (-size+1)*oopSize), ebx);		// obj->init_mark()
@@ -47,11 +52,54 @@ char* PrimitivesGenerator::primitiveNew(int n) {
   }
 
   masm->subl(eax, (size * oopSize) - 1);
-  masm->ret(oopSize);
+  masm->ret(2 * oopSize);
   
+ masm->bind(_break);
+  masm->int3();
+  masm->jmp(no_break);
+
  masm->bind(need_scavenge);
   scavenge(size);
   masm->jmp(fill_object);
   
   return entry_point;
 }
+
+char* PrimitivesGenerator::inline_allocation() {
+  Address klass_addr =  Address(esp, +2 * oopSize);
+  Address count_addr =  Address(esp, +1 * oopSize);
+
+  Label need_scavenge, fill_object, loop, loop_test, exit;
+  int size = 2;
+
+  char* entry_point = masm->pc();
+
+  masm->movl(ebx, klass_addr);
+  masm->movl(edx, count_addr);
+  masm->testl(edx, 1);
+  masm->jcc(Assembler::notEqual, exit);
+  masm->sarl(edx, 2);
+ masm->bind(loop);
+
+  test_for_scavenge(eax, size * oopSize, need_scavenge);
+ masm->bind(fill_object);
+  masm->movl(Address(eax, (-size+0)*oopSize), 0x80000003);	// obj->init_mark()
+  masm->movl(Address(eax, (-size+1)*oopSize), ebx);		// obj->init_mark()
+
+  masm->subl(eax, (size * oopSize) - 1);
+  //masm->jmp(loop);
+ masm->bind(loop_test);
+  masm->decl(edx);
+  masm->jcc(Assembler::notEqual, loop);
+ masm->bind(exit);
+  masm->ret(2 * oopSize);
+  
+ masm->bind(need_scavenge);
+  masm->pushl(ebx);
+  masm->pushl(edx);
+  scavenge(size);
+  masm->popl(edx);
+  masm->popl(ebx);
+  masm->jmp(fill_object);
+  
+  return entry_point;}

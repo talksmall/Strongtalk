@@ -79,13 +79,15 @@ class PrimitivesGenerator: StackObj {
   char* allocateBlock(int n);
   char* allocateContext_var();
   char* allocateContext(int n);
-
+// slr perf testing
+  char* inline_allocation();
+//
   friend class GeneratedPrimitives;
 };
 
 class GeneratedPrimitives: AllStatic {
  private:
-  enum { _code_size = 4000 };			// simply increase if too small (assembler will crash if too small)
+  enum { _code_size = 8192 };			// simply increase if too small (assembler will crash if too small)
   static bool _is_initialized;			// true if GeneratedPrimitives has been initialized
   static char _code[_code_size];		// the code buffer for the primitives
 
@@ -110,6 +112,7 @@ class GeneratedPrimitives: AllStatic {
   static char* _primitiveNew[];
   static char* _allocateBlock[];
   static char* _allocateContext[];
+  static char* _primitiveInlineAllocations;
 
   // helpers for generation and patch
   static char* patch(char* name, char* entry_point);

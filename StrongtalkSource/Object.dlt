@@ -41,6 +41,32 @@ new ^<Instance>
 	"Create and return an initialized instance of this class."
 
 	"%remove when inlining working:"
+	^VM new: self
+"
+	^guaranteed <Instance> (super new)
+"!
+
+new2
+
+	^{{primitiveNew: self
+			ifFail: [:e|
+						VM handleFailure: e
+								allocate: [:tenured :failBlock| VM new: self ifFail: failBlock]
+								ifExpand: [VM expand]]}}!
+
+new3 ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
+	^{{self primitiveNew2IfFail: [ :err <Symbol> |]}}
+"
+	^guaranteed <Instance> (super new)
+"!
+
+oldnew ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
 	^{{self primitiveNewIfFail: [ :err <Symbol> |
 		VM scavengeGarbage.
 		{{self primitiveNewIfFail: [:err <Symbol> |

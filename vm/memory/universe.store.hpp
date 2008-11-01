@@ -25,7 +25,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 inline void Universe::store(oop* p, oop contents, bool cs) {
   assert(is_heap(p) || !cs, "Reference must be in object memory to mark card.");
   *p = contents;  
-//  if (cs && (p >= (oop*)Universe::new_gen.boundary())) remembered_set->record_store(p);
+  //if (cs && (p >= (oop*)Universe::new_gen.boundary())) remembered_set->record_store(p);
   if (cs) remembered_set->record_store(p);
 }
 

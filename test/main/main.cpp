@@ -54,9 +54,6 @@ void stop_vm_process() {
 
 static __declspec( thread ) int val1;
 
-//extern "C" int TlsAlloc();
-//extern "C" bool TlsSetValue(int,void*);
-
 int main(int argc, char* argv[]) {
   parse_arguments(argc, argv);
   init_globals();

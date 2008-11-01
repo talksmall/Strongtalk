@@ -22,7 +22,7 @@ fileOutSignature ^<Integer>
 ! (Delta mirrorFor: #IndexedInstanceVariables) classSide methodsFor: 'private' !
 
 
-primitiveNew: size <Int> ^<Instance>
+oldprimitiveNew: size <Int> ^<Instance>
 
 	^{{self primitiveIndexedObjectNew: size
 			ifFail: [ :err <Symbol> |
@@ -44,7 +44,11 @@ primitiveNew: size <Int> ^<Instance>
 															ifFail: [:err <Symbol> |
 																	self error: err]}}]
 						]}}
-				]}}! !
+				]}}!
+
+primitiveNew: size <Int> ^<Instance>
+
+	^VM new: self size: size! !
 
 ! (Delta mirrorFor: #IndexedInstanceVariables) methodsFor: 'file out' !
 

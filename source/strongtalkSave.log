@@ -63199,3 +63199,268 @@ expandBytes: class size: size
 "October 27, 2008 -> 1:0:17"!
 
 "System saved" !
+"October 27, 2008 -> 9:39:43"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+incFailureCount
+
+	AllocFailureCount isNil
+		ifTrue: [AllocFailureCount = 1]
+		ifFalse: [AllocFailureCount := AllocFailureCount + 1]! !
+
+"October 27, 2008 -> 9:40:0"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNew: class failure: error
+
+	self incFailureCount.
+	^VM handleFailure: error
+			allocate: [:tenured :failBlock| VM new: class tenured: tenured ifFail: failBlock]
+			ifExpand: [VM expand]! !
+
+"October 27, 2008 -> 9:40:7"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewBytes: class size: size failure: error
+
+	self incFailureCount.
+	^VM handleFailure: error
+			allocate: [:tenured :failBlock|
+								VM newBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [VM expandBytes: class size: size]! !
+
+"October 27, 2008 -> 9:40:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleFailure: error allocate: allocateBlock ifExpand: expansionBlock
+
+	self reportNonAllocationFailure: error.
+	^self spaceToScavenge
+				ifTrue: [self scavengeAndAllocate: allocateBlock
+										ifExpand: expansionBlock]
+				ifFalse: [self collectAndAllocate: allocateBlock
+										ifExpand: expansionBlock]! !
+
+"October 27, 2008 -> 9:40:32"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+oldnew ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
+	^{{self primitiveNewIfFail: [ :err <Symbol> |
+		VM scavengeGarbage.
+		{{self primitiveNewIfFail: [:err <Symbol> |
+			Transcript show: err; cr.
+			VM isGCPending
+				ifTrue: [VM waitForGC.
+							{{self primitiveNewIfFail: [:err <Symbol> |
+								VM expand: (VMMirror on: self) instanceSize.
+								VM deferredGC.
+								{{self primitiveNewIfFail: [:err <Symbol> |
+																		self error: err]}}]}}]
+				ifFalse: [VM expand: (VMMirror on: self) instanceSize.
+							VM deferredGC.
+							{{self primitiveNewIfFail: [:err <Symbol> |
+																	self error: err]}}].
+			]}}
+		]}}
+"
+	^guaranteed <Instance> (super new)
+"! !
+
+"October 27, 2008 -> 9:40:32"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+new ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
+	^VM new: self
+"
+	^guaranteed <Instance> (super new)
+"! !
+
+"October 27, 2008 -> 10:39:16"!
+
+! (Delta mirrorFor: #IndexedInstanceVariables) classSide methodsFor: 'private' !
+oldprimitiveNew: size <Int> ^<Instance>
+
+	^{{self primitiveIndexedObjectNew: size
+			ifFail: [ :err <Symbol> |
+					VM scavengeGarbage.
+					{{self primitiveIndexedObjectNew: size
+							ifFail: [ :err <Symbol> |
+									VM isGCPending
+										ifTrue: [VM waitForGC.
+													{{self primitiveIndexedObjectNew: size
+															ifFail: [:err <Symbol> |
+																	VM expand: (VMMirror on: self) instanceSize + size.
+																	VM deferredGC.
+																	{{self primitiveIndexedObjectNew: size
+																			ifFail: [:err <Symbol> |
+																						self error: err]}}]}}]
+										ifFalse: [VM expand: (VMMirror on: self) instanceSize + size.
+													VM deferredGC.
+													{{self primitiveIndexedObjectNew: size
+															ifFail: [:err <Symbol> |
+																	self error: err]}}]
+						]}}
+				]}}! !
+
+"October 27, 2008 -> 10:39:24"!
+
+! (Delta mirrorFor: #IndexedByteInstanceVariables) classSide methodsFor: 'private' !
+oldprimitiveNew: size <Int> ^<Instance>
+
+	^{{self primitiveIndexedByteNew: size
+		ifFail: [ :err <Symbol> |  self error: err ]}}! !
+
+"October 27, 2008 -> 10:40:18"!
+
+! (Delta mirrorFor: #IndexedInstanceVariables) classSide methodsFor: 'private' !
+primitiveNew: size <Int> ^<Instance>
+
+	^VM new: self size: size! !
+
+"October 27, 2008 -> 10:40:45"!
+
+! (Delta mirrorFor: #IndexedByteInstanceVariables) classSide methodsFor: 'private' !
+primitiveNew: size <Int> ^<Instance>
+
+	^VM newBytes: self size: size! !
+
+"October 27, 2008 -> 10:46:6"!
+
+"System saved" !
+"October 27, 2008 -> 12:2:45"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'evaluation' !
+recompileAllMethods
+
+	| counter <Int> |
+	counter := 0.
+	self classesAndMixinsReflectiveDo: [ :mirror <ClassMirror|MixinMirror> |
+		Platform errorStream show: 'Recompiling ', mirror name; cr.
+		mirror recompileAllMethodsIfFail: [ self shouldNotHappen ].
+		"(counter := counter + 1) = 20
+			ifTrue: [	counter := 0. VM collectGarbage ]"
+	]
+
+! !
+
+"October 27, 2008 -> 12:8:41"!
+
+"System saved" !
+"October 27, 2008 -> 16:54:44"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+growBarrier
+
+	^(self smallIntegerAt: #ObjectHeapExpandSize) * VM K! !
+
+"October 27, 2008 -> 16:54:44"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+growIfNecessary
+
+	self freeSpace < self growBarrier
+		ifTrue: [self expand]! !
+
+"October 27, 2008 -> 16:54:44"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	self collectGarbage.
+	self growIfNecessary.
+	^[allocateBlock
+			value: false
+			value: [:e|
+						self reportNonAllocationFailure: e.
+						allocateBlock
+							value: true
+							value: [:e1|
+										self reportNonAllocationFailure: e1.
+										expansionBlock value.
+										allocateBlock
+											value: true
+											value: [:e2| nil error: e2]]]]
+			ensure: [self shrinkIfPossible]! !
+
+"October 27, 2008 -> 17:2:4"!
+
+"System saved" !
+"October 27, 2008 -> 20:16:14"!
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
+testContexts
+	|value|
+	[(1 to: 10) do: [:i|
+		value := value + i]]! !
+
+"October 27, 2008 -> 20:16:14"!
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
+testContexts
+	|value|
+	[(1 to: 10) do: [:i|
+		value := value + i]].
+	^value! !
+
+"October 27, 2008 -> 20:16:54"!
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
+testContexts
+	|value|
+	[(1 to: 10) do: [:i|
+		value := value + i]] value.
+	^value! !
+
+"October 27, 2008 -> 20:17:14"!
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
+testContexts
+	|value|
+	value := 0.
+	[(1 to: 10) do: [:i|
+		value := value + i]] value.
+	^value! !
+
+"October 27, 2008 -> 20:22:40"!
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
+testContexts
+	|value|
+	value := 0.
+	[(1 to: 10) do: [:i|
+		value := value + i]] value.
+	^value! !
+
+"October 28, 2008 -> 9:32:15"!
+
+"System saved" !
+"October 31, 2008 -> 19:40:34"!
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
+allocations: count
+
+	|time|
+	time := Time millisecondsToRun: [
+		count  timesRepeat: [Object new]
+	].
+	Transcript show: time printString; cr! !
+
+"October 31, 2008 -> 19:49:31"!
+
+! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
+allocations: count
+
+	count  timesRepeat: [Object new]! !
+
+"October 31, 2008 -> 20:6:13"!
+
+"System saved" !

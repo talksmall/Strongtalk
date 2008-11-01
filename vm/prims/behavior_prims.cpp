@@ -380,13 +380,14 @@ PRIM_DECL_2(behaviorPrimitives::is_class_of, oop receiver, oop obj) {
 // empty functions, we'll patch them later
 static void trap() { assert(false, "This primitive should be patched"); };
 
-extern "C" oop primitiveNew0(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew1(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew2(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew3(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew4(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew5(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew6(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew7(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew8(oop receiver) { trap(); return NULL; };
-extern "C" oop primitiveNew9(oop receiver) { trap(); return NULL; };
+extern "C" oop primitiveInlineAllocations(oop receiver, oop count) { trap(); return NULL; };
+extern "C" oop primitiveNew0(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew1(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew2(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew3(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew4(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew5(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew6(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew7(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew8(oop receiver, oop tenured) { trap(); return NULL; };
+extern "C" oop primitiveNew9(oop receiver, oop tenured) { trap(); return NULL; };

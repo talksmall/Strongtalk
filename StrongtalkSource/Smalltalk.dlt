@@ -213,8 +213,8 @@ recompileAllMethods
 	self classesAndMixinsReflectiveDo: [ :mirror <ClassMirror|MixinMirror> |
 		Platform errorStream show: 'Recompiling ', mirror name; cr.
 		mirror recompileAllMethodsIfFail: [ self shouldNotHappen ].
-		(counter := counter + 1) = 20
-			ifTrue: [	counter := 0. VM collectGarbage ]
+		"(counter := counter + 1) = 20
+			ifTrue: [	counter := 0. VM collectGarbage ]"
 	]
 
 ! !

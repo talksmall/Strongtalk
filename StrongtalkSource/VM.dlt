@@ -1,5 +1,5 @@
 Delta define: #VM as: (
-(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore') !
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
 
 (Delta mirrorFor: #VM) revision: '$Revision: 1.5 $'!
 
@@ -15,16 +15,18 @@ Use and distribution of this software is subject to the terms of the attached so
 
 new: class
 
-	^self allocate: [:tenured :failBlock| self new: class ifFail: failBlock]
-			ifExpand: [self expand]!
+	^{{primitiveNew: class
+			tenured: false
+			ifFail: [:e| VM handleNew: class failure: e]}}!
 
 new: indexableClass size: size
 
 	^self allocate: [:tenured :failBlock|
 								self new: indexableClass
 										size: size
+										tenured: tenured
 										ifFail: failBlock]
-			ifExpand: [self expand: size * self oopSize]!
+			ifExpand: [self expand: indexableClass size: size]!
 
 newBytes: byteClass size: size
 
@@ -34,6 +36,41 @@ newBytes: byteClass size: size
 										tenured: tenured
 										ifFail: failBlock]
 			ifExpand: [self expand: size]! !
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'benchmarking' !
+
+
+benchmarkNew: iterations
+
+	|elapsed|
+	self resetProfiler.
+	self engageProfiler.
+	elapsed := Time millisecondsToRun: [
+								VM privateBenchmarkNew: iterations].
+	self disengageProfiler.
+	self printProfile.
+	Transcript cr; show: elapsed printString.!
+
+benchmarkNewNew: iterations
+
+	|elapsed|
+	self resetProfiler.
+	self engageProfiler.
+	self resetAllocCounts.
+	elapsed := Time millisecondsToRun: [
+								VM privateBenchmarkNewNew: iterations].
+	self disengageProfiler.
+	self printProfile.
+	Transcript cr; show: elapsed printString.
+	Transcript cr; show: self allocFailures printString!
+
+privateBenchmarkNew: iterations
+
+	iterations timesRepeat: [Object new3]!
+
+privateBenchmarkNewNew: iterations
+
+	iterations timesRepeat: [VM new: Object]! !
 
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
 
@@ -242,28 +279,38 @@ K
 
 	^1024!
 
+allocFailures
+
+	^AllocFailureCount!
+
 allocate: allocateBlock ifExpand: expansionBlock
 
 	^allocateBlock
 			value: false
-			value: [:e| e == #FailedAllocation
-									ifTrue: [self spaceToScavenge
-														ifTrue: [self scavengeAndAllocate: allocateBlock
-																				ifExpand: expansionBlock]
-														ifFalse: [self collectAndAllocate: allocateBlock
-																				ifExpand: expansionBlock]]
-									ifFalse: [nil error: e]]!
+			value: [:e|
+							self reportNonAllocationFailure: e.
+							self spaceToScavenge
+									ifTrue: [self scavengeAndAllocate: allocateBlock
+															ifExpand: expansionBlock]
+									ifFalse: [self collectAndAllocate: allocateBlock
+															ifExpand: expansionBlock]]!
 
 collectAndAllocate: allocateBlock ifExpand: expansionBlock
 
 	self collectGarbage.
+	self growIfNecessary.
 	^[allocateBlock
-			value: true
-			value: [:e| 
-						expansionBlock value.
+			value: false
+			value: [:e|
+						self reportNonAllocationFailure: e.
 						allocateBlock
 							value: true
-							value: [:e2| nil error: e2]]]
+							value: [:e1|
+										self reportNonAllocationFailure: e1.
+										expansionBlock value.
+										allocateBlock
+											value: true
+											value: [:e2| nil error: e2]]]]
 			ensure: [self shrinkIfPossible]!
 
 expand
@@ -276,14 +323,75 @@ expand: expansionSize
 
 	{{primitiveExpandMemory: expansionSize}}!
 
+expand: class size: size
+
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops + size) * self oopSize!
+
+expandBytes: class size: size
+
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops * self oopSize + size)!
+
+expansionCount
+
+	^ {{primitiveExpansions}}!
+
+expansionSize
+
+	^(self smallIntegerAt: #ObjectHeapExpandSize) * self K!
+
+fixedSize: class
+
+	^ {{primitiveBehaviorNonIndexableSizeOf: class ifFail: [:err| nil error: err]}} + 1!
+
 freeSpace
 
 	^{{primitiveFreeSpace}}!
 
-hasExpandedBlock
-	|expansions|
-	expansions := {{primitiveExpansions}}.
-	^[expansions ~~ {{primitiveExpansions}}]!
+growBarrier
+
+	^(self smallIntegerAt: #ObjectHeapExpandSize) * VM K!
+
+growIfNecessary
+
+	self freeSpace < self growBarrier
+		ifTrue: [self expand]!
+
+handleFailure: error allocate: allocateBlock ifExpand: expansionBlock
+
+	self reportNonAllocationFailure: error.
+	^self spaceToScavenge
+				ifTrue: [self scavengeAndAllocate: allocateBlock
+										ifExpand: expansionBlock]
+				ifFalse: [self collectAndAllocate: allocateBlock
+										ifExpand: expansionBlock]!
+
+handleNew: class failure: error
+
+	self incFailureCount.
+	^VM handleFailure: error
+			allocate: [:tenured :failBlock| VM new: class tenured: tenured ifFail: failBlock]
+			ifExpand: [VM expand]!
+
+handleNewBytes: class size: size failure: error
+
+	self incFailureCount.
+	^VM handleFailure: error
+			allocate: [:tenured :failBlock|
+								VM newBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [VM expandBytes: class size: size]!
+
+incFailureCount
+
+	AllocFailureCount isNil
+		ifTrue: [AllocFailureCount = 1]
+		ifFalse: [AllocFailureCount := AllocFailureCount + 1]!
 
 new: class ifFail: failureBlock
 
@@ -293,6 +401,19 @@ new: class ifFail: failureBlock
 new: class size: size ifFail: failureBlock
 
 	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}!
+
+new: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedObjectNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}!
+
+new: class tenured: tenured ifFail: failureBlock
+
+	^{{primitiveNew: class
+			tenured: tenured
 			ifFail: [:e| failureBlock value: e]}}!
 
 newBytes: class size: size tenured: tenured ifFail: failureBlock
@@ -306,18 +427,36 @@ oopSize
 
 	^{{primitiveSizeOfOop}}!
 
+reportNonAllocationFailure: errorSymbol
+
+	(errorSymbol == #FailedAllocation)
+		ifFalse: [nil error: errorSymbol printString, ' reported during allocation']!
+
+resetAllocCounts
+
+	ScavengeCount := 0.
+	AllocFailureCount := 0.!
+
+resetScavengeCount
+
+	ScavengeCount := 0!
+
 scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
 
-	|hasExpandedBlock|
-	hasExpandedBlock := self hasExpandedBlock.
+	|expansions |
+	expansions := self expansionCount.
 	self scavengeGarbage.
-	^hasExpandedBlock value
+	^(expansions ~~ self expansionCount)
 			ifTrue: [self collectAndAllocate: allocateBlock
 								ifExpand: expansionBlock]
 			ifFalse: [allocateBlock
-								value: true
-								value: [:e3| self collectAndAllocate: allocateBlock
-															ifExpand: expansionBlock]]!
+								value: false
+								value: [:e1| self reportNonAllocationFailure: e1.
+													allocateBlock
+															value: true
+															value: [:e2| self reportNonAllocationFailure: e2.
+																				self collectAndAllocate: allocateBlock
+																						ifExpand: expansionBlock]]]!
 
 shrink: size
 
@@ -337,6 +476,24 @@ shrinkIfPossible
 spaceToScavenge
 
 	^self freeSpace > (2 * self survivorSpaceSize)	! !
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'profiling' !
+
+
+disengageProfiler
+
+	{{primitiveFlatProfilerDisengage}}.!
+
+engageProfiler
+
+	{{primitiveFlatProfilerEngage: Processor activeProcess ifFail: [:e| nil error: e]}}.!
+
+printProfile
+
+	{{primitiveFlatProfilerPrint}}!
+
+resetProfiler
+	{{primitiveFlatProfilerReset}}! !
 
 ! (Delta mirrorFor: #VM) classSide methodsFor: 'system control' !
 
