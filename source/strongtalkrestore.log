@@ -1,54 +1,90 @@
 
-"October 31, 2008 -> 19:23:42"!
+"November 2, 2008 -> 22:35:15"!
 
-! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
-allocations! !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newDoubleBytes: doubleByteClass size: size
 
-"October 31, 2008 -> 19:26:23"!
+	^{{primitiveIndexedDoubleByteNew: doubleByteClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNewDoubleBytes: doubleByteClass
+										size: size
+										failure: e]}}! !
 
-! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
-allocations
+"November 2, 2008 -> 22:37:33"!
 
-	|time|
-	time := Time millisecondsToRun: [
-		1000000000 timesRepeat: [Object new]
-	].
-	Transcript show: time printString; cr! !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newDoubleBytes: class size: size tenured: tenured ifFail: failureBlock
 
-"October 31, 2008 -> 19:29:32"!
+	^{{primitiveIndexedDoubleByteNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
 
-! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
-allocations
+"November 2, 2008 -> 22:37:39"!
 
-	|time|
-	time := Time millisecondsToRun: [
-		1000000000 timesRepeat: [Object new]
-	].
-	Transcript show: time printString; cr! !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewDoubleBytes: class size: size failure: error
 
-"October 31, 2008 -> 19:34:57"!
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								self newDoubleBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expandDoubleBytes: class size: size]! !
 
-! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
-allocations
+"November 2, 2008 -> 22:37:42"!
 
-	|time|
-	time := Time millisecondsToRun: [
-		1000000000 timesRepeat: [Object new]
-	].
-	Transcript show: time printString; cr! !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expandDoubleBytes: class size: size
 
-"October 31, 2008 -> 19:35:24"!
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops * self oopSize + (size * 2))! !
 
-! (Delta mirrorFor: #Test) classSide methodsFor: 'toy benchmarks' !
-allocations: count
+"November 2, 2008 -> 22:42:23"!
 
-	|time|
-	time := Time millisecondsToRun: [
-		count  timesRepeat: [Object new]
-	].
-	Transcript show: time printString; cr! !
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newDoubleBytes: doubleByteClass size: size
 
-"October 31, 2008 -> 19:35:28"!
+	^{{primitiveIndexedDoubleByteNew: doubleByteClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNewDoubleBytes: doubleByteClass
+										size: size
+										failure: e]}}! !
 
-(Delta mirrorFor: #Test) classSide removeMethod: #allocations ifAbsent: [] !
+"November 2, 2008 -> 22:42:23"!
 
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newDoubleBytes: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedDoubleByteNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"November 2, 2008 -> 22:42:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewDoubleBytes: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								self newDoubleBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expandDoubleBytes: class size: size]! !
+
+"November 2, 2008 -> 22:42:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expandDoubleBytes: class size: size
+
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops * self oopSize + (size * 2))! !

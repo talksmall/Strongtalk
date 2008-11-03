@@ -190,16 +190,7 @@ call: f <[Symbol,Object]> for: o <Object>
 
 primitiveNew ^<Object>
 
-	^{{self primitiveNewIfFail: [ :err <Symbol> | 
-		VM scavengeGarbage.
-		{{self primitiveNewIfFail: [:err2<Symbol> |
-			Transcript show: err2.
-			VM collectGarbage.
-			{{self primitiveNewIfFail: [:err3 <Symbol> |
-				"need to expand memory here"
-				]}}
-			]}}
-		]}}! !
+	^VM new: self! !
 
 ! (Delta mirrorFor: #Behavior) methodsFor: 'reflective' !
 

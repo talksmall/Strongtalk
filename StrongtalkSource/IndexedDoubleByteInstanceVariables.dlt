@@ -22,8 +22,7 @@ fileOutSignature ^<Integer>
 
 primitiveNew: size <Int> ^<Instance>
 
-	^{{self primitiveIndexedDoubleByteNew: size
-		ifFail: [ :err <Symbol> |  self error: err ]}}! !
+	^VM newDoubleBytes: self size: size! !
 
 ! (Delta mirrorFor: #IndexedDoubleByteInstanceVariables) methodsFor: 'file out' !
 

@@ -63464,3 +63464,243 @@ allocations: count
 "October 31, 2008 -> 20:6:13"!
 
 "System saved" !
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewBytes: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								VM newBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [VM expandBytes: class size: size]! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewBytes: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								self newBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [VM expandBytes: class size: size]! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewBytes: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								self newBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expandBytes: class size: size]! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNew: class failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock| VM new: class tenured: tenured ifFail: failBlock]
+			ifExpand: [VM expand]! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNew: class failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock| self new: class tenured: tenured ifFail: failBlock]
+			ifExpand: [VM expand]! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNew: class failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock| self new: class tenured: tenured ifFail: failBlock]
+			ifExpand: [self expand]! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	^{{primitiveNew: class
+			tenured: false
+			ifFail: [:e| self handleNew: class failure: e]}}! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newBytes: byteClass size: size
+
+	^{{primitiveIndexedByteNew: byteClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNewBytes: byteClass
+										size: size
+										failure: e]}}! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNew: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock| self new: class size: size tenured: tenured ifFail: failBlock]
+			ifExpand: [self expand: class size: size]! !
+
+"November 2, 2008 -> 21:54:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: indexableClass size: size
+
+	^{{primitiveIndexedObjectNew: indexableClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNew: indexableClass
+										size: size
+										failure: e]}}! !
+
+"November 2, 2008 -> 21:54:34"!
+
+"System saved" !
+"November 2, 2008 -> 23:6:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newDoubleBytes: doubleByteClass size: size
+
+	^{{primitiveIndexedDoubleByteNew: doubleByteClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNewDoubleBytes: doubleByteClass
+										size: size
+										failure: e]}}! !
+
+"November 2, 2008 -> 23:6:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newDoubleBytes: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedDoubleByteNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"November 2, 2008 -> 23:6:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewDoubleBytes: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								self newDoubleBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expandDoubleBytes: class size: size]! !
+
+"November 2, 2008 -> 23:6:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expandDoubleBytes: class size: size
+
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops * self oopSize + (size * 2))! !
+
+"November 2, 2008 -> 23:6:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newDoubleBytes: doubleByteClass size: size
+
+	^{{primitiveIndexedDoubleByteNew: doubleByteClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNewDoubleBytes: doubleByteClass
+										size: size
+										failure: e]}}! !
+
+"November 2, 2008 -> 23:6:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newDoubleBytes: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedDoubleByteNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"November 2, 2008 -> 23:6:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewDoubleBytes: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								self newDoubleBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expandDoubleBytes: class size: size]! !
+
+"November 2, 2008 -> 23:6:57"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expandDoubleBytes: class size: size
+
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops * self oopSize + (size * 2))! !
+
+"November 2, 2008 -> 23:7:6"!
+
+"System saved" !
+"November 2, 2008 -> 23:49:40"!
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'private' !
+primitiveNew ^<Object>
+
+	^VM new: self! !
+
+"November 2, 2008 -> 23:51:50"!
+
+! (Delta mirrorFor: #IndexedDoubleByteInstanceVariables) classSide methodsFor: 'private' !
+primitiveNew: size <Int> ^<Instance>
+
+	^VM newDoubleBytes: self size: size! !
+
+"November 3, 2008 -> 0:0:13"!
+
+"System saved" !
+"November 3, 2008 -> 0:20:9"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+incFailureCount
+
+	AllocFailureCount isNil
+		ifTrue: [AllocFailureCount := 1]
+		ifFalse: [AllocFailureCount := AllocFailureCount + 1]! !
+
+"November 3, 2008 -> 0:22:59"!
+
+"System saved" !

@@ -62,6 +62,22 @@ PRIM_DECL_2(doubleByteArrayPrimitives::allocateSize, oop receiver, oop argument)
   return obj;
 }
 
+PRIM_DECL_3(doubleByteArrayPrimitives::allocateSize2, oop receiver, oop argument, oop tenured) {
+  PROLOGUE_2("allocateSize", receiver, argument)
+  if (!receiver->is_klass() || !klassOop(receiver)->klass_part()->oop_is_doubleByteArray())
+    return markSymbol(vmSymbols::invalid_klass());
+  if (!argument->is_smi())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (smiOop(argument)->value() < 0)
+    return markSymbol(vmSymbols::negative_size());
+  if (tenured != Universe::trueObj() && tenured != Universe::falseObj())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  oop result = klassOop(receiver)->klass_part()->allocateObjectSize(smiOop(argument)->value(), false, Universe::trueObj() == tenured);
+  if (result == NULL)
+    return markSymbol(vmSymbols::failed_allocation());
+  return result;
+}
+
 PRIM_DECL_1(doubleByteArrayPrimitives::size, oop receiver) {
   PROLOGUE_1("size", receiver);
   ASSERT_RECEIVER;

@@ -17,10 +17,10 @@ allocation!
 private - allocation!
 profiling!
 benchmarking! !
-growIfNecessary!
-33646896!
-private - allocation!
-1! !
+deferredGC!
+33523479!
+garbage collection!
+0! !
 nmethodHistogram:!
 4570920!
 wrappers!
@@ -53,10 +53,10 @@ useInliningDatabase!
 4569096!
 boolean flags!
 0Boolean! !
-expand!
-33582774!
+handleNewDoubleBytes:size:failure:!
+33662670!
 private - allocation!
-1! !
+1:::! !
 new:ifFail:!
 33572955!
 private - allocation!
@@ -89,9 +89,9 @@ allocate:ifExpand:!
 33628502!
 private - allocation!
 1::! !
-printScavenge:!
-4565016!
-debugging!
+useInliningDatabase:!
+4569275!
+boolean flags!
 0Boolean:! !
 smallIntegerAt:!
 4566342!
@@ -105,10 +105,10 @@ freeSpace!
 33575806!
 private - allocation!
 0! !
-survivorSpaceSize!
-33575578!
-integer flags!
-0! !
+invocationCounterLimit!
+4563667!
+debugging!
+0Int! !
 K!
 33579798!
 private - allocation!
@@ -153,22 +153,22 @@ handleFailure:allocate:ifExpand:!
 33640974!
 private - allocation!
 1:::! !
-vmFlagAt:!
-4566826!
-private!
-1Symbol:Boolean! !
+growIfNecessary!
+33646896!
+private - allocation!
+1! !
 new:!
-33625141!
+33656638!
 allocation!
 0:! !
 allocFailures!
 33609325!
 private - allocation!
 1! !
-stopGCProcess!
-33243846!
-garbage collection!
-0! !
+oopSize!
+33522971!
+private - allocation!
+1! !
 collectAndAllocate:ifExpand:!
 33647089!
 private - allocation!
@@ -201,10 +201,14 @@ needsNewGCProcess!
 33243329!
 garbage collection!
 0! !
-privateBenchmarkNewNew:!
-33617166!
-benchmarking!
-0:! !
+scavengeGarbage!
+4567468!
+garbage collection!
+0! !
+newDoubleBytes:size:!
+33662013!
+allocation!
+0::! !
 objectMemorySize!
 33093819!
 garbage collection!
@@ -246,16 +250,16 @@ wizardMode:!
 boolean flags!
 0True|False:! !
 incFailureCount!
-33640010!
+33663847!
 private - allocation!
 1! !
 reportNonAllocationFailure:!
 33629426!
 private - allocation!
 1:! !
-useInliningDatabase:!
-4569275!
-boolean flags!
+printScavenge:!
+4565016!
+debugging!
 0Boolean:! !
 benchmarkNew:!
 33615606!
@@ -265,18 +269,26 @@ fixedSize:!
 33632842!
 private - allocation!
 1:! !
-invocationCounterLimit!
-4563667!
-debugging!
-0Int! !
+survivorSpaceSize!
+33575578!
+integer flags!
+0! !
 newBytes:size:tenured:ifFail:!
 33589691!
 private - allocation!
 1::::! !
+handleNewBytes:size:failure:!
+33655289!
+private - allocation!
+1:::! !
 error:!
 4566141!
 private!
 1Symbol:Boolean! !
+expandDoubleBytes:size:!
+33663101!
+private - allocation!
+1::! !
 new:size:tenured:ifFail:!
 33631527!
 private - allocation!
@@ -293,6 +305,10 @@ expandBytes:size:!
 33633340!
 private - allocation!
 1::! !
+handleNew:size:failure:!
+33657168!
+private - allocation!
+1:::! !
 waitForGC!
 33523684!
 garbage collection!
@@ -302,29 +318,29 @@ collectGarbage!
 garbage collection!
 0! !
 newBytes:size:!
-33590509!
+33656852!
 allocation!
 0::! !
 smallIntegerAt:put:!
 4566565!
 private!
 1Symbol:SmallInteger:SmallInteger! !
-deferredGC!
-33523479!
-garbage collection!
-0! !
+vmFlagAt:!
+4566826!
+private!
+1Symbol:Boolean! !
 new:size:!
-33632487!
+33657515!
 allocation!
 0::! !
 startGCProcess!
 33242597!
 garbage collection!
 0! !
-oopSize!
-33522971!
-private - allocation!
-1! !
+stopGCProcess!
+33243846!
+garbage collection!
+0! !
 traceLookupMissesFor:!
 4571176!
 wrappers!
@@ -353,23 +369,27 @@ expansionSize!
 33631290!
 private - allocation!
 1! !
-handleNewBytes:size:failure:!
-33640567!
+expand!
+33582774!
 private - allocation!
-1:::! !
+1! !
 vmFlagAt:put:!
 4567050!
 private!
 1Symbol:Boolean:! !
+newDoubleBytes:size:tenured:ifFail:!
+33662364!
+private - allocation!
+1::::! !
 spaceToScavenge!
 33575401!
 private - allocation!
 0! !
-scavengeGarbage!
-4567468!
-garbage collection!
-0! !
+privateBenchmarkNewNew:!
+33617166!
+benchmarking!
+0:! !
 handleNew:failure:!
-33640258!
+33656331!
 private - allocation!
 1::! !
