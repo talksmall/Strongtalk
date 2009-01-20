@@ -39,6 +39,7 @@ class os {
   static char** argv();
   static void   set_args(int argc, char* argv[]);
   static int    getenv(char* name,char* buffer,int len);
+  static void   add_exception_handler(void handler(void* fp, void* sp, void* pc));
 
   // We must call updateTimes before calling userTime or currentTime.
   static int    updateTimes();

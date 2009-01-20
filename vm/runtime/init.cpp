@@ -33,6 +33,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # define INIT_DO(template)				\
   template(ostream_init)				\
   template(os_init)					\
+  template(except_init)					\
   template(prim_init)					\
   template(eventlog_init)				\
   template(integerOps_init)				\

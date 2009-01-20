@@ -78,15 +78,15 @@ class frame : ValueObj {
 
   // accessors for the instance variables
   oop*  sp() const 			{ return _sp; }
-  int*  fp() const 			{ return _fp; }
+  int*  fp() const 			{ return _fp; } // should return void**
   char* pc() const 			{ return _pc; }
 
   // patching operations
   void patch_pc(char* pc); // patch the return address of the frame below.
   void patch_fp(int*  fp); // patch the link of the frame below.
 
-  int*   addr_at(int index) const 	{ return &fp()[index];    }
-  int    at(int index) const      	{ return *addr_at(index); }
+  int*   addr_at(int index) const 	{ return &fp()[index];    } // should return void**
+  int    at(int index) const      	{ return *addr_at(index); } // should really return void*
 
  private:
   int**  link_addr() const        	{ return (int**) addr_at(frame_link_offset); }

@@ -364,6 +364,7 @@ int BB::addUDHelper(PReg* r) {
 
 
 Use* BB::addUse(NonTrivialNode* n, PReg* r, bool soft) {
+  assert(!soft, "soft use");
   assert(contains(n), "node isn't in this BB");
   if (r->isNoPReg()) return NULL;
   Use* u = soft ? new PSoftUse(n) : new Use(n);

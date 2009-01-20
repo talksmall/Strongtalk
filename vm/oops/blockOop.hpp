@@ -107,7 +107,7 @@ class contextOopDesc: public memOopDesc {
   bool has_outer_context() const;
 
   int* parent_fp() const		{ return has_parent_fp() ? (int*) parent() : NULL; }
-  void set_home_fp(int* fp) {
+  void set_home_fp(int* fp) { /* this should be void** or similar to allow for 64-bit */
     assert(oop(fp)->is_smi(), "checking alignment");
     set_parent(oop(fp));
   }

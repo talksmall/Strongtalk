@@ -147,6 +147,7 @@ class debugFlags {
   develop(TraceResults                       , false, "Trace nmethod results"                                                       ) \
   develop(TraceApplyChange                   , false, "Trace reflective operation"                                                  ) \
   develop(TraceInliningDatabase              , false, "Trace inlining database"                                                     ) \
+  develop(TraceCanonicalContext              , false, "Trace canonical context construction"                                        ) \
                                                                                                                                       \
 /* Flags for displaying activations */                                                                                                \
   develop(ActivationShowExpressionStack      , false, "Show expression stack for activation"                                        ) \

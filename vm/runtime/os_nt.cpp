@@ -471,6 +471,26 @@ ThreadCritical::~ThreadCritical() {
   LeaveCriticalSection(&ThreadSection);
 }
 
+void (*handler)(void* fp, void* sp, void* pc) = NULL;
+bool handling_exception;
+
+LONG WINAPI testVectoredHandler(struct _EXCEPTION_POINTERS* exceptionInfo) {
+  lprintf("Caught exception.\n");
+  if (handler && !handling_exception) {
+    handling_exception = true;
+    handler((void*)exceptionInfo->ContextRecord->Ebp,
+      (void*) exceptionInfo->ContextRecord->Esp,
+      (void*) exceptionInfo->ContextRecord->Eip);
+    handling_exception = false;
+  }
+  return EXCEPTION_CONTINUE_SEARCH;
+}
+
+void os::add_exception_handler(void new_handler(void* fp, void* sp, void* pc)) {
+    handler = new_handler;
+    AddVectoredExceptionHandler(0, testVectoredHandler);
+}
+
 void os_init() {
   ThreadCritical::intialize();
 
@@ -505,6 +525,7 @@ void os_init() {
   main_thread_id = (int) GetCurrentThreadId();
 
   // Setup Windows Exceptions
+  
   SetUnhandledExceptionFilter(topLevelExceptionFilter);
 
   // Create the watcher thread

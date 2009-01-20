@@ -196,18 +196,38 @@ static bool validateContextChain(blockClosureOop block) {
   assert(block->is_block(), "must be block");
   bool is_valid = true;
 
-  { contextOop con = block->lexical_scope();
+  { 
+    contextOop con = block->lexical_scope();
+    contextOop prev_con = NULL;
     // verify entire context chain
     assert(con->is_context(), "expecting a context");
 
+    //while (true) {
+    //  if (con->unoptimized_context() != NULL) {
+    //    is_valid = false;
+    //    break;
+    //  }
+    //  if (!con->has_outer_context()) break; 
+    //  con = con->outer_context();
+    //}
+
+    // slr fixup unoptimized context refs as we go
     while (true) {
       if (con->unoptimized_context() != NULL) {
         is_valid = false;
-        break;
+        if (prev_con) {
+          prev_con->set_parent(con->parent());
+        } else {
+          prev_con = con;
+        }
+        //break;
+      } else {
+        prev_con = con;
       }
       if (!con->has_outer_context()) break; 
       con = con->outer_context();
     }
+    // slr fixup unoptimized context refs as we go
   }
 
   if (is_valid) return true;
@@ -706,9 +726,11 @@ char* StubRoutines::generate_verify_context_chain(MacroAssembler* masm) {
 
   char* entry_point = masm->pc();
   masm->set_last_Delta_frame_after_call();
+  masm->pushl(self_reg); // save self (argument can get corrupted in called function)
   masm->pushl(self_reg); // pass argument (C calling convention)
   masm->call((char*)validateContextChain, relocInfo::runtime_call_type);
   masm->movl(ebx, eax);
+  masm->popl(self_reg);
   masm->popl(self_reg);
   masm->reset_last_Delta_frame();
   masm->testl(ebx,ebx);

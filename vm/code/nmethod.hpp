@@ -64,6 +64,7 @@ class nmethod : public OopNCode {
 
   int	 _invocation_count;		// incremented for each nmethod invocation if CountExecution == true
   int	 _uncommon_trap_counter;	// # of times uncommon traps have been executed
+  static int	 all_uncommon_trap_counter;	// # of times uncommon traps have been executed across all nmethods
   nmFlags flags;			// various flags to keep track of nmethod state
 
   // (*) At this address there's 5 bytes of extra space reserved to accomodate for a call to the zombie handler
@@ -112,7 +113,7 @@ class nmethod : public OopNCode {
 
   // Interface for uncommon_trap_invocation
   int  uncommon_trap_counter() const	{ return _uncommon_trap_counter; }
-  void inc_uncommon_trap_counter()	{ _uncommon_trap_counter++; }
+  void inc_uncommon_trap_counter()	{ _uncommon_trap_counter++; all_uncommon_trap_counter++;}
 
   // Returns the parent nmethod if present, NULL otherwise
   nmethod* parent();

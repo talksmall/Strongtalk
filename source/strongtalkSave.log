@@ -63704,3 +63704,122 @@ incFailureCount
 "November 3, 2008 -> 0:22:59"!
 
 "System saved" !
+"January 13, 2009 -> 19:25:6"!
+
+Delta define: #ContextNestingTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"January 13, 2009 -> 19:30:53"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testNestedContext
+
+|t1 t2 block|
+t1 := 10.
+t2 := 1.0.
+self testWith: t1.
+self testWith: t2		! !
+
+"January 13, 2009 -> 19:33:18"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testWith: value
+
+^self do: [:val|
+				self subDo: [:val1|
+									value = val1]
+						with: val]! !
+
+"January 13, 2009 -> 19:33:46"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+do: block
+
+	^block value: 1.0! !
+
+"January 13, 2009 -> 19:33:58"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+do: block
+
+	^block value: 10! !
+
+"January 13, 2009 -> 19:34:29"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+subDo: block with: value
+
+	^block value: value! !
+
+"January 13, 2009 -> 19:34:48"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testNestedContext
+
+|t1 t2 block|
+t1 := 10.
+t2 := #symbol.
+self testWith: t1.
+self testWith: t2		! !
+
+"January 13, 2009 -> 19:35:8"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testNestedContext
+
+self testWith: 10.
+self testWith: #symbol		! !
+
+"January 13, 2009 -> 19:37:3"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testWith: value
+
+^self do: [:val|
+				self subDo: [:val1|
+									value = (val1 /val)]
+						with: val]! !
+
+"January 13, 2009 -> 19:37:52"!
+
+"System saved" !
+"January 13, 2009 -> 19:46:5"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testOnce
+
+self testWith: 10.
+self testWith: #symbol		! !
+
+"January 13, 2009 -> 19:46:13"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testTwice
+
+self testWith: 10.
+self testWith: #symbol		! !
+
+"January 13, 2009 -> 19:46:16"!
+
+(Delta mirrorFor: #ContextNestingTest) removeMethod: #testNestedContext ifAbsent: [] !
+
+
+"January 13, 2009 -> 19:46:22"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testOnce
+
+self testWith: 10! !
+
+"January 13, 2009 -> 19:46:32"!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+testTwice
+
+self testWith: 10.
+self testWith: #symbol! !
+
+"January 13, 2009 -> 19:46:57"!
+
+"System saved" !

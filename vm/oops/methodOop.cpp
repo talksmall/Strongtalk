@@ -1028,7 +1028,7 @@ void methodOopDesc::verify_context(contextOop con) {
   }
   // Check the static vs. dynamic chain length
   if (context_chain_length() != con->chain_length()) {
-    warning("Wong context chain length (got %d expected %d)",
+    warning("Wrong context chain length (got %d expected %d)",
             con->chain_length(), context_chain_length());
   }
   // Check the context has no forward reference
@@ -1248,4 +1248,59 @@ objArrayOop methodOopDesc::senders() const {
   SendersClosure blk(20);
   MethodIterator(methodOop(this), &blk);
   return oopFactory::new_objArray(blk.result);
+}
+
+
+symbolOop selectorFrom(methodOop method) {
+  if (method == NULL) return NULL;
+  if (method->is_blockMethod())
+    return selectorFrom(methodOop(method->selector_or_method()));
+  return method->selector();
+}
+
+void stopInSelector(const char* name, methodOop method) {
+  int len = strlen(name);
+  symbolOop selector = selectorFrom(method);
+  if (selector == NULL)
+    warning("Selector was NULL!");
+  else if (selector->length() == len && strncmp(name, selector->chars(), len) == 0) {
+    TraceCanonicalContext = true;
+    //method->pretty_print();
+    //method->print_codes();
+    breakpoint()
+    ;
+  }
+}
+
+bool StopInSelector::ignored = false;
+
+symbolOop className(klassOop klass) {
+  const int class_name_index = 9;
+
+  if (!klass->is_klass())
+    return NULL;
+  symbolOop selector = symbolOop(klass->instVarAt(class_name_index));
+  if (selector->is_symbol())
+    return selector;
+  if (!selector->is_klass())
+    return NULL;
+  return className(klassOop(selector));
+}
+bool selcmp(const char* name, symbolOop selector) {
+  int len = strlen(name);
+  if (selector == NULL && name == NULL)
+    return true;
+  if (selector == NULL || !selector->is_symbol())
+    return false;
+
+  return ((selector->length() == len && strncmp(name, selector->chars(), len) == 0));
+}
+bool shouldStop(const char* name, methodOop method, const char* class_name, klassOop klass) {
+  return selcmp(name, selectorFrom(method)) && selcmp(class_name, className(klass));
+}
+
+StopInSelector::StopInSelector(const char* class_name, const char* name, klassOop klass, methodOop method, bool &fl, bool stop)
+: enable(shouldStop(name, method, class_name, klass)), oldFlag(enable ? fl : ignored, true), stop(stop) {
+  if (enable && stop)
+    breakpoint();
 }

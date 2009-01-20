@@ -1048,6 +1048,7 @@ void NodeBuilder::allocate_context(int nofTemps, bool forMethod) {
         : NULL;					// parent should never be used, set to 0 for debugging
       // (note: the interpreter sets parent always to self)
     } else {
+      assert(_scope->isBlockScope(), "must be a block scope");
       // create new context PReg (_scope->context() is the context passed in by the caller)
       parent = _scope->context();
       _scope->setContext(new SAPReg(_scope, PrologueBCI, EpilogueBCI));

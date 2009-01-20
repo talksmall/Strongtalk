@@ -226,7 +226,7 @@ public:
   void		set_temporary(int no, Expr* t) 		{ _temporaries->at_put(no, t); }
   Expr*		contextTemporary(int no) const		{ return _contextTemporaries->at(no); }
   PReg*		context() const				{ return _context; }
-  void		setContext(PReg* ctx)			{ _context = ctx; }
+  virtual void	setContext(PReg* ctx)			{ _context = ctx; }
   ExprStack* 	exprStack() const			{ return gen()->exprStack(); }
   Node* 	current() const				{ return gen()->current(); }
   virtual bool  is_self_initialized() const		{ return true; }
@@ -333,7 +333,8 @@ class BlockScope: public InlinedScope {		// block methods
   bool		isRecursiveCall(methodOop method, klassOop rcvrKlass, int n);
 
   void		generateDebugInfo();
-    
+  void          setContext(PReg* newContext);
+
 // debugging
   void		print_short();
   void		print();

@@ -753,6 +753,17 @@ bool BlockScope::isRecursiveCall(methodOop method, klassOop rcvrKlass, int depth
   }
 }
 
+void BlockScope::setContext(PReg* newContext) {
+  _context = newContext;
+  if (_temporaries->first()->isContextExpr()) {
+    _temporaries->at_put(0, new ContextExpr(newContext));
+  } else {
+    GrowableArray<Expr*>* oldTemps = _temporaries;
+    _temporaries = new GrowableArray<Expr*>(oldTemps->length() + 1);
+    _temporaries->append(new ContextExpr(newContext));
+    _temporaries->appendAll(oldTemps);
+  }
+}
 
 void InlinedScope::genCode() {
   _hasBeenGenerated = true;
@@ -798,14 +809,30 @@ void InlinedScope::genCode() {
 
 
 // debugging info
+void print_selector_cr(symbolOop selector) {
+  char buffer[100];
+  int length = selector->length();
+  strncpy(buffer, selector->chars(), length);
+  buffer[length] = '\0';
+  std->print_cr("%s", buffer);
+}
 
 void InlinedScope::generateDebugInfo() {
   // Generate debug info for the common parts of methods and blocks
 
   if (PrintDebugInfoGeneration) {
     if (isMethodScope()) {
+      std->print("Method: ");
+      print_selector_cr(method()->selector());
       std->print_cr("self: %s", _self->preg()->name());
     } else {
+      methodOop m;
+      std->print("Method: ");
+      for (m = method(); m->is_blockMethod(); m = m->parent()) {
+        std->print("[] in ");
+      }
+      print_selector_cr(m->selector());
+      method()->print_codes();
       std->print_cr("no receiver (block method)");
     }
   }

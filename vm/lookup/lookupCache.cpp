@@ -303,7 +303,8 @@ LookupResult lookupCache::cache_miss_lookup(LookupKey* key, bool compile) {
   nmethod* nm = Universe::code->lookup(key);
   if (nm) {
     LookupResult result(nm); // unnecessary?
-    return nm;
+    // was: return nm;
+    return result;
   }
 
   // Last resort is searching class for the method
@@ -325,7 +326,8 @@ LookupResult lookupCache::cache_miss_lookup(LookupKey* key, bool compile) {
   }
 
   LookupResult result(method); // unnecessary
-  return method;
+  // was: return method;
+  return result;
 }
 
 methodOop lookupCache::compile_time_normal_lookup(klassOop receiver_klass, symbolOop selector) {

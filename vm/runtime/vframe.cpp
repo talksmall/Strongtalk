@@ -350,12 +350,12 @@ oop compiledVFrame::context_temp_at(int offset) const {
 }
 
 oop compiledVFrame::expression_at(int index) const {
-  GrowableArray<oop>* stack = expression_stack();
+  GrowableArray<DeferredExpression*>* stack = deferred_expression_stack();
   if (stack->length() <= index) {
     // Hack for Robert 1/15/96, probably wrong expression stack
     return oopFactory::new_symbol("invalid stack element");
   }
-  return stack->at(index);
+  return stack->at(index)->value();
 }
 
 class CollectContextInfoClosure : public NameDescClosure {
@@ -383,6 +383,16 @@ contextOop compiledVFrame::compiled_context() const {
 
   assert(con->is_context(), "context type check");
   return contextOop(con);
+}
+
+GrowableArray<DeferredExpression*>* compiledVFrame::deferred_expression_stack() const {
+  GrowableArray<int>* mapping = method()->expression_stack_mapping(bci());
+  GrowableArray<DeferredExpression*>* result = new GrowableArray<DeferredExpression*>(mapping->length());
+  for (int index = 0; index < mapping->length(); index++) {
+    NameDesc* nd    = sd->exprStackElem(mapping->at(index));
+    result->push(new DeferredExpression(this, nd));
+  }
+  return result;
 }
 
 GrowableArray<oop>* compiledVFrame::expression_stack() const {
@@ -555,6 +565,24 @@ void compiledVFrame::verify_debug_info() const {
 #undef CHECK
 }
 
+class Indenting : public ValueObj {
+public:
+  Indenting() {_std->inc();}
+  ~Indenting() {_std->dec();}
+};
+
+void traceFrame(const compiledVFrame* vf, contextOop con) {
+    if (TraceCanonicalContext) {
+      FlagSetting flag(TraceCanonicalContext, false);
+      _std->cr();
+      _std->indent();
+      _std->print_cr("context(0x%x), vframe(0x%x), block? %d", con, vf, vf->method()->is_blockMethod());
+      vf->print_activation(0);
+      vf->method()->print_codes();
+      //breakpoint();
+    }
+}
+
 contextOop compiledVFrame::compute_canonical_context(ScopeDesc* scope, const compiledVFrame* vf, contextOop con) {
   // Computes the canonical contextOop for a scope desc.
   // 
@@ -565,10 +593,13 @@ contextOop compiledVFrame::compute_canonical_context(ScopeDesc* scope, const com
 
   // Playing rules for contextOops
   // - If there exists a compiled context there is an 1-to-1 mapping to an interpreted context
+  Indenting in;
+  traceFrame(vf, con);
 
   if (!scope->allocates_interpreted_context()) {
     // This scope does not allocate an interpreter contextOop
     if (scope->isMethodScope()) return NULL;
+
     compiledVFrame* parent_vf = (!vf || scope->isTopLevelBlockScope()) ? NULL : (compiledVFrame*) vf->parent();
     return compute_canonical_context(scope->parent(true), parent_vf, con);
   }
@@ -677,7 +708,12 @@ oop compiledMethodVFrame::receiver() const {
 
 contextOop compiledMethodVFrame::canonical_context() const {
   assert(!method()->is_blockMethod(), "check methodOop type");
-  return compute_canonical_context(scope(), this, compiled_context());
+  contextOop conIn = compiled_context();
+  contextOop conOut = compute_canonical_context(scope(), this, conIn);
+  if (TraceCanonicalContext) {
+    _std->print("context in(0x%x), vf(0x%x), context out(0x%x), block? %d", conIn, this, conOut, method()->is_blockMethod());
+  }
+  return conOut;
 }
 
 // ------------- compiledBlockVFrame --------------
@@ -707,7 +743,12 @@ deltaVFrame* compiledBlockVFrame::parent() const {
 
 contextOop compiledBlockVFrame::canonical_context() const {
   assert(method()->is_blockMethod(), "must be block method");
-  return compute_canonical_context(scope(), this, compiled_context());
+  contextOop conIn = compiled_context();
+  contextOop conOut = compute_canonical_context(scope(), this, conIn);
+  if (TraceCanonicalContext) {
+    _std->print("context in(0x%x), vf(0x%x), context out(0x%x), block? %d", conIn, this, conOut, method()->is_blockMethod());
+  }
+  return conOut;
 }
 
 ScopeDesc* compiledBlockVFrame::parent_scope() const {
@@ -763,7 +804,12 @@ deltaVFrame* compiledTopLevelBlockVFrame::parent() const {
 
 contextOop compiledTopLevelBlockVFrame::canonical_context() const {
   assert(method()->is_blockMethod(), "must be block method");
-  return compute_canonical_context(scope(), this, compiled_context());
+  contextOop conIn = compiled_context();
+  contextOop conOut = compute_canonical_context(scope(), this, conIn);
+  if (TraceCanonicalContext) {
+    _std->print("context in(0x%x), vf(0x%x), context out(0x%x), block? %d", conIn, this, conOut, method()->is_blockMethod());
+  }
+  return conOut;
 }
 
 ScopeDesc* compiledTopLevelBlockVFrame::parent_scope() const {

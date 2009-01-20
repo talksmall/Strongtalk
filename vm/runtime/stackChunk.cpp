@@ -42,23 +42,28 @@ StackChunkBuilder::~StackChunkBuilder() {
 }
 
 void StackChunkBuilder::append(deltaVFrame* f) {
+  methodOop method;
+  int number_of_temps;
+  GrowableArray<oop>* stack;
+  {
+    //FlagSetting fl(TraceCanonicalContext, false);
   number_of_vframes++;
 
   // Append the frame information to the array
-  methodOop method = f->method();
+  /*methodOop */method = f->method();
   array->push(f->receiver());
-  array->push(f->method());
+  array->push(method);
   array->push(as_smiOop(f->bci()));
  
   // push locals
-  int number_of_temps = f->method()->number_of_stack_temporaries();
-  GrowableArray<oop>* stack = f->expression_stack();
+  /*int*/ number_of_temps = method->number_of_stack_temporaries();
+  /*GrowableArray<oop>* */ stack = f->expression_stack();
 
   // push number of locals
   int locals = number_of_temps + stack->length();
   array->push(as_smiOop(locals));
   number_of_locals += locals;
-
+  }
   // push context and temporaries
   // if a context is present store the canoniocal form as temporary 0.
   contextOop con = f->canonical_context();

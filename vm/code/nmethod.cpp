@@ -213,6 +213,7 @@ void nmethod::fix_relocation_at_move(int delta) {
   }
 }
 
+int nmethod::all_uncommon_trap_counter = 0;
 
 methodOop nmethod::method() const {
   ResourceMark rm;

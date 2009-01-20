@@ -44,7 +44,6 @@ void compiler_init() {
 #endif
 }
 
-
 ScopeDescRecorder* Compiler::scopeDescRecorder() { return rec; }
 
 CodeBuffer* Compiler::code() const { return _code; }
@@ -429,6 +428,11 @@ nmethod* Compiler::compile() {
   bbIterator->verify();
 #endif
 
+  if (PrintDebugInfoGeneration) {
+    std->cr();
+    std->cr();
+    std->print_cr("Start of debugging info.");
+  }
   topScope->generateDebugInfo();	// must come before gen to set scopeInfo
   topScope->generateDebugInfoForNonInlinedBlocks();
 
@@ -489,20 +493,7 @@ void Compiler::fixupNLRTestPoints() {
   while (i-- > 0) nlrTestPoints->at(i)->fixup();
 }
 
-symbolOop selectorFrom(methodOop method) {
-  if (method == NULL) return NULL;
-  if (method->is_block())
-    return selectorFrom(methodOop(method->selector_or_method()));
-  return method->selector();
-}
-
 void Compiler::computeBlockInfo() {
-  //symbolOop selector = selectorFrom(method);
-
-  //if (selector == NULL)
-  //  warning("Selector was NULL!");
-  //else if (selector->length() == 14 && strncmp("computeHeapSet", selector->chars(), 14) == 0)
-  //  breakpoint();
   FlagSetting(EliminateUnneededNodes, true);  // unused context nodes must be eliminated
   GrowableArray<InlinedScope*>* allContexts = new GrowableArray<InlinedScope*>(25);
   topScope->collectContextInfo(allContexts);
