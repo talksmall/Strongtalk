@@ -559,7 +559,12 @@ Expr* Inliner::inlineMerge(SendInfo* info) {
 
   if (useUncommonBranchForUnknown) {
     // generate an uncommon branch for the unknown case, not a send
-    gen->append_exit(NodeFactory::new_UncommonNode(gen->copyCurrentExprStack(), sender->bci()));
+    // use an uncommon send rather than an uncommon node to capture
+    // the argument usage in case none of the type tests uses the arguments.
+    // - was a bug slr 12/02/2009.
+    gen->append_exit(NodeFactory::new_UncommonSendNode(gen->copyCurrentExprStack(), 
+                                                       sender->bci(),
+                                                       info->sel->number_of_arguments()));
     info->needRealSend = false;
   } else if (others->isEmpty()) {
     // typecase cannot fail

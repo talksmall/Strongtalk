@@ -59,7 +59,11 @@ inline int min(int a, int b)		{ return a < b ? a : b; }
 inline int max(int a, int b)		{ return a > b ? a : b; }
 inline int min(int a, int b, int c)	{ return a < b ? min(a, c) : min(b, c); }
 inline int max(int a, int b, int c)	{ return a > b ? max(a, c) : max(b, c); }
-
+inline void *align(void* p, int alignment) {
+  int number = (int) p;
+  int adjust = alignment - (number%alignment) % alignment;
+  return (void*) (number + adjust);
+}
 
 // some useful constants
 

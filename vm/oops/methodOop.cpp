@@ -1251,8 +1251,12 @@ objArrayOop methodOopDesc::senders() const {
 }
 
 
-symbolOop selectorFrom(methodOop method) {
-  if (method == NULL) return NULL;
+symbolOop selectorFrom(oop method_or_selector) {
+  if (method_or_selector == NULL) return NULL;
+  if (method_or_selector->is_symbol()) return symbolOop(method_or_selector);
+  if (!method_or_selector->is_method()) return NULL;
+  
+  methodOop method = methodOop(method_or_selector);
   if (method->is_blockMethod())
     return selectorFrom(methodOop(method->selector_or_method()));
   return method->selector();
@@ -1295,12 +1299,12 @@ bool selcmp(const char* name, symbolOop selector) {
 
   return ((selector->length() == len && strncmp(name, selector->chars(), len) == 0));
 }
-bool shouldStop(const char* name, methodOop method, const char* class_name, klassOop klass) {
-  return selcmp(name, selectorFrom(method)) && selcmp(class_name, className(klass));
+bool shouldStop(const char* name, oop method_or_selector, const char* class_name, klassOop klass) {
+  return selcmp(name, selectorFrom(method_or_selector)) && selcmp(class_name, className(klass));
 }
 
-StopInSelector::StopInSelector(const char* class_name, const char* name, klassOop klass, methodOop method, bool &fl, bool stop)
-: enable(shouldStop(name, method, class_name, klass)), oldFlag(enable ? fl : ignored, true), stop(stop) {
+StopInSelector::StopInSelector(const char* class_name, const char* name, klassOop klass, oop method_or_selector, bool &fl, bool stop)
+: enable(shouldStop(name, method_or_selector, class_name, klass)), oldFlag(enable ? fl : ignored, true), stop(stop) {
   if (enable && stop)
     breakpoint();
 }

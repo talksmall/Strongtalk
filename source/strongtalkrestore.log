@@ -1,90 +1,121 @@
 
-"November 2, 2008 -> 22:35:15"!
+"February 19, 2009 -> 0:36:0"!
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
-newDoubleBytes: doubleByteClass size: size
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
 
-	^{{primitiveIndexedDoubleByteNew: doubleByteClass
-			size: size
-			tenured: false
-			ifFail: [:e| self handleNewDoubleBytes: doubleByteClass
-										size: size
-										failure: e]}}! !
+"	self objectType type."
+	self nilType type.
+"	self typeId type."
+	"self classId type.
+	self operatorTypeError type.
+	self superNilError type."
+	self placeholderError type.
+	self noTypeError type.
+	! !
 
-"November 2, 2008 -> 22:37:33"!
+"February 19, 2009 -> 0:36:38"!
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
-newDoubleBytes: class size: size tenured: tenured ifFail: failureBlock
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
 
-	^{{primitiveIndexedDoubleByteNew: class
-			size: size
-			tenured: tenured
-			ifFail: [:e| failureBlock value: e]}}! !
+	self nilType type.
+	self placeholderError type.
+	self noTypeError type.
+	self arityError type	! !
 
-"November 2, 2008 -> 22:37:39"!
+"February 19, 2009 -> 0:36:46"!
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
-handleNewDoubleBytes: class size: size failure: error
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
 
-	self incFailureCount.
-	^self handleFailure: error
-			allocate: [:tenured :failBlock|
-								self newDoubleBytes: class
-										size: size
-										tenured: tenured
-										ifFail: failBlock]
-			ifExpand: [self expandDoubleBytes: class size: size]! !
+	self nilType type.
+	self placeholderError type.
+	self noTypeError type.
+	self arityError type! !
 
-"November 2, 2008 -> 22:37:42"!
+"February 19, 2009 -> 0:38:38"!
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
-expandDoubleBytes: class size: size
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+objectClassType
+	
+	^self parameter: (DeltaType for: Object class)! !
 
-	|nonIndexableSizeInOops|
-	nonIndexableSizeInOops := self fixedSize: class.
-	self expand: (nonIndexableSizeInOops * self oopSize + (size * 2))! !
+"February 19, 2009 -> 0:39:4"!
 
-"November 2, 2008 -> 22:42:23"!
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testTriggerUncommonTrap
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
-newDoubleBytes: doubleByteClass size: size
+	self objectClassType isFloatValue! !
 
-	^{{primitiveIndexedDoubleByteNew: doubleByteClass
-			size: size
-			tenured: false
-			ifFail: [:e| self handleNewDoubleBytes: doubleByteClass
-										size: size
-										failure: e]}}! !
+"February 19, 2009 -> 0:39:34"!
 
-"November 2, 2008 -> 22:42:23"!
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #classId ifAbsent: [] !
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
-newDoubleBytes: class size: size tenured: tenured ifFail: failureBlock
 
-	^{{primitiveIndexedDoubleByteNew: class
-			size: size
-			tenured: tenured
-			ifFail: [:e| failureBlock value: e]}}! !
+"February 19, 2009 -> 0:44:50"!
 
-"November 2, 2008 -> 22:42:23"!
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
-handleNewDoubleBytes: class size: size failure: error
+"	self objectType type."
+	self nilType type.
+"	self typeId type."
+	"self classId type.
+	self operatorTypeError type.
+	self superNilError type."
+	self placeholderError type.
+	self noTypeError type.
+	! !
 
-	self incFailureCount.
-	^self handleFailure: error
-			allocate: [:tenured :failBlock|
-								self newDoubleBytes: class
-										size: size
-										tenured: tenured
-										ifFail: failBlock]
-			ifExpand: [self expandDoubleBytes: class size: size]! !
+"February 19, 2009 -> 0:44:50"!
 
-"November 2, 2008 -> 22:42:23"!
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
 
-! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
-expandDoubleBytes: class size: size
+	self nilType type.
+	self placeholderError type.
+	self noTypeError type.
+	self arityError type	! !
 
-	|nonIndexableSizeInOops|
-	nonIndexableSizeInOops := self fixedSize: class.
-	self expand: (nonIndexableSizeInOops * self oopSize + (size * 2))! !
+"February 19, 2009 -> 0:44:50"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
+
+	self nilType type.
+	self placeholderError type.
+	self noTypeError type.
+	self arityError type! !
+
+"February 19, 2009 -> 0:44:50"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+objectClassType
+	
+	^self parameter: (DeltaType for: Object class)! !
+
+"February 19, 2009 -> 0:44:50"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testTriggerUncommonTrap
+
+	self objectClassType isFloatValue! !
+
+"February 19, 2009 -> 0:46:28"!
+
+(Delta mirrorFor: #DeltaParameterTest) classSide removeMethod: #new ifAbsent: [] !
+
+
+"February 19, 2009 -> 0:46:37"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #initialize ifAbsent: [] !
+
+
+"February 19, 2009 -> 0:47:0"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testTriggerUncommonTrap
+
+	self populatePIC.
+	self objectClassType isFloatValue! !

@@ -74,6 +74,7 @@ nmethod::nmethod(Compiler* c) : key(c->key->klass(), c->key->selector_or_method(
   // lookupCache::verify();
 #endif
   // Initializing the chunks sizes
+  assert(instruction_length <= 10 * MaxNmInstrSize, "too many instructions");
   _instsLen	= instruction_length;
   _locsLen	= location_length; 
   _scopeLen	= scope_length;

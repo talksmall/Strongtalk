@@ -1,5 +1,6 @@
 #include "incls/_precompiled.incl"
 #include "incls/_shell.cpp.incl"
+#include "incls/_delta.cpp.incl"
 #include "testharness.h"
 #include <windows.h>
 
@@ -15,18 +16,50 @@ static Event* done;
 class TestDeltaProcess : public DeltaProcess {
 private:
   static int launch_tests(DeltaProcess *process);
+  oop newProcess();
 public:
   TestDeltaProcess();
+  ~TestDeltaProcess();
+  void addToProcesses();
+  void removeFromProcesses();
 };
+
+TestDeltaProcess*    testProcess = NULL;
+static VMProcess*    vmProcess;
+static Thread*       vmThread;
+
+void addTestToProcesses() {
+  testProcess->addToProcesses();
+}
+
+void removeTestFromProcesses() {
+  testProcess->removeFromProcesses();
+}
+
+void TestDeltaProcess::removeFromProcesses() {
+  Processes::remove(this);
+}
+oop TestDeltaProcess::newProcess() {
+  return Delta::call(Universe::find_global("Process"), oopFactory::new_symbol("new"));
+}
+
+void TestDeltaProcess::addToProcesses() {
+  oop process = newProcess();
+  assert(process->is_process(), "Should be process");
+  set_processObj(processOop(process));
+  Processes::add(this);
+}
 
 TestDeltaProcess::TestDeltaProcess(): DeltaProcess(NULL, NULL) {
   int ignore;
   Processes::remove(this);
   os::terminate_thread(_thread); // don't want to launch delta!
   os::create_thread((int (*)(void*)) &launch_tests, this, &ignore);
-  set_processObj(processOop(klassOop(Universe::find_global("Process"))->primitive_allocate()));
 }
 
+TestDeltaProcess::~TestDeltaProcess() {
+  set_processObj(processOop(newProcess()));
+}
 int TestDeltaProcess::launch_tests(DeltaProcess *process) {
   process->suspend_at_creation();
   TestRegistry::runAndPrint();
@@ -34,19 +67,17 @@ int TestDeltaProcess::launch_tests(DeltaProcess *process) {
   return 0;
 }
 
-static VMProcess* vmProcess;
-static Thread* vmThread;
-
 static int vmLoopLauncher(DeltaProcess* testProcess) {
   vmProcess->transfer_to(testProcess);
   vmProcess->loop();
   return 0;
 }
 
-void start_vm_process(DeltaProcess* testProcess) {
+void start_vm_process(TestDeltaProcess* testProcess) {
   int threadId;
   vmProcess = new VMProcess();
   vmThread = os::create_thread((int(*)(void*))&vmLoopLauncher, testProcess, &threadId);
+  ::testProcess = testProcess;
 }
 void stop_vm_process() {
   os::terminate_thread(vmThread);

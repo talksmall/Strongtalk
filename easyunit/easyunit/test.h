@@ -226,6 +226,18 @@ class Test: public CHeap
 	}}
 
 /**
+ * Asserts that a condition is false.
+ * If the condition is not true, a failure is generated.
+ * @param condition Condition to fullfill for the assertion to pass
+ */
+#define ASSERT_FALSE(condition)\
+	{ if (!condition) {\
+	addTestPartResult(new easyunit::TestPartResult(this, __FILE__,__LINE__,#condition,success));\
+	} else {\
+	addTestPartResult(new easyunit::TestPartResult(this, __FILE__,__LINE__, #condition,failure)); return;\
+	}}
+
+ /**
  * Asserts that a condition is true.
  * If the condition is not true, a failure is generated.
  * @param condition Condition to fullfill for the assertion to pass

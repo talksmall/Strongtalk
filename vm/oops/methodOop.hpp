@@ -345,7 +345,7 @@ public:
   StopInSelector(const char* class_name,
                  const char* name,
                  klassOop klass,
-                 methodOop method, 
+                 oop method_or_selector, 
                  bool &fl = StopInSelector::ignored,
                  bool stop = true);
 };

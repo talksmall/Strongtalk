@@ -150,7 +150,9 @@ void Compiler::exitScope (InlinedScope* s) 	{ assert(s == _scopeStack.top(), "ba
 
 
 void Compiler::initialize(RScope* remote_scope) {
-  assert(VMProcess::vm_operation() != NULL, "must be in vmProcess to compile");
+  //assert(VMProcess::vm_operation() != NULL, "must be in vmProcess to compile");
+  if (VMProcess::vm_operation() == NULL)
+    warning("should be in vmProcess to compile"); //softened to a warning to support testing
   nofCompilations++;
 #ifdef DEBUG
   messages = new stringStream(250 * K);
@@ -380,33 +382,40 @@ nmethod* Compiler::compile() {
   bbIterator->computeEscapingBlocks();
   bbIterator->computeUplevelAccesses();
   if (verifyOften) bbIterator->verify();
+  if (PrintCode) print_code(false);
 
   // construct def & use information
   bbIterator->makeUses();
   if (verifyOften) bbIterator->verify();
+  if (PrintCode) print_code(false);
 
   if (LocalCopyPropagate) {
     bbIterator->localCopyPropagate();
     if (verifyOften) bbIterator->verify();
   }
+  if (PrintCode) print_code(false);
   if (GlobalCopyPropagate) {
     bbIterator->globalCopyPropagate();
     if (verifyOften) bbIterator->verify();
   }
+  if (PrintCode) print_code(false);
   if (BruteForcePropagate) {
     bbIterator->bruteForceCopyPropagate();
     if (verifyOften) bbIterator->verify();
   }
+  if (PrintCode) print_code(false);
   if (EliminateUnneededNodes) {
     bbIterator->eliminateUnneededResults();
     if (verifyOften) bbIterator->verify();
   }
+  if (PrintCode) print_code(false);
   if (OptimizeIntegerLoops) {
     // run after copy propagation so that loop increment is easier to recognize
     // also run after eliminateUnneededResults so that cpInfo is set for eliminated PRegs
     topScope->optimizeLoops();
     if (verifyOften) bbIterator->verify();
   }
+  if (PrintCode) print_code(false);
  
   // compute existence & format of run-time context objects and blocks
   computeBlockInfo();

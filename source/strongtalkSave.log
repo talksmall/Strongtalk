@@ -63823,3 +63823,709 @@ self testWith: #symbol! !
 "January 13, 2009 -> 19:46:57"!
 
 "System saved" !
+"February 5, 2009 -> 0:7:56"!
+
+Delta define: #DeltaParameterTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"February 5, 2009 -> 0:8:50"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object)! !
+
+"February 5, 2009 -> 0:9:22"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testTriggerUncommonTrap
+	
+	DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object class)! !
+
+"February 5, 2009 -> 0:10:13"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object);
+		isFloatValue! !
+
+"February 5, 2009 -> 0:10:14"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testTriggerUncommonTrap
+	
+	DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object class);
+		isFloatValue! !
+
+"February 5, 2009 -> 0:11:59"!
+
+"System saved" !
+"February 8, 2009 -> 15:21:44"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object);
+		isFloatValue.
+		
+	DeltaParameter new
+		name: #name
+		type: nil;
+		isFloatValue.! !
+
+"February 8, 2009 -> 15:22:0"!
+
+"System saved" !
+"February 8, 2009 -> 16:3:56"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'processing' !
+debugErrorTest: anInteger
+        selectedErrorTest := anInteger.				"added rew"
+        selectedFailureTest := 0.							"added rew"
+        self changed: #selectedFailureTest.		"added rew"
+        self changed: #selectedErrorTest.			"added rew"
+        (anInteger ~= 0)
+                ifTrue: [[(result errors at: anInteger) debug] fork]! !
+
+"February 8, 2009 -> 16:26:47"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object);
+		isFloatValue.
+		
+	DeltaParameter new
+		name: #name
+		type: ((DeltaTypeId new)
+					setId: #id;
+					yourself);
+		isFloatValue.! !
+
+"February 8, 2009 -> 16:28:4"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object);
+		isFloatValue.
+		
+	DeltaParameter new
+		name: #name
+		type: ((DeltaTypeId new)
+					setId: #id;
+					yourself);
+		isFloatValue.
+		
+	DeltaParameter new
+		name: #name
+		type: nil;
+		type! !
+
+"February 8, 2009 -> 16:29:2"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object);
+		isFloatValue.
+		
+	DeltaParameter new
+		name: #name
+		type: ((DeltaTypeId new)
+					setId: #id;
+					yourself);
+		isFloatValue.
+
+	DeltaParameter new
+		name: #name
+		type: ((DeltaClassId new)
+					setId: #id;
+					yourself);
+		isFloatValue.
+
+	DeltaParameter new
+		name: #name
+		type: nil;
+		type! !
+
+"February 8, 2009 -> 16:29:30"!
+
+"System saved" !
+"February 8, 2009 -> 16:40:28"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+objectType
+	
+	^DeltaParameter new
+		name: #name
+		type: (DeltaType for: Object);
+		yourself! !
+
+"February 8, 2009 -> 16:40:48"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	self objectType isFloatValue.
+		
+	DeltaParameter new
+		name: #name
+		type: ((DeltaTypeId new)
+					setId: #id;
+					yourself);
+		isFloatValue.
+
+	DeltaParameter new
+		name: #name
+		type: ((DeltaClassId new)
+					setId: #id;
+					yourself);
+		isFloatValue.
+
+	DeltaParameter new
+		name: #name
+		type: nil;
+		type! !
+
+"February 8, 2009 -> 16:41:16"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+typeId
+	
+	^DeltaParameter new
+		name: #name
+		type: ((DeltaTypeId new)
+					setId: #id;
+					yourself);
+		yourself! !
+
+"February 8, 2009 -> 16:41:36"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	self objectType isFloatValue.
+	self typeId isFloatValue.
+
+	DeltaParameter new
+		name: #name
+		type: ((DeltaClassId new)
+					setId: #id;
+					yourself);
+		isFloatValue.
+
+	DeltaParameter new
+		name: #name
+		type: nil;
+		type! !
+
+"February 8, 2009 -> 16:42:21"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+classId
+	
+	^DeltaParameter new
+		name: #name
+		type: ((DeltaClassId new)
+					setId: #id;
+					yourself);
+		yourself! !
+
+"February 8, 2009 -> 16:42:38"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	self objectType isFloatValue.
+	self typeId isFloatValue.
+	self classId isFloatValue.
+
+	DeltaParameter new
+		name: #name
+		type: nil;
+		type! !
+
+"February 8, 2009 -> 16:43:9"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+nilType
+	
+	^DeltaParameter new
+		name: #name
+		type: nil;
+		yourself! !
+
+"February 8, 2009 -> 16:43:25"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	self objectType isFloatValue.
+	self typeId isFloatValue.
+	self classId isFloatValue.
+	self nilType type! !
+
+"February 8, 2009 -> 16:44:20"!
+
+Delta define: #DeltaParameterTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'objectType typeId classId nilType')) !
+
+
+"February 8, 2009 -> 16:45:9"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+initialize
+	
+	objectType := self objectType.
+	typeId := self typeId.
+	classId := self classId.
+	nilType := self nilType! !
+
+"February 8, 2009 -> 16:45:32"!
+
+! (Delta mirrorFor: #DeltaParameterTest) classSide methodsFor: 'instance creation' !
+new
+
+	^super new initialize; yourself! !
+
+"February 8, 2009 -> 16:45:56"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	objectType isFloatValue.
+	typeId isFloatValue.
+	classId isFloatValue.
+	nilType type! !
+
+"February 8, 2009 -> 16:46:11"!
+
+"System saved" !
+"February 8, 2009 -> 17:50:52"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+operatorTypeError
+	
+	^DeltaParameter new
+		name: #name
+		type: ((DeltaInvalidTypeOperatorError new)
+					operator: '+';
+					yourself);
+		yourself! !
+
+"February 8, 2009 -> 17:51:14"!
+
+Delta define: #DeltaParameterTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'objectType typeId classId nilType operatorTypeError')) !
+
+
+"February 8, 2009 -> 17:51:30"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+initialize
+	
+	objectType := self objectType.
+	typeId := self typeId.
+	classId := self classId.
+	nilType := self nilType.
+	operatorTypeError := self operatorTypeError! !
+
+"February 8, 2009 -> 17:51:46"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	objectType isFloatValue.
+	typeId isFloatValue.
+	classId isFloatValue.
+	nilType type.
+	operatorTypeError type! !
+
+"February 8, 2009 -> 17:52:15"!
+
+"System saved" !
+"February 8, 2009 -> 18:10:47"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+setupPolymorphicSends
+
+	self objectType type.
+	self nilType type.
+	self typeId type.
+	self classId type.
+	self operatorTypeError type.
+	self superNilError type.
+	! !
+
+"February 8, 2009 -> 18:13:8"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	self setupPolymorphicSends.
+	self arityError type! !
+
+"February 8, 2009 -> 18:13:10"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+setupPolymorphicSends
+
+	self objectType type.
+	self nilType type.
+	self typeId type.
+	self classId type.
+	self operatorTypeError type.
+	self superNilError type.
+	self placeholderError type.
+	self noTypeError type.
+	! !
+
+"February 8, 2009 -> 18:13:24"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+superNilError
+
+! !
+
+"February 8, 2009 -> 18:14:26"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+superNilError
+	
+	^DeltaParameter new
+		name: #name
+		type: (DeltaSuperSendToNilError new);
+		yourself! !
+
+"February 8, 2009 -> 18:15:24"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+placeholderError
+	
+	^DeltaParameter new
+		name: #name
+		type: (DeltaPlaceHolderError new
+						name: #placeholder;
+						yourself);
+		yourself! !
+
+"February 8, 2009 -> 18:16:14"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+noTypeError
+	
+	^DeltaParameter new
+		name: #name
+		type: (DeltaNoTypeSpecifiedError new);
+		yourself! !
+
+"February 8, 2009 -> 18:16:37"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+parameter: type
+	
+	^DeltaParameter new
+		name: #name
+		type: type;
+		yourself! !
+
+"February 8, 2009 -> 18:17:0"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+operatorTypeError
+	
+	^self parameter: ((DeltaInvalidTypeOperatorError new)
+									operator: '+';
+									yourself)! !
+
+"February 8, 2009 -> 18:17:30"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+objectType
+	
+	^self parameter: (DeltaType for: Object)! !
+
+"February 8, 2009 -> 18:17:45"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+noTypeError
+	
+	^self parameter: (DeltaNoTypeSpecifiedError new)! !
+
+"February 8, 2009 -> 18:18:38"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+placeholderError
+	
+	^self parameter: (DeltaPlaceHolderError new
+									name: #placeholder;
+									yourself)! !
+
+"February 8, 2009 -> 18:19:2"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+superNilError
+	
+	^self parameter: (DeltaSuperSendToNilError new)! !
+
+"February 8, 2009 -> 18:19:22"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+typeId
+	
+	^self parameter: ((DeltaTypeId new)
+									setId: #id;
+									yourself)! !
+
+"February 8, 2009 -> 18:19:48"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+nilType
+	
+	^self parameter: nil! !
+
+"February 8, 2009 -> 18:20:5"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+classId
+	
+	^self parameter: ((DeltaClassId new)
+									setId: #id;
+									yourself)! !
+
+"February 8, 2009 -> 18:21:14"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+arityError
+	
+	^self parameter: (DeltaGenericArityError new)! !
+
+"February 8, 2009 -> 18:21:28"!
+
+"System saved" !
+"February 8, 2009 -> 18:33:55"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+setupPolymorphicSends
+
+	self objectType type.
+	self nilType type.
+	self typeId type.
+	self classId type.
+	self operatorTypeError type.
+	"self superNilError type.
+	self placeholderError type.
+	self noTypeError type."
+	! !
+
+"February 8, 2009 -> 18:34:1"!
+
+"System saved" !
+"February 8, 2009 -> 18:40:48"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testTriggerUncommonTrap
+	
+	(self parameter: (DeltaType for: Object class))
+		isFloatValue! !
+
+"February 8, 2009 -> 18:41:28"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupPoly
+	
+	self setupPolymorphicSends! !
+
+"February 8, 2009 -> 18:41:41"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testSetupTypes
+	
+	self arityError type! !
+
+"February 8, 2009 -> 18:42:9"!
+
+"System saved" !
+"February 8, 2009 -> 21:34:57"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+setupPolymorphicSends
+
+	self objectType type.
+	self nilType type.
+	self typeId type.
+	self classId type.
+	"self operatorTypeError type.
+	self superNilError type.
+	self placeholderError type.
+	self noTypeError type."
+	! !
+
+"February 8, 2009 -> 21:35:11"!
+
+"System saved" !
+"February 8, 2009 -> 22:59:51"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+setupPolymorphicSends
+
+	self objectType type.
+	self nilType type.
+	self typeId type.
+	"self classId type.
+	self operatorTypeError type.
+	self superNilError type.
+	self placeholderError type.
+	self noTypeError type."
+	! !
+
+"February 8, 2009 -> 23:0:13"!
+
+"System saved" !
+"February 8, 2009 -> 23:45:53"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+setupPolymorphicSends
+
+"	self objectType type."
+	self nilType type.
+"	self typeId type."
+	"self classId type.
+	self operatorTypeError type.
+	self superNilError type."
+	self placeholderError type.
+	self noTypeError type.
+	! !
+
+"February 8, 2009 -> 23:46:24"!
+
+"System saved" !
+"February 19, 2009 -> 19:5:19"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
+
+"	self objectType type."
+	self nilType type.
+"	self typeId type."
+	"self classId type.
+	self operatorTypeError type.
+	self superNilError type."
+	self placeholderError type.
+	self noTypeError type.
+	! !
+
+"February 19, 2009 -> 19:5:19"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
+
+	self nilType type.
+	self placeholderError type.
+	self noTypeError type.
+	self arityError type	! !
+
+"February 19, 2009 -> 19:5:19"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+populatePIC
+
+	self nilType type.
+	self placeholderError type.
+	self noTypeError type.
+	self arityError type! !
+
+"February 19, 2009 -> 19:5:19"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+objectClassType
+	
+	^self parameter: (DeltaType for: Object class)! !
+
+"February 19, 2009 -> 19:5:19"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testTriggerUncommonTrap
+
+	self objectClassType isFloatValue! !
+
+"February 19, 2009 -> 19:5:19"!
+
+(Delta mirrorFor: #DeltaParameterTest) classSide removeMethod: #new ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:5:19"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #initialize ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:5:19"!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+testTriggerUncommonTrap
+
+	self populatePIC.
+	self objectClassType isFloatValue! !
+
+"February 19, 2009 -> 19:6:33"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #testSetupPoly ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:6:36"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #testSetupTypes ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:7:27"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #setupPolymorphicSends ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:7:39"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #superNilError ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:7:51"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #operatorTypeError ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:7:59"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #objectType ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:8:23"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #classId ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:9:3"!
+
+(Delta mirrorFor: #DeltaParameterTest) removeMethod: #typeId ifAbsent: [] !
+
+
+"February 19, 2009 -> 19:9:24"!
+
+"System saved" !

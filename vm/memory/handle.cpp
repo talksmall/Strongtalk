@@ -25,8 +25,8 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_handle.cpp.incl"
 
 int Handles::_top   = 0;
-int Handles::_size  = 10;
-oop Handles::_array[10];
+int Handles::_size  = 20;
+oop Handles::_array[20];
 
 
 oop Handles::oop_at(int index) {

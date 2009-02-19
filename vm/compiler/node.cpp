@@ -281,6 +281,14 @@ UncommonNode* NodeFactory::new_UncommonNode(GrowableArray<PReg*>* exprStack, int
   return res;
 }
 
+UncommonSendNode* NodeFactory::new_UncommonSendNode(GrowableArray<PReg*>* exprStack, int bci, int args) {
+  UncommonSendNode* res = new UncommonSendNode(exprStack, bci, args);
+  registerNode(res);
+  assert(exprStack, "must have expr. stack");
+  res->scope()->addSend(exprStack, false);  // current expr stack is debug-visible
+  return res;
+}
+
 FixedCodeNode* NodeFactory::new_FixedCodeNode(FixedCodeNode::FixedCodeKind k) {
   FixedCodeNode* res = new FixedCodeNode(k);
   registerNode(res);
@@ -894,6 +902,24 @@ bool InlinedPrimitiveNode::canBeEliminated() const {
 
 UncommonNode::UncommonNode(GrowableArray<PReg*>* e, int bci) { exprStack = e; _bci = bci;}
 
+UncommonSendNode::UncommonSendNode(GrowableArray<PReg*>* e, int bci, int argCount) : UncommonNode(e, bci) {
+  this->argCount = argCount;
+}
+
+Node* UncommonSendNode::clone(PReg* from, PReg* to) const {
+  return NodeFactory::new_UncommonSendNode(this->expressionStack()->copy(), bci(), argCount);
+}
+
+void UncommonSendNode::makeUses(BB* bb) {
+  int expressionCount = expressionStack()->length();
+  for (int pos = expressionCount - argCount; pos < expressionCount; pos++)
+    bb->addUse(this, expressionStack()->at(pos));
+}
+void	UncommonSendNode::verify() const {
+  if (argCount > expressionStack()->length())
+    error("Too few expressions on stack for 0x%x: required %d, but got %d", this, argCount, expressionStack()->length());
+  UncommonNode::verify();
+}
 
 bool PrimNode::canBeEliminated() const {
   if (!Node::canBeEliminated()) return false;
@@ -2628,7 +2654,6 @@ void TypeTestNode::assert_preg_type(PReg* r, GrowableArray<klassOop>* k, LoopHea
 #define DISABLED_IN_PRODUCT
 #endif
 
-
 const int PrintStringLen = 40;	// width of output before printing address
 
 void BasicNode::print_short()	{ char buf[1024]; lprintf(print_string(buf, PrintHexAddresses)); }
@@ -2993,6 +3018,14 @@ char* UncommonNode::print_string(char* buf, bool printAddr) const {
     char* b = buf;
   my_sprintf_len(buf, PrintStringLen, "UncommonBranch");
   if (printAddr) my_sprintf(buf, "((UncommonNode*)%#lx)", this);
+  return b;
+}
+
+char*	UncommonSendNode::print_string(char* buf, bool printAddr) const { 
+  DISABLED_IN_PRODUCT
+    char* b = buf;
+  my_sprintf_len(buf, PrintStringLen, "UncommonSend(%d arg%s)", argCount, argCount != 1 ? "s" : "");
+  if (printAddr) my_sprintf(buf, "((UncommonSendNode*)%#lx)", this);
   return b;
 }
 

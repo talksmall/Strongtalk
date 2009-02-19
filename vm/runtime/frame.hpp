@@ -60,7 +60,7 @@ const int minimum_size_for_deoptimized_frame   = 4;
 class frame : ValueObj {
  private:
   oop*  _sp; // stack pointer
-  int*  _fp; // frame pointer
+  int*  _fp; // frame pointer - %TODO should be void** or similar to allow for 64 bit
   char* _pc; // program counter
 
  public:

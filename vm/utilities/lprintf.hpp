@@ -28,6 +28,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 extern "C" void lprintf(const char* m, ...);
 extern "C" void lputc(char c);
 extern "C" void lputs(char* str);
+
 extern "C" void error(char* m, ...);
 extern "C" void warning(char* m, ...);
 extern "C" void compiler_warning(char* m, ...);
@@ -38,3 +39,11 @@ extern "C" void my_sprintf    (char*& buf, const char* format, ...);
 extern "C" void my_sprintf_len(char*& buf, const int len, const char* format, ...);	// make output len chars long
 
 void flush_logFile();
+
+class Notifier {
+public:
+  static Notifier* current;
+  virtual void error(char* m, va_list argptr) = 0;
+  virtual void warning(char* m, va_list argptr) = 0;
+  virtual void compiler_warning(char* m, va_list argptr) = 0;
+};

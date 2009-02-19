@@ -279,15 +279,9 @@ NoGCVerifier::~NoGCVerifier() {
   }
 }
 
-char *align(void* p, int alignment) {
-  int number = (int) p;
-  int adjust = alignment - (number%alignment) % alignment;
-  return (char*) number + adjust;
-}
-
 char* AllocatePageAligned(int size, char* name) {
   int page_size = Universe::page_size();
-  char* block = align(malloc(size + page_size), page_size);
+  char* block = (char*)align(malloc(size + page_size), page_size);
   if (PrintHeapAllocation)
     lprintf("Malloc (page-aligned) %s: %d = %#lx\n", name, size, block);
   return block;

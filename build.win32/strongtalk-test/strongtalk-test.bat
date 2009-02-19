@@ -1,1 +1,3 @@
-.\debug\strongtalk-test.exe -b ..\..\strongtalk.bst
+pushd ..\..
+build.win32\strongtalk-test\debug\strongtalk-test.exe -f tools\strongtalkrc-forinterpretedtests
+popd

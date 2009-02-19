@@ -101,7 +101,8 @@ class jumpTable : public ValueObj {
 class jumpTableEntry : public ValueObj {
  private:
   char* jump_inst_addr() const 		{ assert(oop(this)->is_smi(), "misaligned"); return (char*) this; }
-  char* state_addr() const		{ return ((char*) this) + sizeof(char) + sizeof(int); }
+  char* state_addr() const		{ return ((char*) this) + jump_inst_size(); }
+  static int jump_inst_size()           { return 1 + sizeof(char*); } // x86 specific
   char  state() const			{ return *state_addr(); }
   void fill_entry(char instr, char* dest, char state);
   void initialize_as_unused(int index);
@@ -149,7 +150,7 @@ class jumpTableEntry : public ValueObj {
   void verify();
 
   // size of jump table entry
-  static int size() 			{ return 8; }
+  static int size()                     { return (int)align((void*)(sizeof(char) + jump_inst_size()), sizeof(oop)); }
 
   friend class jumpTable;
 };

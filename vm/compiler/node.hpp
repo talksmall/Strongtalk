@@ -148,6 +148,7 @@ class BasicNode: public PrintableResourceObj {
   virtual bool isDeadEndNode() const   		{ return false; }
   virtual bool isTypeTestNode() const  		{ return false; }
   virtual bool isUncommonNode() const  		{ return false; }
+  virtual bool isUncommonSendNode() const  	{ return false; }
   virtual bool isNopNode() const		{ return false; }
   virtual bool isCmpNode() const		{ return false; }
   virtual bool isArraySizeLoad() const		{ return false; }
@@ -1700,16 +1701,33 @@ class UncommonNode : public NonTrivialNode {
   int	cost() const 			{ return 4; } // fix this
   bool	isExitNode() const		{ return true; }
   bool	isEndsBB() const		{ return true; }
-  Node*	clone(PReg* from, PReg* to) const;
+  virtual Node*	clone(PReg* from, PReg* to) const;
   void	markAllocated(int* use_count, int* def_count) { Unused(use_count); Unused(def_count); }
   void	gen();
   void	apply(NodeVisitor* v)		{ v->anUncommonNode(this); }
   void	verify() const;
   char*	print_string(char* buf, bool printAddr = true) const;
+  GrowableArray<PReg*>* expressionStack() const { return exprStack; }
 
   friend class NodeFactory;
 };
 
+class UncommonSendNode : public UncommonNode {
+  int argCount;
+
+ protected:
+  UncommonSendNode(GrowableArray<PReg*>* e, int bci, int argCount = 0);
+
+ public:
+  int   args() const { return argCount; }
+  bool  isUncommonSendNode() const { return true; }
+  Node*	clone(PReg* from, PReg* to) const;
+  void	verify() const;
+  void  makeUses(BB* bb);
+  char*	print_string(char* buf, bool printAddr = true) const;
+
+  friend class NodeFactory;
+};
 
 class FixedCodeNode : public TrivialNode {
  public:
@@ -1833,6 +1851,7 @@ class NodeFactory : AllStatic {
 							 PReg* arg2 = NULL, bool arg2_is_smi = false);
 
   static UncommonNode*		new_UncommonNode	(GrowableArray<PReg*>* exprStack, int bci);
+  static UncommonSendNode*	new_UncommonSendNode	(GrowableArray<PReg*>* exprStack, int bci, int args);
   static FixedCodeNode*		new_FixedCodeNode	(FixedCodeNode::FixedCodeKind k);
   static NopNode*		new_NopNode		();
   static CommentNode*		new_CommentNode		(char* comment);
