@@ -90,3 +90,32 @@ TESTF(CompilerTests, uncommonTrap) {
     ASSERT_EQUALS(trapCount + 1, op.result()->uncommon_trap_counter());
   }
 }
+
+TESTF(CompilerTests, invalidJumptableID) {
+  AddTestProcess addTest;
+  {
+    HandleMark mark;
+    initializeSmalltalkEnvironment();
+
+    Handle _new(oopFactory::new_symbol("new"));
+    Handle setup(oopFactory::new_symbol("testIgnoredBlock"));
+    Handle toCompile(oopFactory::new_symbol("testIgnoredBlock"));
+    Handle triggerTrap(oopFactory::new_symbol("testIgnoredBlock"));
+    Handle testClass(Universe::find_global("BlockMaterializeTest"));
+    Handle varClass(Universe::find_global("BlockMaterializeTest"));
+
+    Handle newTest(Delta::call(testClass.as_klass(), _new.as_oop()));
+
+    Delta::call(newTest.as_oop(), toCompile.as_oop());
+
+    LookupResult result = interpreter_normal_lookup(testClass.as_klass(), symbolOop(toCompile.as_oop()));
+
+    LookupKey key(testClass.as_klass(), toCompile.as_oop());
+    ASSERT_TRUE(!result.is_empty());
+
+    VM_OptimizeMethod op(&key, result.method());
+    VMProcess::execute(&op);
+      // was causing assertion failure in CompileTimeClosure::jump_table_entry()
+      // due to no _id
+  }
+}

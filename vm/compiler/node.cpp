@@ -2402,6 +2402,17 @@ void SendNode::computeEscapingBlocks(GrowableArray<BlockPReg*>* ll) {
   }
 }
 
+void UncommonSendNode::computeEscapingBlocks(GrowableArray<BlockPReg*>* ll) {
+  // all arguments to an uncommon send escape
+  if (expressionStack() && (argCount > 0)) {
+    int len = expressionStack()->length();
+    int i = argCount;
+    while (i-- > 0) {
+      ::computeEscapingBlocks(this, expressionStack()->at(--len), ll, "exposed by an uncommon send");
+    }
+  }
+}
+
 void PrimNode::computeEscapingBlocks(GrowableArray<BlockPReg*>* ll) {
   // assume that all block arguments to a primitive call escape
   if (exprStack) {

@@ -1725,7 +1725,7 @@ class UncommonSendNode : public UncommonNode {
   void	verify() const;
   void  makeUses(BB* bb);
   char*	print_string(char* buf, bool printAddr = true) const;
-
+  void  computeEscapingBlocks(GrowableArray<BlockPReg*>* ll);
   friend class NodeFactory;
 };
 

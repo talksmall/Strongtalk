@@ -64529,3 +64529,142 @@ testTriggerUncommonTrap
 "February 19, 2009 -> 19:9:24"!
 
 "System saved" !
+"February 22, 2009 -> 0:32:23"!
+
+Delta define: #DeltaScopeTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"February 22, 2009 -> 0:33:15"!
+
+! (Delta mirrorFor: #DeltaScopeTest) methodsFor: 'testing' !
+testAtIfAbsent
+
+	DeltaScope new
+		at: #symbol
+		ifAbsent: []! !
+
+"February 22, 2009 -> 0:34:34"!
+
+! (Delta mirrorFor: #DeltaScopeTest) methodsFor: 'testing' !
+testAtIfAbsent
+
+	(DeltaScope within: nil)
+		at: #symbol
+		ifAbsent: []! !
+
+"February 22, 2009 -> 0:34:56"!
+
+"System saved" !
+"February 22, 2009 -> 0:40:40"!
+
+! (Delta mirrorFor: #DeltaScopeTest) methodsFor: 'testing' !
+testAtIfAbsent
+
+|scope1 scope2|
+	scope1 := DeltaScope within: nil.
+	scope2 := DeltaScope within: scope1.
+	scope1 bindings
+		at: #symbol
+		put: #value.
+	scope2
+		at: #symbol
+		ifAbsent: [].
+	scope2
+		at: #unknown
+		ifAbsent: []! !
+
+"February 22, 2009 -> 0:40:59"!
+
+"System saved" !
+"February 23, 2009 -> 1:13:16"!
+
+! (Delta mirrorFor: #DeltaScopeTest) methodsFor: 'testing' !
+oldtestAtIfAbsent
+
+|scope1 scope2|
+	scope1 := DeltaScope within: nil.
+	scope2 := DeltaScope within: scope1.
+	scope1 bindings
+		at: #symbol
+		put: #value.
+	scope2
+		at: #symbol
+		ifAbsent: [].
+	scope2
+		at: #unknown
+		ifAbsent: []! !
+
+"February 23, 2009 -> 1:14:32"!
+
+! (Delta mirrorFor: #DeltaScopeTest) methodsFor: 'testing' !
+testAtIfAbsent
+
+|scope1|
+	scope1 := DeltaScope within: nil.
+	scope1 bindings
+		at: #symbol
+		put: #value.
+	scope1
+		at: #symbol
+		ifAbsent: [nil]! !
+
+"February 23, 2009 -> 1:15:3"!
+
+"System saved" !
+"February 23, 2009 -> 1:29:50"!
+
+Delta define: #BlockMaterializeTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"February 23, 2009 -> 1:30:6"!
+
+Delta define: #IgnoreBlock as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"February 23, 2009 -> 1:30:25"!
+
+! (Delta mirrorFor: #IgnoreBlock) methodsFor: 'test support' !
+ignore: block
+
+	^self! !
+
+"February 23, 2009 -> 1:30:55"!
+
+! (Delta mirrorFor: #BlockMaterializeTest) methodsFor: 'testing' !
+testIgnoredBlock
+
+	! !
+
+"February 23, 2009 -> 1:31:15"!
+
+Delta define: #BlockMaterializeTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'scope')) !
+
+
+"February 23, 2009 -> 1:31:57"!
+
+! (Delta mirrorFor: #BlockMaterializeTest) classSide methodsFor: 'instance creation' !
+new
+
+	^super new initialize! !
+
+"February 23, 2009 -> 1:32:23"!
+
+! (Delta mirrorFor: #BlockMaterializeTest) methodsFor: 'initialization' !
+initialize
+
+	scope := IgnoreBlock new! !
+
+"February 23, 2009 -> 1:33:7"!
+
+! (Delta mirrorFor: #BlockMaterializeTest) methodsFor: 'testing' !
+testIgnoredBlock
+
+	self assert: (scope ignore: [nil]) = scope! !
+
+"February 23, 2009 -> 1:34:34"!
+
+"System saved" !
