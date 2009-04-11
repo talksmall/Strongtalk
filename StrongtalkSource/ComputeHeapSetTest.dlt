@@ -1,0 +1,55 @@
+Delta define: #ComputeHeapSetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'outer inner inner2 inner3')) !
+
+(Delta mirrorFor: #ComputeHeapSetTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ComputeHeapSetTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ComputeHeapSetTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+
+
+setupScope
+
+	|var|
+	outer := DeltaCodeScope within: (DeltaCodeScope within: nil).
+	(inner := DeltaCodeScope within: outer) inline.
+	(inner2 := DeltaCodeScope within: inner) inline.
+	var := DeltaInstVar
+					declare: #var1
+					of: nil
+					inScope: inner2
+					ifThere: [].
+	inner2 superVars add: var.
+	
+	"(inner3 := DeltaCodeScope within: inner2) inline"!
+
+setupTwoSubscopes
+
+	self setupScope.
+	DeltaGlobalScope within: outer!
+
+setupTwoVars
+
+	|var|
+	self setupScope.
+	var := DeltaClassVar
+					declare: #Var2
+					of: nil
+					inScope: inner2
+					ifThere: [].
+	inner2 superVars add: var!
+
+testWithOneSubscope
+
+	self setupScope.
+	outer computeHeapSet!
+
+testWithTwoSubscopes
+
+	self setupTwoVars.
+	outer computeHeapSet! !
+

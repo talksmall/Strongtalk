@@ -89,7 +89,7 @@ class zone: public CHeapObj {
   void doWork();
   void doSweep();
   void flush();
-  void flushZombies();
+  void flushZombies(bool deoptimize = true);
   void flushUnused();
 
   // Clear all inline caches of all nmethods

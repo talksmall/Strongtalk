@@ -1,0 +1,40 @@
+Delta define: #DeltaScopeTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaScopeTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #DeltaScopeTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #DeltaScopeTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #DeltaScopeTest) methodsFor: 'testing' !
+
+
+oldtestAtIfAbsent
+
+|scope1 scope2|
+	scope1 := DeltaScope within: nil.
+	scope2 := DeltaScope within: scope1.
+	scope1 bindings
+		at: #symbol
+		put: #value.
+	scope2
+		at: #symbol
+		ifAbsent: [].
+	scope2
+		at: #unknown
+		ifAbsent: []!
+
+testAtIfAbsent
+
+|scope1|
+	scope1 := DeltaScope within: nil.
+	scope1 bindings
+		at: #symbol
+		put: #value.
+	scope1
+		at: #symbol
+		ifAbsent: [nil]! !
+

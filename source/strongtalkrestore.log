@@ -1,121 +1,267 @@
 
-"February 19, 2009 -> 0:36:0"!
+"March 15, 2009 -> 12:41:8"!
 
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-populatePIC
-
-"	self objectType type."
-	self nilType type.
-"	self typeId type."
-	"self classId type.
-	self operatorTypeError type.
-	self superNilError type."
-	self placeholderError type.
-	self noTypeError type.
-	! !
-
-"February 19, 2009 -> 0:36:38"!
-
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-populatePIC
-
-	self nilType type.
-	self placeholderError type.
-	self noTypeError type.
-	self arityError type	! !
-
-"February 19, 2009 -> 0:36:46"!
-
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-populatePIC
-
-	self nilType type.
-	self placeholderError type.
-	self noTypeError type.
-	self arityError type! !
-
-"February 19, 2009 -> 0:38:38"!
-
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-objectClassType
-	
-	^self parameter: (DeltaType for: Object class)! !
-
-"February 19, 2009 -> 0:39:4"!
-
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-testTriggerUncommonTrap
-
-	self objectClassType isFloatValue! !
-
-"February 19, 2009 -> 0:39:34"!
-
-(Delta mirrorFor: #DeltaParameterTest) removeMethod: #classId ifAbsent: [] !
+Delta define: #DeltaCodeScopeSubclass as: (
+(Class subclassOf: 'DeltaCodeScope' instanceVariables: '')) !
 
 
-"February 19, 2009 -> 0:44:50"!
+"March 15, 2009 -> 12:41:29"!
 
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-populatePIC
+! (Delta mirrorFor: #DeltaCodeScopeSubclass) methodsFor: 'a new category' !
+computeHeapSet
+	"
+	Private.
+	Computes the heapSet containing the OrderedCollection of ActivationVars
+	belonging to this scope which have to be in the heap context. All the vars
+	belonging to this scope which are accessed from a real (i.e., non-inlined) sub-
+	scope that expects a context need to be in the heapSet.
+	Note: The heapSet is an OrderedCollection instead of a Set because the
+	element ordering must stay the same for a given scope independent of the
+	compilation.
+	"
+	| heapSet |
+	self assert: [ self isInlined not ].
+	heapSet := OrderedCollection new.
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					self assert: [ var isActivationVarNode ].
+					(heapSet includes: var) ifFalse: [ heapSet add: var ].
+				]
+			]
+		]
+	].
+	^ heapSet! !
 
-"	self objectType type."
-	self nilType type.
-"	self typeId type."
-	"self classId type.
-	self operatorTypeError type.
-	self superNilError type."
-	self placeholderError type.
-	self noTypeError type.
-	! !
+"March 15, 2009 -> 12:41:41"!
 
-"February 19, 2009 -> 0:44:50"!
+! (Delta mirrorFor: #DeltaCodeScopeSubclass) methodsFor: 'a new category' !
+computeHeapSet
+	"
+	Private.
+	Computes the heapSet containing the OrderedCollection of ActivationVars
+	belonging to this scope which have to be in the heap context. All the vars
+	belonging to this scope which are accessed from a real (i.e., non-inlined) sub-
+	scope that expects a context need to be in the heapSet.
+	Note: The heapSet is an OrderedCollection instead of a Set because the
+	element ordering must stay the same for a given scope independent of the
+	compilation.
+	"
+	| heapSet |
+	self assert: [ self isInlined not ].
+	heapSet := OrderedCollection new.
+	self halt.
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					self assert: [ var isActivationVarNode ].
+					(heapSet includes: var) ifFalse: [ heapSet add: var ].
+				]
+			]
+		]
+	].
+	^ heapSet! !
 
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-populatePIC
+"March 15, 2009 -> 12:42:54"!
 
-	self nilType type.
-	self placeholderError type.
-	self noTypeError type.
-	self arityError type	! !
-
-"February 19, 2009 -> 0:44:50"!
-
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-populatePIC
-
-	self nilType type.
-	self placeholderError type.
-	self noTypeError type.
-	self arityError type! !
-
-"February 19, 2009 -> 0:44:50"!
-
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-objectClassType
-	
-	^self parameter: (DeltaType for: Object class)! !
-
-"February 19, 2009 -> 0:44:50"!
-
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-testTriggerUncommonTrap
-
-	self objectClassType isFloatValue! !
-
-"February 19, 2009 -> 0:46:28"!
-
-(Delta mirrorFor: #DeltaParameterTest) classSide removeMethod: #new ifAbsent: [] !
+Delta define: #DeltaCodeScopeSubclass as: (
+(Class subclassOf: 'DeltaCodeScope' instanceVariables: '')) !
 
 
-"February 19, 2009 -> 0:46:37"!
+"March 15, 2009 -> 12:43:5"!
 
-(Delta mirrorFor: #DeltaParameterTest) removeMethod: #initialize ifAbsent: [] !
+! (Delta mirrorFor: #DeltaCodeScopeSubclass) methodsFor: 'a new category' !
+computeHeapSet
+	"
+	Private.
+	Computes the heapSet containing the OrderedCollection of ActivationVars
+	belonging to this scope which have to be in the heap context. All the vars
+	belonging to this scope which are accessed from a real (i.e., non-inlined) sub-
+	scope that expects a context need to be in the heapSet.
+	Note: The heapSet is an OrderedCollection instead of a Set because the
+	element ordering must stay the same for a given scope independent of the
+	compilation.
+	"
+	| heapSet |
+	self assert: [ self isInlined not ].
+	heapSet := OrderedCollection new.
+	self halt.
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					self assert: [ var isActivationVarNode ].
+					(heapSet includes: var) ifFalse: [ heapSet add: var ].
+				]
+			]
+		]
+	].
+	^ heapSet! !
+
+"March 15, 2009 -> 12:43:59"!
+
+! (Delta mirrorFor: #DeltaCodeScopeSubclass) methodsFor: 'a new category' !
+computeHeapSet
+	"
+	Private.
+	Computes the heapSet containing the OrderedCollection of ActivationVars
+	belonging to this scope which have to be in the heap context. All the vars
+	belonging to this scope which are accessed from a real (i.e., non-inlined) sub-
+	scope that expects a context need to be in the heapSet.
+	Note: The heapSet is an OrderedCollection instead of a Set because the
+	element ordering must stay the same for a given scope independent of the
+	compilation.
+	"
+	| heapSet |
+	self halt.	self assert: [ self isInlined not ].
+	heapSet := OrderedCollection new.
+
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					self assert: [ var isActivationVarNode ].
+					(heapSet includes: var) ifFalse: [ heapSet add: var ].
+				]
+			]
+		]
+	].
+	^ heapSet! !
+
+"March 15, 2009 -> 12:46:20"!
+
+Delta define: #DeltaCodeScopeSubclass as: (
+(Class subclassOf: 'DeltaCodeScope' instanceVariables: '')) !
 
 
-"February 19, 2009 -> 0:47:0"!
+"March 15, 2009 -> 12:46:33"!
 
-! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
-testTriggerUncommonTrap
+! (Delta mirrorFor: #DeltaCodeScopeSubclass) methodsFor: 'a new category' !
+computeHeapSet
+	"
+	Private.
+	Computes the heapSet containing the OrderedCollection of ActivationVars
+	belonging to this scope which have to be in the heap context. All the vars
+	belonging to this scope which are accessed from a real (i.e., non-inlined) sub-
+	scope that expects a context need to be in the heapSet.
+	Note: The heapSet is an OrderedCollection instead of a Set because the
+	element ordering must stay the same for a given scope independent of the
+	compilation.
+	"
+	| heapSet |
+	self halt.	self assert: [ self isInlined not ].
+	heapSet := OrderedCollection new.
 
-	self populatePIC.
-	self objectClassType isFloatValue! !
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					self assert: [ var isActivationVarNode ].
+					(heapSet includes: var) ifFalse: [ heapSet add: var ].
+				]
+			]
+		]
+	].
+	^ heapSet! !
+
+"March 15, 2009 -> 13:5:38"!
+
+Delta define: #DeltaCodeScopeSubclass as: (
+(Class subclassOf: 'DeltaCodeScope' instanceVariables: '')) !
+
+
+"March 15, 2009 -> 13:5:49"!
+
+! (Delta mirrorFor: #DeltaCodeScopeSubclass) methodsFor: 'a new category' !
+computeHeapSet
+	"
+	Private.
+	Computes the heapSet containing the OrderedCollection of ActivationVars
+	belonging to this scope which have to be in the heap context. All the vars
+	belonging to this scope which are accessed from a real (i.e., non-inlined) sub-
+	scope that expects a context need to be in the heapSet.
+	Note: The heapSet is an OrderedCollection instead of a Set because the
+	element ordering must stay the same for a given scope independent of the
+	compilation.
+	"
+	| heapSet |
+	self halt.	self assert: [ self isInlined not ].
+	heapSet := OrderedCollection new.
+
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					self assert: [ var isActivationVarNode ].
+					(heapSet includes: var) ifFalse: [ heapSet add: var ].
+				]
+			]
+		]
+	].
+	^ heapSet! !
+
+"March 15, 2009 -> 13:15:31"!
+
+Delta define: #DeltaCodeScopeSubclass as: (
+(Class subclassOf: 'DeltaCodeScope' instanceVariables: '')) !
+
+
+"March 15, 2009 -> 13:15:31"!
+
+! (Delta mirrorFor: #DeltaCodeScopeSubclass) methodsFor: 'a new category' !
+computeHeapSet
+	"
+	Private.
+	Computes the heapSet containing the OrderedCollection of ActivationVars
+	belonging to this scope which have to be in the heap context. All the vars
+	belonging to this scope which are accessed from a real (i.e., non-inlined) sub-
+	scope that expects a context need to be in the heapSet.
+	Note: The heapSet is an OrderedCollection instead of a Set because the
+	element ordering must stay the same for a given scope independent of the
+	compilation.
+	"
+	| heapSet |
+	self halt.	self assert: [ self isInlined not ].
+	heapSet := OrderedCollection new.
+
+	self realSubScopesDo: [ :scope |
+		scope incoming = #context ifTrue: [
+			scope superVars do: [ :var |
+				((self bindings includesKey: var name) or: [(self incoming = #param or: [ self incoming = #self ]) and: [ self superVars first == var ] ]) ifTrue: [
+					"
+					Variable is used in a subScope but defined in this scope;
+					add it to the heapSet if it has not been added already.
+					"
+					self assert: [ var isActivationVarNode ].
+					(heapSet includes: var) ifFalse: [ heapSet add: var ].
+				]
+			]
+		]
+	].
+	^ heapSet! !

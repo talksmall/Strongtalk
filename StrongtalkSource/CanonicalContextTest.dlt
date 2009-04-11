@@ -1,0 +1,39 @@
+Delta define: #CanonicalContextTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'vars')) !
+
+(Delta mirrorFor: #CanonicalContextTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #CanonicalContextTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #CanonicalContextTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'fixture' !
+
+
+addNewVar
+
+	vars add: (self varOfType: DeltaInstVar)!
+
+setUp
+
+	vars := OrderedCollection new.
+	vars add: (self varOfType: DeltaParameter)!
+
+varOfType: aClass
+
+	^aClass new
+		name: #name
+		type: nil! !
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'testing' !
+
+
+testDoBlock
+
+	|names|
+	names := OrderedCollection new.
+	vars do: [:var| names add: var name].
+	^names! !
+

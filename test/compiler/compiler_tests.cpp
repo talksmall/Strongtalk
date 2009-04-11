@@ -2,11 +2,23 @@
 # include "incls/_blockOop.cpp.incl"
 # include "incls/_vmOperations.cpp.incl"
 # include "incls/_delta.cpp.incl"
+# include "recompile.hpp"
 #include "handle.hpp"
 #include "test.h"
 #include "testProcess.hpp"
 
 using namespace easyunit;
+
+class BlockMethodFinder : public SpecializedMethodClosure {
+public:
+  methodOop method;
+  BlockMethodFinder() {
+    method = NULL;
+  }
+  void allocate_closure(AllocationType type, int nofArgs, methodOop meth) {
+    method = meth;
+  }
+};
 
 DECLARE(CompilerTests)
   int count;
@@ -90,7 +102,6 @@ TESTF(CompilerTests, uncommonTrap) {
     ASSERT_EQUALS(trapCount + 1, op.result()->uncommon_trap_counter());
   }
 }
-
 TESTF(CompilerTests, invalidJumptableID) {
   AddTestProcess addTest;
   {
@@ -117,5 +128,46 @@ TESTF(CompilerTests, invalidJumptableID) {
     VMProcess::execute(&op);
       // was causing assertion failure in CompileTimeClosure::jump_table_entry()
       // due to no _id
+  }
+}
+
+TESTF(CompilerTests, toplevelBlockScopeOuterContextFilledWithNils) {
+  AddTestProcess addTest;
+  {
+    HandleMark mark;
+    initializeSmalltalkEnvironment();
+
+    Handle _new(oopFactory::new_symbol("new"));
+
+    Handle setup(oopFactory::new_symbol("testSetup"));
+    Handle toCompile(oopFactory::new_symbol("exercise:value:"));
+    Handle trigger(oopFactory::new_symbol("testTrap"));
+    Handle testClass(Universe::find_global("NonInlinedBlockTest"));
+    Handle varClass(Universe::find_global("NonInlinedBlockTest"));
+
+    Handle newTest(Delta::call(testClass.as_klass(), _new.as_oop()));
+
+    Delta::call(newTest.as_oop(), setup.as_oop());
+
+    LookupResult result = interpreter_normal_lookup(varClass.as_klass(), symbolOop(toCompile.as_oop()));
+
+    LookupKey key(varClass.as_klass(), toCompile.as_oop());
+    ASSERT_TRUE(!result.is_empty());
+
+    VM_OptimizeMethod op(&key, result.method());
+    VMProcess::execute(&op);
+
+    DeltaCallCache::clearAll();
+    lookupCache::flush();
+    LookupResult setupResult = interpreter_normal_lookup(varClass.as_klass(), symbolOop(setup.as_oop()));
+    setupResult.method()->cleanup_inline_caches();
+
+    Delta::call(newTest.as_oop(), setup.as_oop());
+
+    // forces deoptimization, resulting in construction of canonical_context where the
+    // not all of the vframes are contained within a stack frame. Was causing MNU due to
+    // nils in the outer contexts, since the code was not passing the outer vframe when
+    // crossing stack boundaries.
+    Delta::call(newTest.as_oop(), trigger.as_oop());
   }
 }

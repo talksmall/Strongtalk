@@ -113,6 +113,7 @@ void space::compact(OldWaterMark* mark) {
   oop* q       = bottom();
   oop* t       = top();
   oop* new_top = mark->_point;
+
   while (q < t) {
     memOop m = as_memOop(q);
     if (m->mark()->is_smi()) {
@@ -120,6 +121,10 @@ void space::compact(OldWaterMark* mark) {
       q = (oop*) *q;
     } else {
       int size = m->gc_retrieve_size();
+      // make sure we don't run out of old space!
+      if (size > mark->_space->end() - new_top)
+        mark->_space->expand(size * oopSize);
+
       if (q != new_top) {
         copy_oops(q, new_top, size);
         // lprintf("copy %#lx -> %#lx (%d)\n", q, new_top, size);

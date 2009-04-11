@@ -30,6 +30,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 enum SendKind { NormalSend, SelfSend, SuperSend };
 
 class Inliner: public PrintableResourceObj {
+  void reportInline(char* prefix); // Add a comment node delimiting an inlined send
  protected:
   InlinedScope* sender;		// scope containing the send
   SendKind kind;

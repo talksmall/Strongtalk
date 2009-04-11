@@ -1,0 +1,36 @@
+Delta define: #NonInlinedBlockTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #NonInlinedBlockTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #NonInlinedBlockTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #NonInlinedBlockTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+
+
+exercise: nib value: value
+	|set|
+	set := Set new.
+	nib do: [:val | [:a | a isNil
+									ifFalse: [set add: a].
+								a assert: [a notNil]]
+								value: val]
+		value: value!
+
+testSetup
+	self exercise: NIBA new value: 1.
+	self exercise: NIBB new value: 1.
+	self exercise: NIBC new value: 1.
+	self exercise: NIBD new value: 1.
+!
+
+testTrap
+	|a|
+	a := NIBA new.
+	self exercise: a value: 1.
+	self exercise: a value: 1.0! !
+

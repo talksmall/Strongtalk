@@ -152,7 +152,7 @@ class ScopeDesc : public PrintableResourceObj {		// abstract
   virtual NameDesc* self() const		= 0;
   NameDesc* temporary	    (int index, bool canFail = false);
   NameDesc* contextTemporary(int index, bool canFail = false);
-  NameDesc* exprStackElem   (int bci, bool includeTrivial = true);
+  NameDesc* exprStackElem   (int bci);
 
  public:
   int next_offset() const 			{ return _next; }

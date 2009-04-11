@@ -1,0 +1,38 @@
+Delta define: #ContextNestingTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #ContextNestingTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ContextNestingTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ContextNestingTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ContextNestingTest) methodsFor: 'testing' !
+
+
+do: block
+
+	^block value: 10!
+
+subDo: block with: value
+
+	^block value: value!
+
+testOnce
+
+self testWith: 10!
+
+testTwice
+
+self testWith: 10.
+self testWith: #symbol!
+
+testWith: value
+
+^self do: [:val|
+				self subDo: [:val1|
+									value = (val1 /val)]
+						with: val]! !
+

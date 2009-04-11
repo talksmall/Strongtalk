@@ -118,7 +118,7 @@ NameDesc* ScopeDesc::contextTemporary(int index, bool canFail) {
 }
 
 
-NameDesc* ScopeDesc::exprStackElem(int bci, bool includeTrivial) {
+NameDesc* ScopeDesc::exprStackElem(int bci) {
   int pos = _name_desc_offset;
   if (_has_temps) {
     NameDesc* current = nameDescAt(pos);

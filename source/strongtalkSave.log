@@ -64668,3 +64668,1163 @@ testIgnoredBlock
 "February 23, 2009 -> 1:34:34"!
 
 "System saved" !
+"February 27, 2009 -> 1:4:53"!
+
+Delta define: #CanonicalContextTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"February 27, 2009 -> 1:5:31"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'testing' !
+testDoBlock
+
+! !
+
+"February 27, 2009 -> 1:5:39"!
+
+Delta define: #CanonicalContextTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'vars')) !
+
+
+"February 27, 2009 -> 1:11:36"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'fixture' !
+setUp
+
+	vars := OrderedCollection new.
+	vars add: DeltaParameter new! !
+
+"February 27, 2009 -> 1:12:24"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'fixture' !
+varOfType: aClass
+
+	^aClass new
+		name: #name
+		type: nil! !
+
+"February 27, 2009 -> 1:12:39"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'fixture' !
+setUp
+
+	vars := OrderedCollection new.
+	vars add: (self varOfType: DeltaParameter)! !
+
+"February 27, 2009 -> 1:13:9"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'testing' !
+testDoBlock
+
+	vars do: [:var| var name]
+! !
+
+"February 27, 2009 -> 1:13:14"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'testing' !
+testDoBlock
+
+	vars do: [:var| var name]! !
+
+"February 27, 2009 -> 1:13:46"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'fixture' !
+addNewVar
+
+	vars add: (self varOfType: DeltaInstVar)! !
+
+"February 27, 2009 -> 1:16:35"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'testing' !
+testDoBlock
+
+	|names|
+	vars do: [:var| var name]! !
+
+"February 27, 2009 -> 1:16:46"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'testing' !
+testDoBlock
+
+	|names|
+	names := OrderedCollection new.
+	vars do: [:var| var name]! !
+
+"February 27, 2009 -> 1:17:19"!
+
+"System saved" !
+"February 27, 2009 -> 1:20:9"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'testing' !
+testDoBlock
+
+	|names|
+	names := OrderedCollection new.
+	vars do: [:var| names add: var name]! !
+
+"February 27, 2009 -> 1:20:24"!
+
+! (Delta mirrorFor: #CanonicalContextTest) methodsFor: 'testing' !
+testDoBlock
+
+	|names|
+	names := OrderedCollection new.
+	vars do: [:var| names add: var name].
+	^names! !
+
+"February 27, 2009 -> 1:21:6"!
+
+"System saved" !
+"March 15, 2009 -> 15:14:54"!
+
+Delta define: #ComputeHeapsetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"March 15, 2009 -> 15:16:41"!
+
+! (Delta mirrorFor: #ComputeHeapsetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	|outer inner1 inner2|
+	outer := DeltaCodeScope within: nil.
+	inner1 := DeltaGlobalScope within: outer.
+	inner2 := DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 15:18:59"!
+
+Delta define: #ComputeHeapSetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"March 15, 2009 -> 15:19:23"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	|outer inner1 inner2|
+	outer := DeltaCodeScope within: nil.
+	inner1 := DeltaGlobalScope within: outer.
+	inner2 := DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 15:20:3"!
+
+(Delta mirrorFor: #ComputeHeapsetTest) removeDefinitionIfFail: [] !
+
+
+"March 15, 2009 -> 15:20:39"!
+
+"System saved" !
+"March 15, 2009 -> 16:20:43"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithOneSubscope
+
+	|outer inner|
+	outer := DeltaCodeScope within: nil.
+	inner := DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:20:52"!
+
+"System saved" !
+"March 15, 2009 -> 16:43:33"!
+
+Delta define: #ComputeHeapSetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'outer inner inner2')) !
+
+
+"March 15, 2009 -> 16:43:49"!
+
+Delta define: #ComputeHeapSetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'outer')) !
+
+
+"March 15, 2009 -> 16:44:6"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithOneSubscope
+
+	|inner|
+	outer := DeltaCodeScope within: nil.
+	inner := DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:44:15"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	|inner1 inner2|
+	outer := DeltaCodeScope within: nil.
+	inner1 := DeltaGlobalScope within: outer.
+	inner2 := DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:44:25"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	|inner1 inner2|
+	outer := DeltaCodeScope within: nil.
+	DeltaGlobalScope within: outer.
+	DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:44:49"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithOneSubscope
+
+	|inner|
+	outer := DeltaCodeScope within: nil.
+	DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:44:54"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithOneSubscope
+
+	outer := DeltaCodeScope within: nil.
+	DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:45:0"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	outer := DeltaCodeScope within: nil.
+	DeltaGlobalScope within: outer.
+	DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:45:30"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupScope
+
+	outer := DeltaCodeScope within: nil.
+	DeltaCodeScope within: outer! !
+
+"March 15, 2009 -> 16:45:55"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	self setupScope.
+	DeltaCodeScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:45:56"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithOneSubscope
+
+	self setupScope.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:46:26"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	self setupScope.
+	DeltaGlobalScope within: outer.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:46:53"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupTwoSubscopes
+
+	self setupScope.
+	DeltaGlobalScope within: outer! !
+
+"March 15, 2009 -> 16:47:4"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithOneSubscope
+
+	self setupTwoSubscopes.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:47:51"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithOneSubscope
+
+	self setupScope.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:47:53"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	self setupTwoSubscopes.
+	
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 16:48:7"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithOneSubscope
+
+	self setupScope.
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 17:1:20"!
+
+"System saved" !
+"March 15, 2009 -> 17:2:8"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	self setupTwoSubscopes.
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 17:3:10"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupScope
+
+	outer := DeltaCodeScope within: nil.
+	(DeltaCodeScope within: outer) inline! !
+
+"March 15, 2009 -> 17:3:22"!
+
+"System saved" !
+"March 15, 2009 -> 20:39:5"!
+
+Delta define: #ComputeHeapSetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'outer inner innerInner')) !
+
+
+"March 15, 2009 -> 20:39:22"!
+
+Delta define: #ComputeHeapSetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'outer inner inner2 inner3')) !
+
+
+"March 15, 2009 -> 20:39:31"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupScope
+
+	outer := DeltaCodeScope within: nil.
+	(inner := DeltaCodeScope within: outer) inline! !
+
+"March 15, 2009 -> 20:40:44"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupScope
+
+	outer := DeltaCodeScope within: nil.
+	(inner := DeltaCodeScope within: outer) inline.
+	(inner2 := DeltaCodeScope within: inner) inline.
+	(inner3 := DeltaCodeScope within: inner2) inline! !
+
+"March 15, 2009 -> 20:51:30"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupTwoVars
+
+	|var|
+	self setupScope.
+	var := DeltaClassVar
+					declare: #Var2
+					of: nil
+					inScope: inner2
+					ifThere: [].
+	inner2 at: #Var2 put: var! !
+
+"March 15, 2009 -> 20:51:42"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+testWithTwoSubscopes
+
+	self setupTwoVars.
+	outer computeHeapSet! !
+
+"March 15, 2009 -> 20:52:24"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupScope
+
+	|var|
+	outer := DeltaCodeScope within: nil.
+	(inner := DeltaCodeScope within: outer) inline.
+	(inner2 := DeltaCodeScope within: inner) inline.
+	var := DeltaInstVar
+					declare: #var1
+					of: nil
+					inScope: inner2
+					ifThere: [].
+	inner2 at: #var1 put: var.
+	
+	"(inner3 := DeltaCodeScope within: inner2) inline"! !
+
+"March 15, 2009 -> 20:52:39"!
+
+"System saved" !
+"March 15, 2009 -> 21:21:18"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupScope
+
+	|var|
+	outer := DeltaCodeScope within: nil.
+	(inner := DeltaCodeScope within: outer) inline.
+	(inner2 := DeltaCodeScope within: inner) inline.
+	var := DeltaInstVar
+					declare: #var1
+					of: nil
+					inScope: inner2
+					ifThere: [].
+	inner2 superVars add: var.
+	
+	"(inner3 := DeltaCodeScope within: inner2) inline"! !
+
+"March 15, 2009 -> 21:21:39"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupTwoVars
+
+	|var|
+	self setupScope.
+	var := DeltaClassVar
+					declare: #Var2
+					of: nil
+					inScope: inner2
+					ifThere: [].
+	inner2 superVars add: var! !
+
+"March 15, 2009 -> 21:22:56"!
+
+"System saved" !
+"March 15, 2009 -> 21:35:54"!
+
+! (Delta mirrorFor: #ComputeHeapSetTest) methodsFor: 'testing' !
+setupScope
+
+	|var|
+	outer := DeltaCodeScope within: (DeltaCodeScope within: nil).
+	(inner := DeltaCodeScope within: outer) inline.
+	(inner2 := DeltaCodeScope within: inner) inline.
+	var := DeltaInstVar
+					declare: #var1
+					of: nil
+					inScope: inner2
+					ifThere: [].
+	inner2 superVars add: var.
+	
+	"(inner3 := DeltaCodeScope within: inner2) inline"! !
+
+"March 15, 2009 -> 21:38:3"!
+
+"System saved" !
+"March 21, 2009 -> 13:38:51"!
+
+Delta define: #RecursionBlockTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"March 21, 2009 -> 13:41:37"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse: count block: block
+
+	count > 0
+		ifTrue: [self recurse: count - 1
+							block: block]
+		ifFalse: [block value]! !
+
+"March 21, 2009 -> 13:42:17"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse: count block: block
+
+	count > 0
+		ifTrue: [self recurse: count - 1
+							block: block]
+		ifFalse: [block value: count]! !
+
+"March 21, 2009 -> 13:44:56"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse4
+
+	|result|
+	result := OrderedCollection new.
+	self recurse: 4
+		block: [:var| var isInteger
+								ifTrue: [result add: var]]! !
+
+"March 21, 2009 -> 13:45:7"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recursef4
+
+	|result|
+	result := OrderedCollection new.
+	self recurse: 4.0
+		block: [:var| var isInteger
+								ifTrue: [result add: var]]! !
+
+"March 21, 2009 -> 13:45:39"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecurse4! !
+
+"March 21, 2009 -> 13:45:53"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse: val
+
+	|result|
+	result := OrderedCollection new.
+	self recurse: val
+		block: [:var| var isInteger
+								ifTrue: [result add: var]]! !
+
+"March 21, 2009 -> 13:45:59"!
+
+(Delta mirrorFor: #RecursionBlockTest) removeMethod: #recurse4 ifAbsent: [] !
+
+
+"March 21, 2009 -> 13:46:1"!
+
+(Delta mirrorFor: #RecursionBlockTest) removeMethod: #recursef4 ifAbsent: [] !
+
+
+"March 21, 2009 -> 13:46:20"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse: val
+
+	|result|
+	result := OrderedCollection new.
+	self recurse: val
+		block: [:var| var isInteger
+								ifTrue: [result add: var]].
+	^result! !
+
+"March 21, 2009 -> 13:47:6"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecurse4
+
+	self recurse: 4! !
+
+"March 21, 2009 -> 13:47:13"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecursef4
+
+	self recurse: 4.0! !
+
+"March 21, 2009 -> 13:50:45"!
+
+"System saved" !
+"March 21, 2009 -> 14:2:7"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecurse4
+
+	self recurse: 1! !
+
+"March 21, 2009 -> 14:2:33"!
+
+"System saved" !
+"March 21, 2009 -> 14:5:2"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse: val result: result
+
+	self recurse: val
+		block: [:var| var isInteger
+								ifTrue: [result add: var]].
+	^result! !
+
+"March 21, 2009 -> 14:5:32"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecursef4
+
+	self recurse: 4.0
+		result: OrderedCollection new! !
+
+"March 21, 2009 -> 14:5:33"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecurse4
+
+	self recurse: 1
+		result: OrderedCollection new! !
+
+"March 21, 2009 -> 14:6:14"!
+
+"System saved" !
+"March 21, 2009 -> 14:44:29"!
+
+(Delta mirrorFor: #RecursionBlockTest) removeMethod: #recurse: ifAbsent: [] !
+
+
+"March 21, 2009 -> 14:46:34"!
+
+"System saved" !
+"March 21, 2009 -> 15:45:0"!
+
+Delta define: #RecursionBlockTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'var')) !
+
+
+"March 21, 2009 -> 15:45:22"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse: count block: block
+
+	count > 0
+		ifTrue: [self recurse: count - 1
+							block: var]
+		ifFalse: [block value: var]! !
+
+"March 21, 2009 -> 15:45:41"!
+
+Delta define: #RecursionBlockTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'var value')) !
+
+
+"March 21, 2009 -> 15:45:49"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse: count block: block
+
+	count > 0
+		ifTrue: [self recurse: count - 1
+							block: value]
+		ifFalse: [block value: value]! !
+
+"March 21, 2009 -> 15:46:2"!
+
+Delta define: #RecursionBlockTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'value')) !
+
+
+"March 21, 2009 -> 15:46:16"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecurse4
+
+	value = 3.
+	self recurse: 1
+		result: OrderedCollection new! !
+
+"March 21, 2009 -> 15:46:29"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecursef4
+
+	value = 3.0.
+	self recurse: 2
+		result: OrderedCollection new! !
+
+"March 21, 2009 -> 15:48:42"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+recurse: count block: block
+
+	count > 0
+		ifTrue: [self recurse: count - 1
+							block: block]
+		ifFalse: [block value: value]! !
+
+"March 21, 2009 -> 15:49:14"!
+
+"System saved" !
+"March 21, 2009 -> 16:42:51"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecursef4
+
+	|result|
+	value = 3.0.
+	result := OrderedCollection new.
+	self recurse: 2
+		result: result.
+	value = 4.
+	self recurse: 2
+		result: result! !
+
+"March 21, 2009 -> 16:43:1"!
+
+"System saved" !
+"March 22, 2009 -> 0:50:22"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecurse
+
+	value = 3.
+	self recurse: 1
+		result: OrderedCollection new! !
+
+"March 22, 2009 -> 0:50:32"!
+
+(Delta mirrorFor: #RecursionBlockTest) removeMethod: #testRecurse ifAbsent: [] !
+
+
+"March 22, 2009 -> 0:50:48"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecurseFloat
+
+	|result|
+	value = 3.0.
+	result := OrderedCollection new.
+	self recurse: 2
+		result: result.
+	value = 4.
+	self recurse: 2
+		result: result! !
+
+"March 22, 2009 -> 0:50:51"!
+
+(Delta mirrorFor: #RecursionBlockTest) removeMethod: #testRecursef4 ifAbsent: [] !
+
+
+"March 22, 2009 -> 0:50:55"!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+testRecurseInteger
+
+	value = 3.
+	self recurse: 1
+		result: OrderedCollection new! !
+
+"March 22, 2009 -> 0:50:57"!
+
+(Delta mirrorFor: #RecursionBlockTest) removeMethod: #testRecurse4 ifAbsent: [] !
+
+
+"March 22, 2009 -> 0:51:4"!
+
+"System saved" !
+"March 29, 2009 -> 16:20:37"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'benchmarking' !
+benchFib  "Handy send-heavy benchmark"
+	"(result // seconds to run) = approx calls per second"
+	" | r t |
+	  t _ Time millisecondsToRun: [r _ 26 benchFib].
+	  (r * 1000) // t"
+	"138000 on a Mac 8100/100"
+	^ self < 2
+		ifTrue: [1] 
+		ifFalse: [(self-1) benchFib + (self-2) benchFib + 1]! !
+
+"March 29, 2009 -> 16:24:3"!
+
+"System saved" !
+"April 4, 2009 -> 17:53:0"!
+
+Delta define: #NonInlinedBlockTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:53:53"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testSetup! !
+
+"April 4, 2009 -> 17:57:36"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:57:45"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:57:52"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:58:14"!
+
+Delta define: #AbstractNIB as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:2"!
+
+Delta define: #NIBC as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:8"!
+
+Delta define: #NIBB as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 17:59:31"!
+
+Delta define: #NIBA as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 18:0:21"!
+
+! (Delta mirrorFor: #AbstractNIB) methodsFor: 'testing' !
+do: block value: value
+
+	^block value: value! !
+
+"April 4, 2009 -> 18:1:53"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testSetup
+	|a b c|
+	a := NIBA new.
+	b := NIBB new.
+	c := NIBC new.
+	self exercise: a value: 1.
+	self exercise: b value: 1.
+	self exercise: c value: 1
+! !
+
+"April 4, 2009 -> 18:3:7"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise: nib value: value
+	
+	nib do: [:a | a isNil] value: value! !
+
+"April 4, 2009 -> 18:4:43"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testTrap1
+	|a|
+	a := NIBA new.
+	self exercise: a value: 1.
+	self exercise: a value: 1.0! !
+
+"April 4, 2009 -> 18:4:55"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testTrap
+	|a|
+	a := NIBA new.
+	self exercise: a value: 1.
+	self exercise: a value: 1.0! !
+
+"April 4, 2009 -> 18:8:25"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise: nib value: value
+	|set|
+	set := Set new.
+	nib do: [:a | a isNil
+						ifFalse: [set add: a]]
+		value: value! !
+
+"April 4, 2009 -> 18:10:7"!
+
+(Delta mirrorFor: #NonInlinedBlockTest) removeMethod: #testTrap1 ifAbsent: [] !
+
+
+"April 4, 2009 -> 18:10:19"!
+
+"System saved" !
+"April 4, 2009 -> 19:1:42"!
+
+Delta define: #NIBD as: (
+(Class subclassOf: 'AbstractNIB' instanceVariables: '')) !
+
+
+"April 4, 2009 -> 19:2:41"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testSetup
+	self exercise: NIBA new value: 1.
+	self exercise: NIBB new value: 1.
+	self exercise: NIBC new value: 1.
+	self exercise: NIBD new value: 1.
+! !
+
+"April 4, 2009 -> 19:2:59"!
+
+"System saved" !
+"April 4, 2009 -> 23:38:0"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise: nib value: value
+	|set|
+	set := Set new.
+	[nib do: [:a | a isNil
+						ifFalse: [set add: a]]
+		value: value] value! !
+
+"April 4, 2009 -> 23:40:1"!
+
+"System saved" !
+"April 5, 2009 -> 11:48:28"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise: nib value: value
+	|set|
+	set := Set new.
+	[nib do: [:a | a isNil
+							ifFalse: [set add: a].
+						self assert: [a notNil]]
+		value: value] value! !
+
+"April 5, 2009 -> 11:49:39"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise: nib value: value
+	|set|
+	set := Set new.
+	[nib do: [:a | a isNil
+							ifFalse: [set add: a].
+						a assert: [a notNil]]
+		value: value] value! !
+
+"April 5, 2009 -> 11:50:0"!
+
+"System saved" !
+"April 5, 2009 -> 13:48:36"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise: nib value: value
+	|set|
+	set := Set new.
+	[:val1 | nib do: [:a | a isNil
+										ifFalse: [set add: a].
+									a assert: [a notNil]]
+		value: val1] value: value! !
+
+"April 5, 2009 -> 13:49:10"!
+
+"System saved" !
+"April 5, 2009 -> 14:7:4"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise: nib value: value
+	|set|
+	set := Set new.
+	nib do: [:val | [:a | a isNil
+									ifFalse: [set add: a].
+								a assert: [a notNil]]
+								value: val]
+		value: value! !
+
+"April 5, 2009 -> 14:7:28"!
+
+"System saved" !

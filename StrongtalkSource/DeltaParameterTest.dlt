@@ -1,0 +1,55 @@
+Delta define: #DeltaParameterTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'objectType typeId classId nilType operatorTypeError')) !
+
+(Delta mirrorFor: #DeltaParameterTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #DeltaParameterTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #DeltaParameterTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #DeltaParameterTest) methodsFor: 'testing' !
+
+
+arityError
+	
+	^self parameter: (DeltaGenericArityError new)!
+
+nilType
+	
+	^self parameter: nil!
+
+noTypeError
+	
+	^self parameter: (DeltaNoTypeSpecifiedError new)!
+
+objectClassType
+	
+	^self parameter: (DeltaType for: Object class)!
+
+parameter: type
+	
+	^DeltaParameter new
+		name: #name
+		type: type;
+		yourself!
+
+placeholderError
+	
+	^self parameter: (DeltaPlaceHolderError new
+									name: #placeholder;
+									yourself)!
+
+populatePIC
+
+	self nilType type.
+	self placeholderError type.
+	self noTypeError type.
+	self arityError type!
+
+testTriggerUncommonTrap
+
+	self populatePIC.
+	self objectClassType isFloatValue! !
+

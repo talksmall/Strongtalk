@@ -1,0 +1,32 @@
+Delta define: #BlockMaterializeTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'scope')) !
+
+(Delta mirrorFor: #BlockMaterializeTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BlockMaterializeTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #BlockMaterializeTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #BlockMaterializeTest) classSide methodsFor: 'instance creation' !
+
+
+new
+
+	^super new initialize! !
+
+! (Delta mirrorFor: #BlockMaterializeTest) methodsFor: 'initialization' !
+
+
+initialize
+
+	scope := IgnoreBlock new! !
+
+! (Delta mirrorFor: #BlockMaterializeTest) methodsFor: 'testing' !
+
+
+testIgnoredBlock
+
+	self assert: (scope ignore: [nil]) = scope! !
+

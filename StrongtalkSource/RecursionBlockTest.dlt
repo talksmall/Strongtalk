@@ -1,0 +1,45 @@
+Delta define: #RecursionBlockTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'value')) !
+
+(Delta mirrorFor: #RecursionBlockTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #RecursionBlockTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #RecursionBlockTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #RecursionBlockTest) methodsFor: 'testing' !
+
+
+recurse: count block: block
+
+	count > 0
+		ifTrue: [self recurse: count - 1
+							block: block]
+		ifFalse: [block value: value]!
+
+recurse: val result: result
+
+	self recurse: val
+		block: [:var| var isInteger
+								ifTrue: [result add: var]].
+	^result!
+
+testRecurseFloat
+
+	|result|
+	value = 3.0.
+	result := OrderedCollection new.
+	self recurse: 2
+		result: result.
+	value = 4.
+	self recurse: 2
+		result: result!
+
+testRecurseInteger
+
+	value = 3.
+	self recurse: 1
+		result: OrderedCollection new! !
+

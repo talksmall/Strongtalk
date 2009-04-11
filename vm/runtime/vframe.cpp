@@ -576,11 +576,20 @@ void traceFrame(const compiledVFrame* vf, contextOop con) {
       FlagSetting flag(TraceCanonicalContext, false);
       _std->cr();
       _std->indent();
-      _std->print_cr("context(0x%x), vframe(0x%x), block? %d", con, vf, vf->method()->is_blockMethod());
-      vf->print_activation(0);
-      vf->method()->print_codes();
-      //breakpoint();
+      _std->print_cr("context(0x%x), vframe(0x%x), block? %d", con, vf,
+        vf ? vf->method()->is_blockMethod() : false);
+      if (vf) {
+        vf->print_activation(0);
+        vf->method()->print_codes();
+      }
     }
+}
+
+contextOop compiledVFrame::compute_canonical_parent_context(ScopeDesc* scope, const compiledVFrame* vf, contextOop con) {
+  compiledVFrame* parent_vf = (!vf || !vf->parent() || !vf->parent()->is_compiled_frame())
+                                  ? NULL
+                                  : (compiledVFrame*) vf->parent();
+    return compute_canonical_context(scope->parent(true), parent_vf, con);
 }
 
 contextOop compiledVFrame::compute_canonical_context(ScopeDesc* scope, const compiledVFrame* vf, contextOop con) {
@@ -600,8 +609,7 @@ contextOop compiledVFrame::compute_canonical_context(ScopeDesc* scope, const com
     // This scope does not allocate an interpreter contextOop
     if (scope->isMethodScope()) return NULL;
 
-    compiledVFrame* parent_vf = (!vf || scope->isTopLevelBlockScope()) ? NULL : (compiledVFrame*) vf->parent();
-    return compute_canonical_context(scope->parent(true), parent_vf, con);
+    return compute_canonical_parent_context(scope, vf, con);
   }
 
   contextOop result;
@@ -660,9 +668,7 @@ contextOop compiledVFrame::compute_canonical_context(ScopeDesc* scope, const com
 
   // Set parent scope if needed
   if (!scope->isMethodScope()) {
-    contextOop parent = compute_canonical_context(scope->parent(true),
-                                                  (!vf || scope->isTopLevelBlockScope()) ? NULL : (compiledVFrame*) vf->parent(),
-						  con ? con->outer_context() : NULL);
+    contextOop parent = compute_canonical_parent_context(scope, vf, con);
     result->set_parent(parent);
   }
 

@@ -619,13 +619,39 @@ Expr* Inliner::doInline(Node* start) {
   // set callee's starting point for code generation
   gen = callee->gen();
   gen->setCurrent(start);
+
+  reportInline("Inline ");
+
   callee->genCode();
 
   // make sure caller appends new code after inlined return of callee
   gen = sender->gen();
   gen->setCurrent(callee->returnPoint());
   assert(gen->current()->next() == NULL, "shouldn't have successor");
+
+  reportInline("End of ");
+
   return callee->result;
+}
+
+void Inliner::reportInline(char* prefix) {
+  if (!info()->sel) return;
+  if (!callee->methodHolder()) return;
+  char* klassName = callee->methodHolder()->klass_part()->delta_name();
+  if (!klassName) return;
+
+  int prefixLen = strlen(prefix);
+  symbolOop selector = info()->sel;
+  int length = selector->length();
+  int klassLength = strlen(klassName);
+  char* buffer = NEW_RESOURCE_ARRAY(char, klassLength + length + prefixLen + 3);
+  strcpy(buffer, prefix);
+  strcpy(buffer + prefixLen, klassName);
+  strcpy(buffer + klassLength + prefixLen, ">>");
+  strncpy(buffer + klassLength + prefixLen + 2, selector->chars(), length);
+  buffer[length + klassLength + prefixLen + 2] = '\0';
+
+  gen->append(NodeFactory::new_CommentNode(buffer));
 }
 
 Expr* Inliner::picPredict() {

@@ -201,7 +201,7 @@ debugErrorTest: anInteger
         self changed: #selectedFailureTest.		"added rew"
         self changed: #selectedErrorTest.			"added rew"
         (anInteger ~= 0)
-                ifTrue: [(result errors at: anInteger) debug]!
+                ifTrue: [[(result errors at: anInteger) debug] fork]!
 
 debugFailureTest: anInteger
 
