@@ -77,7 +77,7 @@ class nmethod : public OopNCode {
   //       and _verified_entry_point_offset are less than 128 bytes away from _entry_point_offset, thus these
   //       offsets could be stored in one byte relative to _entry_point_offset.
 
-   enum { alive = 0, zombie = 1, dead = 2 };
+   enum { alive = 0, zombie = 1, dead = 2, resurrected = 3 };
  
  public:
   char* insts() const			{ return (char*)(this + 1); }				// machine instructions
@@ -90,11 +90,12 @@ class nmethod : public OopNCode {
   nmethodScopes* scopes() const		{ return (nmethodScopes*) locsEnd(); }
   PcDesc*	pcs() const		{ return (PcDesc*) scopes()->pcs(); }
   PcDesc*	pcsEnd() const		{ return (PcDesc*) scopes()->pcsEnd(); }
-
   methodOop	method() const;
   klassOop      receiver_klass() const;
 
   uint16*	noninlined_block_offsets() const { return (uint16*) pcsEnd(); }
+  char*         end() const             { return (char*)(noninlined_block_offsets() + 
+                                          (_number_of_noninlined_blocks * sizeof uint16)); }
 
   
  public:
@@ -128,7 +129,8 @@ class nmethod : public OopNCode {
  public:
   friend nmethod* new_nmethod(Compiler* c);
   void   initForTesting(int size, LookupKey* key); // to support testing
-  int    size() const 			{ return instsEnd() - insts(); }	// size of code in bytes
+  int    size() const 			{ return end() - ((char*) this); }	// total size of nmethod
+  int    codeSize() const               { return instsEnd() - insts(); }	// size of code in bytes
 
   // Shift the pc relative information by delta.
   // Call this whenever the code is moved.
@@ -142,9 +144,12 @@ class nmethod : public OopNCode {
   // Flag accessing and manipulation.
   bool  isAlive() const			{ return flags.state == alive;  }
   bool  isZombie() const		{ return flags.state == zombie; }
-  bool  isDead()  const                 { return flags.state == dead;   }
+  bool  isDead()  const                 { return flags.state == dead;   } // unused
+  bool  isResurrected()                 { return flags.state == resurrected; }
 
   void  makeZombie(bool clearInlineCaches);
+  // allow resurrection of zombies - for use during recompilation
+  void  resurrect()                     { assert(isZombie(), "cannot resurrect non-zombies"); flags.state = resurrected; }
 
   bool	isUncommonRecompiled() const	{ return flags.isUncommonRecompiled; }
 

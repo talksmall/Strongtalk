@@ -1,0 +1,45 @@
+Delta define: #CompilerTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'a b')) !
+
+(Delta mirrorFor: #CompilerTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #CompilerTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #CompilerTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #CompilerTest) classSide methodsFor: 'instance creation' !
+
+
+new
+
+	^(super new)
+		initialize;
+		yourself! !
+
+! (Delta mirrorFor: #CompilerTest) methodsFor: 'initialise-release' !
+
+
+initialize
+
+	a := FixtureA new.
+	b := FixtureB new! !
+
+! (Delta mirrorFor: #CompilerTest) methodsFor: 'testing' !
+
+
+testOnce
+
+	self with: a!
+
+testTwice
+
+	self with: a.
+	self with: b!
+
+with: fixture
+
+	^fixture value
+	! !
+

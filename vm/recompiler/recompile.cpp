@@ -272,7 +272,7 @@ void Recompilation::recompile(Recompilee* r) {
 
   if (_newNM == NULL) return;		      // possible -- fix this later
 
-  if (recompilee) {
+  if (recompilee && ! recompilee->isFree()) {
     // discard old nmethod (*after* compiling newNM)
     recompilee->clear_inline_caches();
   }

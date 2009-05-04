@@ -82,7 +82,7 @@ class Heap: public CHeapObj {
   char* endAddr()   const { return startAddr() + capacity(); }
 
   // Queries
-  bool  contains(void* p) const { return (void*)base <= p && p < (void*)(base + capacity()); }
+  bool  contains(void* p) const;
   void* firstUsed() const; // Address of first used object
   void* nextUsed(void* prev) const;
   void* findStartOfBlock(void* start) const;

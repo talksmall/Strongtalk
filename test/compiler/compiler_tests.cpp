@@ -257,3 +257,29 @@ TESTF(CompilerTests, recompileZombieForcingFlush) {
     call("NonInlinedBlockTest", "testTrap2");
   }
 }
+
+TESTF(CompilerTests, recompileZombieWhenMethodHeapExhausted) {
+  AddTestProcess addTest;
+  {
+    initializeSmalltalkEnvironment();
+    call("CompilerTest", "testOnce");
+    compile("CompilerTest",  "with:");
+    clearICs("CompilerTest", "testOnce");
+    call("CompilerTest", "testOnce");
+    seed = lookup("CompilerTest",  "with:");
+    seed->inc_uncommon_trap_counter();
+    seed->inc_uncommon_trap_counter();
+    seed->inc_uncommon_trap_counter();
+    seed->inc_uncommon_trap_counter();
+    seed->inc_uncommon_trap_counter();
+
+    exhaustMethodHeap(seed->key, seed->size());
+
+    ASSERT_FALSE(seed->isZombie());
+    // forces deoptimization and recompilation.
+    call("CompilerTest", "testTwice");
+    ASSERT_TRUE(seed->isZombie());
+    nmethod* nm = lookup("CompilerTest",  "with:");
+    ASSERT_FALSE((nm == seed));
+  }
+}

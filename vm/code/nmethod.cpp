@@ -70,7 +70,7 @@ void* nmethod::operator new(size_t size) {
 
 void nmethod::initForTesting(int size, LookupKey* key) {
   this->key.initialize(key->klass(), key->selector_or_method());
-  _instsLen = size;
+  _instsLen = size - sizeof nmethod;
   _locsLen = 0;
   _scopeLen = 0;
   _number_of_noninlined_blocks = 0;
@@ -348,6 +348,11 @@ void nmethod::makeZombie(bool clearInlineCaches) {
   // mark this nmethod as zombie (it is almost dead and can be flushed as
   // soon as it is no longer on the stack)
   if (isZombie()) return;
+  if (isResurrected()) {
+    // was a resurrected zombie, so just reset its state
+    flags.state = zombie;
+    return;
+  }
 
   // overwrite call to recompiler by call to zombie handler
   LOG_EVENT2("%s nmethod 0x%x becomes zombie", (is_method() ? "normal" : "block"), this);

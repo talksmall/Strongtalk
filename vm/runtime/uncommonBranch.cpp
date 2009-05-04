@@ -173,49 +173,49 @@ void uncommon_trap() {
 
   // if counter is high enough, recompile the nmethod
   if (RecompilationPolicy::shouldRecompileAfterUncommonTrap(nm)) {
-    if (!nm->isZombie()) nm->makeZombie(false);
+    if (nm->isZombie()) nm->resurrect();
     Recompilation recomp(vf->receiver(), nm, true);
     VMProcess::execute(&recomp);
+    nm->makeZombie(false); // only allow the old method to be release AFTER recompilation
   }
-
 
   {
-  FinalResourceMark rm;
-  EnableDeoptimization ed; // Wrapper that enables canonicalization when deoptimization.
+    FinalResourceMark rm;
+    EnableDeoptimization ed; // Wrapper that enables canonicalization when deoptimizing.
 
-  DeltaProcess::deoptimize_redo_last_send();
-  process->deoptimize_stretch(&f, &f);
-  if (!nm->is_method()) {
-    // This is a top level block nmethod so we have to make sure all frames on the stack
-    // referring the context chain are deoptimized.
-    // Frames on other stacks might be candidates for deoptimization but are ignored for now.  fix this later
-    //
-    // Recipe:
-    //   walk the stack and collect a work list of {frame, compiled_context} pairs.
-    //   iterate over the work list until no deoptimized contextOops are present.
-    GrowableArray<FrameAndContextElement*>* elements  = new GrowableArray<FrameAndContextElement*>(10);
-    for (frame current_frame = f.sender(); !current_frame.is_first_frame(); current_frame = current_frame.sender()) {
-      collect_compiled_contexts_for(&current_frame, elements);
-    }
-    
-    bool done = false;
+    DeltaProcess::deoptimize_redo_last_send();
+    process->deoptimize_stretch(&f, &f);
+    if (!nm->is_method()) {
+      // This is a top level block nmethod so we have to make sure all frames on the stack
+      // referring the context chain are deoptimized.
+      // Frames on other stacks might be candidates for deoptimization but are ignored for now.  fix this later
+      //
+      // Recipe:
+      //   walk the stack and collect a work list of {frame, compiled_context} pairs.
+      //   iterate over the work list until no deoptimized contextOops are present.
+      GrowableArray<FrameAndContextElement*>* elements  = new GrowableArray<FrameAndContextElement*>(10);
+      for (frame current_frame = f.sender(); !current_frame.is_first_frame(); current_frame = current_frame.sender()) {
+        collect_compiled_contexts_for(&current_frame, elements);
+      }
+      
+      bool done = false;
 
-    while (!done) {
-      done = true;      
-      for (int index = 0; index < elements->length() && done; index++) {
-        FrameAndContextElement* e = elements->at(index);
-	if (e && e->con->unoptimized_context()) {
-	  process->deoptimize_stretch(&e->fr, &e->fr);
+      while (!done) {
+        done = true;      
+        for (int index = 0; index < elements->length() && done; index++) {
+          FrameAndContextElement* e = elements->at(index);
+	  if (e && e->con->unoptimized_context()) {
+	    process->deoptimize_stretch(&e->fr, &e->fr);
 
-          for (int j = 0; j < elements->length(); j++) {
-            if (elements->at(j) && elements->at(j)->fr.fp() == e->fr.fp())
-	      elements->at_put(j, NULL);
+            for (int j = 0; j < elements->length(); j++) {
+              if (elements->at(j) && elements->at(j)->fr.fp() == e->fr.fp())
+	        elements->at_put(j, NULL);
+	    }
+            done = false;
 	  }
-          done = false;
-	}
-      } 
+        } 
+      }
     }
-  }
   }
   process->exit_uncommon();
 }

@@ -302,6 +302,11 @@ void Heap::clear() {
   lastCombine = heapKlass;
 }
 
+bool  Heap::contains(void* p) const {
+  return between(p, base,     base + capacity()) || 
+         between(p, freeList, freeList + nfree); 
+}
+
 Heap::~Heap() {
 # ifdef ASSERT
     set_oops((oop*)base, capacity() / oopSize, NULL);

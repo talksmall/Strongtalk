@@ -211,6 +211,7 @@ class ConvertBlockClosure : public ObjectClosure {
   }
 };
 
+static nmethod* debug_nm = NULL;
 extern nmethod* recompilee;
 void zone::flushZombies(bool deoptimize) {
   // 1. cleanup all methodOop inline caches
@@ -228,9 +229,8 @@ void zone::flushZombies(bool deoptimize) {
   ConvertBlockClosure bl;
   Universe::object_iterate(&bl);
 
-  static nmethod* nm;
   FOR_ALL_NMETHODS(p) {
-    nm = p;
+    debug_nm = p;
     if (p->isZombie()) {
       if (deoptimize)
         Processes::deoptimize_wrt(p);
