@@ -261,7 +261,7 @@ class DeltaProcess: public Process {
   void oop_iterate(OopClosure* blk);
 
   // Deoptimization  
-  void deoptimized_wrt_marked_nmethods();
+  virtual void deoptimized_wrt_marked_nmethods();
   void deoptimize_stretch(frame* first_frame, frame* last_frame);
   static void deoptimize_redo_last_send();
 

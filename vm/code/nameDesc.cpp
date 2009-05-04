@@ -113,7 +113,7 @@ oop BlockValueNameDesc::value(const frame* fr) const {
 }
 
 oop MemoizedBlockNameDesc::value(const frame* fr) const {
-  // check is the block has been created
+  // check if the block has been created
   compiledVFrame* vf = fr 
                      ? compiledVFrame::new_vframe(fr, parent_scope(), 0)
 		     : NULL;

@@ -68,6 +68,28 @@ void* nmethod::operator new(size_t size) {
   return p;
 }
 
+void nmethod::initForTesting(int size, LookupKey* key) {
+  this->key.initialize(key->klass(), key->selector_or_method());
+  _instsLen = size;
+  _locsLen = 0;
+  _scopeLen = 0;
+  _number_of_noninlined_blocks = 0;
+  main_id = Universe::code->jump_table()->allocate(1);
+  promoted_id = NULL;
+
+  _invocation_count		= 0;
+  _uncommon_trap_counter	= 0;
+  _number_of_links		= 0;
+  _special_handler_call_offset	= 0;
+  _entry_point_offset    	= 0;
+  _verified_entry_point_offset	= 0;
+  _number_of_float_temporaries	= 0;
+  _float_section_size		= 0;
+  _float_section_start_offset	= 0;
+
+  flags.clear();
+  flags.state = zombie;
+}
 
 nmethod::nmethod(Compiler* c) : key(c->key->klass(), c->key->selector_or_method()) {
 #ifdef ASSERT

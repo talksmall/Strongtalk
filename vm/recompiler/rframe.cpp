@@ -253,6 +253,7 @@ void CompiledRFrame::init() {
   vframe* vf = vframe::new_vframe(&_fr);
   assert(vf->is_compiled_frame(), "must be compiled");
   _nm = ((compiledVFrame*)vf)->code();
+  _nm->verify();
   vf = vf->top();
   assert(vf->is_compiled_frame(), "must be compiled");
   _vf = (deltaVFrame*)vf;  

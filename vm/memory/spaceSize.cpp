@@ -36,10 +36,10 @@ void spaceSizes::initialize() {
   surv_size              = scale_and_adjust(SurvivorSize);
   old_size               = scale_and_adjust(OldSize);
 
-  reserved_codes_size    = scale_and_adjust(ReservedCodeSize);
+  reserved_codes_size    = scale_and_adjust(ReservedCodeSize); // not used?
   code_size              = scale_and_adjust(CodeSize);
 
-  reserved_pic_heap_size = scale_and_adjust(ReservedPICSize);
+  reserved_pic_heap_size = scale_and_adjust(ReservedPICSize);  // not used?
   pic_heap_size          = scale_and_adjust(PICSize);
 
   jump_table_size        = JumpTableSize;

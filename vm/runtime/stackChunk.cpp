@@ -121,6 +121,7 @@ void StackChunkBuilder::context_at_put(const compiledVFrame* frame, contextOop c
 contextOop StackChunkBuilder::context_at(const compiledVFrame* frame) {
   // Returns if no StackChunkBuilder is in use
   if (!is_deoptimizing()) return NULL;
+  if (!frame) return NULL;
 
   // See if it's stored
   for (int index = 0; index < frames->length(); index++) {

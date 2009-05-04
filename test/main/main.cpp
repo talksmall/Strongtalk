@@ -22,6 +22,8 @@ public:
   ~TestDeltaProcess();
   void addToProcesses();
   void removeFromProcesses();
+  void deoptimized_wrt_marked_nmethods() {}
+  bool has_stack() const { return false; }
 };
 
 TestDeltaProcess*    testProcess = NULL;

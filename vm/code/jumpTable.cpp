@@ -137,17 +137,19 @@ nmethod* jumpTable::compile_block(blockClosureOop closure) {
   nmethod* parent = closure->jump_table_entry()->parent_nmethod(index); 
   NonInlinedBlockScopeDesc* scope = parent->noninlined_block_scope_at(index);
 
+  // save it in case it gets flushed during allocation!
+  jumpTableEntry* jumpEntry = closure->jump_table_entry();
+
   // compile the top-level block nmethod
   VM_OptimizeBlockMethod op(closure, scope);
   VMProcess::execute(&op);
   nmethod* nm = op.method();
 
   // patch the jump entry with the entry point of the compiled nmethod
-  closure->jump_table_entry()->set_destination(nm->entryPoint());
+  jumpEntry->set_destination(nm->entryPoint());
 
-  jumpTableEntry* a = closure->jump_table_entry();
   jumpTableEntry* b = nm->jump_table_entry();
-  assert(a == b, "jump table discrepancy");
+  assert(jumpEntry == b, "jump table discrepancy");
   return nm;
 }
 

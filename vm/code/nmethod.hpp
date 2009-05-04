@@ -84,6 +84,7 @@ class nmethod : public OopNCode {
   char* specialHandlerCall() const	{ return insts() + _special_handler_call_offset; }	// call to special handler
   char* entryPoint() const		{ return insts() + _entry_point_offset; }		// normal entry point
   char* verifiedEntryPoint() const	{ return insts() + _verified_entry_point_offset; }	// e.p. if klass is correct
+  bool  isFree()                        { return Universe::code->contains((void*) _instsLen); } // has this nmethod been freed
 
   // debugging information
   nmethodScopes* scopes() const		{ return (nmethodScopes*) locsEnd(); }
@@ -126,7 +127,7 @@ class nmethod : public OopNCode {
 
  public:
   friend nmethod* new_nmethod(Compiler* c);
-  
+  void   initForTesting(int size, LookupKey* key); // to support testing
   int    size() const 			{ return instsEnd() - insts(); }	// size of code in bytes
 
   // Shift the pc relative information by delta.

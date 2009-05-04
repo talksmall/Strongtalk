@@ -624,7 +624,7 @@ contextOop compiledVFrame::compute_canonical_context(ScopeDesc* scope, const com
 
   // step 2
   if (con && con->unoptimized_context()) {
-    result = con->unoptimized_context();
+    result = con->unoptimized_context(); // shouldn't this go in the SCB context cache?
     assert(result->unoptimized_context() == NULL, "cannot have deoptimized context");
     return result;
   }
@@ -668,7 +668,7 @@ contextOop compiledVFrame::compute_canonical_context(ScopeDesc* scope, const com
 
   // Set parent scope if needed
   if (!scope->isMethodScope()) {
-    contextOop parent = compute_canonical_parent_context(scope, vf, con);
+    contextOop parent = compute_canonical_parent_context(scope, vf, con ? con->outer_context() : NULL);
     result->set_parent(parent);
   }
 
@@ -781,7 +781,7 @@ deltaVFrame* compiledTopLevelBlockVFrame::parent() const {
 			  : compiled_context();
 
   // If the context is killed return NULL
-  if (parent_context->is_dead()) return NULL;
+  if (!parent_context || parent_context->is_dead()) return NULL;
 
   // Now we have to search for the parent on the stack.
   ScopeDesc* ps = parent_scope();

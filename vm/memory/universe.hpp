@@ -310,10 +310,10 @@ public:
   static void cleanup_all_inline_caches();
 
  private:
-  static void methodOops_do(void f(methodOop));
   static void flush_inline_caches_in_method(methodOop method);
 
  public:
+  static void methodOops_do(void f(methodOop));
   static bool on_page_boundary(void* addr);
   static int  page_size();
 };

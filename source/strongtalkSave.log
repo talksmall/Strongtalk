@@ -65828,3 +65828,117 @@ exercise: nib value: value
 "April 5, 2009 -> 14:7:28"!
 
 "System saved" !
+"April 12, 2009 -> 2:21:54"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'initialize-release' !
+initialize! !
+
+"April 12, 2009 -> 2:23:34"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) classSide methodsFor: 'instance creation' !
+new
+
+	^(super new)
+		initialize;
+		yourself! !
+
+"April 12, 2009 -> 2:23:53"!
+
+Delta define: #NonInlinedBlockTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'a b c d')) !
+
+
+"April 12, 2009 -> 2:25:4"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'initialize-release' !
+initialize
+
+	a := NIBA new.
+	b := NIBB new.
+	c := NIBC new.
+	d :=NIBD new.! !
+
+"April 12, 2009 -> 2:25:24"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testSetup
+	self exercise: a value: 1.
+	self exercise: b value: 1.
+	self exercise: c value: 1.
+	self exercise: d value: 1.
+! !
+
+"April 12, 2009 -> 2:25:42"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testSetup
+	self exercise: a value: 1.
+	self exercise: b value: 1.
+	self exercise: c value: 1.
+	self exercise: d value: 1! !
+
+"April 12, 2009 -> 2:25:55"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testTrap
+
+	self exercise: a value: 1.
+	self exercise: a value: 1.0! !
+
+"April 12, 2009 -> 2:29:33"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise2: nib value: value
+	|set|
+	set := Set new.
+	nib do: [:val |
+					
+					val assert: [val notNil].]
+		value: value! !
+
+"April 12, 2009 -> 2:33:0"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise2: nib value: value
+	|set|
+	set := Set new.
+	nib do: [:val |
+					|block|
+					block := [val notNil].
+					val assert: [block value].
+					val noyNil ifTrue: [set add: val]]
+		value: value! !
+
+"April 12, 2009 -> 2:33:16"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testSetup2
+	self exercise2: a value: 1.
+	self exercise2: b value: 1.
+	self exercise2: c value: 1.
+	self exercise2: d value: 1! !
+
+"April 12, 2009 -> 2:33:23"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+testTrap2
+
+	self exercise2: a value: 1.
+	self exercise2: a value: 1.0! !
+
+"April 12, 2009 -> 2:34:4"!
+
+! (Delta mirrorFor: #NonInlinedBlockTest) methodsFor: 'testing' !
+exercise2: nib value: value
+	|set|
+	set := Set new.
+	nib do: [:val |
+					|block|
+					block := [val notNil].
+					val assert: [block value].
+					val notNil ifTrue: [set add: val]]
+		value: value! !
+
+"April 12, 2009 -> 2:35:44"!
+
+"System saved" !
