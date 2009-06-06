@@ -17,10 +17,7 @@ void trace(vframe* from_frame, int start_frame, int number_of_frames){
   }
 }
 
-void handle_exception(void* fp, void* sp, void* pc) {
-  frame f((oop*)sp, (int*)fp, (char*)pc);
-  lprintf("ebp: 0x%x, esp: 0x%x, pc: 0x%x\n", fp, sp, pc);
-  if (f.is_compiled_frame()) {
+void traceCompiledFrame(frame& f) {
     ResourceMark mark;
 
     // Find the nmethod containing the pc
@@ -36,14 +33,51 @@ void handle_exception(void* fp, void* sp, void* pc) {
     std->cr();
     
     trace(vf, 0, 10);
-  } else if (f.is_interpreted_frame()) {
+}
+
+void traceInterpretedFrame(frame& f) {
     ResourceMark mark;
     vframe *vf = vframe::new_vframe(&f);
 
     trace(vf, 0, 10);
-  } else {
-    lprintf("Not in compiled code.");
+}
+
+void traceDeltaFrame(frame& f) {
+  if (f.is_compiled_frame()) {
+    traceCompiledFrame(f);
+  } else if (f.is_interpreted_frame()) {
+    traceInterpretedFrame(f);
   }
+}
+
+void handle_exception(void* fp, void* sp, void* pc) {
+  frame f((oop*)sp, (int*)fp, (char*)pc);
+  lprintf("ebp: 0x%x, esp: 0x%x, pc: 0x%x\n", fp, sp, pc);
+  if (f.is_delta_frame()) {
+    traceDeltaFrame(f);
+    return;
+  } 
+  if (DeltaProcess::active() && last_Delta_fp) {
+    frame lastf((oop*)last_Delta_sp, (int*)last_Delta_fp);
+    if (lastf.is_delta_frame()) {
+      traceDeltaFrame(lastf);
+      return;
+    }
+    frame next = lastf.sender();
+    if (next.is_delta_frame()) {
+      traceDeltaFrame(next);
+      return;
+    }
+  }
+  if (DeltaProcess::active() && DeltaProcess::active()->last_Delta_fp()) {
+    frame activef((oop*)DeltaProcess::active()->last_Delta_sp(), 
+                (int*)DeltaProcess::active()->last_Delta_fp());
+    if (activef.is_delta_frame()) {
+      traceDeltaFrame(activef);
+      return;
+    }
+  }
+  lprintf("Could not trace delta.");
 }
 
 /*

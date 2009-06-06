@@ -1,5 +1,6 @@
 Delta define: #StackTraceInspector as: (
-(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>')) !
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
 
 (Delta mirrorFor: #StackTraceInspector) revision: '$Revision: 1.1 $'!
 
@@ -16,7 +17,31 @@ Use and distribution of this software is subject to the terms of the attached so
 
 on: p <Process> ^ <Instance>
 
-	^self new initProcess: p! !
+	|debugger|
+	(debugger := self new) initProcess: p.
+	self debuggers at: p put: debugger.
+	^debugger!
+
+openOn: p <Process>
+	
+	(self debuggers
+				at: p
+				ifAbsent: [^(self on: p) launch]) rebuild! !
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'private - accessing' !
+
+
+debuggers ^<Dict[Process,StackTraceInspector]>
+
+	Debuggers isNil
+		ifTrue: [Debuggers := Dictionary[Process, StackTraceInspector] new].
+	^Debuggers!
+
+removeDebugger: debugger <StackTraceInspector>
+
+	self debuggers
+		removeAt: debugger process
+		ifAbsent: []! !
 
 ! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'accessing' !
 
@@ -36,6 +61,7 @@ windowTitle ^ <Str>
 abortProcess
 
 	"Process get aborted by default when stack trace inspector is closed"
+	self remove.
 	self requestCloseIfTopWindow.
 
 !
@@ -50,11 +76,17 @@ closeRequest: toClose <[]>
 continueProcess
 
 	|topWindow|
+	self remove.
 	self process resume.
 	self process: nil.		"Don't terminate process when window closes"
 	topWindow := self visual topWindow.
 	topWindow isNil
 		ifFalse: [topWindow requestClose]!
+
+singleStep: activation <Activation>
+
+	{{primitiveProcessSingleStep: self process ifFail: [:err <Symbol> | self error: err]}}.
+	self process resume!
 
 transferToConsoleDebugger
 
@@ -95,28 +127,51 @@ processMenu ^ <Menu>
 ! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
 
 
-buildBareVisualTop: top <Boolean> ^ <Visual>
+addActivationsTo: col <Column[Visual]>
 
-	| stack <Array[Activation]> col <Column[Visual]> start <Int> |
+	| stack <Array[Activation]> start <Int> |
 	stack := self process activationStack.
-	col := Column[Visual] new.
-	start := 1 + self process processError topFramesIgnored.
+	start := 1 "+ self process processError topFramesIgnored".
 	
 	"Add first activation open"
 	self assert: [ start < stack size ].
-	col add: ((ActivationOutliner on: (stack at: start)) open: true; imbeddedVisual) .
+	col add: (self outlinerFor: (stack at: start)
+						open: true).
 	start+1 to: stack size do: [ :i <Int> |
 		| a <Activation> |
 		a := stack at: i.
 		a isBlockValueActivation
-			ifFalse: [	col add: (ActivationOutliner on: a) imbeddedVisual ]
-	].
-	^col
+			ifFalse: [	col add: (self outlinerFor: a open: false) ]
+	]!
+
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	activationOutliners := Column[Visual] new.
+	self addActivationsTo: activationOutliners.
+	^activationOutliners
 !
+
+outlinerFor: activation <Activation> open: b <Boolean>
+
+	^(ActivationOutliner
+			on: activation
+			debugger: self)
+				open: b;
+				imbeddedVisual!
 
 process: p <Process>
 
-	process := p! !
+	process := p!
+
+rebuild
+
+	self inSessionProcessDo:
+		[activationOutliners removeAll.
+		self addActivationsTo: activationOutliners]!
+
+remove
+
+	self class removeDebugger: self! !
 
 ! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private-initialization' !
 

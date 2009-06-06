@@ -66173,3 +66173,2425 @@ with: fixture
 "May 4, 2009 -> 14:33:33"!
 
 "System saved" !
+"May 24, 2009 -> 17:30:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildCodeView ^<Visual>
+
+	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self activation vmPrettyPrint.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	
+	cv := CodeView forText.
+	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
+	cv model: gls.
+	^self editorBorderFor: cv
+! !
+
+"May 24, 2009 -> 17:34:19"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (Button labeled: 'Step' action: [:b <Button> | ]).
+	
+	^row! !
+
+"May 24, 2009 -> 17:35:46"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildBody ^<Visual>
+
+	| col <Column[Visual]> |
+
+	col := Column[Visual] new.
+	col add: self buildActions;
+		add: self buildCodeView.
+	^col
+! !
+
+"May 24, 2009 -> 17:38:44"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (Button labeled: 'Step into' action: [:b <Button> | ]).
+	row add: (Button labeled: 'Step over' action: [:b <Button> | ]).
+	row add: (Button labeled: 'Step out' action: [:b <Button> | ]).
+	^row! !
+
+"May 26, 2009 -> 11:30:17"!
+
+"System saved" !
+"May 30, 2009 -> 20:33:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+on: a <Activation> debugger: debugger<StackTraceInspector> ^ <Instance>
+
+	^self new initActivation: a! !
+
+"May 30, 2009 -> 20:33:29"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	| stack <Array[Activation]> col <Column[Visual]> start <Int> |
+	stack := self process activationStack.
+	col := Column[Visual] new.
+	start := 1 + self process processError topFramesIgnored.
+	
+	"Add first activation open"
+	self assert: [ start < stack size ].
+	col add: ((ActivationOutliner
+						on: (stack at: start)
+						debugger: self)
+							open: true;
+							imbeddedVisual) .
+	start+1 to: stack size do: [ :i <Int> |
+		| a <Activation> |
+		a := stack at: i.
+		a isBlockValueActivation
+			ifFalse: [	col add: (ActivationOutliner on: a) imbeddedVisual ]
+	].
+	^col
+! !
+
+"May 30, 2009 -> 20:33:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	activation := a! !
+
+"May 30, 2009 -> 20:33:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+on: a <Activation> debugger: debugger<StackTraceInspector> ^ <Instance>
+
+	^self new initActivation: a debugger: debugger! !
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	activation := a.
+	debugger := d! !
+
+"May 30, 2009 -> 20:33:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+on: a <Activation> debugger: debugger<StackTraceInspector> ^ <Instance>
+
+	^self new initActivation: a! !
+
+"May 30, 2009 -> 20:33:30"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	| stack <Array[Activation]> col <Column[Visual]> start <Int> |
+	stack := self process activationStack.
+	col := Column[Visual] new.
+	start := 1 + self process processError topFramesIgnored.
+	
+	"Add first activation open"
+	self assert: [ start < stack size ].
+	col add: ((ActivationOutliner
+						on: (stack at: start)
+						debugger: self)
+							open: true;
+							imbeddedVisual) .
+	start+1 to: stack size do: [ :i <Int> |
+		| a <Activation> |
+		a := stack at: i.
+		a isBlockValueActivation
+			ifFalse: [	col add: (ActivationOutliner on: a) imbeddedVisual ]
+	].
+	^col
+! !
+
+"May 30, 2009 -> 20:33:30"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	activation := a! !
+
+"May 30, 2009 -> 20:33:30"!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+on: a <Activation> debugger: debugger<StackTraceInspector> ^ <Instance>
+
+	^self new initActivation: a debugger: debugger! !
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"May 30, 2009 -> 20:33:30"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	activation := a.
+	debugger := d! !
+
+"May 30, 2009 -> 20:39:16"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+singleStep: activation
+
+	Transcript cr;
+		show: 'single step for: '.
+	activation printOn: Transcript.
+	Transcript cr! !
+
+"May 30, 2009 -> 20:39:30"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+singleStep: activation <Activation>
+
+	Transcript cr;
+		show: 'single step for: '.
+	activation printOn: Transcript.
+	Transcript cr! !
+
+"May 30, 2009 -> 20:40:30"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (Button
+						labeled: 'Step into'
+						action: [:b <Button> | debugger singleStep: self]).
+	row add: (Button labeled: 'Step over' action: [:b <Button> | ]).
+	row add: (Button labeled: 'Step out' action: [:b <Button> | ]).
+	^row! !
+
+"May 30, 2009 -> 20:53:7"!
+
+"System saved" !
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>')) !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>')) !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>')) !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>')) !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>')) !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>')) !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'private - accessing' !
+debuggers ^<Dict[Process,StackTraceInspector]>
+
+	Debuggers isNil
+		ifTrue: [Debuggers := Dictionary[Process, StackTraceInspector] new].
+	^Debuggers! !
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:1"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"May 30, 2009 -> 22:6:4"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'instance creation' !
+on: p <Process> ^ <Instance>
+
+	|debugger|
+	(debugger := self new) initProcess: p.
+	self debuggers at: p put: debugger.
+	^debugger! !
+
+"May 30, 2009 -> 22:6:4"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'private - accessing' !
+removeDebugger: debugger <StackTraceInspector>
+
+	self debuggers
+		remove: debugger process
+		ifAbsent: []! !
+
+"May 30, 2009 -> 22:6:4"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+remove
+
+	self class removeDebugger: self! !
+
+"May 30, 2009 -> 22:6:4"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+abortProcess
+
+	"Process get aborted by default when stack trace inspector is closed"
+	self remove.
+	self requestCloseIfTopWindow.
+
+! !
+
+"May 30, 2009 -> 22:6:4"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+continueProcess
+
+	|topWindow|
+	self remove.
+	self process resume.
+	self process: nil.		"Don't terminate process when window closes"
+	topWindow := self visual topWindow.
+	topWindow isNil
+		ifFalse: [topWindow requestClose]! !
+
+"May 30, 2009 -> 22:6:4"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'private - accessing' !
+removeDebugger: debugger <StackTraceInspector>
+
+	self debuggers
+		removeAt: debugger process
+		ifAbsent: []! !
+
+"May 30, 2009 -> 22:7:32"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+addActivationsTo: col <Column[Visual]>
+
+	| stack <Array[Activation]> start <Int> |
+	stack := self process activationStack.
+	start := 1 + self process processError topFramesIgnored.
+	
+	"Add first activation open"
+	self assert: [ start < stack size ].
+	col add: ((ActivationOutliner
+						on: (stack at: start)
+						debugger: self)
+							open: true;
+							imbeddedVisual) .
+	start+1 to: stack size do: [ :i <Int> |
+		| a <Activation> |
+		a := stack at: i.
+		a isBlockValueActivation
+			ifFalse: [	col add: (ActivationOutliner
+											on: a
+											debugger: self) imbeddedVisual ]
+	]! !
+
+"May 30, 2009 -> 22:8:6"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	activationOutliners := Column[Visual] new.
+	self addActivationsTo: activationOutliners.
+	^activationOutliners
+! !
+
+"May 30, 2009 -> 22:9:47"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+rebuild
+
+	activationOutliners removeAll.
+	self addActivationsTo: activationOutliners! !
+
+"May 30, 2009 -> 22:11:31"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'instance creation' !
+openOn: p <Process>
+	|debugger|
+	debugger := self debuggers at: p.
+	debugger isNil
+		ifTrue: [(self on: p) launch]
+		ifFalse: [debugger rebuild]! !
+
+"May 30, 2009 -> 22:17:19"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+outlinerFor: activation <Activation> open: b <Boolean>
+
+	^(ActivationOutliner
+			on: activation
+			debugger: self)
+				open: b;
+				imbeddedVisual! !
+
+"May 30, 2009 -> 22:18:22"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+addActivationsTo: col <Column[Visual]>
+
+	| stack <Array[Activation]> start <Int> |
+	stack := self process activationStack.
+	start := 1 + self process processError topFramesIgnored.
+	
+	"Add first activation open"
+	self assert: [ start < stack size ].
+	col add: (self outlinerFor: (stack at: start)
+						open: true).
+	start+1 to: stack size do: [ :i <Int> |
+		| a <Activation> |
+		a := stack at: i.
+		a isBlockValueActivation
+			ifFalse: [	col add: (ActivationOutliner
+											on: a
+											debugger: self) imbeddedVisual ]
+	]! !
+
+"May 30, 2009 -> 22:19:25"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+addActivationsTo: col <Column[Visual]>
+
+	| stack <Array[Activation]> start <Int> |
+	stack := self process activationStack.
+	start := 1 + self process processError topFramesIgnored.
+	
+	"Add first activation open"
+	self assert: [ start < stack size ].
+	col add: (self outlinerFor: (stack at: start)
+						open: true).
+	start+1 to: stack size do: [ :i <Int> |
+		| a <Activation> |
+		a := stack at: i.
+		a isBlockValueActivation
+			ifFalse: [	col add: (self outlinerFor: a open: false) ]
+	]! !
+
+"May 31, 2009 -> 1:40:9"!
+
+"System saved" !
+"May 31, 2009 -> 1:46:57"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'instance creation' !
+openOn: p <Process>
+	
+	(self debuggers
+				at: p
+				ifAbsent: [(self on: p) launch. ^self]) rebuild! !
+
+"May 31, 2009 -> 1:48:19"!
+
+"System saved" !
+"May 31, 2009 -> 1:49:31"!
+
+! (Delta mirrorFor: #Launcher) classSide methodsFor: 'control' !
+startProgEnv ^<Instance>
+
+	| launcher <Instance> |
+	self createUITranscript.
+	
+	"Register stophandler for process scheduler"
+	Processor stopHandler: [ :p <Process> | StackTraceInspector openOn: p ].
+
+	launcher := (self new) launch; yourself.
+
+	"Don't launch start page if system is inconsistent so that it won't
+		obscure the error messages in the transcript"
+	SourceHandler systemIsConsistent
+		ifTrue: [ [ launcher browseStartPage ] fork. ]. 
+
+	^launcher
+! !
+
+"May 31, 2009 -> 1:49:41"!
+
+"System saved" !
+"May 31, 2009 -> 1:54:7"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+singleStep: activation <Activation>
+
+	{{primitiveProcessSingleStep: self process ifFail: [:err <Symbol> | self error: err]}}! !
+
+"May 31, 2009 -> 1:55:49"!
+
+"System saved" !
+"May 31, 2009 -> 2:3:17"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+singleStep: activation <Activation>
+
+	{{primitiveProcessSingleStep: self process ifFail: [:err <Symbol> | self error: err]}}.
+	self process resume! !
+
+"May 31, 2009 -> 2:3:29"!
+
+"System saved" !
+"May 31, 2009 -> 11:42:39"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'instance creation' !
+openOn: p <Process>
+	
+	(self debuggers
+				at: p
+				ifAbsent: [^(self on: p) launch]) rebuild! !
+
+"May 31, 2009 -> 11:42:39"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+addActivationsTo: col <Column[Visual]>
+
+	| stack <Array[Activation]> start <Int> |
+	stack := self process activationStack.
+	start := 1 "+ self process processError topFramesIgnored".
+	
+	"Add first activation open"
+	self assert: [ start < stack size ].
+	col add: (self outlinerFor: (stack at: start)
+						open: true).
+	start+1 to: stack size do: [ :i <Int> |
+		| a <Activation> |
+		a := stack at: i.
+		a isBlockValueActivation
+			ifFalse: [	col add: (self outlinerFor: a open: false) ]
+	]! !
+
+"May 31, 2009 -> 11:42:49"!
+
+"System saved" !
+"June 1, 2009 -> 20:53:28"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+rebuild
+
+	self inSessionProcessDo:
+		[activationOutliners removeAll.
+		self addActivationsTo: activationOutliners]! !
+
+"June 1, 2009 -> 20:53:39"!
+
+"System saved" !

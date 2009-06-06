@@ -137,6 +137,7 @@ extern "C" volatile void* handleCallBack(int index, int params) {
 
   if (proc) {
     // We'are now back in a asynchronous DLL call so give up the control
+    proc->resetStepping();
     proc->transfer_and_continue();
   }
 

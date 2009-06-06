@@ -152,7 +152,7 @@ void dispatchTable::patch_with_sst_stub() {
 }
 
 
-void dispatchTable::intercept_for_step() {
+void dispatchTable::intercept_for_step(int* fr) {
   if (!in_step_mode()) {
     patch_with_sst_stub();
     mode = step_mode;
@@ -216,7 +216,7 @@ void dispatchTable_init() {
 
 
 void intercept_for_single_step() {
-  dispatchTable::intercept_for_step();
+  dispatchTable::intercept_for_step(NULL);
 }
 
 

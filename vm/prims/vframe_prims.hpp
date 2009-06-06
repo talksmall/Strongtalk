@@ -33,7 +33,7 @@ class vframeOopPrimitives : AllStatic {
   //%prim
   // <Activation> primitiveActivationProcess ^<SmallInteger> =
   //   Internal { flags = #(Pure)
-  //              name  = 'vframeOopPrimitives::index' }
+  //              name  = 'vframeOopPrimitives::process' }
   //%
   static PRIM_DECL_1(process, oop receiver);
 

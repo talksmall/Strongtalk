@@ -39,6 +39,7 @@ class StubRoutines: AllStatic {
   enum { _code_size = 3000 };			// simply increase if too small (assembler will crash if too small)
   static bool _is_initialized;			// true if StubRoutines has been initialized
   static char _code[_code_size];		// the code buffer for the stub routines
+  static void (*single_step_fn)();              // pointer to the current single step function (used by evaluator and ST debugger)
 
   // add entry points here
   static char* _ic_normal_lookup_entry;
@@ -62,6 +63,7 @@ class StubRoutines: AllStatic {
   static char* _call_delta;
   static char* _return_from_Delta;
   static char* _single_step_stub;
+  static char* _single_step_continuation;
   static char* _unpack_unoptimized_frames;
   static char* _provoke_nlr_at;
   static char* _continue_nlr_in_delta;
@@ -141,6 +143,7 @@ class StubRoutines: AllStatic {
   static char* call_delta()			{ return _call_delta; }
   static char* return_from_Delta()		{ return _return_from_Delta; }
   static char* single_step_stub()		{ return _single_step_stub; }
+  static char* single_step_continuation()	{ return _single_step_continuation; }
   static char* unpack_unoptimized_frames()	{ return _unpack_unoptimized_frames; }
   static char* provoke_nlr_at()			{ return _provoke_nlr_at; }
   static char* continue_nlr_in_delta()		{ return _continue_nlr_in_delta; }
@@ -155,4 +158,5 @@ class StubRoutines: AllStatic {
   static bool contains(char* pc)                { return (_code <= pc) && (pc < &_code[_code_size]); }
 
   static void init();				// must be called in system initialization phase
+  static void setSingleStepHandler(void (*fn)()) { single_step_fn = fn; }
 };

@@ -63,7 +63,8 @@ extern "C" int interpreter_loop_counter_limit = 0;
 
 bool Interpreter::contains(char* pc) {
   return
-    (_code_begin_addr       <= pc && pc < _code_end_addr);
+    (_code_begin_addr       <= pc && pc < _code_end_addr) || 
+    (pc == StubRoutines::single_step_continuation());
 }
 
 extern "C" char* InterpreterCodeStatus() { return "\x01\x00\x00\x00\x00\x00"; };
@@ -281,7 +282,7 @@ extern "C" void illegal();
 
 char* Interpreter::redo_send_entry() 				{ return access(_redo_send_entry); }
 //char* Interpreter::restart_primitiveValue() 			{ return access((char*)::restart_primitiveValue); }
-//char* Interpreter::nlr_single_step_continuation()		{ return access((char*)::nlr_single_step_continuation); }
+char* Interpreter::nlr_single_step_continuation_entry()		{ return access(Interpreter::_nlr_single_step_continuation_entry); }
 //char* Interpreter::redo_bytecode_after_deoptimization()		{ return access((char*)::redo_bytecode_after_deoptimization); }
 //char* Interpreter::illegal()					{ return access((char*)::illegal); }
 
@@ -2030,7 +2031,7 @@ extern "C" void verify_at_end_of_deoptimization();
 
 char* Interpreter::_restart_primitiveValue		= NULL;
 char* Interpreter::_redo_bytecode_after_deoptimization	= NULL;
-//char* Interpreter::_nlr_single_step_continuation	= NULL;
+char* Interpreter::_nlr_single_step_continuation_entry	= NULL;
 Label Interpreter::_nlr_single_step_continuation = Label();
 
 void InterpreterGenerator::generate_forStubRountines() {
@@ -2063,7 +2064,7 @@ void InterpreterGenerator::generate_forStubRountines() {
   masm->popl(eax);		  // get top of stack
   jump_ebx();
 
-// Interpreter::_nlr_single_step_continuation = masm->pc();
+ Interpreter::_nlr_single_step_continuation_entry = masm->pc();
   masm->bind(Interpreter::_nlr_single_step_continuation);
   masm->reset_last_Delta_frame();
   masm->jmp(_nlr_testpoint);

@@ -83,6 +83,7 @@ void Universe::scavenge(oop* p) {
   //   the symbol_table can be ignored during scavenge since all
   //   all symbols are tenured.
   FlagSetting fl(GCInProgress, true);
+  if (DeltaProcess::stepping) breakpoint();
   ResourceMark rm;
   scavengeCount++;
   assert(!processSemaphore, "processSemaphore shouldn't be set");

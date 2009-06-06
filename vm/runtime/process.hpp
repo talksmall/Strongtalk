@@ -66,7 +66,8 @@ class Process: public PrintableCHeapObj {
   // testers
   virtual bool is_vmProcess()    const { return false; }
   virtual bool is_deltaProcess() const { return false; }
-
+  virtual void resetStepping() {};
+  virtual void applyStepping() {};
   // operations
   void abort();
 
@@ -153,6 +154,22 @@ enum ProcessState {
   aborted	                // Process has been aborted
 };
 
+class DebugInfo: public ValueObj {
+ private:
+  void (*interceptorEntryPoint)(int*); // entry point of the dispatch table entry point
+  int* frameBreakpoint;                // pointer to the target frame for stepping, if any
+ public:
+  DebugInfo() : interceptorEntryPoint(NULL), frameBreakpoint(NULL) {};
+  void interceptForStep();
+  void interceptForNext(int*fr);
+  void interceptForReturn(int*fr);
+  void apply();
+  void reset();
+  void resetInterceptor() {
+    interceptorEntryPoint = NULL; // %TODO: should we use breakpoint() or similar?
+    frameBreakpoint = NULL;
+  }
+};
 
 class DeltaProcess: public Process {
  private:
@@ -169,13 +186,27 @@ class DeltaProcess: public Process {
   volatile bool _is_terminating;
 
   int           _time_stamp;
-
+  DebugInfo     debug;               // debug info used while stepping
   friend class VMProcess;
  public:
+  static bool stepping;
   // constructor
   DeltaProcess(oop receiver, symbolOop selector);
   ~DeltaProcess();
 
+  virtual void applyStepping() {
+    debug.apply();
+  }
+  virtual void resetStepping() {
+    debug.reset();
+  }
+  void setupSingleStep() {
+    debug.interceptForStep();
+  }
+  void resetStep() {
+    debug.resetInterceptor();
+  }
+  void returnToDebugger();
   // testers
   bool is_deltaProcess() const { return true;  }
   bool isUncommon()      const { return _state == uncommon; }

@@ -1,5 +1,6 @@
 Delta define: #ActivationOutliner as: (
-(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>')) !
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
 
 (Delta mirrorFor: #ActivationOutliner) revision: '$Revision: 1.1 $'!
 
@@ -15,7 +16,11 @@ Use and distribution of this software is subject to the terms of the attached so
 
 on: a <Activation> ^ <Instance>
 
-	^self new initActivation: a! !
+	^self new initActivation: a!
+
+on: a <Activation> debugger: debugger<StackTraceInspector> ^ <Instance>
+
+	^self new initActivation: a debugger: debugger! !
 
 ! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'accessing' !
 
@@ -27,23 +32,26 @@ activation ^ <Activation>
 ! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
 
 
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (Button
+						labeled: 'Step into'
+						action: [:b <Button> | debugger singleStep: self]).
+	row add: (Button labeled: 'Step over' action: [:b <Button> | ]).
+	row add: (Button labeled: 'Step out' action: [:b <Button> | ]).
+	^row!
+
 buildBody ^<Visual>
 
-	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+	| col <Column[Visual]> |
 
-	"Construct vm source with highligthed bci"
-	vmSrc := self activation vmPrettyPrint.
-	strm := vmSrc readStream.
-	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
-	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
-		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
-						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
-	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
-	
-	cv := CodeView forText.
-	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
-	cv model: gls.
-	^self editorBorderFor: cv
+	col := Column[Visual] new.
+	col add: self buildActions;
+		add: self buildCodeView.
+	^col
 !
 
 buildClosedHeader ^ <Visual>
@@ -92,6 +100,25 @@ buildClosedHeader ^ <Visual>
 						].
 	^row!
 
+buildCodeView ^<Visual>
+
+	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self activation vmPrettyPrint.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	
+	cv := CodeView forText.
+	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
+	cv model: gls.
+	^self editorBorderFor: cv
+!
+
 currentByteCodeSeparatorCharacter ^ <Character>
 
 	^Character value: 16r1B
@@ -112,5 +139,10 @@ safePrintString: aValue
 
 initActivation: a <Activation>
 
-	activation := a! !
+	activation := a!
+
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	activation := a.
+	debugger := d! !
 

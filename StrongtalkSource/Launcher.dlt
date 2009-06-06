@@ -42,7 +42,7 @@ startProgEnv ^<Instance>
 	self createUITranscript.
 	
 	"Register stophandler for process scheduler"
-	Processor stopHandler: [ :p <Process> | (StackTraceInspector on: p) launch ].
+	Processor stopHandler: [ :p <Process> | StackTraceInspector openOn: p ].
 
 	launcher := (self new) launch; yourself.
 

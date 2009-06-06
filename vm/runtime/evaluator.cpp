@@ -360,7 +360,7 @@ bool evaluator::process_line() {
     return true;
   } else {
     if (st.is_help())    { print_help();                                     return true;  }
-    if (st.is_step())    { dispatchTable::intercept_for_step();              return false; }
+    if (st.is_step())    { dispatchTable::intercept_for_step(NULL);          return false; }
     if (st.is_next())    { dispatchTable::intercept_for_next(saved_frame);   return false; }
     if (st.is_end())     { dispatchTable::intercept_for_return(saved_frame); return false; }
     if (st.is_cont())    { dispatchTable::reset();                           return false; }

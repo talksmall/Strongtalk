@@ -176,6 +176,7 @@ dll_func DLLs::lookup_and_patch_CompiledDLL_Cache() {
 void DLLs::enter_async_call(DeltaProcess** addr) {
   DeltaProcess* proc = DeltaProcess::active();
   *addr = proc; // proc will be retrieved in dll_enter_async_call
+  proc->resetStepping();
   proc->transfer_and_continue();
 }
 
@@ -183,6 +184,7 @@ void DLLs::enter_async_call(DeltaProcess** addr) {
 void DLLs::exit_async_call(DeltaProcess** addr) {
   DeltaProcess* proc = *addr;
   proc->wait_for_control();
+  proc->applyStepping();
 }
 
 

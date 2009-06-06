@@ -169,7 +169,7 @@ PRIM_DECL_0(systemPrimitives::breakpoint) {
   PROLOGUE_0("breakpoint")
   {
     ResourceMark rm;
-    dispatchTable::intercept_for_step();
+    dispatchTable::intercept_for_step(NULL);
   }
   return trueObj;
 }

@@ -54,7 +54,7 @@ class Interpreter: AllStatic {
   static char* _dr_from_dll_call_restore;
 
   static char* _restart_primitiveValue;
-  //static char* _nlr_single_step_continuation;
+  static char* _nlr_single_step_continuation_entry;
   static Label _nlr_single_step_continuation; // used by single step stub routine
   static char* _redo_bytecode_after_deoptimization;
   static char* _illegal;
@@ -106,6 +106,7 @@ class Interpreter: AllStatic {
     
   static char* redo_send_entry();
   static char* restart_primitiveValue();
+  static char* nlr_single_step_continuation_entry();
   static Label& nlr_single_step_continuation();
   static char* redo_bytecode_after_deoptimization();
   static char* illegal();

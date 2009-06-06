@@ -43,7 +43,7 @@ class dispatchTable: AllStatic {
   static void reset();
 
   // intercepts all relevant entries to enable single step.
-  static void intercept_for_step();
+  static void intercept_for_step(int* fr);
   static void intercept_for_next(int* fr);
   static void intercept_for_return(int* fr);
 

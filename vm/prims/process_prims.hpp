@@ -97,6 +97,17 @@ class processOopPrimitives : AllStatic {
   static PRIM_DECL_1(start_evaluator, oop process);
 
   //%prim
+  // <NoReceiver> primitiveProcessSingleStep: process   <Process> 
+  //                                  ifFail: failBlock <PrimFailBlock> ^<Object> =
+  //   Internal { doc   = 'Transfers the control from the scheduler to a process,'
+  //              doc   = 'and performs a single step.'
+  //              doc   = 'Returns the process.'
+  //              error = #(ProcessCannotContinue Dead)
+  //              name  = 'processOopPrimitives::single_step' }
+  //%
+  static PRIM_DECL_1(single_step, oop process);
+
+  //%prim
   // <Process> primitiveProcessTerminateIfFail: failBlock <PrimFailBlock> ^<Self> =
   //   Internal { doc   = 'Terminates the process'
   //              error = #(Dead)

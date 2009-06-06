@@ -140,6 +140,7 @@ void Process::basic_transfer(Process* target) {
     std->cr();
   }
   os::transfer(_thread, _event, target->_thread, target->_event);
+  applyStepping();
 }
 
 // ======= VMProcess ========
@@ -163,6 +164,7 @@ void VMProcess::transfer_to(DeltaProcess* target) {
     ::last_Delta_sp = target->_last_Delta_sp;
     DeltaProcess::set_active(target);
     DeltaProcess::set_current(target);
+    resetStepping();
   }
   basic_transfer(target);
 }
@@ -246,6 +248,49 @@ void VMProcess::execute(VM_Operation* op) {
   }
 }
 
+extern "C" void returnToDebugger() {
+  if (!DeltaProcess::active()->is_scheduler()) {
+    DeltaProcess::active()->returnToDebugger();
+  }
+}
+
+void DeltaProcess::returnToDebugger() {
+  resetStepping(); // reset dispatch table
+  resetStep();     // disable stepping
+  suspend(stopped);// stop!
+}
+
+void DebugInfo::interceptForStep() {
+  interceptorEntryPoint = &dispatchTable::intercept_for_step;
+  frameBreakpoint = NULL;
+}
+
+void DebugInfo::interceptForNext(int* fr) {
+  interceptorEntryPoint = &dispatchTable::intercept_for_next;
+  frameBreakpoint = fr;
+}
+
+void DebugInfo::interceptForReturn(int* fr) {
+  interceptorEntryPoint = &dispatchTable::intercept_for_return;
+  frameBreakpoint = fr;
+}
+void DebugInfo::apply() { 
+  if (interceptorEntryPoint) {
+    StubRoutines::setSingleStepHandler(&returnToDebugger);
+    interceptorEntryPoint(frameBreakpoint);
+    DeltaProcess::stepping = true;
+  }
+}
+
+void DebugInfo::reset() {
+  if (interceptorEntryPoint) {
+    dispatchTable::reset();
+    StubRoutines::setSingleStepHandler(NULL); // %TODO: replace with breakpoint() or similar?
+    DeltaProcess::stepping = false;
+  }
+}
+
+bool DeltaProcess::stepping = false;
 VMProcess*    VMProcess::_vm_process   = NULL;
 VM_Operation* VMProcess::_vm_operation = NULL;
 
@@ -262,7 +307,7 @@ ProcessState  DeltaProcess::_state_of_terminated_process = initialized;
 Event*        DeltaProcess::_async_dll_completion_event  = NULL;
 
 void DeltaProcess::transfer(ProcessState reason, DeltaProcess* target) {
-  // change time_stamp for targer
+  // change time_stamp for target
   target->inc_time_stamp();
 
   {
@@ -280,6 +325,7 @@ void DeltaProcess::transfer(ProcessState reason, DeltaProcess* target) {
     ::last_Delta_sp = target->_last_Delta_sp;
     set_current(target);
     set_active(target);
+    resetStepping();
   }
 
   // transfer
@@ -319,6 +365,7 @@ void DeltaProcess::transfer_to_vm() {
     _last_Delta_fp = ::last_Delta_fp;	// *don't* use accessors! (check their implementation to see why)
     _last_Delta_sp = ::last_Delta_sp;
     set_current(VMProcess::vm_process());
+    resetStepping();
   }
   basic_transfer(VMProcess::vm_process());
 }
