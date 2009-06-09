@@ -203,6 +203,12 @@ class DeltaProcess: public Process {
   void setupSingleStep() {
     debug.interceptForStep();
   }
+  void setupStepNext(int* fr) {
+    debug.interceptForNext(fr);
+  }
+  void setupStepReturn(int* fr) {
+    debug.interceptForReturn(fr);
+  }
   void resetStep() {
     debug.resetInterceptor();
   }

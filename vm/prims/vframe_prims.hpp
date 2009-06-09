@@ -115,4 +115,34 @@ class vframeOopPrimitives : AllStatic {
   //%
   static PRIM_DECL_1(pretty_print, oop receiver);
 
+  //%prim
+  // <NoReceiver> primitiveActivationSingleStep: activation <Activation> 
+  //                                 ifFail: failBlock <PrimFailBlock> ^<Object> =
+  //   Internal { doc   = 'Sets up single stepping for the activation''s process.'
+  //              doc   = 'Returns the activation.'
+  //              error = #(ProcessCannotContinue Dead)
+  //              name  = 'vframeOopPrimitives::single_step' }
+  //%
+  static PRIM_DECL_1(single_step, oop activation);
+
+  //%prim
+  // <NoReceiver> primitiveActivationStepNext: activation <Activation> 
+  //                                 ifFail: failBlock <PrimFailBlock> ^<Object> =
+  //   Internal { doc   = 'Sets up stepping up to the next bytecode of the activation''s method.'
+  //              doc   = 'Returns the activation.'
+  //              error = #(ProcessCannotContinue Dead)
+  //              name  = 'vframeOopPrimitives::step_next' }
+  //%
+  static PRIM_DECL_1(step_next, oop activation);
+
+  //%prim
+  // <NoReceiver> primitiveActivationStepReturn: activation <Activation> 
+  //                                 ifFail: failBlock <PrimFailBlock> ^<Object> =
+  //   Internal { doc   = 'Sets up stepping up to the return from the activation''s method.'
+  //              doc   = 'Returns the activation.'
+  //              error = #(ProcessCannotContinue Dead)
+  //              name  = 'vframeOopPrimitives::step_return' }
+  //%
+  static PRIM_DECL_1(step_return, oop activation);
+
 };

@@ -68595,3 +68595,120 @@ rebuild
 "June 1, 2009 -> 20:53:39"!
 
 "System saved" !
+"June 9, 2009 -> 1:53:0"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+stepNext: activation <Activation>
+
+	{{primitiveActivationStepNext: activation ifFail: [:err <Symbol> | self error: err]}}.
+	self process resume! !
+
+"June 9, 2009 -> 1:54:39"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (Button
+						labeled: 'Step into'
+						action: [:b <Button> | debugger singleStep: self activation]).
+	row add: (Button 
+						labeled: 'Step over'
+						action: [:b <Button> | debugger stepNext: self activation]).
+	row add: (Button labeled: 'Step out' action: [:b <Button> | ]).
+	^row! !
+
+"June 9, 2009 -> 1:54:58"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+stepReturn: activation <Activation>
+
+	{{primitiveActivationStepNext: activation ifFail: [:err <Symbol> | self error: err]}}.
+	self process resume! !
+
+"June 9, 2009 -> 1:55:42"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (Button
+						labeled: 'Step into'
+						action: [:b <Button> | debugger singleStep: self activation]).
+	row add: (Button 
+						labeled: 'Step over'
+						action: [:b <Button> | debugger stepNext: self activation]).
+	row add: (Button
+						labeled: 'Step out'
+						action: [:b <Button> | debugger stepReturn: self activation]).
+	^row! !
+
+"June 9, 2009 -> 1:56:0"!
+
+"System saved" !
+"June 9, 2009 -> 23:47:44"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+stepReturn: activation <Activation>
+
+	{{primitiveActivationStepReturn: activation ifFail: [:err <Symbol> | self error: err]}}.
+	self process resume! !
+
+"June 9, 2009 -> 23:49:12"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+singleStep: activation <Activation>
+
+	{{primitiveActivationSingleStep: activation ifFail: [:err <Symbol> | self error: err]}}.
+	self process resume! !
+
+"June 9, 2009 -> 23:49:44"!
+
+"System saved" !
+"June 9, 2009 -> 23:52:12"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+step: activation setup: block
+
+	block value: activation.
+	self process resume! !
+
+"June 9, 2009 -> 23:53:58"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+singleStep: activation <Activation>
+
+	self resumeAfter: [{{primitiveActivationSingleStep: activation
+										ifFail: [:err <Symbol> | self error: err]}}]! !
+
+"June 9, 2009 -> 23:54:19"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+resumeAfter: block
+
+	block value.
+	self process resume! !
+
+"June 9, 2009 -> 23:54:53"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+stepNext: activation <Activation>
+
+	self resumeAfter: [{{primitiveActivationStepNext: activation
+										ifFail: [:err <Symbol> | self error: err]}}]! !
+
+"June 9, 2009 -> 23:55:15"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+stepReturn: activation <Activation>
+
+	self resumeAfter: [{{primitiveActivationStepReturn: activation
+										ifFail: [:err <Symbol> | self error: err]}}]! !
+
+"June 9, 2009 -> 23:55:24"!
+
+"System saved" !

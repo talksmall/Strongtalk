@@ -39,9 +39,13 @@ buildActions ^ <Visual>
 	row := Row[Button] new.
 	row add: (Button
 						labeled: 'Step into'
-						action: [:b <Button> | debugger singleStep: self]).
-	row add: (Button labeled: 'Step over' action: [:b <Button> | ]).
-	row add: (Button labeled: 'Step out' action: [:b <Button> | ]).
+						action: [:b <Button> | debugger singleStep: self activation]).
+	row add: (Button 
+						labeled: 'Step over'
+						action: [:b <Button> | debugger stepNext: self activation]).
+	row add: (Button
+						labeled: 'Step out'
+						action: [:b <Button> | debugger stepReturn: self activation]).
 	^row!
 
 buildBody ^<Visual>

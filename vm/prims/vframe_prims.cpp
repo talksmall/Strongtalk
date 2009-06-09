@@ -190,3 +190,108 @@ PRIM_DECL_1(vframeOopPrimitives::pretty_print, oop receiver) {
 
   return stream->asByteArray();
 }
+
+class DeoptimizeProcess: public FrameClosure {
+private:
+  DeltaProcess* theProcess;
+public:
+  void begin_process(Process* process) {
+    if (process->is_deltaProcess())
+      theProcess = (DeltaProcess*)process;
+    else
+      theProcess = NULL;
+  }
+  void end_process(Process* process) {
+    theProcess = NULL;
+  }
+  void do_frame(frame* fr) {
+    if (theProcess && fr->is_compiled_frame())
+      theProcess->deoptimize_stretch(fr, fr);
+  }
+};
+
+void deoptimize(DeltaProcess* process) {
+  ResourceMark rm;
+  DeoptimizeProcess op;
+  process->frame_iterate(&op);
+}
+
+PRIM_DECL_1(vframeOopPrimitives::single_step, oop activation) {
+  PROLOGUE_1("single_step", activation);
+
+  processOop process = vframeOop(activation)->process();
+
+  // Check if argument is a processOop
+  if (!process->is_process())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+
+  // Make sure process is not dead
+  if (!processOop(process)->is_live())
+    return markSymbol(vmSymbols::dead());
+
+  DeltaProcess* proc = processOop(process)->process();
+  deoptimize(proc);
+  proc->setupSingleStep();
+
+  return process;
+}
+
+PRIM_DECL_1(vframeOopPrimitives::step_next, oop activation) {
+  PROLOGUE_1("step_next", activation);
+
+  ResourceMark rm;
+  if (vframeOop(activation)->get_vframe() == NULL)
+    return markSymbol(vmSymbols::activation_is_invalid());
+
+  processOop process = vframeOop(activation)->process();
+
+  // Check if argument is a processOop
+  if (!process->is_process())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+
+  // Make sure process is not dead
+  if (!processOop(process)->is_live())
+    return markSymbol(vmSymbols::dead());
+
+  DeltaProcess* proc = processOop(process)->process();
+  deoptimize(proc);
+
+  vframe* vf = vframeOop(activation)->get_vframe();
+  
+  proc->setupStepNext(vf->fr().fp());
+
+  return process;
+}
+
+PRIM_DECL_1(vframeOopPrimitives::step_return, oop activation) {
+  PROLOGUE_1("step_return", activation);
+
+  ResourceMark rm;
+  if (vframeOop(activation)->get_vframe() == NULL)
+    return markSymbol(vmSymbols::activation_is_invalid());
+
+  processOop process = vframeOop(activation)->process();
+
+  // Check if argument is a processOop
+  if (!process->is_process())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+
+  // Make sure process is not dead
+  if (!processOop(process)->is_live())
+    return markSymbol(vmSymbols::dead());
+
+  {
+    HandleMark hm;
+    Handle activationHandle(activation);
+
+    DeltaProcess* proc = processOop(process)->process();
+    deoptimize(proc);
+
+    vframe* vf = vframeOop(activationHandle.as_oop())->get_vframe();
+    int* framePointer = vf->fr().fp();
+    
+    proc->setupStepReturn(framePointer);
+
+    return activationHandle.as_oop();
+  }
+}

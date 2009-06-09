@@ -85,8 +85,18 @@ continueProcess
 
 singleStep: activation <Activation>
 
-	{{primitiveProcessSingleStep: self process ifFail: [:err <Symbol> | self error: err]}}.
-	self process resume!
+	self resumeAfter: [{{primitiveActivationSingleStep: activation
+										ifFail: [:err <Symbol> | self error: err]}}]!
+
+stepNext: activation <Activation>
+
+	self resumeAfter: [{{primitiveActivationStepNext: activation
+										ifFail: [:err <Symbol> | self error: err]}}]!
+
+stepReturn: activation <Activation>
+
+	self resumeAfter: [{{primitiveActivationStepReturn: activation
+										ifFail: [:err <Symbol> | self error: err]}}]!
 
 transferToConsoleDebugger
 
@@ -171,7 +181,17 @@ rebuild
 
 remove
 
-	self class removeDebugger: self! !
+	self class removeDebugger: self!
+
+resumeAfter: block
+
+	block value.
+	self process resume!
+
+step: activation setup: block
+
+	block value: activation.
+	self process resume! !
 
 ! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private-initialization' !
 

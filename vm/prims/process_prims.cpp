@@ -161,46 +161,6 @@ PRIM_DECL_1(processOopPrimitives::start_evaluator, oop process) {
   return DeltaProcess::symbol_from_state(state);
 }
 
-class DeoptimizeProcess: public FrameClosure {
-private:
-  DeltaProcess* theProcess;
-public:
-  void begin_process(Process* process) {
-    if (process->is_deltaProcess())
-      theProcess = (DeltaProcess*)process;
-    else
-      theProcess = NULL;
-  }
-  void end_process(Process* process) {
-    theProcess = NULL;
-  }
-  void do_frame(frame* fr) {
-    if (theProcess && fr->is_compiled_frame())
-      theProcess->deoptimize_stretch(fr, fr);
-  }
-};
-
-PRIM_DECL_1(processOopPrimitives::single_step, oop process) {
-  PROLOGUE_1("single_step", process);
-
-  // Check if argument is a processOop
-  if (!process->is_process())
-    return markSymbol(vmSymbols::first_argument_has_wrong_type());
-
-  // Make sure process is not dead
-  if (!processOop(process)->is_live())
-    return markSymbol(vmSymbols::dead());
-
-  DeltaProcess* proc = processOop(process)->process();
-  {
-    ResourceMark rm;
-    DeoptimizeProcess op;
-    proc->frame_iterate(&op);
-    proc->setupSingleStep();
-  }
-  return process;
-}
-
 PRIM_DECL_1(processOopPrimitives::terminate, oop receiver) {
   PROLOGUE_1("terminate", receiver);
   ASSERT_RECEIVER;
