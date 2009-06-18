@@ -69018,3 +69018,75 @@ DLLMapName: name <Str> ^<Str>
 "June 19, 2009 -> 0:14:50"!
 
 "System saved" !
+"June 19, 2009 -> 0:34:6"!
+
+Delta define: #MacOSXFileDescriptor as: (
+(Class subclassOf: 'UnixFileDescriptor' instanceVariables: '')) !
+
+
+"June 19, 2009 -> 0:35:3"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+fileDescriptorClass ^<FileDescriptor class>
+"%TODO delegate to Platform"
+    ^UnixFileDescriptor! !
+
+"June 19, 2009 -> 0:35:31"!
+
+Delta define: #MacOSXFilePath as: (
+(Class subclassOf: 'UnixFilePath' instanceVariables: '')) !
+
+
+"June 19, 2009 -> 0:35:50"!
+
+! (Delta mirrorFor: #MacOSXPlatform) classSide methodsFor: 'platform classes' !
+pathClass ^<FilePath class>
+
+    ^MacOSXFilePath! !
+
+"June 19, 2009 -> 0:36:31"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+fileDescriptorClass ^<FileDescriptor class>
+"%TODO delegate to Platform"
+    ^MacOSXFileDescriptor! !
+
+"June 19, 2009 -> 0:37:18"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+blockSize ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := StatBuffer new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fxstat>
+    					version: statBuffer version
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [4096]
+		ifFalse: [ statBuffer blockSize ]]
+		ensure: [ statBuffer free]! !
+
+"June 19, 2009 -> 0:48:25"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+blockSize ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := StatBuffer new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+    					version: statBuffer version
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [4096]
+		ifFalse: [ statBuffer blockSize ]]
+		ensure: [ statBuffer free]! !
+
+"June 19, 2009 -> 0:49:2"!
+
+"System saved" !

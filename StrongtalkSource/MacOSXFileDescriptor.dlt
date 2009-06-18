@@ -1,0 +1,29 @@
+Delta define: #MacOSXFileDescriptor as: (
+(Class subclassOf: 'UnixFileDescriptor' instanceVariables: '')) !
+
+(Delta mirrorFor: #MacOSXFileDescriptor) revision: '$Revision:$'!
+
+(Delta mirrorFor: #MacOSXFileDescriptor) group: 'Unclassified'!
+
+(Delta mirrorFor: #MacOSXFileDescriptor)
+comment: 
+''!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+
+
+blockSize ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := StatBuffer new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+    					version: statBuffer version
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [4096]
+		ifFalse: [ statBuffer blockSize ]]
+		ensure: [ statBuffer free]! !
+
