@@ -161,6 +161,8 @@ PRIM_DECL_1(systemPrimitives::shrinkMemory, oop sizeOop) {
 }
 
 extern "C" int expansion_count;
+extern "C" void single_step_handler();
+
 PRIM_DECL_0(systemPrimitives::expansions) {
   PROLOGUE_0("expansions")
   return as_smiOop(expansion_count);
@@ -169,6 +171,7 @@ PRIM_DECL_0(systemPrimitives::breakpoint) {
   PROLOGUE_0("breakpoint")
   {
     ResourceMark rm;
+    StubRoutines::setSingleStepHandler(&single_step_handler);
     dispatchTable::intercept_for_step(NULL);
   }
   return trueObj;
