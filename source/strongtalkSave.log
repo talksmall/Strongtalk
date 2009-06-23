@@ -69132,3 +69132,40 @@ size ^<Int>
 "June 19, 2009 -> 1:2:40"!
 
 "System saved" !
+"June 23, 2009 -> 21:2:43"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+size ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := StatBuffer new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [0]
+		ifFalse: [ statBuffer fileSize ]]
+		ensure: [ statBuffer free]! !
+
+"June 23, 2009 -> 21:2:45"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+blockSize ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := StatBuffer new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [4096]
+		ifFalse: [ statBuffer blockSize ]]
+		ensure: [ statBuffer free]! !
+
+"June 23, 2009 -> 21:3:11"!
+
+"System saved" !
