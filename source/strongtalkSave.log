@@ -69169,3 +69169,74 @@ blockSize ^<Int>
 "June 23, 2009 -> 21:3:11"!
 
 "System saved" !
+"June 23, 2009 -> 21:59:1"!
+
+Delta define: #MacOSXStatBuffer as: (
+(Class subclassOf: 'StatBuffer' instanceVariables: '')) !
+
+
+"June 23, 2009 -> 21:59:35"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+statBufferClass
+
+	^MacOSXStatBuffer! !
+
+"June 23, 2009 -> 22:0:15"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+size ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := self statBufferClass new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [0]
+		ifFalse: [ statBuffer fileSize ]]
+		ensure: [ statBuffer free]! !
+
+"June 23, 2009 -> 22:0:17"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+blockSize ^<Int>
+    "Use the sector size"
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := self statBufferClass new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [4096]
+		ifFalse: [ statBuffer blockSize ]]
+		ensure: [ statBuffer free]! !
+
+"June 23, 2009 -> 22:6:38"!
+
+! (Delta mirrorFor: #MacOSXStatBuffer) methodsFor: 'offsets' !
+fileSizeOffset
+
+	^48! !
+
+"June 23, 2009 -> 22:6:52"!
+
+! (Delta mirrorFor: #MacOSXStatBuffer) methodsFor: 'offsets' !
+blockSizeOffset
+
+	^64! !
+
+"June 23, 2009 -> 22:10:33"!
+
+! (Delta mirrorFor: #MacOSXStatBuffer) methodsFor: 'accessing' !
+structureSize
+
+	^96! !
+
+"June 23, 2009 -> 22:12:6"!
+
+"System saved" !
