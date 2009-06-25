@@ -69240,3 +69240,118 @@ structureSize
 "June 23, 2009 -> 22:12:6"!
 
 "System saved" !
+"June 25, 2009 -> 0:52:52"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+stat: block ifFail: failBlock
+
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := self statBufferClass new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [failBlock value]
+		ifFalse: [ block value: statBuffer ]]
+			ensure: [ statBuffer free]
+
+	! !
+
+"June 25, 2009 -> 0:53:35"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+blockSize ^<Int>
+    "Use the sector size"
+    ^self stat: [:buffer| buffer blockSize]
+    		ifFail: [4096]! !
+
+"June 25, 2009 -> 0:53:58"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+size ^<Int>
+    "Use the sector size"
+    ^self stat: [:buffer| buffer fileSize]
+    		ifFail: [0]! !
+
+"June 25, 2009 -> 1:7:41"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    "self test"
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> |
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100.    ].
+    self test: 1 is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: 2 is: [ write next = 123 ].
+    write setToEnd.
+    bytes := write contentsWritten.
+    self test: 3 is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: 4 is: [ read peek = 0 ].
+    self test: 5 is: [ read size = sz ].
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: 7 is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: 8 is: [ read atEnd ].
+    read position: 5001.
+
+    self test: 9 is: [ read next = 123 ].
+    read position: 0.
+
+    self test: 10 is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: 11 is: [ in peek = (s at: 1) ].
+
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: 13 is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: 14 is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 1:8:54"!
+
+"System saved" !
