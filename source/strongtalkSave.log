@@ -69355,3 +69355,820 @@ there'.
 "June 25, 2009 -> 1:8:54"!
 
 "System saved" !
+"June 25, 2009 -> 21:58:12"!
+
+Delta define: #Counter as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"June 25, 2009 -> 21:58:36"!
+
+Delta define: #Counter as: (
+(Class subclassOf: 'Object' instanceVariables: 'count')) !
+
+
+"June 25, 2009 -> 21:59:0"!
+
+! (Delta mirrorFor: #Counter) methodsFor: 'initialization' !
+initialize
+
+	count := 0! !
+
+"June 25, 2009 -> 21:59:31"!
+
+! (Delta mirrorFor: #Counter) classSide methodsFor: 'instance creation' !
+new
+
+	^(super new)
+		initialize;
+		yourself! !
+
+"June 25, 2009 -> 22:0:29"!
+
+! (Delta mirrorFor: #Counter) methodsFor: 'updating' !
+preinc
+
+	^count := count + 1! !
+
+"June 25, 2009 -> 22:1:12"!
+
+! (Delta mirrorFor: #Counter) methodsFor: 'updating' !
+postinc
+
+	^[count] ensure: [count := count + 1]! !
+
+"June 25, 2009 -> 22:4:23"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    "self test"
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write setToEnd.
+    bytes := write contentsWritten.
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 0 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:5:32"!
+
+"System saved" !
+"June 25, 2009 -> 22:8:54"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    "self test"
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write setToEnd.
+    bytes := write contentsWritten.
+    self test: testCount preinc is: [ write atEnd ].
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 0 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:10:13"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    "self test"
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write setToEnd.
+    write position: 0.
+    self test: testCount preinc is: [ write position = 0 ].
+    bytes := write contentsWritten.
+    self test: testCount preinc is: [ write atEnd ].
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 0 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:14:40"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    "self test"
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100 + 32.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write setToEnd.
+    write position: 0.
+    self test: testCount preinc is: [ write position = 0 ].
+    bytes := write contentsWritten.
+    self test: testCount preinc is: [ write atEnd ].
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 0 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:16:55"!
+
+"System saved" !
+"June 25, 2009 -> 22:18:9"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    "self test"
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100 + 32.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write setToEnd.
+    write position: 0.
+    self test: testCount preinc is: [ write position = 0 ].
+    bytes := write contentsWritten.
+    "self test: testCount preinc is: [ write atEnd ]."
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 0 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:18:24"!
+
+"System saved" !
+"June 25, 2009 -> 22:21:22"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    "self test"
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100 + 32.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write position: 0.
+    self test: testCount preinc is: [ write position = 0 ].
+    write setToEnd.
+    bytes := write contentsWritten.
+    "self test: testCount preinc is: [ write atEnd ]."
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 0 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:21:27"!
+
+"System saved" !
+"June 25, 2009 -> 22:22:51"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    "ExternalReadWriteStream test"
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100 + 32.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write position: 0.
+    self test: testCount preinc is: [ write position = 0 ].
+    write setToEnd.
+    bytes := write contentsWritten.
+    "self test: testCount preinc is: [ write atEnd ]."
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 0 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:23:3"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    " ExternalReadWriteStream test "
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100 + 32.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write position: 0.
+    self test: testCount preinc is: [ write position = 0 ].
+    write setToEnd.
+    bytes := write contentsWritten.
+    "self test: testCount preinc is: [ write atEnd ]."
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 0 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: 12 is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:24:59"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) classSide methodsFor: 'testing' !
+test
+    " ExternalReadWriteStream test "
+    |    file <FilePath>
+        sz <Int>
+        read <ExternalReadStream>
+        write <ExternalReadWriteStream>
+        in <CharInStream>
+        out <CharOutStream>
+        bytes <ByteArray>
+        s <Str> 
+        testCount <Counter>
+        test <Integer> |
+    testCount := Counter new.
+    file := FilePath for: 'deltatest.tmp'.
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file writeStream.
+    0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100 + 32.    ].
+    self test: testCount preinc is: [ write size = sz ].
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    self test: testCount preinc is: [ write next = 123 ].
+    write position: 0.
+    self test: testCount preinc is: [ write position = 0 ].
+    write setToEnd.
+    bytes := write contentsWritten.
+    "self test: testCount preinc is: [ write atEnd ]."
+    self test: testCount preinc is: [ Transcript show: 'actual: '; print: bytes size; show: ', expected: '; print: sz;cr. bytes size = sz ].
+    write close.
+    read := file readStream.
+    self test: testCount preinc is: [ read peek = 32 ].
+    self test: testCount preinc is: [ read size = sz ].
+    test := testCount preinc.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self test: 6 is:
+                [ i ~= 5001
+                    ifTrue: [ i ~= 5000
+                                ifTrue: [ (i \\ 100 +32) = byte ]
+                                ifFalse: [ byte = 12 ]    ]
+                    ifFalse: [ byte = 123 ]    ].
+            self test: test is: [ (bytes at: i + 1) = byte ].    ].
+
+    self test: testCount preinc is: [ read atEnd ].
+    read position: 5001.
+
+    self test: testCount preinc is: [ read next = 123 ].
+    read position: 0.
+
+    self test: testCount preinc is: [ bytes = read contentsRemaining ].
+    read close.
+    out := file charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in peek = (s at: 1) ].
+
+	test := testCount preinc.
+    1 to: s size do: 
+        [ :i <Int> |
+            self test: test is: [
+				| n |
+				n := in next.
+				(s at: i) =  n].    ].
+
+    self test: testCount preinc is: [ in atEnd ].
+    in close.
+    in := file charInputStream.
+
+    self test: testCount preinc is: [ in contentsRemaining = s ].
+    in close.! !
+
+"June 25, 2009 -> 22:25:6"!
+
+"System saved" !

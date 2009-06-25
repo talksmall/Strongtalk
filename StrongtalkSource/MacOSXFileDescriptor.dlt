@@ -14,16 +14,34 @@ comment:
 
 blockSize ^<Int>
     "Use the sector size"
+    ^self stat: [:buffer| buffer blockSize]
+    		ifFail: [4096]!
+
+size ^<Int>
+    "Use the sector size"
+    ^self stat: [:buffer| buffer fileSize]
+    		ifFail: [0]!
+
+stat: block ifFail: failBlock
+
     | statBuffer <StatBuffer> 
     	status <ExternalProxy> |
-    statBuffer := StatBuffer new.
+    statBuffer := self statBufferClass new.
     statBuffer allocate.
     [ status := {{<libc ExternalProxy fstat>
-    					version: statBuffer version
             			name: self handle
             			buffer: statBuffer    }}.
 	^status asSmallInteger == -1
-		ifTrue: [4096]
-		ifFalse: [ statBuffer blockSize ]]
-		ensure: [ statBuffer free]! !
+		ifTrue: [failBlock value]
+		ifFalse: [ block value: statBuffer ]]
+			ensure: [ statBuffer free]
+
+	! !
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+
+
+statBufferClass
+
+	^MacOSXStatBuffer! !
 

@@ -1,0 +1,38 @@
+Delta define: #Counter as: (
+(Class subclassOf: 'Object' instanceVariables: 'count')) !
+
+(Delta mirrorFor: #Counter) revision: '$Revision:$'!
+
+(Delta mirrorFor: #Counter) group: 'Unclassified'!
+
+(Delta mirrorFor: #Counter)
+comment: 
+''!
+
+! (Delta mirrorFor: #Counter) classSide methodsFor: 'instance creation' !
+
+
+new
+
+	^(super new)
+		initialize;
+		yourself! !
+
+! (Delta mirrorFor: #Counter) methodsFor: 'initialization' !
+
+
+initialize
+
+	count := 0! !
+
+! (Delta mirrorFor: #Counter) methodsFor: 'updating' !
+
+
+postinc
+
+	^[count] ensure: [count := count + 1]!
+
+preinc
+
+	^count := count + 1! !
+
