@@ -1,0 +1,39 @@
+Delta define: #TextTestRunner as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #TextTestRunner) revision: '$Revision:$'!
+
+(Delta mirrorFor: #TextTestRunner) group: 'Unclassified'!
+
+(Delta mirrorFor: #TextTestRunner)
+comment: 
+''!
+
+! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
+
+
+run: suite
+
+	| runner result |
+	runner := self new.
+	suite addDependentToHierarchy: runner.
+	[Transcript cr.
+	result := suite run.
+	Transcript cr;
+		print: result]
+			ensure: [suite removeDependentFromHierarchy: runner]!
+
+runAll
+
+	self run: TestCase buildSuite! !
+
+! (Delta mirrorFor: #TextTestRunner) methodsFor: 'notifications' !
+
+
+update: test with: result
+
+	(result isFailure: test)
+		ifTrue: [ Transcript space; print: test; show: ' failed'; cr].
+	(result isError: test)
+		ifTrue: [ Transcript print: test; show: ' error'; cr]! !
+

@@ -66,14 +66,14 @@ tests
 ! (Delta mirrorFor: #TestSuite) methodsFor: 'Dependencies' !
 
 
-addDependentToHierachy: anObject
+addDependentToHierarchy: anObject
 	self sunitAddDependent: anObject.
-	self tests do: [ :each | each addDependentToHierachy: anObject]
+	self tests do: [ :each | each addDependentToHierarchy: anObject]
 			!
 
-removeDependentFromHierachy: anObject
+removeDependentFromHierarchy: anObject
 	self sunitRemoveDependent: anObject.
-	self tests do: [ :each | each removeDependentFromHierachy: anObject]
+	self tests do: [ :each | each removeDependentFromHierarchy: anObject]
 			! !
 
 ! (Delta mirrorFor: #TestSuite) methodsFor: 'Running' !
@@ -90,8 +90,8 @@ run
 
 run: aResult 
 	self tests do: [:each | 
-		self sunitChanged: each.
 		Processor yield.
-		each run: aResult]
+		each run: aResult.
+		self sunitChanged: each with: aResult]
 			! !
 

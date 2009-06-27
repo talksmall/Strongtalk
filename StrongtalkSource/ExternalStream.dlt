@@ -137,3 +137,10 @@ postCopy
 	self descriptor: self descriptor copy.
 	self initBuffer.! !
 
+! (Delta mirrorFor: #ExternalStream) methodsFor: 'testing' !
+
+
+isClosed
+
+	^self descriptor isNil or: [self descriptor isClosed]! !
+

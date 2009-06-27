@@ -2,11 +2,24 @@ Class
 #categories!
 initialization!
 control!
-private! !
-fillBuffer!
-2686699!
 private!
-1! !
+testing! !
+#comment!
+This is the abstract superclass for all external stream classes.  It
+provides buffer management for subclasses.   Library users don't normally directly instantiate ExternalStreams,
+since that exposes you to genericity and raw ExternalDescriptors; instead, more appropriate entry points
+such as readStream/writeStream/readWriteStream are implemented for the various kinds of external objects
+that can be streamed over, such as File.
+
+Invariant: the buffer position is always less than the index of the last buffer element.   This is accomplished by proactively filling/flushing the buffer when the end is reached.
+
+%responsibility #arrangeForFinalization
+    Subclasses should reimplement this appropriately to do any finalization registration
+      to ensure that the stream is closed when it is garbage collected.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+! !
 #superclassTypeString!
 Object! !
 #group!
@@ -86,24 +99,16 @@ private!
 DESCRIPTOR <ExternalStreamDescriptor> ! !
 #subtype!
 true! !
+isClosed!
+33946738!
+testing!
+0! !
 #branded!
 true! !
-#comment!
-This is the abstract superclass for all external stream classes.  It
-provides buffer management for subclasses.   Library users don't normally directly instantiate ExternalStreams,
-since that exposes you to genericity and raw ExternalDescriptors; instead, more appropriate entry points
-such as readStream/writeStream/readWriteStream are implemented for the various kinds of external objects
-that can be streamed over, such as File.
-
-Invariant: the buffer position is always less than the index of the last buffer element.   This is accomplished by proactively filling/flushing the buffer when the end is reached.
-
-%responsibility #arrangeForFinalization
-    Subclasses should reimplement this appropriately to do any finalization registration
-      to ensure that the stream is closed when it is garbage collected.
-
-(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
-Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
-! !
+fillBuffer!
+2686699!
+private!
+1! !
 #abstract!
 true! !
 doClose!

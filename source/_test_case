@@ -1,8 +1,6 @@
 Class
-deny:!
-30984195!
-Accessing!
-0:! !
+#subtype!
+true! !
 #categories!
 Dependencies!
 Accessing!
@@ -19,12 +17,12 @@ run:!
 30987134!
 Running!
 0:! !
-should:raise:description:!
-30988594!
-Accessing!
-0:::! !
-runCase!
-30987268!
+tearDown!
+30989830!
+Running!
+0! !
+isLogging!
+31775068!
 Running!
 0! !
 #extensionsAreSubtypes!
@@ -45,10 +43,6 @@ assert:description:resumable:!
 30983112!
 Accessing!
 0:::! !
-addDependentToHierachy:!
-30982498!
-Dependencies!
-0:! !
 runCaseAsFailure:!
 30987439!
 Running!
@@ -71,14 +65,16 @@ selector!
 30987677!
 Accessing!
 0! !
-removeDependentFromHierachy:!
-30986328!
+addDependentToHierarchy:!
+33933230!
 Dependencies!
 0:! !
-failureLog!
-30985015!
-Running!
-0! !
+#comment!
+A TestCase is a Command representing the future running of a test case. Create one with the class method #selector: aSymbol, passing the name of the method to be run when the test case runs.
+
+When you discover a new fixture, subclass TestCase, declare instance variables for the objects in the fixture, override #setUp to initialize the variables, and possibly override# tearDown to deallocate any external resources allocated in #setUp.
+
+When you are writing a test case method, send #assert: aBoolean when you want to check for an expected value. For example, you might say "self assert: socket isOpen" to test whether or not a socket is open at a point in a test.! !
 setUp!
 30987947!
 Running!
@@ -139,24 +135,28 @@ assert:description:!
 30982876!
 Accessing!
 0::! !
-#subtype!
-true! !
-#comment!
-A TestCase is a Command representing the future running of a test case. Create one with the class method #selector: aSymbol, passing the name of the method to be run when the test case runs.
-
-When you discover a new fixture, subclass TestCase, declare instance variables for the objects in the fixture, override #setUp to initialize the variables, and possibly override# tearDown to deallocate any external resources allocated in #setUp.
-
-When you are writing a test case method, send #assert: aBoolean when you want to check for an expected value. For example, you might say "self assert: socket isOpen" to test whether or not a socket is open at a point in a test.! !
+deny:!
+30984195!
+Accessing!
+0:! !
+failureLog!
+30985015!
+Running!
+0! !
 #abstract!
 false! !
-tearDown!
-30989830!
+should:raise:description:!
+30988594!
+Accessing!
+0:::! !
+runCase!
+30987268!
 Running!
 0! !
-isLogging!
-31775068!
-Running!
-0! !
+removeDependentFromHierarchy:!
+33933023!
+Dependencies!
+0:! !
 openDebuggerOnFailingTestMethod!
 30985613!
 Running!
