@@ -71380,3 +71380,39 @@ testCharStreamContentsRemainingShouldHaveCorrectContents
 "June 27, 2009 -> 12:0:35"!
 
 "System saved" !
+"June 27, 2009 -> 12:4:1"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
+tearDown
+"
+	self close: write.
+	self close: read.
+	in close.
+	file delete.
+	charFile delete"! !
+
+"June 27, 2009 -> 12:4:3"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
+setUp
+"
+	| out	<CharOutputStream> |
+    file := FilePath for: 'deltatest.tmp'.
+    charFile := FilePath for: 'deltatest2.tmp'.
+    
+    sz := 12345."    "make sure this number is much greater than the stream buffer size" 
+    "write := file writeStream.
+	0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100 + 32].
+
+	out := charFile charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := charFile charInputStream"! !
+
+"June 27, 2009 -> 12:4:8"!
+
+"System saved" !
