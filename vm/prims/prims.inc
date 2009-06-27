@@ -3788,122 +3788,122 @@ static primitive_desc primitive_378 = {
 	errors_378
 };
 
-static char* signature_379[] = { "Object", "BlockWithoutArguments"};
+static char* signature_379[] = { "Object"};
 static char* errors_379[] = {NULL};
 static primitive_desc primitive_379 = {
-	"primitiveValue", 
-	fntype(&primitiveValue0), 
-	5441537, 
+	"primitiveVMBreakpoint", 
+	fntype(&systemPrimitives::vmbreakpoint), 
+	65536, 
 	signature_379, 
 	errors_379
 };
 
-static char* signature_380[] = { "Object", "BlockWithOneArgument", "Object"};
+static char* signature_380[] = { "Object", "BlockWithoutArguments"};
 static char* errors_380[] = {NULL};
 static primitive_desc primitive_380 = {
-	"primitiveValue:", 
-	fntype(&primitiveValue1), 
-	5441538, 
+	"primitiveValue", 
+	fntype(&primitiveValue0), 
+	5441537, 
 	signature_380, 
 	errors_380
 };
 
-static char* signature_381[] = { "Object", "BlockWithTwoArguments", "Object", "Object"};
+static char* signature_381[] = { "Object", "BlockWithOneArgument", "Object"};
 static char* errors_381[] = {NULL};
 static primitive_desc primitive_381 = {
-	"primitiveValue:value:", 
-	fntype(&primitiveValue2), 
-	5441539, 
+	"primitiveValue:", 
+	fntype(&primitiveValue1), 
+	5441538, 
 	signature_381, 
 	errors_381
 };
 
-static char* signature_382[] = { "Object", "BlockWithThreeArguments", "Object", "Object", "Object"};
+static char* signature_382[] = { "Object", "BlockWithTwoArguments", "Object", "Object"};
 static char* errors_382[] = {NULL};
 static primitive_desc primitive_382 = {
-	"primitiveValue:value:value:", 
-	fntype(&primitiveValue3), 
-	5441540, 
+	"primitiveValue:value:", 
+	fntype(&primitiveValue2), 
+	5441539, 
 	signature_382, 
 	errors_382
 };
 
-static char* signature_383[] = { "Object", "BlockWithFourArguments", "Object", "Object", "Object", "Object"};
+static char* signature_383[] = { "Object", "BlockWithThreeArguments", "Object", "Object", "Object"};
 static char* errors_383[] = {NULL};
 static primitive_desc primitive_383 = {
-	"primitiveValue:value:value:value:", 
-	fntype(&primitiveValue4), 
-	5441541, 
+	"primitiveValue:value:value:", 
+	fntype(&primitiveValue3), 
+	5441540, 
 	signature_383, 
 	errors_383
 };
 
-static char* signature_384[] = { "Object", "BlockWithFiveArguments", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_384[] = { "Object", "BlockWithFourArguments", "Object", "Object", "Object", "Object"};
 static char* errors_384[] = {NULL};
 static primitive_desc primitive_384 = {
-	"primitiveValue:value:value:value:value:", 
-	fntype(&primitiveValue5), 
-	5441542, 
+	"primitiveValue:value:value:value:", 
+	fntype(&primitiveValue4), 
+	5441541, 
 	signature_384, 
 	errors_384
 };
 
-static char* signature_385[] = { "Object", "BlockWithSixArguments", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_385[] = { "Object", "BlockWithFiveArguments", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_385[] = {NULL};
 static primitive_desc primitive_385 = {
-	"primitiveValue:value:value:value:value:value:", 
-	fntype(&primitiveValue6), 
-	5441543, 
+	"primitiveValue:value:value:value:value:", 
+	fntype(&primitiveValue5), 
+	5441542, 
 	signature_385, 
 	errors_385
 };
 
-static char* signature_386[] = { "Object", "BlockWithSevenArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_386[] = { "Object", "BlockWithSixArguments", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_386[] = {NULL};
 static primitive_desc primitive_386 = {
-	"primitiveValue:value:value:value:value:value:value:", 
-	fntype(&primitiveValue7), 
-	5441544, 
+	"primitiveValue:value:value:value:value:value:", 
+	fntype(&primitiveValue6), 
+	5441543, 
 	signature_386, 
 	errors_386
 };
 
-static char* signature_387[] = { "Object", "BlockWithEightArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_387[] = { "Object", "BlockWithSevenArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_387[] = {NULL};
 static primitive_desc primitive_387 = {
-	"primitiveValue:value:value:value:value:value:value:value:", 
-	fntype(&primitiveValue8), 
-	5441545, 
+	"primitiveValue:value:value:value:value:value:value:", 
+	fntype(&primitiveValue7), 
+	5441544, 
 	signature_387, 
 	errors_387
 };
 
-static char* signature_388[] = { "Object", "BlockWithNineArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_388[] = { "Object", "BlockWithEightArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_388[] = {NULL};
 static primitive_desc primitive_388 = {
-	"primitiveValue:value:value:value:value:value:value:value:value:", 
-	fntype(&primitiveValue9), 
-	5441546, 
+	"primitiveValue:value:value:value:value:value:value:value:", 
+	fntype(&primitiveValue8), 
+	5441545, 
 	signature_388, 
 	errors_388
 };
 
-static char* signature_389[] = { "Object"};
+static char* signature_389[] = { "Object", "BlockWithNineArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_389[] = {NULL};
 static primitive_desc primitive_389 = {
-	"primitiveVerify", 
-	fntype(&debugPrimitives::verify), 
-	65536, 
+	"primitiveValue:value:value:value:value:value:value:value:value:", 
+	fntype(&primitiveValue9), 
+	5441546, 
 	signature_389, 
 	errors_389
 };
 
-static char* signature_390[] = { "Proxy", "Proxy"};
+static char* signature_390[] = { "Object"};
 static char* errors_390[] = {NULL};
 static primitive_desc primitive_390 = {
-	"primitiveWindowsHInstance:ifFail:", 
-	fntype(&systemPrimitives::windowsHInstance), 
-	327681, 
+	"primitiveVerify", 
+	fntype(&debugPrimitives::verify), 
+	65536, 
 	signature_390, 
 	errors_390
 };
@@ -3911,34 +3911,44 @@ static primitive_desc primitive_390 = {
 static char* signature_391[] = { "Proxy", "Proxy"};
 static char* errors_391[] = {NULL};
 static primitive_desc primitive_391 = {
-	"primitiveWindowsHPrevInstance:ifFail:", 
-	fntype(&systemPrimitives::windowsHPrevInstance), 
+	"primitiveWindowsHInstance:ifFail:", 
+	fntype(&systemPrimitives::windowsHInstance), 
 	327681, 
 	signature_391, 
 	errors_391
 };
 
-static char* signature_392[] = { "Object"};
+static char* signature_392[] = { "Proxy", "Proxy"};
 static char* errors_392[] = {NULL};
 static primitive_desc primitive_392 = {
-	"primitiveWindowsNCmdShow", 
-	fntype(&systemPrimitives::windowsNCmdShow), 
-	65536, 
+	"primitiveWindowsHPrevInstance:ifFail:", 
+	fntype(&systemPrimitives::windowsHPrevInstance), 
+	327681, 
 	signature_392, 
 	errors_392
 };
 
-static char* signature_393[] = { "Object", "String"};
+static char* signature_393[] = { "Object"};
 static char* errors_393[] = {NULL};
 static primitive_desc primitive_393 = {
-	"primitiveWriteSnapshot:", 
-	fntype(&systemPrimitives::writeSnapshot), 
-	65537, 
+	"primitiveWindowsNCmdShow", 
+	fntype(&systemPrimitives::windowsNCmdShow), 
+	65536, 
 	signature_393, 
 	errors_393
 };
 
-static int size_of_primitive_table = 394; 
+static char* signature_394[] = { "Object", "String"};
+static char* errors_394[] = {NULL};
+static primitive_desc primitive_394 = {
+	"primitiveWriteSnapshot:", 
+	fntype(&systemPrimitives::writeSnapshot), 
+	65537, 
+	signature_394, 
+	errors_394
+};
+
+static int size_of_primitive_table = 395; 
 static primitive_desc* primitive_table[] = { 
   &primitive_0,
   &primitive_1,
@@ -4333,5 +4343,6 @@ static primitive_desc* primitive_table[] = {
   &primitive_390,
   &primitive_391,
   &primitive_392,
-  &primitive_393
+  &primitive_393,
+  &primitive_394
 }; 

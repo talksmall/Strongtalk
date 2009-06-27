@@ -167,6 +167,7 @@ PRIM_DECL_0(systemPrimitives::expansions) {
   PROLOGUE_0("expansions")
   return as_smiOop(expansion_count);
 }
+
 PRIM_DECL_0(systemPrimitives::breakpoint) {
   PROLOGUE_0("breakpoint")
   {
@@ -174,6 +175,12 @@ PRIM_DECL_0(systemPrimitives::breakpoint) {
     StubRoutines::setSingleStepHandler(&single_step_handler);
     dispatchTable::intercept_for_step(NULL);
   }
+  return trueObj;
+}
+
+PRIM_DECL_0(systemPrimitives::vmbreakpoint) {
+  PROLOGUE_0("vmbreakpoint")
+  os::breakpoint();
   return trueObj;
 }
 
