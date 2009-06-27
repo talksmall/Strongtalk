@@ -71235,3 +71235,148 @@ runCase: aTestCase
 "June 27, 2009 -> 2:9:43"!
 
 "System saved" !
+"June 27, 2009 -> 11:59:59"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testWrittenFileShouldHaveCorrectSize
+"
+    self should: [ write size = sz ]
+    	description: 'Wrong size ', write size printString.
+    	"! !
+
+"June 27, 2009 -> 12:0:0"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testReadStreamShouldHaveCorrectSize
+"
+	| size |
+	write close.
+    read := file readStream.
+    size := read size.
+    self should: [ size = sz ]
+    	description: 'Wrong size: ', size printString
+    	"! !
+
+"June 27, 2009 -> 12:0:2"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testReadStreamShouldHaveCorrectContents
+"
+	| size |
+	write close.
+    read := file readStream.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self should: [ (i \\ 100 +32) = byte ]
+            	description: 'Wrong byte: ', byte printString, ' at index: ', i printString]
+            	"! !
+
+"June 27, 2009 -> 12:0:3"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testPeekShouldReturnFirstCharacter
+"
+	| char |
+	char := in peek.
+	self assert: char = (s at: 1)
+		description: 'Wrong character: ', char printString
+		"! !
+
+"June 27, 2009 -> 12:0:5"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testPeekShouldReturnCorrectByte
+"
+	| byte |
+	write close.
+    read := file readStream.
+    byte := read peek.
+    self should: [ byte = 32 ]
+    	description: 'Wrong byte: ', byte printString"! !
+
+"June 27, 2009 -> 12:0:7"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testModifyingWrittenFileShouldUpdateContents
+"
+	| byte |
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    byte := write next.
+    self assert: byte = 123 description: 'Wrong write byte value: ', byte printString.
+    write close.
+
+    read := file readStream.
+    read position: 5001.
+    byte := read next.
+    self assert: byte = 123 description: 'Wrong read byte value: ', byte printString
+    "! !
+
+"June 27, 2009 -> 12:0:9"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testContentsWrittenShouldReturnCorrectlySizedCollection
+"
+	| bytes |
+	write setToEnd.
+    bytes := write contentsWritten.
+
+    self should: [ bytes size = sz ]
+    	description: 'Wrong byte count: ', bytes size printString
+    	"! !
+
+"June 27, 2009 -> 12:0:11"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testContentsWrittenShouldMatchReadStreamContents
+"
+	| size bytes |
+	write setToEnd.
+	bytes := write contentsWritten.
+	write close.
+    read := file readStream.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self should: [ (bytes at: i + 1) = byte ]
+            	description: 'Wrong byte: ', (bytes at: i + 1) printString, ' at index: ', i printString].
+    self should: [ read atEnd] description: 'Read stream should be at end'.
+    read position: 0.
+    self assert: bytes = read contentsRemaining description: 'Invalid contentsRemaining'
+    "! !
+
+"June 27, 2009 -> 12:0:13"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testCharStreamShouldHaveCorrectContents
+"
+	1 to: s size do: 
+        [ :i <Int> |
+            | n |
+			n := in next.
+            self assert: (s at: i) =  n
+            	description: 'Wrong character: ', n printString, ' at index: ', i printString].
+    self assert: in atEnd description: 'Character stream should be exhausted'
+    "! !
+
+"June 27, 2009 -> 12:0:14"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testCharStreamContentsRemainingShouldHaveCorrectContents
+
+	"
+	| contents |
+	contents := in contentsRemaining.
+	self assert: contents = s description: 'Wrong contents: ', contents
+	"! !
+
+"June 27, 2009 -> 12:0:35"!
+
+"System saved" !
