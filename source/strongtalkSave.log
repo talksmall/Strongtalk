@@ -71689,3 +71689,39 @@ logFailure: aString
 "June 28, 2009 -> 11:59:41"!
 
 "System saved" !
+"June 28, 2009 -> 14:40:49"!
+
+! (Delta mirrorFor: #UnixFilePattern) methodsFor: 'private' !
+lastError
+
+	^{{primitiveGetLastError}}! !
+
+"June 28, 2009 -> 14:43:20"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'testing' !
+statFailed
+
+	self error: 'could not stat file: ', self lastError printString! !
+
+"June 28, 2009 -> 14:43:31"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'testing' !
+isWriteable
+
+    ^self stat: [:stat| 
+    				(stat uid == self geteuid and: [(stat mode bitAnd: self S_IWUSR) == self S_IWUSR])
+    					or: [(stat gid == self getegid and: [(stat mode bitAnd: self S_IWGRP) == self S_IWGRP])
+    					or: [(stat mode bitAnd: self S_IWOTH) == self S_IWOTH]]]
+    	ifFail: [ self statFailed ]! !
+
+"June 28, 2009 -> 14:44:26"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'testing' !
+isDirectory ^<Boolean>
+
+    ^self stat: [:stat| (stat mode bitAnd: self S_IFDIR) == self S_IFDIR]
+    	ifFail: [ self statFailed ]! !
+
+"June 28, 2009 -> 14:48:17"!
+
+"System saved" !

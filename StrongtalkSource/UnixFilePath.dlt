@@ -306,7 +306,7 @@ exists ^<Boolean>
 isDirectory ^<Boolean>
 
     ^self stat: [:stat| (stat mode bitAnd: self S_IFDIR) == self S_IFDIR]
-    	ifFail: [ self error: 'could not stat file' ]!
+    	ifFail: [ self statFailed ]!
 
 isReadOnly ^<Boolean>
 
@@ -323,5 +323,9 @@ isWriteable
     				(stat uid == self geteuid and: [(stat mode bitAnd: self S_IWUSR) == self S_IWUSR])
     					or: [(stat gid == self getegid and: [(stat mode bitAnd: self S_IWGRP) == self S_IWGRP])
     					or: [(stat mode bitAnd: self S_IWOTH) == self S_IWOTH]]]
-    	ifFail: [ self error: 'could not stat file' ]! !
+    	ifFail: [ self statFailed ]!
+
+statFailed
+
+	self error: 'could not stat file: ', self lastError printString! !
 
