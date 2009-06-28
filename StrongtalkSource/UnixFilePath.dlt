@@ -249,6 +249,13 @@ stat: testBlock ifFail: failBlock
 		ensure: [ statBuffer free.
 						name free]!
 
+statFailed
+
+	| errno|
+	errno := self lastError.
+	self vmHalt.
+	self error: 'could not stat file: ', errno printString!
+
 statName: name buffer: statBuffer
 
     ^{{<libc ExternalProxy __xstat>
@@ -323,9 +330,5 @@ isWriteable
     				(stat uid == self geteuid and: [(stat mode bitAnd: self S_IWUSR) == self S_IWUSR])
     					or: [(stat gid == self getegid and: [(stat mode bitAnd: self S_IWGRP) == self S_IWGRP])
     					or: [(stat mode bitAnd: self S_IWOTH) == self S_IWOTH]]]
-    	ifFail: [ self statFailed ]!
-
-statFailed
-
-	self error: 'could not stat file: ', self lastError printString! !
+    	ifFail: [ self statFailed ]! !
 

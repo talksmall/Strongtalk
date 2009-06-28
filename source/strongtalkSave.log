@@ -71725,3 +71725,23 @@ isDirectory ^<Boolean>
 "June 28, 2009 -> 14:48:17"!
 
 "System saved" !
+"June 28, 2009 -> 14:56:50"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+statFailed
+
+	| errno|
+	errno := self lastError.
+	self vmHalt.
+	self error: 'could not stat file: ', errno printString! !
+
+"June 28, 2009 -> 14:57:49"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+vmHalt
+
+	{{primitiveVMBreakpoint}}! !
+
+"June 28, 2009 -> 14:59:12"!
+
+"System saved" !
