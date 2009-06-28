@@ -12,7 +12,21 @@ comment:
 ! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
 
 
+StatBuffer
+
+	^MacOSXStatBuffer!
+
 fileDescriptorClass ^<FileDescriptor class>
 "%TODO delegate to Platform"
-    ^MacOSXFileDescriptor! !
+    ^MacOSXFileDescriptor!
+
+statBufferClass
+
+	^MacOSXStatBuffer!
+
+statName: name buffer: statBuffer
+
+    ^{{<libc ExternalProxy fstat>
+       			name: name
+       			buffer: statBuffer}}! !
 

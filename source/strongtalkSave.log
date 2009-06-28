@@ -71452,3 +71452,130 @@ there'.
 "June 28, 2009 -> 11:16:16"!
 
 "System saved" !
+"June 28, 2009 -> 11:27:36"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+stat: block ifFail: failBlock
+
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := self statBufferClass new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [failBlock value]
+		ifFalse: [ block value: statBuffer ]]
+			ensure: [ statBuffer free]
+! !
+
+"June 28, 2009 -> 11:27:51"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+statBufferClass
+
+	^MacOSXStatBuffer! !
+
+"June 28, 2009 -> 11:35:41"!
+
+! (Delta mirrorFor: #MacOSXStatBuffer) methodsFor: 'offsets' !
+gidOffset
+
+	^16! !
+
+"June 28, 2009 -> 11:35:51"!
+
+! (Delta mirrorFor: #MacOSXStatBuffer) methodsFor: 'offsets' !
+uidOffset
+
+	^12! !
+
+"June 28, 2009 -> 11:36:15"!
+
+! (Delta mirrorFor: #MacOSXStatBuffer) methodsFor: 'offsets' !
+modeOffset
+
+	^8! !
+
+"June 28, 2009 -> 11:37:21"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+StatBuffer
+
+    ^StatBuffer! !
+
+"June 28, 2009 -> 11:38:14"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+stat: testBlock ifFail: failBlock
+
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy>
+    	name <CString> |
+    statBuffer := self StatBuffer new.
+    statBuffer allocate.
+    name := CString for: self name.
+    [ status := {{<libc ExternalProxy __xstat>
+    					version: statBuffer version
+            			name: name
+            			buffer: statBuffer    }}.
+	status asSmallInteger == -1
+		ifTrue: [ failBlock value ]
+		ifFalse: [ ^testBlock value: statBuffer ]]
+		ensure: [ statBuffer free.
+						name free]! !
+
+"June 28, 2009 -> 11:39:37"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+statName: name buffer: statBuffer
+
+    ^{{<libc ExternalProxy __xstat>
+   				version: statBuffer version
+       			name: name
+       			buffer: statBuffer}}! !
+
+"June 28, 2009 -> 11:40:46"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+stat: testBlock ifFail: failBlock
+
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy>
+    	name <CString> |
+    statBuffer := self StatBuffer new.
+    statBuffer allocate.
+    name := CString for: self name.
+    [ status := self statName: name
+            			buffer: statBuffer.
+	status asSmallInteger == -1
+		ifTrue: [ failBlock value ]
+		ifFalse: [ ^testBlock value: statBuffer ]]
+		ensure: [ statBuffer free.
+						name free]! !
+
+"June 28, 2009 -> 11:42:7"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+StatBuffer
+
+	^MacOSXStatBuffer! !
+
+"June 28, 2009 -> 11:42:13"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+statName: name buffer: statBuffer
+
+    ^{{<libc ExternalProxy fstat>
+       			name: name
+       			buffer: statBuffer}}! !
+
+"June 28, 2009 -> 11:42:37"!
+
+(Delta mirrorFor: #MacOSXFilePath) removeMethod: #stat:ifFail: ifAbsent: [] !
+
+
+"June 28, 2009 -> 11:44:17"!
+
+"System saved" !

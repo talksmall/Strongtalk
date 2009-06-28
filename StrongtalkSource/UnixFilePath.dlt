@@ -145,6 +145,10 @@ S_IXUSR
 
 	^8r1000!
 
+StatBuffer
+
+    ^StatBuffer!
+
 createValueFor: mode <Symbol>  ^<ExternalData>
 
     mode = #read
@@ -234,18 +238,23 @@ stat: testBlock ifFail: failBlock
     | statBuffer <StatBuffer> 
     	status <ExternalProxy>
     	name <CString> |
-    statBuffer := StatBuffer new.
+    statBuffer := self StatBuffer new.
     statBuffer allocate.
     name := CString for: self name.
-    [ status := {{<libc ExternalProxy __xstat>
-    					version: statBuffer version
-            			name: name
-            			buffer: statBuffer    }}.
+    [ status := self statName: name
+            			buffer: statBuffer.
 	status asSmallInteger == -1
 		ifTrue: [ failBlock value ]
 		ifFalse: [ ^testBlock value: statBuffer ]]
 		ensure: [ statBuffer free.
-						name free]! !
+						name free]!
+
+statName: name buffer: statBuffer
+
+    ^{{<libc ExternalProxy __xstat>
+   				version: statBuffer version
+       			name: name
+       			buffer: statBuffer}}! !
 
 ! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted' !
 
