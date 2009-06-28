@@ -39,11 +39,11 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
   template(integerOps_init)				\
   template(bytecodes_init)				\
  /* template(stubRoutines_init)	*/			\
+  template(universe_init)				\
   template(generatedPrimitives_init_before_interpreter)	\
   template(interpreter_init)				\
   template(dispatchTable_init)				\
   template(disclaimer_init)				\
-  template(universe_init)				\
   template(costModel_init)				\
   template(sweeper_init)				\
   template(fprofiler_init)				\

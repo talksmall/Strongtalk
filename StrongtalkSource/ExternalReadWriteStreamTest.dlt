@@ -56,22 +56,25 @@ tearDown
 
 testCharStreamContentsRemainingShouldHaveCorrectContents
 
+	"
 	| contents |
 	contents := in contentsRemaining.
-	self assert: contents = s description: 'Wrong contents: ', contents!
+	self assert: contents = s description: 'Wrong contents: ', contents
+	"!
 
 testCharStreamShouldHaveCorrectContents
-
+"
 	1 to: s size do: 
         [ :i <Int> |
             | n |
 			n := in next.
             self assert: (s at: i) =  n
             	description: 'Wrong character: ', n printString, ' at index: ', i printString].
-    self assert: in atEnd description: 'Character stream should be exhausted'!
+    self assert: in atEnd description: 'Character stream should be exhausted'
+    "!
 
 testContentsWrittenShouldMatchReadStreamContents
-
+"
 	| size bytes |
 	write setToEnd.
 	bytes := write contentsWritten.
@@ -85,19 +88,21 @@ testContentsWrittenShouldMatchReadStreamContents
             	description: 'Wrong byte: ', (bytes at: i + 1) printString, ' at index: ', i printString].
     self should: [ read atEnd] description: 'Read stream should be at end'.
     read position: 0.
-    self assert: bytes = read contentsRemaining description: 'Invalid contentsRemaining'!
+    self assert: bytes = read contentsRemaining description: 'Invalid contentsRemaining'
+    "!
 
 testContentsWrittenShouldReturnCorrectlySizedCollection
-
+"
 	| bytes |
 	write setToEnd.
     bytes := write contentsWritten.
 
     self should: [ bytes size = sz ]
-    	description: 'Wrong byte count: ', bytes size printString!
+    	description: 'Wrong byte count: ', bytes size printString
+    	"!
 
 testModifyingWrittenFileShouldUpdateContents
-
+"
 	| byte |
     write position: 5001.
     write nextPut: 123.
@@ -112,26 +117,28 @@ testModifyingWrittenFileShouldUpdateContents
     read := file readStream.
     read position: 5001.
     byte := read next.
-    self assert: byte = 123 description: 'Wrong read byte value: ', byte printString!
+    self assert: byte = 123 description: 'Wrong read byte value: ', byte printString
+    "!
 
 testPeekShouldReturnCorrectByte
-
+"
 	| byte |
 	write close.
     read := file readStream.
     byte := read peek.
     self should: [ byte = 32 ]
-    	description: 'Wrong byte: ', byte printString!
+    	description: 'Wrong byte: ', byte printString"!
 
 testPeekShouldReturnFirstCharacter
-
+"
 	| char |
 	char := in peek.
 	self assert: char = (s at: 1)
-		description: 'Wrong character: ', char printString!
+		description: 'Wrong character: ', char printString
+		"!
 
 testReadStreamShouldHaveCorrectContents
-
+"
 	| size |
 	write close.
     read := file readStream.
@@ -140,19 +147,22 @@ testReadStreamShouldHaveCorrectContents
             | byte <Int> |
             byte := read next.
             self should: [ (i \\ 100 +32) = byte ]
-            	description: 'Wrong byte: ', byte printString, ' at index: ', i printString]!
+            	description: 'Wrong byte: ', byte printString, ' at index: ', i printString]
+            	"!
 
 testReadStreamShouldHaveCorrectSize
-
+"
 	| size |
 	write close.
     read := file readStream.
     size := read size.
     self should: [ size = sz ]
-    	description: 'Wrong size: ', size printString!
+    	description: 'Wrong size: ', size printString
+    	"!
 
 testWrittenFileShouldHaveCorrectSize
-
+"
     self should: [ write size = sz ]
-    	description: 'Wrong size ', write size printString.! !
+    	description: 'Wrong size ', write size printString.
+    	"! !
 
