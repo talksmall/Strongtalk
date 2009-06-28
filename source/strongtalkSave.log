@@ -71579,3 +71579,113 @@ statName: name buffer: statBuffer
 "June 28, 2009 -> 11:44:17"!
 
 "System saved" !
+"June 28, 2009 -> 11:52:29"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+failureLog	
+	^SUnitNameResolver defaultLogDevice
+			! !
+
+"June 28, 2009 -> 11:52:41"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+logFailure: aString
+	self isLogging ifTrue: [
+		self failureLog 
+			cr; 
+			nextPutAll: aString; 
+			flush]! !
+
+"June 28, 2009 -> 11:52:48"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+failureLog	
+	^SUnitNameResolver defaultLogDevice! !
+
+"June 28, 2009 -> 11:53:21"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+runCase: aTestCase
+
+	| testCasePassed |
+
+	testCasePassed :=
+		[[aTestCase runCase.
+			true]
+				sunitOn: self class failure
+				do: [:signal |
+						self failures add: aTestCase.
+						signal sunitExitWith: false]]
+							sunitOn: self class error
+							do: [:signal |
+							"self halt."
+									self logFailure: signal printString.
+									self errors add: aTestCase.
+									signal sunitExitWith: false].
+
+	testCasePassed
+		ifTrue: [self passed add: aTestCase]
+			! !
+
+"June 28, 2009 -> 11:55:59"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+runCase: aTestCase
+
+	| testCasePassed |
+
+	testCasePassed :=
+		[[aTestCase runCase.
+			true]
+				sunitOn: self class failure
+				do: [:signal |
+						self failures add: aTestCase.
+						signal sunitExitWith: false]]
+							sunitOn: self class error
+							do: [:signal |
+									"self halt."
+									[self logFailure: signal printString]
+										sunitOn: self class error
+										do: [:s2| [self logFailure: 'a ', signal class printString]
+															sunitOn: self class error
+															do: [:s3| ]].
+									self errors add: aTestCase.
+									signal sunitExitWith: false].
+
+	testCasePassed
+		ifTrue: [self passed add: aTestCase]
+			! !
+
+"June 28, 2009 -> 11:57:4"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testError
+
+	self error: 'test failed'! !
+
+"June 28, 2009 -> 11:58:25"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+isLogging
+
+	^true! !
+
+"June 28, 2009 -> 11:58:58"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+logFailure: aString
+	self isLogging ifTrue: [
+		self failureLog 
+			cr; 
+			nextPutAll: aString;
+			cr;
+			flush]! !
+
+"June 28, 2009 -> 11:59:9"!
+
+(Delta mirrorFor: #ExternalReadWriteStreamTest) removeMethod: #testError ifAbsent: [] !
+
+
+"June 28, 2009 -> 11:59:41"!
+
+"System saved" !

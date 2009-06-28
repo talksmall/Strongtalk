@@ -136,6 +136,21 @@ printOn: aStream
 ! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
 
 
+failureLog	
+	^SUnitNameResolver defaultLogDevice!
+
+isLogging
+
+	^true!
+
+logFailure: aString
+	self isLogging ifTrue: [
+		self failureLog 
+			cr; 
+			nextPutAll: aString;
+			cr;
+			flush]!
+
 runCase: aTestCase
 
 	| testCasePassed |
@@ -149,7 +164,12 @@ runCase: aTestCase
 						signal sunitExitWith: false]]
 							sunitOn: self class error
 							do: [:signal |
-							"self halt."
+									"self halt."
+									[self logFailure: signal printString]
+										sunitOn: self class error
+										do: [:s2| [self logFailure: 'a ', signal class printString]
+															sunitOn: self class error
+															do: [:s3| ]].
 									self errors add: aTestCase.
 									signal sunitExitWith: false].
 
