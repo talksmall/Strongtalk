@@ -184,6 +184,11 @@ PRIM_DECL_0(systemPrimitives::vmbreakpoint) {
   return trueObj;
 }
 
+PRIM_DECL_0(systemPrimitives::getLastError) {
+  PROLOGUE_0("getLastError")
+  return as_smiOop(os::error_code()); //%TODO% fix this to support errors > 30 bits in length
+}
+
 PRIM_DECL_0(systemPrimitives::halt) {
   PROLOGUE_0("halt")
 

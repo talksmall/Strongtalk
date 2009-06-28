@@ -491,6 +491,10 @@ void os::add_exception_handler(void new_handler(void* fp, void* sp, void* pc)) {
     AddVectoredExceptionHandler(0, testVectoredHandler);
 }
 
+int os::error_code() {
+  return GetLastError();
+}
+
 void os_init() {
   ThreadCritical::intialize();
 

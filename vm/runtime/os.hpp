@@ -114,6 +114,7 @@ class os {
 
   // Platform
   static char*	  platform_class_name();
+  static int      error_code();
 };
 
 // A critial region for controling thread transfer at

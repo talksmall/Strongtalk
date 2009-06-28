@@ -142,6 +142,12 @@ class systemPrimitives : AllStatic {
   static PRIM_DECL_0(vmbreakpoint);
 
   //%prim
+  // <NoReceiver> primitiveGetLastError ^<Integer> =
+  //   Internal { name  = 'systemPrimitives::getLastError' }
+  //%
+  static PRIM_DECL_0(getLastError);
+
+  //%prim
   // <NoReceiver> primitiveHalt ^<Object> =
   //   Internal { name  = 'systemPrimitives::halt' }
   //%

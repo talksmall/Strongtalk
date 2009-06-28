@@ -33,6 +33,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include <dlfcn.h>
 # include <signal.h>
 # include <ucontext.h>
+# include <errno.h>
 
 void os_dump_context2(ucontext_t *context) {
     mcontext_t mcontext = context->uc_mcontext;
@@ -579,6 +580,9 @@ int os::message_box(char* title, char* message) {
 
 char* os::platform_class_name() { return "UnixPlatform"; }
 
+int os::error_code() {
+  return errno;
+}
 extern "C" bool EnableTasks;
 
 pthread_mutex_t ThreadSection; 
