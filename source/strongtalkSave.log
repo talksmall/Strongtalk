@@ -71757,3 +71757,141 @@ statName: name buffer: statBuffer
 "July 5, 2009 -> 16:20:56"!
 
 "System saved" !
+"July 5, 2009 -> 16:24:16"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testCharStreamContentsRemainingShouldHaveCorrectContents
+
+	| contents |
+	contents := in contentsRemaining.
+	self assert: contents = s description: 'Wrong contents: ', contents! !
+
+"July 5, 2009 -> 16:24:36"!
+
+"System saved" !
+"July 5, 2009 -> 16:25:57"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testCharStreamShouldHaveCorrectContents
+
+	1 to: s size do: 
+        [ :i <Int> |
+            | n |
+			n := in next.
+            self assert: (s at: i) =  n
+            	description: 'Wrong character: ', n printString, ' at index: ', i printString].
+    self assert: in atEnd description: 'Character stream should be exhausted'! !
+
+"July 5, 2009 -> 16:26:10"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testContentsWrittenShouldMatchReadStreamContents
+
+	| size bytes |
+	write setToEnd.
+	bytes := write contentsWritten.
+	write close.
+    read := file readStream.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self should: [ (bytes at: i + 1) = byte ]
+            	description: 'Wrong byte: ', (bytes at: i + 1) printString, ' at index: ', i printString].
+    self should: [ read atEnd] description: 'Read stream should be at end'.
+    read position: 0.
+    self assert: bytes = read contentsRemaining description: 'Invalid contentsRemaining'! !
+
+"July 5, 2009 -> 16:26:20"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testContentsWrittenShouldReturnCorrectlySizedCollection
+
+	| bytes |
+	write setToEnd.
+    bytes := write contentsWritten.
+
+    self should: [ bytes size = sz ]
+    	description: 'Wrong byte count: ', bytes size printString! !
+
+"July 5, 2009 -> 16:26:31"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testModifyingWrittenFileShouldUpdateContents
+
+	| byte |
+    write position: 5001.
+    write nextPut: 123.
+    write close.
+    write := file readWriteStream.
+    write position: 5000.
+    write nextPut: 12.
+    byte := write next.
+    self assert: byte = 123 description: 'Wrong write byte value: ', byte printString.
+    write close.
+
+    read := file readStream.
+    read position: 5001.
+    byte := read next.
+    self assert: byte = 123 description: 'Wrong read byte value: ', byte printString! !
+
+"July 5, 2009 -> 16:26:40"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testPeekShouldReturnCorrectByte
+
+	| byte |
+	write close.
+    read := file readStream.
+    byte := read peek.
+    self should: [ byte = 32 ]
+    	description: 'Wrong byte: ', byte printString! !
+
+"July 5, 2009 -> 16:26:49"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testPeekShouldReturnFirstCharacter
+
+	| char |
+	char := in peek.
+	self assert: char = (s at: 1)
+		description: 'Wrong character: ', char printString! !
+
+"July 5, 2009 -> 16:27:1"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testReadStreamShouldHaveCorrectContents
+
+	| size |
+	write close.
+    read := file readStream.
+    0 to: sz-1 do:
+        [ :i <Int> |
+            | byte <Int> |
+            byte := read next.
+            self should: [ (i \\ 100 +32) = byte ]
+            	description: 'Wrong byte: ', byte printString, ' at index: ', i printString]! !
+
+"July 5, 2009 -> 16:27:10"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testReadStreamShouldHaveCorrectSize
+
+	| size |
+	write close.
+    read := file readStream.
+    size := read size.
+    self should: [ size = sz ]
+    	description: 'Wrong size: ', size printString! !
+
+"July 5, 2009 -> 16:27:28"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
+testWrittenFileShouldHaveCorrectSize
+
+    self should: [ write size = sz ]
+    	description: 'Wrong size ', write size printString! !
+
+"July 5, 2009 -> 16:27:55"!
+
+"System saved" !
