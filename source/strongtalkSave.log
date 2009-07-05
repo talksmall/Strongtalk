@@ -71895,3 +71895,36 @@ testWrittenFileShouldHaveCorrectSize
 "July 5, 2009 -> 16:27:55"!
 
 "System saved" !
+"July 5, 2009 -> 16:39:47"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+runCase: aTestCase
+
+	| testCasePassed |
+
+	testCasePassed :=
+		[[aTestCase runCase.
+			true]
+				sunitOn: self class failure
+				do: [:signal |
+						self failures add: aTestCase.
+						signal sunitExitWith: false]]
+							sunitOn: self class error
+							do: [:signal |
+									"self halt."
+									self vmHalt.
+									[self logFailure: signal printString]
+										sunitOn: self class error
+										do: [:s2| [self logFailure: 'a ', signal class printString]
+															sunitOn: self class error
+															do: [:s3| ]].
+									self errors add: aTestCase.
+									signal sunitExitWith: false].
+
+	testCasePassed
+		ifTrue: [self passed add: aTestCase]
+			! !
+
+"July 5, 2009 -> 16:41:0"!
+
+"System saved" !

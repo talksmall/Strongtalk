@@ -165,6 +165,7 @@ runCase: aTestCase
 							sunitOn: self class error
 							do: [:signal |
 									"self halt."
+									self vmHalt.
 									[self logFailure: signal printString]
 										sunitOn: self class error
 										do: [:s2| [self logFailure: 'a ', signal class printString]
