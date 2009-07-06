@@ -71928,3 +71928,20 @@ runCase: aTestCase
 "July 5, 2009 -> 16:41:0"!
 
 "System saved" !
+"July 7, 2009 -> 0:52:15"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    |result|
+    result := {{<libc ExternalProxy lseek>
+        				fd: self handle
+        				offset: p
+        				whence: self SEEK_SET }}.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [self error: 'Could not position file descriptor: ', 
+    					{{primitiveGetLastError}}]! !
+
+"July 7, 2009 -> 0:53:42"!
+
+"System saved" !

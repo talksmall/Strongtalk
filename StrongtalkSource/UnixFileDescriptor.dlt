@@ -131,8 +131,12 @@ postCopy
 
 setExternalPosition: p <Int>
     "%todo: support large integer positions for extremely large files"
-    {{<libc ExternalProxy lseek>
-        fd: self handle
-        offset: p
-        whence: self SEEK_SET }}    "FILE_BEGIN"! !
+    |result|
+    result := {{<libc ExternalProxy lseek>
+        				fd: self handle
+        				offset: p
+        				whence: self SEEK_SET }}.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [self error: 'Could not position file descriptor: ', 
+    					{{primitiveGetLastError}}]! !
 
