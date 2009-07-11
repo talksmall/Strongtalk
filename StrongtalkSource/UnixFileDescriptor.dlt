@@ -132,6 +132,7 @@ postCopy
 setExternalPosition: p <Int>
     "%todo: support large integer positions for extremely large files"
     |result|
+    self vmHalt.
     result := {{<libc ExternalProxy lseek>
         				fd: self handle
         				offset: p
