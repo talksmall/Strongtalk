@@ -132,13 +132,6 @@ lseek: handle position: p <Int> whence: whence <Int>
         				offset: p
         				whence: whence }}!
 
-lseekHandle: handle position: p <Int> whence: whence <Int>
-    "%todo: support large integer positions for extremely large files"
-    ^ {{<libc ExternalProxy lseek>
-        				fd: handle
-        				offset: p
-        				whence: whence }}!
-
 postCopy
     super postCopy.
     self initializeIOCount.!
