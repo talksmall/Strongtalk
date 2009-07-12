@@ -72209,3 +72209,40 @@ lseek: handle position: p <Int> whence: whence <Int>
 "July 12, 2009 -> 19:39:35"!
 
 "System saved" !
+"July 13, 2009 -> 0:40:1"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) methodsFor: 'accessing' !
+contentsWritten  ^<SeqCltn[Int]>
+    "%copied (substituting for E) from BasicReadWriteStream"
+    | cltn <VarSeqCltn[Int]>  origPos <Int> |
+    cltn := self newCollectionOfSize: self position.
+    origPos := self position.
+    self vmHalt.
+    self position: 0.
+    1 to: origPos do: [ :i <Int> |
+        cltn at: i put: self next.    ].
+    self position: origPos.
+    ^cltn! !
+
+"July 13, 2009 -> 0:40:24"!
+
+"System saved" !
+"July 13, 2009 -> 0:42:0"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+lseek: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    "self vmHalt."
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				with: padding
+        				offset: p
+        				whence: whence }}! !
+
+"July 13, 2009 -> 0:42:20"!
+
+"System saved" !
