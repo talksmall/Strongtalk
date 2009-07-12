@@ -41,6 +41,18 @@ stat: block ifFail: failBlock
 ! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
 
 
+lseek: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				with: padding
+        				offset: p
+        				whence: whence }}!
+
 statBufferClass
 
 	^MacOSXStatBuffer! !

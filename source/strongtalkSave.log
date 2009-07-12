@@ -72003,3 +72003,185 @@ setExternalPosition: p <Int>
 "July 11, 2009 -> 10:44:0"!
 
 "System saved" !
+"July 12, 2009 -> 15:58:40"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    | result padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    result := {{<libc ExternalProxy lseek>
+        				fd: self handle
+        				with: padding
+        				offset: p
+        				whence: self SEEK_SET }}.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [| error |
+    				error := {{primitiveGetLastError}}.
+    				self vmHalt.
+    				self error: 'Could not position file descriptor: ', 
+    					error printString]! !
+
+"July 12, 2009 -> 16:0:2"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+lseek: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    ^ {{<libc ExternalProxy lseek>
+        				fd: self handle
+        				with: padding
+        				offset: p
+        				whence: whence }}! !
+
+"July 12, 2009 -> 16:0:54"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    | result |
+    result := self lseek: p
+           				whence: self SEEK_SET.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [| error |
+    				error := {{primitiveGetLastError}}.
+    				self vmHalt.
+    				self error: 'Could not position file descriptor: ', 
+    					error printString]! !
+
+"July 12, 2009 -> 16:2:10"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+lseekHandle: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				with: padding
+        				offset: p
+        				whence: whence }}! !
+
+"July 12, 2009 -> 16:2:50"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    | result |
+    result := self handle: self handle
+    					lseek: p
+           				whence: self SEEK_SET.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [| error |
+    				error := {{primitiveGetLastError}}.
+    				self vmHalt.
+    				self error: 'Could not position file descriptor: ', 
+    					error printString]! !
+
+"July 12, 2009 -> 16:3:9"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+lseekHandle: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				with: padding
+        				offset: p
+        				whence: whence }}! !
+
+"July 12, 2009 -> 16:3:31"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+lseekHandle: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				offset: p
+        				whence: whence }}! !
+
+"July 12, 2009 -> 16:4:32"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+lseek: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				with: padding
+        				offset: p
+        				whence: whence }}! !
+
+"July 12, 2009 -> 16:4:34"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    | result |
+    result := self lseek: self handle
+    					position: p
+           				whence: self SEEK_SET.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [| error |
+    				error := {{primitiveGetLastError}}.
+    				self vmHalt.
+    				self error: 'Could not position file descriptor: ', 
+    					error printString]! !
+
+"July 12, 2009 -> 16:4:49"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+lseek: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				offset: p
+        				whence: whence }}! !
+
+"July 12, 2009 -> 16:5:5"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    | result |
+    result := self lseek: self handle
+    					position: p
+           				whence: self SEEK_SET.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [| error |
+    				error := {{primitiveGetLastError}}.
+    				self vmHalt.
+    				self error: 'Could not position file descriptor: ', 
+    					error printString]! !
+
+"July 12, 2009 -> 16:5:23"!
+
+(Delta mirrorFor: #MacOSXFileDescriptor) removeMethod: #lseek:whence: ifAbsent: [] !
+
+
+"July 12, 2009 -> 16:5:25"!
+
+(Delta mirrorFor: #MacOSXFileDescriptor) removeMethod: #lseekHandle:position:whence: ifAbsent: [] !
+
+
+"July 12, 2009 -> 16:5:30"!
+
+(Delta mirrorFor: #MacOSXFileDescriptor) removeMethod: #setExternalPosition: ifAbsent: [] !
+
+
+"July 12, 2009 -> 16:8:7"!
+
+"System saved" !

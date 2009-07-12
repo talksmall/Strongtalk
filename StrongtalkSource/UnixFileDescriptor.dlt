@@ -125,18 +125,30 @@ ioCount ^<ExternalProxy>
 
     ^ioCount!
 
+lseek: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				offset: p
+        				whence: whence }}!
+
+lseekHandle: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				offset: p
+        				whence: whence }}!
+
 postCopy
     super postCopy.
     self initializeIOCount.!
 
 setExternalPosition: p <Int>
     "%todo: support large integer positions for extremely large files"
-    |result|
-    self vmHalt.
-    result := {{<libc ExternalProxy lseek>
-        				fd: self handle
-        				offset: p
-        				whence: self SEEK_SET }}.    "FILE_BEGIN"
+    | result |
+    result := self lseek: self handle
+    					position: p
+           				whence: self SEEK_SET.    "FILE_BEGIN"
     result isAllOnes
     	ifTrue: [| error |
     				error := {{primitiveGetLastError}}.
