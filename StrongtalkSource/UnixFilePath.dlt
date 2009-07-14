@@ -226,6 +226,13 @@ modeProxyFor: mode <Symbol> ^<SmallInt>
     mode = #readWrite
         ifTrue: [ ^2 ]!
 
+open: dname <ExternalProxy> mode: dmode <SmallInt> ^ <ExternalProxy>
+
+   ^{{<libc ExternalProxy open>
+    		name: dname
+    		flags: dmode
+    		permissions: 8r777 }}!
+
 sharingValueFor: mode <Symbol> ^<ExternalData>
 
     mode = #read
@@ -273,10 +280,8 @@ openInternalFor: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<External
     dname := self nameProxy.
 
     [ dmode := self modeFor: mode.
-    	proxy := {{<libc ExternalProxy open>
-    					name: dname
-    					flags: dmode
-    					create: 8r777 }} ]
+    	proxy := self open: dname
+    						mode: dmode]
     		ensure: [ dname free ].
 
     ^proxy isAllOnes

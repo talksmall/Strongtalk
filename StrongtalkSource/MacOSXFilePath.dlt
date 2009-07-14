@@ -12,6 +12,14 @@ comment:
 ! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
 
 
+O_CREAT
+
+	^16r200!
+
+O_TRUNC
+
+	^16r400!
+
 StatBuffer
 
 	^MacOSXStatBuffer!
@@ -19,6 +27,12 @@ StatBuffer
 fileDescriptorClass ^<FileDescriptor class>
 "%TODO delegate to Platform"
     ^MacOSXFileDescriptor!
+
+open: dname <ExternalProxy> mode: dmode <SmallInt> ^ <ExternalProxy>
+
+   ^{{<libc ExternalProxy open>
+    		name: dname
+    		flags: dmode }}!
 
 statBufferClass
 

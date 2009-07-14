@@ -72497,3 +72497,97 @@ readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
 "July 14, 2009 -> 10:34:13"!
 
 "System saved" !
+"July 14, 2009 -> 11:0:4"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+O_CREAT
+
+	^16r200! !
+
+"July 14, 2009 -> 11:0:25"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+O_TRUNC
+
+	^16r400! !
+
+"July 14, 2009 -> 11:8:33"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted' !
+open: dname <ExternalProxy> mode: dmode <SmallInt> ^ <ExternalProxy>
+
+   ^{{<libc ExternalProxy open>
+    					name: dname
+    					flags: dmode
+    					create: 8r777 }}! !
+
+"July 14, 2009 -> 11:8:50"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted' !
+open: dname <ExternalProxy> mode: dmode <SmallInt> ^ <ExternalProxy>
+
+   ^{{<libc ExternalProxy open>
+    		name: dname
+    		flags: dmode
+    		create: 8r777 }}! !
+
+"July 14, 2009 -> 11:8:58"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted' !
+open: dname <ExternalProxy> mode: dmode <SmallInt> ^ <ExternalProxy>
+
+   ^{{<libc ExternalProxy open>
+    		name: dname
+    		flags: dmode
+    		permissions: 8r777 }}! !
+
+"July 14, 2009 -> 11:9:34"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted' !
+openInternalFor: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalProxy | X>
+
+    |   dname <ExternalProxy>
+        dmode <SmallInt>
+        proxy <ExternalProxy> |
+    dname := self nameProxy.
+
+    [ dmode := self modeFor: mode.
+    	proxy := self open: dname
+    					mode: dmode]
+    		ensure: [ dname free ].
+
+    ^proxy isAllOnes
+        ifFalse: [ proxy ]
+        ifTrue: [ err value: #cannotOpenFile ]! !
+
+"July 14, 2009 -> 11:10:14"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'restricted' !
+openInternalFor: mode <Symbol> ifFail: err <[ExternalError, ^X def]>  ^<ExternalProxy | X>
+
+    |   dname <ExternalProxy>
+        dmode <SmallInt>
+        proxy <ExternalProxy> |
+    dname := self nameProxy.
+
+    [ dmode := self modeFor: mode.
+    	proxy := self open: dname
+    						mode: dmode]
+    		ensure: [ dname free ].
+
+    ^proxy isAllOnes
+        ifFalse: [ proxy ]
+        ifTrue: [ err value: #cannotOpenFile ]! !
+
+"July 14, 2009 -> 11:10:48"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+open: dname <ExternalProxy> mode: dmode <SmallInt> ^ <ExternalProxy>
+
+   ^{{<libc ExternalProxy open>
+    		name: dname
+    		flags: dmode }}! !
+
+"July 14, 2009 -> 11:12:14"!
+
+"System saved" !
