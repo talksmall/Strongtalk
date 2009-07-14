@@ -72246,3 +72246,146 @@ lseek: handle position: p <Int> whence: whence <Int>
 "July 13, 2009 -> 0:42:20"!
 
 "System saved" !
+"July 14, 2009 -> 1:32:18"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'i/o' !
+read: handle buffer: buffer count: count
+
+	^{{<libc ExternalProxy read>
+		fd: handle
+		buffer: buffer
+		count: count }}! !
+
+"July 14, 2009 -> 1:35:19"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'i/o' !
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    self knowAtEnd
+        ifTrue: [ count := 0 ]
+        ifFalse: [result := self read: self handle
+                        				buffer: self buffer
+                        				count: self bufferSize.
+                     result isAllOnes
+                     	ifTrue: [self vmHalt.
+                     				errf value: 'Error filling buffer']
+                     	ifFalse: [count := result asSmallInteger ]].
+    self setPosition: self position + count.
+    ^count! !
+
+"July 14, 2009 -> 1:36:21"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+errno
+
+	^{{primitiveGetLastError}}! !
+
+"July 14, 2009 -> 1:36:44"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'i/o' !
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    self knowAtEnd
+        ifTrue: [ count := 0 ]
+        ifFalse: [result := self read: self handle
+                        				buffer: self buffer
+                        				count: self bufferSize.
+                     result isAllOnes
+                     	ifTrue: [self vmHalt.
+                     				errf value: 'Error filling buffer: ', self errno printString]
+                     	ifFalse: [count := result asSmallInteger ]].
+    self setPosition: self position + count.
+    ^count! !
+
+"July 14, 2009 -> 1:38:2"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'i/o' !
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    self knowAtEnd
+        ifTrue: [ count := 0 ]
+        ifFalse: [result := self read: self handle
+                        				buffer: self buffer
+                        				count: self bufferSize.
+                     result isAllOnes
+                     	ifTrue: [|msg|
+                     				msg := 'Error filling buffer: ', self errno printString.
+                     				self vmHalt.
+                     				errf value: msg]
+                     	ifFalse: [count := result asSmallInteger ]].
+    self setPosition: self position + count.
+    ^count! !
+
+"July 14, 2009 -> 1:38:38"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    | result |
+    result := self lseek: self handle
+    					position: p
+           				whence: self SEEK_SET.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [| error |
+    				error := self errno.
+    				self vmHalt.
+    				self error: 'Could not position file descriptor: ', 
+    					error printString]! !
+
+"July 14, 2009 -> 1:39:33"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+errorText: message
+
+	^message , self errno! !
+
+"July 14, 2009 -> 1:39:54"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+errorText: message
+
+	^message , self errno printString! !
+
+"July 14, 2009 -> 1:41:13"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    | result |
+    result := self lseek: self handle
+    					position: p
+           				whence: self SEEK_SET.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [self vmHalt.
+    				self error: (self errorText: 'Could not position file descriptor: ')]! !
+
+"July 14, 2009 -> 1:42:21"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'i/o' !
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    self knowAtEnd
+        ifTrue: [ count := 0 ]
+        ifFalse: [result := self read: self handle
+                        				buffer: self buffer
+                        				count: self bufferSize.
+                     result isAllOnes
+                     	ifTrue: [|msg|
+                     				msg := self errorText: 'Error filling buffer: '.
+                     				self vmHalt.
+                     				errf value: msg]
+                     	ifFalse: [count := result asSmallInteger ]].
+    self setPosition: self position + count.
+    ^count! !
+
+"July 14, 2009 -> 1:44:57"!
+
+"System saved" !

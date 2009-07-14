@@ -80,16 +80,28 @@ severExternalConnections
 ! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'i/o' !
 
 
+read: handle buffer: buffer count: count
+
+	^{{<libc ExternalProxy read>
+		fd: handle
+		buffer: buffer
+		count: count }}!
+
 readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
     | result <ExternalProxy> count <Int> |
     self position = pos
         ifFalse: [ self position: pos ].
     self knowAtEnd
         ifTrue: [ count := 0 ]
-        ifFalse: [ count := {{<libc ExternalProxy read>
-        				                fd: self handle
+        ifFalse: [result := self read: self handle
                         				buffer: self buffer
-                        				count: self bufferSize }} asSmallInteger ].
+                        				count: self bufferSize.
+                     result isAllOnes
+                     	ifTrue: [|msg|
+                     				msg := self errorText: 'Error filling buffer: '.
+                     				self vmHalt.
+                     				errf value: msg]
+                     	ifFalse: [count := result asSmallInteger ]].
     self setPosition: self position + count.
     ^count!
 
@@ -117,6 +129,14 @@ SEEK_SET
 
 	^0!
 
+errno
+
+	^{{primitiveGetLastError}}!
+
+errorText: message
+
+	^message , self errno printString!
+
 initializeIOCount
     ioCount := ExternalProxy new.
     ioCount malloc: 4.!
@@ -143,9 +163,6 @@ setExternalPosition: p <Int>
     					position: p
            				whence: self SEEK_SET.    "FILE_BEGIN"
     result isAllOnes
-    	ifTrue: [| error |
-    				error := {{primitiveGetLastError}}.
-    				self vmHalt.
-    				self error: 'Could not position file descriptor: ', 
-    					error printString]! !
+    	ifTrue: [self vmHalt.
+    				self error: (self errorText: 'Could not position file descriptor: ')]! !
 
