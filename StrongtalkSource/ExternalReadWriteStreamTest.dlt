@@ -31,7 +31,7 @@ setUp
     charFile := FilePath for: 'deltatest2.tmp'.
     
     sz := 12345.    "make sure this number is much greater than the stream buffer size" 
-    write := file writeStream.
+    write := file readWriteStream.
 	0 to: sz-1 do: 
         [ :i <Int> |
             write nextPut: i \\ 100 + 32].

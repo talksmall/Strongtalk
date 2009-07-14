@@ -72389,3 +72389,111 @@ readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
 "July 14, 2009 -> 1:44:57"!
 
 "System saved" !
+"July 14, 2009 -> 10:30:14"!
+
+! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
+setUp
+
+	| out	<CharOutputStream> |
+    file := FilePath for: 'deltatest.tmp'.
+    charFile := FilePath for: 'deltatest2.tmp'.
+    
+    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
+    write := file readWriteStream.
+	0 to: sz-1 do: 
+        [ :i <Int> |
+            write nextPut: i \\ 100 + 32].
+
+	out := charFile charOutputStream.
+    s := 'hi 
+there'.
+    out nextPutAll: s.
+    out close.
+    in := charFile charInputStream! !
+
+"July 14, 2009 -> 10:32:14"!
+
+! (Delta mirrorFor: #ExternalReadWriteStream) methodsFor: 'accessing' !
+contentsWritten  ^<SeqCltn[Int]>
+    "%copied (substituting for E) from BasicReadWriteStream"
+    | cltn <VarSeqCltn[Int]>  origPos <Int> |
+    cltn := self newCollectionOfSize: self position.
+    origPos := self position.
+    self position: 0.
+    1 to: origPos do: [ :i <Int> |
+        cltn at: i put: self next.    ].
+    self position: origPos.
+    ^cltn! !
+
+"July 14, 2009 -> 10:33:49"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+statFailed
+
+	| errno|
+	errno := self lastError.
+	self error: 'could not stat file: ', errno printString! !
+
+"July 14, 2009 -> 10:33:51"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'private' !
+setExternalPosition: p <Int>
+    "%todo: support large integer positions for extremely large files"
+    | result |
+    result := self lseek: self handle
+    					position: p
+           				whence: self SEEK_SET.    "FILE_BEGIN"
+    result isAllOnes
+    	ifTrue: [self error: (self errorText: 'Could not position file descriptor: ')]! !
+
+"July 14, 2009 -> 10:33:53"!
+
+! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
+runCase: aTestCase
+
+	| testCasePassed |
+
+	testCasePassed :=
+		[[aTestCase runCase.
+			true]
+				sunitOn: self class failure
+				do: [:signal |
+						self failures add: aTestCase.
+						signal sunitExitWith: false]]
+							sunitOn: self class error
+							do: [:signal |
+									[self logFailure: signal printString]
+										sunitOn: self class error
+										do: [:s2| [self logFailure: 'a ', signal class printString]
+															sunitOn: self class error
+															do: [:s3| ]].
+									self errors add: aTestCase.
+									signal sunitExitWith: false].
+
+	testCasePassed
+		ifTrue: [self passed add: aTestCase]
+			! !
+
+"July 14, 2009 -> 10:33:55"!
+
+! (Delta mirrorFor: #UnixFileDescriptor) methodsFor: 'i/o' !
+readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
+    | result <ExternalProxy> count <Int> |
+    self position = pos
+        ifFalse: [ self position: pos ].
+    self knowAtEnd
+        ifTrue: [ count := 0 ]
+        ifFalse: [result := self read: self handle
+                        				buffer: self buffer
+                        				count: self bufferSize.
+                     result isAllOnes
+                     	ifTrue: [|msg|
+                     				msg := self errorText: 'Error filling buffer: '.
+                     				errf value: msg]
+                     	ifFalse: [count := result asSmallInteger ]].
+    self setPosition: self position + count.
+    ^count! !
+
+"July 14, 2009 -> 10:34:13"!
+
+"System saved" !

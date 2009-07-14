@@ -99,7 +99,6 @@ readAt: pos <Int> ifFail: errf <[ExternalError]> ^<Int>
                      result isAllOnes
                      	ifTrue: [|msg|
                      				msg := self errorText: 'Error filling buffer: '.
-                     				self vmHalt.
                      				errf value: msg]
                      	ifFalse: [count := result asSmallInteger ]].
     self setPosition: self position + count.
@@ -163,6 +162,5 @@ setExternalPosition: p <Int>
     					position: p
            				whence: self SEEK_SET.    "FILE_BEGIN"
     result isAllOnes
-    	ifTrue: [self vmHalt.
-    				self error: (self errorText: 'Could not position file descriptor: ')]! !
+    	ifTrue: [self error: (self errorText: 'Could not position file descriptor: ')]! !
 
