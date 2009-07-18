@@ -72599,3 +72599,19 @@ open: dname <ExternalProxy> mode: dmode <SmallInt> ^ <ExternalProxy>
 "July 14, 2009 -> 21:49:57"!
 
 "System saved" !
+"July 18, 2009 -> 12:35:26"!
+
+! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'Unclassified' !
+sourceForSelector: sel <Symbol> ^ <Str> 
+
+	| list <OrdCltn[Str]> |
+	#positions: == sel ifTrue: [self vmHalt].
+	list := self attributeAt: sel.
+	list size < 2 ifTrue: [ self shouldNotHappen ].
+	(list at: 1) do: [ :e <Character> | e isDigit ifFalse: [ self shouldNotHappen ] ].
+	self changeLog position: (Integer readFrom: (list at: 1) readStream).
+	^self changeLog nextChunk! !
+
+"July 18, 2009 -> 12:40:1"!
+
+"System saved" !
