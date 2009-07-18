@@ -176,7 +176,7 @@ sourceForSelector: sel <Symbol> ^ <Str>
 	list := self attributeAt: sel.
 	list size < 2 ifTrue: [ self shouldNotHappen ].
 	(list at: 1) do: [ :e <Character> | e isDigit ifFalse: [ self shouldNotHappen ] ].
-	self changeLog position: (Integer readFrom: (list at: 1) readStream).
+	self changeLog position: ((Integer readFrom: (list at: 1) readStream) vmHalt: #positions: == sel).
 	^self changeLog nextChunk!
 
 tags: s <OrdCltn[Str]> forSelector: sel <Symbol>

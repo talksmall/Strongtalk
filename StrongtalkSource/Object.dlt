@@ -543,7 +543,11 @@ unimplemented ^<BottomType>
 
 vmHalt
 
-	{{primitiveVMBreakpoint}}! !
+	{{primitiveVMBreakpoint}}!
+
+vmHalt: condition
+
+	condition ifTrue: [self vmHalt]! !
 
 ! (Delta mirrorFor: #Object) methodsFor: 'private-initialization' !
 

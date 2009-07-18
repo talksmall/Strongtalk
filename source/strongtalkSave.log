@@ -72615,3 +72615,25 @@ sourceForSelector: sel <Symbol> ^ <Str>
 "July 18, 2009 -> 12:40:1"!
 
 "System saved" !
+"July 18, 2009 -> 13:27:27"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+vmHalt: condition
+
+	condition ifTrue: [self vmHalt]! !
+
+"July 18, 2009 -> 13:28:22"!
+
+! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'Unclassified' !
+sourceForSelector: sel <Symbol> ^ <Str> 
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: sel.
+	list size < 2 ifTrue: [ self shouldNotHappen ].
+	(list at: 1) do: [ :e <Character> | e isDigit ifFalse: [ self shouldNotHappen ] ].
+	self changeLog position: ((Integer readFrom: (list at: 1) readStream) vmHalt: #positions: == sel).
+	^self changeLog nextChunk! !
+
+"July 18, 2009 -> 13:32:59"!
+
+"System saved" !
