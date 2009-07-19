@@ -72637,3 +72637,35 @@ sourceForSelector: sel <Symbol> ^ <Str>
 "July 18, 2009 -> 13:32:59"!
 
 "System saved" !
+"July 19, 2009 -> 17:5:13"!
+
+! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'Unclassified' !
+sourceForSelector: sel <Symbol> ^ <Str> 
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: sel.
+	list size < 2 ifTrue: [ self shouldNotHappen ].
+	(list at: 1) do: [ :e <Character> | e isDigit ifFalse: [ self shouldNotHappen ] ].
+	LSeekStop := #positions: == sel.
+	self changeLog position: ((Integer readFrom: (list at: 1) readStream)).
+	^self changeLog nextChunk! !
+
+"July 19, 2009 -> 17:12:52"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+lseek: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    "self vmHalt: LSeekStop."
+    ^ {{<libc ExternalProxy lseek>
+        				fd: (handle vmHalt: LSeekStop)
+        				with: padding
+        				offset: p
+        				whence: whence }}! !
+
+"July 19, 2009 -> 17:18:42"!
+
+"System saved" !
