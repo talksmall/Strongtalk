@@ -72669,3 +72669,22 @@ lseek: handle position: p <Int> whence: whence <Int>
 "July 19, 2009 -> 17:18:42"!
 
 "System saved" !
+"July 19, 2009 -> 17:27:32"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+lseek: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+    "self vmHalt: LSeekStop."
+    ^ {{<libc ExternalProxy lseek>
+        				fd: (handle vmHalt: (LSeekStop notNil and: [LSeekStop]))
+        				with: padding
+        				offset: p
+        				whence: whence }}! !
+
+"July 19, 2009 -> 17:27:46"!
+
+"System saved" !
