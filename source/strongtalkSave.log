@@ -72707,3 +72707,77 @@ lseek: handle position: p <Int> whence: whence <Int>
 "July 19, 2009 -> 23:19:31"!
 
 "System saved" !
+"July 19, 2009 -> 23:22:14"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+lseek: handle position: p <Int> whence: whence <Int>
+    "%todo: support large integer positions for extremely large files"
+    | padding |
+    padding := p < 0
+    					ifTrue: [-1]
+    					ifFalse: [0].
+   ^ {{<libc ExternalProxy lseek>
+        				fd: handle
+        				offsetLow: p
+        				offsetHigh: padding
+        				whence: whence }}! !
+
+"July 19, 2009 -> 23:23:10"!
+
+! (Delta mirrorFor: #DefWithMsgSourceHandler) methodsFor: 'Unclassified' !
+sourceForSelector: sel <Symbol> ^ <Str> 
+
+	| list <OrdCltn[Str]> |
+	list := self attributeAt: sel.
+	list size < 2 ifTrue: [ self shouldNotHappen ].
+	(list at: 1) do: [ :e <Character> | e isDigit ifFalse: [ self shouldNotHappen ] ].
+	self changeLog position: ((Integer readFrom: (list at: 1) readStream)).
+	^self changeLog nextChunk! !
+
+"July 19, 2009 -> 23:23:31"!
+
+(Delta mirrorFor: #LSeekStop) removeDefinitionIfFail: [] !
+
+
+"July 19, 2009 -> 23:25:54"!
+
+"System saved" !
+"July 26, 2009 -> 23:19:41"!
+
+! (Delta mirrorFor: #HaltTest) methodsFor: 'Testing' !
+testDefaultActionShouldStopWithProcessHaltError
+
+	| wasHandled processError |
+	wasHandled := false.
+	self withStopHandler: [:p| wasHandled := true.
+											processError := p processError.
+											p terminate]
+			do: [[self halt] fork.
+					Processor yield].
+	self assert: wasHandled
+			description: 'Halt should have been handled'.
+	self assert: (processError isKindOf: ProcessHaltError)
+			description: 'Wrong kind of error reported'! !
+
+"July 26, 2009 -> 23:19:54"!
+
+! (Delta mirrorFor: #ErrorTest) methodsFor: 'testing' !
+testDefaultActionShouldPassToStopHandler
+
+	| wasHandled processError |
+	wasHandled := false.
+	self withStopHandler: [:p| wasHandled := true.
+											processError := p processError.
+											p terminate]
+			do: 	[[self error: 'this is an error'] fork.
+					Processor yield].
+	self assert: wasHandled
+			description: 'defaultAction should invoke the stopHandler'.
+	self assert: (processError isKindOf: ProcessExplicitError)
+			description: 'Process stopped with wrong kind of error', processError printString.
+	self assert: 'this is an error' = processError msg
+			description: 'Process stopped with wrong message: ', processError msg! !
+
+"July 26, 2009 -> 23:21:30"!
+
+"System saved" !

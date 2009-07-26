@@ -17,7 +17,8 @@ testDefaultActionShouldStopWithProcessHaltError
 	| wasHandled processError |
 	wasHandled := false.
 	self withStopHandler: [:p| wasHandled := true.
-													processError := p processError]
+											processError := p processError.
+											p terminate]
 			do: [[self halt] fork.
 					Processor yield].
 	self assert: wasHandled

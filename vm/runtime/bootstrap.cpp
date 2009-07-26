@@ -43,7 +43,7 @@ void bootstrap::initialize_tables(int initial_table_size) {
   oop_table          = NEW_C_HEAP_ARRAY(oop, initial_table_size);
   max_number_of_oops = initial_table_size;
   number_of_oops     = 0;
-  position           = 0;
+  //position           = 0;
 }
 
 bootstrap::~bootstrap() {
@@ -70,10 +70,6 @@ void bootstrap::add(oop obj) {
   }
   oop_table[number_of_oops++] = obj;
 }
-inline int igetc(FILE* fp) {
-  return getc(fp);
-  //return _getc_nolock(fp);
-}
 
 void bootstrap::open_file() {
   stream = fopen(file_name, "rb");
@@ -87,13 +83,13 @@ void bootstrap::open_file() {
 }
 
 char bootstrap::get_char() {
-  position++;
-  return igetc(stream);
+  //position++;
+  return getc(stream);
 }
 
 int bootstrap::get_integer() {
-  position++;
-  int result = igetc(stream);
+  //position++;
+  int result = getc(stream);
   if (result == EOF) fatal("end of file");
   assert(result >= 0, "must be positive");
   if (result < 128 ) return result;
@@ -259,8 +255,8 @@ double bootstrap::read_double() {
   double value;
   unsigned char* str = (unsigned char*) &value;
   for (int index = 0; index < 8; index++) {
-    position++;
-    str[index] = igetc(stream);
+    //position++;
+    str[index] = getc(stream);
   }
   return value; 
 }

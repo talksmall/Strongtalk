@@ -47,11 +47,10 @@ lseek: handle position: p <Int> whence: whence <Int>
     padding := p < 0
     					ifTrue: [-1]
     					ifFalse: [0].
-    "self vmHalt."
-    ^ {{<libc ExternalProxy lseek>
+   ^ {{<libc ExternalProxy lseek>
         				fd: handle
-        				with: padding
-        				offset: p
+        				offsetLow: p
+        				offsetHigh: padding
         				whence: whence }}!
 
 statBufferClass
