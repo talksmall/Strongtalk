@@ -29,9 +29,6 @@ class bootstrap: CHeapObj {
   oop* oop_table;
   int number_of_oops;
   int max_number_of_oops;
-
-  //int position;
-
   bool _new_format;
 
   void initialize_tables(int initial_table_size);
