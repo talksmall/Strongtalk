@@ -1,0 +1,53 @@
+Delta define: #NLRAlignmentTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #NLRAlignmentTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #NLRAlignmentTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #NLRAlignmentTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #NLRAlignmentTest) methodsFor: 'private' !
+
+
+call: block
+
+	[block value]
+		ensure: []!
+
+call: block with: one
+
+	[block value]
+		ensure: []!
+
+call: block with: one with: two
+
+	[block value]
+		ensure: []!
+
+call: block with: one with: two with: three
+
+	[block value]
+		ensure: []! !
+
+! (Delta mirrorFor: #NLRAlignmentTest) methodsFor: 'testing' !
+
+
+testWithNone
+
+	self call: [^self]!
+
+testWithOne
+
+	self call: [^self] with: 0!
+
+testWithThree
+
+	self call: [^self] with: 0 with: 0 with: 0!
+
+testWithTwo
+
+	self call: [^self] with: 0 with: 0! !
+
