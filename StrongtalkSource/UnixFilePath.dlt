@@ -309,10 +309,11 @@ exists ^<Boolean>
     [ result := {{<libc ExternalProxy open>
    	 					name: name
     					flags: 0}}.
-     	^result asSmallInteger >= 0]
-     	ensure: [ name free.
-     				{{<libc ExternalProxy close>
-   	 					fd: result}} ]!
+    	result isAllOnes
+    		ifFalse: [{{<libc ExternalProxy close>
+   	 							fd: result}}]]
+     	ensure: [ name free ].
+    ^result isAllOnes not!
 
 isDirectory ^<Boolean>
 

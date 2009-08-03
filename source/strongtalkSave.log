@@ -72938,3 +72938,36 @@ Delta define: #NLRAlignmentTest as: (
 "August 3, 2009 -> 21:47:19"!
 
 "System saved" !
+"August 3, 2009 -> 22:2:20"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'testing' !
+exists ^<Boolean>
+	| name result |
+	name := self nameProxy.
+    [ result := {{<libc ExternalProxy open>
+   	 					name: name
+    					flags: 0}}.
+    	result isAllOnes
+    		ifFalse: [{{<libc ExternalProxy close>
+   	 							fd: result}}]]
+     	ensure: [ name free ].
+     ^result isAllOnes not! !
+
+"August 3, 2009 -> 22:2:39"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'testing' !
+exists ^<Boolean>
+	| name result |
+	name := self nameProxy.
+    [ result := {{<libc ExternalProxy open>
+   	 					name: name
+    					flags: 0}}.
+    	result isAllOnes
+    		ifFalse: [{{<libc ExternalProxy close>
+   	 							fd: result}}]]
+     	ensure: [ name free ].
+    ^result isAllOnes not! !
+
+"August 3, 2009 -> 22:3:27"!
+
+"System saved" !
