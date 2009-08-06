@@ -134,14 +134,14 @@ extern "C" contextOop allocateContext2() {
 extern "C" bool have_nlr_through_C;
 extern "C" oop  nlr_result;
 
-PRIM_DECL_2(unwindprotect, oop receiver, oop volatile protectBlock) {
+PRIM_DECL_2(unwindprotect, oop receiver, oop protectBlock) {
   PROLOGUE_2("unwindprotect", receiver, protectBlock);
-  
+  PersistentHandle pb(protectBlock);
   oop res = Delta::call(receiver, vmSymbols::value());
 
   if (have_nlr_through_C) {
     unwindInfo enabler;
-    oop    res  = Delta::call(protectBlock, vmSymbols::value(), nlr_result);
+    oop    res  = Delta::call(pb.as_oop(), vmSymbols::value(), nlr_result);
     // Now since we have to continue the first non-local-return
     // the nlr_result must be correct.
   }

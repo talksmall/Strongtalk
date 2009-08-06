@@ -24,10 +24,32 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include "incls/_precompiled.incl"
 # include "incls/_handle.cpp.incl"
 
+PersistentHandle* PersistentHandle::first = NULL;
 int Handles::_top   = 0;
 int Handles::_size  = 20;
 oop Handles::_array[20];
 
+PersistentHandle::PersistentHandle(oop toSave) : saved(toSave) {
+  next = first;
+  prev = NULL;
+  if (first) first->prev = this;
+  first = this;
+}
+PersistentHandle::~PersistentHandle() {
+  if (prev) {
+    prev->next = next;
+  } else {
+    first = next;
+  }
+  if (next)
+    next->prev = prev;
+}
+void PersistentHandle::oops_do(void f(oop*)){
+  for (PersistentHandle* current = first;
+       current;
+       current = current->next)
+    f(&current->saved);
+}
 
 oop Handles::oop_at(int index) {
   assert(index >= 0 && index < top(), "index check");
@@ -49,4 +71,5 @@ void Handles::oops_do(void f(oop*)) {
   for(int index = 0; index < top(); index++) {
     f(&_array[index]);
   }
+  PersistentHandle::oops_do(f);
 }

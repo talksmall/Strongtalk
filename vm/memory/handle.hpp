@@ -31,6 +31,24 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 class HandleMark;
 class Handle;
 
+// PersistentHandles can preserve a memOop without occupying space in the Handles
+// array and do not require a HandleMark. This means they can be used in contexts
+// where a thread switch may occur (eg. surrounding a delta call). 
+class PersistentHandle : StackObj {
+  oop saved;
+  PersistentHandle* next;
+  PersistentHandle* prev;
+  static PersistentHandle* first;
+
+public:
+  PersistentHandle(oop toSave);
+  ~PersistentHandle();
+  oop as_oop() {
+    return saved;
+  }
+  static void oops_do(void f(oop*));
+};
+
 class Handles : AllStatic {
   static int  _top;
   static int  _size;
