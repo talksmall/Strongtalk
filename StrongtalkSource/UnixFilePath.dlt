@@ -306,12 +306,13 @@ deletePathIfFail: blk <[Symbol]>
 exists ^<Boolean>
 	| name result |
 	name := self nameProxy.
-    [ result := {{<libc ExternalProxy open>
+    [result := {{<libc ExternalProxy open>
    	 					name: name
-    					flags: 0}}.
-    	result isAllOnes
-    		ifFalse: [{{<libc ExternalProxy close>
-   	 							fd: result}}]]
+    					flags: 0
+    					ignored: 0}}.
+    result asInteger > 0
+    	ifTrue: [{{<libc ExternalProxy close>
+   							fd: result}}]]
      	ensure: [ name free ].
     ^result isAllOnes not!
 
