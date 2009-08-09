@@ -35,19 +35,35 @@ call: block with: one with: two with: three
 ! (Delta mirrorFor: #NLRAlignmentTest) methodsFor: 'testing' !
 
 
+invokeWithNone
+
+	self call: [^0]!
+
+invokeWithOne
+
+	self call: [^1] with: 0!
+
+invokeWithThree
+
+	self call: [^3] with: 0 with: 0 with: 0!
+
+invokeWithTwo
+
+	self call: [^2] with: 0 with: 0!
+
 testWithNone
 
-	self call: [^self]!
+	self assert: 0 == self invokeWithNone!
 
 testWithOne
 
-	self call: [^self] with: 0!
+	self assert: 1 == self invokeWithOne!
 
 testWithThree
 
-	self call: [^self] with: 0 with: 0 with: 0!
+	self assert: 3 == self invokeWithThree!
 
 testWithTwo
 
-	self call: [^self] with: 0 with: 0! !
+	self assert: 2 == self invokeWithTwo! !
 
