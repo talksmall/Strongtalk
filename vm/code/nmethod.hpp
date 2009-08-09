@@ -94,8 +94,9 @@ class nmethod : public OopNCode {
   klassOop      receiver_klass() const;
 
   uint16*	noninlined_block_offsets() const { return (uint16*) pcsEnd(); }
-  char*         end() const             { return (char*)(noninlined_block_offsets() + 
-                                          (_number_of_noninlined_blocks * sizeof uint16)); }
+  char*         end() const             { 
+	  return ((char*) (noninlined_block_offsets() + _number_of_noninlined_blocks));
+  }
 
   
  public:

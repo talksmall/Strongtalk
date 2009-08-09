@@ -10,7 +10,7 @@ int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdLine, int cm
 	os::set_args(__argc, __argv);
 	return vm_main(__argc, __argv);
 }
-#elif defined(__LINUX__) || defined(WIN32)
+#elif defined(__LINUX__) || defined(__APPLE__) || defined(WIN32)
 int main(int argc, char* argv[]) {
 	os::set_args(argc, argv);
 	return vm_main(argc, argv);

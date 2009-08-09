@@ -70,7 +70,7 @@ void* nmethod::operator new(size_t size) {
 
 void nmethod::initForTesting(int size, LookupKey* key) {
   this->key.initialize(key->klass(), key->selector_or_method());
-  _instsLen = size - sizeof nmethod;
+  _instsLen = size - (sizeof(nmethod));
   _locsLen = 0;
   _scopeLen = 0;
   _number_of_noninlined_blocks = 0;

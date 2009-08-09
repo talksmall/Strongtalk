@@ -34,6 +34,9 @@ class bootstrap;
 // most portable way of dealing with bools is to treat them as ints;
 // the new basic bool type isn't goodness.
 typedef int _bool_type_;
+#ifdef bool
+#undef bool
+#endif
 #define bool _bool_type_
 
 typedef int smi;

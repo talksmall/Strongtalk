@@ -157,7 +157,7 @@ Notifier* Notifier::current = new DebugNotifier();
 void DebugNotifier::error(char* m, va_list ap) {
   std->print_cr("VM Error:");
   std->vprint_cr(m, ap);
-  DEBUG_EXCEPTION
+  DEBUG_EXCEPTION;
 }
 
 void DebugNotifier::warning(char* m, va_list ap) {
@@ -169,5 +169,4 @@ void DebugNotifier::warning(char* m, va_list ap) {
 void DebugNotifier::compiler_warning(char* m, va_list ap) {
   std->print_cr("Compiler Warning:");
   std->vprint_cr(m, ap);
-  if (BreakAtWarning) DEBUG_EXCEPTION;
-}
+  if (BreakAtWarning) DEBUG_EXCEPTION;}

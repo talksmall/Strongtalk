@@ -53,7 +53,11 @@ oop primitive_desc::eval(oop* a) {
 #ifndef __GNUC__
   __asm mov ebx_on_stack, ebx
 #else
-  asm("movl %%ebx, %0" : "=b"(ebx_on_stack));
+  __asm__("pushl %%eax;"
+          "movl %%ebx, %%eax;"
+          "movl %%eax, %0;"
+          "popl %%eax;"
+          : "=a"(ebx_on_stack));
 #endif
   if (reverseArgs) {
     switch (number_of_parameters()) {
@@ -91,7 +95,12 @@ oop primitive_desc::eval(oop* a) {
   __asm mov ebx_now, ebx
   __asm mov ebx, ebx_on_stack
 #else
-  asm("movl %%ebx, %0; movl %1, %%ebx;" : "=b"(ebx_now) : "b"(ebx_on_stack));
+  __asm__("pushl %%eax;"
+          "movl %%ebx, %%eax;"
+          "movl %%eax, %0;"
+          "movl %1, %%eax;"
+          "movl %%eax, %%ebx;"
+          "popl %%eax;" : "=a"(ebx_now) : "a"(ebx_on_stack));
 #endif
 
   if (ebx_now != ebx_on_stack)

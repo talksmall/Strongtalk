@@ -145,10 +145,10 @@ char* copy_string(char* s, smi len) {
 oop catchThisOne;
 
 void breakpoint() {
-  flush_logFile();
-  os::breakpoint();
+  if (DebugBreak) error_breakpoint();
 }
 
 void error_breakpoint() {
-  breakpoint();
+  flush_logFile();
+  os::breakpoint();
 }

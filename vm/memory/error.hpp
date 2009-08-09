@@ -21,9 +21,9 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 */
 
-//#define DEBUG_EXCEPTION _asm { int 3 }
-#define DEBUG_EXCEPTION breakpoint();
-
+#ifndef DEBUG_EXCEPTION
+#define DEBUG_EXCEPTION error_breakpoint();
+#endif
 
 #ifdef PRODUCT
 #define FILE_INFO "<no file info>"
@@ -34,12 +34,17 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 #endif
 
 
+
+extern "C" {
+  void breakpoint();		// called at every warning
+  void error_breakpoint();	// called at every error or fatal
+}
+
 #ifdef ASSERT
-extern "C" void breakpoint();
 #define assert(b,msg)                                            \
   if (!(b)) {                                                    \
     report_assertion_failure(XSTR(b),FILE_INFO, LINE_INFO, msg); \
-    DEBUG_EXCEPTION;                                             \
+    breakpoint();                                             \
   }
 #else
 #define assert(b,msg)
@@ -72,9 +77,3 @@ void report_should_not_reach_here(char* file_name, int line_no);
 void report_subclass_responsibility(char* file_name, int line_no);
 void report_unimplemented(char* file_name, int line_no);
 void report_vm_state();
-
-
-extern "C" {
-  void breakpoint();		// called at every warning
-  void error_breakpoint();	// called at every error or fatal
-}
