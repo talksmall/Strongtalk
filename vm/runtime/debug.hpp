@@ -243,7 +243,6 @@ class debugFlags {
   develop(CreateScopeDescInfo                , true , "Create ScopeDesc info for new backend code"                                  ) \
   develop(GenerateFullDebugInfo              , false, "Generate debugging info for each byte code and not only for sends/traps"     ) \
   develop(UseNewMakeConformant               , true , "Use new makeConformant function"                                             ) \
-  develop(DebugBreak                         , false, "Issue a breakpoint to allow debugging when certain events occur"             ) \
 
 
 #define APPLY_TO_INTEGER_FLAGS(develop,product)                                                                                       \

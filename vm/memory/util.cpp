@@ -145,7 +145,7 @@ char* copy_string(char* s, smi len) {
 oop catchThisOne;
 
 void breakpoint() {
-  if (DebugBreak) error_breakpoint();
+  if (BreakAtWarning) error_breakpoint();
 }
 
 void error_breakpoint() {
