@@ -595,4 +595,33 @@ class systemPrimitives : AllStatic {
   //              name   = 'systemPrimitives::object_memory_size' }
   //%
   static PRIM_DECL_0(object_memory_size);
+
+  // Aliens support
+
+  //%prim
+  // <NoReceiver> primitiveAlienMalloc: size <SmallInteger>
+  //                            ifFail: failBlock <PrimFailBlock> ^<Float> =
+  //   Internal { doc    = 'Allocate "size" bytes of storage from the C heap using malloc.'
+  //              errors = #(OutOfMemory)
+  //              name   = 'systemPrimitives::alienMalloc' }
+  //%
+  static PRIM_DECL_1(alienMalloc, oop size);
+
+  //%prim
+  // <NoReceiver> primitiveAlienCalloc: size <SmallInteger>
+  //                            ifFail: failBlock <PrimFailBlock> ^<Float> =
+  //   Internal { doc    = 'Allocate "size" bytes of storage from the C heap using calloc.'
+  //              errors = #(OutOfMemory)
+  //              name   = 'systemPrimitives::alienCalloc' }
+  //%
+  static PRIM_DECL_1(alienCalloc, oop size);
+  
+  //%prim
+  // <NoReceiver> primitiveAlienFree: address <SmallInteger|LargeInteger>
+  //                          ifFail: failBlock <PrimFailBlock> ^<Float> =
+  //   Internal { doc    = 'Free the storage allocated at "address" from the C heap.'
+  //              errors = #(OutOfMemory)
+  //              name   = 'systemPrimitives::alienFree' }
+  //%
+  static PRIM_DECL_1(alienFree, oop address);
 };

@@ -154,6 +154,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
   template(smi_klass,                    "SmallInteger")                      \
   template(failed_allocation,            "FailedAllocation")                  \
   template(invalid_klass,                "InvalidKlass")                      \
+  template(illegal_state,                "IllegalState")                      \
 								              \
   /* for compiler's type prediction */					      \
   template(error,      "error")        					      \

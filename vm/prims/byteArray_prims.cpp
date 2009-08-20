@@ -423,3 +423,71 @@ PRIM_DECL_1(byteArrayPrimitives::hash, oop receiver) {
   ASSERT_RECEIVER;
   return as_smiOop(byteArrayOop(receiver)->hash_value());
 }
+
+#define ALIEN_SIZE(alien) ((int*)byteArrayOop(alien)->bytes())[0]
+#define ALIEN_ADDRESS(alien) ((int*)byteArrayOop(alien)->bytes())[1]
+
+PRIM_DECL_2(byteArrayPrimitives::alienUnsignedByteAt, oop receiver, oop argument) {
+  PROLOGUE_2("alienUnsignedByteAt", receiver, argument);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument->is_smi())
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+  
+  int size = ALIEN_SIZE(receiver);
+  int absSize = abs(size);
+  int index = smiOop(argument)->value();
+
+  if (index < 1 || (size != 0 && index > absSize))
+    return markSymbol(vmSymbols::argument_is_invalid());
+
+  if (size > 0)
+    return as_smiOop(byteArrayOop(receiver)->byte_at(smiOop(argument)->value() + 4));
+  
+  u_char* baseAddress = ((u_char**)byteArrayOop(receiver)->bytes())[1];
+  return as_smiOop(baseAddress[index - 1]);
+}
+
+PRIM_DECL_1(byteArrayPrimitives::alienSize, oop receiver) {
+  PROLOGUE_1("alienSize", receiver);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+
+  return as_smiOop(ALIEN_SIZE(receiver));
+}
+
+PRIM_DECL_2(byteArrayPrimitives::alienSetSize, oop receiver, oop argument) {
+  PROLOGUE_2("alienSetSize", receiver, argument);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument->is_smi())
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+
+  ALIEN_SIZE(receiver) = smiOop(argument)->value();
+  return receiver;
+}
+
+PRIM_DECL_1(byteArrayPrimitives::alienAddress, oop receiver) {
+  PROLOGUE_1("alienAddress", receiver);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (ALIEN_SIZE(receiver) > 0)
+    return markSymbol(vmSymbols::illegal_state());
+
+  int address = ALIEN_ADDRESS(receiver);
+  int size = IntegerOps::int_to_Integer_result_size_in_bytes(address);
+
+  oop largeInteger = Universe::find_global("LargeInteger");
+  PersistentHandle z(klassOop(largeInteger)->klass_part()->allocateObjectSize(size));
+  IntegerOps::int_to_Integer(address, byteArrayOop(z.as_oop())->number());
+  return simplified(byteArrayOop(z.as_oop()));
+}
+
+PRIM_DECL_2(byteArrayPrimitives::alienSetAddress, oop receiver, oop argument) {
+  PROLOGUE_2("alienSetAddress", receiver, argument);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+
+  ALIEN_ADDRESS(receiver) = smiOop(argument)->value();
+  return receiver;
+}

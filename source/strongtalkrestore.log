@@ -1,458 +1,81 @@
 
-"June 26, 2009 -> 22:50:24"!
+"August 18, 2009 -> 20:47:6"!
 
-Delta define: #TextTestRunner as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+addressField: anInteger <Integer>
 
+	self signedLongAt: 1 put: anInteger! !
 
-"June 26, 2009 -> 22:52:58"!
+"August 18, 2009 -> 20:48:44"!
 
-! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
-runAll
+! (Delta mirrorFor: #Alien) methodsFor: 'testing' !
+isPointer
 
-	| runner suite |
-	runner := self new.
-	suite := TestCase buildSuite.
-	suite addDependent: runner.
-	suite run
-	! !
+	^self size == 0! !
 
-"June 26, 2009 -> 22:53:16"!
+"August 18, 2009 -> 20:49:39"!
 
-! (Delta mirrorFor: #TestSuite) methodsFor: 'Running' !
-run: aResult 
-	self tests do: [:each | 
-		self sunitChanged: each with: aResult.
-		Processor yield.
-		each run: aResult]
-			! !
+! (Delta mirrorFor: #Alien) methodsFor: 'deallocation' !
+free! !
 
-"June 26, 2009 -> 22:54:45"!
+"August 18, 2009 -> 20:51:20"!
 
-! (Delta mirrorFor: #Object) methodsFor: 'Camp Smalltalk' !
-sunitChanged: anAspect with: value
- 
-        self changed: anAspect with: value! !
+! (Delta mirrorFor: #Alien) methodsFor: 'deallocation' !
+free
 
-"June 26, 2009 -> 22:55:47"!
+	{{self primitiveAlienFree}}! !
 
-! (Delta mirrorFor: #TestSuite) methodsFor: 'Running' !
-run: aResult 
-	self tests do: [:each | 
-		Processor yield.
-		each run: aResult.
-		self sunitChanged: each with: aResult]
-			! !
+"August 18, 2009 -> 20:53:1"!
 
-"June 26, 2009 -> 22:56:58"!
+! (Delta mirrorFor: #Alien) methodsFor: 'deallocation' !
+free
 
-! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
-runAll
+	{{primitiveAlienFree: self ifFail: [:err| self error: 'Could not free alien']}}! !
 
-	| runner suite result |
-	runner := self new.
-	suite := TestCase buildSuite.
-	suite addDependent: runner.
-	result := suite run.
-	Transcript cr;
-		print: result! !
+"August 18, 2009 -> 20:53:29"!
 
-"June 26, 2009 -> 23:0:3"!
+! (Delta mirrorFor: #Alien) methodsFor: 'deallocation' !
+free
 
-! (Delta mirrorFor: #TextTestRunner) methodsFor: 'notifications' !
-update: test with: result
+	{{primitiveAlienFree: self ifFail: [:err| self error: 'Could not free alien: ', err]}}! !
 
-	(result isFailure: test)
-		ifTrue: [ Transcript print: test; show: ' failed'; cr].
-	(result isError: test)
-		ifTrue: [ Transcript print: test; show: ' error'; cr]! !
+"August 18, 2009 -> 20:54:1"!
 
-"June 26, 2009 -> 23:0:35"!
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+addressField ^<Integer>
 
-! (Delta mirrorFor: #BecomeTest) methodsFor: 'testing' !
-testFail
+	^self signedLongAt: 1! !
 
-	self fail! !
+"August 18, 2009 -> 20:54:15"!
 
-"June 26, 2009 -> 23:2:25"!
+! (Delta mirrorFor: #Alien) methodsFor: 'deallocation' !
+free
 
-! (Delta mirrorFor: #TextTestRunner) methodsFor: 'notifications' !
-update: test with: result
-Transcript print: test.
-	(result isFailure: test)
-		ifTrue: [ Transcript print: test; show: ' failed'; cr].
-	(result isError: test)
-		ifTrue: [ Transcript print: test; show: ' error'; cr]! !
+	{{primitiveAlienFree: self addressField
+		ifFail: [:err| self error: 'Could not free alien: ', err]}}! !
 
-"June 26, 2009 -> 23:6:45"!
+"August 18, 2009 -> 20:56:45"!
 
-! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
-runAll
+! (Delta mirrorFor: #PointerAlienTest) methodsFor: 'testing' !
+testFreeingTwiceShouldFail
 
-	| runner suite result |
-	runner := self new.
-	suite := TestCase buildSuite.
-	suite addDependentToHierarch: runner.
-	result := suite run.
-	Transcript cr;
-		print: result! !
+	pointer free.
+	self should: [pointer free] raise: Error! !
 
-"June 26, 2009 -> 23:6:51"!
+"August 18, 2009 -> 20:57:15"!
 
-! (Delta mirrorFor: #TextTestRunner) methodsFor: 'notifications' !
-update: test with: result
+! (Delta mirrorFor: #Alien) methodsFor: 'deallocation' !
+free
 
-	(result isFailure: test)
-		ifTrue: [ Transcript print: test; show: ' failed'; cr].
-	(result isError: test)
-		ifTrue: [ Transcript print: test; show: ' error'; cr]! !
+	{{primitiveAlienFree: self addressField
+		ifFail: [:err| self error: 'Could not free alien: ', err]}}.
+	self addressField: 0! !
 
-"June 26, 2009 -> 23:7:20"!
+"August 18, 2009 -> 20:58:17"!
 
-! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
-runAll
-
-	| runner suite result |
-	runner := self new.
-	suite := TestCase buildSuite.
-	suite addDependentToHierarchy: runner.
-	result := suite run.
-	Transcript cr;
-		print: result! !
-
-"June 26, 2009 -> 23:9:16"!
-
-! (Delta mirrorFor: #TestSuite) methodsFor: 'Dependencies' !
-addDependentToHierarchy: anObject
-	self sunitAddDependent: anObject.
-	self tests do: [ :each | each addDependentToHierarchy: anObject]
-			! !
-
-"June 26, 2009 -> 23:9:37"!
-
-! (Delta mirrorFor: #TestSuite) methodsFor: 'Dependencies' !
-removeDependentFromHierarchy: anObject
-	self sunitRemoveDependent: anObject.
-	self tests do: [ :each | each removeDependentFromHierarchy: anObject]
-			! !
-
-"June 26, 2009 -> 23:9:39"!
-
-(Delta mirrorFor: #TestSuite) removeMethod: #removeDependentFromHierachy: ifAbsent: [] !
-
-
-"June 26, 2009 -> 23:9:42"!
-
-(Delta mirrorFor: #TestSuite) removeMethod: #addDependentToHierachy: ifAbsent: [] !
-
-
-"June 26, 2009 -> 23:10:38"!
-
-! (Delta mirrorFor: #TestCase) methodsFor: 'Dependencies' !
-removeDependentFromHierarchy: anObject 
-	"an empty method. for Composite compability with TestSuite"
-
-
-			! !
-
-"June 26, 2009 -> 23:10:40"!
-
-! (Delta mirrorFor: #TestCase) methodsFor: 'Dependencies' !
-addDependentToHierarchy: anObject 
-	"an empty method. for Composite compability with TestSuite"
-
-
-			! !
-
-"June 26, 2009 -> 23:10:42"!
-
-(Delta mirrorFor: #TestCase) removeMethod: #addDependentToHierachy: ifAbsent: [] !
-
-
-"June 26, 2009 -> 23:10:45"!
-
-(Delta mirrorFor: #TestCase) removeMethod: #removeDependentFromHierachy: ifAbsent: [] !
-
-
-"June 26, 2009 -> 23:11:9"!
-
-! (Delta mirrorFor: #BecomeTest) methodsFor: 'testing' !
-testFail
-
-	self assert: false! !
-
-"June 26, 2009 -> 23:11:30"!
-
-! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
-runAll
-
-	| runner suite result |
-	runner := self new.
-	suite := TestCase buildSuite.
-	suite addDependentToHierarchy: runner.
-	Transcript cr.
-	result := suite run.
-	Transcript cr;
-		print: result! !
-
-"June 26, 2009 -> 23:12:9"!
-
-(Delta mirrorFor: #BecomeTest) removeMethod: #testFail ifAbsent: [] !
-
-
-"June 26, 2009 -> 23:16:24"!
-
-! (Delta mirrorFor: #BecomeTest) methodsFor: 'testing' !
-testFail
-
-	self assert: false description: 'failure message'! !
-
-"June 26, 2009 -> 23:17:54"!
-
-! (Delta mirrorFor: #TextTestRunner) methodsFor: 'notifications' !
-update: test with: result
-
-	(result isFailure: test)
-		ifTrue: [ Transcript space; print: test; show: ' failed'; cr].
-	(result isError: test)
-		ifTrue: [ Transcript space; print: test; show: ' error'; cr]! !
-
-"June 26, 2009 -> 23:18:10"!
-
-(Delta mirrorFor: #BecomeTest) removeMethod: #testFail ifAbsent: [] !
-
-
-"June 26, 2009 -> 23:18:50"!
-
-Delta define: #ExternalReadWriteStreamTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: '')) !
-
-
-"June 26, 2009 -> 23:23:17"!
-
-Delta define: #ExternalReadWriteStreamTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: 'file <FilePath>
-write <ReadWriteStream>')) !
-
-
-"June 26, 2009 -> 23:24:41"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
+! (Delta mirrorFor: #PointerAlienTest) methodsFor: 'fixture' !
 tearDown
 
-	write ifNotNil: [write close].
-	file delete! !
-
-"June 26, 2009 -> 23:24:44"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
-setUp
-
-	file := FilePath for: 'deltatest.tmp'.
-	write := file writeStream! !
-
-"June 26, 2009 -> 23:25:3"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
-tearDown
-
-	write isNil ifFalse: [write close].
-	file delete! !
-
-"June 26, 2009 -> 23:28:16"!
-
-Delta define: #ExternalReadWriteStreamTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: 'file		<FilePath>
-write		<ReadWriteStream>
-sz			<Integer>')) !
-
-
-"June 26, 2009 -> 23:28:40"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
-testWrittenFileShouldHaveCorrectSize
-
-	0 to: sz-1 do: 
-        [ :i <Int> |
-            write nextPut: i \\ 100 + 32.    ].
-    self should: [ write size = sz ]
-    	description: 'Wrong size ', write size printString.! !
-
-"June 26, 2009 -> 23:29:25"!
-
-! (Delta mirrorFor: #TextTestRunner) methodsFor: 'notifications' !
-update: test with: result
-
-	(result isFailure: test)
-		ifTrue: [ Transcript space; print: test; show: ' failed'; cr].
-	(result isError: test)
-		ifTrue: [ Transcript print: test; show: ' error'; cr]! !
-
-"June 26, 2009 -> 23:31:6"!
-
-! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
-runCase: aTestCase
-
-	| testCasePassed |
-
-	testCasePassed :=
-		[[aTestCase runCase.
-			true]
-				sunitOn: self class failure
-				do: [:signal |
-						self failures add: aTestCase.
-						signal sunitExitWith: false]]
-							sunitOn: self class error
-							do: [:signal |
-							self halt.
-									self errors add: aTestCase.
-									signal sunitExitWith: false].
-
-	testCasePassed
-		ifTrue: [self passed add: aTestCase]
-			! !
-
-"June 26, 2009 -> 23:34:45"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
-setUp
-
-    file := FilePath for: 'deltatest.tmp'.
-    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
-    write := file writeStream.! !
-
-"June 26, 2009 -> 23:34:58"!
-
-! (Delta mirrorFor: #TestResult) methodsFor: 'Running' !
-runCase: aTestCase
-
-	| testCasePassed |
-
-	testCasePassed :=
-		[[aTestCase runCase.
-			true]
-				sunitOn: self class failure
-				do: [:signal |
-						self failures add: aTestCase.
-						signal sunitExitWith: false]]
-							sunitOn: self class error
-							do: [:signal |
-							"self halt."
-									self errors add: aTestCase.
-									signal sunitExitWith: false].
-
-	testCasePassed
-		ifTrue: [self passed add: aTestCase]
-			! !
-
-"June 26, 2009 -> 23:36:28"!
-
-! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
-run: suite
-
-	| runner result |
-	runner := self new.
-	suite addDependentToHierarchy: runner.
-	Transcript cr.
-	result := suite run.
-	Transcript cr;
-		print: result! !
-
-"June 26, 2009 -> 23:36:55"!
-
-! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
-runAll
-
-	self run: TestCase buildSuite! !
-
-"June 26, 2009 -> 23:38:2"!
-
-! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
-run: suite
-
-	| runner result |
-	runner := self new.
-	suite addDependentToHierarchy: runner.
-	[Transcript cr.
-	result := suite run.
-	Transcript cr;
-		print: result]
-			ensure: [suite removeDependentFromHierarchy: runner]! !
-
-"June 26, 2009 -> 23:40:33"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
-setUp
-
-    file := FilePath for: 'deltatest.tmp'.
-    sz := 12345.    "make sure this number is much greater than the stream buffer size" 
-    write := file writeStream.
-	0 to: sz-1 do: 
-        [ :i <Int> |
-            write nextPut: i \\ 100 + 32]! !
-
-"June 26, 2009 -> 23:40:41"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
-testWrittenFileShouldHaveCorrectSize
-
-    self should: [ write size = sz ]
-    	description: 'Wrong size ', write size printString.! !
-
-"June 26, 2009 -> 23:45:37"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
-testModifyingWrittenFileShouldUpdateContents
-
-	| byte |
-    write position: 5001.
-    write nextPut: 123.
-    write close.
-    write := file readWriteStream.
-    write position: 5000.
-    write nextPut: 12.
-    byte := write next.
-    self should: [ byte = 123 ]
-    	description: 'Wrong byte value: ', byte printString.! !
-
-"June 26, 2009 -> 23:48:9"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
-testContentsWrittenShouldReturnCorrectlySizedCollection
-
-	| bytes |
-	write setToEnd.
-    bytes := write contentsWritten.
-
-    self should: [ bytes size = sz ]
-    	description: 'Wrong byte count: ', bytes size printString! !
-
-"June 26, 2009 -> 23:56:4"!
-
-Delta define: #ExternalReadWriteStreamTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: 'file		<FilePath>
-write		<ReadWriteStream>
-read		<ReadStream>
-sz			<Integer>')) !
-
-
-"June 26, 2009 -> 23:56:6"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'running' !
-tearDown
-
-	write isNil ifFalse: [write close].
-	read isNil ifFalse: [read close].
-	file delete! !
-
-"June 26, 2009 -> 23:57:5"!
-
-! (Delta mirrorFor: #ExternalReadWriteStreamTest) methodsFor: 'tests' !
-testPeekShouldReturnCorrectByte
-
-	| byte |
-	write close.
-    read := file readStream.
-    byte := read peek.
-    self should: [ byte = 32 ]
-    	description: 'Wrong byte: ', byte printString! !
+	[pointer free]
+		on: Error
+		do: [:ignore|]! !

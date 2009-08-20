@@ -1,0 +1,78 @@
+Delta define: #AlienTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'alien')) !
+
+(Delta mirrorFor: #AlienTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AlienTest) group: 'Aliens tests'!
+
+(Delta mirrorFor: #AlienTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #AlienTest) methodsFor: 'fixture' !
+
+
+setUp
+
+	alien := Alien new: 4! !
+
+! (Delta mirrorFor: #AlienTest) methodsFor: 'testing' !
+
+
+testSignedByteAccess
+
+	1 to: 4 do: [:index|
+		self assert: (alien signedByteAt: index put: index) == index].
+	1 to: 4 do: [:index|
+		self assert: (alien signedByteAt: index) == index].
+	1 to: 4 do: [:index|
+		alien signedByteAt: index put: index negated].
+	1 to: 4 do: [:index|
+		self assert: (alien signedByteAt: index) == index negated].
+	self assert: alien asSignedByte == -1!
+
+testSignedLongAccess
+
+	|long|
+	long := (256 * 256 + 1) negated.
+	self assert: (alien signedLongAt: 1 put: long) = long.
+	self assert: (alien signedLongAt: 1) = long.
+	self assert: (alien unsignedByteAt: 1) == 255.
+	self assert: (alien unsignedByteAt: 3) == 254!
+
+testSignedShortAccess
+
+	1 to: 4 do: [:index|
+		alien unsignedByteAt: index put: 255].
+	self assert: (alien signedShortAt: 1) == -1.
+	self assert: (alien signedShortAt: 1 put: 255) == 255.
+	self assert: (alien signedShortAt: 1) == 255.
+	self assert: alien asSignedShort == 255!
+
+testUnsignedByteAccess
+
+	1 to: 4 do: [:index|
+		self assert: (alien unsignedByteAt: index put: index) == index].
+	1 to: 4 do: [:index|
+		self assert: (alien unsignedByteAt: index) == index].
+	self assert: (alien asUnsignedByte == 1)!
+
+testUnsignedLongAccess
+
+	|long|
+	long := 256 * 256 + 1.
+	self assert: (alien unsignedLongAt: 1 put: long) == long.
+	self assert: (alien unsignedLongAt: 1) == long.
+	self assert: (alien unsignedByteAt: 1) == 1.
+	self assert: (alien unsignedByteAt: 3) == 1!
+
+testUnsignedShortAccess
+
+	1 to: 4 do: [:index|
+		alien unsignedByteAt: index put: index].
+	self assert: (alien unsignedShortAt: 1) == (2 * 256 + 1).
+	self assert: (alien unsignedShortAt: 2 put: 65535) == 65535.
+	self assert: (alien unsignedByteAt: 2) == 255.
+	self assert: (alien unsignedByteAt: 3) == 255.
+	self assert: alien asUnsignedShort == (255 * 256 + 1)! !
+

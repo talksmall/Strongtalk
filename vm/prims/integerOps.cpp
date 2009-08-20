@@ -921,7 +921,7 @@ int IntegerOps::cmp(Integer& x, Integer& y) {
   if (x.is_negative() == y.is_negative()) {
     return x.is_negative() ? unsigned_cmp(y, x) : unsigned_cmp(x, y);
   } else {
-    return x.signum();
+    return x.is_zero() ? -y.signum() : x.signum();
   }
 }
 

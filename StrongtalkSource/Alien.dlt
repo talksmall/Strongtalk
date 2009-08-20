@@ -1,0 +1,256 @@
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: 'size') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+(Delta mirrorFor: #Alien) revision: '$Revision:$'!
+
+(Delta mirrorFor: #Alien) group: 'Aliens'!
+
+(Delta mirrorFor: #Alien)
+comment: 
+''!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'class initialization' !
+
+
+initialize
+
+	LoadedLibraries isNil ifTrue: 
+		[LoadedLibraries := Dictionary new].
+	GCMallocedAliens isNil ifTrue:
+		[GCMallocedAliens := AlienWeakTable newForOwner: self]! !
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+
+
+atAddress: pointer <Integer> ^<X>
+
+	^(self primitiveNew: 4)
+		size: self dataSize negated;
+		addressField: pointer;
+		yourself!
+
+atAddress: pointer <Integer> dataSize: dataSize <Integer> ^<X>
+
+	^(self primitiveNew: 4)
+		size: dataSize negated;
+		addressField: pointer;
+		yourself!
+
+autoFreeAfter: action <[X, ^ Y]>
+	"Evaluate the action, which must be a 1-argument block.
+	 The argument passed to the action is a block the action
+	 can use to register Aliens created inside the action.
+	 Such aliens will be freed as soon as the action completes.
+	 Return the value returned from the action. See usage
+	 example at the bottom of the method. "
+	
+	| toFree |
+	toFree := OrderedCollection new.
+	^[action value: [:alien | toFree add: alien]]
+		ensure: [toFree do: [:each | each free]]
+		
+"
+	Alien autoFreeAfter:
+		[:autoFree | | foo bar |
+		foo := autoFree value: (Alien newCString: 'foo').
+		bar := autoFree value: (Alien newCString: 'bar').
+		...]
+"!
+
+dataSize
+
+	^self subclassResponsibility!
+
+forPointer: pointer <Integer> ^<X>
+
+	^(self primitiveNew: 4)
+		size: 0;
+		addressField: pointer;
+		yourself!
+
+new
+
+	^self new: self dataSize!
+
+new: size <Integer> ^ <X>
+
+	^(self primitiveNew: size)
+		size: size;
+		initialize!
+
+newC
+
+	^self newC: self dataSize!
+
+newC: size <Integer> ^ <X>
+
+	^(self primitiveNew: 4)
+		size: size negated;
+		addressField: (self Ccalloc: size);
+		initialize!
+
+newGC
+
+	^self newGC: self dataSize!
+
+newGC: size <Integer> ^<X>
+
+	| alien address |
+	alien := self primitiveNew: 4.
+	alien size: size negated.
+	address := self Ccalloc: size.
+	GCMallocedAliens add: alien finalizing: address.
+	^alien
+		addressField: address;
+		initialize
+		!
+
+rawNewC: size <Integer> ^ <X>
+
+	^(self primitiveNew: 4)
+		size: size negated;
+		addressField: (self Cmalloc: size);
+		initialize! !
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - memory allocation' !
+
+
+Ccalloc: size <Integer> ^ <Integer>
+
+	^{{self primitiveAlienCalloc: size
+			ifFail: [:err| self error: 'Failed to calloc alien: ', err]}}!
+
+Cmalloc: size <Integer> ^ <Integer>
+
+	^{{self primitiveAlienMalloc: size
+			ifFail: [:err| self error: 'Failed to malloc alien: ', err]}}! !
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+
+
+address ^<Integer>
+
+	^self size <= 0
+		ifTrue: [self addressField]
+		ifFalse: [self error: 'One cannot take the address of direct Alien instances; they may move']!
+
+signedByteAt: index <Integer> ^<Integer>
+
+	|byte|
+	byte := self at: index.
+	^byte < 128
+		ifTrue: [byte]
+		ifFalse: [(256 - byte) negated]!
+
+signedByteAt: index <Integer> put: byte <Integer> ^<Integer>
+
+	self at: index put: (byte < 0 ifTrue: [byte + 256] ifFalse: [byte]).
+	^byte!
+
+signedLongAt: index <Integer> ^<Integer>
+
+	|unsigned|
+	unsigned := (self unsignedShortAt: index) + ((self unsignedShortAt: index + 2) * 65536).
+	^unsigned < 2147483648
+		ifTrue: [unsigned]
+		ifFalse: [unsigned - 4294967296]!
+
+signedLongAt: index <Integer> put: long <Integer>^<Integer>
+
+	|unsigned|
+	unsigned := long < 0
+		ifTrue: [4294967296 + long]
+		ifFalse: [long].
+	self unsignedLongAt: index put: unsigned.
+	^long!
+
+signedShortAt: index <Integer> ^<Integer>
+
+	|unsigned|
+	unsigned := (self at: index) + ((self at: index + 1) * 256).
+	^unsigned < 32768
+		ifTrue: [unsigned]
+		ifFalse: [unsigned - 65536]!
+
+signedShortAt: index <Integer> put: short <Integer> ^<Integer>
+
+	|unsigned|
+	unsigned := short < 0
+		ifTrue: [65536 + short]
+		ifFalse: [short].
+	self unsignedShortAt: index put: unsigned.
+	^short!
+
+unsignedByteAt: index <Integer> ^<Integer>
+
+	^self at: index!
+
+unsignedByteAt: index <Integer> put: byte <Integer> ^<Integer>
+
+	self at: index put: byte.
+	^byte!
+
+unsignedLongAt: index <Integer> ^<Integer>
+
+	^(self unsignedShortAt: index) + ((self unsignedShortAt: index + 2) * (256 * 256))!
+
+unsignedLongAt: index <Integer> put: long <Integer>^<Integer>
+
+	self unsignedShortAt: index put: (long \\ (256 * 256)).
+	self unsignedShortAt: index + 2 put: (long // (256 * 256)).
+	^long!
+
+unsignedShortAt: index <Integer> ^<Integer>
+
+	^(self at: index) + ((self at: index + 1) * 256)!
+
+unsignedShortAt: index <Integer> put: short <Integer>^<Integer>
+
+	self at: index put: (short \\ 256).
+	self at: index + 1 put: (short // 256).
+	^short! !
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+
+
+asSignedByte
+
+	^self signedByteAt: 1!
+
+asSignedShort
+
+	^self signedShortAt: 1!
+
+asUnsignedByte
+
+	^self unsignedByteAt: 1!
+
+asUnsignedShort
+
+	^self unsignedShortAt: 1! !
+
+! (Delta mirrorFor: #Alien) methodsFor: 'instance initialization' !
+
+
+initialize
+	"Subclasses may override to perform specific initialization"! !
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+
+
+addressField ^<Integer>
+
+	^{{self primitiveAlienAddress}}!
+
+addressField: anInteger <Integer>
+
+	{{self primitiveAlienAddress: anInteger}}!
+
+size ^<Integer>
+
+	^size!
+
+size: anInteger <Integer>
+
+	size := anInteger! !
+

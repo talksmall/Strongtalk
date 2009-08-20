@@ -144,6 +144,11 @@ asArray ^<Array[EX]>
 ! (Delta mirrorFor: #Array) methodsFor: 'copying' !
 
 
+copyGrownBy: delta <Integer> ^<Array[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	^self copyWithSize: self size + delta!
+
 copyWithSize: s <Int> ^<Array[EX]>
 	{where EX is returnType of #anElement message of receiverType}
 

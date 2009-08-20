@@ -231,5 +231,50 @@ class byteArrayPrimitives : AllStatic {
   //              name  = 'byteArrayPrimitives::hash' }
   //%
   static PRIM_DECL_1(hash, oop receiver); 
+
+  // Aliens primitives
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienUnsignedByteAt: index  <SmallInteger>
+  //                         ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienUnsignedByteAt' }
+  //%
+  static PRIM_DECL_2(alienUnsignedByteAt, oop receiver, oop index);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienSizeIfFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienSize' }
+  //%
+  static PRIM_DECL_1(alienSize, oop receiver);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienSize: size <SmallInteger>
+  //               IfFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienSetSize' }
+  //%
+  static PRIM_DECL_2(alienSetSize, oop receiver, oop argument);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienAddressIfFail: failBlock <PrimFailBlock> ^<Integer> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienAddress' }
+  //%
+  static PRIM_DECL_1(alienAddress, oop receiver);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienAddress: address <Integer>
+  //                  ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienSetAddress' }
+  //%
+  static PRIM_DECL_2(alienSetAddress, oop receiver, oop argument);
 };
 

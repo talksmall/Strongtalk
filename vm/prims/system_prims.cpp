@@ -963,3 +963,48 @@ PRIM_DECL_0(systemPrimitives::nurseryFreeSpace) {
   PROLOGUE_0("nurseryFreeSpace");
   return as_smiOop(Universe::new_gen.eden()->free());
 }
+
+PRIM_DECL_1(systemPrimitives::alienMalloc, oop size) {
+  PROLOGUE_0("alienMalloc");
+  if (!size->is_smi())
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+  int theSize = smiOop(size)->value();
+  if (theSize <= 0)
+    return markSymbol(vmSymbols::argument_is_invalid());
+
+  return as_smiOop((int) malloc(theSize));
+}
+
+PRIM_DECL_1(systemPrimitives::alienCalloc, oop size) {
+  PROLOGUE_0("alienCalloc");
+  if (!size->is_smi())
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+  int theSize = smiOop(size)->value();
+  if (theSize <= 0)
+    return markSymbol(vmSymbols::argument_is_invalid());
+
+  return as_smiOop((int) calloc(smiOop(size)->value(), 1));
+}
+
+PRIM_DECL_1(systemPrimitives::alienFree, oop address) {
+  PROLOGUE_0("alienFree");
+  if (!address->is_smi() && 
+     !(address->is_byteArray() && address->klass() == Universe::find_global("LargeInteger")))
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+
+  if (address->is_smi()) {
+    if (smiOop(address)->value() == 0)
+      return markSymbol(vmSymbols::argument_is_invalid());
+
+    free((void*) smiOop(address)->value());
+  } else { // LargeInteger
+    BlockScavenge bs;
+    Integer* largeAddress = &byteArrayOop(address)->number();
+    bool ok;
+    int intAddress = largeAddress->as_int(ok);
+    if (intAddress == 0 || !ok)
+      return markSymbol(vmSymbols::argument_is_invalid());
+    free((void*) intAddress);
+  }
+  return trueObj;
+}
