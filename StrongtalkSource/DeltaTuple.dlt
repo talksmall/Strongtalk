@@ -1,0 +1,26 @@
+Delta define: #DeltaTuple as: (
+(Class subclassOf: 'DeltaArray' instanceVariables: '')) !
+
+(Delta mirrorFor: #DeltaTuple) revision: '$Revision:$'!
+
+(Delta mirrorFor: #DeltaTuple) group: 'ast'!
+
+(Delta mirrorFor: #DeltaTuple)
+comment: 
+''!
+
+! (Delta mirrorFor: #DeltaTuple) methodsFor: 'a new category' !
+
+
+apply: aTool <DeltaTool > ^ <Self>
+	aTool tupleNode: self!
+
+elements ^ <OrderedCollection[ASTNode]>
+	^self value!
+
+isArrayNode
+    ^ false!
+
+isTupleNode
+    ^ true! !
+

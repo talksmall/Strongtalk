@@ -238,6 +238,13 @@ printOn: aStream  <Stream>
 		nextPutAll: self name.
 !
 
+priorReflecteeFor: n <Symbol> ^ <Mirror>
+	^(Delta at: n) isNil 
+									ifTrue:[Delta assocAt: n] "it's a global created as forward reference"
+									ifFalse:[Delta at: n].
+
+!
+
 reflectee  ^ <T>
 
 self subclassResponsibility!

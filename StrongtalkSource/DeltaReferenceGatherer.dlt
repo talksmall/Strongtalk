@@ -137,6 +137,9 @@ temporaryNode: node <DeltaTemporary > ^ <Self>
 
 self varNode: node.!
 
+tupleNode: node <DeltaTuple>
+	node elements do:[:e | e apply: self]!
+
 tupleTypeNode: node <TupleType > ^ <Self>
 
 self genericApplicationTypeNode: node!

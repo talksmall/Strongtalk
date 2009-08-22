@@ -273,7 +273,7 @@ nameExisting: n <Symbol> ifFail: fb <[Str]>
 "This method modifies an existing protocol named n so that it is equivalent to me"
 
 |  p  <ProtocolMirror> |
-p :=  Mirror on: (Delta at: n).
+p :=  Mirror on: (self priorReflecteeFor: n).
 p convertToProtocol: self ifFail: fb.
 !
 

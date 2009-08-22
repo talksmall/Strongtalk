@@ -347,10 +347,11 @@ mixin  ^<MixinDeclMirror>
 nameExisting: n <Symbol> ifFail: fb <[Str]>
 
 "This method modifies an existing class named n so that it is equivalent to me"
-|  c  <ClassMirror> |
+|  c  <ClassMirror>  |
 
 "self verifyNoCyclesFor: n ifFail: fb."
-c :=  Mirror on: (Delta at: n).
+
+c :=  Mirror on: (self priorReflecteeFor: n).
 c convertToClass: self ifFail: fb.
 self reflect: (Delta at: n).
 

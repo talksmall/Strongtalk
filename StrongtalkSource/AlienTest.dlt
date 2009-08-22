@@ -3,7 +3,7 @@ Delta define: #AlienTest as: (
 
 (Delta mirrorFor: #AlienTest) revision: '$Revision:$'!
 
-(Delta mirrorFor: #AlienTest) group: 'Aliens tests'!
+(Delta mirrorFor: #AlienTest) group: 'Aliens test'!
 
 (Delta mirrorFor: #AlienTest)
 comment: 
@@ -18,6 +18,21 @@ setUp
 
 ! (Delta mirrorFor: #AlienTest) methodsFor: 'testing' !
 
+
+testAsAlien
+
+	self assert: alien asAlien == alien!
+
+testBoolAccess
+
+	self assert: (alien boolAt: 1 put: true).
+	self assert: (alien boolAt: 1).
+	self deny: (alien boolAt: 1 put: false).
+	self deny: (alien boolAt: 1)!
+
+testDataSize
+
+	self assert: alien dataSize == 4!
 
 testSignedByteAccess
 
@@ -38,7 +53,8 @@ testSignedLongAccess
 	self assert: (alien signedLongAt: 1 put: long) = long.
 	self assert: (alien signedLongAt: 1) = long.
 	self assert: (alien unsignedByteAt: 1) == 255.
-	self assert: (alien unsignedByteAt: 3) == 254!
+	self assert: (alien unsignedByteAt: 3) == 254.
+	self assert: alien asSignedLong = long!
 
 testSignedShortAccess
 
@@ -64,7 +80,8 @@ testUnsignedLongAccess
 	self assert: (alien unsignedLongAt: 1 put: long) == long.
 	self assert: (alien unsignedLongAt: 1) == long.
 	self assert: (alien unsignedByteAt: 1) == 1.
-	self assert: (alien unsignedByteAt: 3) == 1!
+	self assert: (alien unsignedByteAt: 3) == 1.
+	self assert: alien asUnsignedLong = long!
 
 testUnsignedShortAccess
 

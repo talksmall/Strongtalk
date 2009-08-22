@@ -303,7 +303,10 @@ temporaryNode: node <DeltaTemporary>
 
 	self deltaHack.
 	node isIntroducedByRewriter ifTrue: [ ^ self ].		"ignore temporaries introduced by rewriter"
-	self varNode: node! !
+	self varNode: node!
+
+tupleNode: node <DeltaTule>
+	node elements do:[:e | e apply: self]! !
 
 ! (Delta mirrorFor: #ASTtoRichTextTool) methodsFor: 'private' !
 

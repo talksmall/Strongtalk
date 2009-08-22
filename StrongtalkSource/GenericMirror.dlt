@@ -84,7 +84,7 @@ nameExisting: n <Symbol> ifFail: fb <[Str]>
 
 | b <Mirror> |
 
-b :=  Mirror on: (Delta at: n).
+b :=  Mirror on: (self priorReflecteeFor: n).
 b convertToGeneric: self ifFail: fb.
 "self body convert: b ifFail: fb."
 b :=  Mirror on: (Delta at: n).

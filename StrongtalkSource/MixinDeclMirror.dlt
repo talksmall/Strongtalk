@@ -970,7 +970,7 @@ nameExisting: n <Symbol> ifFail: fb <[Str]>
 
 self nonAtomic.
 self mixinDecl name: n ifFail: fb.
-(Mirror on: (Delta at: n)) convertToMixin: self ifFail: fb.
+(Mirror on: (self priorReflecteeFor: n)) convertToMixin: self ifFail: fb.
                           !
 
 nameNew: n <Symbol> ifFail: fb <[Str]>

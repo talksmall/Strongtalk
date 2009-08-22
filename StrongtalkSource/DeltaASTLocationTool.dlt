@@ -240,6 +240,10 @@ toEscape ^ <[]>
 toEscape: blk <[]>
 	toEscape := blk!
 
+tupleNode: node <DeltaTuple>
+	self check: node.
+	node elements do:[:e | e apply: self]!
+
 tupleTypeNode: node <TupleType > ^ <Self>
 
 self genericApplicationTypeNode: node!

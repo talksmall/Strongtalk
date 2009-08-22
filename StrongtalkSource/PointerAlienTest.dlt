@@ -1,0 +1,36 @@
+Delta define: #PointerAlienTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'pointer')) !
+
+(Delta mirrorFor: #PointerAlienTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #PointerAlienTest) group: 'Aliens test'!
+
+(Delta mirrorFor: #PointerAlienTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #PointerAlienTest) methodsFor: 'fixture' !
+
+
+setUp
+
+	pointer := Alien forPointer: (Alien Ccalloc: 4)!
+
+tearDown
+
+	[pointer free]
+		on: Error
+		do: [:ignore|]! !
+
+! (Delta mirrorFor: #PointerAlienTest) methodsFor: 'testing' !
+
+
+testFreeingTwiceShouldFail
+
+	pointer free.
+	self should: [pointer free] raise: Error!
+
+testIsPointer
+
+	self assert: pointer isPointer! !
+

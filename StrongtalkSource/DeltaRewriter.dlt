@@ -493,5 +493,42 @@ selfSendNode: node
 
 superSendNode: node
     self assert: [node isSuperSendNode].
-    result := node! !
+    result := node!
+
+tupleNode: aNode <TupleAST>
+"
+This code added based on Newspeak code.  Therefore:
+
+Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''License''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+"
+"should rewrite into a tree representing the expression
+(Array new:  n) at: 1 put:: e1 ; ...  at: n put: en; yourself
+where n is the size of the tuple"
+| els <OrderedCollection[AST]>   
+  array <NormalSendAST> 
+  len <NumberAST> 
+  tup <NormalSendAST>
+  index <Integer>
+|
+
+	len :=  DeltaInt new value: aNode elements size.
+	array :=  DeltaNormalSend new
+		to: (DeltaRef new decl: (DeltaGlobals at: #Array)) "Array" 
+		send: (DeltaMessage new send: #new: with:((Array new:1) at: 1 put: len; yourself)). "Array new: n"
+	aNode elements size = 0 ifTrue:[^array apply: self].
+	index :=  0.
+	tup := aNode elements inject: array into:[:r : e |  | msg <MessageAST> |
+	      index := index + 1.
+	      msg :=  DeltaMessage new send: #at:put:
+								with: ((Array new: 2) at: 1 put: (DeltaInt new value: index); at: 2 put: e; yourself).
+	      index = 1 
+			ifTrue:[DeltaNormalSend new to: r send: msg] 
+						"(Array new: n) at:1 put: e1"
+	      	ifFalse:[DeltaCascadedSend new to: r cascade: msg]. "...; at: k put: ek"
+		].
+^(DeltaCascadedSend new to: tup cascade:(DeltaMessage new send: #yourself with: #()))
+	"(Array new:  n) at: 1 put:: e1 ; ...  at: n put: en; yourself"
+	 apply: self "visit elements"! !
 

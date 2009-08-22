@@ -134,6 +134,19 @@ address ^<Integer>
 		ifTrue: [self addressField]
 		ifFalse: [self error: 'One cannot take the address of direct Alien instances; they may move']!
 
+boolAt: index <Integer> ^<Boolean>
+
+	^(self at: 1) ~~ 0!
+
+boolAt: index <Integer> put: value <Boolean> ^<Boolean>
+
+	self at: 1 put: (value ifTrue: [1] ifFalse: [0]).
+	^value!
+
+dataSize ^<Integer>
+
+	^self size abs!
+
 signedByteAt: index <Integer> ^<Integer>
 
 	|byte|
@@ -151,15 +164,15 @@ signedLongAt: index <Integer> ^<Integer>
 
 	|unsigned|
 	unsigned := (self unsignedShortAt: index) + ((self unsignedShortAt: index + 2) * 65536).
-	^unsigned < 2147483648
+	^unsigned < self signedFourByteLimit
 		ifTrue: [unsigned]
-		ifFalse: [unsigned - 4294967296]!
+		ifFalse: [unsigned - self unsignedFourByteLimit]!
 
 signedLongAt: index <Integer> put: long <Integer>^<Integer>
 
 	|unsigned|
 	unsigned := long < 0
-		ifTrue: [4294967296 + long]
+		ifTrue: [self unsignedFourByteLimit + long]
 		ifFalse: [long].
 	self unsignedLongAt: index put: unsigned.
 	^long!
@@ -213,9 +226,17 @@ unsignedShortAt: index <Integer> put: short <Integer>^<Integer>
 ! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
 
 
+asAlien
+
+	^self!
+
 asSignedByte
 
 	^self signedByteAt: 1!
+
+asSignedLong
+
+	^self signedLongAt: 1!
 
 asSignedShort
 
@@ -225,9 +246,22 @@ asUnsignedByte
 
 	^self unsignedByteAt: 1!
 
+asUnsignedLong
+
+	^self unsignedLongAt: 1!
+
 asUnsignedShort
 
 	^self unsignedShortAt: 1! !
+
+! (Delta mirrorFor: #Alien) methodsFor: 'deallocation' !
+
+
+free
+
+	{{primitiveAlienFree: self addressField
+		ifFail: [:err| self error: 'Could not free alien: ', err]}}.
+	self addressField: 0! !
 
 ! (Delta mirrorFor: #Alien) methodsFor: 'instance initialization' !
 
@@ -240,11 +274,15 @@ initialize
 
 addressField ^<Integer>
 
-	^{{self primitiveAlienAddress}}!
+	^self signedLongAt: 1!
 
 addressField: anInteger <Integer>
 
-	{{self primitiveAlienAddress: anInteger}}!
+	self signedLongAt: 1 put: anInteger!
+
+signedFourByteLimit
+
+	^self smallIntLimit * 4!
 
 size ^<Integer>
 
@@ -252,5 +290,20 @@ size ^<Integer>
 
 size: anInteger <Integer>
 
-	size := anInteger! !
+	size := anInteger!
+
+smallIntLimit
+
+	^SmallInteger maxVal + 1!
+
+unsignedFourByteLimit
+
+	^self smallIntLimit * 8! !
+
+! (Delta mirrorFor: #Alien) methodsFor: 'testing' !
+
+
+isPointer
+
+	^self size == 0! !
 

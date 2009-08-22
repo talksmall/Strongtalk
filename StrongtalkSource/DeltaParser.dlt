@@ -396,6 +396,7 @@ literal: withHash <Boolean > ^ <DeltaLiteral>
     token = #number ifTrue: [^ self literalNumber].
     token = #character ifTrue: [^ self literalChar].
     token = #string ifTrue: [^ self literalString].
+    token = #lbrace ifTrue:[^ self tuple].
     withHash ifTrue: [
         token = #hash
             ifTrue: [self nextToken]
@@ -908,6 +909,20 @@ temporaries: temps  ^ <Self>
     ].
     self check: #vbar
 !
+
+tuple ^ <DeltaTuple>
+    | a <VarOrdCltn[Expression]>  start <Integer> |
+
+    start := scanner tokenBeg.
+    self check: #lbrace.
+    a := OrderedCollection[Expression]  new.
+    ((token ~= #rbrace) and: [token ~= #eos]) ifTrue: [a add: self expr].
+    [(token ~= #rbrace) and: [token ~= #eos]] whileTrue: [
+        self check: #period.
+        (token ~= #rbrace) ifTrue:[a add: self expr].
+    ].
+    self check: #rbrace.
+     ^self node: (DeltaTuple new value: a) begin: start end: prevTokenEnd!
 
 type ^ <TypeExpr>
     | type <TypeExpr>  |

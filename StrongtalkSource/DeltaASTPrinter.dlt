@@ -302,6 +302,14 @@ temporaryNode: node
 	self assert: [ node isTemporaryNode ].	
 	self write: node name!
 
+tupleNode: node
+	self write: '{ '.
+	node elements do: [: e | 
+		e  apply: self.
+		self write: '.'.
+		].
+	self write: ' }'.!
+
 typeVarNode: node
 	self write: node name!
 
