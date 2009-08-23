@@ -49,6 +49,12 @@ sunitOn: anException do: aHandlerBlock
  
         ^self on: anException do: aHandlerBlock! !
 
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'arity' !
+
+
+arity ^ <Integer>
+	^0! !
+
 ! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
 
 
@@ -119,6 +125,10 @@ value ^<R>
 
 valueIfFail: fail <[^X def]>  ^<R | X>
 
+	^self value!
+
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
 	^self value!
 
 verify

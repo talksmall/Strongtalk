@@ -10,10 +10,20 @@ comment:
 '(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
 
+! (Delta mirrorFor: #BlockWithTwoArguments) methodsFor: 'arity' !
+
+
+arity ^ <Integer>
+	^2! !
+
 ! (Delta mirrorFor: #BlockWithTwoArguments) methodsFor: 'evaluating' !
 
 
 value: arg1 <A1> value: arg2 <A2>
     "Block dispatch method (vm generated)"
-    ^{{self primitiveValue: arg1 value: arg2}}! !
+    ^{{self primitiveValue: arg1 value: arg2}}!
+
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2)! !
 

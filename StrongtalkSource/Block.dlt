@@ -26,6 +26,12 @@ exitFrom: blk <[[RET def,^BottomType], ^FALLOFF def]>  ^<RET | FALLOFF>
 fileOutSignature ^<Integer>
     ^75! !
 
+! (Delta mirrorFor: #Block) methodsFor: 'arity' !
+
+
+arity
+	self subclassResponsibility! !
+
 ! (Delta mirrorFor: #Block) methodsFor: 'debugging' !
 
 
@@ -42,11 +48,20 @@ blockMethod ^ <Method>
 
 value ^<Object>
 
-	self error: 'Block with arguments invoked with none'! !
+	self error: 'Block with arguments invoked with none'!
+
+valueWithArguments: a <Array[Object]> ^ <Object>
+	^self subclassResponsibility! !
 
 ! (Delta mirrorFor: #Block) methodsFor: 'file out' !
 
 
 fileOutOn: d <Dumper>
 	self error: 'should not file out blocks'! !
+
+! (Delta mirrorFor: #Block) methodsFor: 'private' !
+
+
+validateValues: a <Array[Object]>
+	self assert:[a size = self arity].! !
 

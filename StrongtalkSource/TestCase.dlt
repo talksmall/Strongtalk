@@ -135,9 +135,9 @@ shouldInheritSelectors
 ! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
 
 
-assert: aBoolean
+assert: aBooleanOrBlock
 
-	aBoolean ifFalse: [self signalFailure: 'Assertion failed']
+	aBooleanOrBlock value ifFalse: [self signalFailure: 'Assertion failed']
 			!
 
 assert: aBoolean description: aString
@@ -207,6 +207,10 @@ should: aBlock raise: anExceptionalEvent description: aString
 		description: aString
 			!
 
+should: aBlock raise: anException withExceptionDo: anotherBlock 
+
+	^self assert: [self executeShould: aBlock inScopeOf: anException withExceptionDo: anotherBlock]!
+
 shouldnt: aBlock
 	self deny: aBlock value
 			!
@@ -265,6 +269,15 @@ executeShould: aBlock inScopeOf: anExceptionalEvent
  	false] sunitOn: anExceptionalEvent
 		do: [:ex | ex sunitExitWith: true]
 			!
+
+executeShould: aBlock inScopeOf: anException withExceptionDo: anotherBlock
+
+	^[aBlock value.
+ 	false] 
+		on: anException
+		do: [:exception | 
+			anotherBlock value: exception.
+			exception return: true]!
 
 performTest
 

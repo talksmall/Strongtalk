@@ -87902,3 +87902,1961 @@ node type apply: self.! !
 "August 22, 2009 -> 14:58:4"!
 
 "System saved" !
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+Delta define: #TestCase as: (
+(Class subclassOf: 'NotifyingObject' instanceVariables: 'testSelector')) !
+
+
+"August 23, 2009 -> 19:50:35"!
+
+(Delta mirrorFor: #TestCase)
+comment: 
+'A TestCase is a Command representing the future running of a test case. Create one with the class method #selector: aSymbol, passing the name of the method to be run when the test case runs.
+
+When you discover a new fixture, subclass TestCase, declare instance variables for the objects in the fixture, override #setUp to initialize the variables, and possibly override# tearDown to deallocate any external resources allocated in #setUp.
+
+When you are writing a test case method, send #assert: aBoolean when you want to check for an expected value. For example, you might say "self assert: socket isOpen" to test whether or not a socket is open at a point in a test.'!
+
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Accessing' !
+allTestSelectors
+
+	^(self sunitAllSelectors
+		select: [:each | 'test*' sunitMatch: each])
+		reject: [:each| each includes: $:]! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Accessing' !
+resources
+
+	^#()
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Accessing' !
+sunitVersion
+	^'3.1'
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Accessing' !
+testSelectors
+
+	^(self sunitSelectors 
+		select: [:each | 'test*' sunitMatch: each])
+		reject: [:each| each includes: $:]
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Building Suites' !
+buildSuite
+	| suite |
+	^self isAbstract
+		ifTrue: 
+			[suite := self suiteClass named: self name asString.
+			self allSubclasses 
+				do: [:each | each isAbstract ifFalse: [suite addTest: each buildSuiteFromSelectors]].
+			suite]
+		ifFalse: [self buildSuiteFromSelectors]
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Building Suites' !
+buildSuiteFromAllSelectors
+
+	^self buildSuiteFromMethods: self allTestSelectors
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Building Suites' !
+buildSuiteFromLocalSelectors
+
+	^self buildSuiteFromMethods: self testSelectors
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Building Suites' !
+buildSuiteFromMethods: testMethods
+
+	^testMethods
+		inject: (self suiteClass named: self name asString)
+		into: [:suite :selector |
+			suite
+				addTest: (self selector: selector);
+				yourself]
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Building Suites' !
+buildSuiteFromSelectors
+
+	^self shouldInheritSelectors
+		ifTrue: [self buildSuiteFromAllSelectors]
+		ifFalse: [self buildSuiteFromLocalSelectors]
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Building Suites' !
+suiteClass
+	^TestSuite
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Instance Creation' !
+debug: aSymbol
+
+	^(self selector: aSymbol) debug
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Instance Creation' !
+run: aSymbol
+
+	^(self selector: aSymbol) run
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Instance Creation' !
+runAll
+
+	[self suite run printOn: (Transcript cr; yourself)] fork! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Instance Creation' !
+selector: aSymbol
+
+	^self new setTestSelector: aSymbol
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Instance Creation' !
+suite
+
+	^self buildSuite
+			! !
+
+"August 23, 2009 -> 19:50:35"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Testing' !
+isAbstract
+	"Override to true if a TestCase subclass is Abstract and should not have
+	TestCase instances built from it"
+
+	^self sunitName = #TestCase
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) classSide methodsFor: 'Testing' !
+shouldInheritSelectors
+	"I should inherit from an Abstract superclass but not from a concrete one by default,
+	 unless I have no testSelectors in which case I must be expecting to inherit them
+	 from my superclass.  If a test case with selectors wants to inherit selectors from a
+	 concrete superclass, override this to true in that subclass."
+
+	^self superclass isAbstract
+		or: [self testSelectors isEmpty]
+
+"$QA Ignore:Sends system method(superclass)$"
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+assert: aBooleanOrBlock
+
+	aBooleanOrBlock value ifFalse: [self signalFailure: 'Assertion failed']
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+assert: aBoolean description: aString
+	aBoolean ifFalse: [
+		self logFailure: aString.
+		TestResult failure sunitSignalWith: aString]
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+assert: aBoolean description: aString resumable: resumableBoolean 
+	| exception |
+	aBoolean
+		ifFalse: 
+			[self logFailure: aString.
+			exception := resumableBoolean
+						ifTrue: [TestResult resumableFailure]
+						ifFalse: [TestResult failure].
+			exception sunitSignalWith: aString]
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+deny: aBoolean
+
+	self assert: aBoolean not
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+deny: aBoolean description: aString
+	self assert: aBoolean not description: aString
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+deny: aBoolean description: aString resumable: resumableBoolean 
+	self
+		assert: aBoolean not
+		description: aString
+		resumable: resumableBoolean
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+resources
+	| allResources resourceQueue |
+	allResources := Set new.
+	resourceQueue := OrderedCollection new.
+	resourceQueue addAll: self class resources.
+	[resourceQueue isEmpty] whileFalse: [
+		| next |
+		next := resourceQueue removeFirst.
+		allResources add: next.
+		resourceQueue addAll: next resources].
+	^allResources
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+selector
+	^testSelector
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+should: aBlock
+	self assert: aBlock value
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+should: aBlock description: aString
+	self assert: aBlock value description: aString
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+should: aBlock raise: anExceptionalEvent 
+	^self assert: (self executeShould: aBlock inScopeOf: anExceptionalEvent)
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+should: aBlock raise: anExceptionalEvent description: aString 
+	^self assert: (self executeShould: aBlock inScopeOf: anExceptionalEvent)
+		description: aString
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+should: aBlock raise: anException withExceptionDo: anotherBlock 
+
+	^self assert: [self executeShould: aBlock inScopeOf: anException withExceptionDo: anotherBlock]! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+shouldnt: aBlock
+	self deny: aBlock value
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+shouldnt: aBlock description: aString
+	self deny: aBlock value description: aString
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+shouldnt: aBlock raise: anExceptionalEvent 
+	^self assert: (self executeShould: aBlock inScopeOf: anExceptionalEvent) not
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+shouldnt: aBlock raise: anExceptionalEvent description: aString 
+	^self assert: (self executeShould: aBlock inScopeOf: anExceptionalEvent) not 		description: aString
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Accessing' !
+signalFailure: aString
+	TestResult failure sunitSignalWith: aString! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Dependencies' !
+addDependentToHierarchy: anObject 
+	"an empty method. for Composite compability with TestSuite"
+
+
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Dependencies' !
+removeDependentFromHierarchy: anObject 
+	"an empty method. for Composite compability with TestSuite"
+
+
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Printing' !
+echo
+
+	Transcript cr.
+	self printOn: Transcript! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Printing' !
+printOn: aStream
+
+	aStream
+		nextPutAll: self class printString;
+		nextPutAll: '>>#';
+		nextPutAll: testSelector
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Private' !
+executeShould: aBlock inScopeOf: anExceptionalEvent 
+	^[aBlock value.
+ 	false] sunitOn: anExceptionalEvent
+		do: [:ex | ex sunitExitWith: true]
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Private' !
+executeShould: aBlock inScopeOf: anException withExceptionDo: anotherBlock
+
+	^[aBlock value.
+ 	false] 
+		on: anException
+		do: [:exception | 
+			anotherBlock value: exception.
+			exception return: true]! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Private' !
+performTest
+
+	self perform: testSelector sunitAsSymbol
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Private' !
+setTestSelector: aSymbol
+	testSelector := aSymbol
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+debug
+	self resources do: [:res | 
+		res isAvailable ifFalse: [^res signalInitializationError]].
+	[(self class selector: testSelector) runCase] 
+		sunitEnsure: [self resources do: [:each | each reset]]
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+debugAsFailure
+	| semaphore |
+	semaphore := Semaphore new.
+	self resources do: [:res | 
+		res isAvailable ifFalse: [^res signalInitializationError]].
+	[semaphore wait. self resources do: [:each | each reset]] fork.
+	(self class selector: testSelector) runCaseAsFailure: semaphore.
+
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+failureLog	
+	^SUnitNameResolver defaultLogDevice
+
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+isLogging
+	"By default, we're not logging failures. If you override this in 
+	a subclass, make sure that you override #failureLog"
+	^true
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+logFailure: aString
+	self isLogging ifTrue: [
+		self failureLog 
+			cr; 
+			nextPutAll: aString; 
+			flush]
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+openDebuggerOnFailingTestMethod
+	"SUnit has halted one step in front of the failing test method. Step over the 'self halt' and 
+	 send into 'self perform: testSelector' to see the failure from the beginning"
+
+	self
+		halt;
+		performTest
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+run
+	| result |
+	result := TestResult new.
+	self run: result.
+	^result
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+run: aResult
+	aResult runCase: self
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+runCase
+
+	[self setUp.
+	self performTest] sunitEnsure: [self tearDown]
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+runCaseAsFailure: aSemaphore
+	[self setUp.
+	self openDebuggerOnFailingTestMethod] sunitEnsure: [
+		self tearDown.
+		aSemaphore signal]
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+setUp
+			! !
+
+"August 23, 2009 -> 19:50:36"!
+
+! (Delta mirrorFor: #TestCase) methodsFor: 'Running' !
+tearDown
+			! !
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+Delta define: #Block as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"August 23, 2009 -> 19:50:44"!
+
+(Delta mirrorFor: #Block)
+comment: 
+'Tags: %BlueBook
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) classSide methodsFor: 'fancy control structures' !
+exitFrom: blk <[[RET def,^BottomType], ^FALLOFF def]>  ^<RET | FALLOFF>
+
+	^blk value: [ :ret <RET> | ^ret ]! !
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) classSide methodsFor: 'file out' !
+fileOutSignature ^<Integer>
+    ^75! !
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) methodsFor: 'arity' !
+arity
+	self subclassResponsibility! !
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) methodsFor: 'debugging' !
+blockIsOptimized ^ <Boolean>
+
+	^{{self primitiveBlockIsOptimized}}! !
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) methodsFor: 'debugging' !
+blockMethod ^ <Method>
+
+	^{{self primitiveBlockMethod}}! !
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) methodsFor: 'evaluating' !
+value ^<Object>
+
+	self error: 'Block with arguments invoked with none'! !
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <Object>
+	^self subclassResponsibility! !
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) methodsFor: 'file out' !
+fileOutOn: d <Dumper>
+	self error: 'should not file out blocks'! !
+
+"August 23, 2009 -> 19:50:44"!
+
+! (Delta mirrorFor: #Block) methodsFor: 'private' !
+validateValues: a <Array[Object]>
+	self assert:[a size = self arity].! !
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+Delta define: #BlockWithEightArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra), (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra)  , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:52"!
+
+(Delta mirrorFor: #BlockWithEightArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:50:52"!
+
+! (Delta mirrorFor: #BlockWithEightArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^8! !
+
+"August 23, 2009 -> 19:50:52"!
+
+! (Delta mirrorFor: #BlockWithEightArguments) methodsFor: 'evaluating' !
+value: arg1 <A1> value: arg2 <A2> value: arg3 <A3> value: arg4 <A4> value: arg5 <A5> value: arg6 <A6> value: arg7 <A7> value: arg8 <A8>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8}}! !
+
+"August 23, 2009 -> 19:50:52"!
+
+! (Delta mirrorFor: #BlockWithEightArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2) value: (a at: 3)
+			value: (a at: 4) value: (a at: 5) value: (a at: 6) 
+			value: (a at: 7) value: (a at: 8)! !
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+Delta define: #BlockWithFiveArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra), (A5 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, ^R]')) !
+
+
+"August 23, 2009 -> 19:50:58"!
+
+(Delta mirrorFor: #BlockWithFiveArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:50:58"!
+
+! (Delta mirrorFor: #BlockWithFiveArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^5! !
+
+"August 23, 2009 -> 19:50:58"!
+
+! (Delta mirrorFor: #BlockWithFiveArguments) methodsFor: 'evaluating' !
+value: arg1 <A1> value: arg2 <A2> value: arg3 <A3> value: arg4 <A4> value: arg5 <A5>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5}}! !
+
+"August 23, 2009 -> 19:50:58"!
+
+! (Delta mirrorFor: #BlockWithFiveArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2) value: (a at: 3)
+			value: (a at: 4) value: (a at: 5)! !
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:4"!
+
+Delta define: #BlockWithFourArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:5"!
+
+(Delta mirrorFor: #BlockWithFourArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:51:5"!
+
+! (Delta mirrorFor: #BlockWithFourArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^4! !
+
+"August 23, 2009 -> 19:51:5"!
+
+! (Delta mirrorFor: #BlockWithFourArguments) methodsFor: 'evaluating' !
+value: arg1 <A1> value: arg2 <A2> value: arg3 <A3> value: arg4 <A4>
+
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2 value: arg3 value: arg4}}! !
+
+"August 23, 2009 -> 19:51:5"!
+
+! (Delta mirrorFor: #BlockWithFourArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2) value: (a at: 3)
+			value: (a at: 4)! !
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+Delta define: #BlockWithNineArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (A8 contra), (A9 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, A8, A9, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:24"!
+
+(Delta mirrorFor: #BlockWithNineArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:51:24"!
+
+! (Delta mirrorFor: #BlockWithNineArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^9! !
+
+"August 23, 2009 -> 19:51:24"!
+
+! (Delta mirrorFor: #BlockWithNineArguments) methodsFor: 'evaluating' !
+value: arg1 <A1> value: arg2 <A2> value: arg3 <A3> value: arg4 <A4> value: arg5 <A5> value: arg6 <A6> value: arg7 <A7> value: arg8 <A8> value: arg9 <A9>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9}}! !
+
+"August 23, 2009 -> 19:51:24"!
+
+! (Delta mirrorFor: #BlockWithNineArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2) value: (a at: 3)
+			value: (a at: 4) value: (a at: 5) value: (a at: 6) 
+			value: (a at: 7) value: (a at: 8) value: (a at: 9)! !
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+Delta define: #BlockWithOneArgument as: (
+Generic forAll: '(A1 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:31"!
+
+(Delta mirrorFor: #BlockWithOneArgument)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:51:31"!
+
+! (Delta mirrorFor: #BlockWithOneArgument) methodsFor: 'arity' !
+arity ^ <Integer>
+	^1! !
+
+"August 23, 2009 -> 19:51:31"!
+
+! (Delta mirrorFor: #BlockWithOneArgument) methodsFor: 'evaluating' !
+value: arg1 <A1>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1}}! !
+
+"August 23, 2009 -> 19:51:31"!
+
+! (Delta mirrorFor: #BlockWithOneArgument) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: a first! !
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+Delta define: #BlockWithoutArguments as: (
+Generic forAll: '(R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[^R]')) !
+
+
+"August 23, 2009 -> 19:51:37"!
+
+(Delta mirrorFor: #BlockWithoutArguments)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.4 $
+'!
+
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) classSide methodsFor: 'testing' !
+test
+
+	| v <Boolean> |
+	
+	[ v := false ] ensure: [ v := true ].
+	self assert: [ v ].
+
+	[ v := false ] ifCurtailed: [ v := true ].
+	self assert: [ v not ].
+
+	self testForUnwind: [ v := false ] onUnwind: [ v := true ].
+	self assert: [ v ].
+
+	self testForEnsure: [ v := false ] onUnwind: [ v := true ].
+	self assert: [ v ]! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) classSide methodsFor: 'testing' !
+testForEnsure: b <[]> onUnwind: b2 <[]> ^<Object>
+
+	[ ^b value ] ensure: b2! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) classSide methodsFor: 'testing' !
+testForUnwind: b <[]> onUnwind: b2 <[]> ^<Object>
+
+	[ ^b value ] ifCurtailed: b2! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'Camp Smalltalk' !
+sunitEnsure: aBlock
+ 
+        ^self ensure: aBlock! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'Camp Smalltalk' !
+sunitOn: anException do: aHandlerBlock
+ 
+        ^self on: anException do: aHandlerBlock! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^0! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+critical ^<R>
+	"This is used for very short, fast critical regions where the overhead or inconvenience
+	  of a semaphore is not desired.  The argument is evaluated without any process context
+	  switches taking place, so that it can perform atomic operations.  WARNING: the blk MUST
+	  NOT do anything that might cause the process to block, such as any kind of I/O.  This
+	  method is only appropriate for very fast atomic operations that are extremely reliable, since
+	  no other processes will get a chance to run while it is being evaluated, and if it crashes,
+	  it will not be debuggable, since the development & debugger processes will not be able to run."
+
+	"%todo: implement this right.  NOTE: an interesting semantic idea: we could dramatically improve
+	  the usefulnes of this if it was a critical region on the receiver, not on the system as a whole."
+
+	^self value! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+ensure: f <[]> ^<R>
+
+	"Use the following impl when vm bug fixed"
+	"[ ^self value ] ifCurtailed: f"
+
+	| result <R> |
+	[ result := self value ] ifCurtailed: f.
+	f value.
+	^result! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+fork ^<Process>
+
+	^self forkAt: Processor activePriority! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+forkAt: priority <Int> ^<Process>
+
+	^self newProcess priority: priority; resume! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+ifCurtailed: protect <[]> ^<R>
+
+	^guaranteed <R>
+		  {{self primitiveUnwindProtect: protect
+				ifFail: [ :err <Symbol> |	self shouldNotHappen ]
+		  }}
+! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+newProcess ^<Process>
+
+	^Process for: self! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+profile
+
+	Profiler do: self! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+repeat ^<BottomType>
+
+	[ true ] whileTrue: [ self value ].
+	self shouldNotHappen.! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+time ^<Int>
+
+	^Time millisecondsToRun: self! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+userTime ^<Int>
+
+	^Time userMillisecondsToRun: self! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+value ^<R>
+
+    ^{{self primitiveValue}}! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+valueIfFail: fail <[^X def]>  ^<R | X>
+
+	^self value! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+verify
+	"Evaluate the receiver, and generate an error if it does not return true.  This is different than
+	  Object>>#assert: in that 1) it is a boolean block message, and 2) it ALWAYS evaluates, whereas
+	  #assert: does not guarantee that it will evaluate the predicate.
+
+	  Use verify in situations where you must ensure that the test is performed, for example when there
+	  are side-effects that must take place, or if it is testing code that should always be performed.
+
+	  Note that this message is only valid for blocks that return boolean values."
+
+	"Note: we don't use self as the receiver for #error: below because it will currently
+		prevent the block from being optimized away by the inliner"
+	self value
+		ifFalse: [ BlockWithoutArguments[Object] error: 'Assertion failed' ].
+
+	"%hack %todo: remove this when compiler bug fixed"
+	^nil! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+verify: message
+	"Evaluate the receiver, and generate an error if it does not return true.  This is different than
+	  Object>>#assert: in that 1) it is a boolean block message, and 2) it ALWAYS evaluates, whereas
+	  #assert: does not guarantee that it will evaluate the predicate.
+
+	  Use verify in situations where you must ensure that the test is performed, for example when there
+	  are side-effects that must take place, or if it is testing code that should always be performed.
+
+	  Note that this message is only valid for blocks that return boolean values."
+
+	"Note: we don't use self as the receiver for #error: below because it will currently
+		prevent the block from being optimized away by the inliner"
+	self value
+		ifFalse: [ BlockWithoutArguments[Object] error: 'Assertion failed: ', message ].
+
+	"%hack %todo: remove this when compiler bug fixed"
+	^nil! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+whileFalse ^<Object>
+
+	^self whileFalse: []! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+whileFalse: blk <[]> ^<Object>
+
+	"We can guarantee that self value is a Boolean in typesafe programs because the typechecker removes this
+		  message from the protocol of blocks that don't return Booleans"
+	(guaranteed <Boolean> (self value))
+		ifFalse: [	blk value.
+					[ (guaranteed <Boolean> (self value)) ]
+						whileFalse: [ blk value ]	].
+	^nil! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+whileTrue ^<Object>
+
+	^self whileTrue: []! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+whileTrue: blk <[]> ^<Object>
+
+	"We can guarantee that self value is a Boolean in typesafe programs because the typechecker removes this
+		  message from the protocol of blocks that don't return Booleans"
+
+
+	(guaranteed <Boolean> (self value))
+		ifTrue: [	blk value.
+					[ (guaranteed <Boolean> (self value)) ]
+						whileTrue: [ blk value ]	].
+
+	^nil! !
+
+"August 23, 2009 -> 19:51:37"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'exceptions' !
+on: exception do: handlerBlock
+
+	^(LinkedExceptionHandler
+		on: exception
+		do: handlerBlock
+		return: [:value | ^ value]) protect: self
+! !
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+Delta define: #BlockWithSevenArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (A7 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, A7, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:44"!
+
+(Delta mirrorFor: #BlockWithSevenArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:51:44"!
+
+! (Delta mirrorFor: #BlockWithSevenArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^7! !
+
+"August 23, 2009 -> 19:51:44"!
+
+! (Delta mirrorFor: #BlockWithSevenArguments) methodsFor: 'evaluating' !
+value: arg1 <A1> value: arg2 <A2> value: arg3 <A3> value: arg4 <A4> value: arg5 <A5> value: arg6 <A6> value: arg7 <A7>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7}}! !
+
+"August 23, 2009 -> 19:51:44"!
+
+! (Delta mirrorFor: #BlockWithSevenArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2) value: (a at: 3)
+			value: (a at: 4) value: (a at: 5) value: (a at: 6) 
+			value: (a at: 7)! !
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+Delta define: #BlockWithSixArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (A4 contra) , (A5 contra) , (A6 contra) , (R covar)' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, A4, A5, A6, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:52"!
+
+(Delta mirrorFor: #BlockWithSixArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:51:52"!
+
+! (Delta mirrorFor: #BlockWithSixArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^6! !
+
+"August 23, 2009 -> 19:51:52"!
+
+! (Delta mirrorFor: #BlockWithSixArguments) methodsFor: 'evaluating' !
+value: arg1 <A1> value: arg2 <A2> value: arg3 <A3> value: arg4 <A4> value: arg5 <A5> value: arg6 <A6>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6}}! !
+
+"August 23, 2009 -> 19:51:52"!
+
+! (Delta mirrorFor: #BlockWithSixArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2) value: (a at: 3)
+			value: (a at: 4) value: (a at: 5) value: (a at: 6)! !
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+Delta define: #BlockWithThreeArguments as: (
+Generic forAll: '(A1 contra) , (A2 contra) , (A3 contra) , (R covar) ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, A3, ^R]')) !
+
+
+"August 23, 2009 -> 19:51:58"!
+
+(Delta mirrorFor: #BlockWithThreeArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:51:58"!
+
+! (Delta mirrorFor: #BlockWithThreeArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^3! !
+
+"August 23, 2009 -> 19:51:58"!
+
+! (Delta mirrorFor: #BlockWithThreeArguments) methodsFor: 'evaluating' !
+value: arg1 <A1> value: arg2 <A2> value: arg3 <A3>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2 value: arg3}}! !
+
+"August 23, 2009 -> 19:51:58"!
+
+! (Delta mirrorFor: #BlockWithThreeArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2) value: (a at: 3)! !
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+Delta define: #BlockWithTwoArguments as: (
+Generic forAll: '(A1 contra), (A2 contra) , (R covar)  ' body: ((Class subclassOf: 'Block' instanceVariables: '') protocols: '[A1, A2, ^R]')) !
+
+
+"August 23, 2009 -> 19:52:4"!
+
+(Delta mirrorFor: #BlockWithTwoArguments)
+comment: 
+'(c) 1996-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $'!
+
+
+"August 23, 2009 -> 19:52:4"!
+
+! (Delta mirrorFor: #BlockWithTwoArguments) methodsFor: 'arity' !
+arity ^ <Integer>
+	^2! !
+
+"August 23, 2009 -> 19:52:4"!
+
+! (Delta mirrorFor: #BlockWithTwoArguments) methodsFor: 'evaluating' !
+value: arg1 <A1> value: arg2 <A2>
+    "Block dispatch method (vm generated)"
+    ^{{self primitiveValue: arg1 value: arg2}}! !
+
+"August 23, 2009 -> 19:52:4"!
+
+! (Delta mirrorFor: #BlockWithTwoArguments) methodsFor: 'evaluating' !
+valueWithArguments: a <Array[Object]> ^ <R>
+	self validateValues: a.
+	^self value: (a at: 1) value: (a at: 2)! !
+
+"August 23, 2009 -> 19:52:39"!
+
+"System saved" !
