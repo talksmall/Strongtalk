@@ -2,6 +2,7 @@
 # include "incls/_byteArray_prims.cpp.incl"
 #include "test.h"
 #include "delta.hpp"
+#include "testUtils.hpp"
 
 using namespace easyunit;
 
@@ -30,6 +31,11 @@ DECLARE(ByteArrayPrimsTests)
     contents[1] = 2;
     contents[2] = 3;
     contents[3] = 4;
+  }
+
+  int asInteger(oop largeInteger, bool& ok) {
+    Integer* number = &byteArrayOop(largeInteger)->number();
+    return number->as_int(ok);
   }
 END_DECLARE
 
@@ -99,15 +105,6 @@ TESTF(ByteArrayPrimsTests, allocateSize2ShouldFailWhenTooBigForOldGen) {
   checkMarkedSymbol("failed allocation", result, vmSymbols::failed_allocation());
 }
 
-TESTF(ByteArrayPrimsTests, unsignedByteAtWithDirectAlienShouldReturnCorrectByte) {
-  u_char* bytes = alien->bytes();
-
-  ((int*)bytes)[0] = 4;
-  setUnsignedContents(&bytes[4]);
-
-  checkAlienContents(alien);
-}
-
 TESTF(ByteArrayPrimsTests, alienSizeShouldReturnCorrectSize) {
   u_char* bytes = alien->bytes();
 
@@ -133,15 +130,44 @@ TESTF(ByteArrayPrimsTests, alienSetAddressShouldAssignCorrectAddress) {
   ASSERT_EQUALS_M(address, smiOop(byteArrayPrimitives::alienAddress(alien))->value(), "Address should match");
 }
 
-TESTF(ByteArrayPrimsTests, alienSetAddressShouldReturnMarkedSymbolWhenNotAlien) {
-  u_char* bytes = alien->bytes();
+TESTF(ByteArrayPrimsTests, alienSetAddressShouldAssignCorrectAddressFromLargeInteger) {
+  PersistentHandle address(as_large_integer((int)alien_byte_region));
+  byteArrayPrimitives::alienSetSize(as_smiOop(-16), alien);
+  
+  ASSERT_TRUE_M(alien == byteArrayPrimitives::alienSetAddress(address.as_oop(), alien), "Should return alien");
+  ASSERT_EQUALS_M((int)alien_byte_region, smiOop(byteArrayPrimitives::alienAddress(alien))->value(), "Address should match");
+}
 
-  int address = (int)alien_byte_region;
-  ((int*)bytes)[0] = -16;
+TESTF(ByteArrayPrimsTests, alienSetAddressShouldReturnMarkedSymbolForAddressOutOfRange) {
+  BlockScavenge bs;
+  byteArrayPrimitives::alienSetSize(as_smiOop(0), alien);
+  oop largeInteger = as_large_integer(256*256*256);
+  oop tooBig = byteArrayPrimitives::largeIntegerMultiply(largeInteger, largeInteger);
+  oop result = byteArrayPrimitives::alienSetAddress(tooBig, alien);
+  
+  checkMarkedSymbol("invalid argument", result, vmSymbols::argument_is_invalid());
+}
+
+TESTF(ByteArrayPrimsTests, alienSetAddressShouldReturnMarkedSymbolWhenNotAlien) {
   oop result = byteArrayPrimitives::alienSetAddress(smiOop(0), smiOop(0));
   checkMarkedSymbol("wrong receiver", result, vmSymbols::receiver_has_wrong_type());
 }
 
+TESTF(ByteArrayPrimsTests, alienSetAddressShouldReturnMarkedSymbolWhenAlienIsDirect) {
+  u_char* bytes = alien->bytes();
+
+  byteArrayPrimitives::alienSetSize(smiOop(4), alien);
+
+  oop result = byteArrayPrimitives::alienSetAddress(smiOop(0), alien);
+  checkMarkedSymbol("iillegal state", result, vmSymbols::illegal_state());
+}
+
+TESTF(ByteArrayPrimsTests, alienSetAddressShouldReturnMarkedSymbolWhenArgumentNotInteger) {
+  byteArrayPrimitives::alienSetSize(smiOop(-16), alien);
+
+  oop result = byteArrayPrimitives::alienSetAddress(trueObj, alien);
+  checkMarkedSymbol("wrong type", result, vmSymbols::first_argument_has_wrong_type());
+}
 TESTF(ByteArrayPrimsTests, alienAddressShouldReturnLargeIntegerAddress) {
   u_char* bytes = alien->bytes();
 
@@ -194,7 +220,16 @@ TESTF(ByteArrayPrimsTests, alienSetSizeShouldSetCorrectSize) {
   ASSERT_EQUALS_M(4, ((int*)bytes)[0], "wrong size");
 }
 
-TESTF(ByteArrayPrimsTests, unsignedByteAtWithDirectAlienShouldReturnCorrectByteFromIndirectAlien) {
+TESTF(ByteArrayPrimsTests, unsignedByteAtWithDirectAlienShouldReturnCorrectByte) {
+  u_char* bytes = alien->bytes();
+
+  ((int*)bytes)[0] = 4;
+  setUnsignedContents(&bytes[4]);
+
+  checkAlienContents(alien);
+}
+
+TESTF(ByteArrayPrimsTests, unsignedByteAtWithIndirectAlienShouldReturnCorrectByteFromIndirectAlien) {
   u_char* bytes = alien->bytes();
   u_char* contents = bytes + 4;
 
@@ -205,7 +240,7 @@ TESTF(ByteArrayPrimsTests, unsignedByteAtWithDirectAlienShouldReturnCorrectByteF
   checkAlienContents(alien);
 }
 
-TESTF(ByteArrayPrimsTests, unsignedByteAtWithDirectAlienShouldReturnCorrectByteFromPointerAlien) {
+TESTF(ByteArrayPrimsTests, unsignedByteAtWithPointerAlienShouldReturnCorrectByteFromPointerAlien) {
   u_char* bytes = alien->bytes();
 
   ((int*)bytes)[0] = 0;
@@ -218,6 +253,44 @@ TESTF(ByteArrayPrimsTests, unsignedByteAtWithDirectAlienShouldReturnCorrectByteF
 TESTF(ByteArrayPrimsTests, alienUnsignedByteAtShouldReturnMarkedSymbolWhenNotByteArray) {
   oop result = byteArrayPrimitives::alienUnsignedByteAt(as_smiOop(1), as_smiOop(0));
   checkMarkedSymbol("wrong type", result, vmSymbols::receiver_has_wrong_type());
+}
+
+TESTF(ByteArrayPrimsTests, alienUnsignedByteAtPutShouldReturnMarkedSymbolWhenNotByteArray) {
+  oop result = byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(1), as_smiOop(1), as_smiOop(0));
+  checkMarkedSymbol("wrong type", result, vmSymbols::receiver_has_wrong_type());
+}
+
+TESTF(ByteArrayPrimsTests, alienUnsignedByteAtPutShouldReturnMarkedSymbolWhenIndexNotSmallInteger) {
+  oop result = byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(1), alien, alien);
+  checkMarkedSymbol("wrong type", result, vmSymbols::first_argument_has_wrong_type());
+}
+
+TESTF(ByteArrayPrimsTests, alienUnsignedByteAtPutShouldReturnMarkedSymbolWhenValueNotSmallInteger) {
+  oop result = byteArrayPrimitives::alienUnsignedByteAtPut(alien, as_smiOop(1), alien);
+  checkMarkedSymbol("wrong type", result, vmSymbols::second_argument_has_wrong_type());
+}
+
+TESTF(ByteArrayPrimsTests, alienUnsignedByteAtPutShouldReturnMarkedSymbolWhenIndexTooSmall) {
+  oop result = byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(0), as_smiOop(0), alien);
+  checkMarkedSymbol("wrong type", result, vmSymbols::index_not_valid());
+}
+
+TESTF(ByteArrayPrimsTests, alienUnsignedByteAtPutShouldReturnMarkedSymbolWhenValueTooSmall) {
+  byteArrayPrimitives::alienSetSize(as_smiOop(4), alien);
+  oop result = byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(-1), as_smiOop(1), alien);
+  checkMarkedSymbol("argument invalid", result, vmSymbols::argument_is_invalid());
+}
+
+TESTF(ByteArrayPrimsTests, alienUnsignedByteAtPutShouldReturnMarkedSymbolWhenValueTooLarge) {
+  byteArrayPrimitives::alienSetSize(as_smiOop(4), alien);
+  oop result = byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(256), as_smiOop(1), alien);
+  checkMarkedSymbol("argument invalid", result, vmSymbols::argument_is_invalid());
+}
+
+TESTF(ByteArrayPrimsTests, alienUnsignedByteAtPutShouldReturnMarkedSymbolWhenIndexTooLarge) {
+  byteArrayPrimitives::alienSetSize(as_smiOop(4), alien);
+  oop result = byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(0), as_smiOop(5), alien);
+  checkMarkedSymbol("wrong type", result, vmSymbols::index_not_valid());
 }
 
 TESTF(ByteArrayPrimsTests, alienUnsignedByteAtShouldReturnMarkedSymbolWhenIndexNotSMI) {

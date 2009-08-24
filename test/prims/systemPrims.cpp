@@ -4,6 +4,7 @@
 #include "behavior_prims.hpp"
 #include "byteArray_prims.hpp"
 #include "test.h"
+#include "testUtils.hpp"
 
 using namespace easyunit;
 
@@ -146,11 +147,6 @@ TEST(SystemPrimTests, alienFreeShouldReturnMarkedSymbolWhenAddressZero) {
   
   ASSERT_TRUE_M(result->is_mark(), "return should be marked");
   ASSERT_EQUALS_M(markSymbol(vmSymbols::argument_is_invalid()), result, "wrong symbol returned");
-}
-
-oop as_large_integer(int value) {
-  klassOop theClass = klassOop(Universe::find_global("LargeInteger"));
-  return byteArrayPrimitives::largeIntegerFromSmallInteger(as_smiOop(value), theClass);
 }
 
 TEST(SystemPrimTests, alienFreeShouldReturnMarkedSymbolWhenAddressLargeIntegerZero) {

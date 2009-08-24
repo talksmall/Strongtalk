@@ -426,6 +426,9 @@ PRIM_DECL_1(byteArrayPrimitives::hash, oop receiver) {
 
 #define ALIEN_SIZE(alien) ((int*)byteArrayOop(alien)->bytes())[0]
 #define ALIEN_ADDRESS(alien) ((int*)byteArrayOop(alien)->bytes())[1]
+#define ALIEN_BYTE_AT(alien, index) byteArrayOop(alien)->byte_at(index + 4)
+#define ALIEN_BYTE_AT_PUT(alien, index, byte) byteArrayOop(alien)->byte_at_put(smiOop(index)->value() + 4, byte)
+#define ALIEN_PTR_AT(alien, index) ((u_char*)(ALIEN_ADDRESS(alien)))[index - 1]
 
 PRIM_DECL_2(byteArrayPrimitives::alienUnsignedByteAt, oop receiver, oop argument) {
   PROLOGUE_2("alienUnsignedByteAt", receiver, argument);
@@ -441,13 +444,85 @@ PRIM_DECL_2(byteArrayPrimitives::alienUnsignedByteAt, oop receiver, oop argument
   if (index < 1 || (size != 0 && index > absSize))
     return markSymbol(vmSymbols::argument_is_invalid());
 
+  u_char byte;
   if (size > 0)
-    return as_smiOop(byteArrayOop(receiver)->byte_at(smiOop(argument)->value() + 4));
+    byte = ALIEN_BYTE_AT(receiver, index);
+  else
+    byte = ALIEN_PTR_AT(receiver, index);
   
-  u_char* baseAddress = ((u_char**)byteArrayOop(receiver)->bytes())[1];
-  return as_smiOop(baseAddress[index - 1]);
+  return as_smiOop(byte);
 }
+PRIM_DECL_3(byteArrayPrimitives::alienUnsignedByteAtPut, oop receiver, oop argument1, oop argument2){
+  PROLOGUE_3("alienUnsignedByteAtPut", receiver, argument1, argument2);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument1->is_smi())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (!argument2->is_smi())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  
+  int index = smiOop(argument1)->value();
+  int size = ALIEN_SIZE(receiver);
+  int absSize = abs(size);
+  int byte = smiOop(argument2)->value();
+  
+  if (index < 1 || (size != 0 && index > absSize))
+    return markSymbol(vmSymbols::index_not_valid());
+  if (byte < 0 || byte > 255)
+    return markSymbol(vmSymbols::argument_is_invalid());
 
+  if (size > 0)
+    byteArrayOop(receiver)->byte_at_put(index + 4, smiOop(argument2)->value());
+  else {
+    ALIEN_PTR_AT(receiver, index) = (u_char)byte;
+  }
+  return argument2;
+}
+PRIM_DECL_2(byteArrayPrimitives::alienSignedByteAt, oop receiver, oop argument) {
+  PROLOGUE_2("alienSignedByteAt", receiver, argument);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument->is_smi())
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+
+  int index = smiOop(argument)->value();
+  int size = ALIEN_SIZE(receiver);
+
+  if (index < 1 || (size != 0 && index > abs(size)))
+    return markSymbol(vmSymbols::index_not_valid());
+
+  int byte;
+  if (size > 0)
+    byte = ALIEN_BYTE_AT(receiver, index);
+  else
+    byte = ALIEN_PTR_AT(receiver, index);
+  return as_smiOop((char)byte);
+}
+PRIM_DECL_3(byteArrayPrimitives::alienSignedByteAtPut, oop receiver, oop argument1, oop argument2) {
+  PROLOGUE_3("alienSignedByteAtPut", receiver, argument1, argument2);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument1->is_smi())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (!argument2->is_smi())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+
+  int index = smiOop(argument1)->value();
+  int size = ALIEN_SIZE(receiver);
+  int value = smiOop(argument2)->value();
+
+  if (index < 1 || (size != 0 && index > abs(size)))
+    return markSymbol(vmSymbols::index_not_valid());
+  if (value < -128 || value > 127)
+    return markSymbol(vmSymbols::argument_is_invalid());
+
+  u_char byte = value;
+  if (size > 0)
+    ALIEN_BYTE_AT_PUT(receiver, argument1, byte);
+  else
+    ALIEN_PTR_AT(receiver, index) = byte;
+  return argument2;
+}
 PRIM_DECL_1(byteArrayPrimitives::alienSize, oop receiver) {
   PROLOGUE_1("alienSize", receiver);
   if (!receiver->is_byteArray())
@@ -487,7 +562,20 @@ PRIM_DECL_2(byteArrayPrimitives::alienSetAddress, oop receiver, oop argument) {
   PROLOGUE_2("alienSetAddress", receiver, argument);
   if (!receiver->is_byteArray())
     return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (ALIEN_SIZE(receiver) > 0)
+    return markSymbol(vmSymbols::illegal_state());
+  if (!argument->is_smi() && 
+     !(argument->is_byteArray() && byteArrayOop(argument)->number().signum() > 0))
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
 
-  ALIEN_ADDRESS(receiver) = smiOop(argument)->value();
+  if (argument->is_smi())
+    ALIEN_ADDRESS(receiver) = smiOop(argument)->value();
+  else {
+    bool ok;
+    int address = byteArrayOop(argument)->number().as_int(ok);
+    if (!ok) return markSymbol(vmSymbols::argument_is_invalid());
+    ALIEN_ADDRESS(receiver) = address;
+  }
+
   return receiver;
 }
