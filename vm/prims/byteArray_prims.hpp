@@ -305,5 +305,80 @@ class byteArrayPrimitives : AllStatic {
   //              name  = 'byteArrayPrimitives::alienSignedByteAtPut' }
   //%
   static PRIM_DECL_3(alienSignedByteAtPut, oop receiver, oop index, oop value);
-};
 
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienUnsignedShortAt: index  <SmallInteger>
+  //                          ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienUnsignedShortAt' }
+  //%
+  static PRIM_DECL_2(alienUnsignedShortAt, oop receiver, oop index);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienUnsignedShortAt: index  <SmallInteger>
+  //                             put: value  <SmallInteger>
+  //                          ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienUnsignedShortAtPut' }
+  //%
+  static PRIM_DECL_3(alienUnsignedShortAtPut, oop receiver, oop argument1, oop argument2);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienSignedShortAt: index  <SmallInteger>
+  //                        ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienSignedShortAt' }
+  //%
+  static PRIM_DECL_2(alienSignedShortAt, oop receiver, oop index);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienSignedShortAt: index  <SmallInteger>
+  //                           put: value  <SmallInteger>
+  //                        ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienSignedShortAtPut' }
+  //%
+  static PRIM_DECL_3(alienSignedShortAtPut, oop receiver, oop argument1, oop argument2);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienUnsignedLongAt: index  <SmallInteger>
+  //                         ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienUnsignedLongAt' }
+  //%
+  static PRIM_DECL_2(alienUnsignedLongAt, oop receiver, oop index);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienUnsignedLongAt: index  <SmallInteger>
+  //                            put: value  <SmallInteger>
+  //                         ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienUnsignedLongAtPut' }
+  //%
+  static PRIM_DECL_3(alienUnsignedLongAtPut, oop receiver, oop argument1, oop argument2);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienSignedLongAt: index  <SmallInteger>
+  //                       ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienSignedLongAt' }
+  //%
+  static PRIM_DECL_2(alienSignedLongAt, oop receiver, oop index);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveAlienSignedLongAt: index  <SmallInteger>
+  //                          put: value  <SmallInteger>
+  //                       ifFail: failBlock <PrimFailBlock> ^<SmallInteger> =
+  //   Internal { flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::alienSignedLongAtPut' }
+  //%
+  static PRIM_DECL_3(alienSignedLongAtPut, oop receiver, oop argument1, oop argument2);
+};

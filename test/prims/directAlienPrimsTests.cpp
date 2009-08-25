@@ -139,3 +139,182 @@ TESTF(DirectAlienPrimsTests, alienSignedByteAtPutShouldReturnMarkedSymbolWhenVal
 
   checkMarkedSymbol("invalid value", result, vmSymbols::argument_is_invalid());
 }
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtShouldReturnCorrectValue) {
+  byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(255), as_smiOop(1), alien);
+  byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(255), as_smiOop(2), alien);
+
+  oop result = byteArrayPrimitives::alienUnsignedShortAt(as_smiOop(1), alien);
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(65535, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtShouldReturnMarkedSymbolWhenNotAlien) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAt(as_smiOop(1), as_smiOop(0));
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::receiver_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtShouldReturnMarkedSymbolWhenIndexNotSMI) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAt(alien, alien);
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::argument_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtShouldReturnMarkedSymbolWhenIndexTooSmall) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAt(as_smiOop(0), alien);
+
+  checkMarkedSymbol("index invalid", result, vmSymbols::index_not_valid());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtShouldReturnMarkedSymbolWhenIndexTooBig) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAt(as_smiOop(4), alien);
+
+  checkMarkedSymbol("index invalid", result, vmSymbols::index_not_valid());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldReturnCorrectValue) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(65535), as_smiOop(1), alien);
+
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(65535, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldSetCorrectValue) {
+  byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(65535), as_smiOop(1), alien);
+  oop result = byteArrayPrimitives::alienUnsignedShortAt(as_smiOop(1), alien);
+
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(65535, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldReturnMarkedSymbolWhenNotAlien) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(1), as_smiOop(1), as_smiOop(0));
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::receiver_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldReturnMarkedSymbolWhenIndexNotSMI) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(1), alien, alien);
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::first_argument_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldReturnMarkedSymbolWhenValueNotSMI) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAtPut(alien, as_smiOop(1), alien);
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::second_argument_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldReturnMarkedSymbolWhenIndexTooSmall) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(1), as_smiOop(0), alien);
+
+  checkMarkedSymbol("index invalid", result, vmSymbols::index_not_valid());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldReturnMarkedSymbolWhenIndexTooBig) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(1), as_smiOop(4), alien);
+
+  checkMarkedSymbol("index invalid", result, vmSymbols::index_not_valid());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldReturnMarkedSymbolWhenValueTooSmall) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(-1), as_smiOop(1), alien);
+
+  checkMarkedSymbol("value too small", result, vmSymbols::argument_is_invalid());
+}
+
+TESTF(DirectAlienPrimsTests, alienUnsignedShortAtPutShouldReturnMarkedSymbolWhenValueTooBig) {
+  oop result = byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(65536), as_smiOop(1), alien);
+
+  checkMarkedSymbol("value too small", result, vmSymbols::argument_is_invalid());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtShouldReturnCorrectValue) {
+  byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(65535), as_smiOop(1), alien);
+
+  oop result = byteArrayPrimitives::alienSignedShortAt(as_smiOop(1), alien);
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(-1, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtShouldReturnMarkedSymbolWhenNotAlien) {
+  oop result = byteArrayPrimitives::alienSignedShortAt(as_smiOop(1), as_smiOop(0));
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::receiver_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtShouldReturnMarkedSymbolWhenIndexNotSMI) {
+  oop result = byteArrayPrimitives::alienSignedShortAt(alien, alien);
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::argument_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtShouldReturnMarkedSymbolWhenIndexTooSmall) {
+  oop result = byteArrayPrimitives::alienSignedShortAt(as_smiOop(0), alien);
+
+  checkMarkedSymbol("index invalid", result, vmSymbols::index_not_valid());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtShouldReturnMarkedSymbolWhenIndexTooBig) {
+  oop result = byteArrayPrimitives::alienSignedShortAt(as_smiOop(4), alien);
+
+  checkMarkedSymbol("index invalid", result, vmSymbols::index_not_valid());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldReturnCorrectValue) {
+  oop result = byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(-1), as_smiOop(1), alien);
+
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(-1, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldSetCorrectValue) {
+  byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(-1), as_smiOop(1), alien);
+  oop result = byteArrayPrimitives::alienSignedShortAt(as_smiOop(1), alien);
+
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(-1, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldReturnMarkedSymbolWhenNotAlien) {
+  oop result = byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(1), as_smiOop(1), as_smiOop(0));
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::receiver_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldReturnMarkedSymbolWhenIndexNotSMI) {
+  oop result = byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(1), alien, alien);
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::first_argument_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldReturnMarkedSymbolWhenValueNotSMI) {
+  oop result = byteArrayPrimitives::alienSignedShortAtPut(alien, as_smiOop(1), alien);
+
+  checkMarkedSymbol("wrong type", result, vmSymbols::second_argument_has_wrong_type());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldReturnMarkedSymbolWhenIndexTooSmall) {
+  oop result = byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(1), as_smiOop(0), alien);
+
+  checkMarkedSymbol("index invalid", result, vmSymbols::index_not_valid());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldReturnMarkedSymbolWhenIndexTooBig) {
+  oop result = byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(1), as_smiOop(4), alien);
+
+  checkMarkedSymbol("index invalid", result, vmSymbols::index_not_valid());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldReturnMarkedSymbolWhenValueTooSmall) {
+  oop result = byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(-32769), as_smiOop(1), alien);
+
+  checkMarkedSymbol("value too small", result, vmSymbols::argument_is_invalid());
+}
+
+TESTF(DirectAlienPrimsTests, alienSignedShortAtPutShouldReturnMarkedSymbolWhenValueTooBig) {
+  oop result = byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(32768), as_smiOop(1), alien);
+
+  checkMarkedSymbol("value too small", result, vmSymbols::argument_is_invalid());
+}

@@ -80,3 +80,36 @@ TESTF(PointerAlienPrimsTests, alienSignedByteAtPutShouldSetCorrectByte) {
   ASSERT_TRUE_M(result->is_smi(), "result should be SmallInteger");
   ASSERT_EQUALS_M(-1, smiOop(result)->value(), "Should return value");
 }
+
+TESTF(PointerAlienPrimsTests, alienUnsignedShortAtShouldReturnCorrectValue) {
+  byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(255), as_smiOop(1), alien);
+  byteArrayPrimitives::alienUnsignedByteAtPut(as_smiOop(255), as_smiOop(2), alien);
+
+  oop result = byteArrayPrimitives::alienUnsignedShortAt(as_smiOop(1), alien);
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(65535, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(PointerAlienPrimsTests, alienUnsignedShortAtPutShouldSetCorrectValue) {
+  byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(65535), as_smiOop(1), alien);
+  oop result = byteArrayPrimitives::alienUnsignedShortAt(as_smiOop(1), alien);
+
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(65535, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(PointerAlienPrimsTests, alienSignedShortAtShouldReturnCorrectValue) {
+  byteArrayPrimitives::alienUnsignedShortAtPut(as_smiOop(65535), as_smiOop(1), alien);
+
+  oop result = byteArrayPrimitives::alienSignedShortAt(as_smiOop(1), alien);
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(-1, smiOop(result)->value(), "wrong value");
+}
+
+TESTF(PointerAlienPrimsTests, alienSignedShortAtPutShouldSetCorrectValue) {
+  byteArrayPrimitives::alienSignedShortAtPut(as_smiOop(-1), as_smiOop(1), alien);
+  oop result = byteArrayPrimitives::alienSignedShortAt(as_smiOop(1), alien);
+
+  ASSERT_TRUE_M(result->is_smi(), "should be smi");
+  ASSERT_EQUALS_M(-1, smiOop(result)->value(), "wrong value");
+}

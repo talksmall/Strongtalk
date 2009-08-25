@@ -429,6 +429,8 @@ PRIM_DECL_1(byteArrayPrimitives::hash, oop receiver) {
 #define ALIEN_BYTE_AT(alien, index) byteArrayOop(alien)->byte_at(index + 4)
 #define ALIEN_BYTE_AT_PUT(alien, index, byte) byteArrayOop(alien)->byte_at_put(smiOop(index)->value() + 4, byte)
 #define ALIEN_PTR_AT(alien, index) ((u_char*)(ALIEN_ADDRESS(alien)))[index - 1]
+#define ALIEN_SHORT_AT(alien, index) (short*)(((u_char*)byteArrayOop(alien)->bytes()) + index + 3)
+#define ALIEN_SHORT_PTR_AT(alien, index) ((short*)&ALIEN_PTR_AT(receiver, index))
 
 PRIM_DECL_2(byteArrayPrimitives::alienUnsignedByteAt, oop receiver, oop argument) {
   PROLOGUE_2("alienUnsignedByteAt", receiver, argument);
@@ -452,6 +454,7 @@ PRIM_DECL_2(byteArrayPrimitives::alienUnsignedByteAt, oop receiver, oop argument
   
   return as_smiOop(byte);
 }
+
 PRIM_DECL_3(byteArrayPrimitives::alienUnsignedByteAtPut, oop receiver, oop argument1, oop argument2){
   PROLOGUE_3("alienUnsignedByteAtPut", receiver, argument1, argument2);
   if (!receiver->is_byteArray())
@@ -478,6 +481,7 @@ PRIM_DECL_3(byteArrayPrimitives::alienUnsignedByteAtPut, oop receiver, oop argum
   }
   return argument2;
 }
+
 PRIM_DECL_2(byteArrayPrimitives::alienSignedByteAt, oop receiver, oop argument) {
   PROLOGUE_2("alienSignedByteAt", receiver, argument);
   if (!receiver->is_byteArray())
@@ -498,6 +502,7 @@ PRIM_DECL_2(byteArrayPrimitives::alienSignedByteAt, oop receiver, oop argument) 
     byte = ALIEN_PTR_AT(receiver, index);
   return as_smiOop((char)byte);
 }
+
 PRIM_DECL_3(byteArrayPrimitives::alienSignedByteAtPut, oop receiver, oop argument1, oop argument2) {
   PROLOGUE_3("alienSignedByteAtPut", receiver, argument1, argument2);
   if (!receiver->is_byteArray())
@@ -523,6 +528,123 @@ PRIM_DECL_3(byteArrayPrimitives::alienSignedByteAtPut, oop receiver, oop argumen
     ALIEN_PTR_AT(receiver, index) = byte;
   return argument2;
 }
+
+PRIM_DECL_2(byteArrayPrimitives::alienUnsignedShortAt, oop receiver, oop argument) {
+  PROLOGUE_2("alienUnsignedShortAt", receiver, argument);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument->is_smi())
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+
+  int size = ALIEN_SIZE(receiver);
+  int index = smiOop(argument)->value();
+
+  if (index < 1 || (size != 0 && index > abs(size) - 1))
+    return markSymbol(vmSymbols::index_not_valid());
+
+  unsigned short value;
+  if (size > 0)
+    value = *ALIEN_SHORT_AT(receiver, index);
+  else
+    value = *ALIEN_SHORT_PTR_AT(receiver, index);
+  
+  return as_smiOop(value);
+}
+
+PRIM_DECL_3(byteArrayPrimitives::alienUnsignedShortAtPut, oop receiver, oop argument1, oop argument2) {
+  PROLOGUE_3("alienUnsignedShortAtPut", receiver, argument1, argument2);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument1->is_smi())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (!argument2->is_smi())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  
+  int size = ALIEN_SIZE(receiver);
+  int index = smiOop(argument1)->value();
+  int value = smiOop(argument2)->value();
+  
+  if (index < 1 || (size != 0 && index > abs(size) - 1))
+    return markSymbol(vmSymbols::index_not_valid());
+  if (value < 0 || value > 65535)
+    return markSymbol(vmSymbols::argument_is_invalid());
+
+  if (size > 0)
+    *ALIEN_SHORT_AT(receiver, index) = value;
+  else
+    *ALIEN_SHORT_PTR_AT(receiver, index) = value;
+  
+  return argument2;
+}
+
+PRIM_DECL_2(byteArrayPrimitives::alienSignedShortAt, oop receiver, oop argument) {
+  PROLOGUE_2("alienSignedShortAt", receiver, argument);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument->is_smi())
+    return markSymbol(vmSymbols::argument_has_wrong_type());
+
+  int size = ALIEN_SIZE(receiver);
+  int index = smiOop(argument)->value();
+
+  if (index < 1 || (size != 0 && index > abs(size) - 1))
+    return markSymbol(vmSymbols::index_not_valid());
+
+  short value;
+  if (size > 0)
+    value = *ALIEN_SHORT_AT(receiver, index);
+  else
+    value = *ALIEN_SHORT_PTR_AT(receiver, index);
+  
+  return as_smiOop(value);
+}
+
+PRIM_DECL_3(byteArrayPrimitives::alienSignedShortAtPut, oop receiver, oop argument1, oop argument2) {
+  PROLOGUE_3("alienSignedShortAtPut", receiver, argument1, argument2);
+  if (!receiver->is_byteArray())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!argument1->is_smi())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (!argument2->is_smi())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+
+  int size = ALIEN_SIZE(receiver);
+  int index = smiOop(argument1)->value();
+  int value = smiOop(argument2)->value();
+
+  if (index < 1 || (size != 0 && index > abs(size) - 1))
+    return markSymbol(vmSymbols::index_not_valid());
+  if (value < -32768 || value > 32767)
+    return markSymbol(vmSymbols::argument_is_invalid());
+
+  if (size > 0)
+    *ALIEN_SHORT_AT(receiver, index) = value;
+  else
+    *ALIEN_SHORT_PTR_AT(receiver, index) = value;
+
+  return argument2;
+}
+
+PRIM_DECL_2(byteArrayPrimitives::alienUnsignedLongAt, oop receiver, oop argument) {
+  PROLOGUE_2("alienUnsignedLongAt", receiver, argument);
+  return nilObj;
+}
+
+PRIM_DECL_3(byteArrayPrimitives::alienUnsignedLongAtPut, oop receiver, oop argument1, oop argument2) {
+  PROLOGUE_3("alienUnsignedLongAtPut", receiver, argument1, argument2);
+  return nilObj;
+}
+
+PRIM_DECL_2(byteArrayPrimitives::alienSignedLongAt, oop receiver, oop argument) {
+  PROLOGUE_2("alienSignedLongAt", receiver, argument);
+  return nilObj;
+}
+
+PRIM_DECL_3(byteArrayPrimitives::alienSignedLongAtPut, oop receiver, oop argument1, oop argument2) {
+  PROLOGUE_3("alienSignedLongAtPut", receiver, argument1, argument2);
+  return nilObj;
+}
+
 PRIM_DECL_1(byteArrayPrimitives::alienSize, oop receiver) {
   PROLOGUE_1("alienSize", receiver);
   if (!receiver->is_byteArray())
