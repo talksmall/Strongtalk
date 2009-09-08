@@ -263,6 +263,7 @@ class Klass : ValueObj {
   virtual void oop_layout_iterate(oop obj, ObjectLayoutClosure* blk);
 
   friend class klassKlass;
+  friend class klassOopDesc;
 };
 
 inline klassOop as_klassOop(void* p)

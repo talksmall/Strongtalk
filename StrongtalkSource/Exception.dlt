@@ -147,7 +147,10 @@ description
 
 messageText
 "Return an exception's message text."
-	^messageText!
+	^messageText isNil
+		ifTrue: ['']
+		ifFalse: [messageText]
+		!
 
 printOn: stream
 

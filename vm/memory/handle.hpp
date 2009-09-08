@@ -34,17 +34,23 @@ class Handle;
 // PersistentHandles can preserve a memOop without occupying space in the Handles
 // array and do not require a HandleMark. This means they can be used in contexts
 // where a thread switch may occur (eg. surrounding a delta call). 
-class PersistentHandle : StackObj {
+class PersistentHandle : public CHeapObj {
   oop saved;
   PersistentHandle* next;
   PersistentHandle* prev;
   static PersistentHandle* first;
 
 public:
+  static int savedOffset() {
+    return (int)&((PersistentHandle*)NULL)->saved;
+  }
   PersistentHandle(oop toSave);
   ~PersistentHandle();
   oop as_oop() {
     return saved;
+  }
+  klassOop as_klassOop() {
+    return klassOop(saved);
   }
   static void oops_do(void f(oop*));
 };

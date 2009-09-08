@@ -1,0 +1,25 @@
+Delta define: #DirectAlienTest as: (
+(Class subclassOf: 'AlienTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #DirectAlienTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #DirectAlienTest) group: 'Aliens test'!
+
+(Delta mirrorFor: #DirectAlienTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #DirectAlienTest) methodsFor: 'fixture' !
+
+
+setUp
+
+	alien := Alien new: self dataSize! !
+
+! (Delta mirrorFor: #DirectAlienTest) methodsFor: 'testing' !
+
+
+testPointer
+
+	self should: [alien pointer] raise: Error! !
+

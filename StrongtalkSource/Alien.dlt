@@ -1,5 +1,5 @@
 Delta define: #Alien as: (
-(Class subclassOf: 'ByteArray' instanceVariables: 'size') classVariables: 'GCMallocedAliens LoadedLibraries') !
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
 
 (Delta mirrorFor: #Alien) revision: '$Revision:$'!
 
@@ -24,14 +24,14 @@ initialize
 
 atAddress: pointer <Integer> ^<X>
 
-	^(self primitiveNew: 4)
+	^(self primitiveNew: 8)
 		size: self dataSize negated;
 		addressField: pointer;
 		yourself!
 
 atAddress: pointer <Integer> dataSize: dataSize <Integer> ^<X>
 
-	^(self primitiveNew: 4)
+	^(self primitiveNew: 8)
 		size: dataSize negated;
 		addressField: pointer;
 		yourself!
@@ -61,9 +61,17 @@ dataSize
 
 	^self subclassResponsibility!
 
+ensureLoaded: libraryName
+
+	^self loadedLibraries
+		at: libraryName
+		ifAbsentPut: [(Alien new: 4)
+								unsignedLongAt: 1 put: (self primLoadLibrary: libraryName);
+								yourself]!
+
 forPointer: pointer <Integer> ^<X>
 
-	^(self primitiveNew: 4)
+	^(self primitiveNew: 8)
 		size: 0;
 		addressField: pointer;
 		yourself!
@@ -74,7 +82,7 @@ new
 
 new: size <Integer> ^ <X>
 
-	^(self primitiveNew: size)
+	^(self primitiveNew: size + 4)
 		size: size;
 		initialize!
 
@@ -84,10 +92,20 @@ newC
 
 newC: size <Integer> ^ <X>
 
-	^(self primitiveNew: 4)
+	^(self primitiveNew: 8)
 		size: size negated;
 		addressField: (self Ccalloc: size);
 		initialize!
+
+newCString: string <String> ^ <Alien>
+
+	^(Alien rawNewC: string size + 1)
+		replaceFrom: 1
+		to: string size
+		with: string
+		startingAt: 1;
+		unsignedByteAt: string size + 1 put: 0;
+		yourself!
 
 newGC
 
@@ -96,7 +114,8 @@ newGC
 newGC: size <Integer> ^<X>
 
 	| alien address |
-	alien := self primitiveNew: 4.
+	self unimplemented.
+	alien := self primitiveNew: 8.
 	alien size: size negated.
 	address := self Ccalloc: size.
 	GCMallocedAliens add: alien finalizing: address.
@@ -107,10 +126,40 @@ newGC: size <Integer> ^<X>
 
 rawNewC: size <Integer> ^ <X>
 
-	^(self primitiveNew: 4)
+	^(self primitiveNew: 8)
 		size: size negated;
 		addressField: (self Cmalloc: size);
 		initialize! !
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'libraries' !
+
+
+lookup: symbolName <String> inLibrary: libraryName <String> ^ <Alien>
+
+	^self forPointer: ((Alien ensureLoaded: libraryName)
+										primFindSymbol: symbolName)!
+
+lookupOrNil: symbolName <String> inLibrary: libraryName <String> ^ <Alien>
+
+	^[self lookup: symbolName inLibrary: libraryName]
+			on: NotFoundError
+			do: [:err| nil]!
+
+primLoadLibrary: libraryName
+
+	|proxy|
+	proxy := ExternalProxy new.
+	{{primitiveDLLLoad: libraryName result: proxy ifFail: [:err|] }}.
+	^proxy asInteger! !
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+
+
+loadedLibraries
+
+	LoadedLibraries isNil ifTrue: 
+		[LoadedLibraries := Dictionary new].
+	^LoadedLibraries! !
 
 ! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - memory allocation' !
 
@@ -147,81 +196,318 @@ dataSize ^<Integer>
 
 	^self size abs!
 
+doubleAt: index <Integer> ^<Float>
+
+	^{{self primitiveAlienDoubleAt: index
+				ifFail: [:err| self error: 'Unable to get double ', err] }}!
+
+doubleAt: index <Integer> put: double <Float> ^<Float>
+
+	^{{self primitiveAlienDoubleAt: index
+				put: double
+				ifFail: [:err| self error: 'Unable to set double ', err] }}!
+
+floatAt: index <Integer> ^<Double>
+
+	^{{self primitiveAlienFloatAt: index
+				ifFail: [:err| self error: 'Unable to get float ', err] }}!
+
+floatAt: index <Integer> put: double <Float> ^<Float>
+
+	^{{self primitiveAlienFloatAt: index
+				put: double
+				ifFail: [:err| self error: 'Unable to set float ', err] }}!
+
+pointer
+
+	self isPointer ifTrue: [self error:  'One cannot take the address of pointer Alien instances; they may move, and are already pointers'].
+	^self class forPointer: self address!
+
 signedByteAt: index <Integer> ^<Integer>
 
-	|byte|
-	byte := self at: index.
-	^byte < 128
-		ifTrue: [byte]
-		ifFalse: [(256 - byte) negated]!
+	^{{self primitiveAlienSignedByteAt: index
+				ifFail: [:err| self error: 'Unable to get signed byte ', err] }}!
 
 signedByteAt: index <Integer> put: byte <Integer> ^<Integer>
 
-	self at: index put: (byte < 0 ifTrue: [byte + 256] ifFalse: [byte]).
-	^byte!
+	^{{self primitiveAlienSignedByteAt: index
+				put: byte
+				ifFail: [:err| self error: 'Unable to set signed byte ', err] }}!
 
 signedLongAt: index <Integer> ^<Integer>
 
-	|unsigned|
-	unsigned := (self unsignedShortAt: index) + ((self unsignedShortAt: index + 2) * 65536).
-	^unsigned < self signedFourByteLimit
-		ifTrue: [unsigned]
-		ifFalse: [unsigned - self unsignedFourByteLimit]!
+	^{{self primitiveAlienSignedLongAt: index
+				ifFail: [:err| self error: 'Unable to get signed long ', err] }}!
 
 signedLongAt: index <Integer> put: long <Integer>^<Integer>
 
-	|unsigned|
-	unsigned := long < 0
-		ifTrue: [self unsignedFourByteLimit + long]
-		ifFalse: [long].
-	self unsignedLongAt: index put: unsigned.
-	^long!
+	^{{self primitiveAlienSignedLongAt: index
+				put: long
+				ifFail: [:err| self error: 'Unable to get signed long ', err] }}!
 
 signedShortAt: index <Integer> ^<Integer>
 
-	|unsigned|
-	unsigned := (self at: index) + ((self at: index + 1) * 256).
-	^unsigned < 32768
-		ifTrue: [unsigned]
-		ifFalse: [unsigned - 65536]!
+	^{{self primitiveAlienSignedShortAt: index
+				ifFail: [:err| self error: 'Unable to get signed short ', err] }}!
 
 signedShortAt: index <Integer> put: short <Integer> ^<Integer>
 
-	|unsigned|
-	unsigned := short < 0
-		ifTrue: [65536 + short]
-		ifFalse: [short].
-	self unsignedShortAt: index put: unsigned.
-	^short!
+	^{{self primitiveAlienSignedShortAt: index
+				put: short
+				ifFail: [:err| self error: 'Unable to set signed short ', err] }}!
+
+strcpy
+
+	^self strcpyFrom: 1!
+
+strcpyFrom: startIndex
+
+	|string length offset|
+	length := self strlenStartingAt: startIndex.
+	string := String new: length.
+	offset := startIndex - 1.
+	1 to: length do: [:i|
+		string at: i put: (Character value: (self unsignedByteAt: i + offset))].
+	^string!
+
+strcpyUTF8
+
+	^self strcpyUTF8From: 1!
+
+strcpyUTF8From: startIndex
+
+	^self unimplemented!
+
+strlen
+
+	^self strlenStartingAt: 1!
+
+strlenStartingAt: startIndex
+
+	self dataSize == 0
+		ifTrue: [^self rawStrlenStartingAt: startIndex].
+	startIndex to: self dataSize do: [:i| (self unsignedByteAt: i) == 0
+																ifTrue: [^ i - startIndex]].
+	^self dataSize - startIndex + 1!
 
 unsignedByteAt: index <Integer> ^<Integer>
 
-	^self at: index!
+	^{{self primitiveAlienUnsignedByteAt: index
+				ifFail: [:err| self error: 'Unable to get unsigned byte ', err] }}!
 
-unsignedByteAt: index <Integer> put: byte <Integer> ^<Integer>
+unsignedByteAt: index <Integer> put: byte <Integer|Character> ^<Integer>
 
-	self at: index put: byte.
-	^byte!
+	|c|
+	c := byte isCharacter
+				ifTrue: [byte asciiValue]
+				ifFalse: [byte].
+	^{{self primitiveAlienUnsignedByteAt: index
+				put: c
+				ifFail: [:err| self error: 'Unable to set unsigned byte ', err] }}!
 
 unsignedLongAt: index <Integer> ^<Integer>
 
-	^(self unsignedShortAt: index) + ((self unsignedShortAt: index + 2) * (256 * 256))!
+	^{{self primitiveAlienUnsignedLongAt: index
+				ifFail: [:err| self error: 'Unable to get unsigned long ', err] }}!
 
 unsignedLongAt: index <Integer> put: long <Integer>^<Integer>
 
-	self unsignedShortAt: index put: (long \\ (256 * 256)).
-	self unsignedShortAt: index + 2 put: (long // (256 * 256)).
-	^long!
+	^{{self primitiveAlienUnsignedLongAt: index
+				put: long
+				ifFail: [:err| self error: 'Unable to set unsigned long ', err] }}!
 
 unsignedShortAt: index <Integer> ^<Integer>
 
-	^(self at: index) + ((self at: index + 1) * 256)!
+	^{{self primitiveAlienUnsignedShortAt: index
+				ifFail: [:err| self error: 'Unable to get unsigned short ', err] }}!
 
 unsignedShortAt: index <Integer> put: short <Integer>^<Integer>
 
-	self at: index put: (short \\ 256).
-	self at: index + 1 put: (short // 256).
-	^short! !
+	^{{self primitiveAlienUnsignedShortAt: index
+				put: short
+				ifFail: [:err| self error: 'Unable to set unsigned short ', err] }}! !
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+
+
+primFFICallResult: result <Alien>
+
+	{{self primitiveAlienCallResult: result ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger> with: arg2 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1
+			with: arg2
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1
+			with: arg2
+			with: arg3
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1
+			with: arg2
+			with: arg3
+			with: arg4
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1
+			with: arg2
+			with: arg3
+			with: arg4
+			with: arg5
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1
+			with: arg2
+			with: arg3
+			with: arg4
+			with: arg5
+			with: arg6
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1
+			with: arg2
+			with: arg3
+			with: arg4
+			with: arg5
+			with: arg6
+			with: arg7
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8 }
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger>
+with: arg9 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9 }
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger>
+with: arg9 <Alien|SmallInteger>
+with: arg10 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10 }
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger>
+with: arg9 <Alien|SmallInteger>
+with: arg10 <Alien|SmallInteger>
+with: arg11 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11 }
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger>
+with: arg9 <Alien|SmallInteger>
+with: arg10 <Alien|SmallInteger>
+with: arg11 <Alien|SmallInteger>
+with: arg12 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11. arg12 }
+			ifFail: [:err| self error: err]}}!
+
+primFFICallResult: result <Alien|UndefinedObject>
+withArguments: arguments <Array[Alien|SmallInteger]> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: arguments
+			ifFail: [:err| self error: err]}}! !
 
 ! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
 
@@ -229,6 +515,12 @@ unsignedShortAt: index <Integer> put: short <Integer>^<Integer>
 asAlien
 
 	^self!
+
+asExternalProxy ^<ExternalProxy>
+
+	^ExternalProxy
+		forHigh: (self unsignedShortAt: 3)
+		low: (self unsignedShortAt: 1)!
 
 asSignedByte
 
@@ -254,31 +546,66 @@ asUnsignedShort
 
 	^self unsignedShortAt: 1! !
 
-! (Delta mirrorFor: #Alien) methodsFor: 'deallocation' !
-
-
-free
-
-	{{primitiveAlienFree: self addressField
-		ifFail: [:err| self error: 'Could not free alien: ', err]}}.
-	self addressField: 0! !
-
 ! (Delta mirrorFor: #Alien) methodsFor: 'instance initialization' !
 
 
 initialize
 	"Subclasses may override to perform specific initialization"! !
 
+! (Delta mirrorFor: #Alien) methodsFor: 'memory management' !
+
+
+free
+
+	{{primitiveAlienFree: self addressField
+		ifFail: [:err| self error: 'Could not free alien: ', err]}}.
+	self addressField: 0!
+
+freeAfter: aBlock <[Alien]>
+
+	[aBlock value: self]
+		ensure: [self free]! !
+
 ! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
 
 
 addressField ^<Integer>
 
-	^self signedLongAt: 1!
+	^{{ self primitiveAlienAddressIfFail: [:err| self error: 'failed to get address of alien ', err] }}!
 
 addressField: anInteger <Integer>
 
-	self signedLongAt: 1 put: anInteger!
+	^{{ self primitiveAlienAddress: anInteger
+					ifFail: [:err| self error: 'failed to set address of alien ', err] }}!
+
+at: index <Integer> ^ <SmallInteger>
+
+	^self unsignedByteAt: index!
+
+at: index <Integer> put: byte <SmallInteger> ^ <SmallInteger>
+
+	^self unsignedByteAt: index put: byte!
+
+primFindSymbol: symbolName <String> ^ <Integer>
+
+	|result library|
+	result := ExternalProxy new.
+	library := self asExternalProxy.
+	{{primitiveDLLLookup: symbolName asSymbol
+			in: library
+			result: result
+			ifFail: [:err | err == #NotFound
+									ifTrue: [NotFoundError signal]
+									ifFalse: [self error: err]]}}.
+	^result asInteger	!
+
+rawStrlenStartingAt: startIndex
+
+	|index|
+	index := startIndex.
+	[(self unsignedByteAt: index) == 0]
+		whileFalse: [index := index + 1].
+	^index - startIndex!
 
 signedFourByteLimit
 
@@ -286,15 +613,21 @@ signedFourByteLimit
 
 size ^<Integer>
 
-	^size!
+	^{{self primitiveAlienSizeIfFail: [:err| self error: 'failed to get alien size: ', err] }}!
 
 size: anInteger <Integer>
 
-	size := anInteger!
+	{{self primitiveAlienSize: anInteger
+				ifFail: [:err| self error: 'failed to set alien size: ', err] }}!
 
 smallIntLimit
 
 	^SmallInteger maxVal + 1!
+
+strlenThroughPointerAt: index
+
+	^(Alien forPointer: (self unsignedLongAt: index))
+		rawStrlenStartingAt: 1!
 
 unsignedFourByteLimit
 

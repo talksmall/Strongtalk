@@ -170,6 +170,19 @@ int Integer::as_int(bool& ok) const {
   return 0;
 }
 
+unsigned int Integer::as_unsigned_int(bool& ok) const {
+  ok = true;
+  switch (_signed_length) {
+    case  0:
+      return 0;
+    case  1:
+      return  (unsigned int)_first_digit;
+      break;
+  }
+  ok = false;
+  return 0;
+}
+
 
 double Integer::as_double(bool& ok) const {
   // filter out trivial result 0.0
@@ -773,7 +786,6 @@ int IntegerOps::int_to_Integer_result_size_in_bytes(int i) {
   return Integer::length_to_size_in_bytes(i != 0);
 }
 
-
 int IntegerOps::double_to_Integer_result_size_in_bytes(double x) {
   if (x < 0.0) x = -x;
   return Integer::length_to_size_in_bytes(x < 1.0 ? 0 : (exponent(x) + logB)/logB);
@@ -942,6 +954,14 @@ void IntegerOps::copy(Integer& x, Integer& z) {
   while (i > 0) { i--; z[i] = x[i]; }
 }
 
+void IntegerOps::unsigned_int_to_Integer(unsigned int i, Integer& z) {
+  if (i == 0)
+    z.set_length(0);
+  else {
+    z.set_length(1);
+    z._first_digit = Digit(i);
+  }
+}
 
 void IntegerOps::int_to_Integer(int i, Integer& z) {
   if (i < 0) {

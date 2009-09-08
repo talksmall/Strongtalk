@@ -74,6 +74,10 @@ at: key <Object> ifAbsent: f <[^X def]> ^<E|X>
 	^self elementFor:
 			(self valAt: key ifAbsent: [ ^f value ])!
 
+at: key <K> ifAbsentPut: block <[^X def]> ^ <E|X>
+
+	^self at: key ifAbsent: [self at: key put: block value]!
+
 indexOf: el <Object> ^<K>
 
 	^self indexOf: el

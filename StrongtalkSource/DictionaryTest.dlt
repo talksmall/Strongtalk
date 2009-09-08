@@ -1,0 +1,25 @@
+Delta define: #DictionaryTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #DictionaryTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #DictionaryTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #DictionaryTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #DictionaryTest) methodsFor: 'testing' !
+
+
+testAtIfAbsentPut
+
+	|dict|
+	dict := Dictionary new.
+	self assert: (dict at: 'a' ifAbsent: []) isNil.
+	self assert: (dict at: 'a'
+							ifAbsentPut: ['b']) = 'b'.
+	self assert: (dict at: 'a'
+							ifAbsentPut: ['c']) = 'b'
+	! !
+

@@ -1,0 +1,78 @@
+Delta define: #AlienClassTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #AlienClassTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AlienClassTest) group: 'Aliens test'!
+
+(Delta mirrorFor: #AlienClassTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'private - test support' !
+
+
+unimplementedText
+
+	[self unimplemented]
+		on: Error
+		do: [:ex|^ex messageText]! !
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+
+
+testEnsureLoadedWin32
+
+	|library proxy|
+	Platform == Win32Platform ifFalse: [^self].
+	proxy := Platform DLLLoad: 'user'.
+	library := Alien ensureLoaded: 'USER32.DLL'.
+	self assert: library asUnsignedLong = proxy asInteger.
+	self assert: library == (Alien ensureLoaded: 'USER32.DLL')!
+
+testLookupClockWin32
+
+	|function result|
+	Platform == Win32Platform ifFalse: [^self].
+	function := Alien lookup: 'clock' inLibrary: 'msvcrt.dll'.
+	result := Alien new: 8.
+	function primFFICallResult: result!
+
+testLookupInLibraryWin32
+
+	|function proxy|
+	Platform == Win32Platform ifFalse: [^self].
+	proxy := Platform DLLLookup: 'sprintf' in: 'msvcrt.dll'.
+	function := Alien lookup: 'sprintf' inLibrary: 'msvcrt.dll'.
+	self assert: function address = proxy asInteger!
+
+testLookupOrNilInLibraryWin32
+
+	|function proxy|
+	Platform == Win32Platform ifFalse: [^self].
+	proxy := Platform DLLLookup: 'sprintf' in: 'msvcrt.dll'.
+	function := Alien lookupOrNil: 'sprintf' inLibrary: 'msvcrt.dll'.
+	self assert: function address = proxy asInteger.
+	self assert: (Alien lookupOrNil: 'unknown' inLibrary: 'msvcrt.dll') isNil!
+
+testNewCString
+
+	(Alien newCString: '12345678')
+		freeAfter: [:pointer|
+							self assert: 8 = pointer strlen.
+							self assert: '12345678' = pointer strcpy]!
+
+testNewGCUnimplemented
+
+	self should: [Alien newGC: 4]
+		raise: Error
+		withExceptionDo: [:ex| self assert: self unimplementedText = ex messageText]!
+
+testPrimLoadLibraryWin32
+
+	|library proxy|
+	Platform == Win32Platform ifFalse: [^self].
+	proxy := Platform DLLLoad: 'user'.
+	library := Alien primLoadLibrary: 'USER32.DLL'.
+	self assert: library = proxy asInteger! !
+

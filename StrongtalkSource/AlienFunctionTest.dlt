@@ -1,0 +1,236 @@
+Delta define: #AlienFunctionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'sprintf
+labs
+result
+formattedString')) !
+
+(Delta mirrorFor: #AlienFunctionTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AlienFunctionTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #AlienFunctionTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #AlienFunctionTest) methodsFor: 'fixture' !
+
+
+libcName
+	
+	Platform == Win32Platform
+		ifTrue: [^'msvcrt.dll'].
+	Platform == MacOSXPlatform
+		ifTrue: [^'libc.dylib'].
+	Platform == UnixPlatform
+		ifTrue: [^'libc.6.so']
+	self error: 'Unsupported platform'!
+
+setUp
+
+	sprintf := Alien lookup: 'sprintf' inLibrary: self libcName.
+	labs := Alien lookup: 'labs' inLibrary: self libcName.
+	result := Alien new: 4.
+	formattedString := Alien newC: 200!
+
+tearDown
+
+	formattedString free! !
+
+! (Delta mirrorFor: #AlienFunctionTest) methodsFor: 'testing' !
+
+
+testCallSprintfWithArguments
+	
+	Alien autoFreeAfter: [:free|
+			|formatString|
+			formatString := '%d' asString.
+			sprintf primFFICallResult: nil
+							withArguments: { formattedString pointer.
+														(free value: formatString asAlien) pointer.
+														1 } ].
+	self assert: '1' asString = formattedString strcpy!
+
+testCallSprintfWithEightArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d %d %d %d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1
+							with: 2
+							with: 3
+							with: 4
+							with: 5
+							with: 6].
+	self assert: '1 2 3 4 5 6' asString = formattedString strcpy.
+	self assert: 11 == result asUnsignedLong!
+
+testCallSprintfWithElevenArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d %d %d %d %d %d %d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1
+							with: 2
+							with: 3
+							with: 4
+							with: 5
+							with: 6
+							with: 7
+							with: 8
+							with: 9].
+	self assert: '1 2 3 4 5 6 7 8 9' asString = formattedString strcpy.
+	self assert: 17 == result asUnsignedLong!
+
+testCallSprintfWithFiveArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1
+							with: 2
+							with: 3].
+	self assert: '1 2 3' asString = formattedString strcpy.
+	self assert: 5 == result asUnsignedLong!
+
+testCallSprintfWithFourArgs
+	
+	Alien
+		autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: ((free value: (Alien newC: 4))
+										signedLongAt: 1 put: 1;
+										yourself)
+							with: 2.
+			self assert: '1 2' asString = formattedString strcpy.
+			self assert: 3 == result asUnsignedLong]!
+
+testCallSprintfWithNineArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d %d %d %d %d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1
+							with: 2
+							with: 3
+							with: 4
+							with: 5
+							with: 6
+							with: 7].
+	self assert: '1 2 3 4 5 6 7' asString = formattedString strcpy.
+	self assert: 13 == result asUnsignedLong!
+
+testCallSprintfWithOneArg
+
+	labs primFFICallResult: result
+			with: -1.
+	self assert: 1 == result asSignedLong!
+
+testCallSprintfWithSevenArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d %d %d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1
+							with: 2
+							with: 3
+							with: 4
+							with: 5].
+	self assert: '1 2 3 4 5' asString = formattedString strcpy.
+	self assert: 9 == result asUnsignedLong!
+
+testCallSprintfWithSixArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d %d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1
+							with: 2
+							with: 3
+							with: 4].
+	self assert: '1 2 3 4' asString = formattedString strcpy.
+	self assert: 7 == result asUnsignedLong!
+
+testCallSprintfWithTenArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d %d %d %d %d %d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1
+							with: 2
+							with: 3
+							with: 4
+							with: 5
+							with: 6
+							with: 7
+							with: 8].
+	self assert: '1 2 3 4 5 6 7 8' asString = formattedString strcpy.
+	self assert: 15 == result asUnsignedLong!
+
+testCallSprintfWithThreeArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString|
+			formatString := '%d' asString.
+			sprintf primFFICallResult: nil
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1].
+	self assert: '1' asString = formattedString strcpy!
+
+testCallSprintfWithTwelveArgs
+	
+	Alien autoFreeAfter: [:free|
+			|formatString |
+			formatString := '%d %d %d %d %d %d %d %d %d %d' asString.
+			sprintf primFFICallResult: result
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer
+							with: 1
+							with: 2
+							with: 3
+							with: 4
+							with: 5
+							with: 6
+							with: 7
+							with: 8
+							with: 9
+							with: 10].
+	self assert: '1 2 3 4 5 6 7 8 9 10' asString = formattedString strcpy.
+	self assert: 20 == result asUnsignedLong!
+
+testCallSprintfWithTwoArgs
+	
+	Alien
+		autoFreeAfter: [:free|
+			|formatString|
+			formatString := '12345' asString.
+			sprintf primFFICallResult: nil
+							with: formattedString pointer
+							with: (free value: formatString asAlien) pointer.
+			self assert: formatString = formattedString strcpy]! !
+

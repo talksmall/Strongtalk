@@ -26,10 +26,10 @@ elementForCopy:!
 4214636!
 private-subclass responsibility!
 1A:A! !
-remove:ifAbsent:!
-4217940!
-removing!
-2A:[^X def]:A|X! !
+printStatsOn:!
+4223278!
+debugging!
+0CharOutputStream:! !
 tableAt:put:inMatchingSlot:value:!
 4216961!
 private-subroutines for #tableAt:put:ifNew:!
@@ -44,10 +44,10 @@ private-subclass responsibility!
 1K:E:A! !
 #typeArgumentString!
 K , E , A ! !
-removeKey:!
-4219029!
-removing!
-0K:E! !
+tableAt:put:inUnusedSlot:!
+4217350!
+private-subroutines for #tableAt:put:ifNew:!
+1K:E:Int:A! !
 includesElement:!
 4221700!
 testing!
@@ -72,10 +72,10 @@ addAll:!
 4219899!
 including/adding!
 0Cltn[A]:Cltn[A]! !
-tableAt:put:inDeletedSlot:!
-4216264!
-private-subroutines for #tableAt:put:ifNew:!
-1K:E:Int:A! !
+hashFor:!
+4215126!
+private-subclass responsibility!
+1Object:Int! !
 objToIncludeFor:withExisting:!
 4215822!
 private-subclass responsibility!
@@ -126,8 +126,10 @@ markDeleted:!
 4220696!
 private-misc!
 1Int:! !
-#isGeneric!
-true! !
+at:!
+4212779!
+accessing!
+0K:E! !
 #comment!
 (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.! !
@@ -159,20 +161,18 @@ atIndex:inTable:occupiedSlotDo:emptySlotDo:deletedSlotDo:!
 7903914!
 private-table manipulation!
 3Int:Array[Object|A]:[A,^X def]:[^Y def]:[^Z def]:X|Y|Z! !
-table:!
-4211028!
-private-accessing!
-1Array[A|Object]:! !
+#abstract!
+true! !
 #group!
 base! !
 tableAt:put:inEmptySlot:!
 4216657!
 private-subroutines for #tableAt:put:ifNew:!
 1K:E:Int:A! !
-tableAt:put:inUnusedSlot:!
-4217350!
-private-subroutines for #tableAt:put:ifNew:!
-1K:E:Int:A! !
+removeKey:!
+4219029!
+removing!
+0K:E! !
 createFirstTable!
 4206331!
 private-table manipulation!
@@ -203,10 +203,10 @@ elementFor:!
 4214422!
 private-subclass responsibility!
 1A:E! !
-hashFor:!
-4215126!
-private-subclass responsibility!
-1Object:Int! !
+tableAt:put:inDeletedSlot:!
+4216264!
+private-subroutines for #tableAt:put:ifNew:!
+1K:E:Int:A! !
 growTable!
 7905387!
 private-table manipulation!
@@ -245,10 +245,8 @@ newTableWithSize:!
 4211973!
 private-computations!
 1Int:Array[A|Object]! !
-at:!
-4212779!
-accessing!
-0K:E! !
+#isGeneric!
+true! !
 include:!
 4220090!
 including/adding!
@@ -272,10 +270,10 @@ size!
 4214028!
 accessing!
 0Int! !
-printStatsOn:!
-4223278!
-debugging!
-0CharOutputStream:! !
+remove:ifAbsent:!
+4217940!
+removing!
+2A:[^X def]:A|X! !
 valAt:ifAbsent:!
 7896890!
 private-table manipulation!
@@ -288,14 +286,20 @@ tableSizeForCapacity:!
 4212347!
 private-computations!
 1Int:Int! !
+at:ifAbsentPut:!
+35013674!
+accessing!
+2K:[^X def]:E|X! !
 #subtype!
 true! !
 occupied!
 4212182!
 private-computations!
 1Int! !
-#abstract!
-true! !
+table:!
+4211028!
+private-accessing!
+1Array[A|Object]:! !
 checkValidity!
 4222744!
 consistency testing!

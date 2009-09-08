@@ -1,0 +1,92 @@
+Delta define: #IndirectAlienTest as: (
+(Class subclassOf: 'AlienTest' instanceVariables: '')) !
+
+(Delta mirrorFor: #IndirectAlienTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #IndirectAlienTest) group: 'Aliens test'!
+
+(Delta mirrorFor: #IndirectAlienTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #IndirectAlienTest) methodsFor: 'fixture' !
+
+
+setUp
+
+	alien := Alien newC: self dataSize!
+
+tearDown
+
+	[alien free]
+		on: Error
+		do: [:ignore|]! !
+
+! (Delta mirrorFor: #IndirectAlienTest) methodsFor: 'testing' !
+
+
+testAutoFreeAfter
+
+	|wasCalled toFree|
+	Alien autoFreeAfter: [:autoFree|
+									wasCalled := true.
+									autoFree value: alien.
+									self deny: alien address == 0.
+									autoFree value: (toFree := Alien newC:4).
+									self deny: alien address == 0].
+	self assert: alien address == 0.
+	self assert: alien address == 0.
+	self assert: wasCalled!
+
+testFreeAfter
+
+	|arg|
+	self deny: alien address == 0.
+	alien freeAfter: [:buf| arg := buf].
+	self assert: alien == arg.
+	self assert: alien address == 0!
+
+testPointer
+
+	|pointer|
+	pointer := alien pointer.
+	self assert: pointer address == alien address.
+	self assert: pointer size == 0!
+
+testStrcpy
+
+	|contents|
+	contents := #'12345678'.
+	alien replaceFrom: 1 to: 8 with: (contents collect: [:c| c asciiValue]) startingAt: 1.
+	self assert: (contents asString = alien strcpy).
+	
+	alien unsignedByteAt: 5 put: 0.
+	self assert: (contents asString copyFrom: 1 to: 4) = alien strcpy!
+
+testStrcpyFrom
+
+	|contents shortContents actual|
+	contents := '12345678'.
+	shortContents := contents asString copyFrom: 5 to: 8.
+	alien replaceFrom: 1 to: 8 with: (contents collect: [:c| c asciiValue]) startingAt: 1.
+	actual := alien strcpyFrom: 5.
+	self assert: shortContents asString = actual
+		description: 'Expected :''',shortContents, ''', but was: ''',actual,''''!
+
+testStrlen
+
+	|contents|
+	contents := #'12345678'.
+	alien replaceFrom: 1 to: 8 with: (contents collect: [:c| c asciiValue]) startingAt: 1.
+	self assert: alien strlen = 8!
+
+testStrlenThroughPointerAt
+
+	|contents|
+	contents := '1234567'.
+	alien replaceFrom: 1 to: 7 with: contents startingAt: 1.
+	alien unsignedByteAt: 8 put: 0.
+	(Alien newC: 4) freeAfter: [:pointer|
+											pointer unsignedLongAt: 1 put: alien address.
+											self assert: (pointer strlenThroughPointerAt: 1) == 7]! !
+

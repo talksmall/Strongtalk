@@ -130,6 +130,9 @@ PRIM_DECL_2(proxyOopPrimitives::byteAt, oop receiver, oop offset) {
   ASSERT_RECEIVER_ACCESS;
   if (!offset->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   return as_smiOop(proxyOop(receiver)->byte_at(smiOop(offset)->value()));
 }
 
@@ -138,7 +141,11 @@ PRIM_DECL_3(proxyOopPrimitives::byteAtPut, oop receiver, oop offset, oop value) 
   ASSERT_RECEIVER_ACCESS;
   if (!offset->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
-  if (!value->is_smi()) return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (!value->is_smi())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   proxyOop(receiver)->byte_at_put(smiOop(offset)->value(), smiOop(value)->value());
   return receiver;
 }
@@ -148,6 +155,9 @@ PRIM_DECL_2(proxyOopPrimitives::doubleByteAt, oop receiver, oop offset) {
   ASSERT_RECEIVER_ACCESS;
   if (!offset->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   return as_smiOop(proxyOop(receiver)->doubleByte_at(smiOop(offset)->value()));
 }
 
@@ -156,7 +166,11 @@ PRIM_DECL_3(proxyOopPrimitives::doubleByteAtPut, oop receiver, oop offset, oop v
   ASSERT_RECEIVER_ACCESS;
   if (!offset->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
-  if (!value->is_smi()) return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (!value->is_smi())
+    return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   proxyOop(receiver)->doubleByte_at_put(smiOop(offset)->value(), smiOop(value)->value());
   return receiver;
 }
@@ -166,6 +180,9 @@ PRIM_DECL_2(proxyOopPrimitives::smiAt, oop receiver, oop offset) {
   ASSERT_RECEIVER_ACCESS;
   if (!offset->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   unsigned int value   = (unsigned int) proxyOop(receiver)->long_at(smiOop(offset)->value());
   unsigned int topBits = value >> (BitsPerWord - Tag_Size);
   if ((topBits != 0) && (topBits != 3))
@@ -180,6 +197,9 @@ PRIM_DECL_3(proxyOopPrimitives::smiAtPut, oop receiver, oop offset, oop value) {
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
   if (!value->is_smi())
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   proxyOop(receiver)->long_at_put(smiOop(offset)->value(), smiOop(value)->value());
   return receiver;
 }
@@ -191,6 +211,9 @@ PRIM_DECL_3(proxyOopPrimitives::subProxyAt, oop receiver, oop offset, oop result
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
   if (!result->is_proxy())
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   proxyOop(result)->set_pointer((void*) ((char*) proxyOop(receiver)->get_pointer() + smiOop(offset)->value()));
   return result;
 }
@@ -202,6 +225,9 @@ PRIM_DECL_3(proxyOopPrimitives::proxyAt, oop receiver, oop offset, oop result) {
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
   if (!result->is_proxy())
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   proxyOop(result)->set_pointer((void*)proxyOop(receiver)->long_at(smiOop(offset)->value()));
   return result;
 }
@@ -213,6 +239,9 @@ PRIM_DECL_3(proxyOopPrimitives::proxyAtPut, oop receiver, oop offset, oop value)
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
   if (!value->is_proxy())
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   proxyOop(receiver)->long_at_put(smiOop(offset)->value(), (long)proxyOop(value)->get_pointer());
   return receiver;
 }
@@ -222,6 +251,9 @@ PRIM_DECL_2(proxyOopPrimitives::singlePrecisionFloatAt, oop receiver, oop offset
   ASSERT_RECEIVER_ACCESS;
   if (!offset->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   return oopFactory::new_double((double) proxyOop(receiver)->float_at(smiOop(offset)->value()));
 }
 
@@ -232,6 +264,9 @@ PRIM_DECL_3(proxyOopPrimitives::singlePrecisionFloatAtPut, oop receiver, oop off
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
   if (!value->is_double())
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   proxyOop(receiver)->float_at_put(smiOop(offset)->value(), (float) doubleOop(value)->value());
   return receiver;
 }
@@ -241,6 +276,9 @@ PRIM_DECL_2(proxyOopPrimitives::doublePrecisionFloatAt, oop receiver, oop offset
   ASSERT_RECEIVER_ACCESS;
   if (!offset->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   return oopFactory::new_double(proxyOop(receiver)->double_at(smiOop(offset)->value()));
 }
 
@@ -251,6 +289,9 @@ PRIM_DECL_3(proxyOopPrimitives::doublePrecisionFloatAtPut, oop receiver, oop off
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
   if (!value->is_double())
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
+
   proxyOop(receiver)->double_at_put(smiOop(offset)->value(), doubleOop(value)->value());
   return receiver;
 }
@@ -272,8 +313,13 @@ PRIM_DECL_2(proxyOopPrimitives::callOut0, oop receiver, oop result) {
   PROLOGUE_2("callOut0", receiver, result);
   ASSERT_RECEIVER_ACCESS;
 
+  if (!receiver->is_proxy())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
   if (!result->is_proxy())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
+
   call_out_func_0 f = (call_out_func_0) proxyOop(receiver)->get_pointer();
   proxyOop(result)->set_pointer((*f)());
   return result;
@@ -285,9 +331,12 @@ PRIM_DECL_3(proxyOopPrimitives::callOut1, oop receiver, oop arg1, oop result) {
   ASSERT_RECEIVER_ACCESS;
 
   int a1;
+  if (!receiver->is_proxy())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
   if (!convert_to_arg(arg1, &a1)) 
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
-
   if (!result->is_proxy())
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
 
@@ -301,14 +350,15 @@ PRIM_DECL_4(proxyOopPrimitives::callOut2, oop receiver, oop arg1, oop arg2, oop 
   PROLOGUE_4("callOut2", receiver, arg1, arg2, result);
   ASSERT_RECEIVER_ACCESS;
 
-  int a1;
+  int a1, a2;
+  if (!receiver->is_proxy())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
   if (!convert_to_arg(arg1, &a1)) 
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
-
-  int a2;
   if (!convert_to_arg(arg2, &a2)) 
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
-
   if (!result->is_proxy())
     return markSymbol(vmSymbols::third_argument_has_wrong_type());
 
@@ -322,18 +372,17 @@ PRIM_DECL_5(proxyOopPrimitives::callOut3, oop receiver, oop arg1, oop arg2, oop 
   PROLOGUE_5("callOut3", receiver, arg1, arg2, arg3, result);
   ASSERT_RECEIVER_ACCESS;
 
-  int a1;
+  int a1, a2, a3;
+  if (!receiver->is_proxy())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
   if (!convert_to_arg(arg1, &a1)) 
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
-
-  int a2;
   if (!convert_to_arg(arg2, &a2)) 
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
-
-  int a3;
   if (!convert_to_arg(arg3, &a3)) 
     return markSymbol(vmSymbols::third_argument_has_wrong_type());
-
   if (!result->is_proxy())
     return markSymbol(vmSymbols::fourth_argument_has_wrong_type());
 
@@ -347,22 +396,19 @@ PRIM_DECL_6(proxyOopPrimitives::callOut4, oop receiver, oop arg1, oop arg2, oop 
   PROLOGUE_6("callOut4", receiver, arg1, arg2, arg3, arg4, result);
   ASSERT_RECEIVER_ACCESS;
 
-  int a1;
+  int a1, a2, a3, a4;
+  if (!receiver->is_proxy())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
   if (!convert_to_arg(arg1, &a1)) 
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
-
-  int a2;
   if (!convert_to_arg(arg2, &a2)) 
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
-
-  int a3;
   if (!convert_to_arg(arg3, &a3)) 
     return markSymbol(vmSymbols::third_argument_has_wrong_type());
-
-  int a4;
   if (!convert_to_arg(arg4, &a4)) 
     return markSymbol(vmSymbols::fourth_argument_has_wrong_type());
-
   if (!result->is_proxy())
     return markSymbol(vmSymbols::fifth_argument_has_wrong_type());
 
@@ -377,26 +423,21 @@ PRIM_DECL_7(proxyOopPrimitives::callOut5, oop receiver, oop arg1, oop arg2, oop 
   PROLOGUE_7("callOut5", receiver, arg1, arg2, arg3, arg4, arg5, result);
   ASSERT_RECEIVER_ACCESS;
 
-  int a1;
+  int a1, a2, a3, a4, a5;
+  if (!receiver->is_proxy())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (proxyOop(receiver)->is_null())
+    return markSymbol(vmSymbols::illegal_state());
   if (!convert_to_arg(arg1, &a1)) 
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
-
-  int a2;
   if (!convert_to_arg(arg2, &a2)) 
     return markSymbol(vmSymbols::second_argument_has_wrong_type());
-
-  int a3;
   if (!convert_to_arg(arg3, &a3)) 
     return markSymbol(vmSymbols::third_argument_has_wrong_type());
-
-  int a4;
   if (!convert_to_arg(arg4, &a4)) 
     return markSymbol(vmSymbols::fourth_argument_has_wrong_type());
-
-  int a5;
   if (!convert_to_arg(arg5, &a5)) 
     return markSymbol(vmSymbols::fifth_argument_has_wrong_type());
-
   if (!result->is_proxy())
     return markSymbol(vmSymbols::sixth_argument_has_wrong_type());
 

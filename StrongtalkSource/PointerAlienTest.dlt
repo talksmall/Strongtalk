@@ -1,5 +1,5 @@
 Delta define: #PointerAlienTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: 'pointer')) !
+(Class subclassOf: 'AlienTest' instanceVariables: '')) !
 
 (Delta mirrorFor: #PointerAlienTest) revision: '$Revision:$'!
 
@@ -14,23 +14,95 @@ comment:
 
 setUp
 
-	pointer := Alien forPointer: (Alien Ccalloc: 4)!
+	alien := Alien forPointer: (Alien Ccalloc: self dataSize)!
 
 tearDown
 
-	[pointer free]
+	[alien free]
 		on: Error
 		do: [:ignore|]! !
 
 ! (Delta mirrorFor: #PointerAlienTest) methodsFor: 'testing' !
 
 
+testDataSize
+
+	self assert: alien dataSize == 0!
+
+testDoubleIndexOutOfRange
+
+	self should: [alien doubleAt: 0 put: 1.0] raise: Error.
+	self should: [alien doubleAt: 0] raise: Error!
+
+testFloatIndexOutOfRange
+
+	self should: [alien doubleAt: 0 put: 1.0] raise: Error.
+	self should: [alien doubleAt: 0] raise: Error!
+
 testFreeingTwiceShouldFail
 
-	pointer free.
-	self should: [pointer free] raise: Error!
+	alien free.
+	self should: [alien free] raise: Error!
 
 testIsPointer
 
-	self assert: pointer isPointer! !
+	self assert: alien isPointer!
+
+testPointer
+
+	self should: [alien pointer] raise: Error!
+
+testSignedByteIndexOutOfRange
+
+	self should: [alien signedByteAt: 0] raise: Error.
+	self should: [alien signedByteAt: 0 put: 1] raise: Error!
+
+testSignedLongIndexOutOfRange
+
+	self should: [alien signedLongAt: 0] raise: Error.
+	self should: [alien signedLongAt: 0 put: 1] raise: Error!
+
+testSignedShortIndexOutOfRange
+
+	self should: [alien signedShortAt: 0 put: 1] raise: Error.
+	self should: [alien signedShortAt: 0] raise: Error!
+
+testStrcpy
+
+	|contents actual expected|
+	contents := #'12345678'.
+	alien replaceFrom: 1 to: 7 with: (contents collect: [:c| c asciiValue]) startingAt: 1.
+	alien unsignedByteAt: 8 put: 0.
+	
+	actual := alien strcpy.
+	expected := contents asString copyFrom: 1 to: 7.
+	self assert: expected = actual
+		description: 'Expected: ''',expected,''', but was: ''',actual,''''!
+
+testStrcpyFrom
+
+	|contents actual expected|
+	contents := #'12345678'.
+	alien replaceFrom: 1 to: 7 with: (contents collect: [:c| c asciiValue]) startingAt: 1.
+	alien unsignedByteAt: 8 put: 0.
+	
+	actual := alien strcpyFrom: 3.
+	expected := contents asString copyFrom: 3 to: 7.
+	self assert: expected = actual
+		description: 'Expected: ''',expected,''', but was: ''',actual,''''!
+
+testUnsignedByteIndexOutOfRange
+
+	self should: [alien unsignedByteAt: 0] raise: Error.
+	self should: [alien unsignedByteAt: 0 put: 1] raise: Error!
+
+testUnsignedLongIndexOutOfRange
+
+	self should: [alien unsignedLongAt: 0] raise: Error.
+	self should: [alien unsignedLongAt: 0 put: 1] raise: Error!
+
+testUnsignedShortIndexOutOfRange
+
+	self should: [alien unsignedShortAt: 0 put: 1] raise: Error.
+	self should: [alien unsignedShortAt: 0] raise: Error! !
 

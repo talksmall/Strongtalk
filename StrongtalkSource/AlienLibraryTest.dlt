@@ -1,0 +1,42 @@
+Delta define: #AlienLibraryTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'library proxy address')) !
+
+(Delta mirrorFor: #AlienLibraryTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AlienLibraryTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #AlienLibraryTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #AlienLibraryTest) methodsFor: 'fixture' !
+
+
+setUp
+
+	self ensureWin32Or: [^self].
+	library := Alien ensureLoaded: 'msvcrt.dll'! !
+
+! (Delta mirrorFor: #AlienLibraryTest) methodsFor: 'private - test support' !
+
+
+ensureWin32Or: block
+
+	Platform == Win32Platform
+		ifFalse: [block value]! !
+
+! (Delta mirrorFor: #AlienLibraryTest) methodsFor: 'testing' !
+
+
+testPrimFindSymbol
+
+	self ensureWin32Or: [^self].
+	self assert: (library primFindSymbol: 'sprintf')
+						= (Platform DLLLookup: 'sprintf' in: 'msvcrt.dll') asInteger!
+
+testPrimFindSymbolUnknown
+
+	self ensureWin32Or: [^self].
+	self should: [library primFindSymbol: 'unknownSymbol']
+			raise: NotFoundError! !
+

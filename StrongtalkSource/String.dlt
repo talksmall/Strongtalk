@@ -146,6 +146,15 @@ testCollectionProtocol
 		[ ('Hello Dudes' select: [ :e <Character> | e isUppercase ]) hasSameElementsAndOrderAs: 'HD' ] verify.
 		[ ('Hello Dudes' reject: [ :e <Character> | e isLowercase ]) hasSameElementsAndOrderAs: 'H D' ] verify.! !
 
+! (Delta mirrorFor: #String) methodsFor: 'Aliens-converting' !
+
+
+asAlien
+
+	^(Alien newC: self size + 1)
+		replaceFrom: 1 to: self size with: self startingAt: 1
+	! !
+
 ! (Delta mirrorFor: #String) methodsFor: 'Camp Smalltalk' !
 
 

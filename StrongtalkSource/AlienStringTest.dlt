@@ -1,0 +1,23 @@
+Delta define: #AlienStringTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #AlienStringTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AlienStringTest) group: 'Aliens test'!
+
+(Delta mirrorFor: #AlienStringTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #AlienStringTest) methodsFor: 'testing' !
+
+
+testAsAlien
+
+	|alien string|
+	string := '123456' asString.
+	alien := string asAlien.
+	self assert: (alien size abs = 7).
+	self assert: string = alien strcpy
+	! !
+

@@ -61,9 +61,10 @@ class Integer: ValueObj {
   bool   is_valid() const			{ return is_zero() || operator[](length() - 1) != 0; }
   int    size_in_bytes() const			{ return length_to_size_in_bytes(length()); }
 
-  int    as_int   (bool& ok) const;
-  double as_double(bool& ok) const;
-  smiOop as_smi   (bool& ok) const;
+  int             as_int            (bool& ok) const;
+  unsigned int    as_unsigned_int   (bool& ok) const;
+  double          as_double         (bool& ok) const;
+  smiOop          as_smi            (bool& ok) const;
 
   void print();
 
@@ -151,6 +152,7 @@ class IntegerOps: AllStatic {
   // copy & conversion operations
   static void copy(Integer& x, Integer& z);
   static void int_to_Integer(int i, Integer& z);
+  static void unsigned_int_to_Integer(unsigned int i, Integer& z);
   static void double_to_Integer(double x, Integer& z);
   static void string_to_Integer(char* s, int base, Integer& z);
   static void Integer_to_string(Integer& x, int base, char* s);

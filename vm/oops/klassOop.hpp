@@ -55,5 +55,8 @@ class klassOopDesc : public memOopDesc {
   void print_superclasses();
 
   void bootstrap_object(bootstrap* st);
+  static int nonIndexableSizeOffset() {
+    return (int)(&klassOop(NULL)->klass_part()->_non_indexable_size);
+  }
 };
 

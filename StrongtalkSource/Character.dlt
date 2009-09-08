@@ -77,6 +77,13 @@ lf ^<Character>
 
 	^self value: 10!
 
+nul ^<Character>
+	"carriage-return"
+
+	"%note: There should be an entry for all constants in #constantNameIfNone:"
+
+	^self value: 0!
+
 space ^<Character>
 
 	"%note: There should be an entry for all constants in #constantNameIfNone:"
@@ -285,6 +292,8 @@ constantNameIfNone: blk <[^Str]> ^<Str>
 		ifTrue: [ ^'space' ].
 	self = Character tab
 		ifTrue: [ ^'tab' ].
+	self = Character nul
+		ifTrue: [ ^'nul' ].
 	^blk value!
 
 printOn: strm <CharOutputStream>

@@ -47,7 +47,8 @@ DLLMapName: name <Str> ^<Str>
     name = 'gdi'            ifTrue: [^'GDI32.DLL'].
     name = 'kernel'     ifTrue: [^'KERNEL32.DLL'].
     name = 'comdlg'     ifTrue: [^'COMDLG32.DLL'].
-    self error: 'Mapping ', name, ' not found'! !
+    "self error: 'Mapping ', name, ' not found'"
+    ^name! !
 
 ! (Delta mirrorFor: #Win32Platform) classSide methodsFor: 'clipboard access' !
 
