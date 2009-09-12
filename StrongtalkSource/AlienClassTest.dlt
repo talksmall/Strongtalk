@@ -12,6 +12,16 @@ comment:
 ! (Delta mirrorFor: #AlienClassTest) methodsFor: 'private - test support' !
 
 
+libcName
+
+	Platform == Win32Platform
+		ifTrue: [^'msvcrt.dll'].
+	Platform == MacOSXPlatform
+		ifTrue: [^'libc.dylib'].
+	Platform == UnixPlatform
+		ifTrue: [^'libc.so.6'].
+	self error: 'Platform set incorrectly'!
+
 unimplementedText
 
 	[self unimplemented]
@@ -33,8 +43,7 @@ testEnsureLoadedWin32
 testLookupClockWin32
 
 	|function result|
-	Platform == Win32Platform ifFalse: [^self].
-	function := Alien lookup: 'clock' inLibrary: 'msvcrt.dll'.
+	function := Alien lookup: 'clock' inLibrary: self libcName.
 	result := Alien new: 8.
 	function primFFICallResult: result!
 
@@ -61,6 +70,13 @@ testNewCString
 		freeAfter: [:pointer|
 							self assert: 8 = pointer strlen.
 							self assert: '12345678' = pointer strcpy]!
+
+testNewForCallbackArgs
+
+	|alien|
+	alien := TestAlien newForCallbackArgs.
+	self assert: alien size == TestAlien dataSize negated.
+	self assert: alien address == 0!
 
 testNewGCUnimplemented
 

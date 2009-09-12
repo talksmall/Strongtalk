@@ -25,12 +25,20 @@ extern "C" oop PRIM_API forceScavenge1(int ignore) {
   return vmSymbols::completed();
 }
 
+extern "C" int PRIM_API argAlignment(int a) {
+  return ((int) &a) & 0xF;
+}
+
+extern "C" char* PRIM_API argUnsafe1(char* a) {
+  return a;
+}
+
 DECLARE(AlienIntegerCallout1Tests)
 GrowableArray<PersistentHandle**> *handles;
 PersistentHandle *resultAlien, *addressAlien, *pointerAlien, *functionAlien; 
-PersistentHandle *directAlien, *invalidFunctionAlien;
+PersistentHandle *directAlien, *invalidFunctionAlien, *unsafeAlien, *unsafeContents;
 smiOop smi0, smi1;
-char address[8];
+char address[16];
 
 void allocateAlien(PersistentHandle* &alienHandle, int arraySize, int alienSize, void* ptr = NULL) {
   byteArrayOop alien = byteArrayOop(Universe::byteArrayKlassObj()->klass_part()->allocateObjectSize(arraySize));
@@ -76,6 +84,17 @@ void release(PersistentHandle** handle) {
   delete *handle;
   *handle = NULL;
 }
+void allocateUnsafe(PersistentHandle* &handle, PersistentHandle* &contents) {
+  klassOop unsafeKlass = klassOop(Universe::find_global("UnsafeAlien"));
+  unsafeAlien = new PersistentHandle(unsafeKlass->primitive_allocate());
+  int offset = unsafeKlass->klass_part()->lookup_inst_var(oopFactory::new_symbol("nonPointerObject"));
+
+  contents = new PersistentHandle(Universe::byteArrayKlassObj()->primitive_allocate_size(12));
+  memOop(unsafeAlien->as_oop())->instVarAtPut(offset, contents->as_oop());
+}
+void setAddress(void* p, PersistentHandle* alien) {
+  byteArrayPrimitives::alienSetAddress(asOop((int)p), alien->as_oop());
+}
 END_DECLARE
 
 SETUP(AlienIntegerCallout1Tests) {
@@ -89,6 +108,7 @@ SETUP(AlienIntegerCallout1Tests) {
   allocateAlien(addressAlien,         8, -4, &address);
   allocateAlien(pointerAlien,         8,  0, &address);
   allocateAlien(invalidFunctionAlien, 8,  0);
+  allocateUnsafe(unsafeAlien, unsafeContents);
 
   memset(address, 0, 8);
 }
@@ -104,6 +124,13 @@ TESTF(AlienIntegerCallout1Tests, alienCallResult1ShouldCallFunction) {
   byteArrayPrimitives::alienCallResult1(as_smiOop(-1), resultAlien->as_oop(), functionAlien->as_oop());
 
   checkIntResult("wrong result", labs(-1), resultAlien);
+}
+
+TESTF(AlienIntegerCallout1Tests, alienCallResult1WithUnsafeAlienShouldCallFunction) {
+  setAddress(&argUnsafe1, functionAlien);
+  byteArrayPrimitives::alienCallResult1(unsafeAlien->as_oop(), resultAlien->as_oop(), functionAlien->as_oop());
+
+  checkIntResult("wrong result", (int)byteArrayOop(unsafeContents->as_oop())->bytes(), resultAlien);
 }
 
 TESTF(AlienIntegerCallout1Tests, alienCallResult1ShouldCallFunctionAndIgnoreResultWhenResultAlienNil) {
@@ -132,6 +159,27 @@ TESTF(AlienIntegerCallout1Tests, alienCallResult1WithPointerArgumentShouldCallFu
   byteArrayPrimitives::alienCallResult1(pointerAlien->as_oop(), resultAlien->as_oop(), functionAlien->as_oop());
 
   checkIntResult("wrong result", labs(-1), resultAlien);
+}
+
+TESTF(AlienIntegerCallout1Tests, alienCallResult1Should16ByteAlignArgs) {
+  oop fnAddress = asOop((int)&argAlignment);
+  byteArrayPrimitives::alienSetAddress(fnAddress, functionAlien->as_oop());
+
+  oop result = byteArrayPrimitives::alienCallResult1(addressAlien->as_oop(), resultAlien->as_oop(), functionAlien->as_oop());
+  ASSERT_TRUE_M(!result->is_mark(), "Should not be marked");
+  checkIntResult("wrong result", 0, resultAlien);
+
+  byteArrayPrimitives::alienSetSize(as_smiOop(-8), addressAlien->as_oop());
+  byteArrayPrimitives::alienCallResult1(addressAlien->as_oop(), resultAlien->as_oop(), functionAlien->as_oop());
+  checkIntResult("wrong result", 0, resultAlien);
+
+  byteArrayPrimitives::alienSetSize(as_smiOop(-12), addressAlien->as_oop());
+  byteArrayPrimitives::alienCallResult1(addressAlien->as_oop(), resultAlien->as_oop(), functionAlien->as_oop());
+  checkIntResult("wrong result", 0, resultAlien);
+
+  byteArrayPrimitives::alienSetSize(as_smiOop(-16), addressAlien->as_oop());
+  byteArrayPrimitives::alienCallResult1(addressAlien->as_oop(), resultAlien->as_oop(), functionAlien->as_oop());
+  checkIntResult("wrong result", 0, resultAlien);
 }
 
 TESTF(AlienIntegerCallout1Tests, alienCallResult1WithOddSizedArgumentShouldCallFunction) {

@@ -107,6 +107,12 @@ newCString: string <String> ^ <Alien>
 		unsignedByteAt: string size + 1 put: 0;
 		yourself!
 
+newForCallbackArgs
+
+	^(self new: 8)
+		size: self dataSize negated;
+		yourself!
+
 newGC
 
 	^self newGC: self dataSize!

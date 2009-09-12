@@ -6,7 +6,7 @@ formattedString')) !
 
 (Delta mirrorFor: #AlienFunctionTest) revision: '$Revision:$'!
 
-(Delta mirrorFor: #AlienFunctionTest) group: 'Unclassified'!
+(Delta mirrorFor: #AlienFunctionTest) group: 'Aliens test'!
 
 (Delta mirrorFor: #AlienFunctionTest)
 comment: 
@@ -22,7 +22,7 @@ libcName
 	Platform == MacOSXPlatform
 		ifTrue: [^'libc.dylib'].
 	Platform == UnixPlatform
-		ifTrue: [^'libc.6.so']
+		ifTrue: [^'libc.so.6']
 	self error: 'Unsupported platform'!
 
 setUp
@@ -38,6 +38,12 @@ tearDown
 
 ! (Delta mirrorFor: #AlienFunctionTest) methodsFor: 'testing' !
 
+
+testCallLabsWithOneArg
+
+	labs primFFICallResult: result
+			with: -1.
+	self assert: 1 == result asSignedLong!
 
 testCallSprintfWithArguments
 	
@@ -135,12 +141,6 @@ testCallSprintfWithNineArgs
 	self assert: '1 2 3 4 5 6 7' asString = formattedString strcpy.
 	self assert: 13 == result asUnsignedLong!
 
-testCallSprintfWithOneArg
-
-	labs primFFICallResult: result
-			with: -1.
-	self assert: 1 == result asSignedLong!
-
 testCallSprintfWithSevenArgs
 	
 	Alien autoFreeAfter: [:free|
@@ -232,5 +232,18 @@ testCallSprintfWithTwoArgs
 			sprintf primFFICallResult: nil
 							with: formattedString pointer
 							with: (free value: formatString asAlien) pointer.
-			self assert: formatString = formattedString strcpy]! !
+			self assert: formatString = formattedString strcpy]!
+
+testCallSprintfWithUnsafeAlienTarget
+	
+	Alien
+		autoFreeAfter: [:free|
+			|formatString bytes string unsafe|
+			bytes := ByteArray new: 6.
+			unsafe := UnsafeAlien forPointerTo: bytes.
+			formatString := '12345' asString.
+			sprintf primFFICallResult: nil
+							with: unsafe
+							with: (free value: formatString asAlien) pointer.
+			self assert: formatString = (bytes copyWithSize: 5) asString]! !
 

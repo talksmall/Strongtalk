@@ -1,0 +1,61 @@
+Delta define: #AlienDemoTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #AlienDemoTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AlienDemoTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #AlienDemoTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'test-support' !
+
+
+libcName
+
+	Platform == Win32Platform
+		ifTrue: [^'msvcrt.dll'].
+	Platform == MacOSXPlatform
+		ifTrue: [^'libc.dylib'].
+	Platform == UnixPlatform
+		ifTrue: [^'libc.so.6'].
+	self error: 'Unknow platform'! !
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+
+
+testCqsort
+	"Call the libc qsort function (which requires a callback)."
+	| cb rand nElements sizeofDouble values orig sort |
+	rand:= Random new.
+	values:= Alien newC: (nElements:= 100) * (sizeofDouble:= 8).
+"	1 to: values dataSize by: sizeofDouble do:
+		[:i| values doubleAt: i put: rand next].
+	orig:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	cb:= Callback
+			block: [:args :result|
+					result returnInteger: ((args first doubleAt: 1) - (args second doubleAt: 1)) sign]
+			argsClass: QsortCompare.
+	(Alien lookup: 'qsort' inLibrary: libcName)
+		primFFICallResult: nil
+		with: values pointer
+		with: nElements
+		with: sizeofDouble
+		with: cb thunk.
+	sort:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	values free.
+	^orig -> sort"!
+
+testSprintf
+
+	| r s actual |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: ('Hello World %d %x !!!!', (String with: Character nul)) asSymbol. "only works for symbols"
+						 			123.
+						 			48879}.
+	actual := (s copyFrom: 1 to: (r signedLongAt: 1)) asString.
+	self assert: 'Hello World 123 beef !!!!' = actual! !
+

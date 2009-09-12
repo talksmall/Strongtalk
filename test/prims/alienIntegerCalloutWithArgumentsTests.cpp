@@ -29,6 +29,10 @@ extern "C" int PRIM_API forceScavengeWA(int a, int b) {
   return -1;
 }
 
+extern "C" int PRIM_API argAlignment2(int a, int b) {
+  return ((int) &a) & 0xF;
+}
+
 DECLARE(AlienIntegerCalloutWithArgumentsTests)
 GrowableArray<PersistentHandle**> *handles;
 PersistentHandle *resultAlien, *addressAlien, *pointerAlien, *functionAlien; 
@@ -38,7 +42,7 @@ static const int argCount = 2;
 void* intCalloutFunctions[argCount];
 void* intPointerCalloutFunctions[argCount];
 oop zeroes[argCount];
-char address[8];
+char address[16];
 
 void allocateAlien(PersistentHandle* &alienHandle, int arraySize, int alienSize, void* ptr = NULL) {
   byteArrayOop alien = byteArrayOop(Universe::byteArrayKlassObj()->klass_part()->allocateObjectSize(arraySize));
@@ -156,6 +160,20 @@ TEARDOWN(AlienIntegerCalloutWithArgumentsTests){
 TESTF(AlienIntegerCalloutWithArgumentsTests, alienCallResultWithArgumentsShouldCallIntArgFunction) {
   for (int arg = 0; arg < argCount; arg++)
     checkArgnPassed(arg, -1, intCalloutFunctions);
+}
+
+TESTF(AlienIntegerCalloutWithArgumentsTests, alienCallResult1Should16ByteAlignArgs) {
+  oop fnAddress = asOop((int)&argAlignment2);
+  byteArrayPrimitives::alienSetAddress(fnAddress, functionAlien->as_oop());
+
+  oop arg[argCount];
+  arg[1] = smi0;
+  for (int size = -4; size > -20; size -= 4) {
+    arg[0] = addressAlien->as_oop();
+    byteArrayPrimitives::alienSetSize(as_smiOop(size), addressAlien->as_oop());
+    callout(arg);
+    checkIntResult("wrong result", 0, resultAlien);
+  }
 }
 
 TESTF(AlienIntegerCalloutWithArgumentsTests, alienCallResultWithArgumentsShouldCallIntPointerArgFunction) {

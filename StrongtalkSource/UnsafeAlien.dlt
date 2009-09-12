@@ -1,0 +1,35 @@
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+(Delta mirrorFor: #UnsafeAlien) revision: '$Revision:$'!
+
+(Delta mirrorFor: #UnsafeAlien) group: 'Alien'!
+
+(Delta mirrorFor: #UnsafeAlien)
+comment: 
+''!
+
+! (Delta mirrorFor: #UnsafeAlien) classSide methodsFor: 'instance creation' !
+
+
+forPointerTo: bytes <IndexedByteInstanceVariables> ^ <UnsafeAlien>
+
+	^self new
+		nonPointerObject: bytes;
+		yourself
+		! !
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'accessing' !
+
+
+object
+
+	^nonPointerObject! !
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'initialization' !
+
+
+nonPointerObject: bytes <IndexedByteInstanceVariables>
+
+	nonPointerObject := bytes! !
+

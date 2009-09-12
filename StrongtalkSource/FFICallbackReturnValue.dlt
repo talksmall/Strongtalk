@@ -1,0 +1,57 @@
+Delta define: #FFICallbackReturnValue as: (
+(Class subclassOf: 'Alien' instanceVariables: '')) !
+
+(Delta mirrorFor: #FFICallbackReturnValue) revision: '$Revision:$'!
+
+(Delta mirrorFor: #FFICallbackReturnValue) group: 'Aliens'!
+
+(Delta mirrorFor: #FFICallbackReturnValue)
+comment: 
+''!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+
+	^16! !
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+
+
+returnDouble: value <Integer>
+
+	self type: 1.
+	self doubleAt: self dataOffset put: value!
+
+returnInteger: value <Integer>
+
+	self type: 0.
+	self signedLongAt: self dataOffset put: value!
+
+type: type <Integer>
+
+	self unsignedByteAt: self typeOffset put: type! !
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'restricted-accessing' !
+
+
+dataOffset
+
+	^9!
+
+type
+
+	^self unsignedByteAt: self typeOffset!
+
+typeOffset
+
+	^1!
+
+value
+
+	self type == 0
+		ifTrue: [^self signedLongAt: self dataOffset].
+	self type == 1
+		ifTrue: [^self doubleAt: self dataOffset] ! !
+

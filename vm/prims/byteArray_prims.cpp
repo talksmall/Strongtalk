@@ -424,11 +424,31 @@ PRIM_DECL_1(byteArrayPrimitives::hash, oop receiver) {
   return as_smiOop(byteArrayOop(receiver)->hash_value());
 }
 
+PersistentHandle* _unsafeAlienClass = NULL;
+klassOop unsafeAlienClass() {
+  if (_unsafeAlienClass)
+    return _unsafeAlienClass->as_klassOop();
+  oop uaKlass = Universe::find_global("UnsafeAlien");
+  assert(uaKlass && uaKlass->is_klass(), "UnsafeAlien not found");
+  if (!uaKlass) return NULL;
+  _unsafeAlienClass = new PersistentHandle(uaKlass);
+  return klassOop(uaKlass);
+}
+oop unsafeContents(oop unsafeAlien) {
+  symbolOop ivarName = oopFactory::new_symbol("nonPointerObject");
+  int offset = unsafeAlienClass()->klass_part()->lookup_inst_var(ivarName);
+  return memOop(unsafeAlien)->instVarAt(offset);
+}
 #define checkAlienReceiver(receiver)\
   if (!receiver->is_byteArray())\
     return markSymbol(vmSymbols::receiver_has_wrong_type())
 
-#define alienArg(argument)      (void*)(argument->is_smi() ? ((int)argument) + Mem_Tag : (int)byteArrayOop(argument)->bytes())
+#define isUnsafe(argument)\
+  (!oop(argument)->is_smi()\
+  && memOop(argument)->klass_field() == unsafeAlienClass()\
+  && unsafeContents(argument)->is_byteArray())
+
+#define alienArg(argument)      (void*)argument
 
 #define alienArray(receiver)    ((int*)byteArrayOop(receiver)->bytes())
 
@@ -452,11 +472,11 @@ PRIM_DECL_1(byteArrayPrimitives::hash, oop receiver) {
     return markSymbol(vmSymbols::first_argument_has_wrong_type())
 
 #define checkAlienCalloutArg(argument, symbol)\
-  if (!(argument->is_byteArray() || argument->is_smi()))\
+  if (!(argument->is_byteArray() || argument->is_smi() || isUnsafe(argument)))\
     return markSymbol(symbol)
 
 #define checkAlienCalloutArg1(argument)\
-  checkAlienCalloutArg(argument, vmSymbols::second_argument_has_wrong_type());
+  checkAlienCalloutArg(argument, vmSymbols::second_argument_has_wrong_type())
 
 #define checkAlienCalloutArg2(argument)\
   checkAlienCalloutArg(argument, vmSymbols::third_argument_has_wrong_type())

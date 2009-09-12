@@ -36,7 +36,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 class StubRoutines: AllStatic {
  private:
-  enum { _code_size = 8000 };			// simply increase if too small (assembler will crash if too small)
+  enum { _code_size = 12000 };			// simply increase if too small (assembler will crash if too small)
   static bool _is_initialized;			// true if StubRoutines has been initialized
   static char _code[_code_size];		// the code buffer for the stub routines
   static void (*single_step_fn)();              // pointer to the current single step function (used by evaluator and ST debugger)
@@ -123,6 +123,9 @@ class StubRoutines: AllStatic {
   // helpers for generation
   static char* generate(MacroAssembler* masm, char* title, char* gen(MacroAssembler*));
   static char* generate(MacroAssembler* masm, char* title, char* gen(MacroAssembler*, int argument), int argument);
+  static void  alien_arg_size(MacroAssembler* masm, Label &nextArg);
+  static void  push_alien_arg(MacroAssembler* masm, Label &nextArg);
+  static void  push_alignment_spacers(MacroAssembler* masm);
 
  public:
   // add entry point accessors here

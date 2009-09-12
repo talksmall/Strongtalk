@@ -83,6 +83,16 @@ byteArrayCopyWithSize: s <Int> ^<ByteArray>
 	"The guarantee is safe because of the inference clause"
 	^a!
 
+copyFrom: start <Int> to: stop <Int>   ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is typesafe since the inference clause guarantees that E < EX at the call site"
+	| copy <VarSeqCltn[EX]> safeme <SeqCltn[EX]> |
+	safeme := guaranteed <SeqCltn[EX]> self.
+	copy := guaranteed <VarSeqCltn[EX]> (self class new: (stop - start) + 1).
+	copy replaceFrom: 1 to: copy size with: safeme startingAt: start.
+	^copy!
+
 copyWithSize: s <Int> ^<VarSeqCltn[EX]>
 	{where EX is returnType of #anElement message of receiverType}
 

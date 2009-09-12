@@ -1,96 +1,74 @@
-Delta define: #CallBack as: (
-(Class subclassOf: 'ExternalProxy' instanceVariables: 'parameters block')) !
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
 
-(Delta mirrorFor: #CallBack) revision: '$Revision: 1.2 $'!
+(Delta mirrorFor: #Callback) revision: '$Revision:$'!
 
-(Delta mirrorFor: #CallBack) group: 'base'!
+(Delta mirrorFor: #Callback) group: 'Aliens'!
 
-(Delta mirrorFor: #CallBack)
+(Delta mirrorFor: #Callback)
 comment: 
-'CallBack is the abstract superclass for all call back classes.
+''!
 
-(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
-Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.2 $
-'!
-
-! (Delta mirrorFor: #CallBack) classSide methodsFor: 'registration' !
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
 
 
-initialize
-    "create callBack array"
-    CallBackArray isNil
-    	ifTrue: [	CallBackArray := OrderedCollection new. ].
+block: block <[Alien, Alien]> argsClass: class <Alien class> ^ <Callback>
 
-    "initialize the vm for callBack"
-    {{primitiveCallBackReceiver: self
-                        selector: #vmCallBackIndex:stackHigh:stackLow:
-                          ifFail: [ :err | self error: err]}}!
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallBackRegisterCCall: CallBackArray size
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback!
 
-register: block parameters: params
-    self subclassResponsibility
-!
+block: block <[Alien, Alien]> stdcallArgsClass: class <Alien class> ^ <Callback>
 
-vmCallBackIndex: index stackHigh: h stackLow: l
-    "This method is invoked whenever a CallBack is executed"
-    | stack |
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallBackRegisterPascalCall: CallBackArray size
+		numberOfArguments: ((class dataSize + 3) // 4)
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback! !
 
-    "create a proxy pointing to the first parameter"
-    stack := ExternalProxy new setHigh: h low: l.
-
-    ^(CallBackArray at: index) evaluate: stack.! !
-
-! (Delta mirrorFor: #CallBack) methodsFor: 'accessors' !
-
-
-block
-    ^block!
-
-block: b
-    block := b!
-
-fetchArgument: arg stack: stack class: class
-    | proxy |
-    class = SmallInteger ifTrue: [^stack smallIntegerAt: arg * 4].
-    proxy := class new.
-    stack proxyAt: (arg * 4) result: proxy.
-    ^proxy!
-
-parameters
-    ^parameters!
-
-parameters: p
-    parameters := p! !
-
-! (Delta mirrorFor: #CallBack) methodsFor: 'deleting' !
+! (Delta mirrorFor: #Callback) methodsFor: 'accessing' !
 
 
-free
+thunk ^<Alien>
 
-  {{primitiveCallBackUnregister: self ifFail: [:err| self error: err]}}.
-  CallBackArray at: self index put: nil.! !
+	^Alien forPointer: self asInteger! !
 
-! (Delta mirrorFor: #CallBack) methodsFor: 'evaluating' !
+! (Delta mirrorFor: #Callback) methodsFor: 'evaluation' !
 
 
 evaluate: stack
-    | nofArgs a b c d e |
-    nofArgs := parameters size.
-    nofArgs = 0 ifTrue: [^block value].
 
-    a := self fetchArgument: 0 stack: stack class: (parameters at: 1).
-    nofArgs = 1 ifTrue: [^block value: a].
+	^block value: stack! !
 
-    b := self fetchArgument: 1 stack: stack class: (parameters at: 2).
-    nofArgs = 2 ifTrue: [^block value: a value: b].
+! (Delta mirrorFor: #Callback) methodsFor: 'instance initialization' !
 
-    c := self fetchArgument: 2 stack: stack class: (parameters at: 3).
-    nofArgs = 3 ifTrue: [^block value: a value: b value: c].
 
-    d := self fetchArgument: 3 stack: stack class: (parameters at: 4).
-    nofArgs = 4 ifTrue: [^block value: a value: b value: c value: d].
+block: block <[Alien, Alien]> argsProxy: args <Alien>
 
-    e := self fetchArgument: 4 stack: stack class: (parameters at: 5).
-    nofArgs = 5 ifTrue: [^block value: a value: b value: c value: d value: e].
+	self block: [:stack|
+						|result|
+						result := FFICallbackReturnValue new.
+						args addressField: stack asInteger.
+						block value: args value: result.
+						result value]! !
 
-    self error: 'too many arguments for callBack'! !
+! (Delta mirrorFor: #Callback) methodsFor: 'restricted-accessing' !
+
+
+index
+
+	^self smallIntegerAt: 1! !
 

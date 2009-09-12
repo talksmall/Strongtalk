@@ -1356,33 +1356,63 @@ char* StubRoutines::generate_allocate(MacroAssembler* masm, int size) {
   masm->hlt();
   return entry_point;
 }
+void StubRoutines::alien_arg_size(MacroAssembler* masm, Label &nextArg) {
+    Label isPointer, isDirect, isSMI, isUnsafe;
 
-char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
-  Label no_result, ptr_result, short_ptr_result, short_result, argLoopStart;
-  Label isSMI, isDirect, startMove, isPointer, nextArg, 
-    moveLoopHead, moveLoopEnd, moveLoopTest, argLoopExit, argLoopTest;
-  Address fnptr(ebp,8);
-  Address result(ebp,12);
-  Address argCount(ebp,16);
-  Address argArray(ebp,20);
-  char* entry_point = masm->pc();
+    masm->movl(ecx, Address(eax));                        // load current arg
+    masm->testl(ecx, Mem_Tag);
+    masm->jcc(Assembler::equal, isSMI);
 
-  masm->enter();
-  masm->pushl(esi);                             // preserve registers
-  masm->pushl(edi);
-  masm->pushl(ebx);
+    masm->movl(esi, Address(ecx, memOopDesc::klass_byte_offset()));// get class
+    masm->movl(esi, Address(esi, klassOopDesc::nonIndexableSizeOffset()));// get non-indexable size
+                                                          // start of the byte array's bytes
+    masm->leal(ecx, Address(ecx, esi, Address::times_1, - Mem_Tag));
+    masm->testl(ecx, Mem_Tag);
+    masm->jcc(Assembler::notEqual, isUnsafe);
+    masm->addl(ecx, 4);
 
-  masm->movl(edi, argArray);                            // start of the oops in the array
-  masm->movl(ebx, argCount);
-  masm->leal(ebx, Address(edi, ebx, Address::times_1)); // upper bounds of array
+    masm->movl(esi, Address(ecx));                        // load the size
+    masm->testl(esi, esi);                                // direct?
+    masm->jcc(Assembler::equal, isPointer);               // pointer == 0
+    masm->jcc(Assembler::greater, isDirect);              // direct > 0
+    
+    masm->addl(edx, esi);                                 // indirect so size negative  
+    masm->jmp(nextArg);
+    
+    masm->bind(isDirect);
+    masm->subl(edx, esi);
+    masm->jmp(nextArg);
 
-  //masm->int3();
-
-  masm->jmp(argLoopTest);
-    masm->bind(argLoopStart);
-    masm->movl(eax, Address(ebx));
+    masm->bind(isUnsafe);
+    masm->bind(isPointer);
+    masm->bind(isSMI);
+    masm->subl(edx, 4);
+}
+void StubRoutines::push_alignment_spacers(MacroAssembler* masm) {
+  Label pushArgs;
+  masm->andl(edx, 0xf);                                   // push spacers to align stack
+  masm->jcc(Assembler::equal, pushArgs);
+  masm->subl(edx, 4);
+  masm->pushl(0);
+  masm->jcc(Assembler::equal, pushArgs);
+  masm->subl(edx, 4);
+  masm->pushl(0);
+  masm->jcc(Assembler::equal, pushArgs);
+  masm->subl(edx, 4);
+  masm->pushl(0);
+  masm->bind(pushArgs);                                   // end of stack alignment spacers
+}
+void StubRoutines::push_alien_arg(MacroAssembler *masm, Label &nextArg) {
+  Label isSMI, isPointer, isDirect, isUnsafe, startMove, moveLoopTest, moveLoopHead;
     masm->testl(eax, Mem_Tag);
     masm->jcc(Assembler::equal, isSMI);
+
+    masm->movl(esi, Address(eax, sizeof(memOopDesc) - Mem_Tag));
+                                                          // load the first ivar
+                                                          //   either smiOop for normal alien
+                                                          //   or memOop for unsafe alien
+    masm->testl(esi, Mem_Tag);                            
+    masm->jcc(Assembler::notEqual, isUnsafe);
 
     masm->movl(esi, Address(eax, memOopDesc::klass_byte_offset()));
     masm->movl(esi, Address(esi, klassOopDesc::nonIndexableSizeOffset()));
@@ -1399,7 +1429,7 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
     masm->bind(isPointer);                                // push the pointer
     masm->movl(eax, Address(eax, 4));
     masm->pushl(eax);
-    masm->jmp(moveLoopEnd);
+    masm->jmp(nextArg);
     
     masm->bind(isDirect);
     masm->negl(esi);                                      // negate the size to lower esp
@@ -1422,28 +1452,82 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
       masm->jcc(Assembler::greaterEqual, moveLoopHead);     // y - next iteration
                                                             // n - less than four bytes remain
       masm->addl(esi, 3);                                   // adjust offset for byte moves
-      masm->jcc(Assembler::less, moveLoopEnd);              // y - exact multiple of four bytes
+      masm->jcc(Assembler::less, nextArg);                  // y - exact multiple of four bytes
                                                             // n - 1-3 bytes need to be moved
       masm->movb(ecx, Address(eax, esi, Address::times_1));
       masm->movb(Address(esp, esi, Address::times_1), ecx);
       masm->decl(esi);
-      masm->jcc(Assembler::less, moveLoopEnd);              // y - one extra byte
+      masm->jcc(Assembler::less, nextArg);                  // y - one extra byte
                                                             // n - 2-3 extra bytes
       masm->movb(ecx, Address(eax, esi, Address::times_1));
       masm->movb(Address(esp, esi, Address::times_1), ecx);
       masm->decl(esi);
-      masm->jcc(Assembler::less, moveLoopEnd);              // y - two extra bytes
+      masm->jcc(Assembler::less, nextArg);                  // y - two extra bytes
                                                             // n - three extra bytes
       masm->movb(ecx, Address(eax, esi, Address::times_1));
       masm->movb(Address(esp, esi, Address::times_1), ecx);
-      masm->jmp(moveLoopEnd);                               // finished
+      masm->jmp(nextArg);                                   // finished
+
+    masm->bind(isUnsafe);
+
+    masm->movl(eax, Address(esi, memOopDesc::klass_byte_offset()));
+    masm->movl(eax, Address(eax, klassOopDesc::nonIndexableSizeOffset()));
+    masm->leal(esi, Address(esi, eax, Address::times_1, 4 - Mem_Tag)); // start of the bytes in the array
+    masm->pushl(esi);
+    masm->jmp(nextArg);
 
     masm->bind(isSMI);
     masm->sarl(eax, 2);
     masm->pushl(eax);
-    masm->bind(moveLoopEnd);
 
-    masm->bind(argLoopTest);
+    masm->bind(nextArg);
+}
+
+char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
+  Label no_result, ptr_result, short_ptr_result, short_result, argLoopStart;
+  Label isSMI, isDirect, startMove, isPointer, nextArg, moveLoopHead, moveLoopEnd, 
+    moveLoopTest, argLoopExit, argLoopTest, pushArgs;
+  Label sizeLoopTest, sizeLoopStart;
+
+  Address fnptr(ebp,8);
+  Address result(ebp,12);
+  Address argCount(ebp,16);
+  Address argArray(ebp,20);
+  char* entry_point = masm->pc();
+
+  masm->enter();
+  masm->pushl(esi);                                       // preserve registers
+  masm->pushl(edi);
+  masm->pushl(ebx);
+
+  masm->movl(edi, argArray);                              // start of the oops in the array
+  masm->movl(ebx, argCount);
+  masm->leal(ebx, Address(edi, ebx, Address::times_1));   // upper bounds of array
+
+  masm->movl(edx, esp);                                   // start of size calculation
+
+  //masm->int3();
+
+  masm->movl(eax, ebx);                                   // eax is pointer to current arg
+  masm->jmp(sizeLoopTest);
+    masm->bind(sizeLoopStart);
+    
+    alien_arg_size(masm, sizeLoopTest);
+
+    masm->bind(sizeLoopTest);                             // end of size calculation
+    masm->subl(eax, 4);
+    masm->cmpl(eax, edi);
+  masm->jcc(Assembler::greaterEqual, sizeLoopStart);
+
+  push_alignment_spacers(masm);
+  //masm->int3();
+
+  masm->jmp(argLoopTest);
+    masm->bind(argLoopStart);
+    masm->movl(eax, Address(ebx));
+
+    push_alien_arg(masm, argLoopTest);
+
     masm->subl(ebx, 4);
     masm->cmpl(ebx, edi);
     masm->jcc(Assembler::less, argLoopExit);
@@ -1499,74 +1583,43 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
 }
 
 char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
-  Label no_result, ptr_result, short_ptr_result, short_result;
+  Label no_result, ptr_result, short_ptr_result, short_result, pushArgs;
   Address fnptr(ebp,8);
   Address result(ebp,12);
   char* entry_point = masm->pc();
 
   masm->enter();
   masm->pushl(esi);                             // preserve registers
-  
+
+  masm->movl(edx, esp);
+  for (int arg = 0; arg < args; arg++) {
+    Address argAddress(ebp, 16 + (args - arg - 1) * 4);
+    Label isSMI, isDirect, isPointer, nextArg;
+    masm->leal(eax, argAddress);
+    alien_arg_size(masm, nextArg);
+      
+    masm->bind(nextArg);
+  }
+
+  masm->andl(edx, 0xf);
+  masm->jcc(Assembler::equal, pushArgs);
+  masm->pushl(0);
+  masm->subl(edx, 4);
+  masm->jcc(Assembler::equal, pushArgs);
+  masm->pushl(0);
+  masm->subl(edx, 4);
+  masm->jcc(Assembler::equal, pushArgs);
+  masm->pushl(0);
+  masm->subl(edx, 4);
+  masm->bind(pushArgs);
   //if (args > 0) masm->int3();
 
   for (int arg = 0; arg < args; arg++) {
+    Address argAddress(ebp, 16 + (args - arg - 1) * 4);
     Label isSMI, isDirect, startMove, isPointer, nextArg, moveLoopHead, moveLoopEnd, moveLoopTest;
-    masm->movl(eax, Address(ebp, 16 + (args - arg - 1) * 4));
-    masm->testl(eax, Mem_Tag);
-    masm->jcc(Assembler::notEqual, isSMI);
-    masm->movl(esi, Address(eax));                        // load the size
-    masm->testl(esi, esi);                                // direct?
-    masm->jcc(Assembler::equal, isPointer);               // pointer == 0
-    masm->jcc(Assembler::greater, isDirect);              // direct > 0
-                                                          // indirect < 0
-    //if (arg == 0) masm->int3();
-    masm->movl(eax, Address(eax, 4));                     // load the indirect start address
-    masm->jmp(startMove);
+    masm->movl(eax, argAddress);
 
-    masm->bind(isPointer);                                // push the pointer
-    masm->movl(eax, Address(eax, 4));
-    masm->pushl(eax);
-    masm->jmp(moveLoopEnd);
-    
-    masm->bind(isDirect);
-    masm->negl(esi);                                      // negate the size to lower esp
-    masm->addl(eax, 4);                                   // start of direct contents
-    masm->bind(startMove);
-    masm->pushl(0);                                       // pad odd sizes with zero
-    masm->leal(esp, Address(esp, esi, Address::times_1, 4)); // move stack pointer by size of data
-    masm->andl(esp, -4);                                  // ensure stack 4-byte aligned
-
-    masm->negl(esi);                                      // negate size to use as offset
-    masm->jmp(moveLoopTest);
-    masm->bind(moveLoopHead);
-    masm->movl(ecx, Address(eax, esi, Address::times_1));
-    masm->movl(Address(esp, esi, Address::times_1), ecx);
-
-    masm->bind(moveLoopTest);                             // continue?
-    masm->subl(esi, 4);
-    masm->cmpl(esi, 0);
-    masm->jcc(Assembler::greaterEqual, moveLoopHead);     // y - next iteration
-                                                          // n - less than four bytes remain
-    masm->addl(esi, 3);                                   // adjust offset for byte moves
-    masm->jcc(Assembler::less, moveLoopEnd);              // y - exact multiple of four bytes
-                                                          // n - 1-3 bytes need to be moved
-    masm->movb(ecx, Address(eax, esi, Address::times_1));
-    masm->movb(Address(esp, esi, Address::times_1), ecx);
-    masm->decl(esi);
-    masm->jcc(Assembler::less, moveLoopEnd);              // y - one extra byte
-                                                          // n - 2-3 extra bytes
-    masm->movb(ecx, Address(eax, esi, Address::times_1));
-    masm->movb(Address(esp, esi, Address::times_1), ecx);
-    masm->decl(esi);
-    masm->jcc(Assembler::less, moveLoopEnd);              // y - two extra bytes
-                                                          // n - three extra bytes
-    masm->movb(ecx, Address(eax, esi, Address::times_1));
-    masm->movb(Address(esp, esi, Address::times_1), ecx);
-    masm->jmp(moveLoopEnd);                               // finished
-    masm->bind(isSMI);
-    masm->sarl(eax, 2);
-    masm->pushl(eax);
-    masm->bind(moveLoopEnd);
+    push_alien_arg(masm, moveLoopEnd);
   }
 
   masm->movl(eax, fnptr);

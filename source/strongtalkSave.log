@@ -94161,3 +94161,1727 @@ primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger
 "September 8, 2009 -> 10:34:44"!
 
 "System saved" !
+"September 8, 2009 -> 22:53:38"!
+
+Delta define: #TestAlien as: (
+(Class subclassOf: 'Alien' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 22:54:10"!
+
+! (Delta mirrorFor: #TestAlien) classSide methodsFor: 'instance creation' !
+dataSize
+
+	^8! !
+
+"September 8, 2009 -> 22:56:16"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'private - test support' !
+libcName
+
+	Platform == Win32Platform
+		ifTrue: [^'msvcrt.dll'].
+	Platform == MacOSXPlatform
+		ifTrue: [^'libc.dylib'].
+	Platform == UnixPlatform
+		ifTrue: [^'libc.6.so'].
+	self error: 'Platform set incorrectly'! !
+
+"September 8, 2009 -> 22:56:37"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testLookupClockWin32
+
+	|function result|
+	Platform == Win32Platform ifFalse: [^self].
+	function := Alien lookup: 'clock' inLibrary: self libcName.
+	result := Alien new: 8.
+	function primFFICallResult: result! !
+
+"September 8, 2009 -> 22:57:19"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testLookupClockWin32
+
+	|function result|
+	function := Alien lookup: 'clock' inLibrary: self libcName.
+	result := Alien new: 8.
+	function primFFICallResult: result! !
+
+"September 8, 2009 -> 22:59:8"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testNewForCallbackArgs
+
+	|alien|
+	alien := TestAlien newForCallbackArgs.
+	self assert: alien size == TestAlien dataSize negated.
+	self assert: alien address == 0! !
+
+"September 8, 2009 -> 23:0:14"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+newForCallbackArgs
+
+	^(self new: 8)
+		size: self dataSize negated;
+		yourself! !
+
+"September 8, 2009 -> 23:16:25"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:16:50"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 8, 2009 -> 23:18:24"!
+
+"System saved" !
+"September 9, 2009 -> 1:3:12"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback|
+	callback := Callback
+							block: [:args :result|]
+							argsClass: TestAlien
+					! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> argsClass: class <Alien class> ^ <Callback>
+
+	^self new! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback proxy|
+	callback := Callback
+							block: [:args :result|]
+							argsClass: TestAlien.
+	(proxy := ExternalProxy new)
+		malloc: 4.
+	proxy smallIntegerAt: 1 put: 1.! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback proxy|
+	[callback := Callback
+							block: [:args :result|]
+							argsClass: TestAlien.
+	(proxy := ExternalProxy new)
+		malloc: 4.
+	proxy smallIntegerAt: 1 put: 1.]
+		ensure: [proxy free]! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback proxy|
+	[callback := Callback
+							block: [:args :result|]
+							argsClass: TestAlien.
+	(proxy := ExternalProxy new)
+		malloc: 4.
+	proxy smallIntegerAt: 1 put: 1.]
+		ensure: [proxy isNull ifFalse: [proxy free]]! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback proxy|
+	callback := Callback
+							block: [:args :result|]
+							argsClass: TestAlien.
+	(proxy := ExternalProxy new)
+		malloc: 4.
+	proxy smallIntegerAt: 1 put: 1.! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback stack wasCalled|
+	wasCalled := false.
+	callback := Callback
+							block: [:args :result| wasCalled := true]
+							argsClass: TestAlien.
+	(stack := ExternalProxy new)
+		malloc: 4.
+	stack smallIntegerAt: 1 put: 1.
+	callback evaluate: stack! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> argsClass: class <Alien class> ^ <Callback>
+
+	^(self new)
+			block: [:stack| block value: nil value: nil];
+			yourself! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback stack wasCalled|
+	wasCalled := false.
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true
+										self assert: args address == stack asInteger]
+							argsClass: TestAlien.
+	(stack := ExternalProxy new)
+		malloc: 4.
+	stack smallIntegerAt: 1 put: 1.
+	callback evaluate: stack! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback stack wasCalled|
+	wasCalled := false.
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger]
+							argsClass: TestAlien.
+	(stack := ExternalProxy new)
+		malloc: 4.
+	stack smallIntegerAt: 1 put: 1.
+	callback evaluate: stack! !
+
+"September 9, 2009 -> 1:3:12"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> argsClass: class <Alien class> ^ <Callback>
+
+	^(self new)
+			block: [:stack| block value: nil value: nil]
+			argsProxy: class newForCallbackArgs;
+			yourself! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'instance initialization' !
+block: block <[Alien, Alien]> argsProxy: args <Alien>
+
+	self block: block;
+		argsProxy: args! !
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: 'argsProxy')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: 'argsProxy')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: 'argsProxy')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: 'argsProxy')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'restricted-accessing' !
+argsProxy: args <Alien>
+
+	argsProxy := args! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'restricted-accessing' !
+argsProxy ^<Alien>
+
+	^argsProxy! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> argsClass: class <Alien class> ^ <Callback>
+
+	^(self new)
+			block: block
+			argsProxy: class newForCallbackArgs;
+			yourself! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'instance initialization' !
+block: block <[Alien, Alien]> argsProxy: args <Alien>
+
+	self block: [:stack|
+						args address: stack asInteger.
+						block value: argsProxy value: nil]! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'instance initialization' !
+block: block <[Alien, Alien]> argsProxy: args <Alien>
+
+	self block: [:stack|
+						args addressField: stack asInteger.
+						block value: argsProxy value: nil]! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'instance initialization' !
+block: block <[Alien, Alien]> argsProxy: args <Alien>
+
+	self block: [:stack|
+						args addressField: stack asInteger.
+						block value: args value: nil]! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback stack wasCalled|
+	wasCalled := false.
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	(stack := ExternalProxy new)
+		malloc: 4.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3! !
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #FFICallbackReturnValue as: (
+(Class subclassOf: 'Alien' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) classSide methodsFor: 'instance creation' !
+dataSize
+
+	^16! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnInteger: value <Integer>! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'instance initialization' !
+block: block <[Alien, Alien]> argsProxy: args <Alien>
+
+	self block: [:stack|
+						|result|
+						result := FFICallbackReturnValue new.
+						args addressField: stack asInteger.
+						block value: args value: result.
+						result]! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'instance initialization' !
+block: block <[Alien, Alien]> argsProxy: args <Alien>
+
+	self block: [:stack|
+						|result|
+						result := FFICallbackReturnValue new.
+						args addressField: stack asInteger.
+						block value: args value: result.
+						result value]! !
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #FFICallbackReturnValueTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValueTest) methodsFor: 'testing' !
+testValueShouldReturnIntegerWhenInteger
+
+	|alien|
+	alien := FFICallbackReturnValue new.
+	alien returnInteger: 1.
+	self assert: 1 == alien value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnInteger: value <Integer>
+
+	self signedLongAt: 9 put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+value
+
+	^self signedLongAt: 9! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValueTest) methodsFor: 'testing' !
+testValueShouldReturnFloatWhenFloat
+
+	|alien|
+	alien := FFICallbackReturnValue new.
+	alien returnFloat: 1.0.
+	self assert: 1.0 == alien value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValueTest) methodsFor: 'testing' !
+testValueShouldReturnFloatWhenFloat
+
+	|alien|
+	alien := FFICallbackReturnValue new.
+	alien returnDouble: 1.0.
+	self assert: 1.0 == alien value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnDouble: value <Integer>
+
+	self signedDoubleAt: 9 put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnDouble: value <Integer>
+
+	self doubleAt: 9 put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnDouble: value <Integer>
+
+	self unsignedByteAt: 1 put: 1.
+	self doubleAt: 9 put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+value
+
+	|type|
+	(type := self asUnsignedByte) == 0
+		ifTrue: [^self signedLongAt: 9].
+	type == 1
+		ifTrue: [^self doubleAt: 9] ! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnInteger: value <Integer>
+
+	self unsignedByteAt: 1 put: 0.
+	self signedLongAt: 9 put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValueTest) methodsFor: 'testing' !
+testValueShouldReturnFloatWhenFloat
+
+	|alien value|
+	alien := FFICallbackReturnValue new.
+	alien returnDouble: 1.0.
+	self assert: 1.0 == (value := alien value)! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValueTest) methodsFor: 'testing' !
+testValueShouldReturnFloatWhenFloat
+
+	|alien value|
+	alien := FFICallbackReturnValue new.
+	alien returnDouble: 1.0.
+	self assert: 1.0 = (value := alien value)! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValueTest) methodsFor: 'testing' !
+testValueShouldReturnFloatWhenFloat
+
+	|alien value|
+	alien := FFICallbackReturnValue new.
+	alien returnDouble: 1.0.
+	self assert: 1.0 = alien value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'restricted-accessing' !
+dataOffset
+
+	^9! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnDouble: value <Integer>
+
+	self unsignedByteAt: 1 put: 1.
+	self doubleAt: self dataOffset put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnInteger: value <Integer>
+
+	self unsignedByteAt: 1 put: 0.
+	self signedLongAt: self dataOffset put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'restricted-accessing' !
+value
+
+	|type|
+	(type := self asUnsignedByte) == 0
+		ifTrue: [^self signedLongAt: self dataOffset].
+	type == 1
+		ifTrue: [^self doubleAt: self dataOffset] ! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'restricted-accessing' !
+type
+
+	^self asUnsignedByte! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'restricted-accessing' !
+value
+
+	self type == 0
+		ifTrue: [^self signedLongAt: self dataOffset].
+	self type == 1
+		ifTrue: [^self doubleAt: self dataOffset] ! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'restricted-accessing' !
+typeOffset
+
+	^1! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'restricted-accessing' !
+type
+
+	^self unsignedByteAt: self typeOffset! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnInteger: value <Integer>
+
+	self unsignedByteAt: self typeOffset put: 0.
+	self signedLongAt: self dataOffset put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnDouble: value <Integer>
+
+	self unsignedByteAt: self typeOffset put: 1.
+	self doubleAt: self dataOffset put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+type: type <Integer>
+
+	self unsignedByteAt: self typeOffset put: type! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnInteger: value <Integer>
+
+	self type: 0.
+	self signedLongAt: self dataOffset put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #FFICallbackReturnValue) methodsFor: 'accessing' !
+returnDouble: value <Integer>
+
+	self type: 1.
+	self doubleAt: self dataOffset put: value! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	|callback stack wasCalled|
+	wasCalled := false.
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	(stack := ExternalProxy new)
+		malloc: 4.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'fixture' !
+setUp! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'restricted-accessing' !
+index
+
+	^self smallIntegerAt: 2! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> argsClass: class <Alien class> ^ <Callback>
+
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallbackRegisterCCall: CallBackArray size
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> argsClass: class <Alien class> ^ <Callback>
+
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallBackRegisterCCall: CallBackArray size
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'restricted-accessing' !
+index
+
+	^self smallIntegerAt: 1! !
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'callback
+stack
+wasCalled')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'callback
+stack
+wasCalled')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'callback
+stack
+wasCalled')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'callback
+stack
+wasCalled')) !
+
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	wasCalled := false.
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	(stack := ExternalProxy new)
+		malloc: 4.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'fixture' !
+setUp
+
+	wasCalled := false.
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	(stack := ExternalProxy new)
+		malloc: 4.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'fixture' !
+setUp
+
+	wasCalled := false.
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	(stack := ExternalProxy new)
+		malloc: 4.
+! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback! !
+
+"September 9, 2009 -> 1:3:13"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'fixture' !
+tearDown
+
+	callback isNull
+		ifFalse: [callback free]! !
+
+"September 9, 2009 -> 1:6:26"!
+
+(Delta mirrorFor: #Callback) removeMethod: #argsProxy ifAbsent: [] !
+
+
+"September 9, 2009 -> 1:6:28"!
+
+(Delta mirrorFor: #Callback) removeMethod: #argsProxy: ifAbsent: [] !
+
+
+"September 9, 2009 -> 1:6:35"!
+
+Delta define: #Callback as: (
+(Class subclassOf: 'CallBack' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:7:27"!
+
+"System saved" !
+"September 9, 2009 -> 1:11:53"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'evaluation' !
+evaluate: stack
+
+	^block value: stack! !
+
+"September 9, 2009 -> 1:23:12"!
+
+! (Delta mirrorFor: #CallBack) methodsFor: 'deleting' !
+free
+	|index|
+	index := self index.
+	{{primitiveCallBackUnregister: self ifFail: [:err| self error: err]}}.
+	CallBackArray at: index put: nil.! !
+
+"September 9, 2009 -> 1:25:33"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'fixture' !
+tearDown
+
+	(callback isNil or: [callback isNull])
+		ifFalse: [callback free]! !
+
+"September 9, 2009 -> 1:43:14"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback! !
+
+"September 9, 2009 -> 1:43:15"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'fixture' !
+setUp
+
+	wasCalled := false.
+	(stack := ExternalProxy new)
+		malloc: 4.
+! !
+
+"September 9, 2009 -> 1:45:16"!
+
+Delta define: #TestInvokeArgs as: (
+(Class subclassOf: 'Alien' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 1:45:38"!
+
+! (Delta mirrorFor: #TestInvokeArgs) classSide methodsFor: 'instance creation' !
+dataSize
+
+	^8! !
+
+"September 9, 2009 -> 1:46:13"!
+
+! (Delta mirrorFor: #TestInvokeArgs) methodsFor: 'accessing' !
+first
+
+	^self signedLongAt: 1! !
+
+"September 9, 2009 -> 1:46:21"!
+
+! (Delta mirrorFor: #TestInvokeArgs) methodsFor: 'accessing' !
+second
+
+	^self signedLongAt: 5! !
+
+"September 9, 2009 -> 1:49:11"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							argsClass: TestInvokeArgs.
+	self assert: wasCalled.
+	self assert: (CCallback invoke: callback) == 15
+	! !
+
+"September 9, 2009 -> 1:49:23"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							argsClass: TestInvokeArgs.
+	self assert: wasCalled.
+	self assert: (CCallBack invoke: callback) == 15
+	! !
+
+"September 9, 2009 -> 1:49:34"!
+
+(Delta mirrorFor: #CCallback) removeDefinitionIfFail: [] !
+
+
+"September 9, 2009 -> 1:50:34"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							argsClass: TestInvokeArgs.
+	self assert: (CCallBack invoke: callback) == 15.
+	self assert: wasCalled
+	! !
+
+"September 9, 2009 -> 2:29:46"!
+
+"System saved" !
+"September 9, 2009 -> 20:5:3"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeCCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							argsClass: TestInvokeArgs.
+	self assert: (CCallBack invoke: callback) == 15.
+	self assert: wasCalled
+	! !
+
+"September 9, 2009 -> 20:5:3"!
+
+(Delta mirrorFor: #CallbackTest) removeMethod: #testInvokeCallback ifAbsent: [] !
+
+
+"September 9, 2009 -> 20:5:3"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeStdcallCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							stdcallArgsClass: TestInvokeArgs.
+	self assert: (CCallBack invoke: callback) == 15.
+	self assert: wasCalled
+	! !
+
+"September 9, 2009 -> 20:5:3"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> stdcallArgsClass: class <Alien class> ^ <Callback>
+
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallBackRegisterPascallCall: CallBackArray size
+		numberOfArguments: ((class dataSize + 3) / 4) asInteger
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback! !
+
+"September 9, 2009 -> 20:5:3"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> stdcallArgsClass: class <Alien class> ^ <Callback>
+
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallBackRegisterPascalCall: CallBackArray size
+		numberOfArguments: ((class dataSize + 3) / 4) asInteger
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback! !
+
+"September 9, 2009 -> 20:5:3"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeCCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							argsClass: TestInvokeArgs.
+	self assert: (CCallBack invoke: callback) == 15.
+	self assert: wasCalled
+	! !
+
+"September 9, 2009 -> 20:5:3"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeStdcallCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							stdcallArgsClass: TestInvokeArgs.
+	self assert: (CCallBack invoke: callback) == 15.
+	self assert: wasCalled
+	! !
+
+"September 9, 2009 -> 20:5:3"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> stdcallArgsClass: class <Alien class> ^ <Callback>
+
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallBackRegisterPascallCall: CallBackArray size
+		numberOfArguments: ((class dataSize + 3) / 4) asInteger
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback! !
+
+"September 9, 2009 -> 20:5:3"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> stdcallArgsClass: class <Alien class> ^ <Callback>
+
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallBackRegisterPascalCall: CallBackArray size
+		numberOfArguments: ((class dataSize + 3) / 4) asInteger
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback! !
+
+"September 9, 2009 -> 20:5:4"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeStdcallCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							stdcallArgsClass: TestInvokeArgs.
+	self assert: (APICallBack invoke: callback) == 15.
+	self assert: wasCalled
+	! !
+
+"September 9, 2009 -> 20:7:16"!
+
+"System saved" !
+"September 9, 2009 -> 20:28:48"!
+
+! (Delta mirrorFor: #Callback) classSide methodsFor: 'instance creation' !
+block: block <[Alien, Alien]> stdcallArgsClass: class <Alien class> ^ <Callback>
+
+	|callback|
+	callback := self new.
+	CallBackArray add: callback.
+	{{primitiveCallBackRegisterPascalCall: CallBackArray size
+		numberOfArguments: ((class dataSize + 3) // 4)
+		result: callback
+		ifFail: [:err | self error: err]}}.
+	callback
+		block: block
+		argsProxy: class newForCallbackArgs.
+	^callback! !
+
+"September 9, 2009 -> 20:33:43"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+invokeCCallbackWithNLR
+
+	callback := Callback
+							block: [:args :result| ^#nlr]
+							argsClass: TestInvokeArgs.
+	CCallBack invoke: callback
+	! !
+
+"September 9, 2009 -> 20:34:16"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeCCallbackWithNLR
+
+	self assert: #nlr == self invokeCCallbackWithNLR
+	! !
+
+"September 9, 2009 -> 20:35:32"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+invokePascalCallbackWithNLR
+
+	callback := Callback
+							block: [:args :result| ^#nlr]
+							stdcallArgsClass: TestInvokeArgs.
+	APICallBack invoke: callback
+	! !
+
+"September 9, 2009 -> 20:35:49"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+invokeStdcallCallbackWithNLR
+
+	callback := Callback
+							block: [:args :result| ^#nlr]
+							stdcallArgsClass: TestInvokeArgs.
+	APICallBack invoke: callback
+	! !
+
+"September 9, 2009 -> 20:35:52"!
+
+(Delta mirrorFor: #CallbackTest) removeMethod: #invokePascalCallbackWithNLR ifAbsent: [] !
+
+
+"September 9, 2009 -> 20:36:3"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testInvokeStdcallCallbackWithNLR
+
+	self assert: #nlr == self invokeStdcallCallbackWithNLR
+	! !
+
+"September 9, 2009 -> 20:37:17"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback
+	self assert: callback thunk = callback asInteger! !
+
+"September 9, 2009 -> 20:43:36"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback
+	self assert: callback thunk address = callback asInteger! !
+
+"September 9, 2009 -> 20:44:49"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'accessing' !
+thunk
+
+	^Alien forPointer: self asInteger! !
+
+"September 9, 2009 -> 20:45:20"!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+testBlockArgsClass
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback.
+	self assert: callback thunk address = callback asInteger! !
+
+"September 9, 2009 -> 20:45:54"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'accessing' !
+thunk ^<Alien>
+
+	^Alien forPointer: self asInteger! !
+
+"September 9, 2009 -> 21:2:9"!
+
+! (Delta mirrorFor: #AlienFunctionTest) methodsFor: 'fixture' !
+libcName
+	
+	Platform == Win32Platform
+		ifTrue: [^'msvcrt.dll'].
+	Platform == MacOSXPlatform
+		ifTrue: [^'libc.dylib'].
+	Platform == UnixPlatform
+		ifTrue: [^'libc.so.6']
+	self error: 'Unsupported platform'! !
+
+"September 9, 2009 -> 21:2:15"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'private - test support' !
+libcName
+
+	Platform == Win32Platform
+		ifTrue: [^'msvcrt.dll'].
+	Platform == MacOSXPlatform
+		ifTrue: [^'libc.dylib'].
+	Platform == UnixPlatform
+		ifTrue: [^'libc.so.6'].
+	self error: 'Platform set incorrectly'! !
+
+"September 9, 2009 -> 21:9:40"!
+
+Delta define: #AlienDemoTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 21:11:26"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'test-support' !
+libcName
+
+	Platform == Win32Platform
+		ifTrue: [^'msvcrt.dll'].
+	Platform == MacOSXPlatform
+		ifTrue: [^'libc.dylib'].
+	Platform == UnixPlatform
+		ifTrue: [^'libc.so.6'].
+	self error: 'Unknow platform'! !
+
+"September 9, 2009 -> 21:29:44"!
+
+"System saved" !
+"September 9, 2009 -> 21:46:24"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 9, 2009 -> 21:47:25"!
+
+"System saved" !
+"September 10, 2009 -> 0:12:20"!
+
+! (Delta mirrorFor: #UnsafeAlien) classSide methodsFor: 'instance creation' !
+forPointerTo: bytes <IndexedByteInstanceVariables> ^ <UnsafeAlien>
+
+	^self new
+		nonPointerObject: bytes;
+		yourself
+		! !
+
+"September 10, 2009 -> 0:12:58"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"September 10, 2009 -> 0:13:6"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'accessing' !
+object
+
+	^nonPointerObject! !
+
+"September 10, 2009 -> 0:13:50"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'initialization' !
+nonPointerObject: bytes <IndexedByteInstanceVariables>
+
+	nonPointerObject := bytes! !
+
+"September 10, 2009 -> 0:17:43"!
+
+"System saved" !
+"September 12, 2009 -> 19:8:56"!
+
+! (Delta mirrorFor: #AlienFunctionTest) methodsFor: 'testing' !
+testCallLabsWithOneArg
+
+	labs primFFICallResult: result
+			with: -1.
+	self assert: 1 == result asSignedLong! !
+
+"September 12, 2009 -> 19:9:1"!
+
+(Delta mirrorFor: #AlienFunctionTest) removeMethod: #testCallSprintfWithOneArg ifAbsent: [] !
+
+
+"September 12, 2009 -> 19:13:40"!
+
+! (Delta mirrorFor: #AlienFunctionTest) methodsFor: 'testing' !
+testCallSprintfWithUnsafeAlienTarget
+	
+	Alien
+		autoFreeAfter: [:free|
+			|formatString bytes string unsafe|
+			bytes := ByteArray new: 6.
+			unsafe := UnsafeAlien forPointerTo: bytes.
+			formatString := '12345' asString.
+			sprintf primFFICallResult: nil
+							with: unsafe
+							with: (free value: formatString asAlien) pointer.
+			self assert: formatString = (bytes copyWithSize: 5) asString]! !
+
+"September 12, 2009 -> 19:16:8"!
+
+"System saved" !
+"September 12, 2009 -> 19:23:37"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s |
+	(Alien lookup: 'sprintf' inLibrary: Alien libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: 'Hello World %d %x !!!!'. "only works for symbols"
+						 			123.
+						 			48879}.
+	self assert: 'Hello World 123 beef !!!!' = (s copyFrom: 1 to: (r signedLongAt: 1) - 1) asString! !
+
+"September 12, 2009 -> 19:26:42"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: 'Hello World %d %x !!!!'. "only works for symbols"
+						 			123.
+						 			48879}.
+	self assert: 'Hello World 123 beef !!!!' = (s copyFrom: 1 to: (r signedLongAt: 1) - 1) asString! !
+
+"September 12, 2009 -> 19:32:26"!
+
+! (Delta mirrorFor: #ByteArray) methodsFor: 'copying' !
+copyFrom: start <Int> to: stop <Int>   ^<VarSeqCltn[EX]>
+	{where EX is returnType of #anElement message of receiverType}
+
+	"The guarantee is typesafe since the inference clause guarantees that E < EX at the call site"
+	| copy <VarSeqCltn[EX]> safeme <SeqCltn[EX]> |
+	safeme := guaranteed <SeqCltn[EX]> self.
+	copy := guaranteed <VarSeqCltn[EX]> (self class new: (stop - start) + 1).
+	copy replaceFrom: 1 to: copy size with: safeme startingAt: start.
+	^copy! !
+
+"September 12, 2009 -> 19:33:25"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: 'Hello World %d %x !!!!'. "only works for symbols"
+						 			123.
+						 			48879}.
+	self assert: 'Hello World 123 beef !!!!' = (s copyFrom: 1 to: (r signedLongAt: 1)) asString! !
+
+"September 12, 2009 -> 19:33:46"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: 'Hello World %d %x !!!!'. "only works for symbols"
+						 			123.
+						 			48879}.
+	self assert: 'Hello World 123 BEEF !!!!' = (s copyFrom: 1 to: (r signedLongAt: 1)) asString! !
+
+"September 12, 2009 -> 19:34:15"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s actual |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: 'Hello World %d %x !!!!'. "only works for symbols"
+						 			123.
+						 			48879}.
+	actual := (s copyFrom: 1 to: (r signedLongAt: 1)) asString.
+	self assert: 'Hello World 123 BEEF !!!!' = actual! !
+
+"September 12, 2009 -> 19:36:44"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s actual |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: 'Hello World %d %x !!!!'. "only works for symbols"
+						 			123.
+						 			48879}.
+	actual := (s copyFrom: 1 to: (r signedLongAt: 1)) asString.
+	Transcript show: actual.
+	self assert: 'Hello World 123 BEEF !!!!' = actual! !
+
+"September 12, 2009 -> 19:38:21"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s actual |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: 'Hello World %d %x !!!!'. "only works for symbols"
+						 			123.
+						 			48879}.
+	Transcript print: (r asSignedLong).
+	actual := (s copyFrom: 1 to: (r signedLongAt: 1)) asString.
+	Transcript show: actual.
+	self assert: 'Hello World 123 beef !!!!' = actual! !
+
+"September 12, 2009 -> 19:40:35"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s actual |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: ('Hello World %d %x !!!!', Character nul) asSymbol. "only works for symbols"
+						 			123.
+						 			48879}.
+	Transcript print: (r asSignedLong).
+	actual := (s copyFrom: 1 to: (r signedLongAt: 1)) asString.
+	Transcript show: actual.
+	self assert: 'Hello World 123 beef !!!!' = actual! !
+
+"September 12, 2009 -> 19:41:11"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s actual |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: ('Hello World %d %x !!!!', (String with: Character nul)) asSymbol. "only works for symbols"
+						 			123.
+						 			48879}.
+	Transcript print: (r asSignedLong).
+	actual := (s copyFrom: 1 to: (r signedLongAt: 1)) asString.
+	Transcript show: actual.
+	self assert: 'Hello World 123 beef !!!!' = actual! !
+
+"September 12, 2009 -> 19:46:59"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testCqsort
+	"Call the libc qsort function (which requires a callback)."
+"	| cb rand nElements sizeofDouble values orig sort |
+	rand:= Random new.
+	values:= Alien newC: (nElements:= 100) * (sizeofDouble:= 8).
+	1 to: values dataSize by: sizeofDouble do:
+		[:i| values doubleAt: i put: rand next].
+	orig:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	cb:= Callback
+			block: [:args :result|
+					result returnInteger: ((args first doubleAt: 1) - (args second doubleAt: 1)) sign]
+			argsClass: QsortCompare.
+	(Alien lookup: 'qsort' inLibrary: libcName)
+		primFFICallResult: nil
+		with: values pointer
+		with: nElements
+		with: sizeofDouble
+		with: cb thunk.
+	sort:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	values free.
+	^orig -> sort"! !
+
+"September 12, 2009 -> 19:47:37"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testCqsort
+	"Call the libc qsort function (which requires a callback)."
+	| cb rand nElements sizeofDouble values orig sort |
+	rand:= Random new.
+"	values:= Alien newC: (nElements:= 100) * (sizeofDouble:= 8).
+	1 to: values dataSize by: sizeofDouble do:
+		[:i| values doubleAt: i put: rand next].
+	orig:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	cb:= Callback
+			block: [:args :result|
+					result returnInteger: ((args first doubleAt: 1) - (args second doubleAt: 1)) sign]
+			argsClass: QsortCompare.
+	(Alien lookup: 'qsort' inLibrary: libcName)
+		primFFICallResult: nil
+		with: values pointer
+		with: nElements
+		with: sizeofDouble
+		with: cb thunk.
+	sort:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	values free.
+	^orig -> sort"! !
+
+"September 12, 2009 -> 19:47:43"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testCqsort
+	"Call the libc qsort function (which requires a callback)."
+	| cb rand nElements sizeofDouble values orig sort |
+	rand:= Random new.
+	values:= Alien newC: (nElements:= 100) * (sizeofDouble:= 8).
+"	1 to: values dataSize by: sizeofDouble do:
+		[:i| values doubleAt: i put: rand next].
+	orig:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	cb:= Callback
+			block: [:args :result|
+					result returnInteger: ((args first doubleAt: 1) - (args second doubleAt: 1)) sign]
+			argsClass: QsortCompare.
+	(Alien lookup: 'qsort' inLibrary: libcName)
+		primFFICallResult: nil
+		with: values pointer
+		with: nElements
+		with: sizeofDouble
+		with: cb thunk.
+	sort:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	values free.
+	^orig -> sort"! !
+
+"September 12, 2009 -> 21:12:50"!
+
+! (Delta mirrorFor: #AlienDemoTest) methodsFor: 'testing' !
+testSprintf
+
+	| r s actual |
+	(Alien lookup: 'sprintf' inLibrary: self libcName)
+		primFFICallResult: (r := Alien new: 4)
+		withArguments: { UnsafeAlien forPointerTo: (s := ByteArray new: 1024).
+						 			UnsafeAlien forPointerTo: ('Hello World %d %x !!!!', (String with: Character nul)) asSymbol. "only works for symbols"
+						 			123.
+						 			48879}.
+	actual := (s copyFrom: 1 to: (r signedLongAt: 1)) asString.
+	self assert: 'Hello World 123 beef !!!!' = actual! !
+
+"September 12, 2009 -> 21:13:40"!
+
+"System saved" !

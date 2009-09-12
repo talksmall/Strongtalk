@@ -1,0 +1,28 @@
+Delta define: #FFICallbackReturnValueTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #FFICallbackReturnValueTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #FFICallbackReturnValueTest) group: 'Aliens test'!
+
+(Delta mirrorFor: #FFICallbackReturnValueTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #FFICallbackReturnValueTest) methodsFor: 'testing' !
+
+
+testValueShouldReturnFloatWhenFloat
+
+	|alien value|
+	alien := FFICallbackReturnValue new.
+	alien returnDouble: 1.0.
+	self assert: 1.0 = alien value!
+
+testValueShouldReturnIntegerWhenInteger
+
+	|alien|
+	alien := FFICallbackReturnValue new.
+	alien returnInteger: 1.
+	self assert: 1 == alien value! !
+

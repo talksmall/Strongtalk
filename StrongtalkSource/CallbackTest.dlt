@@ -1,0 +1,96 @@
+Delta define: #CallbackTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'callback
+stack
+wasCalled')) !
+
+(Delta mirrorFor: #CallbackTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #CallbackTest) group: 'Aliens test'!
+
+(Delta mirrorFor: #CallbackTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'fixture' !
+
+
+setUp
+
+	wasCalled := false.
+	(stack := ExternalProxy new)
+		malloc: 4.
+!
+
+tearDown
+
+	(callback isNil or: [callback isNull])
+		ifFalse: [callback free]! !
+
+! (Delta mirrorFor: #CallbackTest) methodsFor: 'testing' !
+
+
+invokeCCallbackWithNLR
+
+	callback := Callback
+							block: [:args :result| ^#nlr]
+							argsClass: TestInvokeArgs.
+	CCallBack invoke: callback
+	!
+
+invokeStdcallCallbackWithNLR
+
+	callback := Callback
+							block: [:args :result| ^#nlr]
+							stdcallArgsClass: TestInvokeArgs.
+	APICallBack invoke: callback
+	!
+
+testBlockArgsClass
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args address == stack asInteger.
+										result returnInteger: -3]
+							argsClass: TestAlien.
+	stack smallIntegerAt: 1 put: 1.
+	self assert: (callback evaluate: stack) == -3.
+	self assert: (CallBackArray at: callback index) == callback.
+	self assert: callback thunk address = callback asInteger!
+
+testInvokeCCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							argsClass: TestInvokeArgs.
+	self assert: (CCallBack invoke: callback) == 15.
+	self assert: wasCalled
+	!
+
+testInvokeCCallbackWithNLR
+
+	self assert: #nlr == self invokeCCallbackWithNLR
+	!
+
+testInvokeStdcallCallback
+
+	callback := Callback
+							block: [:args :result|
+										wasCalled := true.
+										self assert: args first == 10.
+										self assert: args second == 5.
+										result returnInteger: args first + args second]
+							stdcallArgsClass: TestInvokeArgs.
+	self assert: (APICallBack invoke: callback) == 15.
+	self assert: wasCalled
+	!
+
+testInvokeStdcallCallbackWithNLR
+
+	self assert: #nlr == self invokeStdcallCallbackWithNLR
+	! !
+
