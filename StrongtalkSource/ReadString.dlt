@@ -151,7 +151,14 @@ compare: other <Str>  ^<Int>
 			diff == 0
 				ifFalse: [ ^diff ]
 		].
-	^mySize compare: otherSize! !
+	^mySize compare: otherSize!
+
+endsWith: chars <SequenceableCollection[Character]>
+
+	| indices <Collection[Integer]> |
+	indices := (self indicesOfSubCollection: chars).
+	indices isEmpty ifTrue: [^false].
+	^indices last + chars size - 1 = self size! !
 
 ! (Delta mirrorFor: #ReadString) methodsFor: 'converting' !
 

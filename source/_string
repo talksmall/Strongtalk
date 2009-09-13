@@ -11,10 +11,21 @@ converting!
 Camp Smalltalk!
 Aliens-converting!
 comparing! !
-sunitSubStrings!
-30869996!
-Camp Smalltalk!
-0! !
+#comment!
+Writable Strings.
+
+%note: Adjacent byte pairs of indexed byte inst vars hold the unicode value of each character.
+At the moment, the high byte of the pair holds the high byte of the character code.
+
+%todo: implement all the basic ops faster (<, at:, size, =, etc).  It would be nice to have a primitive
+		that returned a sigma value (-1,0,1) based on the comparison; <,
+        equality, & more etc would all be definable using it.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+! !
 #superclassTypeString!
 VarSequenceableCollection[Character] mixin |> UncompressedReadString! !
 #group!
@@ -43,21 +54,10 @@ Aliens-converting!
 0! !
 #branded!
 true! !
-#comment!
-Writable Strings.
-
-%note: Adjacent byte pairs of indexed byte inst vars hold the unicode value of each character.
-At the moment, the high byte of the pair holds the high byte of the character code.
-
-%todo: implement all the basic ops faster (<, at:, size, =, etc).  It would be nice to have a primitive
-		that returned a sigma value (-1,0,1) based on the comparison; <,
-        equality, & more etc would all be definable using it.
-
-Tags: %BlueBook %User
-
-(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
-Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
-! !
+sunitSubStrings!
+30869996!
+Camp Smalltalk!
+0! !
 #abstract!
 false! !
 sunitMatch:!
@@ -68,10 +68,6 @@ at:put:!
 925133!
 accessing!
 0Int:Character:Character! !
-endsWith:!
-35153368!
-comparing!
-0SequenceableCollection[Character]:! !
 #supportedProtocolString!
 VarStr! !
 readWriteStream!

@@ -96036,3 +96036,33 @@ testIndexOfSubCollectionStartingAtIfAbsent
 "September 13, 2009 -> 18:14:37"!
 
 "System saved" !
+"September 13, 2009 -> 18:22:32"!
+
+! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
+testEndsWith
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source endsWith: 'vis').
+	self assert: ('Elvis' endsWith: 'vis').
+	self deny: (source endsWith: 'El').
+	self deny: (source endsWith: 'the').! !
+
+"September 13, 2009 -> 18:23:37"!
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case sensitive' !
+endsWith: chars <SequenceableCollection[Character]>
+
+	| indices <Collection[Integer]> |
+	indices := (self indicesOfSubCollection: chars).
+	indices isEmpty ifTrue: [^false].
+	^indices last + chars size - 1 = self size! !
+
+"September 13, 2009 -> 18:23:44"!
+
+(Delta mirrorFor: #String) removeMethod: #endsWith: ifAbsent: [] !
+
+
+"September 13, 2009 -> 18:24:13"!
+
+"System saved" !
