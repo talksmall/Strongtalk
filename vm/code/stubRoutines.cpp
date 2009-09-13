@@ -1594,7 +1594,7 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
   masm->movl(edx, esp);
   for (int arg = 0; arg < args; arg++) {
     Address argAddress(ebp, 16 + (args - arg - 1) * 4);
-    Label isSMI, isDirect, isPointer, nextArg;
+    Label nextArg;
     masm->leal(eax, argAddress);
     alien_arg_size(masm, nextArg);
       
@@ -1614,9 +1614,9 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
   masm->bind(pushArgs);
   //if (args > 0) masm->int3();
 
-  for (int arg = 0; arg < args; arg++) {
-    Address argAddress(ebp, 16 + (args - arg - 1) * 4);
-    Label isSMI, isDirect, startMove, isPointer, nextArg, moveLoopHead, moveLoopEnd, moveLoopTest;
+  for (int arg1 = 0; arg1 < args; arg1++) {
+    Address argAddress(ebp, 16 + (args - arg1 - 1) * 4);
+    Label moveLoopEnd;
     masm->movl(eax, argAddress);
 
     push_alien_arg(masm, moveLoopEnd);

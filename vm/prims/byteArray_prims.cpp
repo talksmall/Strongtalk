@@ -780,7 +780,7 @@ PRIM_DECL_2(byteArrayPrimitives::alienSetAddress, oop receiver, oop argument) {
     value = smiOop(argument)->value();
   else {
     bool ok;
-    value = byteArrayOop(argument)->number().as_int(ok);
+    value = byteArrayOop(argument)->number().as_unsigned_int(ok);
     if (!ok)
       return markSymbol(vmSymbols::argument_is_invalid());
   }
