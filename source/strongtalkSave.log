@@ -95885,3 +95885,154 @@ testSprintf
 "September 12, 2009 -> 21:13:40"!
 
 "System saved" !
+"September 13, 2009 -> 17:1:17"!
+
+! (Delta mirrorFor: #MacOSXPlatform) classSide methodsFor: 'Dynamic Linked Libraries' !
+DLLMapName: name <Str> ^<Str>
+	(name endsWith: '.dylib') ifTrue: [^name].
+    name = 'libc' ifTrue: [^'libc.dylib'].
+    ^name, '.dylib'! !
+
+"September 13, 2009 -> 17:50:18"!
+
+Delta define: #ReadStringTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 13, 2009 -> 17:50:28"!
+
+(Delta mirrorFor: #ReadStringTest) removeDefinitionIfFail: [] !
+
+
+"September 13, 2009 -> 17:50:37"!
+
+Delta define: #StringTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 13, 2009 -> 17:52:0"!
+
+! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
+testEndsWith
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source endsWith: 'vis')! !
+
+"September 13, 2009 -> 17:57:25"!
+
+! (Delta mirrorFor: #String) methodsFor: 'comparing' !
+endsWith: chars <SequenceableCollection[Character]>
+
+	^(self indicesOfSubCollection: chars
+			startingAt: 1) last + chars size - 1 = self size
+			! !
+
+"September 13, 2009 -> 17:58:14"!
+
+! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
+testEndsWith
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source endsWith: 'vis').
+	self deny: (source endsWith: 'El').! !
+
+"September 13, 2009 -> 17:58:41"!
+
+! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
+testEndsWith
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source endsWith: 'vis').
+	self deny: (source endsWith: 'El').
+	self deny: (source endsWith: 'the').! !
+
+"September 13, 2009 -> 18:0:5"!
+
+! (Delta mirrorFor: #String) methodsFor: 'comparing' !
+endsWith: chars <SequenceableCollection[Character]>
+
+	| indices <Collection[Integer]> |
+	indices := (self indicesOfSubCollection: chars startingAt: 1).
+	indices isEmpty ifTrue: [^false].
+	^indices last + chars size - 1 = self size
+			! !
+
+"September 13, 2009 -> 18:0:28"!
+
+! (Delta mirrorFor: #String) methodsFor: 'comparing' !
+endsWith: chars <SequenceableCollection[Character]>
+
+	| indices <Collection[Integer]> |
+	indices := (self indicesOfSubCollection: chars).
+	indices isEmpty ifTrue: [^false].
+	^indices last + chars size - 1 = self size
+			! !
+
+"September 13, 2009 -> 18:2:12"!
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'Dynamic Linked Libraries' !
+DLLMapName: name <Str> ^<Str>
+	(name contains: '.so') ifTrue: [^name].
+    name = 'libc' ifTrue: [^'libc.so.6'].
+    ^name, '.so'! !
+
+"September 13, 2009 -> 18:2:33"!
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'Dynamic Linked Libraries' !
+DLLMapName: name <Str> ^<Str>
+	(name includes: '.so') ifTrue: [^name].
+    name = 'libc' ifTrue: [^'libc.so.6'].
+    ^name, '.so'! !
+
+"September 13, 2009 -> 18:8:32"!
+
+! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'Dynamic Linked Libraries' !
+DLLMapName: name <Str> ^<Str>
+	name indexOfSubCollection: '.so'
+			startingAt: 1
+			ifAbsent: [name = 'libc' ifTrue: [^'libc.so.6'].
+    						^name, '.so'].
+    ^name    ! !
+
+"September 13, 2009 -> 18:10:11"!
+
+! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
+testIndexOfSubCollectionStartingAtIfAbsent
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source indexOfSubCollection: 'vis'
+								startingAt: 1
+								ifAbsent: [self fail])! !
+
+"September 13, 2009 -> 18:10:50"!
+
+! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
+testIndexOfSubCollectionStartingAtIfAbsent
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source indexOfSubCollection: 'vis'
+								startingAt: 1
+								ifAbsent: [self fail]) = 3! !
+
+"September 13, 2009 -> 18:12:11"!
+
+! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
+testIndexOfSubCollectionStartingAtIfAbsent
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source indexOfSubCollection: 'vis'
+								startingAt: 1
+								ifAbsent: [self fail]) = 3.
+	self assert: (source indexOfSubCollection: 'lv'
+								startingAt: 1
+								ifAbsent: [self fail]) = 2.! !
+
+"September 13, 2009 -> 18:14:37"!
+
+"System saved" !

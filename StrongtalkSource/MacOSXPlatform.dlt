@@ -43,6 +43,7 @@ DLLLookup: name <Str> in: library <Str>
     ^r!
 
 DLLMapName: name <Str> ^<Str>
+	(name endsWith: '.dylib') ifTrue: [^name].
     name = 'libc' ifTrue: [^'libc.dylib'].
     ^name, '.dylib'! !
 

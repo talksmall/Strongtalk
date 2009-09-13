@@ -183,6 +183,17 @@ at: index <Int> putUnicode: unicode <Int> ^<Int>
 	self primitiveAt: index put: unicode.
 	^unicode! !
 
+! (Delta mirrorFor: #String) methodsFor: 'comparing' !
+
+
+endsWith: chars <SequenceableCollection[Character]>
+
+	| indices <Collection[Integer]> |
+	indices := (self indicesOfSubCollection: chars).
+	indices isEmpty ifTrue: [^false].
+	^indices last + chars size - 1 = self size
+			! !
+
 ! (Delta mirrorFor: #String) methodsFor: 'converting' !
 
 

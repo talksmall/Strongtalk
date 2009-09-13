@@ -43,8 +43,11 @@ DLLLookup: name <Str> in: library <Str>
     ^r!
 
 DLLMapName: name <Str> ^<Str>
-    name = 'libc' ifTrue: [^'libc.so.6'].
-    ^name, '.so'! !
+	name indexOfSubCollection: '.so'
+			startingAt: 1
+			ifAbsent: [name = 'libc' ifTrue: [^'libc.so.6'].
+    						^name, '.so'].
+    ^name    ! !
 
 ! (Delta mirrorFor: #UnixPlatform) classSide methodsFor: 'clipboard access' !
 
