@@ -303,7 +303,7 @@ charGlyphFor: c <Character> paint: paint <Paint>  ^<CharacterGlyph>
 	"Return the Glyph for the specified character of this font that will render
 	  using the paint p."
 
-	| curmap <CanonicalCharGlyphs> gl <CharacterGlyph> code <Int> |
+	| curmap <CanonicalCharGlyphs> gl <CharacterGlyph> code <Int> ch <Character> |
 	
 	"We must cache the curmap in a local variable so that we can avoid a critical
 			region"
@@ -312,19 +312,19 @@ charGlyphFor: c <Character> paint: paint <Paint>  ^<CharacterGlyph>
 	(curmap == nil or: [ curmap paint ~~ paint and: [ curmap paint ~= paint ]])
 		ifTrue: [	curmap := self uncachedMapFor: paint.
 						self currentMap: curmap.	].
-
-	code := c unicodeValue.
+	ch := c unicodeValue = 0 ifTrue: [$.] ifFalse: [c].
+	code := ch unicodeValue.
 	code > curmap size
-		ifTrue: [	curmap := curmap copyWithSize: c unicodeValue.
+		ifTrue: [	curmap := curmap copyWithSize: ch unicodeValue.
 						self currentMap: curmap.
 						self critical:
 							[	self allMaps include: curmap. ].
 					].
 
-	gl := curmap at: c unicodeValue.
+	gl := curmap at: ch unicodeValue.
 	gl == nil
-		ifTrue: [	gl := CharacterGlyph buildFor: c painter: curmap painter.
-						curmap at: c unicodeValue put: gl.	 ].
+		ifTrue: [	gl := CharacterGlyph buildFor: ch painter: curmap painter.
+						curmap at: ch unicodeValue put: gl.	 ].
 	^gl
 !
 

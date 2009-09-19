@@ -203,7 +203,7 @@ int byteArrayOopDesc::number_of_arguments() const {
   assert(length() > 0, "selector should have a positive length");
   
   // Return 1 if binary selector
-  if (ispunct(byte_at(1))) return 1;
+  if (is_binary()) return 1;
 
   // Return number of colons
   for (int index = 1; index <= length(); index++)
@@ -221,7 +221,9 @@ bool byteArrayOopDesc::is_unary() const {
 }
 
 bool byteArrayOopDesc::is_binary() const {
-	return ispunct(byte_at(1)) ? true : false;
+  u_char first = byte_at(1);
+  // special case _, as compiler treats as a letter
+  return first != '_' && ispunct(first) ? true : false;
 }
 
 bool byteArrayOopDesc::is_keyword() const {

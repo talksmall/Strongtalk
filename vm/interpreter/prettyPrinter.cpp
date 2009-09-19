@@ -86,7 +86,7 @@ static bool print_selector_with_arguments(prettyPrintStream*       output,
                                           symbolOop                selector,
                                           GrowableArray<astNode*>* arguments,
                                           bool                     split) {
-  if (ispunct(selector->byte_at(1))) {
+  if (selector->is_binary()) {
     // binary send
     output->print(selector->as_string());
     output->space();

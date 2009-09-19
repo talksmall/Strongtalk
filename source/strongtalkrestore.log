@@ -1,79 +1,33 @@
 
-"September 9, 2009 -> 21:55:38"!
+"September 19, 2009 -> 16:11:30"!
 
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+! (Delta mirrorFor: #Font) methodsFor: 'restricted-win32' !
+charGlyphFor: c <Character> paint: paint <Paint>  ^<CharacterGlyph>
+	"Return the Glyph for the specified character of this font that will render
+	  using the paint p."
 
+	| curmap <CanonicalCharGlyphs> gl <CharacterGlyph> code <Int> |
+	
+	"We must cache the curmap in a local variable so that we can avoid a critical
+			region"
+	curmap := self currentMap.
+	
+	(curmap == nil or: [ curmap paint ~~ paint and: [ curmap paint ~= paint ]])
+		ifTrue: [	curmap := self uncachedMapFor: paint.
+						self currentMap: curmap.	].
 
-"September 9, 2009 -> 21:56:2"!
+	code := c unicodeValue.
+	code = 0 ifTrue: [code := $. unicodeValue].
+	code > curmap size
+		ifTrue: [	curmap := curmap copyWithSize: c unicodeValue.
+						self currentMap: curmap.
+						self critical:
+							[	self allMaps include: curmap. ].
+					].
 
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:56:2"!
-
-Delta define: #Callback2 as: (
-(Class subclassOf: 'Alien mixin |> Object' instanceVariables: '')) !
-
-
-"September 9, 2009 -> 21:57:55"!
-
-! (Delta mirrorFor: #Callback2) classSide methodsFor: 'instance creation' !
-new
-
-	^LoadedLibraries! !
+	gl := curmap at: c unicodeValue.
+	gl == nil
+		ifTrue: [	gl := CharacterGlyph buildFor: c painter: curmap painter.
+						curmap at: c unicodeValue put: gl.	 ].
+	^gl
+! !
