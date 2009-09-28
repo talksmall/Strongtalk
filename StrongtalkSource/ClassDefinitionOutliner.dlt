@@ -1,5 +1,7 @@
 Delta define: #ClassDefinitionOutliner as: (
-(Class subclassOf: 'ClassOrMixinDefinitionOutliner[AbstractClassMirror]' instanceVariables: 'superclassOutliner <SuperclassOutliner>')) !
+(Class subclassOf: 'ClassOrMixinDefinitionOutliner[AbstractClassMirror]' instanceVariables: 'superclassOutliner <SuperclassOutliner>
+classInstanceVariableOutliner <InstanceVariableOutliner>
+addingClassInstanceVariables <Boolean>')) !
 
 (Delta mirrorFor: #ClassDefinitionOutliner) revision: '$Revision: 1.4 $'!
 
@@ -19,6 +21,18 @@ outlinerForLocator: loc <DeltaLocator[Mirror]>
 	do:[: l <SuperclassClauseLocator> | self superclassOutliner]
 	else:[super outlinerForLocator: loc]! !
 
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'control' !
+
+
+addClassInstanceVariables
+
+	self open: true.
+	self addingClassInstanceVariables: true.
+	[ self updateBody ] ensure: [ self addingClassInstanceVariables: false ].
+	self classInstanceVariableOutliner notNil
+		ifTrue: [ self inSessionProcessDo: [ 
+							self classInstanceVariableOutliner becomeFocusIfFail: [] ] ]! !
+
 ! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'dependencies' !
 
 
@@ -32,6 +46,31 @@ update: aspect <Object> with: value <Object>
 
 ! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
 
+
+addingClassInstanceVariables ^ <Boolean>
+
+	^addingClassInstanceVariables!
+
+addingClassInstanceVariables: value <Boolean>
+
+	addingClassInstanceVariables := value!
+
+classInstanceVariableOutliner ^ <InstanceVariableOutliner>
+
+	^classInstanceVariableOutliner!
+
+classInstanceVariableOutliner: outliner <InstanceVariableOutliner>
+
+	classInstanceVariableOutliner := outliner!
+
+insertRemainingDefinition: col <Column[Visual]>
+
+	super insertRemainingDefinition: col.
+ 	(self mirror classSide instanceVariableString isEmpty not or: [ self addingClassInstanceVariables ])
+		ifTrue: [		self classInstanceVariableOutliner: (ClassInstanceVariableOutliner for: self mirror classSide).
+							col add: (self addChild: self classInstanceVariableOutliner) imbeddedVisual ]
+		ifFalse: [	self classInstanceVariableOutliner: nil ].
+!
 
 insertSuperDefinition: col <Column[Visual]>
 
@@ -48,4 +87,12 @@ superclassOutliner ^ <SuperclassOutliner>
 superclassOutliner: o <SuperclassOutliner>
 
 	superclassOutliner := o! !
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	super initialize.
+	self addingClassInstanceVariables: false! !
 

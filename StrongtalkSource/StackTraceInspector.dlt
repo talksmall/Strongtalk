@@ -137,6 +137,10 @@ processMenu ^ <Menu>
 ! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
 
 
+ActivationOutliner
+
+	^ActivationOutliner!
+
 addActivationsTo: col <Column[Visual]>
 
 	| stack <Array[Activation]> start <Int> |
@@ -163,7 +167,7 @@ buildBareVisualTop: top <Boolean> ^ <Visual>
 
 outlinerFor: activation <Activation> open: b <Boolean>
 
-	^(ActivationOutliner
+	^(self ActivationOutliner
 			on: activation
 			debugger: self)
 				open: b;

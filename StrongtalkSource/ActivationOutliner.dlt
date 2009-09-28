@@ -123,20 +123,84 @@ buildCodeView ^<Visual>
 	^self editorBorderFor: cv
 !
 
+buildExternalHeader ^ <Visual>
+
+	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual!
+
 currentByteCodeSeparatorCharacter ^ <Character>
 
 	^Character value: 16r1B
 !
 
+hasSelector ^<Boolean>
+
+	^self isMethodActivation!
+
 initialPacifiedState ^ <Boolean>
 
 	^self activation isSmalltalk not!
+
+isBlockActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod]!
+
+isExternal ^ <Boolean>
+
+	^self activation isSmalltalk not!
+
+isMethodActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod not]!
+
+method
+
+	^self mirror isNil
+		ifTrue: [nil]
+		ifFalse: [self mirror compiledMethodAt: self selector]!
+
+methodSource ^<Str>
+
+	^(self hasSelector and: [self mirror notNil])
+		ifTrue: [self mirror sourceForSelector: self selector]
+		ifFalse: [self vmMethodSource]!
+
+mirror
+
+	|mirror|
+	mirror := Mirror on: self activation receiver class.
+	[mirror isNil]
+		whileFalse: [(mirror hasSelector: self selector) ifTrue: [^mirror].
+							mirror := mirror superclass].
+	^nil!
 
 safePrintString: aValue
 
 	^[aValue printString]
 		on: Error
-		do: [:ex|'??instance of ', aValue class name]! !
+		do: [:ex|'??instance of ', aValue class name]!
+
+selector ^<Symbol>
+
+	^self activation method selector!
+
+sourceAsCharGlyphs ^<CharGlyphs>
+
+	| vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	^gls
+!
+
+vmMethodSource ^<Str>
+
+	^self activation vmPrettyPrint! !
 
 ! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
 

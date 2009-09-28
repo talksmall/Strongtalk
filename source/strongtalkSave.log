@@ -96139,3 +96139,3846 @@ charGlyphFor: c <Character> paint: paint <Paint>  ^<CharacterGlyph>
 "September 19, 2009 -> 16:36:16"!
 
 "System saved" !
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	^self activation vmPrettyPrint! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildCodeView ^<Visual>
+
+	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	
+	cv := CodeView forText.
+	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
+	cv model: gls.
+	^self editorBorderFor: cv
+! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource2 ^<Str>
+
+	|method mirror fail|
+	fail := [:e| ^self activation vmPrettyPrint].
+	mirror := Mirror on: self activation receiver class.
+	method := mirror compiledMethodAt: self activation method selector ifFail: fail.
+	
+
+	fail value: nil! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+vmMethodSource ^<Str>
+
+	^self activation vmPrettyPrint! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource2 ^<Str>
+
+	|method mirror selector|
+	self activation method isBlockMethod ifTrue: [^self vmMethodSource].
+	selector := self activation method selector.
+	mirror := Mirror on: self activation receiver class.
+	method := mirror compiledMethodAt: selector ifFail: [:e| ^self vmMethodSource].
+	^(self activation method == method)
+		ifTrue: [mirror sourceForSelector: selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	|method mirror selector|
+	self activation method isBlockMethod ifTrue: [^self vmMethodSource].
+	selector := self activation method selector.
+	mirror := Mirror on: self activation receiver class.
+	method := mirror compiledMethodAt: selector ifFail: [:e| ^self vmMethodSource].
+	^(self activation method == method)
+		ifTrue: [mirror sourceForSelector: selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	|method mirror selector|
+	self activation method isBlockMethod ifTrue: [^self vmMethodSource].
+	selector := self activation method selector.
+	mirror := Mirror on: self activation receiver class.
+	method := mirror compiledMethodAt: selector ifFail: [^self vmMethodSource].
+	^(self activation method == method)
+		ifTrue: [mirror sourceForSelector: selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 20, 2009 -> 20:0:47"!
+
+(Delta mirrorFor: #ActivationOutliner) removeMethod: #methodSource2 ifAbsent: [] !
+
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+mirror ^<ClassMirror>
+
+	^Mirror on: self activation receiver class! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	|method selector|
+	self activation method isBlockMethod ifTrue: [^self vmMethodSource].
+	selector := self activation method selector.
+	method := self mirror compiledMethodAt: selector ifFail: [^self vmMethodSource].
+	^(self activation method == method)
+		ifTrue: [self mirror sourceForSelector: selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+hasSelector ^<Boolean>
+
+	^self activation method isBlockMethod not! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	|method selector|
+	self hasSelector ifFalse: [^self vmMethodSource].
+	selector := self activation method selector.
+	method := self mirror compiledMethodAt: selector ifFail: [^self vmMethodSource].
+	^(self activation method == method)
+		ifTrue: [self mirror sourceForSelector: selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+selector ^<Symbol>
+
+	^self activation method selector! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	|method|
+	self hasSelector ifFalse: [^self vmMethodSource].
+	method := self mirror compiledMethodAt: self selector 
+										ifFail: [^self vmMethodSource].
+	^(self activation method == method)
+		ifTrue: [self mirror sourceForSelector: self selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+method
+
+	^self mirror compiledMethodAt: self selector 
+						ifFail: []! !
+
+"September 20, 2009 -> 20:0:47"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+hasSelector ^<Boolean>
+
+	^self activation method isBlockMethod not
+		and: [self method == self activation method]! !
+
+"September 20, 2009 -> 20:3:5"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+isBlockActivation ^<Boolean>
+
+	^self activation method isBlockMethod! !
+
+"September 20, 2009 -> 20:3:19"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+hasSelector ^<Boolean>
+
+	^self isBlockActivation not
+		and: [self method == self activation method]! !
+
+"September 20, 2009 -> 20:3:45"!
+
+"System saved" !
+"September 21, 2009 -> 20:38:43"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	|method|
+	self hasSelector ifFalse: [^self vmMethodSource].
+	method := self mirror compiledMethodAt: self selector 
+										ifFail: [^self vmMethodSource].
+	^(self activation method == self method)
+		ifTrue: [self mirror sourceForSelector: self selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 21, 2009 -> 20:38:43"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	|method|
+	self hasSelector ifFalse: [^self vmMethodSource].
+	^(self activation method == self method)
+		ifTrue: [self mirror sourceForSelector: self selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 21, 2009 -> 20:38:43"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	^self hasSelector
+		ifTrue: [self mirror sourceForSelector: self selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 21, 2009 -> 20:38:43"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+ActivationOutliner
+
+	^ActivationOutliner! !
+
+"September 21, 2009 -> 20:38:43"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+outlinerFor: activation <Activation> open: b <Boolean>
+
+	^(self ActivationOutliner
+			on: activation
+			debugger: self)
+				open: b;
+				imbeddedVisual! !
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #Debugger as: (
+(Class subclassOf: 'StackTraceInspector' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+! (Delta mirrorFor: #Debugger) methodsFor: 'restricted' !
+ActivationOutline
+
+	^EditableActivationOutliner! !
+
+"September 21, 2009 -> 20:38:44"!
+
+! (Delta mirrorFor: #Debugger) methodsFor: 'restricted' !
+ActivationOutliner
+
+	^EditableActivationOutliner! !
+
+"September 21, 2009 -> 20:38:44"!
+
+(Delta mirrorFor: #Debugger) removeMethod: #ActivationOutline ifAbsent: [] !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:44"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner mixin |> MessageDeclarationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+initialOpenState
+
+	^false! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+isMethodActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod not]! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+hasSelector ^<Boolean>
+
+	^self isMethodActivation
+		and: [self method == self activation method]! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+hasSelector ^<Boolean>
+
+	^self isMethodActivation! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+method
+
+	|method mirror|
+	self mirror compiledMethodAt: self selector 
+						ifFail: []! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+isBlockActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod]! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+method
+
+	|method mirror|
+	mirror := Mirror on: self activation receiver class.
+	[mirror isNil]
+		whileFalse: [method := mirror compiledMethodAt: self selector ifFail: [].
+							method isNil ifFalse: [^method].
+							mirror := mirror superclass].
+	^nil! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+mirror
+
+	|method mirror|
+	mirror := Mirror on: self activation receiver class.
+	[mirror isNil]
+		whileFalse: [method := mirror compiledMethodAt: self selector ifFail: [].
+							method isNil ifFalse: [^mirror].
+							mirror := mirror superclass].
+	^nil! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	^(self hasSelector and: [self mirror notNil])
+		ifTrue: [self mirror sourceForSelector: self selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+method
+
+	^self mirror isNil
+		ifTrue: [nil]
+		ifFalse: [self mirror compiledMethodAt: self selector]! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+mirror
+
+	|mirror|
+	mirror := Mirror on: self activation receiver class.
+	[mirror isNil]
+		whileFalse: [(mirror hasSelector: self selector) ifTrue: [^mirror].
+							mirror := mirror superclass].
+	^nil! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+sourceAsCharGlyphs ^<Visual>
+
+	| vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	^gls
+! !
+
+"September 21, 2009 -> 20:38:45"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+sourceAsCharGlyphs ^<CharGlyphs>
+
+	| vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	^gls
+! !
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:45"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'MessageDeclarationOutliner mixin |> ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 20:38:46"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	super initActivation: a
+		debugger: d.
+	! !
+
+"September 21, 2009 -> 20:38:46"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	super initActivation: a
+		debugger: d.
+	self isMethodActivation
+		ifTrue: [selector := self activation method selector]! !
+
+"September 21, 2009 -> 20:38:46"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+isExterernal ^ <Boolean>
+
+	^self activation isSmalltalk not! !
+
+"September 21, 2009 -> 20:38:46"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> |
+	
+	"Check type of activation"
+	self isExternal
+		ifTrue: [	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual ].
+
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	self activation method isBlockMethod
+		ifTrue: [		"Add block parens interspersed with arguments"
+							row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+							args do: [ :arg <Object> |
+								row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+								row add: (self
+									buildLabel: (self safePrintString: arg)
+									painter: self codePainter
+									action: [ (Inspector on: arg) launch ]) ].
+							row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+							row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	"Add receiver"
+							| receiver <Object> |
+							receiver := self activation receiver.
+							row add: (self
+								buildLabel: (self safePrintString: receiver)
+								painter: self codePainter
+								action: [ (Inspector on: receiver) launch ]).
+							row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+							"Add selector interspersed with arguments"
+							args size = 0
+								ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+								ifFalse: [	| strm <CharacterReadStream> |
+													strm := selector readStream.
+													args do: [ :arg <Object> |
+														row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+														row add: (self
+															buildLabel: (self safePrintString: arg)
+															painter: self codePainter
+															action: [ (Inspector on: arg) launch ]) ]
+												]
+						].
+	^row! !
+
+"September 21, 2009 -> 20:38:46"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildExternalHeader ^ <Visual>
+
+	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual! !
+
+"September 21, 2009 -> 20:38:46"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> |
+	
+	"Check type of activation"
+	self isExternal
+		ifTrue: [	^self buildExternalHeader].
+
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	self activation method isBlockMethod
+		ifTrue: [		"Add block parens interspersed with arguments"
+							row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+							args do: [ :arg <Object> |
+								row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+								row add: (self
+									buildLabel: (self safePrintString: arg)
+									painter: self codePainter
+									action: [ (Inspector on: arg) launch ]) ].
+							row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+							row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	"Add receiver"
+							| receiver <Object> |
+							receiver := self activation receiver.
+							row add: (self
+								buildLabel: (self safePrintString: receiver)
+								painter: self codePainter
+								action: [ (Inspector on: receiver) launch ]).
+							row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+							"Add selector interspersed with arguments"
+							args size = 0
+								ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+								ifFalse: [	| strm <CharacterReadStream> |
+													strm := selector readStream.
+													args do: [ :arg <Object> |
+														row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+														row add: (self
+															buildLabel: (self safePrintString: arg)
+															painter: self codePainter
+															action: [ (Inspector on: arg) launch ]) ]
+												]
+						].
+	^row! !
+
+"September 21, 2009 -> 20:38:46"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedHeader
+
+	^self isExternal
+		ifTrue: [self buildExternalHeader]
+		ifFalse: [super buildClosedHeader]! !
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:3:23"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 21, 2009 -> 21:4:1"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+isExternal ^ <Boolean>
+
+	^self activation isSmalltalk not! !
+
+"September 21, 2009 -> 21:4:10"!
+
+(Delta mirrorFor: #ActivationOutliner) removeMethod: #isExterernal ifAbsent: [] !
+
+
+"September 21, 2009 -> 21:6:5"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedHeader2
+
+	^self isExternal
+		ifTrue: [self buildExternalHeader]
+		ifFalse: [super buildClosedHeader]! !
+
+"September 21, 2009 -> 21:6:9"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> |
+	
+	"Check type of activation"
+	self isExternal
+		ifTrue: [	^self buildExternalHeader].
+
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	self activation method isBlockMethod
+		ifTrue: [		"Add block parens interspersed with arguments"
+							row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+							args do: [ :arg <Object> |
+								row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+								row add: (self
+									buildLabel: (self safePrintString: arg)
+									painter: self codePainter
+									action: [ (Inspector on: arg) launch ]) ].
+							row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+							row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	"Add receiver"
+							| receiver <Object> |
+							receiver := self activation receiver.
+							row add: (self
+								buildLabel: (self safePrintString: receiver)
+								painter: self codePainter
+								action: [ (Inspector on: receiver) launch ]).
+							row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+							"Add selector interspersed with arguments"
+							args size = 0
+								ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+								ifFalse: [	| strm <CharacterReadStream> |
+													strm := selector readStream.
+													args do: [ :arg <Object> |
+														row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+														row add: (self
+															buildLabel: (self safePrintString: arg)
+															painter: self codePainter
+															action: [ (Inspector on: arg) launch ]) ]
+												]
+						].
+	^row! !
+
+"September 21, 2009 -> 21:7:12"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildExternalHeader ^ <Visual>
+
+	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual! !
+
+"September 21, 2009 -> 21:7:23"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildCodeView ^<Visual>
+
+	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	
+	cv := CodeView forText.
+	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
+	cv model: gls.
+	^self editorBorderFor: cv
+! !
+
+"September 21, 2009 -> 21:7:36"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+hasSelector ^<Boolean>
+
+	^self isMethodActivation! !
+
+"September 21, 2009 -> 21:7:45"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+isBlockActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod]! !
+
+"September 21, 2009 -> 21:7:55"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+isExternal ^ <Boolean>
+
+	^self activation isSmalltalk not! !
+
+"September 21, 2009 -> 21:8:5"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+isMethodActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod not]! !
+
+"September 21, 2009 -> 21:8:13"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+method
+
+	^self mirror isNil
+		ifTrue: [nil]
+		ifFalse: [self mirror compiledMethodAt: self selector]! !
+
+"September 21, 2009 -> 21:8:23"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	^(self hasSelector and: [self mirror notNil])
+		ifTrue: [self mirror sourceForSelector: self selector]
+		ifFalse: [self vmMethodSource]! !
+
+"September 21, 2009 -> 21:8:32"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+mirror
+
+	|mirror|
+	mirror := Mirror on: self activation receiver class.
+	[mirror isNil]
+		whileFalse: [(mirror hasSelector: self selector) ifTrue: [^mirror].
+							mirror := mirror superclass].
+	^nil! !
+
+"September 21, 2009 -> 21:8:41"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+selector ^<Symbol>
+
+	^self activation method selector! !
+
+"September 21, 2009 -> 21:8:51"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+sourceAsCharGlyphs ^<CharGlyphs>
+
+	| vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	^gls! !
+
+"September 21, 2009 -> 21:9:1"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+vmMethodSource ^<Str>
+
+	^self activation vmPrettyPrint! !
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"September 21, 2009 -> 21:10:17"!
+
+(Delta mirrorFor: #ActivationOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+on: a <Activation> ^ <Instance>
+
+	^self new initActivation: a! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+on: a <Activation> debugger: debugger<StackTraceInspector> ^ <Instance>
+
+	^self new initActivation: a debugger: debugger! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'accessing' !
+activation ^ <Activation>
+
+	^activation! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (Button
+						labeled: 'Step into'
+						action: [:b <Button> | debugger singleStep: self activation]).
+	row add: (Button 
+						labeled: 'Step over'
+						action: [:b <Button> | debugger stepNext: self activation]).
+	row add: (Button
+						labeled: 'Step out'
+						action: [:b <Button> | debugger stepReturn: self activation]).
+	^row! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildBody ^<Visual>
+
+	| col <Column[Visual]> |
+
+	col := Column[Visual] new.
+	col add: self buildActions;
+		add: self buildCodeView.
+	^col
+! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> |
+	
+	"Check type of activation"
+	self activation isSmalltalk
+		ifFalse: [	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual ].
+
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	self activation method isBlockMethod
+		ifTrue: [		"Add block parens interspersed with arguments"
+							row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+							args do: [ :arg <Object> |
+								row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+								row add: (self
+									buildLabel: (self safePrintString: arg)
+									painter: self codePainter
+									action: [ (Inspector on: arg) launch ]) ].
+							row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+							row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	"Add receiver"
+							| receiver <Object> |
+							receiver := self activation receiver.
+							row add: (self
+								buildLabel: (self safePrintString: receiver)
+								painter: self codePainter
+								action: [ (Inspector on: receiver) launch ]).
+							row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+							"Add selector interspersed with arguments"
+							args size = 0
+								ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+								ifFalse: [	| strm <CharacterReadStream> |
+													strm := selector readStream.
+													args do: [ :arg <Object> |
+														row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+														row add: (self
+															buildLabel: (self safePrintString: arg)
+															painter: self codePainter
+															action: [ (Inspector on: arg) launch ]) ]
+												]
+						].
+	^row! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildCodeView ^<Visual>
+
+	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self activation vmPrettyPrint.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	
+	cv := CodeView forText.
+	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
+	cv model: gls.
+	^self editorBorderFor: cv
+! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+currentByteCodeSeparatorCharacter ^ <Character>
+
+	^Character value: 16r1B
+! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+initialPacifiedState ^ <Boolean>
+
+	^self activation isSmalltalk not! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+safePrintString: aValue
+
+	^[aValue printString]
+		on: Error
+		do: [:ex|'??instance of ', aValue class name]! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+initActivation: a <Activation>
+
+	activation := a! !
+
+"September 21, 2009 -> 21:10:17"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	activation := a.
+	debugger := d! !
+
+"September 21, 2009 -> 21:11:14"!
+
+"System saved" !
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedBlockHeader
+
+	|selector args row|
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	"Add block parens interspersed with arguments"
+	row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+	args do: [ :arg <Object> |
+					row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+					row add: (self
+										buildLabel: (self safePrintString: arg)
+										painter: self codePainter
+										action: [ (Inspector on: arg) launch ]) ].
+	row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+	row add: (StringGlyph for: selector painter: self selectorPainter) asVisual.
+		
+	^row! !
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedMethodHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> receiver <Object> |
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	"Add receiver"
+	receiver := self activation receiver.
+	row add: (self
+						buildLabel: (self safePrintString: receiver)
+						painter: self codePainter
+						action: [ (Inspector on: receiver) launch ]).
+	row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+	"Add selector interspersed with arguments"
+	args size = 0
+		ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	| strm <CharacterReadStream> |
+					strm := selector readStream.
+					args do: [ :arg <Object> |
+									row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+									row add: (self
+														buildLabel: (self safePrintString: arg)
+														painter: self codePainter
+														action: [ (Inspector on: arg) launch ]) ]].
+	^row! !
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> |
+	
+	"Check type of activation"
+	^self isExternal
+		ifTrue: [self buildExternalHeader]
+		ifFalse: [self isBlockMethod
+							ifTrue: [self buildClosedBlockHeader]
+							ifFalse: [self buildClosedMethodHeader]]! !
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+	
+	^self isExternal
+		ifTrue: [self buildExternalHeader]
+		ifFalse: [self isBlockMethod
+							ifTrue: [self buildClosedBlockHeader]
+							ifFalse: [self buildClosedMethodHeader]]! !
+
+"September 22, 2009 -> 2:39:24"!
+
+(Delta mirrorFor: #EditableActivationOutliner) removeMethod: #buildClosedHeader2 ifAbsent: [] !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedBlockHeader
+
+	|selector args row|
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	"Add block parens interspersed with arguments"
+	row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+	args do: [ :arg <Object> |
+					row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+					row add: (self
+										buildLabel: (self safePrintString: arg)
+										painter: self codePainter
+										action: [ (Inspector on: arg) launch ]) ].
+	row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+	row add: (StringGlyph for: selector painter: self selectorPainter) asVisual.
+		
+	^row! !
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedMethodHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> receiver <Object> |
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	"Add receiver"
+	receiver := self activation receiver.
+	row add: (self
+						buildLabel: (self safePrintString: receiver)
+						painter: self codePainter
+						action: [ (Inspector on: receiver) launch ]).
+	row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+	"Add selector interspersed with arguments"
+	args size = 0
+		ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	| strm <CharacterReadStream> |
+					strm := selector readStream.
+					args do: [ :arg <Object> |
+									row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+									row add: (self
+														buildLabel: (self safePrintString: arg)
+														painter: self codePainter
+														action: [ (Inspector on: arg) launch ]) ]].
+	^row! !
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> |
+	
+	"Check type of activation"
+	^self isExternal
+		ifTrue: [self buildExternalHeader]
+		ifFalse: [self isBlockMethod
+							ifTrue: [self buildClosedBlockHeader]
+							ifFalse: [self buildClosedMethodHeader]]! !
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+	
+	^self isExternal
+		ifTrue: [self buildExternalHeader]
+		ifFalse: [self isBlockMethod
+							ifTrue: [self buildClosedBlockHeader]
+							ifFalse: [self buildClosedMethodHeader]]! !
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: '')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: 'selector')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: 'selector')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: 'selector')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: 'selector')) !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	super initActivation: a
+		debugger: d.
+	self isMethodActivation
+		ifTrue: [selector := self activation method selector]! !
+
+"September 22, 2009 -> 2:39:24"!
+
+(Delta mirrorFor: #EditableActivationOutliner) removeMethod: #initActivation:debugger: ifAbsent: [] !
+
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+methodMirror
+
+	|mirror|
+	mirror := Mirror on: self activation receiver class.
+	[mirror isNil]
+		whileFalse: [(mirror hasSelector: self selector) ifTrue: [^mirror].
+							mirror := mirror superclass].
+	^nil! !
+
+"September 22, 2009 -> 2:39:24"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+blockMirror
+
+	|homeMethod selector|
+	homeMethod := self activation method enclosingMethod.
+	[homeMethod enclosingMethod isNil] whileFalse: [homeMethod := homeMethod enclosingMethod].
+	
+	selector := homeMethod selector.
+	Smalltalk classesReflectiveDo: [:mirror| ((mirror hasSelector: selector) 
+																		and: [(mirror compiledMethodAt: selector ifFail: [:a :b|]) ==homeMethod])
+																		ifTrue: [^mirror]].
+	^nil! !
+
+"September 22, 2009 -> 2:39:25"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+mirror
+
+	^self isBlockActivation
+		ifTrue: [self blockMirror]
+		ifFalse: [self methodMirror]! !
+
+"September 22, 2009 -> 2:39:25"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	^self mirror isNil
+		ifTrue: [self vmMethodSource]
+		ifFalse: [self mirror sourceForSelector: self selector]! !
+
+"September 22, 2009 -> 2:40:42"!
+
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: 'selector mirror')) !
+
+
+"September 22, 2009 -> 2:41:53"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+findMirror
+
+	^self isBlockActivation
+		ifTrue: [self blockMirror]
+		ifFalse: [self methodMirror]! !
+
+"September 22, 2009 -> 2:43:15"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+mirror
+
+	mirror isNil
+		ifTrue: [mirror := self findMirror.
+					mirror isNil ifTrue: [mirror := self]].
+	^mirror == self
+		ifTrue: [nil]
+		ifFalse: [mirror]! !
+
+"September 22, 2009 -> 2:44:5"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+findHomeMethod
+
+	|homeMethod selector|
+	homeMethod := self activation method enclosingMethod.
+	[homeMethod enclosingMethod isNil] whileFalse: [homeMethod := homeMethod enclosingMethod].
+	
+	^homeMethod! !
+
+"September 22, 2009 -> 2:46:45"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+findHomeMethod
+
+	|homeMethod selector|
+	homeMethod := self activation method enclosingMethod.
+	[homeMethod isBlockMethod] whileTrue: [homeMethod := homeMethod enclosingMethod].
+	
+	^homeMethod! !
+
+"September 22, 2009 -> 2:47:12"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+findHomeMethod
+
+	|homeMethod selector|
+	homeMethod := self activation method enclosingMethod.
+	[homeMethod isBlockMethod]
+		whileTrue: [homeMethod := homeMethod enclosingMethod].
+	
+	^homeMethod! !
+
+"September 22, 2009 -> 2:48:12"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+findHomeMethod
+
+	|method|
+	method := self activation method.
+	[method isBlockMethod]
+		whileTrue: [method := method enclosingMethod].
+	
+	^method! !
+
+"September 22, 2009 -> 2:48:56"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+selector ^<Symbol>
+
+	selector isNil
+		ifTrue: [selector := self isBlockActivation
+											ifTrue: [self findHomeMethod selector]
+											ifFalse: [self activation method selector]].
+	^selector! !
+
+"September 22, 2009 -> 2:50:27"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+blockMirror
+
+	|homeMethod selector|
+	homeMethod := self findHomeMethod.
+	selector := homeMethod selector.
+	Smalltalk classesReflectiveDo: [:mirror| ((mirror hasSelector: selector) 
+																		and: [(mirror compiledMethodAt: selector ifFail: [:a :b|]) ==homeMethod])
+																		ifTrue: [^mirror]].
+	^nil! !
+
+"September 22, 2009 -> 2:51:36"!
+
+"System saved" !
+"September 22, 2009 -> 2:52:38"!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+	
+	^self isExternal
+		ifTrue: [self buildExternalHeader]
+		ifFalse: [self isBlockActivation
+							ifTrue: [self buildClosedBlockHeader]
+							ifFalse: [self buildClosedMethodHeader]]! !
+
+"September 23, 2009 -> 10:31:1"!
+
+"System saved" !
+"September 27, 2009 -> 11:54:29"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 27, 2009 -> 11:54:43"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 27, 2009 -> 11:55:8"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 27, 2009 -> 11:58:46"!
+
+! (Delta mirrorFor: #NewspeakObject) classSide methodsFor: 'accessing' !
+enclosingObject
+
+	^enclosingObject! !
+
+"September 27, 2009 -> 11:59:4"!
+
+! (Delta mirrorFor: #NewspeakObject) classSide methodsFor: 'accessing' !
+enclosingObject: value
+
+	enclosingObject := value! !
+
+"September 27, 2009 -> 12:23:23"!
+
+"System saved" !
+"September 27, 2009 -> 12:26:36"!
+
+Delta define: #NS1 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 27, 2009 -> 12:33:0"!
+
+! (Delta mirrorFor: #NS1) classSide methodsFor: 'test' !
+name: symbol
+
+	name := symbol! !
+
+"September 27, 2009 -> 12:33:35"!
+
+(Delta mirrorFor: #NS1) classSide removeMethod: #name: ifAbsent: [] !
+
+
+"September 27, 2009 -> 12:36:38"!
+
+! (Delta mirrorFor: #NS1) classSide methodsFor: 'test' !
+name: symbol
+
+	name := symbol! !
+
+"September 27, 2009 -> 12:36:55"!
+
+"System saved" !
+"September 27, 2009 -> 12:37:32"!
+
+(Delta mirrorFor: #NS1) classSide removeMethod: #name: ifAbsent: [] !
+
+
+"September 27, 2009 -> 12:37:45"!
+
+"System saved" !
+"September 29, 2009 -> 0:16:10"!
+
+Delta define: #ClassDefinitionOutliner as: (
+(Class subclassOf: 'ClassOrMixinDefinitionOutliner[AbstractClassMirror]' instanceVariables: 'superclassOutliner <SuperclassOutliner>
+classInstanceVariableOutliner <InstanceVariableOutliner>')) !
+
+
+"September 29, 2009 -> 0:17:4"!
+
+Delta define: #ClassDefinitionOutliner as: (
+(Class subclassOf: 'ClassOrMixinDefinitionOutliner[AbstractClassMirror]' instanceVariables: 'superclassOutliner <SuperclassOutliner>
+classInstanceVariableOutliner <InstanceVariableOutliner>
+addingClassInstanceVariables <Boolean>')) !
+
+
+"September 29, 2009 -> 0:17:37"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
+addingClassInstanceVariables ^ <Boolean>
+
+	^addingClassInstanceVariables! !
+
+"September 29, 2009 -> 0:19:53"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
+addingClassInstanceVariables: value <Boolean>
+
+	addingClassInstanceVariables := value! !
+
+"September 29, 2009 -> 0:20:1"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private-initialization' !
+initialize
+
+	super initialize.
+	self addingClassInstanceVariables: false! !
+
+"September 29, 2009 -> 0:22:41"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
+classInstanceVariableOutliner ^ <InstanceVariableOutliner>
+
+	^classInstanceVariableOutliner! !
+
+"September 29, 2009 -> 0:22:57"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
+classInstanceVariableOutliner: outliner <InstanceVariableOutliner>
+
+	classInstanceVariableOutliner := outliner! !
+
+"September 29, 2009 -> 0:23:29"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
+insertRemainingDefinition: col <Column[Visual]>
+
+	super insertRemainingDefinition: col.
+ 	(self mirror classSide instanceVariableString isEmpty not or: [ self addingInstVars ])
+		ifTrue: [		self classInstVarOutliner: (InstanceVariableOutliner for: self mirror classSide).
+							col add: (self addChild: self classInstVarOutliner) imbeddedVisual ]
+		ifFalse: [	self classInstVarOutliner: nil ].
+! !
+
+"September 29, 2009 -> 0:24:48"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
+insertRemainingDefinition: col <Column[Visual]>
+
+	super insertRemainingDefinition: col.
+ 	(self mirror classSide instanceVariableString isEmpty not or: [ self addingInstVars ])
+		ifTrue: [		self classInstanceVariableOutliner: (InstanceVariableOutliner for: self mirror classSide).
+							col add: (self addChild: self classInstanceVariableOutliner) imbeddedVisual ]
+		ifFalse: [	self classInstanceVariableOutliner: nil ].
+! !
+
+"September 29, 2009 -> 0:26:43"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'control' !
+addClassInstanceVariables
+
+	self open: true.
+	self addingClassInstanceVariables: true.
+	[ self updateBody ] ensure: [ self addingClassInstanceVariables: false ].
+	self classInstanceVariableOutliner notNil
+		ifTrue: [ self inSessionProcessDo: [ 
+							self classInstanceVariableOutliner becomeFocusIfFail: [] ] ]! !
+
+"September 29, 2009 -> 0:27:38"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
+insertRemainingDefinition: col <Column[Visual]>
+
+	super insertRemainingDefinition: col.
+ 	(self mirror classSide instanceVariableString isEmpty not or: [ self addingClassInstanceVariables ])
+		ifTrue: [		self classInstanceVariableOutliner: (InstanceVariableOutliner for: self mirror classSide).
+							col add: (self addChild: self classInstanceVariableOutliner) imbeddedVisual ]
+		ifFalse: [	self classInstanceVariableOutliner: nil ].
+! !
+
+"September 29, 2009 -> 0:29:32"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 29, 2009 -> 0:30:28"!
+
+Delta define: #ClassInstanceVariableOutliner as: (
+(Class subclassOf: 'InstanceVariableOutliner' instanceVariables: '')) !
+
+
+"September 29, 2009 -> 0:30:50"!
+
+! (Delta mirrorFor: #ClassInstanceVariableOutliner) methodsFor: 'private' !
+header
+
+	^'Class instance variables'! !
+
+"September 29, 2009 -> 0:31:17"!
+
+! (Delta mirrorFor: #ClassDefinitionOutliner) methodsFor: 'private' !
+insertRemainingDefinition: col <Column[Visual]>
+
+	super insertRemainingDefinition: col.
+ 	(self mirror classSide instanceVariableString isEmpty not or: [ self addingClassInstanceVariables ])
+		ifTrue: [		self classInstanceVariableOutliner: (ClassInstanceVariableOutliner for: self mirror classSide).
+							col add: (self addChild: self classInstanceVariableOutliner) imbeddedVisual ]
+		ifFalse: [	self classInstanceVariableOutliner: nil ].
+! !
+
+"September 29, 2009 -> 0:31:33"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"September 29, 2009 -> 0:33:49"!
+
+"System saved" !

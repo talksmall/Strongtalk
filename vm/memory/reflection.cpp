@@ -258,7 +258,7 @@ class mixinConverter: public memConverter {
   }
 
   void transfer(memOop src, memOop dst) {
-    Unimplemented();
+    //Unimplemented();
     memConverter::transfer(src, dst);
   }
 };
@@ -544,7 +544,7 @@ bool ClassChange::compute_needed_schema_change() {
     return true;
   }
 
-  // Check if we've changed the of instance variables
+  // Check if we've changed the instance variables
   if (new_mixin()->number_of_instVars() != old_mixin()->number_of_instVars()) {
     set_reason_for_schema_change("number of instance variables have changed");
     return true;
@@ -556,6 +556,22 @@ bool ClassChange::compute_needed_schema_change() {
       return true;
     }
   }
+
+  // Check if we've changed the class instance variables
+  mixinOop new_class_mixin = new_mixin()->class_mixin();
+  mixinOop old_class_mixin = old_mixin()->class_mixin();
+  if (new_class_mixin->number_of_instVars() != old_class_mixin->number_of_instVars()) {
+    set_reason_for_schema_change("number of class instance variables have changed");
+    return true;
+  }
+
+  for (int index = new_class_mixin->number_of_instVars(); index > 0; index--) {
+    if (new_class_mixin->instVar_at(index) != old_class_mixin->instVar_at(index)) {
+      set_reason_for_schema_change("class instance variables have changed");
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -664,6 +680,8 @@ void Reflection::setup_schema_change() {
   for (index = 0; index < class_changes->length(); index++) {
     // Mark old class for schema change
     class_changes->at(index)->old_klass()->klass_part()->mark_for_schema_change();
+    // Mark old metaclass for schema change
+    class_changes->at(index)->old_klass()->klass()->klass_part()->mark_for_schema_change();
   }
 }
 

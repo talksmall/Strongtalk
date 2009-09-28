@@ -39,7 +39,8 @@ oop klassKlass::allocateObject(bool permit_scavenge, bool tenured) {
 }
 
 klassOop klassKlass::create_subclass(mixinOop mixin, Format format) {
-  return NULL;
+  klassKlass o;
+  return create_generic_class(as_klassOop(), mixin, o.vtbl_value());
 }
 
 int klassKlass::oop_scavenge_contents(oop obj) {

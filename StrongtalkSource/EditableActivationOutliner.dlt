@@ -1,0 +1,193 @@
+Delta define: #EditableActivationOutliner as: (
+(Class subclassOf: 'ActivationOutliner' instanceVariables: 'selector mirror')) !
+
+(Delta mirrorFor: #EditableActivationOutliner) revision: '$Revision:$'!
+
+(Delta mirrorFor: #EditableActivationOutliner) group: 'Unclassified'!
+
+(Delta mirrorFor: #EditableActivationOutliner)
+comment: 
+''!
+
+! (Delta mirrorFor: #EditableActivationOutliner) methodsFor: 'private' !
+
+
+blockMirror
+
+	|homeMethod selector|
+	homeMethod := self findHomeMethod.
+	selector := homeMethod selector.
+	Smalltalk classesReflectiveDo: [:mirror| ((mirror hasSelector: selector) 
+																		and: [(mirror compiledMethodAt: selector ifFail: [:a :b|]) ==homeMethod])
+																		ifTrue: [^mirror]].
+	^nil!
+
+buildClosedBlockHeader
+
+	|selector args row|
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	"Add block parens interspersed with arguments"
+	row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+	args do: [ :arg <Object> |
+					row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+					row add: (self
+										buildLabel: (self safePrintString: arg)
+										painter: self codePainter
+										action: [ (Inspector on: arg) launch ]) ].
+	row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+	row add: (StringGlyph for: selector painter: self selectorPainter) asVisual.
+		
+	^row!
+
+buildClosedHeader ^ <Visual>
+	
+	^self isExternal
+		ifTrue: [self buildExternalHeader]
+		ifFalse: [self isBlockActivation
+							ifTrue: [self buildClosedBlockHeader]
+							ifFalse: [self buildClosedMethodHeader]]!
+
+buildClosedMethodHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> receiver <Object> |
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	"Add receiver"
+	receiver := self activation receiver.
+	row add: (self
+						buildLabel: (self safePrintString: receiver)
+						painter: self codePainter
+						action: [ (Inspector on: receiver) launch ]).
+	row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+	"Add selector interspersed with arguments"
+	args size = 0
+		ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	| strm <CharacterReadStream> |
+					strm := selector readStream.
+					args do: [ :arg <Object> |
+									row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+									row add: (self
+														buildLabel: (self safePrintString: arg)
+														painter: self codePainter
+														action: [ (Inspector on: arg) launch ]) ]].
+	^row!
+
+buildCodeView ^<Visual>
+
+	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	
+	cv := CodeView forText.
+	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
+	cv model: gls.
+	^self editorBorderFor: cv
+!
+
+buildExternalHeader ^ <Visual>
+
+	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual!
+
+findHomeMethod
+
+	|method|
+	method := self activation method.
+	[method isBlockMethod]
+		whileTrue: [method := method enclosingMethod].
+	
+	^method!
+
+findMirror
+
+	^self isBlockActivation
+		ifTrue: [self blockMirror]
+		ifFalse: [self methodMirror]!
+
+hasSelector ^<Boolean>
+
+	^self isMethodActivation!
+
+initialOpenState
+
+	^false!
+
+isBlockActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod]!
+
+isExternal ^ <Boolean>
+
+	^self activation isSmalltalk not!
+
+isMethodActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod not]!
+
+method
+
+	^self mirror isNil
+		ifTrue: [nil]
+		ifFalse: [self mirror compiledMethodAt: self selector]!
+
+methodMirror
+
+	|mirror|
+	mirror := Mirror on: self activation receiver class.
+	[mirror isNil]
+		whileFalse: [(mirror hasSelector: self selector) ifTrue: [^mirror].
+							mirror := mirror superclass].
+	^nil!
+
+methodSource ^<Str>
+
+	^self mirror isNil
+		ifTrue: [self vmMethodSource]
+		ifFalse: [self mirror sourceForSelector: self selector]!
+
+mirror
+
+	mirror isNil
+		ifTrue: [mirror := self findMirror.
+					mirror isNil ifTrue: [mirror := self]].
+	^mirror == self
+		ifTrue: [nil]
+		ifFalse: [mirror]!
+
+selector ^<Symbol>
+
+	selector isNil
+		ifTrue: [selector := self isBlockActivation
+											ifTrue: [self findHomeMethod selector]
+											ifFalse: [self activation method selector]].
+	^selector!
+
+sourceAsCharGlyphs ^<CharGlyphs>
+
+	| vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	^gls!
+
+vmMethodSource ^<Str>
+
+	^self activation vmPrettyPrint! !
+
