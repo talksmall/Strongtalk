@@ -30,6 +30,17 @@ subclassOf: superRef  <Str>  instanceVariables: instVarsString <Str> ^ <ClassMir
 
 c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
 AbstractClassMirror flushSubclassHierarchyCache.
+^c!
+
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
+
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+c mixin classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
 ^c! !
 
 ! (Delta mirrorFor: #Class) methodsFor: 'Camp Smalltalk' !

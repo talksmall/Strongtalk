@@ -1,800 +1,608 @@
 
-"September 23, 2009 -> 10:33:0"!
+"September 29, 2009 -> 23:16:0"!
 
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
+! (Delta mirrorFor: #InstanceVariableOutliner) methodsFor: 'private' !
+storeAndOnSuccess: blk <[]>
 
+	"The right way to do this is to have a #instanceVariables:ifFail: in ClassMirror and MixinDeclMirror
+		that will parse and	update accordingly.
+		
+		In the meantime, we parse an extra time here to check for errors and call #instanceVariables: afterwards.
+		This should be changed shortly."
+		
+	| ivs <Str> eval <Str> constructor <Mirror> |
+	self deltaHack.
+	ivs := self charGlyphModelAsString: self codeView.
+	DeltaParser new 
+		parseInstVarList: ivs
+		within: (DeltaScope within: nil)
+		ifError: [ :msg <Str> :pos <Int> | ^self showParseError: msg at: pos in: self codeView ].
+	self mirror instanceVariables: ivs halt.
+	blk value.
+! !
 
-"September 24, 2009 -> 1:36:33"!
+"September 29, 2009 -> 23:32:54"!
 
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
+Delta define: #NS1 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
 
 
-"September 24, 2009 -> 1:36:33"!
+"September 29, 2009 -> 23:47:37"!
 
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
 
+"September 29, 2009 -> 23:58:14"!
 
-"September 24, 2009 -> 1:36:33"!
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
 
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
 
+"September 29, 2009 -> 23:59:6"!
 
-"September 24, 2009 -> 1:36:33"!
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
 
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+c classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
 
+"September 30, 2009 -> 0:23:5"!
 
-"September 24, 2009 -> 1:36:33"!
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
 
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+c classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
 
+"September 30, 2009 -> 0:29:43"!
 
-"September 24, 2009 -> 1:36:33"!
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
 
+"September 30, 2009 -> 0:30:23"!
 
-"September 24, 2009 -> 1:36:33"!
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
 
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+c classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
 
+"September 30, 2009 -> 0:30:40"!
 
-"September 24, 2009 -> 1:36:33"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
-
-
-"September 24, 2009 -> 1:36:33"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
-
-
-"September 24, 2009 -> 1:36:33"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
-
-
-"September 24, 2009 -> 1:36:33"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
-
-
-"September 24, 2009 -> 22:47:37"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
-
-
-"September 24, 2009 -> 22:47:38"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name nsmixin')) !
-
-
-"September 24, 2009 -> 22:52:50"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 24, 2009 -> 23:40:43"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 1:25:59"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:21:18"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-computDependentsOf: inv <Class>
-| dependents <Collection[Class]> mir <ClassVMMirror> |
-                                      
-mir := ClassVMMirror on: inv.
-dependents := mir sortedSubclasses remove: inv; yourself.
-^dependents! !
-
-"September 25, 2009 -> 20:21:33"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-computeDependentsOf: inv <Class>
-| dependents <Collection[Class]> mir <ClassVMMirror> |
-                                      
-mir := ClassVMMirror on: inv.
-dependents := mir sortedSubclasses remove: inv; yourself.
-^dependents! !
-
-"September 25, 2009 -> 20:21:38"!
-
-(Delta mirrorFor: #MixinDeclMirror) removeMethod: #computDependentsOf: ifAbsent: [] !
-
-
-"September 25, 2009 -> 20:22:22"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-prepareInvocation: inv <Class> mixinFormat: mixinFormat <Symbol> 
-oldClasses: ocs <OrderedCollection[Class]> newClasses: ncs <OrderedCollection[ClassMirror]> 
-ifFail: fb <[Str, ^DoesNotMatter]> ^  <Array[Class|Symbol]>
-| 
-dependents <Collection[Class]>
-a <Array[Class | Symbol]>
-mir <ClassVMMirror>
-j  <Integer>
-formats <VarDict[Class, Symbol]>
-sc <ClassVMMirror | ClassMirror>
-dm <ClassVMMirror>
-formatMightChange <Boolean>
-fmt <Symbol> 
-|
-
-                                      
-mir := ClassVMMirror on: inv.
-dependents := self computeDependentsFor: inv.
-formats := IdentityDictionary[Class, Symbol] new.
-formatMightChange := ocs isEmpty not.
-formatMightChange 
-	ifTrue:[
-				formats at: inv put: nil.
-				dependents do:[:d <Class> | formats at: d put: nil].
-				fmt := self formatFor: mir mixinFormat: mixinFormat formats: formats ifFail: fb.
-				]
-	ifFalse:[fmt := mir format].
-a := Array[Class | Symbol] new: 3 + (dependents size * 2).
-a at: 1 put: inv.
-a at: 2 put: fmt. " new format, if legal !!"
-sc := ((ocs includes: inv)
-			ifTrue:[ncs at: (ocs indexOf: inv ifAbsent:[self error: 'Internal failure in change'])]
-			ifFalse:[mir]) superclass.
-a at: 3 put: (sc notNil ifTrue:[sc reflectee] ifFalse:[nil]).
-j := 4.
-dependents do:[: d <Class>  | 
-								dm := ClassVMMirror on: d.
-								a at: j put: d.
-								fmt := formatMightChange 
-									ifTrue:[self formatFor: dm mixinFormat: dm mixin format formats: formats ifFail: fb]
-									ifFalse:[dm format].
-								a at: j + 1 put:  fmt. " new format, if legal !!"
-								j := j + 2.
-								].                           
-^a! !
-
-"September 25, 2009 -> 20:30:24"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-computeDependentsOf: inv <Class>
-| dependents <Collection[Class]> mir <ClassVMMirror> |
-                                      
-mir := ClassVMMirror on: inv.
-dependents := mir sortedSubclasses remove: inv; yourself.
-^dependents! !
-
-"September 25, 2009 -> 20:31:35"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-computeDependentsOf: inv <Class>
-| dependents <Collection[Class]> mir <ClassVMMirror> |
-                                      
-mir := ClassVMMirror on: inv.
-dependents := mir sortedSubclasses remove: inv; yourself.
-mir name == #Class
-	ifTrue: [dependents addAll: (ClassVMMirror on: Object) sortedSubclasses].
-^dependents! !
-
-"September 25, 2009 -> 20:32:30"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-prepareInvocation: inv <Class> mixinFormat: mixinFormat <Symbol> 
-oldClasses: ocs <OrderedCollection[Class]> newClasses: ncs <OrderedCollection[ClassMirror]> 
-ifFail: fb <[Str, ^DoesNotMatter]> ^  <Array[Class|Symbol]>
-| 
-dependents <Collection[Class]>
-a <Array[Class | Symbol]>
-mir <ClassVMMirror>
-j  <Integer>
-formats <VarDict[Class, Symbol]>
-sc <ClassVMMirror | ClassMirror>
-dm <ClassVMMirror>
-formatMightChange <Boolean>
-fmt <Symbol> 
-|
-
-                                      
-mir := ClassVMMirror on: inv.
-dependents := self computeDependentsOf: inv.
-formats := IdentityDictionary[Class, Symbol] new.
-formatMightChange := ocs isEmpty not.
-formatMightChange 
-	ifTrue:[
-				formats at: inv put: nil.
-				dependents do:[:d <Class> | formats at: d put: nil].
-				fmt := self formatFor: mir mixinFormat: mixinFormat formats: formats ifFail: fb.
-				]
-	ifFalse:[fmt := mir format].
-a := Array[Class | Symbol] new: 3 + (dependents size * 2).
-a at: 1 put: inv.
-a at: 2 put: fmt. " new format, if legal !!"
-sc := ((ocs includes: inv)
-			ifTrue:[ncs at: (ocs indexOf: inv ifAbsent:[self error: 'Internal failure in change'])]
-			ifFalse:[mir]) superclass.
-a at: 3 put: (sc notNil ifTrue:[sc reflectee] ifFalse:[nil]).
-j := 4.
-dependents do:[: d <Class>  | 
-								dm := ClassVMMirror on: d.
-								a at: j put: d.
-								fmt := formatMightChange 
-									ifTrue:[self formatFor: dm mixinFormat: dm mixin format formats: formats ifFail: fb]
-									ifFalse:[dm format].
-								a at: j + 1 put:  fmt. " new format, if legal !!"
-								j := j + 2.
-								].                           
-^a! !
-
-"September 25, 2009 -> 20:33:1"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:33:3"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:34:10"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 25, 2009 -> 20:57:3"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-computeDependentsOf: inv <Class>
-| dependents <Collection[Class]> mir <ClassVMMirror> |
-                                      
-mir := ClassVMMirror on: inv.
-dependents := mir sortedSubclasses remove: inv; yourself.
-mir name == #Class
-	ifTrue: [dependents addAll: (ClassVMMirror on: Object) sortedSubclasses].
-^dependents! !
-
-"September 25, 2009 -> 20:57:5"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-prepareInvocation: inv <Class> mixinFormat: mixinFormat <Symbol> 
-oldClasses: ocs <OrderedCollection[Class]> newClasses: ncs <OrderedCollection[ClassMirror]> 
-ifFail: fb <[Str, ^DoesNotMatter]> ^  <Array[Class|Symbol]>
-| 
-dependents <Collection[Class]>
-a <Array[Class | Symbol]>
-mir <ClassVMMirror>
-j  <Integer>
-formats <VarDict[Class, Symbol]>
-sc <ClassVMMirror | ClassMirror>
-dm <ClassVMMirror>
-formatMightChange <Boolean>
-fmt <Symbol> 
-|
-
-                                      
-mir := ClassVMMirror on: inv.
-dependents := self computeDependentsOf: inv.
-formats := IdentityDictionary[Class, Symbol] new.
-formatMightChange := ocs isEmpty not.
-formatMightChange 
-	ifTrue:[
-				formats at: inv put: nil.
-				dependents do:[:d <Class> | formats at: d put: nil].
-				fmt := self formatFor: mir mixinFormat: mixinFormat formats: formats ifFail: fb.
-				]
-	ifFalse:[fmt := mir format].
-a := Array[Class | Symbol] new: 3 + (dependents size * 2).
-a at: 1 put: inv.
-a at: 2 put: fmt. " new format, if legal !!"
-sc := ((ocs includes: inv)
-			ifTrue:[ncs at: (ocs indexOf: inv ifAbsent:[self error: 'Internal failure in change'])]
-			ifFalse:[mir]) superclass.
-a at: 3 put: (sc notNil ifTrue:[sc reflectee] ifFalse:[nil]).
-j := 4.
-dependents do:[: d <Class>  | 
-								dm := ClassVMMirror on: d.
-								a at: j put: d.
-								fmt := formatMightChange 
-									ifTrue:[self formatFor: dm mixinFormat: dm mixin format formats: formats ifFail: fb]
-									ifFalse:[dm format].
-								a at: j + 1 put:  fmt. " new format, if legal !!"
-								j := j + 2.
-								].                           
-^a! !
-
-"September 25, 2009 -> 20:57:22"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 26, 2009 -> 8:36:46"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-computeDependentsOf: inv <Class>
-| dependents <Collection[Class]> mir <ClassVMMirror> |
-                                      
-mir := ClassVMMirror on: inv.
-dependents := mir sortedSubclasses remove: inv; yourself.
-mir name == #Class
-	ifTrue: [dependents addAll: ((ClassVMMirror on: Object) sortedSubclasses collect: [:c| c class])].
-^dependents! !
-
-"September 26, 2009 -> 8:37:5"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-prepareInvocation: inv <Class> mixinFormat: mixinFormat <Symbol> 
-oldClasses: ocs <OrderedCollection[Class]> newClasses: ncs <OrderedCollection[ClassMirror]> 
-ifFail: fb <[Str, ^DoesNotMatter]> ^  <Array[Class|Symbol]>
-| 
-dependents <Collection[Class]>
-a <Array[Class | Symbol]>
-mir <ClassVMMirror>
-j  <Integer>
-formats <VarDict[Class, Symbol]>
-sc <ClassVMMirror | ClassMirror>
-dm <ClassVMMirror>
-formatMightChange <Boolean>
-fmt <Symbol> 
-|
-
-                                      
-mir := ClassVMMirror on: inv.
-dependents := self computeDependentsOf: inv.
-formats := IdentityDictionary[Class, Symbol] new.
-formatMightChange := ocs isEmpty not.
-formatMightChange 
-	ifTrue:[
-				formats at: inv put: nil.
-				dependents do:[:d <Class> | formats at: d put: nil].
-				fmt := self formatFor: mir mixinFormat: mixinFormat formats: formats ifFail: fb.
-				]
-	ifFalse:[fmt := mir format].
-a := Array[Class | Symbol] new: 3 + (dependents size * 2).
-a at: 1 put: inv.
-a at: 2 put: fmt. " new format, if legal !!"
-sc := ((ocs includes: inv)
-			ifTrue:[ncs at: (ocs indexOf: inv ifAbsent:[self error: 'Internal failure in change'])]
-			ifFalse:[mir]) superclass.
-a at: 3 put: (sc notNil ifTrue:[sc reflectee] ifFalse:[nil]).
-j := 4.
-dependents do:[: d <Class>  | 
-								dm := ClassVMMirror on: d.
-								a at: j put: d.
-								fmt := formatMightChange 
-									ifTrue:[self formatFor: dm mixinFormat: dm mixin format formats: formats ifFail: fb]
-									ifFalse:[dm format].
-								a at: j + 1 put:  fmt. " new format, if legal !!"
-								j := j + 2.
-								].                           
-^a! !
-
-"September 26, 2009 -> 8:37:30"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 26, 2009 -> 9:8:37"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-computeDependentsOf: inv <Class>
-| dependents <Collection[Class]> mir <ClassVMMirror> |
-                                      
-mir := ClassVMMirror on: inv.
-dependents := mir sortedSubclasses remove: inv; yourself.
-mir name == #Class
-	ifTrue: [dependents addAll: (ClassVMMirror on: Object) sortedSubclasses].
-^dependents! !
-
-"September 26, 2009 -> 9:8:56"!
-
-! (Delta mirrorFor: #MixinDeclMirror) methodsFor: 'Unclassified' !
-prepareInvocation: inv <Class> mixinFormat: mixinFormat <Symbol> 
-oldClasses: ocs <OrderedCollection[Class]> newClasses: ncs <OrderedCollection[ClassMirror]> 
-ifFail: fb <[Str, ^DoesNotMatter]> ^  <Array[Class|Symbol]>
-| 
-dependents <Collection[Class]>
-a <Array[Class | Symbol]>
-mir <ClassVMMirror>
-j  <Integer>
-formats <VarDict[Class, Symbol]>
-sc <ClassVMMirror | ClassMirror>
-dm <ClassVMMirror>
-formatMightChange <Boolean>
-fmt <Symbol> 
-|
-
-                                      
-mir := ClassVMMirror on: inv.
-dependents := self computeDependentsOf: inv.
-formats := IdentityDictionary[Class, Symbol] new.
-formatMightChange := ocs isEmpty not.
-formatMightChange 
-	ifTrue:[
-				formats at: inv put: nil.
-				dependents do:[:d <Class> | formats at: d put: nil].
-				fmt := self formatFor: mir mixinFormat: mixinFormat formats: formats ifFail: fb.
-				]
-	ifFalse:[fmt := mir format].
-a := Array[Class | Symbol] new: 3 + (dependents size * 2).
-a at: 1 put: inv.
-a at: 2 put: fmt. " new format, if legal !!"
-sc := ((ocs includes: inv)
-			ifTrue:[ncs at: (ocs indexOf: inv ifAbsent:[self error: 'Internal failure in change'])]
-			ifFalse:[mir]) superclass.
-a at: 3 put: (sc notNil ifTrue:[sc reflectee] ifFalse:[nil]).
-j := 4.
-dependents do:[: d <Class>  | 
-								dm := ClassVMMirror on: d.
-								a at: j put: d.
-								fmt := formatMightChange 
-									ifTrue:[self formatFor: dm mixinFormat: dm mixin format formats: formats ifFail: fb]
-									ifFalse:[dm format].
-								a at: j + 1 put:  fmt. " new format, if legal !!"
-								j := j + 2.
-								].                           
-^a! !
-
-"September 26, 2009 -> 9:9:17"!
-
-Delta define: #Class as: (
-(Class subclassOf: 'ClassDescription' instanceVariables: 'name')) !
-
-
-"September 26, 2009 -> 11:30:51"!
-
-Delta define: #NewspeakMixin as: (
-(Class subclassOf: 'Mixin' instanceVariables: '')) !
-
-
-"September 26, 2009 -> 11:31:12"!
-
-(Delta mirrorFor: #NewspeakMixin) removeDefinitionIfFail: [] !
-
-
-"September 26, 2009 -> 11:31:25"!
-
-Delta define: #NewspeakMixin as: (
-(Class subclassOf: 'ClassMixin' instanceVariables: '')) !
-
-
-"September 26, 2009 -> 11:31:33"!
-
-Delta define: #NewspeakMixin as: (
-(Class subclassOf: 'ClassMixin' instanceVariables: 'test')) !
-
-
-"September 26, 2009 -> 11:31:41"!
-
-(Delta mirrorFor: #NewspeakMixin) removeDefinitionIfFail: [] !
-
-
-"September 26, 2009 -> 11:31:59"!
-
-Delta define: #NewspeakClassMixin as: (
-(Class subclassOf: 'ClassMixin' instanceVariables: '')) !
-
-
-"September 26, 2009 -> 11:32:6"!
-
-Delta define: #NewspeakClassMixin as: (
-(Class subclassOf: 'ClassMixin' instanceVariables: 'test')) !
-
-
-"September 26, 2009 -> 11:32:36"!
-
-Delta define: #NewspeakMetaclassMixin as: (
-(Class subclassOf: 'MetaClassMixin' instanceVariables: '')) !
-
-
-"September 26, 2009 -> 11:32:46"!
-
-Delta define: #NewspeakMetaclassMixin as: (
-(Class subclassOf: 'MetaClassMixin' instanceVariables: 'test')) !
-
-
-"September 26, 2009 -> 12:13:0"!
-
-Delta define: #NewspeakObject as: (
+Delta define: #UndefinedObject as: (
 (Class subclassOf: 'Object' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:15:23"!
+"September 30, 2009 -> 0:30:40"!
 
-Delta define: #NewspeakObject as: (
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:30:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:31:45"!
+
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str>  instanceVariables: instVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+	^self subclassOf: superRef
+			instanceVariables: instVarsString
+			classInstanceVariables: ''
+! !
+
+"September 30, 2009 -> 0:31:47"!
+
+Delta define: #UndefinedObject as: (
 (Class subclassOf: 'Object' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:16:10"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 0:31:47"!
+
+Delta define: #UndefinedObject as: (
 (Class subclassOf: 'Object' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:16:42"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:31:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:35:6"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
 
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+c classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:41:15"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
 
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+c classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
 
-"September 26, 2009 -> 12:21:48"!
+"September 30, 2009 -> 0:41:39"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:27:20"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 12:32:43"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 15:36:46"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 15:37:20"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: 'temp')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 15:53:33"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 15:59:17"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 19:51:24"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakMetaclass as: (
-(Class subclassOf: 'Metaclass' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
 
 
-"September 26, 2009 -> 19:51:39"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakMetaclass as: (
-(Class subclassOf: 'Metaclass' instanceVariables: 'one two three')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
 
 
-"September 26, 2009 -> 20:3:38"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
 
 
-"September 26, 2009 -> 20:5:15"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakMetaclass as: (
-(Class subclassOf: 'Metaclass' instanceVariables: 'one two three')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
 
 
-"September 26, 2009 -> 20:5:17"!
+"September 30, 2009 -> 0:41:47"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
 
 
-"September 26, 2009 -> 20:19:53"!
+"September 30, 2009 -> 0:57:14"!
 
-Delta define: #NewspeakMetaclass as: (
-(Class subclassOf: 'Metaclass' instanceVariables: 'one two three')) !
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
 
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+c classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
 
-"September 26, 2009 -> 20:19:54"!
+"September 30, 2009 -> 0:57:53"!
 
-Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
+
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+c := (c classSide instanceVariables: classInstVarsString) instanceSide.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
+
+"September 30, 2009 -> 0:58:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 0:59:35"!
+
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
+
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+c := (c classSide instanceVariables: classInstVarsString) instanceSide.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
+
+"September 30, 2009 -> 1:8:30"!
+
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
+
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+c mixin classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
+
+"September 30, 2009 -> 1:8:40"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:9:17"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:8"!
+
+! (Delta mirrorFor: #ClassMirror) methodsFor: 'Unclassified' !
+basicDefinitionString   ^ <Str>
+| classVarStr protocolStr classProtocolStr stream first |
+
+classVarStr := self mixin classVariableString.
+protocolStr := self mixin supportedProtocolString.
+classProtocolStr := self mixin classSide supportedProtocolString.
+
+stream := (String new: 20) writeStream.
+self superclass isNil
+	ifTrue: [
+		stream nextPutAll: '(Class delta)'.
+		self mixin instanceVariableString isEmpty ifFalse: [
+			stream nextPutAll: ' instanceVariables: '.
+			stream nextPutAll: self mixin instanceVariableString asString printString]]
+	ifFalse: [
+		stream nextPutAll: '(Class subclassOf: '.
+		stream nextPutAll: self mixin superclassTypeString asString printString.
+		stream nextPutAll: ' instanceVariables: '.
+		stream nextPutAll: self mixin instanceVariableString asString printString.
+		stream nextPutAll: ' classInstanceVariables: '.
+		stream nextPutAll: self mixin classSide instanceVariableString asString printString, ')'].
+
+first := true.
+classVarStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' classVariables: ', classVarStr asString printString].
+protocolStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' protocols: ', protocolStr asString printString].
+classProtocolStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' classProtocols: ', classProtocolStr asString printString].
+self isAbstract ifTrue:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' abstract'].
+self extensionsAreSubtypes ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' extensionsAreNotSubtypes'].
+self isSubtype ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' notSubtype'].
+self isBranded ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' unbranded'].
+
+^stream contents
+! !
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: '' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one' classInstanceVariables: '')) !
+
+
+"September 30, 2009 -> 1:11:22"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one' classInstanceVariables: '')) !
 

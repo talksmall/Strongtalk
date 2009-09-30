@@ -73,11 +73,16 @@ self superclass isNil
 		self mixin instanceVariableString isEmpty ifFalse: [
 			stream nextPutAll: ' instanceVariables: '.
 			stream nextPutAll: self mixin instanceVariableString asString printString]]
-	ifFalse: [
+	ifFalse: [|classInstVars|
 		stream nextPutAll: '(Class subclassOf: '.
 		stream nextPutAll: self mixin superclassTypeString asString printString.
 		stream nextPutAll: ' instanceVariables: '.
-		stream nextPutAll: self mixin instanceVariableString asString printString, ')'].
+		stream nextPutAll: self mixin instanceVariableString asString printString.
+		classInstVars := self mixin classSide instanceVariableString.
+		classInstVars isEmpty
+			ifFalse: [stream nextPutAll: ' classInstanceVariables: '.
+						stream nextPutAll: self mixin classSide instanceVariableString asString printString].
+		stream nextPutAll: ')'].
 
 first := true.
 classVarStr isEmpty ifFalse: [

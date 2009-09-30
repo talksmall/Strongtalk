@@ -99982,3 +99982,134 @@ Delta define: #NewspeakObject as: (
 "September 29, 2009 -> 0:33:49"!
 
 "System saved" !
+"September 30, 2009 -> 1:13:11"!
+
+! (Delta mirrorFor: #Class) classSide methodsFor: 'constructors' !
+subclassOf: superRef  <Str> 
+instanceVariables: instVarsString <Str>
+classInstanceVariables: classInstVarsString <Str> ^ <ClassMirror> 
+    "Creation of a Delta class constructor"
+| c <ClassMirror> |
+
+c := ClassMirror  subclassOf: superRef instanceVariables: instVarsString.
+c mixin classSide instanceVariables: classInstVarsString.
+AbstractClassMirror flushSubclassHierarchyCache.
+^c! !
+
+"September 30, 2009 -> 1:13:26"!
+
+! (Delta mirrorFor: #ClassMirror) methodsFor: 'Unclassified' !
+basicDefinitionString   ^ <Str>
+| classVarStr protocolStr classProtocolStr stream first |
+
+classVarStr := self mixin classVariableString.
+protocolStr := self mixin supportedProtocolString.
+classProtocolStr := self mixin classSide supportedProtocolString.
+
+stream := (String new: 20) writeStream.
+self superclass isNil
+	ifTrue: [
+		stream nextPutAll: '(Class delta)'.
+		self mixin instanceVariableString isEmpty ifFalse: [
+			stream nextPutAll: ' instanceVariables: '.
+			stream nextPutAll: self mixin instanceVariableString asString printString]]
+	ifFalse: [
+		stream nextPutAll: '(Class subclassOf: '.
+		stream nextPutAll: self mixin superclassTypeString asString printString.
+		stream nextPutAll: ' instanceVariables: '.
+		stream nextPutAll: self mixin instanceVariableString asString printString.
+		stream nextPutAll: ' classInstanceVariables: '.
+		stream nextPutAll: self mixin classSide instanceVariableString asString printString, ')'].
+
+first := true.
+classVarStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' classVariables: ', classVarStr asString printString].
+protocolStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' protocols: ', protocolStr asString printString].
+classProtocolStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' classProtocols: ', classProtocolStr asString printString].
+self isAbstract ifTrue:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' abstract'].
+self extensionsAreSubtypes ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' extensionsAreNotSubtypes'].
+self isSubtype ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' notSubtype'].
+self isBranded ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' unbranded'].
+
+^stream contents
+! !
+
+"September 30, 2009 -> 1:14:24"!
+
+Delta define: #NS2 as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'one' classInstanceVariables: 'two')) !
+
+
+"September 30, 2009 -> 1:15:42"!
+
+"System saved" !
+"September 30, 2009 -> 1:18:56"!
+
+! (Delta mirrorFor: #ClassMirror) methodsFor: 'Unclassified' !
+basicDefinitionString   ^ <Str>
+| classVarStr protocolStr classProtocolStr stream first |
+
+classVarStr := self mixin classVariableString.
+protocolStr := self mixin supportedProtocolString.
+classProtocolStr := self mixin classSide supportedProtocolString.
+
+stream := (String new: 20) writeStream.
+self superclass isNil
+	ifTrue: [
+		stream nextPutAll: '(Class delta)'.
+		self mixin instanceVariableString isEmpty ifFalse: [
+			stream nextPutAll: ' instanceVariables: '.
+			stream nextPutAll: self mixin instanceVariableString asString printString]]
+	ifFalse: [|classInstVars|
+		stream nextPutAll: '(Class subclassOf: '.
+		stream nextPutAll: self mixin superclassTypeString asString printString.
+		stream nextPutAll: ' instanceVariables: '.
+		stream nextPutAll: self mixin instanceVariableString asString printString.
+		classInstVars := self mixin classSide instanceVariableString.
+		classInstVars isEmpty
+			ifFalse: [stream nextPutAll: ' classInstanceVariables: '.
+						stream nextPutAll: self mixin classSide instanceVariableString asString printString].
+		stream nextPutAll: ')'].
+
+first := true.
+classVarStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' classVariables: ', classVarStr asString printString].
+protocolStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' protocols: ', protocolStr asString printString].
+classProtocolStr isEmpty ifFalse: [
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' classProtocols: ', classProtocolStr asString printString].
+self isAbstract ifTrue:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' abstract'].
+self extensionsAreSubtypes ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' extensionsAreNotSubtypes'].
+self isSubtype ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' notSubtype'].
+self isBranded ifFalse:[
+	first ifTrue: [ first := false ] ifFalse: [ stream nextPut: $; ].
+	stream nextPutAll: ' unbranded'].
+
+^stream contents
+! !
+
+"September 30, 2009 -> 1:19:21"!
+
+"System saved" !
