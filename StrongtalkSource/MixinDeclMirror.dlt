@@ -242,6 +242,7 @@ newBody := newBody
                                     classVariables: self classVariableString;
                                     protocols: self supportedProtocolString;
                                     classProtocols: self classSide supportedProtocolString.
+newBody classInstanceVariables: self classSide instanceVariableString.
 
 self isAbstract ifTrue:[newBody abstract].
 self extensionsAreSubtypes ifFalse:[newBody extensionsAreNotSubtypes].

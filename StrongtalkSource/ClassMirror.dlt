@@ -30,7 +30,13 @@ sort: cs <Collection[Class]> ^ <OrdCltn[Class]>
 ^ClassVMMirror sort: cs!
 
 subclassOf: s <Str> instanceVariables: instVars <Str> ^ <Instance>
-    ^self new initializeSubclassOf: s instanceVariables: instVars! !
+    ^self new initializeSubclassOf: s instanceVariables: instVars!
+
+subclassOf: s <Str> instanceVariables: instVars <Str> classInstanceVariables: classInstVars <Str> ^ <Instance>
+    ^self new
+    	initializeSubclassOf: s
+    	instanceVariables: instVars
+    	classInstanceVariables: classInstVars! !
 
 ! (Delta mirrorFor: #ClassMirror) methodsFor: 'Unclassified' !
 
@@ -117,6 +123,10 @@ branded: b <Boolean>
 
 self mixin branded: b.
 !
+
+classInstanceVariables: iv  <Str>
+
+self mixin classSide instanceVariables: iv!
 
 classProtocols: p  <Str>
 
@@ -291,6 +301,13 @@ initializeSubclassOf: s  <Str> instanceVariables: instVars  <Str>
     self initialize.
     self superclass: s.
     self instanceVariables: instVars!
+
+initializeSubclassOf: s  <Str> instanceVariables: instVars  <Str> classInstanceVariables: classInstVars <Str>
+
+    self initialize.
+    self superclass: s.
+    self instanceVariables: instVars.
+    self classInstanceVariables: classInstVars!
 
 installed  ^ <Boolean>
 "Private"
