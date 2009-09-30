@@ -1,0 +1,46 @@
+Delta define: #ClassTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #ClassTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ClassTest) group: 'base test'!
+
+(Delta mirrorFor: #ClassTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'fixture' !
+
+
+tearDown
+
+	self classFixture isNil
+		ifFalse: [(Mirror on: self classFixture) removeDefinitionIfFail: [:err| self signalFailure: err]]! !
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+
+
+classFixture
+
+	^Smalltalk at: self fixtureClassName ifAbsent: []!
+
+fixtureClassName
+
+	^#ClassTestIvars123!
+
+testCreateClassWithInstanceAndClassInstanceVariables
+
+	|mirror|
+	self assert: self classFixture isNil.
+	
+	Delta define: self fixtureClassName as: (
+		Class subclassOf: 'Object'
+			instanceVariables: 'one'
+			classInstanceVariables: 'two three').
+	
+	self deny: self classFixture isNil.
+	
+	mirror := Mirror on: self classFixture.
+	self assert: mirror classInstanceVariableString = 'two three'.
+	self assert: mirror instanceVariableString = 'one'! !
+

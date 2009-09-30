@@ -101164,3 +101164,262 @@ Delta define: #NS2 as: (
 "September 30, 2009 -> 23:15:21"!
 
 "System saved" !
+"September 30, 2009 -> 23:17:11"!
+
+Delta define: #ClassTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 30, 2009 -> 23:18:59"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testClassInstanceVariableCreation
+
+	self assert: (Smalltalk at: #ClassTestIvars123 ifAbsent: []) isNil! !
+
+"September 30, 2009 -> 23:19:56"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+classFixture
+
+	^Smalltalk at: #ClassTestIvars123 ifAbsent: []! !
+
+"September 30, 2009 -> 23:20:11"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testClassInstanceVariableCreation
+
+	self assert: self classFixture isNil! !
+
+"September 30, 2009 -> 23:25:42"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'fixture' !
+tearDown
+
+	self classFixture isNil
+		ifFalse: [(Mirror on: self classFixture) removeDefinitionIfFail: [:err| self signalFailure: err]]! !
+
+"September 30, 2009 -> 23:28:10"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testClassInstanceVariableCreation
+
+	self assert: self classFixture isNil.
+	Delta define: #ClassTestIvars123 as: (
+		Class subclassOf: 'Object'
+			instanceVariables: 'one'
+			classInstanceVariables: 'two three').
+	self deny: self classFixture isNil! !
+
+"September 30, 2009 -> 23:28:11"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 30, 2009 -> 23:28:12"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 30, 2009 -> 23:28:17"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 30, 2009 -> 23:28:17"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 30, 2009 -> 23:29:25"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+fixtureClassName
+
+	^#ClassTestIvars123! !
+
+"September 30, 2009 -> 23:29:37"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+classFixture
+
+	^Smalltalk at: self fixtureClassName ifAbsent: []! !
+
+"September 30, 2009 -> 23:33:1"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testClassInstanceVariableCreation
+
+	self assert: self classFixture isNil.
+	Delta define: self fixtureClassName as: (
+		Class subclassOf: 'Object'
+			instanceVariables: 'one'
+			classInstanceVariables: 'two three').
+	self deny: self classFixture isNil.
+	self assert: (Mirror on: self classFixture) mixin classSide instanceVariableString = 'two three'! !
+
+"September 30, 2009 -> 23:33:2"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 30, 2009 -> 23:33:2"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 30, 2009 -> 23:33:19"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 30, 2009 -> 23:33:19"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 30, 2009 -> 23:34:17"!
+
+! (Delta mirrorFor: #ClassMirror) methodsFor: 'Unclassified' !
+classInstanceVariableString
+
+	^self mixin classSide instanceVariableString! !
+
+"September 30, 2009 -> 23:34:30"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testClassInstanceVariableCreation
+
+	self assert: self classFixture isNil.
+	Delta define: self fixtureClassName as: (
+		Class subclassOf: 'Object'
+			instanceVariables: 'one'
+			classInstanceVariables: 'two three').
+	self deny: self classFixture isNil.
+	self assert: (Mirror on: self classFixture) classInstanceVariableString = 'two three'! !
+
+"September 30, 2009 -> 23:34:32"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 30, 2009 -> 23:34:32"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 30, 2009 -> 23:36:2"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testClassInstanceVariableCreation
+
+	self assert: self classFixture isNil.
+	
+	Delta define: self fixtureClassName as: (
+		Class subclassOf: 'Object'
+			instanceVariables: 'one'
+			classInstanceVariables: 'two three').
+	
+	self deny: self classFixture isNil.
+	self assert: (Mirror on: self classFixture) classInstanceVariableString = 'two three'! !
+
+"September 30, 2009 -> 23:36:36"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testClassInstanceVariableCreation
+
+	self assert: self classFixture isNil.
+	
+	Delta define: self fixtureClassName as: (
+		Class subclassOf: 'Object'
+			instanceVariables: 'one'
+			classInstanceVariables: 'two three').
+	
+	self deny: self classFixture isNil.
+	self assert: (Mirror on: self classFixture) classInstanceVariableString = 'two three'.
+	self assert: (Mirror on: self classFixture) instanceVariableString = 'one'! !
+
+"September 30, 2009 -> 23:36:39"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 30, 2009 -> 23:36:39"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 30, 2009 -> 23:37:43"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testClassInstanceVariableCreation
+
+	|mirror|
+	self assert: self classFixture isNil.
+	
+	Delta define: self fixtureClassName as: (
+		Class subclassOf: 'Object'
+			instanceVariables: 'one'
+			classInstanceVariables: 'two three').
+	
+	self deny: self classFixture isNil.
+	
+	mirror := Mirror on: self classFixture.
+	self assert: mirror classInstanceVariableString = 'two three'.
+	self assert: mirror instanceVariableString = 'one'! !
+
+"September 30, 2009 -> 23:37:45"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 30, 2009 -> 23:37:45"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 30, 2009 -> 23:38:28"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
+testCreateClassWithInstanceAndClassInstanceVariables
+
+	|mirror|
+	self assert: self classFixture isNil.
+	
+	Delta define: self fixtureClassName as: (
+		Class subclassOf: 'Object'
+			instanceVariables: 'one'
+			classInstanceVariables: 'two three').
+	
+	self deny: self classFixture isNil.
+	
+	mirror := Mirror on: self classFixture.
+	self assert: mirror classInstanceVariableString = 'two three'.
+	self assert: mirror instanceVariableString = 'one'! !
+
+"September 30, 2009 -> 23:38:31"!
+
+(Delta mirrorFor: #ClassTest) removeMethod: #testClassInstanceVariableCreation ifAbsent: [] !
+
+
+"September 30, 2009 -> 23:38:33"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 30, 2009 -> 23:38:33"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 30, 2009 -> 23:39:47"!
+
+"System saved" !
