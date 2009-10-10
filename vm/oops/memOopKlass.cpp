@@ -112,6 +112,10 @@ oop memOopKlass::allocateObjectSize(int size, bool permit_scavenge, bool permit_
   return markSymbol(vmSymbols::not_indexable());
 }
 
+klassOop memOopKlass::create_subclass(mixinOop mixin, klassOop instSuper, klassOop metaClass, Format format) {
+  memOopKlass o;
+  return create_generic_class(as_klassOop(), instSuper, metaClass, mixin, o.vtbl_value());
+}
 klassOop memOopKlass::create_subclass(mixinOop mixin, Format format) {
   assert(can_be_subclassed(), "must be able to subclass this");
   if (format == mem_klass)             return memOopKlass::create_class(as_klassOop(), mixin);
@@ -136,7 +140,6 @@ klassOop memOopKlass::create_class(klassOop super_class, mixinOop mixin) {
   memOopKlass o;
   return create_generic_class(super_class, mixin, o.vtbl_value());
 }
-
 oop memOopKlass::oop_shallow_copy(oop obj, bool tenured) {
   // Do not copy oddballs (nil, true, false)
   if (obj == nilObj)   return obj;

@@ -101423,3 +101423,59 @@ Delta define: #ClassTestIvars123 as: (
 "September 30, 2009 -> 23:39:47"!
 
 "System saved" !
+"October 1, 2009 -> 22:19:19"!
+
+! (Delta mirrorFor: #SourceHandler) methodsFor: 'Unclassified' !
+initIndexDict ^ <Dictionary[Symbol,Cltn[Str]]>
+
+	indexDict isNil ifTrue: [ 
+		self indexDict: Dictionary[Symbol,Cltn[String]] new.
+		self isPersistent ifTrue: [
+			self parseIndexFile ] ]! !
+
+"October 1, 2009 -> 22:19:19"!
+
+! (Delta mirrorFor: #SourceHandler) methodsFor: 'Unclassified' !
+indexDict ^ <Dictionary[Symbol,Cltn[Str]]>
+
+	self initIndexDict.
+	^indexDict! !
+
+"October 1, 2009 -> 22:19:20"!
+
+! (Delta mirrorFor: #SourceHandler) methodsFor: 'Unclassified' !
+storeIndexFile
+
+	| ws <CharOutputStream> |
+	self initIndexDict.
+	self makeBackupIndex.
+	BootStrapping
+		ifTrue: [ ws := self indexFile charOutputStream ]
+		ifFalse: [  ws := self indexFile writeStream ].
+	[
+		ws nextPutAll: self handlerId; cr.
+		self indexDict associationsDo: [ :a <Association[Symbol, Cltn[Str]]> |
+	 		ws deltaNextChunkPut: a key.
+			a value do: [ :e <Str> | 
+				ws cr; deltaNextChunkPut: e ].
+			ws nextPut: $ ; nextPut: $!!; cr ].
+		BootStrapping ifFalse: [ ws truncate ]
+	] ensure: [
+		ws close
+	]
+! !
+
+"October 1, 2009 -> 22:19:51"!
+
+Delta define: #Top as: (
+(Class subclassOf: '' instanceVariables: '')) !
+
+
+"October 1, 2009 -> 22:21:6"!
+
+(Delta mirrorFor: #Top) removeDefinitionIfFail: [] !
+
+
+"October 1, 2009 -> 23:21:15"!
+
+"System saved" !

@@ -264,27 +264,31 @@ class listNode : public astNode {
 class scopeNode : public astNode {
  protected:
    methodOop   _method;
-   klassOop    klass;
-   int         in;
+   klassOop     klass;
+   int          in;
    int         _hot_bci;
-   int         frame_index;
-   deltaVFrame* _fr;
-   ScopeDesc*   _sd;
+   int          frame_index;
+   deltaVFrame*_fr;
+   ScopeDesc*  _sd;
+   scopeNode*   parentScope;
+   scopeNode*   innerScope;
  public:
-   scopeNode(deltaVFrame* fr, int index)
+   scopeNode(deltaVFrame* fr, int index, scopeNode* scope = NULL) 
   : astNode(0, NULL) {
     frame_index = index;
     _method     = fr->method();
     klass       = fr->receiver()->klass();
-    _hot_bci    = fr->bci();
+    _hot_bci    = scope ? -1 : fr->bci();
     _fr         = fr;
     in = 0;
     _sd = _fr->is_compiled_frame() 
           ? ((compiledVFrame*) _fr)->scope()
 	  : NULL;
+    innerScope = scope;
+    initParent();
   }
 
-  scopeNode(methodOop method, klassOop klass, int hot_bci)
+  scopeNode(methodOop method, klassOop klass, int hot_bci, scopeNode* scope = NULL)
   : astNode(0, NULL) {
     _method        = method;
     this->klass    = klass;
@@ -292,8 +296,14 @@ class scopeNode : public astNode {
     _fr = NULL;
     in = 0;
     _sd = NULL;
+    innerScope = scope;
+    initParent();
   }
-
+  void initParent() {
+    parentScope = _method->is_blockMethod()
+      ? new scopeNode(_method->parent(), klass, -1, this) 
+      : parentScope = NULL;
+  }
   deltaVFrame* fr() { return _fr; }
   ScopeDesc* sd() const { return _sd; }
 
@@ -307,7 +317,13 @@ class scopeNode : public astNode {
 
   void context_allocated()    { assert(is_context_allocated(), "just checking");  }
   bool is_context_allocated() { return method()->allocatesInterpretedContext(); }
-
+  scopeNode* scopeFor(methodOop method) {
+    return innerScope && innerScope->isFor(method) ? innerScope : NULL;
+  }
+  bool isFor(methodOop method) {
+    return _method == method;
+  }
+  scopeNode* homeScope() { return parentScope ? parentScope->homeScope() : this; }
   char* param_string(int index, bool in_block = false) {
     byteArrayOop res = find_parameter_name(method(), index);
     if (in_block) {
@@ -1292,6 +1308,7 @@ void byteArrayPrettyPrintStream::newline() {
 
 // Forward declaration
 astNode* generateForBlock(methodOop method, klassOop klass, int bci, int numOfArgs);
+astNode* generate(scopeNode* scope);
 
 class MethodPrettyPrinter : public MethodClosure {
  private:
@@ -1330,7 +1347,11 @@ class MethodPrettyPrinter : public MethodClosure {
 
   void allocate_closure(AllocationType type, int nofArgs, methodOop meth) {
     if (type == tos_as_scope) _pop();
-    _push(generateForBlock(meth, scope()->get_klass(), -1, nofArgs));
+    scopeNode* methodScope = _scope->scopeFor(meth);
+    if (methodScope)
+      _push(generate(methodScope));
+    else
+      _push(generateForBlock(meth, scope()->get_klass(), -1, nofArgs));
   }
   void allocate_context(int nofTemps, bool forMethod) { 
     scope()->context_allocated();
@@ -1605,7 +1626,9 @@ astNode* generate(scopeNode* scope) {
 
 
 astNode* generateForActivation(deltaVFrame* fr, int index) {
-  return generate(new scopeNode(fr, index));
+  scopeNode* scope = new scopeNode(fr, index);
+  scopeNode* toGenerate = scope->homeScope();
+  return generate(toGenerate);
 }
 
 

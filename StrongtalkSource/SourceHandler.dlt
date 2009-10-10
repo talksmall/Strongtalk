@@ -639,10 +639,7 @@ hasDualHandler ^ <Boolean>
 
 indexDict ^ <Dictionary[Symbol,Cltn[Str]]>
 
-	indexDict isNil ifTrue: [ 
-		self indexDict: Dictionary[Symbol,Cltn[String]] new.
-		self isPersistent ifTrue: [
-			self parseIndexFile ] ].
+	self initIndexDict.
 	^indexDict!
 
 indexDict: i <Dictionary[Symbol,Cltn[Str]]>
@@ -677,6 +674,13 @@ indexFileName ^ <Str>
 		ifTrue: [ s, self metaExtension ]
 		ifFalse: [ s ]
 !
+
+initIndexDict ^ <Dictionary[Symbol,Cltn[Str]]>
+
+	indexDict isNil ifTrue: [ 
+		self indexDict: Dictionary[Symbol,Cltn[String]] new.
+		self isPersistent ifTrue: [
+			self parseIndexFile ] ]!
 
 isMeta ^ <Boolean>
 
@@ -808,6 +812,7 @@ sourceDirectory ^ <FilePath>
 storeIndexFile
 
 	| ws <CharOutputStream> |
+	self initIndexDict.
 	self makeBackupIndex.
 	BootStrapping
 		ifTrue: [ ws := self indexFile charOutputStream ]

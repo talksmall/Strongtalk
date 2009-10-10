@@ -45,6 +45,7 @@ class memOopKlass: public Klass {
 
   // invocation creation
   klassOop create_subclass(mixinOop mixin, Format format);
+  klassOop create_subclass(mixinOop mixin, klassOop instSuper, klassOop metaClass, Format format);
 
   static klassOop create_class(klassOop super_class, mixinOop mixin);
 

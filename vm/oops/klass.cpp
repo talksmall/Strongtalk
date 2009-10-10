@@ -97,10 +97,13 @@ klassOop Klass::create_subclass(mixinOop mixin, Format format) {
   return NULL;
 }
 
-klassOop Klass::create_generic_class(klassOop super_class, mixinOop mixin, int vtbl) {
-  BlockScavenge bs;
+klassOop Klass::create_subclass(mixinOop mixin, klassOop instSuper, klassOop metaClass, Format format) {
+  ShouldNotCallThis();
+  return NULL;
+}
 
-  // Compute the class variables based on the instance side mixin class variable names
+klassOop Klass::create_generic_class(klassOop superMetaClass, klassOop superClass, klassOop metaMetaClass, mixinOop mixin, int vtbl) {
+  BlockScavenge bs;
 
   assert(mixin->classVars()->is_objArray(),                "checking instance side class var names");
   assert(mixin->class_mixin()->classVars()->is_objArray(), "checking class side class var names");
@@ -115,12 +118,12 @@ klassOop Klass::create_generic_class(klassOop super_class, mixinOop mixin, int v
   }
 
   // Meta class
-  klassOop meta_klass = klassOop(super_class->klass()->klass()->klass_part()->allocateObject());
+  klassOop meta_klass = klassOop(metaMetaClass->klass_part()->allocateObject());
   Klass* mk = meta_klass->klass_part();
   mk->set_untagged_contents(false);
   mk->set_classVars(class_vars);
   mk->set_methods(oopFactory::new_objArray(0));
-  mk->set_superKlass(super_class->klass());
+  mk->set_superKlass(superMetaClass);
   mk->set_mixin(mixin->class_mixin());
   mk->set_non_indexable_size(klassOopDesc::header_size() + mk->number_of_instance_variables());
   set_klassKlass_vtbl(mk);
@@ -131,12 +134,15 @@ klassOop Klass::create_generic_class(klassOop super_class, mixinOop mixin, int v
   k->set_untagged_contents(false);
   k->set_classVars(class_vars);
   k->set_methods(oopFactory::new_objArray(0));
-  k->set_superKlass(super_class);
+  k->set_superKlass(superClass);
   k->set_mixin(mixin);
   k->set_vtbl_value(vtbl);
   k->set_non_indexable_size(k->oop_header_size() + k->number_of_instance_variables());
 
   return klass;
+}
+klassOop Klass::create_generic_class(klassOop super_class, mixinOop mixin, int vtbl) {
+  return create_generic_class(super_class->klass(), super_class, super_class->klass()->klass(), mixin, vtbl);
 }
 
 symbolOop Klass::inst_var_name_at(int offset) const {

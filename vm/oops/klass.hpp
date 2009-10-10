@@ -168,9 +168,12 @@ class Klass : ValueObj {
 
   // creates invocation
   virtual klassOop create_subclass(mixinOop mixin, Format format);
+  // create invocation (receiver as metaclass superclass)
+  virtual klassOop create_subclass(mixinOop mixin, klassOop instSuper, klassOop metaClass, Format format);
 
  protected:
   static klassOop create_generic_class(klassOop super_class, mixinOop mixin, int vtbl);
+  static klassOop create_generic_class(klassOop superMetaClass, klassOop superClass, klassOop metaMetaClass, mixinOop mixin, int vtbl);
 
  public:
 
