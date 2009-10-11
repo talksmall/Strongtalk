@@ -3888,152 +3888,152 @@ static primitive_desc primitive_388 = {
 	errors_388
 };
 
-static char* signature_389[] = { "Object", "Object"};
-static char* errors_389[] = { "ReceiverHasWrongType", NULL};
+static char* signature_389[] = { "Behavior", "Behavior", "Behavior"};
+static char* errors_389[] = { "NotAClass", NULL};
 static primitive_desc primitive_389 = {
-	"primitiveShallowCopyIfFail:", 
-	fntype(&oopPrimitives::shallowCopy), 
-	1376257, 
+	"primitiveSetSuperclassOf:toClass:ifFail:", 
+	fntype(&behaviorPrimitives::setSuperclass), 
+	327682, 
 	signature_389, 
 	errors_389
 };
 
-static char* signature_390[] = { "Object", "SmallInteger"};
-static char* errors_390[] = {NULL};
+static char* signature_390[] = { "Object", "Object"};
+static char* errors_390[] = { "ReceiverHasWrongType", NULL};
 static primitive_desc primitive_390 = {
-	"primitiveShrinkMemory:", 
-	fntype(&systemPrimitives::shrinkMemory), 
-	65537, 
+	"primitiveShallowCopyIfFail:", 
+	fntype(&oopPrimitives::shallowCopy), 
+	1376257, 
 	signature_390, 
 	errors_390
 };
 
-static char* signature_391[] = { "SmallInteger"};
+static char* signature_391[] = { "Object", "SmallInteger"};
 static char* errors_391[] = {NULL};
 static primitive_desc primitive_391 = {
-	"primitiveSizeOfOop", 
-	fntype(&systemPrimitives::oopSize), 
-	65536, 
+	"primitiveShrinkMemory:", 
+	fntype(&systemPrimitives::shrinkMemory), 
+	65537, 
 	signature_391, 
 	errors_391
 };
 
-static char* signature_392[] = { "IndexedInstanceVariables"};
+static char* signature_392[] = { "SmallInteger"};
 static char* errors_392[] = {NULL};
 static primitive_desc primitive_392 = {
-	"primitiveSlidingSystemAverageIfFail:", 
-	fntype(&systemPrimitives::sliding_system_average), 
-	327680, 
+	"primitiveSizeOfOop", 
+	fntype(&systemPrimitives::oopSize), 
+	65536, 
 	signature_392, 
 	errors_392
 };
 
-static char* signature_393[] = { "Boolean", "SmallInteger", "SmallInteger"};
+static char* signature_393[] = { "IndexedInstanceVariables"};
 static char* errors_393[] = {NULL};
 static primitive_desc primitive_393 = {
-	"primitiveSmallIntegerEqual:ifFail:", 
-	fntype(&smiOopPrimitives::equal), 
-	6029570, 
+	"primitiveSlidingSystemAverageIfFail:", 
+	fntype(&systemPrimitives::sliding_system_average), 
+	327680, 
 	signature_393, 
 	errors_393
 };
 
-static char* signature_394[] = { "SmallInteger", "Symbol"};
-static char* errors_394[] = { "NotFound", NULL};
+static char* signature_394[] = { "Boolean", "SmallInteger", "SmallInteger"};
+static char* errors_394[] = {NULL};
 static primitive_desc primitive_394 = {
-	"primitiveSmallIntegerFlagAt:ifFail:", 
-	fntype(&debugPrimitives::smiAt), 
-	327681, 
+	"primitiveSmallIntegerEqual:ifFail:", 
+	fntype(&smiOopPrimitives::equal), 
+	6029570, 
 	signature_394, 
 	errors_394
 };
 
-static char* signature_395[] = { "Boolean", "Symbol", "Boolean"};
+static char* signature_395[] = { "SmallInteger", "Symbol"};
 static char* errors_395[] = { "NotFound", NULL};
 static primitive_desc primitive_395 = {
-	"primitiveSmallIntegerFlagAt:put:ifFail:", 
-	fntype(&debugPrimitives::smiAtPut), 
-	327682, 
+	"primitiveSmallIntegerFlagAt:ifFail:", 
+	fntype(&debugPrimitives::smiAt), 
+	327681, 
 	signature_395, 
 	errors_395
 };
 
-static char* signature_396[] = { "Boolean", "SmallInteger", "SmallInteger"};
-static char* errors_396[] = {NULL};
+static char* signature_396[] = { "Boolean", "Symbol", "Boolean"};
+static char* errors_396[] = { "NotFound", NULL};
 static primitive_desc primitive_396 = {
-	"primitiveSmallIntegerNotEqual:ifFail:", 
-	fntype(&smiOopPrimitives::notEqual), 
-	6029570, 
+	"primitiveSmallIntegerFlagAt:put:ifFail:", 
+	fntype(&debugPrimitives::smiAtPut), 
+	327682, 
 	signature_396, 
 	errors_396
 };
 
-static char* signature_397[] = { "IndexedInstanceVariables"};
+static char* signature_397[] = { "Boolean", "SmallInteger", "SmallInteger"};
 static char* errors_397[] = {NULL};
 static primitive_desc primitive_397 = {
-	"primitiveSmalltalkArray", 
-	fntype(&systemPrimitives::smalltalk_array), 
-	65536, 
+	"primitiveSmallIntegerNotEqual:ifFail:", 
+	fntype(&smiOopPrimitives::notEqual), 
+	6029570, 
 	signature_397, 
 	errors_397
 };
 
-static char* signature_398[] = { "GlobalAssociation", "Symbol", "Object"};
+static char* signature_398[] = { "IndexedInstanceVariables"};
 static char* errors_398[] = {NULL};
 static primitive_desc primitive_398 = {
-	"primitiveSmalltalkAt:Put:ifFail:", 
-	fntype(&systemPrimitives::smalltalk_at_put), 
-	327682, 
+	"primitiveSmalltalkArray", 
+	fntype(&systemPrimitives::smalltalk_array), 
+	65536, 
 	signature_398, 
 	errors_398
 };
 
-static char* signature_399[] = { "GlobalAssociation", "SmallInteger"};
-static char* errors_399[] = { "OutOfBounds", NULL};
+static char* signature_399[] = { "GlobalAssociation", "Symbol", "Object"};
+static char* errors_399[] = {NULL};
 static primitive_desc primitive_399 = {
-	"primitiveSmalltalkAt:ifFail:", 
-	fntype(&systemPrimitives::smalltalk_at), 
-	327681, 
+	"primitiveSmalltalkAt:Put:ifFail:", 
+	fntype(&systemPrimitives::smalltalk_at_put), 
+	327682, 
 	signature_399, 
 	errors_399
 };
 
 static char* signature_400[] = { "GlobalAssociation", "SmallInteger"};
-static char* errors_400[] = {NULL};
+static char* errors_400[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_400 = {
-	"primitiveSmalltalkRemoveAt:ifFail:", 
-	fntype(&systemPrimitives::smalltalk_remove_at), 
+	"primitiveSmalltalkAt:ifFail:", 
+	fntype(&systemPrimitives::smalltalk_at), 
 	327681, 
 	signature_400, 
 	errors_400
 };
 
-static char* signature_401[] = { "SmallInteger"};
+static char* signature_401[] = { "GlobalAssociation", "SmallInteger"};
 static char* errors_401[] = {NULL};
 static primitive_desc primitive_401 = {
-	"primitiveSmalltalkSize", 
-	fntype(&systemPrimitives::smalltalk_size), 
-	65536, 
+	"primitiveSmalltalkRemoveAt:ifFail:", 
+	fntype(&systemPrimitives::smalltalk_remove_at), 
+	327681, 
 	signature_401, 
 	errors_401
 };
 
-static char* signature_402[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
-static char* errors_402[] = { "Overflow", NULL};
+static char* signature_402[] = { "SmallInteger"};
+static char* errors_402[] = {NULL};
 static primitive_desc primitive_402 = {
-	"primitiveSubtract:ifFail:", 
-	fntype(&smiOopPrimitives_subtract), 
-	6029826, 
+	"primitiveSmalltalkSize", 
+	fntype(&systemPrimitives::smalltalk_size), 
+	65536, 
 	signature_402, 
 	errors_402
 };
 
-static char* signature_403[] = { "Behavior|Nil", "Behavior"};
-static char* errors_403[] = {NULL};
+static char* signature_403[] = { "SmallInteger", "SmallInteger", "SmallInteger"};
+static char* errors_403[] = { "Overflow", NULL};
 static primitive_desc primitive_403 = {
-	"primitiveSuperclass", 
-	fntype(&behaviorPrimitives::superclass), 
-	1114113, 
+	"primitiveSubtract:ifFail:", 
+	fntype(&smiOopPrimitives_subtract), 
+	6029826, 
 	signature_403, 
 	errors_403
 };
@@ -4041,28 +4041,28 @@ static primitive_desc primitive_403 = {
 static char* signature_404[] = { "Behavior|Nil", "Behavior"};
 static char* errors_404[] = {NULL};
 static primitive_desc primitive_404 = {
-	"primitiveSuperclassOf:ifFail:", 
-	fntype(&behaviorPrimitives::superclass_of), 
-	327681, 
+	"primitiveSuperclass", 
+	fntype(&behaviorPrimitives::superclass), 
+	1114113, 
 	signature_404, 
 	errors_404
 };
 
-static char* signature_405[] = { "Float"};
+static char* signature_405[] = { "Behavior|Nil", "Behavior"};
 static char* errors_405[] = {NULL};
 static primitive_desc primitive_405 = {
-	"primitiveSystemTime", 
-	fntype(&systemPrimitives::systemTime), 
-	65536, 
+	"primitiveSuperclassOf:ifFail:", 
+	fntype(&behaviorPrimitives::superclass_of), 
+	327681, 
 	signature_405, 
 	errors_405
 };
 
-static char* signature_406[] = { "Object"};
+static char* signature_406[] = { "Float"};
 static char* errors_406[] = {NULL};
 static primitive_desc primitive_406 = {
-	"primitiveTimerPrintBuffer", 
-	fntype(&debugPrimitives::timerPrintBuffer), 
+	"primitiveSystemTime", 
+	fntype(&systemPrimitives::systemTime), 
 	65536, 
 	signature_406, 
 	errors_406
@@ -4071,8 +4071,8 @@ static primitive_desc primitive_406 = {
 static char* signature_407[] = { "Object"};
 static char* errors_407[] = {NULL};
 static primitive_desc primitive_407 = {
-	"primitiveTimerStart", 
-	fntype(&debugPrimitives::timerStart), 
+	"primitiveTimerPrintBuffer", 
+	fntype(&debugPrimitives::timerPrintBuffer), 
 	65536, 
 	signature_407, 
 	errors_407
@@ -4081,8 +4081,8 @@ static primitive_desc primitive_407 = {
 static char* signature_408[] = { "Object"};
 static char* errors_408[] = {NULL};
 static primitive_desc primitive_408 = {
-	"primitiveTimerStop", 
-	fntype(&debugPrimitives::timerStop), 
+	"primitiveTimerStart", 
+	fntype(&debugPrimitives::timerStart), 
 	65536, 
 	signature_408, 
 	errors_408
@@ -4091,159 +4091,159 @@ static primitive_desc primitive_408 = {
 static char* signature_409[] = { "Object"};
 static char* errors_409[] = {NULL};
 static primitive_desc primitive_409 = {
-	"primitiveTraceStack", 
-	fntype(&systemPrimitives::traceStack), 
+	"primitiveTimerStop", 
+	fntype(&debugPrimitives::timerStop), 
 	65536, 
 	signature_409, 
 	errors_409
 };
 
-static char* signature_410[] = { "Object", "BlockWithoutArguments", "BlockWithoutArguments"};
+static char* signature_410[] = { "Object"};
 static char* errors_410[] = {NULL};
 static primitive_desc primitive_410 = {
-	"primitiveUnwindProtect:ifFail:", 
-	fntype(&unwindprotect), 
-	1507330, 
+	"primitiveTraceStack", 
+	fntype(&systemPrimitives::traceStack), 
+	65536, 
 	signature_410, 
 	errors_410
 };
 
-static char* signature_411[] = { "Float"};
+static char* signature_411[] = { "Object", "BlockWithoutArguments", "BlockWithoutArguments"};
 static char* errors_411[] = {NULL};
 static primitive_desc primitive_411 = {
-	"primitiveUserTime", 
-	fntype(&systemPrimitives::userTime), 
-	65536, 
+	"primitiveUnwindProtect:ifFail:", 
+	fntype(&unwindprotect), 
+	1507330, 
 	signature_411, 
 	errors_411
 };
 
-static char* signature_412[] = { "Object"};
+static char* signature_412[] = { "Float"};
 static char* errors_412[] = {NULL};
 static primitive_desc primitive_412 = {
-	"primitiveVMBreakpoint", 
-	fntype(&systemPrimitives::vmbreakpoint), 
+	"primitiveUserTime", 
+	fntype(&systemPrimitives::userTime), 
 	65536, 
 	signature_412, 
 	errors_412
 };
 
-static char* signature_413[] = { "Object", "BlockWithoutArguments"};
+static char* signature_413[] = { "Object"};
 static char* errors_413[] = {NULL};
 static primitive_desc primitive_413 = {
-	"primitiveValue", 
-	fntype(&primitiveValue0), 
-	5441537, 
+	"primitiveVMBreakpoint", 
+	fntype(&systemPrimitives::vmbreakpoint), 
+	65536, 
 	signature_413, 
 	errors_413
 };
 
-static char* signature_414[] = { "Object", "BlockWithOneArgument", "Object"};
+static char* signature_414[] = { "Object", "BlockWithoutArguments"};
 static char* errors_414[] = {NULL};
 static primitive_desc primitive_414 = {
-	"primitiveValue:", 
-	fntype(&primitiveValue1), 
-	5441538, 
+	"primitiveValue", 
+	fntype(&primitiveValue0), 
+	5441537, 
 	signature_414, 
 	errors_414
 };
 
-static char* signature_415[] = { "Object", "BlockWithTwoArguments", "Object", "Object"};
+static char* signature_415[] = { "Object", "BlockWithOneArgument", "Object"};
 static char* errors_415[] = {NULL};
 static primitive_desc primitive_415 = {
-	"primitiveValue:value:", 
-	fntype(&primitiveValue2), 
-	5441539, 
+	"primitiveValue:", 
+	fntype(&primitiveValue1), 
+	5441538, 
 	signature_415, 
 	errors_415
 };
 
-static char* signature_416[] = { "Object", "BlockWithThreeArguments", "Object", "Object", "Object"};
+static char* signature_416[] = { "Object", "BlockWithTwoArguments", "Object", "Object"};
 static char* errors_416[] = {NULL};
 static primitive_desc primitive_416 = {
-	"primitiveValue:value:value:", 
-	fntype(&primitiveValue3), 
-	5441540, 
+	"primitiveValue:value:", 
+	fntype(&primitiveValue2), 
+	5441539, 
 	signature_416, 
 	errors_416
 };
 
-static char* signature_417[] = { "Object", "BlockWithFourArguments", "Object", "Object", "Object", "Object"};
+static char* signature_417[] = { "Object", "BlockWithThreeArguments", "Object", "Object", "Object"};
 static char* errors_417[] = {NULL};
 static primitive_desc primitive_417 = {
-	"primitiveValue:value:value:value:", 
-	fntype(&primitiveValue4), 
-	5441541, 
+	"primitiveValue:value:value:", 
+	fntype(&primitiveValue3), 
+	5441540, 
 	signature_417, 
 	errors_417
 };
 
-static char* signature_418[] = { "Object", "BlockWithFiveArguments", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_418[] = { "Object", "BlockWithFourArguments", "Object", "Object", "Object", "Object"};
 static char* errors_418[] = {NULL};
 static primitive_desc primitive_418 = {
-	"primitiveValue:value:value:value:value:", 
-	fntype(&primitiveValue5), 
-	5441542, 
+	"primitiveValue:value:value:value:", 
+	fntype(&primitiveValue4), 
+	5441541, 
 	signature_418, 
 	errors_418
 };
 
-static char* signature_419[] = { "Object", "BlockWithSixArguments", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_419[] = { "Object", "BlockWithFiveArguments", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_419[] = {NULL};
 static primitive_desc primitive_419 = {
-	"primitiveValue:value:value:value:value:value:", 
-	fntype(&primitiveValue6), 
-	5441543, 
+	"primitiveValue:value:value:value:value:", 
+	fntype(&primitiveValue5), 
+	5441542, 
 	signature_419, 
 	errors_419
 };
 
-static char* signature_420[] = { "Object", "BlockWithSevenArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_420[] = { "Object", "BlockWithSixArguments", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_420[] = {NULL};
 static primitive_desc primitive_420 = {
-	"primitiveValue:value:value:value:value:value:value:", 
-	fntype(&primitiveValue7), 
-	5441544, 
+	"primitiveValue:value:value:value:value:value:", 
+	fntype(&primitiveValue6), 
+	5441543, 
 	signature_420, 
 	errors_420
 };
 
-static char* signature_421[] = { "Object", "BlockWithEightArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_421[] = { "Object", "BlockWithSevenArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_421[] = {NULL};
 static primitive_desc primitive_421 = {
-	"primitiveValue:value:value:value:value:value:value:value:", 
-	fntype(&primitiveValue8), 
-	5441545, 
+	"primitiveValue:value:value:value:value:value:value:", 
+	fntype(&primitiveValue7), 
+	5441544, 
 	signature_421, 
 	errors_421
 };
 
-static char* signature_422[] = { "Object", "BlockWithNineArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
+static char* signature_422[] = { "Object", "BlockWithEightArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_422[] = {NULL};
 static primitive_desc primitive_422 = {
-	"primitiveValue:value:value:value:value:value:value:value:value:", 
-	fntype(&primitiveValue9), 
-	5441546, 
+	"primitiveValue:value:value:value:value:value:value:value:", 
+	fntype(&primitiveValue8), 
+	5441545, 
 	signature_422, 
 	errors_422
 };
 
-static char* signature_423[] = { "Object"};
+static char* signature_423[] = { "Object", "BlockWithNineArguments", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object", "Object"};
 static char* errors_423[] = {NULL};
 static primitive_desc primitive_423 = {
-	"primitiveVerify", 
-	fntype(&debugPrimitives::verify), 
-	65536, 
+	"primitiveValue:value:value:value:value:value:value:value:value:", 
+	fntype(&primitiveValue9), 
+	5441546, 
 	signature_423, 
 	errors_423
 };
 
-static char* signature_424[] = { "Proxy", "Proxy"};
+static char* signature_424[] = { "Object"};
 static char* errors_424[] = {NULL};
 static primitive_desc primitive_424 = {
-	"primitiveWindowsHInstance:ifFail:", 
-	fntype(&systemPrimitives::windowsHInstance), 
-	327681, 
+	"primitiveVerify", 
+	fntype(&debugPrimitives::verify), 
+	65536, 
 	signature_424, 
 	errors_424
 };
@@ -4251,34 +4251,44 @@ static primitive_desc primitive_424 = {
 static char* signature_425[] = { "Proxy", "Proxy"};
 static char* errors_425[] = {NULL};
 static primitive_desc primitive_425 = {
-	"primitiveWindowsHPrevInstance:ifFail:", 
-	fntype(&systemPrimitives::windowsHPrevInstance), 
+	"primitiveWindowsHInstance:ifFail:", 
+	fntype(&systemPrimitives::windowsHInstance), 
 	327681, 
 	signature_425, 
 	errors_425
 };
 
-static char* signature_426[] = { "Object"};
+static char* signature_426[] = { "Proxy", "Proxy"};
 static char* errors_426[] = {NULL};
 static primitive_desc primitive_426 = {
-	"primitiveWindowsNCmdShow", 
-	fntype(&systemPrimitives::windowsNCmdShow), 
-	65536, 
+	"primitiveWindowsHPrevInstance:ifFail:", 
+	fntype(&systemPrimitives::windowsHPrevInstance), 
+	327681, 
 	signature_426, 
 	errors_426
 };
 
-static char* signature_427[] = { "Object", "String"};
+static char* signature_427[] = { "Object"};
 static char* errors_427[] = {NULL};
 static primitive_desc primitive_427 = {
-	"primitiveWriteSnapshot:", 
-	fntype(&systemPrimitives::writeSnapshot), 
-	65537, 
+	"primitiveWindowsNCmdShow", 
+	fntype(&systemPrimitives::windowsNCmdShow), 
+	65536, 
 	signature_427, 
 	errors_427
 };
 
-static int size_of_primitive_table = 428; 
+static char* signature_428[] = { "Object", "String"};
+static char* errors_428[] = {NULL};
+static primitive_desc primitive_428 = {
+	"primitiveWriteSnapshot:", 
+	fntype(&systemPrimitives::writeSnapshot), 
+	65537, 
+	signature_428, 
+	errors_428
+};
+
+static int size_of_primitive_table = 429; 
 static primitive_desc* primitive_table[] = { 
   &primitive_0,
   &primitive_1,
@@ -4707,5 +4717,6 @@ static primitive_desc* primitive_table[] = {
   &primitive_424,
   &primitive_425,
   &primitive_426,
-  &primitive_427
+  &primitive_427,
+  &primitive_428
 }; 

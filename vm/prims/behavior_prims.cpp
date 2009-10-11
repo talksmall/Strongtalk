@@ -66,6 +66,25 @@ PRIM_DECL_1(behaviorPrimitives::superclass_of, oop klass) {
   return klassOop(klass)->klass_part()->superKlass();
 }
 
+PRIM_DECL_2(behaviorPrimitives::setSuperclass, oop receiver, oop newSuper) {
+  PROLOGUE_2("setSuperclass", receiver, newSuper);
+  if (!receiver->is_klass())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+  if (!newSuper->is_klass())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+
+  Klass* receiverClass = klassOop(receiver)->klass_part();
+  Klass* oldSuperclass = receiverClass->superKlass()->klass_part();
+  klassOop newSuperclass = klassOop(newSuper);
+
+  if (!oldSuperclass->has_same_layout_as(newSuperclass))
+    return markSymbol(vmSymbols::invalid_klass());
+
+  receiverClass->set_superKlass(newSuperclass);
+  
+  return receiver;
+}
+
 PRIM_DECL_1(behaviorPrimitives::mixinOf, oop behavior) {
   PROLOGUE_1("mixinOf", behavior);
   if (!behavior->is_klass())

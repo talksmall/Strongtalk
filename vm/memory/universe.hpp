@@ -199,7 +199,9 @@ class Universe: AllStatic {
   static memOop relocate(memOop p);
 
   static bool verify_oop(memOop p);
-  static bool really_contains(void *p);
+  static bool really_contains(void *p) {
+    return new_gen.contains(p) || old_gen.contains(p);
+  }
   static space* spaceFor(void* p);
 
   static generation* generation_containing(oop p) {

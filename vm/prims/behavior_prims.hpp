@@ -112,6 +112,15 @@ class behaviorPrimitives : AllStatic {
   //%
   static PRIM_DECL_1(superclass_of, oop klass);
 
+  //%prim
+  // <NoReceiver> primitiveSetSuperclassOf: behavior  <Behavior>
+  //                               toClass: newSuper  <Behavior>
+  //                                ifFail: failBlock <PrimFailBlock> ^<Behavior> = 
+  //   Internal { error = #(NotAClass)
+  //              name  = 'behaviorPrimitives::setSuperclass' }
+  //%
+  static PRIM_DECL_2(setSuperclass, oop receiver, oop newSuper);
+
   // CLASS VARIABLES
 
   //%prim
@@ -175,7 +184,6 @@ class behaviorPrimitives : AllStatic {
   //%
   static PRIM_DECL_2(is_class_of, oop receiver, oop obj);
 };
-
 
 //%prim
 // <NoReceiver> primitiveInlineAllocations: behavior <Behavior>
