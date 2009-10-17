@@ -10,3 +10,96 @@ Delta define: #Top as: (
 Delta define: #Top as: (
 (Class subclassOf: 'Object' instanceVariables: '')) !
 
+
+"October 17, 2009 -> 14:59:8"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 17, 2009 -> 15:0:19"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
+doesNotUnderstand: m <Message> ^<BottomType>
+	"Processor stopWithError: (ProcessDoesNotUnderstandError new message: m)"
+	(MessageNotUnderstood message: m) signal! !
+
+"October 17, 2009 -> 15:35:54"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth + 1]
+               
+
+! !
+
+"October 17, 2009 -> 15:36:25"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
+articleFor: s <Str> ^<Str>
+
+	^(s at: 1) isVowel
+			ifTrue: [ 'an' ]
+			ifFalse: [ 'a' ]! !
+
+"October 17, 2009 -> 15:36:47"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
+class ^<Object class>
+	"Return the effective class of this object.  This is reflective, and thus indiscriminate
+	  use is considered bad style.
+
+	  Unlike in some other Smalltalk implementations, it
+	  is ok to override this method to return something other than the real class of the
+	  receiver, in situations where one class is trying to completely emulate another.
+
+	  If you are writing Strongtalk code that needs to send a class message that you have
+	  written to the receiver's class, you should use the #actualClass message, which is
+	  private.
+
+	  Truly reflective tools such as inspectors, etc. that need to get at the actual class
+	  of an object o should use the message (Reflection classOf: o).  The idea behind this
+	  scheme is that an object should be able (as much as feasible) to hide its
+	  implementation behind its message interface (including its actual class) from
+	  user code.  This allows, for example, forwarding objects (or proxies, etc), to act
+	  as if they have the same class as the object they are forwarding to, without breaking
+	  any system invariant, or breaking debugging and inspecting tools.  At the moment,
+	  the only exception to this rule is that the #== message may not be overridden, for
+	  performance reasons."
+
+	^{{self primitiveClass}}! !
+
+"October 17, 2009 -> 15:37:6"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
+printOn: strm <CharOutputStream>
+
+	| nm <Str> |
+	nm := self class name.
+	strm	nextPutAll: (self articleFor: nm);
+			nextPut: Character space;
+			nextPutAll: nm.! !
+
+"October 17, 2009 -> 15:37:17"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
+print
+
+	self printOn: Platform errorStream.
+	Platform errorStream cr.! !
+
+"October 17, 2009 -> 15:37:26"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
+printString ^<Str>
+	"Return a string that holds a readable but terse representation of the receiver"
+
+	| strm <CharWriteStream> |
+	strm := CharacterReadWriteStream on: (String new: 8).
+	self printOn: strm.
+	^strm contentsWritten! !

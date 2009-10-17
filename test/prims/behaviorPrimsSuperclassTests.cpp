@@ -209,6 +209,18 @@ TESTF(BehaviorPrimitivesSuperclassTests, setSuperclassShouldChangeSuperclassToNi
                 "Metasuperclass should be unchanged");
 }
 
+TESTF(BehaviorPrimitivesSuperclassTests, setSuperclassShouldChangeNilSuperclassToNotNil) {
+  ASSERT_TRUE_M(superclassOf(subclass()) == objectClass(), "Original superclassHandle");
+
+  oop result = behaviorPrimitives::setSuperclass(nilObj, subclass());
+
+  ASSERT_TRUE_M(superclassOf(subclass()) == nilObj, "Superclass should have changed");
+
+  result = behaviorPrimitives::setSuperclass(objectClass(), subclass());
+
+  ASSERT_TRUE_M(superclassOf(subclass()) == objectClass(), "Superclass should have changed back");
+}
+
 TESTF(BehaviorPrimitivesSuperclassTests, setSuperclassShouldChangeTopSuperclassToClass) {
   oop result = behaviorPrimitives::setSuperclass(classClass(), topClass()->klass());
 

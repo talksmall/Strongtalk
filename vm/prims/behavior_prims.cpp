@@ -74,17 +74,24 @@ PRIM_DECL_2(behaviorPrimitives::setSuperclass, oop receiver, oop newSuper) {
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
 
   Klass* receiverClass = klassOop(receiver)->klass_part();
-  Klass* oldSuperclass = receiverClass->superKlass()->klass_part();
   klassOop newSuperclass;
-  if (newSuper == nilObj) {
-    newSuperclass = klassOop(nilObj);
-    if (oldSuperclass->number_of_instance_variables() > 0)
+  if (receiverClass->superKlass() == newSuper) return receiver; // no change
+  if (receiverClass->superKlass() == nilObj) {
+    newSuperclass = klassOop(newSuper);
+    if (newSuperclass->klass_part()->number_of_instance_variables() > 0)
       return markSymbol(vmSymbols::argument_is_invalid());
   } else {
-    newSuperclass = klassOop(newSuper);
+    Klass* oldSuperclass = receiverClass->superKlass()->klass_part();
+    if (newSuper == nilObj) {
+      newSuperclass = klassOop(nilObj);
+      if (oldSuperclass->number_of_instance_variables() > 0)
+        return markSymbol(vmSymbols::argument_is_invalid());
+    } else {
+      newSuperclass = klassOop(newSuper);
 
-    if (!oldSuperclass->has_same_inst_vars_as(newSuperclass))
-      return markSymbol(vmSymbols::invalid_klass());
+      if (!oldSuperclass->has_same_inst_vars_as(newSuperclass))
+        return markSymbol(vmSymbols::invalid_klass());
+    }
   }
   receiverClass->set_superKlass(newSuperclass);
   
