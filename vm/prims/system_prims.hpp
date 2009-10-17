@@ -85,6 +85,12 @@ class systemPrimitives : AllStatic {
   static PRIM_DECL_1(scavenge, oop receiver);
 
   //%prim
+  // <NoReceiver> primitiveCanScavenge ^<Boolean> =
+  //   Internal { name  = 'systemPrimitives::canScavenge' }
+  //%
+  static PRIM_DECL_0(canScavenge);
+
+  //%prim
   // <Object> primitiveGarbageCollect ^<Self> =
   //   Internal { name  = 'systemPrimitives::garbageGollect' }
   //%

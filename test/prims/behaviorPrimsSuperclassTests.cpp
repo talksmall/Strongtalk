@@ -11,11 +11,16 @@ DECLARE(BehaviorPrimitivesSuperclassTests)
   PersistentHandle* delta;
   PersistentHandle* objectClassHandle;
   PersistentHandle* classClassHandle;
+  PersistentHandle* delayClassHandle;
   PersistentHandle* metaclassClassHandle;
   PersistentHandle* classMetaclass;
   PersistentHandle* subclassHandle;
+  PersistentHandle* topClassHandle;
+  PersistentHandle* delaySubclassHandle;
   PersistentHandle* superclassHandle;
   PersistentHandle* subclassName;
+  PersistentHandle* topClassName;
+  PersistentHandle* delaySubclassName;
   PersistentHandle* superclassName;
 
   mixinOop createEmptyMixin() {
@@ -41,7 +46,8 @@ DECLARE(BehaviorPrimitivesSuperclassTests)
 
     return mixin;
   }
-  klassOop createClass(symbolOop className) {
+  klassOop createClass(symbolOop className, klassOop superclass) {
+    PersistentHandle superclassHandle(superclass);
     char name[100];
     {
       ResourceMark rm;
@@ -52,7 +58,7 @@ DECLARE(BehaviorPrimitivesSuperclassTests)
     symbolOop format = oopFactory::new_symbol("Oops");
     mixinOop mixin = createEmptyMixin();
     return klassOop(systemPrimitives::createNamedInvocation(format,
-                                                            objectClassHandle->as_oop(),
+                                                            superclassHandle.as_oop(),
                                                             trueObj, 
                                                             className,
                                                             mixin));
@@ -89,14 +95,23 @@ DECLARE(BehaviorPrimitivesSuperclassTests)
   klassOop subclass() {
     return subclassHandle->as_klassOop();
   }
+  klassOop delaySubclass() {
+    return delaySubclassHandle->as_klassOop();
+  }
   klassOop superclass() {
     return superclassHandle->as_klassOop();
   }
   klassOop objectClass() {
     return objectClassHandle->as_klassOop();
   }
+  klassOop delayClass() {
+    return delayClassHandle->as_klassOop();
+  }
   klassOop classClass() {
     return classClassHandle->as_klassOop();
+  }
+  klassOop topClass() {
+    return topClassHandle->as_klassOop();
   }
   klassOop metaclassClass() {
     return metaclassClassHandle->as_klassOop();
@@ -108,24 +123,44 @@ DECLARE(BehaviorPrimitivesSuperclassTests)
     sprintf(text,"%s. Should be: %s, was: %s", message, expected->as_string(), unmarkSymbol(result)->as_string());
     ASSERT_TRUE_M(unmarkSymbol(result) == expected, text);
   }
+  void checkNotMarkedSymbol(oop result) {
+    if (!result->is_mark()) return;
+    ResourceMark rm;
+    char text[200];
+    sprintf(text,"Unexpected marked result was: %s", unmarkSymbol(result)->as_string());
+    FAIL_M(text);
+  }
 END_DECLARE
 
 SETUP(BehaviorPrimitivesSuperclassTests) {
    delta          = new PersistentHandle(Universe::find_global("Smalltalk"));
    objectClassHandle    = new PersistentHandle(Universe::find_global("Object"));
    classClassHandle     = new PersistentHandle(Universe::find_global("Class"));
+   delayClassHandle     = new PersistentHandle(Universe::find_global("Delay"));
    metaclassClassHandle     = new PersistentHandle(Universe::find_global("Metaclass"));
    classMetaclass = new PersistentHandle(classClassHandle->as_klassOop()->klass_part()->superKlass());
    subclassName   = new PersistentHandle(oopFactory::new_symbol("BehaviorPrimsSubclassFixture"));
    superclassName = new PersistentHandle(oopFactory::new_symbol("BehaviorPrimsSuperclassFixture"));
+   topClassName = new PersistentHandle(oopFactory::new_symbol("BehaviorPrimsTopClassFixture"));
+   delaySubclassName = new PersistentHandle(oopFactory::new_symbol("BehaviorPrimsDelayFixture"));
 
    checkDoesntExist(superclassName);
    checkDoesntExist(subclassName);
+   checkDoesntExist(delaySubclassName);
+   checkDoesntExist(topClassName);
 
-   subclassHandle       = new PersistentHandle(createClass(as_symbol(subclassName)));
+   subclassHandle       = new PersistentHandle(createClass(as_symbol(subclassName), 
+                                               objectClass()));
    checkClass(subclassHandle);
-   superclassHandle     = new PersistentHandle(createClass(as_symbol(superclassName)));
+   superclassHandle     = new PersistentHandle(createClass(as_symbol(superclassName),
+                                               objectClass()));
    checkClass(superclassHandle);
+   delaySubclassHandle  = new PersistentHandle(createClass(as_symbol(delaySubclassName), 
+                                               delayClass()));
+   checkClass(delaySubclassHandle);
+   topClassHandle       = new PersistentHandle(createClass(as_symbol(topClassName), 
+                                               objectClass()));
+   checkClass(topClassHandle);
 }
 
 TEARDOWN(BehaviorPrimitivesSuperclassTests){
@@ -133,6 +168,10 @@ TEARDOWN(BehaviorPrimitivesSuperclassTests){
     remove(subclassName);
   if (superclassHandle)
     remove(superclassName);
+  if (delaySubclassHandle)
+    remove(delaySubclassName);
+  if (topClassHandle)
+    remove(topClassName);
 
   safeDelete(delta);
   safeDelete(classMetaclass);
@@ -140,8 +179,11 @@ TEARDOWN(BehaviorPrimitivesSuperclassTests){
   safeDelete(metaclassClassHandle);
   safeDelete(objectClassHandle);
   safeDelete(subclassName);
+  safeDelete(delaySubclassName);
   safeDelete(superclassName);
   safeDelete(subclassHandle);
+  safeDelete(topClassHandle);
+  safeDelete(delaySubclassHandle);
   safeDelete(superclassHandle);
 }
 
@@ -154,6 +196,31 @@ TESTF(BehaviorPrimitivesSuperclassTests, setSuperclassShouldChangeSuperclassToNe
   ASSERT_TRUE_M(superclassOf(subclass()) == superclass(), "Superclass should have changed");
   ASSERT_TRUE_M(superclassOf(subclass()->klass()) == objectClass()->klass(), 
                 "Metasuperclass should be unchanged");
+}
+
+TESTF(BehaviorPrimitivesSuperclassTests, setSuperclassShouldChangeSuperclassToNil) {
+  ASSERT_TRUE_M(superclassOf(subclass()) == objectClass(), "Original superclassHandle");
+
+  oop result = behaviorPrimitives::setSuperclass(nilObj, subclass());
+
+  ASSERT_TRUE_M(subclass() == result, "Should return receiver");
+  ASSERT_TRUE_M(superclassOf(subclass()) == nilObj, "Superclass should have changed");
+  ASSERT_TRUE_M(superclassOf(subclass()->klass()) == objectClass()->klass(), 
+                "Metasuperclass should be unchanged");
+}
+
+TESTF(BehaviorPrimitivesSuperclassTests, setSuperclassShouldChangeTopSuperclassToClass) {
+  oop result = behaviorPrimitives::setSuperclass(classClass(), topClass()->klass());
+
+  checkNotMarkedSymbol(result);
+  ASSERT_TRUE_M(topClass()->klass() == result, "Should return receiver");
+  ASSERT_TRUE_M(superclassOf(topClass()->klass()) == classClass(), "Superclass should have changed");
+}
+
+TESTF(BehaviorPrimitivesSuperclassTests, setSuperclassShouldNotChangeSuperclassToNilWhenSuperclasHasIvars) {
+  oop result = behaviorPrimitives::setSuperclass(nilObj, delaySubclass());
+
+  checkMarkedSymbol("Should report error", result, vmSymbols::argument_is_invalid()); 
 }
 
 TESTF(BehaviorPrimitivesSuperclassTests, setSuperclassShouldReportErrorWhenReceiverNotAClass) {

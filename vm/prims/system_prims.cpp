@@ -116,6 +116,12 @@ PRIM_DECL_1(systemPrimitives::applyChange, oop change) {
   return Reflection::apply_change(objArrayOop(change));
 }
 
+PRIM_DECL_0(systemPrimitives::canScavenge) {
+  PROLOGUE_0("canScavenge")
+
+  return Universe::can_scavenge() ? trueObj : falseObj;
+}
+
 PRIM_DECL_1(systemPrimitives::scavenge, oop receiver) {
   PROLOGUE_1("scavenge", receiver)
   oop rec = receiver;

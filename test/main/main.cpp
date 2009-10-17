@@ -1,6 +1,7 @@
 #include "incls/_precompiled.incl"
 #include "incls/_shell.cpp.incl"
 #include "incls/_delta.cpp.incl"
+#include "handle.hpp"
 #include "testharness.h"
 #include <windows.h>
 
@@ -62,19 +63,37 @@ TestDeltaProcess::TestDeltaProcess(): DeltaProcess(NULL, NULL) {
 TestDeltaProcess::~TestDeltaProcess() {
   set_processObj(processOop(newProcess()));
 }
+void initializeSmalltalkEnvironment() {
+  PersistentHandle _new(oopFactory::new_symbol("new"));
+  PersistentHandle initialize(oopFactory::new_symbol("initialize"));
+  PersistentHandle runBase(oopFactory::new_symbol("runBaseClassInitializers"));
+  PersistentHandle processorScheduler(Universe::find_global("ProcessorScheduler"));
+  PersistentHandle smalltalk(Universe::find_global("Smalltalk"));
+  PersistentHandle systemInitializer(Universe::find_global("SystemInitializer"));
+  
+  PersistentHandle processor(Delta::call(processorScheduler.as_oop(), _new.as_oop()));
+  associationOop processorAssoc = Universe::find_global_association("Processor");
+  processorAssoc->set_value(processor.as_oop());
+
+  Delta::call(processor.as_oop(), initialize.as_oop());
+  Delta::call(systemInitializer.as_oop(), runBase.as_oop());
+  Delta::call(smalltalk.as_oop(), initialize.as_oop());
+}
 int TestDeltaProcess::launch_tests(DeltaProcess *process) {
   process->suspend_at_creation();
+  {
+     BlockScavenge bs;
+     initializeSmalltalkEnvironment();
+  }
   TestRegistry::runAndPrint();
   os::signal_event(done);
   return 0;
 }
-
 static int vmLoopLauncher(DeltaProcess* testProcess) {
   vmProcess->transfer_to(testProcess);
   vmProcess->loop();
   return 0;
 }
-
 void start_vm_process(TestDeltaProcess* testProcess) {
   int threadId;
   vmProcess = new VMProcess();

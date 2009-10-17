@@ -476,7 +476,7 @@ bool handling_exception;
 
 LONG WINAPI testVectoredHandler(struct _EXCEPTION_POINTERS* exceptionInfo) {
   lprintf("Caught exception.\n");
-  if (handler && !handling_exception) {
+  if (false && handler && !handling_exception) {
     handling_exception = true;
     handler((void*)exceptionInfo->ContextRecord->Ebp,
       (void*) exceptionInfo->ContextRecord->Esp,

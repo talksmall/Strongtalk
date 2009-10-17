@@ -101522,3 +101522,83 @@ one
 "October 11, 2009 -> 21:57:21"!
 
 "System saved" !
+"October 15, 2009 -> 0:39:48"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeIfPossible
+
+	self scavengeGarbage! !
+
+"October 15, 2009 -> 0:42:15"!
+
+"System saved" !
+"October 15, 2009 -> 0:46:34"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+canScavenge
+
+	^{{primitiveCanScavenge}}! !
+
+"October 15, 2009 -> 0:47:20"!
+
+"System saved" !
+"October 15, 2009 -> 0:52:48"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeIfPossible
+
+	self canScavenge
+		ifTrue: [self scavengeGarbage]! !
+
+"October 15, 2009 -> 0:53:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	|expansions |
+	expansions := self expansionCount.
+	self scavengeIfPossible.
+	^(expansions ~~ self expansionCount)
+			ifTrue: [self collectAndAllocate: allocateBlock
+								ifExpand: expansionBlock]
+			ifFalse: [allocateBlock
+								value: false
+								value: [:e1| self reportNonAllocationFailure: e1.
+													allocateBlock
+															value: true
+															value: [:e2| self reportNonAllocationFailure: e2.
+																				self collectAndAllocate: allocateBlock
+																						ifExpand: expansionBlock]]]! !
+
+"October 15, 2009 -> 0:54:52"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectIfPossible
+
+	self canScavenge
+		ifTrue: [self collectGarbage]! !
+
+"October 15, 2009 -> 0:55:12"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	self collectIfPossible.
+	self growIfNecessary.
+	^[allocateBlock
+			value: false
+			value: [:e|
+						self reportNonAllocationFailure: e.
+						allocateBlock
+							value: true
+							value: [:e1|
+										self reportNonAllocationFailure: e1.
+										expansionBlock value.
+										allocateBlock
+											value: true
+											value: [:e2| nil error: e2]]]]
+			ensure: [self shrinkIfPossible]! !
+
+"October 15, 2009 -> 0:56:33"!
+
+"System saved" !

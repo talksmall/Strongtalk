@@ -72,8 +72,6 @@ char* Klass::name_from_format(Format format) {
   return "Special";
 }
 
-
-
 bool Klass::has_same_layout_as(klassOop klass) {
   assert(klass->is_klass(), "argument must be klass");
   // Check equality
@@ -88,6 +86,26 @@ bool Klass::has_same_layout_as(klassOop klass) {
   // Check instance variables
   for (int index = oop_header_size(); index < non_indexable_size(); index++) {
     if (inst_var_name_at(index) !=  klass->klass_part()->inst_var_name_at(index)) return false;
+  }
+  return true;
+}
+
+bool Klass::has_same_inst_vars_as(klassOop klass) {
+  assert(klass->is_klass(), "argument must be klass");
+  // Check equality
+  if (as_klassOop() == klass) return true;
+
+  Klass* classPart = klass->klass_part();
+  // Check instance size
+  int ivars      = number_of_instance_variables();
+  int classIvars = classPart->number_of_instance_variables();
+  if (ivars != classIvars)
+    return false;
+
+  // Check instance variables
+  for (int offset = 1; offset <= number_of_instance_variables(); offset++) {
+    if (inst_var_name_at(non_indexable_size() - offset) != 
+      classPart->inst_var_name_at(classPart->non_indexable_size() - offset)) return false;
   }
   return true;
 }

@@ -34,19 +34,19 @@ DECLARE(CompilerTests)
     return nm;
   }
   void initializeSmalltalkEnvironment() {
-    HandleMark mark;
-    Handle _new(oopFactory::new_symbol("new"));
-    Handle initialize(oopFactory::new_symbol("initialize"));
-    Handle processorScheduler(Universe::find_global("ProcessorScheduler"));
-    Handle run(oopFactory::new_symbol("run"));
-    Handle systemInitializer(Universe::find_global("SystemInitializer"));
-    
-    Handle processor(Delta::call(processorScheduler.as_oop(), _new.as_oop()));
-    associationOop processorAssoc = Universe::find_global_association("Processor");
-    processorAssoc->set_value(processor.as_oop());
+    //HandleMark mark;
+    //Handle _new(oopFactory::new_symbol("new"));
+    //Handle initialize(oopFactory::new_symbol("initialize"));
+    //Handle processorScheduler(Universe::find_global("ProcessorScheduler"));
+    //Handle run(oopFactory::new_symbol("run"));
+    //Handle systemInitializer(Universe::find_global("SystemInitializer"));
+    //
+    //Handle processor(Delta::call(processorScheduler.as_oop(), _new.as_oop()));
+    //associationOop processorAssoc = Universe::find_global_association("Processor");
+    //processorAssoc->set_value(processor.as_oop());
 
-    Delta::call(processor.as_oop(), initialize.as_oop());
-    Delta::call(systemInitializer.as_oop(), run.as_oop());
+    //Delta::call(processor.as_oop(), initialize.as_oop());
+    //Delta::call(systemInitializer.as_oop(), run.as_oop());
   }
   void exhaustMethodHeap(LookupKey& key, int requiredSize) {
     GrowableArray<nmethod*>* nmethods = new GrowableArray<nmethod*>;

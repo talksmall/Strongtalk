@@ -304,9 +304,13 @@ allocate: allocateBlock ifExpand: expansionBlock
 									ifFalse: [self collectAndAllocate: allocateBlock
 															ifExpand: expansionBlock]]!
 
+canScavenge
+
+	^{{primitiveCanScavenge}}!
+
 collectAndAllocate: allocateBlock ifExpand: expansionBlock
 
-	self collectGarbage.
+	self collectIfPossible.
 	self growIfNecessary.
 	^[allocateBlock
 			value: false
@@ -321,6 +325,11 @@ collectAndAllocate: allocateBlock ifExpand: expansionBlock
 											value: true
 											value: [:e2| nil error: e2]]]]
 			ensure: [self shrinkIfPossible]!
+
+collectIfPossible
+
+	self canScavenge
+		ifTrue: [self collectGarbage]!
 
 expand
 
@@ -485,7 +494,7 @@ scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
 
 	|expansions |
 	expansions := self expansionCount.
-	self scavengeGarbage.
+	self scavengeIfPossible.
 	^(expansions ~~ self expansionCount)
 			ifTrue: [self collectAndAllocate: allocateBlock
 								ifExpand: expansionBlock]
@@ -497,6 +506,11 @@ scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
 															value: [:e2| self reportNonAllocationFailure: e2.
 																				self collectAndAllocate: allocateBlock
 																						ifExpand: expansionBlock]]]!
+
+scavengeIfPossible
+
+	self canScavenge
+		ifTrue: [self scavengeGarbage]!
 
 shrink: size
 

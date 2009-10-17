@@ -165,6 +165,7 @@ class Klass : ValueObj {
 
   // Tells whether the two klass have same layout (format and instance variables)
   bool has_same_layout_as(klassOop klass);
+  bool has_same_inst_vars_as(klassOop klass);
 
   // creates invocation
   virtual klassOop create_subclass(mixinOop mixin, Format format);
