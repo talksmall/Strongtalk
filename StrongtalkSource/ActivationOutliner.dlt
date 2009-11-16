@@ -32,6 +32,19 @@ activation ^ <Activation>
 ! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
 
 
+activationVariableView: variable <Object> ^<Visual>
+
+	^self
+		activationVariableView: (self safePrintString: variable)
+		value: variable!
+
+activationVariableView: label <Str> value: variable <Object> ^<Visual>
+
+	^self
+		buildLabel: label
+		painter: self codePainter
+		action: [ (Inspector on: variable) launch ]!
+
 buildActions ^ <Visual>
 
 	| row <Row[Visual]> |
@@ -46,15 +59,19 @@ buildActions ^ <Visual>
 	row add: (Button
 						labeled: 'Step out'
 						action: [:b <Button> | debugger stepReturn: self activation]).
+	row add: Glue xStretchy.
 	^row!
 
 buildBody ^<Visual>
 
-	| col <Column[Visual]> |
+	| col <Column[Visual]> row <Row[Visual]> |
 
 	col := Column[Visual] new.
+	row := Row[Visual] new.
+	row add: self buildCodeView;
+		add: self buildTemporariesView.
 	col add: self buildActions;
-		add: self buildCodeView.
+		add: row.
 	^col
 !
 
@@ -75,19 +92,13 @@ buildClosedHeader ^ <Visual>
 							row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
 							args do: [ :arg <Object> |
 								row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
-								row add: (self
-									buildLabel: (self safePrintString: arg)
-									painter: self codePainter
-									action: [ (Inspector on: arg) launch ]) ].
+								row add: (self activationVariableView: arg)].
 							row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
 							row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
 		ifFalse: [	"Add receiver"
 							| receiver <Object> |
 							receiver := self activation receiver.
-							row add: (self
-								buildLabel: (self safePrintString: receiver)
-								painter: self codePainter
-								action: [ (Inspector on: receiver) launch ]).
+							row add: (self activationVariableView: receiver).
 							row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
 							"Add selector interspersed with arguments"
 							args size = 0
@@ -96,10 +107,7 @@ buildClosedHeader ^ <Visual>
 													strm := selector readStream.
 													args do: [ :arg <Object> |
 														row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
-														row add: (self
-															buildLabel: (self safePrintString: arg)
-															painter: self codePainter
-															action: [ (Inspector on: arg) launch ]) ]
+														row add: (self activationVariableView: arg) ]
 												]
 						].
 	^row!
@@ -126,6 +134,16 @@ buildCodeView ^<Visual>
 buildExternalHeader ^ <Visual>
 
 	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual!
+
+buildTemporariesView ^ <Visual>
+
+	| column <Column[Visual]> |
+	column := Column[Visual] new.
+	self activation temporaries
+		do: [:temp| column add: (self activationVariableView: temp key
+														value: temp value)].
+	^column
+!
 
 currentByteCodeSeparatorCharacter ^ <Character>
 

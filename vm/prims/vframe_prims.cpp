@@ -139,9 +139,50 @@ PRIM_DECL_1(vframeOopPrimitives::receiver, oop recv) {
 
 PRIM_DECL_1(vframeOopPrimitives::temporaries, oop receiver) {
   PROLOGUE_1("temporaries", receiver);
-  ASSERT_RECEIVER;
 
-  return receiver;
+  assert(receiver->is_vframe(), "receiver must be vframe");
+
+  BlockScavenge bs;
+  ResourceMark rm;
+
+  vframe* vf = vframeOop(receiver)->get_vframe();
+
+  if (vf == NULL)
+    return markSymbol(vmSymbols::activation_is_invalid());
+    
+  if (!vf->is_delta_frame())
+    return markSymbol(vmSymbols::external_activation());
+
+  deltaVFrame* df = (deltaVFrame*) vf;
+  GrowableArray<oop> *temps = new GrowableArray<oop>(10);
+  methodOop method = df->method();
+  int tempCount = method->number_of_stack_temporaries();
+  
+  for (int offset = (method->activation_has_context() ? 1 : 0); offset < tempCount; offset++) {
+    byteArrayOop name = find_stack_temp(method, df->bci(), offset);
+    if (name)
+      temps->append(oopFactory::new_association(oopFactory::new_symbol(name),
+                                                df->temp_at(offset),
+                                                false));
+  }
+  
+  while(df) {
+    if (method->allocatesInterpretedContext()) {
+      int contextTempCount = method->number_of_context_temporaries();
+      for (int offset = 0; offset < contextTempCount; offset++) {
+        byteArrayOop name = find_heap_temp(method, df->bci(), offset);
+        if (name)
+          temps->append(oopFactory::new_association(oopFactory::new_symbol(name),
+                                                    df->context_temp_at(offset),
+                                                    false));
+      }
+    }
+    df = df->parent();
+    if (df)
+      method = df->method();
+  }
+
+  return oopFactory::new_objArray(temps);
 }
 
 PRIM_DECL_1(vframeOopPrimitives::arguments, oop receiver) {

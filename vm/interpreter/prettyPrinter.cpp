@@ -302,7 +302,7 @@ class scopeNode : public astNode {
   void initParent() {
     parentScope = _method->is_blockMethod()
       ? new scopeNode(_method->parent(), klass, -1, this) 
-      : parentScope = NULL;
+      : NULL;
   }
   deltaVFrame* fr() { return _fr; }
   ScopeDesc* sd() const { return _sd; }

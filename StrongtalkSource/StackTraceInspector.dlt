@@ -62,16 +62,24 @@ abortProcess
 
 	"Process get aborted by default when stack trace inspector is closed"
 	self remove.
-	self requestCloseIfTopWindow.
+	self closeTopWindow
 
 !
 
 closeRequest: toClose <[]>
 
 	"Abort inspected process when window closes"
+	self remove.
 	self process isNil
 		ifFalse: [	self process terminate ].
 	super closeRequest: toClose!
+
+closeTopWindow
+
+	|topWindow|
+	topWindow := self visual topWindow.
+	topWindow isNil
+		ifFalse: [topWindow requestClose]!
 
 continueProcess
 
