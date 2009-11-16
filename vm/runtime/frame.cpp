@@ -421,9 +421,14 @@ void frame::follow_roots() {
   }
     
   if (is_entry_frame()) {
-    for (oop* p = sp(); p < (oop*)fp(); p++) {
+    //for (oop* p = sp(); p < (oop*)fp(); p++) {
       // %hack
    //   MarkSweep::follow_root(p);
+    //}
+    // Should be the following to match oop_iterate() (used by scavenge) slr - 11/09
+    // %TODO how to test?
+    for (oop* p = sp(); p < (oop*)fp() - 4; p++) {
+      MarkSweep::follow_root(p);
     }
     return;
   }
