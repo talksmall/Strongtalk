@@ -101616,3 +101616,726 @@ Delta define: #Top as: (
 "October 17, 2009 -> 16:20:16"!
 
 "System saved" !
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+Delta define: #StackTraceInspector as: (
+(Class subclassOf: 'ProgrammingEnvironment' instanceVariables: 'process <Process>
+activationOutliners <Column[Visual]>') classVariables: 'Debuggers <Dict[Process, StackTraceInspector]>') !
+
+
+"November 16, 2009 -> 1:56:21"!
+
+(Delta mirrorFor: #StackTraceInspector)
+comment: 
+'Display for process stack trace (abort, continue, and command line debug possible).
+ (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'instance creation' !
+on: p <Process> ^ <Instance>
+
+	|debugger|
+	(debugger := self new) initProcess: p.
+	self debuggers at: p put: debugger.
+	^debugger! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'instance creation' !
+openOn: p <Process>
+	
+	(self debuggers
+				at: p
+				ifAbsent: [^(self on: p) launch]) rebuild! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'private - accessing' !
+debuggers ^<Dict[Process,StackTraceInspector]>
+
+	Debuggers isNil
+		ifTrue: [Debuggers := Dictionary[Process, StackTraceInspector] new].
+	^Debuggers! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) classSide methodsFor: 'private - accessing' !
+removeDebugger: debugger <StackTraceInspector>
+
+	self debuggers
+		removeAt: debugger process
+		ifAbsent: []! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'accessing' !
+process ^ <Process>
+
+	^process! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'accessing' !
+windowTitle ^ <Str>
+
+	self process processError isNil ifTrue: [^''].
+	^self process processError name! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+abortProcess
+
+	"Process get aborted by default when stack trace inspector is closed"
+	self remove.
+	self closeTopWindow
+
+! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+closeRequest: toClose <[]>
+
+	"Abort inspected process when window closes"
+	self remove.
+	self process isNil
+		ifFalse: [	self process terminate ].
+	super closeRequest: toClose! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+closeTopWindow
+
+	|topWindow|
+	topWindow := self visual topWindow.
+	topWindow isNil
+		ifFalse: [topWindow requestClose]! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+continueProcess
+
+	|topWindow|
+	self remove.
+	self process resume.
+	self process: nil.		"Don't terminate process when window closes"
+	topWindow := self visual topWindow.
+	topWindow isNil
+		ifFalse: [topWindow requestClose]! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+singleStep: activation <Activation>
+
+	self resumeAfter: [{{primitiveActivationSingleStep: activation
+										ifFail: [:err <Symbol> | self error: err]}}]! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+stepNext: activation <Activation>
+
+	self resumeAfter: [{{primitiveActivationStepNext: activation
+										ifFail: [:err <Symbol> | self error: err]}}]! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+stepReturn: activation <Activation>
+
+	self resumeAfter: [{{primitiveActivationStepReturn: activation
+										ifFail: [:err <Symbol> | self error: err]}}]! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'control' !
+transferToConsoleDebugger
+
+	self process stopInEvaluator.
+	self process: nil.		"Don't terminate process when window closes"
+	self requestCloseIfTopWindow.
+! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'menus' !
+hasMenu ^ <Boolean>
+
+	^true! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'menus' !
+menuBar ^ <Menu>
+
+	^Menu new
+		add: self fileMenu;
+		add: self processMenu! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'menus' !
+processMenu ^ <Menu>
+
+	^Menu new
+		name: '&Process';
+		add: (MenuAction new
+					name: '&Abort';
+					action: [ self abortProcess ] );
+		add: (MenuAction new
+					name: '&Continue';
+					active: [ self process processError continuable ];
+					action: [ self continueProcess ] );
+		add: (MenuAction new
+					name: '&Transfer to console debugger';
+					action: [ self transferToConsoleDebugger ] )
+! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+ActivationOutliner
+
+	^ActivationOutliner! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+addActivationsTo: col <Column[Visual]>
+
+	| stack <Array[Activation]> start <Int> |
+	stack := self process activationStack.
+	start := 1 "+ self process processError topFramesIgnored".
+	
+	"Add first activation open"
+	self assert: [ start < stack size ].
+	col add: (self outlinerFor: (stack at: start)
+						open: true).
+	start+1 to: stack size do: [ :i <Int> |
+		| a <Activation> |
+		a := stack at: i.
+		a isBlockValueActivation
+			ifFalse: [	col add: (self outlinerFor: a open: false) ]
+	]! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+buildBareVisualTop: top <Boolean> ^ <Visual>
+
+	activationOutliners := Column[Visual] new.
+	self addActivationsTo: activationOutliners.
+	^activationOutliners
+! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+outlinerFor: activation <Activation> open: b <Boolean>
+
+	^(self ActivationOutliner
+			on: activation
+			debugger: self)
+				open: b;
+				imbeddedVisual! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+process: p <Process>
+
+	process := p! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+rebuild
+
+	self inSessionProcessDo:
+		[activationOutliners removeAll.
+		self addActivationsTo: activationOutliners]! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+remove
+
+	self class removeDebugger: self! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+resumeAfter: block
+
+	block value.
+	self process resume! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private' !
+step: activation setup: block
+
+	block value: activation.
+	self process resume! !
+
+"November 16, 2009 -> 1:56:21"!
+
+! (Delta mirrorFor: #StackTraceInspector) methodsFor: 'private-initialization' !
+initProcess: p <Process>
+
+	self assert: [ p processError notNil ].
+	self process: p.
+! !
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+Delta define: #ActivationOutliner as: (
+(Class subclassOf: 'CommonProgEnvOutliner' instanceVariables: 'activation <Activation>
+debugger <StackTraceInspector>')) !
+
+
+"November 16, 2009 -> 1:56:28"!
+
+(Delta mirrorFor: #ActivationOutliner)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+on: a <Activation> ^ <Instance>
+
+	^self new initActivation: a! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) classSide methodsFor: 'instance creation' !
+on: a <Activation> debugger: debugger<StackTraceInspector> ^ <Instance>
+
+	^self new initActivation: a debugger: debugger! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'accessing' !
+activation ^ <Activation>
+
+	^activation! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+activationVariableView: variable <Object> ^<Visual>
+
+	^self
+		activationVariableView: (self safePrintString: variable)
+		value: variable! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+activationVariableView: label <Str> value: variable <Object> ^<Visual>
+
+	^self
+		buildLabel: label
+		painter: self codePainter
+		action: [ (Inspector on: variable) launch ]! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (Button
+						labeled: 'Step into'
+						action: [:b <Button> | debugger singleStep: self activation]).
+	row add: (Button 
+						labeled: 'Step over'
+						action: [:b <Button> | debugger stepNext: self activation]).
+	row add: (Button
+						labeled: 'Step out'
+						action: [:b <Button> | debugger stepReturn: self activation]).
+	row add: Glue xStretchy.
+	^row! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildBody ^<Visual>
+
+	| col <Column[Visual]> row <Row[Visual]> |
+
+	col := Column[Visual] new.
+	row := Row[Visual] new.
+	row add: self buildCodeView;
+		add: self buildTemporariesView.
+	col add: self buildActions;
+		add: row.
+	^col
+! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildClosedHeader ^ <Visual>
+
+	| selector <Symbol> args <Array[Object]> row <Row[Visual]> |
+	
+	"Check type of activation"
+	self activation isSmalltalk
+		ifFalse: [	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual ].
+
+	selector := self activation method enclosingMethod selector.
+	args := self activation arguments.
+	row := Row[Visual] new.
+	
+	self activation method isBlockMethod
+		ifTrue: [		"Add block parens interspersed with arguments"
+							row add: (StringGlyph for: '[' painter: self codePainter) asVisual.
+							args do: [ :arg <Object> |
+								row add: (StringGlyph for: ':' painter: self selectorPainter) asVisual.
+								row add: (self activationVariableView: arg)].
+							row add: (StringGlyph for: '] in ' painter: self codePainter) asVisual.
+							row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+		ifFalse: [	"Add receiver"
+							| receiver <Object> |
+							receiver := self activation receiver.
+							row add: (self activationVariableView: receiver).
+							row add: (StringGlyph for: '>> ' painter: self codePainter) asVisual.
+							"Add selector interspersed with arguments"
+							args size = 0
+								ifTrue: [		row add: (StringGlyph for: selector painter: self selectorPainter) asVisual ]
+								ifFalse: [	| strm <CharacterReadStream> |
+													strm := selector readStream.
+													args do: [ :arg <Object> |
+														row add: (StringGlyph for: (strm upTo: $:), ':' painter: self selectorPainter) asVisual.
+														row add: (self activationVariableView: arg) ]
+												]
+						].
+	^row! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildCodeView ^<Visual>
+
+	| cv <CodeView> vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self activation vmPrettyPrint.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	
+	cv := CodeView forText.
+	cv doneBlock: [ :b <Boolean> :onSuccess <[]> | b ifTrue: onSuccess ].	"Dummy for now, we are not showing the real source code"
+	cv model: gls.
+	^self editorBorderFor: cv
+! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildExternalHeader ^ <Visual>
+
+	^(StringGlyph for: 'External activation' painter: self codePainter) asVisual! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildTemporariesView ^ <Visual>
+
+	| column <Column[Visual]> |
+	column := Column[Visual] new.
+	self activation temporaries
+		do: [:temp| column add: (self activationVariableView: temp key
+														value: temp value)].
+	^column
+! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+currentByteCodeSeparatorCharacter ^ <Character>
+
+	^Character value: 16r1B
+! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+hasSelector ^<Boolean>
+
+	^self isMethodActivation! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+initialPacifiedState ^ <Boolean>
+
+	^self activation isSmalltalk not! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+isBlockActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod]! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+isExternal ^ <Boolean>
+
+	^self activation isSmalltalk not! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+isMethodActivation ^<Boolean>
+
+	^self activation isSmalltalk and: [self activation method isBlockMethod not]! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+method
+
+	^self mirror isNil
+		ifTrue: [nil]
+		ifFalse: [self mirror compiledMethodAt: self selector]! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+methodSource ^<Str>
+
+	^(self hasSelector and: [self mirror notNil])
+		ifTrue: [self mirror sourceForSelector: self selector]
+		ifFalse: [self vmMethodSource]! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+mirror
+
+	|mirror|
+	mirror := Mirror on: self activation receiver class.
+	[mirror isNil]
+		whileFalse: [(mirror hasSelector: self selector) ifTrue: [^mirror].
+							mirror := mirror superclass].
+	^nil! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+safePrintString: aValue
+
+	^[aValue printString]
+		on: Error
+		do: [:ex|'??instance of ', aValue class name]! !
+
+"November 16, 2009 -> 1:56:28"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+selector ^<Symbol>
+
+	^self activation method selector! !
+
+"November 16, 2009 -> 1:56:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+sourceAsCharGlyphs ^<CharGlyphs>
+
+	| vmSrc <Str> strm <CharacterReadStream> gls <OrdCltn[CharacterGlyph]> |
+
+	"Construct vm source with highligthed bci"
+	vmSrc := self methodSource.
+	strm := vmSrc readStream.
+	gls := OrderedCollection[CharacterGlyph] new: vmSrc size.
+	(vmSrc occurrencesOf: self currentByteCodeSeparatorCharacter) = 2
+		ifTrue: [	gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codePainter).
+						gls addAll: (self standardTextForString: (strm upTo: self currentByteCodeSeparatorCharacter) painter: self codeBCIPainter) ].
+	gls addAll: (self standardTextForString: strm contentsRemaining painter: self codePainter).
+	^gls
+! !
+
+"November 16, 2009 -> 1:56:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+vmMethodSource ^<Str>
+
+	^self activation vmPrettyPrint! !
+
+"November 16, 2009 -> 1:56:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+initActivation: a <Activation>
+
+	activation := a! !
+
+"November 16, 2009 -> 1:56:29"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private-initialization' !
+initActivation: a <Activation> debugger: d <StackTraceInspector>
+
+	activation := a.
+	debugger := d! !
+
+"November 16, 2009 -> 1:56:57"!
+
+"System saved" !
