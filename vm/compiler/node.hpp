@@ -640,7 +640,7 @@ class NLRSetupNode: public AbstractReturnNode {
   // uses hardwired regs, has no src or dest
   bool	canCopyPropagate() const 	{ return false; }
   bool	canCopyPropagateOop() const 	{ return false; }
-  bool	hasSrc() const 			{ return false; }
+  bool	hasSrc() const 			{ return true;  }  // otherwise breaks nonlocal_return
   bool	isAssignmentLike() const	{ return false; }
   bool	hasDest() const 		{ return false; }
   bool	canChangeDest() const 		{ return false; }	// has no dest

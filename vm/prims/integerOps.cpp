@@ -29,7 +29,7 @@ static const int   maxD = 36;
 static const int   logB = sizeof(Digit)*8;
 static const Digit hlfB = 0x80000000;
 static const Digit oneB = 0xFFFFFFFF;
-
+static const int   digitBitLength = sizeof(Digit) * 8;
 
 // double layout
 //
@@ -270,166 +270,38 @@ inline char IntegerOps::as_char(int i) {
   return "0123456789abcdefghijklmnopqrstuvwxyz"[i];
 }
 
-
 inline Digit IntegerOps::xpy(Digit x, Digit y, Digit& carry) {
   // returns (x + y + c) mod B; sets carry = (x + y + c) div B
-  Digit c = carry;	// make sure that carry is used below and not &carry
-  Digit r;
-  assert(c <= 1, "wrong carry");
 
-  /*
-  __asm {
-    //push eax		// save eax
-    mov eax, x		// eax = x
-    add eax, y		// eax = (x + y    ) mod B,	0 <= carry = (x + y    ) div B <= 1
-    adc eax, c		// eax = (x + y + c) mod B,	0 <= carry = (x + y + c) div B <= 1
-    mov r, eax		// eax is result
-    mov eax, 0		// cannot use xor because that clears carry bit!
-    adc eax, 0		// eax = carry
-    mov c, eax		// save carry
-    //pop eax		// restore eax
-  }
-  */
-  
-  // 1836311903+2971215073
-
-  r = x + y + c;
-  if (x == -1 || y == -1) {
-    c = (x==-1) ? (y+c)>0 : (x+c)>0;
-  } else {
-    c = ((x>>1)+(y>>1)) > 0x80000000;
-  }
-  carry = c;
-  return r;
+  DoubleDigit lx = x;
+  DoubleDigit r = lx + y + carry;
+  carry = r >> digitBitLength;
+  return (Digit)(r  & oneB);
 }
-
 
 inline Digit IntegerOps::xmy(Digit x, Digit y, Digit& carry) {
   // returns (x - y - c) mod B; sets carry = -((x - y - c) div B)
-  Digit c = carry;	// make sure that carry is used below and not &carry
-  Digit r;
-  assert(c <= 1, "wrong carry");
-  /*
-  __asm {
-    //push eax		// save eax
-    mov eax, x		// eax = x
-    sub eax, y		// eax = (x - y    ) mod B,	0 <= carry = (x - y    ) div B <= 1
-    sbb eax, c		// eax = (x - y - c) mod B,	0 <= carry = (x - y - c) div B <= 1
-    mov r, eax		// eax is result
-    mov eax, 0		// cannot use xor because that clears carry bit!
-    adc eax, 0		// eax = carry
-    mov c, eax		// save carry
-    //pop eax		// restore eax
-  }
-  */
-
-  if (x==1836311903 || y==1836311903) {
-    assert(true, "");
-  }
-
-  // 1836311903+2971215073-2971215073
-
-  r = x - (y + c);
-  if (y == -1) {
-    // propagate carry ~
-  } else {
-    c = x < (y+c);
-  }
-  carry = c;
-  return r;
+  DoubleDigit lx = x;
+  DoubleDigit r = lx - y - carry;
+  carry = r >> digitBitLength & 1;
+  return Digit(r  & oneB);
 }
-
 
 inline Digit IntegerOps::axpy(Digit a, Digit x, Digit y, Digit& carry) {
   // returns (a*x + y + c) mod B; sets carry = (a*x + y + c) div B
-  Digit c = carry;	// make sure that carry is used below and not &carry
-  Digit r;
-  /*
-  __asm {
-    //push eax		// save eax
-    //push edx		// save edx
-    mov eax, a		// eax = a
-    mul x		// edx:eax = a*x
-    add eax, y		//
-    adc edx, 0		// edx:eax = a*x + y
-    add eax, c		//
-    adc edx, 0		// edx:eax = a*x + y + c
-    mov r, eax		// eax is result
-    mov c, edx		// save carry
-    //pop edx		// restore edx
-    //pop eax		// restore eax
-  }
-  */
-  
-  Digit la = a & 0xFFFF;
-  Digit lx = x & 0xFFFF;
-  Digit ha = a >> 16;
-  Digit hx = x >> 16;
-  Digit cross = (lx*ha + la*hx);
-  Digit m1 = la*lx + (cross<<16);
-  Digit m2 = ha*hx + (cross>>16);
- // r = m1 + y + c;
-  Digit _c = 0;
-  m1 = xpy(m1, y, _c);
-  m2 = xpy(m2, 0, _c);
-  _c = 0;
-  m1 = xpy(m1, c, _c);
-  m2 = xpy(m2, 0, _c);
-
-  r = m1;
-  carry = m2;
-  return r;
+  DoubleDigit lx = x;
+  DoubleDigit r = (lx * a) + y + carry;
+  carry = r >> digitBitLength;
+  return Digit(r  & oneB);
 }
-
 
 inline Digit IntegerOps::xdy(Digit x, Digit y, Digit& carry) {
   // returns (carry*B + x) div y; sets carry = (carry*B + x) mod y
-  Digit c = carry;	// make sure that carry is used below and not &carry
-  Digit r;
-  
-  /*
-  __asm {
-    //push eax		// save eax
-    //push edx		// save edx
-    mov eax, x		// eax = x
-    mov edx, c		// edx:eax =  carry*B + x
-    div y		// edx:eax = (carry*B + x) mod y : (carry*B + x) div y
-    mov r, eax		// eax is result
-    mov c, edx		// save carry
-    //pop edx		// restore edx
-    //pop eax		// restore eax
-  }
-  */
-
-  // long division using 16-32 bit arithmetic
-  // %hack: this code is incomplete, but enough to extract digits in small bases
-  assert((y>>16) == 0, "only works with small divisors") 
-
-  Digit xx[4] = { carry >> 16, carry & 0xFFFF, x >> 16, x & 0xFFFF };
-  Digit rr[4];
-
-  rr[0] = (xx[0] / y);
-  xx[0] -= rr[0] * y;
-
-  rr[1] = ((xx[0]<<16) + xx[1])/y;
-  xx[0] -= (rr[1]*y) >>16;
-  xx[1] -= (rr[1]*y) & 0xFFFF;
-  
-  rr[2] = ((xx[1]<<16) + xx[2])/y;
-  xx[1] -= (rr[2]*y) >>16;
-  xx[2] -= (rr[2]*y) & 0xFFFF;
-  
-  rr[3] = ((xx[2]<<16) + xx[3])/y;
-  xx[2] -= (rr[3]*y) >>16;
-  xx[3] -= (rr[3]*y) & 0xFFFF;
-  
-  r = (rr[2]<<16) + rr[3];
-  c = (xx[2]<<16) + xx[3];
-
-  carry = c;
-  return r;
+  DoubleDigit c = carry;	// make sure that carry is used below and not &carry
+  DoubleDigit total = ((c << digitBitLength) + x);
+  carry = total % y;
+  return Digit((total / y) & oneB);
 }
-
 
 Digit IntegerOps::power(Digit x, int n) {
   Digit f = x;
@@ -446,7 +318,6 @@ Digit IntegerOps::power(Digit x, int n) {
   }
   return p;
 }
-
 
 Digit IntegerOps::max_power(Digit x) {
   Digit n = 1;
@@ -523,8 +394,90 @@ Digit IntegerOps::scale(Digit* array, Digit factor, int length) {
   return c;
 }
 
+Digit* IntegerOps::copyDigits(Digit* source, int length, int toCopy) {
+  Digit* x = NEW_RESOURCE_ARRAY(Digit, length);
+  for (int i = toCopy - 1; i >= 0; i--)
+    x[i] = source[i];
+  return x;
+}
 
-Digit* IntegerOps::qr_decomposition(Integer& x0, Integer& y0) {
+Digit* IntegerOps::qr_decomposition_single_digit(Digit* x, int length, Digit divisor) {
+  Digit c = 0;
+  for (int i = length - 1; i >= 0; i--)
+    x[i+1] = xdy(x[i], divisor, c);
+  x[0] = c;
+  return x;
+}
+
+Digit IntegerOps::qr_estimate_digit_quotient(Digit& xhi, Digit xlo, Digit y) {
+  if (xhi == y) return oneB;
+  return xdy(xlo, y, xhi);
+}
+
+Digit IntegerOps::qr_calculate_remainder(Digit* qr, Digit* divisor, Digit q, int qrStart, int stop) {
+  Digit c = 0;
+  int   j = qrStart;
+  int   k = 0;
+  Digit b = 0;
+  while (k < stop) {
+    qr[j] = xmy(qr[j], 0, b);
+    Digit qyk = axpy(q, divisor[k], 0, c);
+    Digit c2 = 0;
+    qr[j] = xmy(qr[j], qyk, c2);
+    b = xpy(b, c2, c);
+    assert(c == 0, "Overflow");
+    
+    j++;
+    k++;
+  }
+  return b;
+}
+
+Digit IntegerOps::qr_adjust_for_underflow(Digit* qr, Digit* divisor, Digit q, int qrStart, int stop) {
+  int j = qrStart;
+  int k = 0;
+  Digit c = 0;
+  while(k < stop) {
+    qr[j] = xpy(qr[j], divisor[k], c);
+    j++;
+    k++;
+  }
+  assert(c == 1, "Should have carry to balance borrow"); // see Knuth p258 D6
+  return q-1; // correct estimate
+}
+
+Digit IntegerOps::qr_adjust_for_over_estimate(Digit y1, Digit y2, Digit q, Digit xi, Digit xi2) {
+  //check if estimate is too large
+  Digit c = 0;
+  Digit y2q = axpy(y2, q, 0, c);
+  if (c > xi || (c = xi && y2q > xi2)) {
+    q--; // too large by 1
+    Digit c2 = 0;
+    xpy(xi, y1, c2); // add back divisor
+
+    if (!c2) {
+      c = 0;
+      y2q = axpy(y2, q, 0, c);
+      if (c > xi || (c = xi && y2q > xi2))
+        q--; // too large by 2
+    }
+  }
+  return q;
+}
+
+Digit IntegerOps::qr_scaling_factor(Digit firstDivisorDigit) {
+  Digit c = 1;
+  return (firstDivisorDigit == oneB) ? 1 : xdy(0, firstDivisorDigit + 1, c); // d = B/(yn + 1)
+}
+
+void IntegerOps::qr_unscale_remainder(Digit* qr, Digit scalingFactor, int length) {
+  Digit c = 0;
+  for (int i = length - 1; i >= 0; i--)
+    qr[i] = xdy(qr[i], scalingFactor, c); // undo scaling to get remainder
+  assert(c == 0, "qr scaling broken");
+}
+
+Digit* IntegerOps::qr_decomposition(Integer& dividend, Integer& y0) {
 // qr_decomposition divides x by y (unsigned) and returns its decomposition
 // into quotient (q) and remainder (r) packed into the array qr with length
 // x.length() + 1. The layout of the result qr is as follows:
@@ -535,69 +488,50 @@ Digit* IntegerOps::qr_decomposition(Integer& x0, Integer& y0) {
 // length of quotient : ql = xl - yl + 1 (xl >= yl => ql >= 1)
 // length of remainder: rl = yl          (yl >   0 => rl >= 1)
 
-  int xl = x0.length();
-  int yl = y0.length();
-  if (xl < yl) fatal("division not needed");
-  if (yl == 0) fatal("division by zero");
+  int dividendLength = dividend.length();
+  int divisorLength = y0.length();
+  if (dividendLength < divisorLength) fatal("division not needed");
+  if (divisorLength == 0) fatal("division by zero");
   // initialize qr
-  Digit* x = NEW_RESOURCE_ARRAY(Digit, xl+1);
-  int i = xl;
-  while (i > 0) { i--; x[i] = x0[i]; }
-  // decompose
-  if (yl == 1) {
-    // single-digit y => use simple division
-    int i = xl;
-    Digit c = 0;
-    Digit d = y0._first_digit;
-    while (i > 0) { i--; x[i+1] = xdy(x[i], d, c); }
-    x[0] = c;
-  } else if (xl >= yl) {
-    missing_code_for("division by large integers");
-    // full division
-    x[xl] = 0;
-    Digit* y = y0.digits();
-    Digit d = (hlfB - 1) / y[yl-1] + 1;
+  Digit* x = copyDigits(dividend.digits(), dividendLength+1, dividendLength);
 
-    if (d != 1) {
-      // scale x (already copied)
-      x[xl] = scale(x, d, xl);
-      // make a copy of y
-      y = NEW_RESOURCE_ARRAY(Digit, yl);
-      int i = yl;
-      while (i > 0) { i--; y[i] = y0[i]; }
-      // scale y
-      Digit c = scale(y, d, yl);
-      if (c != 0) fatal("qr_decomposition broken");
+  if (divisorLength == 1)
+    return qr_decomposition_single_digit(x, dividendLength, y0._first_digit);
+
+  // full division
+  x[dividendLength] = 0;
+  Digit* y = y0.digits();
+
+  Digit d = qr_scaling_factor(y[divisorLength-1]); // d = B/(yn + 1)
+
+  if (d > 1) {
+    x[dividendLength] = scale(x, d, dividendLength);
+    y = copyDigits(y, divisorLength, divisorLength);
+    Digit c = scale(y, d, divisorLength);
+
+    if (c != 0) fatal("qr_decomposition broken");
+  }
+
+  Digit y1 = y[divisorLength-1];
+  Digit y2 = y[divisorLength-2];
+  int   i  = dividendLength;
+  while (i >= divisorLength) {
+    Digit xi = x[i]; //x[i] gets overwritten by remainder so save it for later
+    Digit q = qr_estimate_digit_quotient(x[i], x[i-1], y1); // estimate q = rem/y
+    //x[i] now contains remainder - used in test below
+    q = qr_adjust_for_over_estimate(y1, y2, q, x[i], x[i - 2]);
+
+    Digit b = qr_calculate_remainder(x, y, q, i - divisorLength, divisorLength);
+    xmy(xi, 0, b);
+    if (b) { // underflow 
+      x[i] = qr_adjust_for_underflow(x, y, q, i - divisorLength, divisorLength);
+    } else {
+      x[i] = q;
     }
-
-    Digit y1 = y[yl-1];
-    Digit y2 = y[yl-2];
-    int   i  = xl;
-    while (i >= yl) {
-      Digit q = (x[i] == y1) ? oneB : xdy(x[i-1], y1, x[i]);
-
-      while (true) {}
-
-      int   j = i-yl;
-      int   k = 0;
-      Digit c = 0;
-      while (k < yl) { j++; k++; }
-      if (true) {
-        
-      } else {
-        x[i] = q;
-      }
-      i--;
-    }
-    if (d != 1) {
-      int   i = yl;
-      Digit c = 0;
-      while (i > 0) { i--; x[i] = xdy(x[i], d, c); }
-    }
-  } else {
-    // xl < yl
-    //
-    // add some more comments here
+    i--;
+  }
+  if (d != 1) {
+    qr_unscale_remainder(x, d, divisorLength);
   }
   return x;
 }
@@ -621,13 +555,91 @@ void IntegerOps::unsigned_quo(Integer& x, Integer& y, Integer& z) {
   }
 }
 
+bool IntegerOps::sd_all_zero(Digit* digits, int start, int stop) {
+  for (int i = start; i < stop; i++)
+    if (digits[i]) return false;
+  return true;
+}
+
+void IntegerOps::signed_div(Integer& x, Integer& y, Integer& z) {
+  int xl = x.length();
+  bool xneg = x.is_negative();
+  int yl = y.length();
+  bool yneg = y.is_negative();
+
+  if (xl < yl) {
+    // unsigned x < unsigned y => z = 0
+    if (xneg == yneg)
+      z.set_length(0);
+    else {
+      z.set_length(1);
+      z[0] = 1;
+      neg(z);
+    }
+  } else {
+    // xl >= yl
+    ResourceMark rm;
+    Digit* qr = qr_decomposition(x, y);
+
+    int i  = xl;
+    while (i >= yl && qr[i] == 0) i--;
+    // i < yl || qr[i] != 0
+    Digit carry = !sd_all_zero(qr, 0, yl) && xneg != yneg;
+    int digits = i - yl + 1;
+    for (int j = 0; j < digits; j++)
+      z[j] = xpy(qr[yl + j], 0, carry);
+
+    if (carry) {
+      z.set_length(i-yl+2);
+      z[i - yl + 1] = carry;
+    } else
+      z.set_length(i-yl+1);
+    if (xneg != yneg) neg(z);
+  }
+}
+int IntegerOps::last_non_zero_index(Digit* z, int lastIndex) {
+  int i = lastIndex;
+  while (i >= 0&& z[i] == 0) i--;
+  return i;
+}
+void IntegerOps::signed_mod(Integer& x, Integer& y, Integer& z) {
+  int xl = x.length();
+  int yl = y.length();
+  if (xl < yl) {
+    // unsigned x < unsigned y => z = (y - x)
+    Digit carry = 0;
+    int i;
+    for (i = 0; i < xl; i++)
+      z[i] = xmy(y[i], x[i], carry);
+    for (i = xl; i < yl; i++)
+      z[i] = xmy(y[i], 0, carry);
+    assert(carry == 0, "Remainder too large");
+    
+    z.set_length(last_non_zero_index(z.digits(), yl -1) + 1);
+  } else {
+    // xl >= yl
+    ResourceMark rm;
+    Digit* qr = qr_decomposition(x, y);
+
+    if (!sd_all_zero(qr, 0, yl)) {
+      Digit carry = 0;
+      for (int j = 0; j < yl; j++)
+        qr[j] = xmy(y[j], qr[j], carry);
+      assert(carry == 0, "Remainder too large");
+    }
+
+    int i = last_non_zero_index(qr, yl -1);
+    z.set_length(i+1);
+    while (i >= 0) { z[i] = qr[i]; i--; }
+  }
+}
 
 void IntegerOps::unsigned_rem(Integer& x, Integer& y, Integer& z) {
   int xl = x.length();
   int yl = y.length();
   if (xl < yl) {
-    // unsigned x < unsigned y => z = y
-    copy(y, z);
+    // unsigned x < unsigned y => z = x
+    copy(x, z);
   } else {
     // xl >= yl
     ResourceMark rm;
@@ -718,62 +730,78 @@ int IntegerOps::rem_result_size_in_bytes(Integer& x, Integer& y) {
 
 int IntegerOps::div_result_size_in_bytes(Integer& x, Integer& y) {
   int l;
-  if (!x.is_negative() && y.is_positive()) {
+  if (x.is_negative() == y.is_negative()) {
     l = unsigned_quo_result_length(x, y);
   } else {
-    missing_code_for("division with negative numbers");
+    l = unsigned_quo_result_length(x, y) + 1;
   }
   return Integer::length_to_size_in_bytes(l);
 }
 
 
 int IntegerOps::mod_result_size_in_bytes(Integer& x, Integer& y) {
-  int l;
-  if (!x.is_negative() && y.is_positive()) {
-    l = unsigned_rem_result_length(x, y);
-  } else {
-    missing_code_for("division with negative numbers");
-  }
-  return Integer::length_to_size_in_bytes(l);
+  int digitLength = unsigned_rem_result_length(x, y);
+  return Integer::length_to_size_in_bytes(digitLength);
 }
 
 
 int IntegerOps::and_result_size_in_bytes(Integer& x, Integer& y) {
-  int l;
-  if (x.is_positive() && y.is_positive()) {
-    l = min(x.length(), y.length());
+  int digitLength;
+  if (x.is_zero()||y.is_zero()) {
+    digitLength = 0;
+  } else if (x.is_positive() && y.is_positive()) {
+    digitLength = min(x.length(), y.length());
+  } else if (x.is_positive()) {
+    digitLength = x.length();
+  } else if (y.is_positive()) {
+    digitLength = y.length();
   } else {
-    missing_code_for("bitwise and with negative numbers");
+    digitLength = max(x.length(), y.length());
   }
-  return Integer::length_to_size_in_bytes(l);
+  return Integer::length_to_size_in_bytes(digitLength);
 }
 
 
 int IntegerOps::or_result_size_in_bytes (Integer& x, Integer& y) {
-  int l;
-  if (x.is_positive() && y.is_positive()) {
-    l = max(x.length(), y.length());
-  } else {
-    missing_code_for("bitwise or with negative numbers");
-  }
-  return Integer::length_to_size_in_bytes(l);
+  int digitLength;
+  if (x.is_positive() && y.is_positive())
+    digitLength = max(x.length(), y.length());
+  else if (y.is_positive())
+    digitLength = x.length();
+  else if (x.is_positive())
+    digitLength = y.length();
+  else
+    digitLength = min(x.length(), y.length());
+
+  return Integer::length_to_size_in_bytes(digitLength);
 }
 
 
 int IntegerOps::xor_result_size_in_bytes(Integer& x, Integer& y) {
-  int l;
-  if (x.is_positive() && y.is_positive()) {
-    l = max(x.length(), y.length());
-  } else {
-    missing_code_for("bitwise xor with negative numbers");
-  }
-  return Integer::length_to_size_in_bytes(l);
+  int digitLength;
+  if (x.is_negative() != y.is_negative())
+    digitLength = max(x.length(), y.length()) + 1;
+  else
+    digitLength = max(x.length(), y.length());
+  return Integer::length_to_size_in_bytes(digitLength);
 }
 
 
 int IntegerOps::ash_result_size_in_bytes(Integer& x, int n) {
-  missing_code_for("arithmetic shift");
-  return 0;
+  int digitLength;
+  if (x.is_zero() || n == 0) {
+    digitLength = x.length();
+  } else if (n > 0) {
+    int rem = n % logB;
+    Digit mask = nthMask(logB - rem) ^ oneB;
+    bool overflow = (mask & x[x.length() - 1]) != 0;
+    digitLength = x.length() + (n / logB) + overflow;
+  } else {
+    int rem = (-n) % logB;
+    Digit mask = nthMask(rem) ^ oneB;
+    digitLength = max(x.length() + (n / logB), 1);
+  }
+  return Integer::length_to_size_in_bytes(digitLength);
 }
 
 
@@ -861,71 +889,232 @@ void IntegerOps::rem(Integer& x, Integer& y, Integer& z) {
   if (x.is_negative()) neg(z);
 }
 
+#define copyInteger(x)\
+  (Integer*)memcpy((void*)NEW_RESOURCE_ARRAY(Digit, x.length() + 1), \
+                 (void*)&x._signed_length,\
+                 (x.length() + 1) * sizeof(Digit))
 
 void IntegerOps::div(Integer& x, Integer& y, Integer& z) {
+  ResourceMark rm;
+
   if (!x.is_negative() && y.is_positive()) {
     unsigned_quo(x, y, z);
   } else {
-    missing_code_for("division with negative numbers");
+    signed_div(x, y, z);
   }
 }
 
 
 void IntegerOps::mod(Integer& x, Integer& y, Integer& z) {
-  if (!x.is_negative() && y.is_positive()) {
+  if (x.is_negative() == y.is_negative()) {
     unsigned_rem(x, y, z);
   } else {
-    missing_code_for("division with negative numbers");
+    signed_mod(x, y, z);
   }
+  if (y.is_negative() && z.is_not_zero()) neg(z);
 }
 
 
 void IntegerOps::and(Integer& x, Integer& y, Integer& z) {
-  if (x.is_positive() && y.is_positive()) {
+  if (x.is_zero() || y.is_zero()) {
+    z.set_length(0);
+  } else if (x.is_positive() && y.is_positive()) {
     int l  = min(x.length(), y.length());
     int i  = 0;
     while (i <  l) { z[i] = x[i] & y[i]; i++; }
     z.set_length(i);
+  } else if (x.is_positive()) {
+    and_one_positive(x, y, z);
+  } else if (y.is_positive()) {
+    and_one_positive(y, x, z);
   } else {
-    missing_code_for("bitwise and with negative numbers");
+    and_both_negative(x, y, z);
   }
 }
+void IntegerOps::and_both_negative(Integer& x, Integer& y, Integer& z) {
+  int digitLength = max(x.length(), y.length());
 
+  Digit xcarry = 1;
+  Digit ycarry = 1;
+  Digit zcarry = 1;
+  int i = 0;
+  while(i < min(x.length(), y.length())) {
+    z[i] = xpy((xpy(x[i] ^ 0xffffffff, 0, xcarry)
+              & xpy(y[i] ^ 0xffffffff, 0, ycarry)) ^ 0xffffffff, 0, zcarry);
+    i++;
+  }
+  while(i < x.length()) {
+    z[i] = x[i];
+    i++;
+  }
+  while(i < y.length()) {
+    z[i] = y[i];
+    i++;
+  }
+  z.set_length(-digitLength);
+}
+
+void IntegerOps::and_one_positive(Integer& positive, Integer& negative, Integer& z) {
+  int digitLength = positive.length();
+
+  Digit carry = 1;
+  int i = 0;
+  while(i < min(positive.length(), negative.length())) { // digits in both
+    z[i] = positive[i] & xpy((negative[i] ^oneB), 0, carry);
+    i++;
+  }
+  while(i < digitLength) { // remaining digits in positive
+    z[i] = positive[i];
+    i++;
+  }
+  z.set_length(digitLength);
+}
 
 void IntegerOps::or(Integer& x, Integer& y, Integer& z) {
-  if (x.is_positive() && y.is_positive()) {
-    int xl = x.length();
-    int yl = y.length();
-    int l  = min(xl, yl);
-    int i  = 0;
+  int xl = x.length();
+  int yl = y.length();
+  int l  = min(xl, yl);
+  Digit xcarry = 1;
+  Digit ycarry = 1;
+  Digit zcarry = 1;
+  int i  = 0;
+  if (!x.is_negative() && !y.is_negative()) {
     while (i <  l) { z[i] = x[i] | y[i]; i++; }
     while (i < xl) { z[i] = x[i]       ; i++; }
     while (i < yl) { z[i] =        y[i]; i++; }
     z.set_length(i);
+    return;
+  } else if (!x.is_negative()) {
+    while (i < l) {
+      z[i] = xpy((x[i] | xpy(y[i] ^ oneB, 0, ycarry)) ^ oneB, 0, zcarry);
+      i++;
+    }
+    while (i < yl) {
+      z[i] = y[i];
+      i++;
+    }
+  } else if (!y.is_negative()) {
+    while (i < l) {
+      z[i] = xpy((y[i] | xpy(x[i] ^ oneB, 0, xcarry)) ^ oneB, 0, zcarry);
+      i++;
+    }
+    while (i < xl) {
+      z[i] = x[i];
+      i++;
+    }
   } else {
-    missing_code_for("bitwise or with negative numbers");
+    assert(x.is_negative() && y.is_negative(), "Error invalid integers?");
+    while (i < l) {
+      z[i] = xpy((xpy(y[i] ^ oneB, 0, ycarry) | xpy(x[i] ^ oneB, 0, xcarry)) ^ oneB, 0, zcarry);
+      i++;
+    }
   }
+  while (i > 0 && !z[i - 1]) i--;
+  z.set_length(-i);
 }
 
 
 void IntegerOps::xor(Integer& x, Integer& y, Integer& z) {
-  if (x.is_positive() && y.is_positive()) {
-    int xl = x.length();
-    int yl = y.length();
-    int l  = min(xl, yl);
-    int i  = 0;
+  int xl = x.length();
+  int yl = y.length();
+  int l  = min(xl, yl);
+  int i  = 0;
+  if (!x.is_negative() && !y.is_negative()) {
     while (i <  l) { z[i] = x[i] ^ y[i]; i++; }
     while (i < xl) { z[i] = x[i]       ; i++; }
     while (i < yl) { z[i] =        y[i]; i++; }
+    while (i > 0 && !z[i - 1]) i--;
     z.set_length(i);
+  } else if (!y.is_negative()) {
+    xor_one_positive(y, x, z);
+  } else if (!x.is_negative()) {
+    xor_one_positive(x, y, z);
   } else {
-    missing_code_for("bitwise xor with negative numbers");
+    assert(x.is_negative() && y.is_negative(), "Error invalid integers?");
+    Digit xcarry = 1;
+    Digit ycarry = 1;
+    while(i < l) {
+      z[i] = xmy(x[i], 0, xcarry) ^ xmy(y[i], 0, ycarry);
+      i++;
+    }
+    while (i < xl) {
+      z[i] = xmy(x[i], 0, xcarry);
+      i++;
+    }
+    while (i < yl) {
+      z[i] = xmy(y[i], 0, ycarry);
+      i++;
+    }
+    while (i > 0 && z[i - 1] == 0) i--;
+    z.set_length(i);
   }
 }
 
-
+void IntegerOps::xor_one_positive(Integer& positive, Integer& negative, Integer& z) {
+  int pl = positive.length();
+  int nl = negative.length();
+  int l  = min(pl, nl);
+  int i  = 0;
+  Digit ncarry = 1;
+  Digit zcarry = 1;
+  while (i < l) {
+    z[i] = xpy(positive[i] ^ xmy(negative[i], 0, ncarry), 0, zcarry);
+    i++;
+  }
+  while (i < nl) {
+    z[i] = xpy(xmy(negative[i], 0, ncarry), 0, zcarry);
+    i++;
+  }
+  while (i < pl) {
+    z[i] = xpy(positive[i], 0, zcarry);
+    i++;
+  }
+  if (zcarry) {
+    z[i] = 1;
+    i++;
+  }
+  z.set_length(-i);
+}
 void IntegerOps::ash(Integer& x, int n, Integer& z) {
-  missing_code_for("arithmetic shift");
+  if (n > 0) {
+    int i = 0;
+    int bitShift = n % logB;
+    int digitShift = n / logB;
+    while (i < digitShift) {
+      z[i] = 0;
+      i++;
+    }
+    Digit carry = 0;
+    while (i < x.length() + digitShift) {
+      z[i] = (x[i - digitShift] << bitShift) + carry;
+      carry = bitShift ? x[i - digitShift] >> (logB - bitShift) : 0;
+      i++;
+    }
+    if (carry) {
+      z[i] = carry;
+      i++;
+    }
+    z.set_length(i);
+    if (x.is_negative()) neg(z);
+  } else {
+    int digitShift = -n / logB;
+    int bitShift = -n % logB;
+    int i = x.length() - digitShift;
+    Digit carry = 0;
+    while (i > 0) {
+      i--;
+      z[i]  = (x[i + digitShift] >> bitShift) + carry;
+      carry = bitShift ? (x[i + digitShift] & nthMask(bitShift)) << (logB - bitShift) : 0;
+    }
+    i = x.length() - digitShift;
+    while(i > 0 && z[i - 1] == 0) i--;
+    z.set_length(max(i, 0));
+    if (x.is_negative()) neg(z);
+    if (x.is_negative() && z.is_zero()) {
+      z.set_length(-1);
+      z[0] = 1;
+    }
+  }
 }
 
 
@@ -1054,6 +1243,13 @@ void IntegerOps::Integer_to_string(Integer& x, int base, char* s) {
   }
 }
 
+int IntegerOps::hash(Integer& x) {
+  int hash = 0;
+  for (int i = x.length() - 1; i >= 0; i--)
+    hash ^= x[i];
+  hash ^= x.signum();
+  return hash>>2;
+}
   
 // testing
 

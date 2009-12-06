@@ -179,6 +179,16 @@ class byteArrayPrimitives : AllStatic {
 
   //%prim
   // <IndexedByteInstanceVariables>
+  //   primitiveIndexedByteLargeIntegerQuo: argument <IndexedByteInstanceVariables>
+  //                                ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+  //   Internal { error = #(ArgumentIsInvalid DivisionByZero)
+  //              flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::largeIntegerQuo' }
+  //%
+  static PRIM_DECL_2(largeIntegerQuo, oop receiver, oop argument);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
   //   primitiveIndexedByteLargeIntegerDiv: argument <IndexedByteInstanceVariables>
   //                                ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
   //   Internal { error = #(ArgumentIsInvalid DivisionByZero)
@@ -197,6 +207,56 @@ class byteArrayPrimitives : AllStatic {
   //              name  = 'byteArrayPrimitives::largeIntegerMod' }
   //%
   static PRIM_DECL_2(largeIntegerMod, oop receiver, oop argument);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveIndexedByteLargeIntegerRem: argument <IndexedByteInstanceVariables>
+  //                                ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+  //   Internal { error = #(ArgumentIsInvalid DivisionByZero)
+  //              flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::largeIntegerRem' }
+  //%
+  static PRIM_DECL_2(largeIntegerRem, oop receiver, oop argument);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveIndexedByteLargeIntegerAnd: argument <IndexedByteInstanceVariables>
+  //                                ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+  //   Internal { error = #(ArgumentIsInvalid DivisionByZero)
+  //              flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::largeIntegerAnd' }
+  //%
+  static PRIM_DECL_2(largeIntegerAnd, oop receiver, oop argument);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveIndexedByteLargeIntegerXor: argument <IndexedByteInstanceVariables>
+  //                                ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+  //   Internal { error = #(ArgumentIsInvalid DivisionByZero)
+  //              flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::largeIntegerXor' }
+  //%
+  static PRIM_DECL_2(largeIntegerXor, oop receiver, oop argument);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveIndexedByteLargeIntegerOr: argument <IndexedByteInstanceVariables>
+  //                               ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+  //   Internal { error = #(ArgumentIsInvalid DivisionByZero)
+  //              flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::largeIntegerOr' }
+  //%
+  static PRIM_DECL_2(largeIntegerOr, oop receiver, oop argument);
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveIndexedByteLargeIntegerShift: argument <SmallInt>
+  //                                  ifFail: failBlock <PrimFailBlock> ^<IndexedByteInstanceVariables|SmallInteger> =
+  //   Internal { error = #(ArgumentIsInvalid DivisionByZero)
+  //              flags = #(Function IndexedByte)
+  //              name  = 'byteArrayPrimitives::largeIntegerShift' }
+  //%
+  static PRIM_DECL_2(largeIntegerShift, oop receiver, oop argument);
 
   //%prim
   // <IndexedByteInstanceVariables>
@@ -231,6 +291,14 @@ class byteArrayPrimitives : AllStatic {
   //              name  = 'byteArrayPrimitives::hash' }
   //%
   static PRIM_DECL_1(hash, oop receiver); 
+
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveLargeIntegerHash ^<SmallInteger> =
+  //   Internal { flags = #(Pure IndexedByte)
+  //              name  = 'byteArrayPrimitives::largeIntegerHash' }
+  //%
+  static PRIM_DECL_1(largeIntegerHash, oop receiver);
 
   // Aliens primitives
 

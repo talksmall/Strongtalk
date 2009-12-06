@@ -32,6 +32,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 class IntegerOps;
 typedef unsigned int Digit;
+typedef unsigned long long DoubleDigit;
 
 class Integer: ValueObj {
  private:
@@ -78,7 +79,7 @@ class Integer: ValueObj {
 // can be computed via the corresponding functions.
 
 class IntegerOps: AllStatic {
- private:
+ public:
   static inline Digit as_Digit(char c);
   static inline char  as_char(int i);
 
@@ -102,13 +103,24 @@ class IntegerOps: AllStatic {
   static void   unsigned_quo(Integer& x, Integer& y, Integer& z);
   static void   unsigned_rem(Integer& x, Integer& y, Integer& z);
   static int    unsigned_cmp(Integer& x, Integer& y            );
+  static void   signed_div  (Integer& x, Integer& y, Integer& z);
+  static void   signed_mod  (Integer& x, Integer& y, Integer& z);
 
-  static Digit   scale(Digit* array, Digit factor, int length);
-  static Digit*  qr_decomposition(Integer& x, Integer& y);
-  static Digit   last_digit (Integer& x, Digit b);			// divides x by b and returns x mod b
-  static void    first_digit(Integer& x, Digit b, Digit c);		// multiplies x by b and adds c
+  static int    last_non_zero_index(Digit* z, int lastIndex);
+  static Digit  scale(Digit* array, Digit factor, int length);
+  static bool   sd_all_zero(Digit* digits, int start, int stop);
+  static Digit* copyDigits(Digit* source, int length, int toCopy);
+  static Digit* qr_decomposition(Integer& x, Integer& y);
+  static Digit  qr_estimate_digit_quotient(Digit& xhi, Digit xlo, Digit y);
+  static Digit* qr_decomposition_single_digit(Digit* qr, int length, Digit divisor);
+  static Digit  qr_calculate_remainder(Digit* qr, Digit* divisor, Digit q, int qrStart, int stop);
+  static Digit  qr_adjust_for_underflow(Digit* qr, Digit* divisor, Digit q, int qrStart, int stop);
+  static Digit  qr_adjust_for_over_estimate(Digit y1, Digit y2, Digit q, Digit xi, Digit xi2);
+  static Digit  qr_scaling_factor(Digit firstDivisorDigit);
+  static void   qr_unscale_remainder(Digit* qr, Digit scalingFactor, int length);
+  static Digit  last_digit (Integer& x, Digit b);			// divides x by b and returns x mod b
+  static void   first_digit(Integer& x, Digit b, Digit c);		// multiplies x by b and adds c
 
- public:
   // the following functions return the maximum result size
   // in bytes for the operation specified in the function name
   static int  add_result_size_in_bytes(Integer& x, Integer& y);
@@ -124,6 +136,9 @@ class IntegerOps: AllStatic {
   static int  xor_result_size_in_bytes(Integer& x, Integer& y);
   static int  ash_result_size_in_bytes(Integer& x, int      n);
 
+  static void and_both_negative(Integer& x, Integer& y, Integer& z);
+  static void and_one_positive(Integer& x, Integer& y, Integer& z);
+  static void xor_one_positive(Integer& positive, Integer& negative, Integer& z);
   static int  copy_result_size_in_bytes(Integer& x);
   static int  int_to_Integer_result_size_in_bytes(int i);
   static int  double_to_Integer_result_size_in_bytes(double x);
@@ -148,6 +163,7 @@ class IntegerOps: AllStatic {
 
   static void abs(Integer& x);				// x := |x|
   static void neg(Integer& x);				// x := -x
+  static int  hash(Integer& x);
 
   // copy & conversion operations
   static void copy(Integer& x, Integer& z);
@@ -156,7 +172,6 @@ class IntegerOps: AllStatic {
   static void double_to_Integer(double x, Integer& z);
   static void string_to_Integer(char* s, int base, Integer& z);
   static void Integer_to_string(Integer& x, int base, char* s);
-
   // testing/debugging
   static void self_test();
 };

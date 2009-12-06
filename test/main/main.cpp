@@ -4,7 +4,7 @@
 #include "handle.hpp"
 #include "testharness.h"
 #include <windows.h>
-
+#include "testProcess.hpp"
 void ostream_init();
 
 using namespace easyunit;
@@ -64,6 +64,7 @@ TestDeltaProcess::~TestDeltaProcess() {
   set_processObj(processOop(newProcess()));
 }
 void initializeSmalltalkEnvironment() {
+  AddTestProcess ap;
   PersistentHandle _new(oopFactory::new_symbol("new"));
   PersistentHandle initialize(oopFactory::new_symbol("initialize"));
   PersistentHandle runBase(oopFactory::new_symbol("runBaseClassInitializers"));
@@ -81,10 +82,7 @@ void initializeSmalltalkEnvironment() {
 }
 int TestDeltaProcess::launch_tests(DeltaProcess *process) {
   process->suspend_at_creation();
-  {
-     BlockScavenge bs;
-     initializeSmalltalkEnvironment();
-  }
+  initializeSmalltalkEnvironment();
   TestRegistry::runAndPrint();
   os::signal_event(done);
   return 0;

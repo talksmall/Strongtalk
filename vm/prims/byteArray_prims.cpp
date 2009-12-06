@@ -318,53 +318,71 @@ PRIM_DECL_2(byteArrayPrimitives::largeIntegerMultiply, oop receiver, oop argumen
   IntegerOps::mul(x->number(), y->number(), z->number());
   return simplified(z);
 }
+#define BIT_OP(receiver, argument, sizeFn, opFn, label)\
+  ARG_CHECK(receiver, argument, label);\
+  byteArrayOop z = byteArrayOop(x->klass()->klass_part()->allocateObjectSize(IntegerOps::sizeFn(x->number(), y->number())));\
+\
+  IntegerOps::opFn(x->number(), y->number(), z->number());\
+  return simplified(z)
+#define DIVISION(receiver, argument, sizeFn, divFn, label)\
+  ARG_CHECK(receiver, argument, label);\
+  if (y->number().is_zero()) return markSymbol(vmSymbols::division_by_zero   ());\
+\
+  byteArrayOop z = byteArrayOop(x->klass()->klass_part()->allocateObjectSize(IntegerOps::sizeFn(x->number(), y->number())));\
+\
+  IntegerOps::divFn(x->number(), y->number(), z->number());\
+  return simplified(z)
+#define ARG_CHECK(receiver, argument, label)\
+  PROLOGUE_2(label, receiver, argument);\
+  ASSERT_RECEIVER;\
+\
+  if (!argument->is_byteArray())\
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());\
+\
+  byteArrayOop x = byteArrayOop(receiver);\
+  byteArrayOop y = byteArrayOop(argument);\
+\
+  if (!x->number().is_valid() || !y->number().is_valid()) return markSymbol(vmSymbols::argument_is_invalid())
 
+PRIM_DECL_2(byteArrayPrimitives::largeIntegerQuo, oop receiver, oop argument) {
+  DIVISION(receiver, argument, quo_result_size_in_bytes, quo, "largeIntegerQuo");
+}
 PRIM_DECL_2(byteArrayPrimitives::largeIntegerDiv, oop receiver, oop argument) {
-  PROLOGUE_2("largeIntegerDiv", receiver, argument);
-  ASSERT_RECEIVER;
-
-  if (!argument->is_byteArray())
-    return markSymbol(vmSymbols::first_argument_has_wrong_type());
-
-  BlockScavenge bs;
-
-  byteArrayOop x = byteArrayOop(receiver);
-  byteArrayOop y = byteArrayOop(argument);
-  byteArrayOop z;
-
-  if (!x->number().is_valid() || !y->number().is_valid()) return markSymbol(vmSymbols::argument_is_invalid());
-  if (y->number().is_zero()                             ) return markSymbol(vmSymbols::division_by_zero   ());
-
-  z = byteArrayOop(x->klass()->klass_part()->allocateObjectSize(IntegerOps::div_result_size_in_bytes(x->number(), y->number())));
-  x = byteArrayOop(receiver);
-  y = byteArrayOop(argument);
-  IntegerOps::div(x->number(), y->number(), z->number());
-  return simplified(z);
+  DIVISION(receiver, argument, div_result_size_in_bytes, div, "largeIntegerDiv");
 }
-
 PRIM_DECL_2(byteArrayPrimitives::largeIntegerMod, oop receiver, oop argument) {
-  PROLOGUE_2("largeIntegerMod", receiver, argument);
+  DIVISION(receiver, argument, mod_result_size_in_bytes, mod, "largeIntegerMod");
+}
+PRIM_DECL_2(byteArrayPrimitives::largeIntegerRem, oop receiver, oop argument) {
+  DIVISION(receiver, argument, rem_result_size_in_bytes, rem, "largeIntegerRem");
+}
+PRIM_DECL_2(byteArrayPrimitives::largeIntegerAnd, oop receiver, oop argument) {
+  BIT_OP(receiver, argument, and_result_size_in_bytes, and, "largeIntegerAnd");
+}
+PRIM_DECL_2(byteArrayPrimitives::largeIntegerOr, oop receiver, oop argument) {
+  BIT_OP(receiver, argument, or_result_size_in_bytes, or, "largeIntegerOr");
+}
+PRIM_DECL_2(byteArrayPrimitives::largeIntegerXor, oop receiver, oop argument) {
+  BIT_OP(receiver, argument, xor_result_size_in_bytes, xor, "largeIntegerXor");
+}
+PRIM_DECL_2(byteArrayPrimitives::largeIntegerShift, oop receiver, oop argument) {
+  PROLOGUE_2("largeIntegerShift", receiver, argument);
   ASSERT_RECEIVER;
-
-  if (!argument->is_byteArray())
+  if (!argument->is_smi())
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
 
-  BlockScavenge bs;
-
   byteArrayOop x = byteArrayOop(receiver);
-  byteArrayOop y = byteArrayOop(argument);
-  byteArrayOop z;
+  int shift = smiOop(argument)->value();
 
-  if (!x->number().is_valid() || !y->number().is_valid()) return markSymbol(vmSymbols::argument_is_invalid());
-  if (y->number().is_zero()                             ) return markSymbol(vmSymbols::division_by_zero   ());
+  if (!byteArrayOop(receiver)->number().is_valid())
+    return markSymbol(vmSymbols::argument_is_invalid());
 
-  z = byteArrayOop(x->klass()->klass_part()->allocateObjectSize(IntegerOps::mod_result_size_in_bytes(x->number(), y->number())));
-  x = byteArrayOop(receiver);
-  y = byteArrayOop(argument);
-  IntegerOps::mod(x->number(), y->number(), z->number());
+  byteArrayOop z = byteArrayOop(x->klass()->klass_part()->allocateObjectSize(IntegerOps::ash_result_size_in_bytes(x->number(), shift)));
+
+  IntegerOps::ash(x->number(), shift, z->number());
+
   return simplified(z);
 }
-
 PRIM_DECL_2(byteArrayPrimitives::largeIntegerCompare, oop receiver, oop argument) {
   PROLOGUE_2("largeIntegerCompare", receiver, argument);
   ASSERT_RECEIVER;
@@ -416,6 +434,12 @@ PRIM_DECL_2(byteArrayPrimitives::largeIntegerToString, oop receiver, oop base) {
 
   IntegerOps::Integer_to_string(x->number(), smiOop(base)->value(), result->chars());
   return result;
+}
+
+PRIM_DECL_1(byteArrayPrimitives::largeIntegerHash, oop receiver) {
+  PROLOGUE_1("largeIntegerHash", receiver);
+  ASSERT_RECEIVER;
+  return as_smiOop(IntegerOps::hash(byteArrayOop(receiver)->number()));
 }
 
 PRIM_DECL_1(byteArrayPrimitives::hash, oop receiver) {
