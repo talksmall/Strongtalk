@@ -63,6 +63,48 @@ test
 	[ 20 factorial =  (Integer readFrom: '2432902008176640000' readStream) ] verify.
 ! !
 
+! (Delta mirrorFor: #LargeInteger) methodsFor: 'bit operations' !
+
+
+<< bits <Int> ^ <Int>
+
+	bits < 0 ifTrue: [self error: 'shift right should not be negative'].
+	^self bitShift: bits!
+
+>> bits <Int> ^ <Int>
+
+	bits < 0 ifTrue: [self error: 'shift left should not be negative'].
+	^self bitShift: bits negated!
+
+bitAnd: arg <Number> ^ <Int>
+
+	^{{self primitiveIndexedByteLargeIntegerAnd: arg
+				ifFail: [:err|
+							#FirstArgumentHasWrongType == err
+								ifTrue: [super bitAnd: arg]
+								ifFalse: [self error: err]]}}!
+
+bitOr: arg <Number> ^ <Int>
+
+	^{{self primitiveIndexedByteLargeIntegerOr: arg
+				ifFail: [:err|
+							#FirstArgumentHasWrongType == err
+								ifTrue: [super bitOr: arg]
+								ifFalse: [self error: err]]}}!
+
+bitShift: bits <Int> ^ <Int>
+
+	^{{self primitiveIndexedByteLargeIntegerShift: bits
+				ifFail: [:err | self error: err]}}!
+
+bitXor: arg <Number> ^ <Int>
+
+	^{{self primitiveIndexedByteLargeIntegerXor: arg
+				ifFail: [:err|
+							#FirstArgumentHasWrongType == err
+								ifTrue: [super bitXor: arg]
+								ifFalse: [self error: err]]}}! !
+
 ! (Delta mirrorFor: #LargeInteger) methodsFor: 'converting' !
 
 
@@ -82,7 +124,12 @@ asFloat ^ <Float>
 								ifTrue: [ super // arg ]
 								ifFalse: [ self error: 'LargeInteger //: ', err ]
 					  ]
-		}}! !
+		}}!
+
+rem: arg <Number> ^ <Number>
+
+	^{{self primitiveIndexedByteLargeIntegerRem: arg asLargeInteger
+				ifFail: [ :err <Symbol> | self nonPrimitiveRem: arg error: err ]}}! !
 
 ! (Delta mirrorFor: #LargeInteger) methodsFor: 'printing' !
 
@@ -117,7 +164,21 @@ compareToLargeInteger: li <LargeInteger> ^<Int>
 		ifFalse: [ result < 0
 							ifTrue: [ -1 ]
 							ifFalse: [ 0 ]
-					 ]! !
+					 ]!
+
+nonPrimitiveDiv: a <Number> error: err <Symbol> ^<Int>
+	"This is invoked on primitive failure"
+
+	^err == #FirstArgumentHasWrongType
+			ifTrue: [ super // a ]
+			ifFalse: [ self error: 'LargeInteger //: ', err ]!
+
+nonPrimitiveRem: a <Number> error: err <Symbol> ^<Int>
+	"This is invoked on primitive failure"
+
+	^err == #FirstArgumentHasWrongType
+			ifTrue: [ super rem: a ]
+			ifFalse: [ self error: 'LargeInteger rem: ', err ]! !
 
 ! (Delta mirrorFor: #LargeInteger) methodsFor: 'restricted-double dispatching' !
 
@@ -146,6 +207,12 @@ multiplyFromInteger: o <Integer> ^<Integer>
 		ifFail: [ :err <Symbol> | self error: err ]
 	}}.
 !
+
+remFromInteger: o <Integer> ^<Integer>
+
+	^{{self primitiveIndexedByteLargeIntegerRem: o asLargeInteger
+		ifFail: [ :err <Symbol> | self error: err ]
+	}}!
 
 subtractFromInteger: o <Integer> ^<Integer>
 

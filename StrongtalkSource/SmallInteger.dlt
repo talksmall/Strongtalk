@@ -454,6 +454,18 @@ hasBitsSet: mask <ExternalData> ^<Boolean>
 addFromSmallInteger: o <SmallInteger> ^<Int>
 	self error: 'can''t happen because of double dispatching, but need for typing'!
 
+bitAndFromInteger: arg <Integer> ^ <Integer>
+
+	^arg bitAnd: self asLargeInteger!
+
+bitOrFromInteger: arg <Integer> ^ <Integer>
+
+	^arg bitOr: self asLargeInteger!
+
+bitXorFromInteger: arg <Integer> ^ <Integer>
+
+	^arg bitXor: self asLargeInteger!
+
 equalFromSmallInteger: o <SmallInteger> ^<Boolean>
 	self error: 'can''t happen because of double dispatching'!
 

@@ -12,6 +12,136 @@ comment:
 ! (Delta mirrorFor: #LargeIntegerTest) methodsFor: 'testing' !
 
 
+testBitAnd
+
+	self assert: (1 asLargeInteger bitAnd: 1 asLargeInteger) = 1!
+
+testBitAndComplex
+
+	self assert: (16rFFFFFFFF bitAnd: 16rF0F0F0F0) = 16rF0F0F0F0!
+
+testBitAndWithDouble
+
+	self assert: (16rFFFFFFFF bitAnd: 1.0) = 1!
+
+testBitAndWithSmallInteger
+
+	self assert: (16rFFFFFFFF bitAnd: 1) = 1!
+
+testBitOr
+
+	self assert: (1 asLargeInteger bitOr:  -1 asLargeInteger) = -1!
+
+testBitOrWithDouble
+
+	self assert: (16rFFFFFFFE bitOr: 1.0) = 16rFFFFFFFF!
+
+testBitOrWithSmallInteger
+
+	self assert: (16rFFFFFFFE bitOr: 1) = 16rFFFFFFFF!
+
+testBitShiftWithPositiveShift
+
+	self assert: (2 asLargeInteger bitShift: 1) = 4!
+
+testBitXor
+
+	self assert: (1 asLargeInteger bitXor:  -1 asLargeInteger) = -2!
+
+testBitXorWithDouble
+
+	self assert: (16rFFFFFFFF bitXor: 1.0) = 16rFFFFFFFE!
+
+testBitXorWithSmallInteger
+
+	self assert: (16rFFFFFFFE bitXor: 16rF) = 16rFFFFFFF1!
+
+testDivision
+
+	self assert: 16r100000000 // 16r10000 = 16r10000!
+
+testDivisionWithLargeNegativeDividend
+
+	self assert: -16r100000001 // 16r100000000 = -16r2!
+
+testDivisionWithLargeNegativeDivisor
+
+	self assert: 16r111111111 // -16r111111110 = -16r2!
+
+testDivisionWithNegativeDividend
+
+	self assert: -16r100000001 // 16r10000 = -16r10001!
+
+testDivisionWithNegativeDivisor
+
+	self assert: 16r100000001 // -16r10000 = -16r10001!
+
+testDivisionWithRounding
+
+	self assert: 16r100000001 // 16r10000 = 16r10000!
+
+testIntegerDivisionNegativeDenominator
+
+	self assert: (1 negated asLargeInteger isKindOf: LargeInteger).
+	self assert: 1 asLargeInteger // 2 negated asLargeInteger = -1.
+	self assert: 3 asLargeInteger // 2 negated asLargeInteger = -2!
+
+testIntegerDivisionNegativeNumerator
+
+	self assert: (1 negated asLargeInteger isKindOf: LargeInteger).
+	self assert: 1 negated asLargeInteger // 2 asLargeInteger = -1.
+	self assert: 3 negated asLargeInteger // 2 asLargeInteger = -2!
+
+testIntegerDivisionNegativeNumeratorAndDenominator
+
+	self assert: (1 negated asLargeInteger isKindOf: LargeInteger).
+	self assert: 1 negated asLargeInteger // 2 negated asLargeInteger = 0.
+	self assert: 3 negated asLargeInteger // 2 negated asLargeInteger = 1!
+
+testQuo
+
+	self assert: (16r100000000 quo: 16r10000) = 16r10000!
+
+testQuoWithLargeNegativeDivisor
+
+	self assert: (16r111111111 quo: -16r111111110) = -16r1!
+
+testQuoWithNegativeDividend
+
+	self assert: (-16r100000001 quo: 16r10000) = -16r10000!
+
+testQuoWithNegativeDivisor
+
+	self assert: (16r100000001 quo: -16r10000) = -16r10000!
+
+testQuoWithRounding
+
+	self assert: (16r100000001 quo: 16r10000) = 16r10000!
+
+testRemWithLargeNegativeDivisor
+
+	| result |
+	result := (16r111111111 rem: -16r111111110).
+	self assert: result = 1!
+
+testShiftLeft
+
+	self assert: 2 asLargeInteger >> 1 = 1!
+
+testShiftLeftWithError
+
+	self should: [2 asLargeInteger >> -1]
+			raise: Error!
+
+testShiftRight
+
+	self assert: 2 asLargeInteger << 1 = 4!
+
+testShiftRightWithError
+
+	self should: [2 asLargeInteger << -1]
+			raise: Error!
+
 testUnderflow
 
 	self deny: SmallInteger maxVal + 1 * 8 + 1 negated = -1! !

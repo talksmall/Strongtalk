@@ -106,7 +106,7 @@ anyMask: mask <Integer> ^<Boolean>
 bitAnd: o <X> ^<Self|X>
 		{where X <Integer> is arg 1}
 
-	self unimplemented!
+	^o bitAndFromInteger: self!
 
 bitAt: index <Int> ^<Int>
 	"Return the bit at the specified bit index, with the low bit being index 1"
@@ -120,7 +120,7 @@ bitInvert ^<Int>
 bitOr: o <X> ^<Self|X>
 		{where X <Integer> is arg 1}
 
-	self unimplemented!
+	^o bitOrFromInteger: self!
 
 bitShift: shift <Int> ^<Int>
 
@@ -129,7 +129,7 @@ bitShift: shift <Int> ^<Int>
 bitXor: o <X> ^<Self|X>
 		{where X <Integer> is arg 1}
 
-	self unimplemented!
+	^o bitXorFromInteger: self!
 
 highBit ^<SmallInt>
 
@@ -334,6 +334,10 @@ gcd: other <Integer> ^<Integer>
 				lower := oldHigher \\ lower.	].
 	^higher!
 
+rem: a <Number> ^<X>
+			{where X <Number> is returnType of #remFromInteger: message of arg 1}
+	^guaranteed <X> (a remFromInteger: self)!
+
 truncated ^<Int>
 
 	^self! !
@@ -414,6 +418,14 @@ addFromSmallInteger: o <SmallInteger> ^<Integer>
 	"%generated code- do not modify"
 	^self addFromInteger: o!
 
+bitAndFromInteger: arg <Integer>
+
+	self unimplemented!
+
+bitOrFromInteger: arg <Integer>
+
+	self unimplemented!
+
 equalFromInteger: o <Integer> ^<Boolean>
 
 	^o = self asLargeInteger!
@@ -447,6 +459,10 @@ multiplyFromInteger: o <Integer> ^<Integer>
 multiplyFromSmallInteger: o <SmallInteger> ^<Integer>
 	"%generated code- do not modify"
 	^self multiplyFromInteger: o!
+
+remFromInteger: o <Integer> ^<Integer>
+
+	self unimplemented!
 
 subtractFromInteger: o <Integer> ^<Integer>
 
