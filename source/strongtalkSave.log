@@ -108382,3 +108382,676 @@ Delta define: #ClassTestIvars123 as: (
 "December 14, 2009 -> 0:37:25"!
 
 "System saved" !
+"December 14, 2009 -> 2:17:29"!
+
+! (Delta mirrorFor: #AlienWeakTable) methodsFor: 'initialization' !
+initializeWithOwner: anOwner
+
+	accessProtect := Semaphore forMutualExclusion.
+	firstUnusedIndex := 1.
+	lastUsedIndex := 0.
+	weakArray := WeakArray new: 1024.
+	strongArray := Array new: 1024.
+	owner := anOwner.
+	weakArray addWeakDependent: (BlockDependent
+															updateBlock: [:aspect :object | self finalizeValues])! !
+
+"December 14, 2009 -> 2:17:40"!
+
+"System saved" !
+"December 14, 2009 -> 21:5:36"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	self assert: (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32') isPointer! !
+
+"December 14, 2009 -> 21:6:49"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	|virtualQuery|
+	virtualQuery := (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32').
+	self assert: virtualQuery isPointer.
+	self deny: virtualQuery address == 0! !
+
+"December 14, 2009 -> 21:10:51"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	|virtualQuery result buffer|
+	result := Alien newC: 4.
+	buffer := Alien newC: 28.
+	virtualQuery := (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32').
+	self assert: virtualQuery isPointer.
+	self deny: virtualQuery address == 0.
+	virtualQuery
+		primFFICallResult: result
+		with: buffer
+		with: 28.
+	Transcript print: (result asSignedLong)! !
+
+"December 14, 2009 -> 21:12:6"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	|virtualQuery result buffer ptr|
+	result := Alien newC: 4.
+	ptr := Alien forPointer: 0.
+	buffer := Alien newC: 28.
+	virtualQuery := (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32').
+	self assert: virtualQuery isPointer.
+	self deny: virtualQuery address == 0.
+	virtualQuery
+		primFFICallResult: result
+		with: buffer
+		with: 28.
+	Transcript print: (result asSignedLong)! !
+
+"December 14, 2009 -> 21:12:18"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	|virtualQuery result buffer ptr|
+	result := Alien newC: 4.
+	ptr := Alien forPointer: 0.
+	buffer := Alien newC: 28.
+	virtualQuery := (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32').
+	self assert: virtualQuery isPointer.
+	self deny: virtualQuery address == 0.
+	virtualQuery
+		primFFICallResult: result
+		with: ptr
+		with: buffer
+		with: 28.
+	Transcript print: (result asSignedLong)! !
+
+"December 14, 2009 -> 21:12:26"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	|virtualQuery result buffer ptr|
+	result := Alien newC: 4.
+	ptr := Alien forPointer: 1.
+	buffer := Alien newC: 28.
+	virtualQuery := (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32').
+	self assert: virtualQuery isPointer.
+	self deny: virtualQuery address == 0.
+	virtualQuery
+		primFFICallResult: result
+		with: ptr
+		with: buffer
+		with: 28.
+	Transcript print: (result asSignedLong)! !
+
+"December 14, 2009 -> 21:12:47"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	|virtualQuery result buffer ptr|
+	result := Alien newC: 4.
+	ptr := Alien forPointer: 16r7FFFFFFF.
+	buffer := Alien newC: 28.
+	virtualQuery := (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32').
+	self assert: virtualQuery isPointer.
+	self deny: virtualQuery address == 0.
+	virtualQuery
+		primFFICallResult: result
+		with: ptr
+		with: buffer
+		with: 28.
+	Transcript print: (result asSignedLong)! !
+
+"December 14, 2009 -> 21:14:36"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	|virtualQuery result buffer ptr getError|
+	result := Alien newC: 4.
+	ptr := Alien forPointer: 16r7FFFFFFF.
+	buffer := Alien newC: 28.
+	virtualQuery := (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32').
+	getError := (Alien lookup: 'GetLastError' inLibrary: 'kernel32').
+	self assert: virtualQuery isPointer.
+	self deny: virtualQuery address == 0.
+	virtualQuery
+		primFFICallResult: result
+		with: ptr
+		with: buffer
+		with: 28.
+	Transcript print: (result asSignedLong).
+	getError
+		primFFICallResult: result.
+	Transcript cr; print: (result asSignedLong)! !
+
+"December 14, 2009 -> 21:16:11"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testPointer
+
+	|virtualQuery result buffer ptr getError|
+	result := Alien newC: 4.
+	ptr := Alien forPointer: 16r7FFFFFFF.
+	buffer := Alien newC: 28.
+	virtualQuery := (Alien lookup: 'VirtualQuery' inLibrary: 'kernel32').
+	getError := (Alien lookup: 'GetLastError' inLibrary: 'kernel32').
+	self assert: virtualQuery isPointer.
+	self deny: virtualQuery address == 0.
+	virtualQuery
+		primFFICallResult: result
+		with: ptr
+		with: buffer
+		with: 28.
+	Transcript cr; print: (result asSignedLong).
+	getError
+		primFFICallResult: result.
+	Transcript cr; print: (result asSignedLong)! !
+
+"December 14, 2009 -> 21:27:10"!
+
+Delta define: #WeakSetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 14, 2009 -> 21:28:6"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testAddShouldAddItemToSet
+
+	| set |
+	set := WeakSet new! !
+
+"December 14, 2009 -> 21:28:37"!
+
+(Delta mirrorFor: #WeakSet) removeDefinitionIfFail: [] !
+
+
+"December 14, 2009 -> 21:28:43"!
+
+Delta define: #WeakSet as: (
+(Class subclassOf: 'Set' instanceVariables: '')) !
+
+
+"December 14, 2009 -> 21:29:58"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-computations' !
+newTableWithSize: tableSize <Int> ^ <WeakArray[A|Object]>
+
+	^WeakArray[A|Object] new: tableSize! !
+
+"December 14, 2009 -> 21:33:16"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testAddShouldAddItemToSet
+
+	| set victim finalizedObject listener dead |
+	set := WeakSet new.
+	victim := Object new.
+	set add: victim.
+	self assert: (set includes: victim).
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | dead := obj].
+	set addWeakDependent: listener.
+	victim := nil.
+	VM collectGarbage.
+	Processor yield! !
+
+"December 14, 2009 -> 21:34:22"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'weak dependents' !
+addWeakDependent: dependent! !
+
+"December 14, 2009 -> 21:34:44"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testAddShouldAddItemToSet
+
+	| set victim finalizedObject listener dead |
+	set := WeakSet new.
+	victim := Object new.
+	set add: victim.
+	self assert: (set includes: victim).
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | dead := obj].
+	set addWeakDependent: listener.
+	victim := nil.
+	VM collectGarbage.
+	Processor yield.
+	self deny: dead isNil! !
+
+"December 14, 2009 -> 21:35:11"!
+
+Delta define: #WeakSet as: (
+(Class subclassOf: 'Set' instanceVariables: 'dependents <NotifyingObject>
+')) !
+
+
+"December 14, 2009 -> 21:35:28"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'weak dependents' !
+addWeakDependent: dependent
+
+	dependents addDependent: dependent! !
+
+"December 14, 2009 -> 21:37:14"!
+
+Delta define: #WeakSet as: (
+(Class subclassOf: 'Set' instanceVariables: 'dependents <NotifyingObject>
+tableDependent <BlockDependent>
+')) !
+
+
+"December 14, 2009 -> 21:39:37"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-initialization' !
+initCapacity: cap <Int>
+
+	dependents := NotifyingObject new.
+	tableDependent := BlockDependent
+										updateBlock: [:aspect :victim |
+																dependents
+																	changed: #finalize
+																	with: victim]! !
+
+"December 14, 2009 -> 21:40:13"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-initialization' !
+initCapacity: cap <Int>
+
+	dependents := NotifyingObject new.
+	tableDependent := BlockDependent
+										updateBlock: [:aspect :victim |
+																dependents
+																	changed: #finalize
+																	with: victim].
+	super initCapacity: cap! !
+
+"December 14, 2009 -> 21:41:12"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-accessing' !
+table: newTable <WeakArray[A|Object]>
+
+	self table isNil
+		ifFalse: [self table removeWeakDependent: tableDependent].
+	newTable addWeakDependent: tableDependent! !
+
+"December 14, 2009 -> 21:43:15"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-accessing' !
+table: newTable <WeakArray[A|Object]>
+
+	self table isNil
+		ifFalse: [self table removeWeakDependent: tableDependent].
+	newTable addWeakDependent: tableDependent.
+	super table: newTable! !
+
+"December 14, 2009 -> 21:44:21"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testAddShouldAddItemToSet
+
+	| set victim finalizedObject listener dead |
+	set := WeakSet new.
+	victim := Object new.
+	set add: victim.
+	self assert: (set includes: victim).
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | dead := obj].
+	set addWeakDependent: listener.
+	victim := nil.
+	VM collectGarbage.
+	Processor yield.
+	self deny: dead isNil.
+	self deny: (set includes: dead)! !
+
+"December 14, 2009 -> 21:44:45"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testAddShouldAddItemToSet
+
+	| set victim finalizedObject listener dead |
+	set := WeakSet new.
+	victim := Object new.
+	set add: victim.
+	self assert: (set includes: victim).
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | dead := obj].
+	set addWeakDependent: listener.
+	victim := nil.
+	VM collectGarbage.
+	Processor yield.
+	self deny: dead isNil.
+	self deny: (set includes: dead).
+	set add: dead.
+	self assert: (set includes: dead)! !
+
+"December 14, 2009 -> 21:46:9"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testRemovedWeakDependentShouldNotReceiveUpdate
+
+	| set victim finalizedObject listener dead |
+	set := WeakSet new.
+	victim := Object new.
+	set add: victim.
+	self assert: (set includes: victim).
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | dead := obj].
+	set addWeakDependent: listener.
+	set removeWeakDependent: listener.
+	victim := nil.
+	VM collectGarbage.
+	Processor yield.
+	self assert: dead isNil! !
+
+"December 14, 2009 -> 21:46:26"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'weak dependents' !
+removeWeakDependent: dependent
+
+	dependents removeDependent: dependent! !
+
+"December 14, 2009 -> 21:50:55"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testShouldOnlyNotifyOncePerObjectFollowingGrowth
+
+	| set finalizedObject listener dead strong count|
+	count := 0.
+	set := WeakSet new.
+	strong := Set new.
+	100 timesRepeat: [|object|
+								set add: (object := Object new).
+								strong add: object].
+	self assert: set size == 100.
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | count := count + 1].
+	set addWeakDependent: listener.
+	strong := nil.
+	VM collectGarbage.
+	Processor yield.
+	self assert: count == 100! !
+
+"December 14, 2009 -> 21:51:21"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testShouldOnlyNotifyOncePerObjectFollowingGrowth
+
+	| set finalizedObject listener dead strong count|
+	count := 0.
+	set := WeakSet new.
+	strong := Set new.
+	100 timesRepeat: [|object|
+								set add: (object := Object new).
+								strong add: object].
+	self assert: set size == 100.
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | count := count + 1].
+	set addWeakDependent: listener.
+	strong := nil.
+	VM collectGarbage.
+	Processor yield.
+	self assert: count = 100! !
+
+"December 14, 2009 -> 21:54:51"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testShouldOnlyNotifyOncePerObjectFollowingGrowth
+
+	| set finalizedObject listener dead strong count|
+	count := 0.
+	set := WeakSet new: 4.
+	strong := Set new: 4.
+	5 timesRepeat: [|object|
+								set add: (object := Object new).
+								strong add: object].
+	self assert: set size = 5.
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | count := count + 1].
+	set addWeakDependent: listener.
+	strong := nil.
+	VM collectGarbage.
+	Processor yield.
+	self assert: count = 5! !
+
+"December 14, 2009 -> 21:55:50"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+add: count <int> to: set <Set>
+
+	count timesRepeat: [set add: Object new]! !
+
+"December 14, 2009 -> 21:56:14"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testShouldOnlyNotifyOncePerObjectFollowingGrowth
+
+	| set finalizedObject listener dead strong count|
+	count := 0.
+	set := WeakSet new: 4.
+	strong := Set new: 4.
+	self add: 5 to: strong.
+	set addAll: strong.
+	self assert: set size = 5.
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | count := count + 1].
+	set addWeakDependent: listener.
+	strong := nil.
+	VM collectGarbage.
+	Processor yield.
+	self assert: count = 5! !
+
+"December 14, 2009 -> 21:56:40"!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+testShouldOnlyNotifyOncePerObjectFollowingGrowth
+
+	| set finalizedObject listener dead strong count|
+	count := 0.
+	set := WeakSet new: 4.
+	strong := Set new: 4.
+	self add: 5 to: strong.
+	set addAll: strong.
+	self assert: set size = 5.
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | count := count + 1].
+	set addWeakDependent: listener.
+	strong := nil.
+	VM collectGarbage.
+	Processor yield.
+	self assert: count = 5.
+	self assert: set size = 0! !
+
+"December 14, 2009 -> 21:58:34"!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-initialization' !
+initCapacity: cap <Int>
+
+	dependents := NotifyingObject new.
+	tableDependent := BlockDependent
+										updateBlock: [:aspect :victim |
+																self size: self size - 1.
+																dependents
+																	changed: #finalize
+																	with: victim].
+	super initCapacity: cap! !
+
+"December 14, 2009 -> 22:5:22"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testNewGCUnimplemented
+
+	|gcAlien weak res|
+	gcAlien := Alien newGC: 4.
+	weak := WeakSet new.
+	weak add: gcAlien.
+	weak addWeakDependent: (BlockDependent updateBlock: [:a :dead| res := dead]).
+	self deny: gcAlien address = 0.
+	gcAlien := nil.
+	VM collectGarbage.
+	Processor yield.
+	self deny: res isNil.
+	self assert: res address = 0! !
+
+"December 14, 2009 -> 22:6:46"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil ifTrue: [GCMallocedAliens := WeakSet new].
+	^GCMallocedAliens! !
+
+"December 14, 2009 -> 22:8:38"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil
+		ifTrue: [GCMallocedAliens := WeakSet new.
+					GCMallocedAliens addWeakDependent: (BlockDependent update: [:aspect :alien| alien primFree])].
+	^GCMallocedAliens! !
+
+"December 14, 2009 -> 22:9:3"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+newGC: size <Integer> ^<X>
+
+	| alien address |
+	alien := self primitiveNew: 8.
+	alien size: size negated.
+	address := self Ccalloc: size.
+	self gcMallocedAliens add: alien.
+	^alien
+		addressField: address;
+		initialize
+		! !
+
+"December 14, 2009 -> 22:11:50"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil
+		ifTrue: [GCMallocedAliens := WeakSet new.
+					GCMallocedAliens addWeakDependent: (BlockDependent update: [:aspect :alien| alien free])].
+	^GCMallocedAliens! !
+
+"December 14, 2009 -> 22:12:7"!
+
+(Delta mirrorFor: #AlienClassTest) removeMethod: #testPointer ifAbsent: [] !
+
+
+"December 14, 2009 -> 22:37:47"!
+
+(Delta mirrorFor: #GCMallocedAlient) removeDefinitionIfFail: [] !
+
+
+"December 14, 2009 -> 22:42:19"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil
+		ifTrue: [GCMallocedAliens := WeakSet new.
+					GCMallocedAliens addWeakDependent: (
+						BlockDependent update: [:aspect :alien|
+																[alien free]
+																	on: Error
+																	do: [:err| Transcript cr; print: err]])].
+	^GCMallocedAliens! !
+
+"December 14, 2009 -> 22:43:7"!
+
+(Delta mirrorFor: #GCMallocedAlienst) removeDefinitionIfFail: [] !
+
+
+"December 14, 2009 -> 22:43:44"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil
+		ifTrue: [GCMallocedAliens := WeakSet new.
+					GCMallocedAliens addWeakDependent: (
+						BlockDependent update: [:aspect :alien|
+																[Transcript cr; show: 'freeing alien'.
+																alien free]
+																	on: Error
+																	do: [:err| Transcript cr; print: err]])].
+	^GCMallocedAliens! !
+
+"December 14, 2009 -> 22:48:32"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil
+		ifTrue: [GCMallocedAliens := WeakSet new.
+					GCMallocedAliens addWeakDependent: (
+						BlockDependent updateBlock: [:aspect :alien|
+																[Transcript cr; show: 'freeing alien'.
+																alien free]
+																	on: Error
+																	do: [:err| Transcript cr; print: err]])].
+	^GCMallocedAliens! !
+
+"December 14, 2009 -> 22:51:51"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testNewGCUnimplemented
+
+	|gcAlien weak res|
+	gcAlien := Alien newGC: 4.
+	weak := WeakSet new.
+	weak add: gcAlien.
+	weak addWeakDependent: (BlockDependent updateBlock: [:a :dead| res := dead]).
+	self deny: gcAlien address = 0.
+	gcAlien := nil.
+	VM collectGarbage.
+	(Delay forMilliseconds: 10) wait.
+	self deny: res isNil.
+	self assert: res address = 0! !
+
+"December 14, 2009 -> 22:52:44"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil
+		ifTrue: [GCMallocedAliens := WeakSet new.
+					GCMallocedAliens addWeakDependent: (
+						BlockDependent updateBlock: [:aspect :alien | alien free])].
+	^GCMallocedAliens! !
+
+"December 14, 2009 -> 22:53:32"!
+
+! (Delta mirrorFor: #AlienClassTest) methodsFor: 'testing' !
+testNewGCShouldBeFreedAfterGC
+
+	|gcAlien weak res|
+	gcAlien := Alien newGC: 4.
+	weak := WeakSet new.
+	weak add: gcAlien.
+	weak addWeakDependent: (BlockDependent updateBlock: [:a :dead| res := dead]).
+	self deny: gcAlien address = 0.
+	gcAlien := nil.
+	VM collectGarbage.
+	(Delay forMilliseconds: 10) wait.
+	self deny: res isNil.
+	self assert: res address = 0! !
+
+"December 14, 2009 -> 22:53:37"!
+
+(Delta mirrorFor: #AlienClassTest) removeMethod: #testNewGCUnimplemented ifAbsent: [] !
+
+
+"December 14, 2009 -> 23:1:35"!
+
+"System saved" !
