@@ -78,11 +78,19 @@ testNewForCallbackArgs
 	self assert: alien size == TestAlien dataSize negated.
 	self assert: alien address == 0!
 
-testNewGCUnimplemented
+testNewGCShouldBeFreedAfterGC
 
-	self should: [Alien newGC: 4]
-		raise: Error
-		withExceptionDo: [:ex| self assert: self unimplementedText = ex messageText]!
+	|gcAlien weak res|
+	gcAlien := Alien newGC: 4.
+	weak := WeakSet new.
+	weak add: gcAlien.
+	weak addWeakDependent: (BlockDependent updateBlock: [:a :dead| res := dead]).
+	self deny: gcAlien address = 0.
+	gcAlien := nil.
+	VM collectGarbage.
+	(Delay forMilliseconds: 10) wait.
+	self deny: res isNil.
+	self assert: res address = 0!
 
 testPrimLoadLibraryWin32
 

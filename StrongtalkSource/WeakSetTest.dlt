@@ -1,0 +1,70 @@
+Delta define: #WeakSetTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #WeakSetTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #WeakSetTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #WeakSetTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #WeakSetTest) methodsFor: 'testing' !
+
+
+add: count <int> to: set <Set>
+
+	count timesRepeat: [set add: Object new]!
+
+testAddShouldAddItemToSet
+
+	| set victim finalizedObject listener dead |
+	set := WeakSet new.
+	victim := Object new.
+	set add: victim.
+	self assert: (set includes: victim).
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | dead := obj].
+	set addWeakDependent: listener.
+	victim := nil.
+	VM collectGarbage.
+	Processor yield.
+	self deny: dead isNil.
+	self deny: (set includes: dead).
+	set add: dead.
+	self assert: (set includes: dead)!
+
+testRemovedWeakDependentShouldNotReceiveUpdate
+
+	| set victim finalizedObject listener dead |
+	set := WeakSet new.
+	victim := Object new.
+	set add: victim.
+	self assert: (set includes: victim).
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | dead := obj].
+	set addWeakDependent: listener.
+	set removeWeakDependent: listener.
+	victim := nil.
+	VM collectGarbage.
+	Processor yield.
+	self assert: dead isNil!
+
+testShouldOnlyNotifyOncePerObjectFollowingGrowth
+
+	| set finalizedObject listener dead strong count|
+	count := 0.
+	set := WeakSet new: 4.
+	strong := Set new: 4.
+	self add: 5 to: strong.
+	set addAll: strong.
+	self assert: set size = 5.
+	listener := BlockDependent
+						updateBlock: [:aspect :obj | count := count + 1].
+	set addWeakDependent: listener.
+	strong := nil.
+	VM collectGarbage.
+	Processor yield.
+	self assert: count = 5.
+	self assert: set size = 0! !
+

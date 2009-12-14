@@ -120,11 +120,10 @@ newGC
 newGC: size <Integer> ^<X>
 
 	| alien address |
-	self unimplemented.
 	alien := self primitiveNew: 8.
 	alien size: size negated.
 	address := self Ccalloc: size.
-	GCMallocedAliens add: alien finalizing: address.
+	self gcMallocedAliens add: alien.
 	^alien
 		addressField: address;
 		initialize
@@ -160,6 +159,14 @@ primLoadLibrary: libraryName
 
 ! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
 
+
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil
+		ifTrue: [GCMallocedAliens := WeakSet new.
+					GCMallocedAliens addWeakDependent: (
+						BlockDependent updateBlock: [:aspect :alien | alien free])].
+	^GCMallocedAliens!
 
 loadedLibraries
 

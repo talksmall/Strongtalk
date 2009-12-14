@@ -1,0 +1,55 @@
+Delta define: #WeakSet as: (
+(Class subclassOf: 'Set' instanceVariables: 'dependents <NotifyingObject>
+tableDependent <BlockDependent>
+')) !
+
+(Delta mirrorFor: #WeakSet) revision: '$Revision:$'!
+
+(Delta mirrorFor: #WeakSet) group: 'Unclassified'!
+
+(Delta mirrorFor: #WeakSet)
+comment: 
+''!
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-accessing' !
+
+
+table: newTable <WeakArray[A|Object]>
+
+	self table isNil
+		ifFalse: [self table removeWeakDependent: tableDependent].
+	newTable addWeakDependent: tableDependent.
+	super table: newTable! !
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-computations' !
+
+
+newTableWithSize: tableSize <Int> ^ <WeakArray[A|Object]>
+
+	^WeakArray[A|Object] new: tableSize! !
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'private-initialization' !
+
+
+initCapacity: cap <Int>
+
+	dependents := NotifyingObject new.
+	tableDependent := BlockDependent
+										updateBlock: [:aspect :victim |
+																self size: self size - 1.
+																dependents
+																	changed: #finalize
+																	with: victim].
+	super initCapacity: cap! !
+
+! (Delta mirrorFor: #WeakSet) methodsFor: 'weak dependents' !
+
+
+addWeakDependent: dependent
+
+	dependents addDependent: dependent!
+
+removeWeakDependent: dependent
+
+	dependents removeDependent: dependent! !
+
