@@ -1,5 +1,6 @@
 Delta define: #WeakArray as: (
-Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: ''))) !
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: 'dependents <NotifyingObject>') classVariables: 'FinalizationProcess <Process>
+FinalizationSemaphore <Semaphore>')) !
 
 (Delta mirrorFor: #WeakArray) revision: '$Revision: 1.5 $'!
 
@@ -33,6 +34,90 @@ Tags: %User
 Use and distribution of this software is subject to the terms of the attached source license
 '!
 
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	self startFinalizationProcess! !
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'instance creation' !
+
+
+new: size <Int>
+
+	self startFinalizationProcess.
+	^(super new: size)
+		initialize;
+		yourself! !
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+
+
+checkNotification
+	[ 
+		{{primitiveNotificationQueueGetIfFail: [ :err |^self]}}  notify.
+	] repeat.!
+
+finalizationBlock
+
+	^[[[self checkNotification]
+			on: Error
+			do: [:error| self handleFinalizationError: error] .
+		self finalizationSemaphore wait] repeat]!
+
+finalizationPriority
+
+	"%TODO revisit once Process prioritization implemented"
+	^Processor activePriority!
+
+finalizationProcess
+
+	^FinalizationProcess!
+
+finalizationSemaphore
+
+	self initFinalizationSemaphore.
+	^FinalizationSemaphore!
+
+handleFinalizationError: error
+
+	FinalizationProcess := nil.
+	error pass!
+
+hasFinalizationProcess
+
+	^self finalizationProcess notNil
+		and: [self finalizationProcess running]!
+
+initFinalizationSemaphore
+
+	FinalizationSemaphore isNil
+		ifTrue: [FinalizationSemaphore := Semaphore new]!
+
+startFinalizationProcess
+
+	self hasFinalizationProcess ifTrue: [^self].
+	self terminateFinalizationProcess.
+	self initFinalizationSemaphore.
+	FinalizationProcess := self finalizationBlock forkAt: self finalizationPriority!
+
+terminateFinalizationProcess
+
+	true ifTrue: [^self]. "%TODO remove when stack overflow issue fixed"
+	self finalizationProcess notNil
+		ifTrue: [[self finalizationProcess terminate]
+						on: Error
+						do: [:ignore|]]! !
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'restricted to VM-finalization' !
+
+
+signalFinalization
+
+	self finalizationSemaphore waitWouldBlock
+		ifTrue: [self finalizationSemaphore signal]! !
+
 ! (Delta mirrorFor: #WeakArray) methodsFor: 'notification' !
 
 
@@ -41,9 +126,28 @@ hadNearDeathExperience: anObject
 
 notify
 	1 to: self size do: [ :index |
-		(self hadNearDeathExperience: (self at: index)) ifTrue: [
-			Transcript show: 'Cleaing ', index printString; cr.
-			self at: index put: nil
+		| victim |
+		(self hadNearDeathExperience: (victim := self at: index)) ifTrue: [
+			self at: index put: nil.
+			dependents changed: #finalize with: victim
 		]
 	]! !
+
+! (Delta mirrorFor: #WeakArray) methodsFor: 'private-initialization' !
+
+
+initialize
+
+	dependents := NotifyingObject new! !
+
+! (Delta mirrorFor: #WeakArray) methodsFor: 'weak dependents' !
+
+
+addWeakDependent: dependent
+
+	dependents addDependent: dependent!
+
+removeWeakDependent: dependent
+
+	dependents removeDependent: dependent! !
 

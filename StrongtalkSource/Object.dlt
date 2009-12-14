@@ -663,6 +663,14 @@ species ^<Object class>
 		ifTrue: [ false ] "for speed"
 		ifFalse: [ true ]! !
 
+! (Delta mirrorFor: #Object) methodsFor: 'restricted-finalization' !
+
+
+finalize
+" no live references to the receiver exist. Clean up any external
+  resources owned by the receiver. The receiver may be resurrected.
+  Default is to do nothing"! !
+
 ! (Delta mirrorFor: #Object) methodsFor: 'testing' !
 
 

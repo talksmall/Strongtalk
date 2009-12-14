@@ -1,0 +1,21 @@
+Delta define: #FinalizationDependent as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #FinalizationDependent) revision: '$Revision:$'!
+
+(Delta mirrorFor: #FinalizationDependent) group: 'Unclassified'!
+
+(Delta mirrorFor: #FinalizationDependent)
+comment: 
+'A dependent that can be registered with a WeakArray
+instance to receive notification about terminal objects.
+'!
+
+! (Delta mirrorFor: #FinalizationDependent) methodsFor: 'dependencies' !
+
+
+update: aspect with: victim
+
+	#finalize == aspect ifFalse: [^self].
+	victim finalize! !
+

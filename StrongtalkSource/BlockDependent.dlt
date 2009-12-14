@@ -1,0 +1,55 @@
+Delta define: #BlockDependent as: (
+(Class subclassOf: 'Object' instanceVariables: 'updateBlock <[X]>')) !
+
+(Delta mirrorFor: #BlockDependent) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BlockDependent) group: 'Unclassified'!
+
+(Delta mirrorFor: #BlockDependent)
+comment: 
+''!
+
+! (Delta mirrorFor: #BlockDependent) classSide methodsFor: 'instance creation' !
+
+
+asTwoArg: block
+
+	| arity |
+	arity := block arity.
+	arity == 2 ifTrue: [^block].
+	arity == 1 ifTrue: [^[:aspect :value | block value: aspect]].
+	arity == 0 ifTrue: [^[:aspect :value | block value]].
+	^[:aspect :value| |args|
+		args := Array new:  arity.
+		args at: 1 put: aspect.
+		args at: 2 put: value.
+		block valueWithArguments: args]	!
+
+updateBlock: block <[]>
+
+	^self new
+		initialize: (self asTwoArg: block);
+		yourself! !
+
+! (Delta mirrorFor: #BlockDependent) methodsFor: 'dependencies' !
+
+
+update: aspect
+
+	updateBlock
+		value: aspect
+		with: nil!
+
+update: aspect with: value
+
+	updateBlock
+		value: aspect
+		value: value! !
+
+! (Delta mirrorFor: #BlockDependent) methodsFor: 'priviate-initialization' !
+
+
+initialize: block
+
+	updateBlock := block! !
+

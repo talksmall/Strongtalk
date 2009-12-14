@@ -63,5 +63,6 @@ initializeWithOwner: anOwner
 	weakArray := WeakArray new: 1024.
 	strongArray := Array new: 1024.
 	owner := anOwner.
-	! !
+	weakArray addWeakDependent: (BlockDependent
+															updateBlock: [:aspect| self finalizeValues])! !
 

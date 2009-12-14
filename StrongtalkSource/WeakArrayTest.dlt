@@ -1,0 +1,29 @@
+Delta define: #WeakArrayTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #WeakArrayTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #WeakArrayTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #WeakArrayTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #WeakArrayTest) methodsFor: 'testing' !
+
+
+testNotifiesWeakDependentOnObjectDeath
+
+| array object dependent victim |
+object := Object new.
+dependent := BlockDependent updateBlock: [:aspect :object | victim := object].
+array := WeakArray new: 1.
+array at: 1 put: object.
+array addWeakDependent: dependent.
+VM collectGarbage.
+self assert: victim isNil description: 'victim should still have references'.
+object := nil.
+VM collectGarbage.
+Processor yield.
+self deny: victim isNil description: 'victim not dying'! !
+

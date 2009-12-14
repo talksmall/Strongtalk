@@ -162,7 +162,8 @@ recompilation: flag <Boolean>
 
 collectGarbage
 
-	{{self primitiveGarbageCollect}}!
+	{{self primitiveGarbageCollect}}.
+	WeakArray signalFinalization!
 
 deferredGC
 
@@ -196,7 +197,8 @@ scavengeGarbage
 	"Collect very recent garbage.  This is fast, but does not collect all garbage.
 		(i.e. it scavenges the object nursery) "
 
-	{{self primitiveScavenge}}!
+	{{self primitiveScavenge}}.
+	WeakArray signalFinalization!
 
 startGCProcess
 
