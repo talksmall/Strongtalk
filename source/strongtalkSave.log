@@ -105302,3 +105302,3083 @@ Delta define: #ClassTestIvars123 as: (
 "December 6, 2009 -> 18:31:9"!
 
 "System saved" !
+"December 14, 2009 -> 0:34:26"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:26"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:26"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:26"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:26"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:27"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:27"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:27"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:27"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:27"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:27"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:34:27"!
+
+(Delta mirrorFor: #AlienWeakTable)
+comment: 
+''!
+
+
+"December 14, 2009 -> 0:34:27"!
+
+! (Delta mirrorFor: #AlienWeakTable) classSide methodsFor: 'instance creation' !
+newForOwner: owner
+	^self new initializeWithOwner: owner! !
+
+"December 14, 2009 -> 0:34:27"!
+
+! (Delta mirrorFor: #AlienWeakTable) methodsFor: 'adding' !
+add: anObject finalizing: postMortemFinalizationTag
+	"Register a new object in the table, with the associated tag.
+	 The object is held onto weakly, the tag--strongly. The tag
+	 will be passed to the owner as the argument of #finalize:
+	 some time after the object is garbage collected."
+
+	| size start delta |
+	accessProtect critical:
+		[size := strongArray size.
+		 start := firstUnusedIndex].
+	start to: size do:
+		[:i|
+		(strongArray at: i) == nil ifTrue:
+			[accessProtect critical:
+				[weakArray at: i put: anObject.
+				 strongArray at: i put: postMortemFinalizationTag.
+				 firstUnusedIndex := i + 1.
+				 i > lastUsedIndex ifTrue: [lastUsedIndex := i]].
+			 ^anObject]].
+	delta := size min: 4096.
+	accessProtect critical:
+		[(weakArray := weakArray copyGrownBy: delta)
+			 at: size + 1 put: anObject.
+		 (strongArray := strongArray  copyGrownBy: delta)
+			at: size put: postMortemFinalizationTag.
+		 firstUnusedIndex := size + 1.
+		 lastUsedIndex := size].
+	^anObject! !
+
+"December 14, 2009 -> 0:34:27"!
+
+! (Delta mirrorFor: #AlienWeakTable) methodsFor: 'initialization' !
+initializeWithOwner: anOwner
+
+	accessProtect := Semaphore forMutualExclusion.
+	firstUnusedIndex := 1.
+	lastUsedIndex := 0.
+	weakArray := WeakArray new: 1024.
+	strongArray := Array new: 1024.
+	owner := anOwner.
+	weakArray addWeakDependent: (BlockDependent
+															updateBlock: [:aspect| self finalizeValues])! !
+
+"December 14, 2009 -> 0:34:43"!
+
+Delta define: #BlockDependent as: (
+(Class subclassOf: 'Object' instanceVariables: 'updateBlock <[X]>')) !
+
+
+"December 14, 2009 -> 0:34:43"!
+
+(Delta mirrorFor: #BlockDependent)
+comment: 
+''!
+
+
+"December 14, 2009 -> 0:34:43"!
+
+! (Delta mirrorFor: #BlockDependent) classSide methodsFor: 'instance creation' !
+asTwoArg: block
+
+	| arity |
+	arity := block arity.
+	arity == 2 ifTrue: [^block].
+	arity == 1 ifTrue: [^[:aspect :value | block value: aspect]].
+	arity == 0 ifTrue: [^[:aspect :value | block value]].
+	^[:aspect :value| |args|
+		args := Array new:  arity.
+		args at: 1 put: aspect.
+		args at: 2 put: value.
+		block valueWithArguments: args]	! !
+
+"December 14, 2009 -> 0:34:43"!
+
+! (Delta mirrorFor: #BlockDependent) classSide methodsFor: 'instance creation' !
+updateBlock: block <[]>
+
+	^self new
+		initialize: (self asTwoArg: block);
+		yourself! !
+
+"December 14, 2009 -> 0:34:43"!
+
+! (Delta mirrorFor: #BlockDependent) methodsFor: 'dependencies' !
+update: aspect
+
+	updateBlock
+		value: aspect
+		with: nil! !
+
+"December 14, 2009 -> 0:34:43"!
+
+! (Delta mirrorFor: #BlockDependent) methodsFor: 'dependencies' !
+update: aspect with: value
+
+	updateBlock
+		value: aspect
+		value: value! !
+
+"December 14, 2009 -> 0:34:43"!
+
+! (Delta mirrorFor: #BlockDependent) methodsFor: 'priviate-initialization' !
+initialize: block
+
+	updateBlock := block! !
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+Delta define: #AlienWeakTable as: (
+(Class subclassOf: 'Object' instanceVariables: 'accessProtect <Semaphore>
+firstUnusedIndex <Integer>
+lastUsedIndex <Integer>
+weakArray <WeakArray>
+strongArray <Array>
+owner <Object>')) !
+
+
+"December 14, 2009 -> 0:35:4"!
+
+(Delta mirrorFor: #AlienWeakTable)
+comment: 
+''!
+
+
+"December 14, 2009 -> 0:35:4"!
+
+! (Delta mirrorFor: #AlienWeakTable) classSide methodsFor: 'instance creation' !
+newForOwner: owner
+	^self new initializeWithOwner: owner! !
+
+"December 14, 2009 -> 0:35:4"!
+
+! (Delta mirrorFor: #AlienWeakTable) methodsFor: 'adding' !
+add: anObject finalizing: postMortemFinalizationTag
+	"Register a new object in the table, with the associated tag.
+	 The object is held onto weakly, the tag--strongly. The tag
+	 will be passed to the owner as the argument of #finalize:
+	 some time after the object is garbage collected."
+
+	| size start delta |
+	accessProtect critical:
+		[size := strongArray size.
+		 start := firstUnusedIndex].
+	start to: size do:
+		[:i|
+		(strongArray at: i) == nil ifTrue:
+			[accessProtect critical:
+				[weakArray at: i put: anObject.
+				 strongArray at: i put: postMortemFinalizationTag.
+				 firstUnusedIndex := i + 1.
+				 i > lastUsedIndex ifTrue: [lastUsedIndex := i]].
+			 ^anObject]].
+	delta := size min: 4096.
+	accessProtect critical:
+		[(weakArray := weakArray copyGrownBy: delta)
+			 at: size + 1 put: anObject.
+		 (strongArray := strongArray  copyGrownBy: delta)
+			at: size put: postMortemFinalizationTag.
+		 firstUnusedIndex := size + 1.
+		 lastUsedIndex := size].
+	^anObject! !
+
+"December 14, 2009 -> 0:35:4"!
+
+! (Delta mirrorFor: #AlienWeakTable) methodsFor: 'initialization' !
+initializeWithOwner: anOwner
+
+	accessProtect := Semaphore forMutualExclusion.
+	firstUnusedIndex := 1.
+	lastUsedIndex := 0.
+	weakArray := WeakArray new: 1024.
+	strongArray := Array new: 1024.
+	owner := anOwner.
+	weakArray addWeakDependent: (BlockDependent
+															updateBlock: [:aspect| self finalizeValues])! !
+
+"December 14, 2009 -> 0:35:15"!
+
+Delta define: #Object as: (
+(Class delta)) !
+
+
+"December 14, 2009 -> 0:35:15"!
+
+(Delta mirrorFor: #Object)
+comment: 
+'This is the class implementing behavior common to all objects.
+
+Subclass responsibilities:
+    %responsibility copying
+        Any class with instance variables whose values should not be shared between copies of an instance should
+        override #postCopy to copy them as necessary, as well as sending "super postCopy".   Classes whose instances
+        are immutable and can be shared can override #copy to return self.
+    %responsibility hash
+        If you override the #= method, you must override the #hash method if necessary
+            to ensure that all objects that are = have hash values that are = too.  For example,
+        if you override #= in class YourPoint to test that both x and y are the same, you
+        must override #hash to do something like: (^self x hash bitXor: self y hash), so
+        that the hash value depends upon the hash values of all the values you are
+        comparing.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'file out' !
+fileOutSignature ^<Integer>
+    ^67! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+new ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
+	^VM new: self
+"
+	^guaranteed <Instance> (super new)
+"! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+new2
+
+	^{{primitiveNew: self
+			ifFail: [:e|
+						VM handleFailure: e
+								allocate: [:tenured :failBlock| VM new: self ifFail: failBlock]
+								ifExpand: [VM expand]]}}! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+new3 ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
+	^{{self primitiveNew2IfFail: [ :err <Symbol> |]}}
+"
+	^guaranteed <Instance> (super new)
+"! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'instance creation' !
+oldnew ^<Instance>
+	"Create and return an initialized instance of this class."
+
+	"%remove when inlining working:"
+	^{{self primitiveNewIfFail: [ :err <Symbol> |
+		VM scavengeGarbage.
+		{{self primitiveNewIfFail: [:err <Symbol> |
+			Transcript show: err; cr.
+			VM isGCPending
+				ifTrue: [VM waitForGC.
+							{{self primitiveNewIfFail: [:err <Symbol> |
+								VM expand: (VMMirror on: self) instanceSize.
+								VM deferredGC.
+								{{self primitiveNewIfFail: [:err <Symbol> |
+																		self error: err]}}]}}]
+				ifFalse: [VM expand: (VMMirror on: self) instanceSize.
+							VM deferredGC.
+							{{self primitiveNewIfFail: [:err <Symbol> |
+																	self error: err]}}].
+			]}}
+		]}}
+"
+	^guaranteed <Instance> (super new)
+"! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'private' !
+primitiveNew ^<Instance>
+	"%todo: Call this basicNew if in commonbase"
+
+	"This method produces an uninitialized instance of this class. It should not be overridden"
+
+	"This is the point at which Strongtalk starts to know about the type relationship between
+	 classes & instances"
+
+	^guaranteed <Instance> (super primitiveNew)! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'reflection' !
+coerce: o <Object> ^<Instance>
+
+	^self coerce: o else: [ self error: 'Coercion failed with no failure code' ]! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'reflection' !
+coerce: o <Object> do: blk <[Instance]>
+
+	blk value: (self coerce: o else: [ ^self ])! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'reflection' !
+coerce: o <Object> do: blk <[Instance,^Y def]> else: fail <[^X def]>   ^<Y|X>
+
+	"%remove when typecase correctly implemented."
+	^blk value: (self coerce: o else: [ ^fail value ])! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'reflection' !
+coerce: o <Object> else: fail <[^X def]>   ^<Instance|X>
+
+	"%remove when typecase correctly implemented."
+	^(o isKindOf: self)
+		ifTrue: [ guaranteed <Instance> o ]
+		ifFalse: [ fail value ]! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'reflection' !
+isSupportedBy: o <Object> ^<Boolean>
+
+	self coerce: o else: [ ^false ].
+	^true! !
+
+"December 14, 2009 -> 0:35:15"!
+
+! (Delta mirrorFor: #Object) classSide methodsFor: 'utility' !
+yourself ^<Self>
+	"A handy message for syntactic convenience.  Useful in a message cascade when
+	 you want the receiver of the previous message, but it doesn't return self, e.g.
+		(Dictionary new) at: 1 put: 2; yourself
+	 returns the new dictionary, rather than 2"
+
+	^self! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'Camp Smalltalk' !
+sunitAddDependent: anObject
+ 
+        self addDependent: anObject! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'Camp Smalltalk' !
+sunitChanged: anAspect
+ 
+        self changed: anAspect! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'Camp Smalltalk' !
+sunitChanged: anAspect with: value
+ 
+        self changed: anAspect with: value! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'Camp Smalltalk' !
+sunitRemoveDependent: anObject
+ 
+        self removeDependent: anObject! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'accessing' !
+hash ^<Int>
+	"Return a hash value that is the same as that returned by any
+	 object which is = to the receiver.  This usually means that you 
+	 must override this method too if you override ="
+
+	^self identityHash! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'accessing' !
+identityHash ^<Integer>
+	"Return a hash value based on the receiver's identity"
+
+	^{{ self primitiveHash }}! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+deltaHack
+
+	"Called by methods that should be revisited after bootstrap"! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isAssociationOop ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: GlobalAssociation.! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isBehavior ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Behavior.! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isBoolean ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Boolean.! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isCharacter ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Character.! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isCollection ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Collection[Object].! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isError ^ <Boolean>
+	self deltaHack.
+	^false ! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isInteger ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Integer.! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isMethodOop ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Method.! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isOop ^ <Boolean>
+	self deltaHack.
+	^true! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isSmallInteger ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: SmallInteger! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isString ^ <Boolean>
+	self deltaHack.
+	^(self isKindOf: String) or:[self isSymbol].! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isSymbol ^ <Boolean>
+	self deltaHack.
+	^self isKindOf: Symbol.! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+isSymbolOop ^ <Boolean>
+	self deltaHack.
+	^self isSymbol! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'bootstrap-temporary' !
+printValue
+	self deltaHack.
+	{{self primitivePrintValue}}! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'copying' !
+copy ^<Instance>
+	"Create and return a copy of the receiver.  Objects that are immutable and cannot be copied may return
+	 themselves.  Objects contained by this object that are externally accessible objects and  are 	 considered
+	 'separate' from  the receiver (such as the elements of a collection) are not copied.
+
+	Subclasses must override postCopy if they contain private information that should not be shared
+	after a copy."
+
+	^self shallowCopy postCopy! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'dependencies' !
+addDependent: o <Object>
+
+	"Objects that aren't models don't need to store dependents, since they don't do notification.  To
+	  add support for BlueBook-style dependency notification to a class, mix-in or inherit from 
+	  NotifyingObject."! !
+
+"December 14, 2009 -> 0:35:16"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'dependencies' !
+removeDependent: o <Object>
+
+	"Objects that aren't models don't need to store dependents, since they don't do notification"! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'dependencies' !
+update: aspect <Object> 
+! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'dependencies' !
+update: aspect <Object> with: value <Object>
+
+	self update: aspect
+! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'fake brands' !
+Number ^<Boolean>
+	^false! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'fake brands' !
+Str ^<Boolean>
+	^false! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'file out' !
+fileOutBodyOn: d <Dumper>
+	| start <Integer> end <Integer> |
+	"File out instance variables"
+	start	:= self fileOutHeaderSize.
+	end		:=	(Reflection classOf: self)	 fileOutNonIndexableSize.
+	start + 1 to: end do: [:index <Integer> |
+		(self fileOutInstVarAt: index) fileOutOn: d
+	]! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'file out' !
+fileOutHeaderOn: d <Dumper>
+	d	putByte: 		self fileOutSignature.
+	d	putInteger:	self fileOutSize.
+	(Reflection classOf: self)		fileOutOn: d! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'file out' !
+fileOutHeaderSize ^<Integer>
+	^(Reflection classOf: self) fileOutInstanceHeaderSize! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'file out' !
+fileOutInstVarAt: index <Integer> ^<Object>
+	^{{self primitiveInstVarAt: index ifFail: [:err <Symbol> | self error: err]}}! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'file out' !
+fileOutSignature ^<Integer>
+    ^99! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'file out' !
+fileOutSize ^<Integer>
+	^{{self primitiveOopSize}}! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'performing' !
+perform: selector <"Symbol"BottomType> ^<Object>
+	"Send the message selector to the receiver with no arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type. 
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+     are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'performing' !
+perform: selector <Symbol>
+with: arg1 <BottomType>
+^<Object>
+
+	"Send the message selector to the receiver with 1 arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type.
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+         are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			with: arg1
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}
+! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'performing' !
+perform: selector <Symbol>
+with: arg1 <BottomType>
+with: arg2 <BottomType>
+^<Object>
+
+	"Send the message selector to the receiver with 2 arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type.
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+         are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			with: arg1
+			with: arg2
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}
+! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'performing' !
+perform: selector <Symbol>
+with: arg1 <BottomType>
+with: arg2 <BottomType>
+with: arg3 <BottomType>
+^<Object>
+
+	"Send the message selector to the receiver with 3 arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type.
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+         are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			with: arg1
+			with: arg2
+			with: arg3
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}
+! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'performing' !
+perform: selector <Symbol>
+withArguments: args <SeqCltn[Object]>
+^<Object>
+
+	"Send the message selector to the receiver with 4 arguments, and return the result.
+	 This can potentially result in a run-time error if the receiver doesn't implement
+	 the message, or if the method needs a different number of arguments, or if an argument
+	 is of an incorrect type.
+
+	The  type BottomType is used so that you have to put in an explicit guarantee to make
+	 your code typecheck.  Although this is really a trick, we consider it sensible because you
+         are in fact taking over the  typechecker's responsiblity to guarantee that the perform
+	 will work."
+
+	^{{self primitivePerform: selector
+			arguments: args
+			ifFail: [ :err <Symbol> |
+							self error: err ]
+	  }}
+! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'printing' !
+print
+
+	self printOn: Platform errorStream.
+	Platform errorStream cr.! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'printing' !
+printOn: strm <CharOutputStream>
+
+	| nm <Str> |
+	nm := self class name.
+	strm	nextPutAll: (self articleFor: nm);
+			nextPut: Character space;
+			nextPutAll: nm.! !
+
+"December 14, 2009 -> 0:35:17"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'printing' !
+printString ^<Str>
+	"Return a string that holds a readable but terse representation of the receiver"
+
+	| strm <CharWriteStream> |
+	strm := CharacterReadWriteStream on: (String new: 8).
+	self printOn: strm.
+	^strm contentsWritten! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'printing' !
+vmPrint
+     "%remove"
+	{{self primitivePrint}}! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private' !
+articleFor: s <Str> ^<Str>
+
+	^(s at: 1) isVowel
+			ifTrue: [ 'an' ]
+			ifFalse: [ 'a' ]! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private' !
+assert: predicate <[^Boolean]>
+	"Assert that the predicate is true.   If it is false, the program is considered to have failed.  It is STRONGLY encouraged that you
+	 sprinkle assertions liberally through your code, to doublecheck that your designs are correct.  When you are running in a
+  	 high performance production environment, and wish to gain every bit of performance at the expense of some extra program
+	 validity checks, you can change inProduction to return true, so that none of the assertions are checked.
+	 Because of this, you should not put code with side effects in assert blocks, since they will not be executed
+	 in production environments.  See BooleanBlock>>verify for an alternative that always tests."
+
+	self inProduction
+		ifFalse: [ predicate verify ]! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private' !
+postCopy
+	"This is sent to an object that is the result of a shallowCopy to allow it to copy any subobjects
+	  that should not be shared.  Subclasses should override this if they have such subobjects."
+! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private' !
+shallowCopy ^<Instance>
+	"Create a bitwise copy of the current object.  This is not public because the new object shares the
+	 values of all of the receiver's instance variables, which may violate the design of the receiver's class.
+	 The postCopy message fixes such undesired sharing, after the fact"
+
+	^guaranteed <Instance>
+		{{self primitiveShallowCopyIfFail: [ :err <Symbol> | self error: err ]}}! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private' !
+shallowCopyTenured ^<Instance>
+	"As shallowCopy, but forces the copy to be in old space"
+
+	^guaranteed <Instance>
+		{{self primitiveCopyTenuredIfFail: [ :err <Symbol> | self error: err ]}} ! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private- file out' !
+fileOutOn: d <Dumper>
+
+	"%bug: this method should NOT be called fileOutOn:,
+		since this is NOT Smalltalk fileOut, but image save
+		code.  This conflicts with the real fileOutOn:, which
+		is implemented in DefinitionWriter"
+		
+	d at: self ifPresent: [ :id <Integer> |
+		d putByte: 51.
+		d putInteger: id.
+	] ifAbsentPut: [ :id <Integer> |
+		self fileOutHeaderOn: d.
+		self fileOutBodyOn: d.
+	]! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+doesNotUnderstand: m <Message> ^<BottomType>
+	"Processor stopWithError: (ProcessDoesNotUnderstandError new message: m)"
+	(MessageNotUnderstood message: m) signal! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+error: msg <Str> ^<BottomType>
+
+	"Processor stopWithError: (ProcessExplicitError new msg: msg)"
+	Error signal: msg! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+halt
+
+	"Processor stopWithError: ProcessHaltError new."
+	Halt signal
+! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+shouldNotHappen ^<BottomType>
+
+	self error: 'This shouldn''t happen'.! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+shouldNotImplement ^<BottomType>
+
+	self error: 'A message that cannot be supported by this class has been sent to an instance'.! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+subclassResponsibility ^<BottomType>
+
+	"Note: In the Strongtalk language, a method whose body consists of only 
+	 'self subclassResponsibility' is considered a declaration, which subclasses
+	  must implement for concrete subclasses"
+
+	self error: 'A message that should be implemented but is not has been sent to this object'.! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+unimplemented ^<BottomType>
+
+	self error: 'A hook for unimplemented code has been encountered'! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+vmHalt
+
+	{{primitiveVMBreakpoint}}! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-error handling' !
+vmHalt: condition
+
+	condition ifTrue: [self vmHalt]! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-initialization' !
+initialize
+
+	"This initialize method does NOT have to be called by subclasses.  It is here
+		as a stub so that mixins can have an initialize method that sends super initialize so
+		that they work when invoked in the presence superclass initialize methods.
+		** Note that this method is NOT called by Object>>new; subclasses must provide a
+		#new method to invoke it if needed."
+
+	"do nothing"! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-reflective' !
+actualClass ^<Self class>
+
+	^{{self primitiveClass}}! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-reflective' !
+become: otherObject <BottomType>
+	"Replace all references to the receiver anywhere in this image with references to otherObject, instead.
+
+	This is a very dangerous message that should only be used if you really know what you are doing. Note that ALL
+	references are changed, including 'self' in any currently active method contexts for the receiver,
+	which means that instance variables could be accessed incorrectly, etc.  Note that this also means that the receiver
+	becomes COMPLETELY inaccessible.
+	 Also, this is not typesafe, and the type of the argument has been chosen to force typed code to insert an 
+	 explicit guarantee, to avoid 'accidental' type-safety holes.  "
+
+	"self unimplemented"
+	{{ self primitiveBecome: otherObject ifFail: [:error| self error: error] }}! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'private-system testing' !
+inProduction ^<Boolean>
+
+	"Indicates whether the system should emphasis speed over extra design validity checks.
+     You can change this to return true for production applications.
+     For example, when this is true, assertions (see #assert) are not checked."
+
+	^true! !
+
+"December 14, 2009 -> 0:35:18"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
+== other <Object> ^<Boolean>
+	"test whether the receiver is identical to (completely interchangeable with) other"
+
+	^{{self primitiveEqual: other}}! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
+class ^<Object class>
+	"Return the effective class of this object.  This is reflective, and thus indiscriminate
+	  use is considered bad style.
+
+	  Unlike in some other Smalltalk implementations, it
+	  is ok to override this method to return something other than the real class of the
+	  receiver, in situations where one class is trying to completely emulate another.
+
+	  If you are writing Strongtalk code that needs to send a class message that you have
+	  written to the receiver's class, you should use the #actualClass message, which is
+	  private.
+
+	  Truly reflective tools such as inspectors, etc. that need to get at the actual class
+	  of an object o should use the message (Reflection classOf: o).  The idea behind this
+	  scheme is that an object should be able (as much as feasible) to hide its
+	  implementation behind its message interface (including its actual class) from
+	  user code.  This allows, for example, forwarding objects (or proxies, etc), to act
+	  as if they have the same class as the object they are forwarding to, without breaking
+	  any system invariant, or breaking debugging and inspecting tools.  At the moment,
+	  the only exception to this rule is that the #== message may not be overridden, for
+	  performance reasons."
+
+	^{{self primitiveClass}}! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
+isKindOf: beh <Behavior> ^<Boolean>
+	| current <Behavior> |
+
+	current := Reflection classOf: self.
+
+	"%remove %hack: until coerce is fast, we put a simple cache
+		here to speed this up when it is relatively monomorphic.
+	    This is NOT safe when preemption is on"
+	(current == CurrentClassCacheForIsKindOf
+			and: [ beh == BehCacheForIsKindOf ])
+		ifTrue: [   ^ResultCacheForIsKindOf ].
+
+	CurrentClassCacheForIsKindOf := current.
+	BehCacheForIsKindOf := beh.
+
+	[ current = beh ]
+		whileFalse: [ current := current superclassIfAbsent: [ ^ResultCacheForIsKindOf := false ] ].
+	^ResultCacheForIsKindOf := true! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
+isMemberOf: behavior <Behavior> ^<Boolean>
+
+	^self actualClass = behavior! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
+respondsTo: selector <Symbol> ^<Boolean>
+
+	self unimplemented! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
+species ^<Object class>
+
+	^self actualClass! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'reflective' !
+~~ other <Object> ^<Boolean>
+	"test whether the receiver is not identical to (not completely interchangeable with) other"
+
+	^(self == other) 
+		ifTrue: [ false ] "for speed"
+		ifFalse: [ true ]! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'restricted-finalization' !
+finalize
+" no live references to the receiver exist. Clean up any external
+  resources owned by the receiver. The receiver may be resurrected.
+  Default is to do nothing"! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+= other <Object> ^<Boolean>
+	"test whether this object and other are equivalent (as close to the same
+	 as possible without necessarily being ==).  
+	
+	 By default this is the same as ==.  Subclasses that redefine this must ensure
+	 that: 1) the method works with ANY object passed in as an argument
+	 (you CANNOT assume that the other object is of any particular type/class)
+	 2) if two objects are =, their #hash values are = too
+	 "
+
+	^self == other! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+isNil ^<Boolean>
+	"test whether the receiver is nil.  This method should not be overridden by application programmers."
+
+	^false! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+isPoint ^<Boolean>
+	"%todo: remove when coercion is fast.  Don't write code that depends on this!!"
+
+	^false! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+notNil ^<Boolean>
+	"test whether the receiver is not nil.  This method should not be overridden by users."
+
+	^true! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+~= other <Object> ^<Boolean>
+	"not ="
+
+	^(self = other)
+		ifTrue: [ false ]
+		ifFalse: [ true ]! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'utility' !
+,, other <Y def> ^<VarTuple[X,Y]>
+			{where X is receiverType}
+	"Return a 2 element tuple containing the receiver as its first element, and other as its second."
+
+	| safeself <X> |
+	"this guarantee is safe because of the inference clause"
+	safeself := guaranteed <X> self.
+"%todo: use real tuple class"
+	^guaranteed <VarTuple[X,Y]> (Association[X,Y] key: safeself value: other)! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'utility' !
+-> other <Y def> ^<VarAssoc[X,Y]>
+	{where X is receiverType}
+
+	| safeself <X> |
+	"this guarantee is safe because of the inference clause"
+	safeself := guaranteed <X> self.
+
+	^Association[X,Y] key: safeself value: other! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'utility' !
+test: i <Int> is: predicate <[^Boolean]>
+
+	predicate value ifFalse: [
+		Platform errorStream show: 'Test '; print: i; show: ' failed'; cr.
+		self error: 'Test failed'.	]! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'utility' !
+value
+
+	^self! !
+
+"December 14, 2009 -> 0:35:19"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'utility' !
+yourself ^<Self>
+
+	"This message is used for syntactic convenience to get at the original receiver
+	  in a cascade, so as to avoid creating a temporary variable.  Example:
+		OrderedCollection[E] class method
+			with: <E> ^<Instance>
+
+		  		^(self new: 1) addLast: val; yourself
+
+	 In this example, yourself is needed to return the new ordered collection, because
+	 the #addLast: message returns val, not the ordered collection."! !
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+Delta define: #Process as: (
+(Class subclassOf: 'Object' instanceVariables: 'priority <Int>
+body <[]>
+win32Handle <Win32Handle>
+	"the thread id"
+processError <ProcessError>
+	"Description of why process stopped running"
+handlerChain
+	"Chain of registered exception handlers for this process"')) !
+
+
+"December 14, 2009 -> 0:35:33"!
+
+(Delta mirrorFor: #Process)
+comment: 
+'Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) classSide methodsFor: 'file out' !
+fileOutSignature ^<Integer>
+    ^80! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) classSide methodsFor: 'instance creation' !
+for: block <[]> ^<Instance>
+	"Create and return a new process that will execute the block at the
+	 specified priority.  The new process is suspended."
+
+	| i <Instance> |
+	i := (guaranteed <Instance>
+		{{self primitiveProcessCreate: [ i recordId. block value ]
+				ifFail: [ :err <Symbol> | self error: err ]
+		}}
+	  ) initFor: block.
+	^i! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) classSide methodsFor: 'instance creation' !
+primitiveCreate: block! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'accessing' !
+priority ^<Int>
+
+	^priority! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'accessing' !
+priority: prio <Int>
+
+	priority := prio! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'accessing' !
+processError ^ <ProcessError>
+
+	^processError
+! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'accessing' !
+status ^<Symbol>
+	"One of:
+		#Initialized				- State right after creation.
+		#Yielded					- Gave up control by calling yield.
+		#InAsyncDLL			- Gave up control but continues to execute asynchronous DLL.
+		#Stopped				- Gave up control by calling stop.
+		#Preempted			- Was preempted by system.
+		#Running					- Currently running
+		#Completed			- Ran to completion.
+		#Killed						- The process has been terminated.
+		#BooleanError		- A boolean was expected at hardcoded control structure.
+		#LookupError			- The receiver does not understand doesNotUnderstand:.
+		#PrimitiveLookupError	- Binding a primitive failed.
+		#DLLLookupError				 - Binding a DLL function failed.
+		#NLRError				- Context for NLR did not exist.
+		#StackOverflow		- Stack exhausted.
+	"
+
+	^{{self primitiveProcessStatus}}! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'control' !
+resume
+
+	Processor resume: self! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'control' !
+suspend
+
+	Processor suspend: self.
+	Processor activeProcess = self
+		ifTrue: [ self yield ]! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'control' !
+terminate
+
+	Processor terminating: self.
+	self vmTerminate.	! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'control' !
+waitUntilDead
+	"can be called after a process has been terminated to wait until it has completed
+		unwinding its stack etc, and is truly dead.  This loops currently, so it is not
+		a good way for waiting for the death of a process that has not been terminated.
+		This may never return if the process that has been terminated does not ever
+		finish cleaning up."
+	
+	[ self running ]
+		whileTrue: [ Processor yield ]! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+handle: exception
+
+	^self handlerChain handle: exception! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+handlerChain
+
+	handlerChain isNil
+		ifTrue: [handlerChain := BlockExceptionHandler default].
+	^handlerChain! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+handlerChain: aHandler
+
+	handlerChain := aHandler! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+inEnvironment: aHandler do: block
+
+	| oldHandler |
+	oldHandler := self handlerChain.
+	handlerChain := aHandler.
+	block
+		ensure: [handlerChain := oldHandler]! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+popHandler
+
+	| poppedHandler |
+	handlerChain := (poppedHandler := self handlerChain) nextHandler.
+	^poppedHandler! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+pushHandler: handler
+
+	handler nextHandler: self handlerChain.
+	handlerChain := handler ! !
+
+"December 14, 2009 -> 0:35:33"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+resetExceptionEnvironment
+
+	handlerChain := nil
+
+! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'exception support' !
+resetHandlers
+
+	handlerChain := nil
+
+! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'file out' !
+fileOutSignature ^<Integer>
+    ^112! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'private' !
+register
+
+	Processor register: self.! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'private' !
+vmTerminate
+
+	{{self primitiveProcessTerminateIfFail: [ :err <Symbol> | self error: err ]}}! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'private-initialization' !
+initFor: block <[]>
+
+	body := block.
+
+	self register.
+	
+! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'private-initialization' !
+recordId
+
+	win32Handle := Platform currentThreadId! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
+activationStack ^ <Array[Activation]>
+
+	^{{self primitiveProcessStackLimit: 100 ifFail: [ :err <CompressedSymbol>  | self error: err]}}! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
+processError: e <ProcessError>
+
+	processError := e
+! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
+stopInEvaluator
+
+	Processor stopInEvaluator: self! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
+traceStack
+
+	{{self primitiveProcessTraceStack: 20 ifFail: [ :err <Symbol> | self error: err]}}
+! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
+win32Handle ^<Win32Handle>
+	"This is valid only after the process has begun to actually execute"
+
+	^win32Handle! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'restricted' !
+yield
+	{{primitiveProcessYield}}! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'testing' !
+dead
+
+	^self status == #Killed! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'testing' !
+running ^<Boolean>
+	"Not suspended, dying, or dead. (This includes processes blocked in async dll calls)"
+
+	^Processor isRunning: self! !
+
+"December 14, 2009 -> 0:35:34"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'testing' !
+suspended ^<Boolean>
+	"Not on the running list, but can be resumed"
+
+	| s <Symbol> |
+	self running
+		ifTrue: [ ^false ].
+	s := self status.
+	^s == #Yielded
+		or: [ s == #InAsyncDLL
+		or: [ s == #Initialized
+		or: [ s == #Preempted
+		or: [ s == #Stopped ]   ]]]! !
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: ''))) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: ''))) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: ''))) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: ''))) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: ''))) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: ''))) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: '') classVariables: 'FinalizationProcess <Process>
+FinalizationSemaphore <Semaphore>')) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: 'dependents <NotifyingObject>') classVariables: 'FinalizationProcess <Process>
+FinalizationSemaphore <Semaphore>')) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: 'dependents <NotifyingObject>') classVariables: 'FinalizationProcess <Process>
+FinalizationSemaphore <Semaphore>')) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: 'dependents <NotifyingObject>') classVariables: 'FinalizationProcess <Process>
+FinalizationSemaphore <Semaphore>')) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: 'dependents <NotifyingObject>') classVariables: 'FinalizationProcess <Process>
+FinalizationSemaphore <Semaphore>')) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+Delta define: #WeakArray as: (
+Generic forAll: 'E ' body: ((Class subclassOf: 'IndexedNextOfKinInstanceVariables[E] |> Array[E]' instanceVariables: 'dependents <NotifyingObject>') classVariables: 'FinalizationProcess <Process>
+FinalizationSemaphore <Semaphore>')) !
+
+
+"December 14, 2009 -> 0:35:44"!
+
+(Delta mirrorFor: #WeakArray)
+comment: 
+'Implements Arrays whose elements are checked by the garbage collector
+to see if their memory would be reclaimed if they weren''t referenced by a
+WeakArray.  This is called a ''near-death experience''.   The weak array is notified
+whenever such a reference is detected by the collector, with the message
+hadNearDeathExperience:.  By default, this message just nils out any
+references to the object, so that it can be reclaimed on the next garbage
+collection. 
+
+Compatibility note:
+This kind of WeakArray is not quite the same as the WeakArrays implemented
+in some other Smalltalks.  Other WeakArrays implement ''post-facto'' notification,
+which some company has patented.  Our WeakArrays actually are more flexible,
+since they implement notification before-the-fact of object collection, so that
+the contents of the object are still accessible.  For example, if this was used to
+hold references to open file descriptors, upon notification, the file descriptor can
+be closed, and then its reference nilled out so that it can be collected.  With
+previous WeakArrays, the descriptor gets collected before you find out that it
+was destroyed, so you have to keep the information needed to close the file
+in some additional data structure.
+
+Tags: %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license
+'!
+
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'initialization' !
+initialize
+
+	self startFinalizationProcess! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'instance creation' !
+new: size <Int>
+
+	self startFinalizationProcess.
+	^(super new: size)
+		initialize;
+		yourself! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+checkNotification
+	[ 
+		{{primitiveNotificationQueueGetIfFail: [ :err |^self]}}  notify.
+	] repeat.! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+finalizationBlock
+
+	^[[[self checkNotification]
+			on: Error
+			do: [:error| self handleFinalizationError: error] .
+		self finalizationSemaphore wait] repeat]! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+finalizationPriority
+
+	"%TODO revisit once Process prioritization implemented"
+	^Processor activePriority! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+finalizationProcess
+
+	^FinalizationProcess! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+finalizationSemaphore
+
+	self initFinalizationSemaphore.
+	^FinalizationSemaphore! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+handleFinalizationError: error
+
+	FinalizationProcess := nil.
+	error pass! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+hasFinalizationProcess
+
+	^self finalizationProcess notNil
+		and: [self finalizationProcess running]! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+initFinalizationSemaphore
+
+	FinalizationSemaphore isNil
+		ifTrue: [FinalizationSemaphore := Semaphore new]! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+startFinalizationProcess
+
+	self hasFinalizationProcess ifTrue: [^self].
+	self terminateFinalizationProcess.
+	self initFinalizationSemaphore.
+	FinalizationProcess := self finalizationBlock forkAt: self finalizationPriority! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'private-finalization' !
+terminateFinalizationProcess
+
+	true ifTrue: [^self]. "%TODO remove when stack overflow issue fixed"
+	self finalizationProcess notNil
+		ifTrue: [[self finalizationProcess terminate]
+						on: Error
+						do: [:ignore|]]! !
+
+"December 14, 2009 -> 0:35:44"!
+
+! (Delta mirrorFor: #WeakArray) classSide methodsFor: 'restricted to VM-finalization' !
+signalFinalization
+
+	self finalizationSemaphore waitWouldBlock
+		ifTrue: [self finalizationSemaphore signal]! !
+
+"December 14, 2009 -> 0:35:45"!
+
+! (Delta mirrorFor: #WeakArray) methodsFor: 'notification' !
+hadNearDeathExperience: anObject
+	^{{primitiveHadNearDeathExperience: anObject}}! !
+
+"December 14, 2009 -> 0:35:45"!
+
+! (Delta mirrorFor: #WeakArray) methodsFor: 'notification' !
+notify
+	1 to: self size do: [ :index |
+		| victim |
+		(self hadNearDeathExperience: (victim := self at: index)) ifTrue: [
+			self at: index put: nil.
+			dependents changed: #finalize with: victim
+		]
+	]! !
+
+"December 14, 2009 -> 0:35:45"!
+
+! (Delta mirrorFor: #WeakArray) methodsFor: 'private-initialization' !
+initialize
+
+	dependents := NotifyingObject new! !
+
+"December 14, 2009 -> 0:35:45"!
+
+! (Delta mirrorFor: #WeakArray) methodsFor: 'weak dependents' !
+addWeakDependent: dependent
+
+	dependents addDependent: dependent! !
+
+"December 14, 2009 -> 0:35:45"!
+
+! (Delta mirrorFor: #WeakArray) methodsFor: 'weak dependents' !
+removeWeakDependent: dependent
+
+	dependents removeDependent: dependent! !
+
+"December 14, 2009 -> 0:35:52"!
+
+Delta define: #WeakArrayTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 14, 2009 -> 0:35:52"!
+
+(Delta mirrorFor: #WeakArrayTest)
+comment: 
+''!
+
+
+"December 14, 2009 -> 0:35:52"!
+
+! (Delta mirrorFor: #WeakArrayTest) methodsFor: 'testing' !
+testNotifiesWeakDependentOnObjectDeath
+
+| array object dependent victim |
+object := Object new.
+dependent := BlockDependent updateBlock: [:aspect :object | victim := object].
+array := WeakArray new: 1.
+array at: 1 put: object.
+array addWeakDependent: dependent.
+VM collectGarbage.
+self assert: victim isNil description: 'victim should still have references'.
+object := nil.
+VM collectGarbage.
+Processor yield.
+self deny: victim isNil description: 'victim not dying'! !
+
+"December 14, 2009 -> 0:36:3"!
+
+Delta define: #FinalizationDependent as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 14, 2009 -> 0:36:3"!
+
+(Delta mirrorFor: #FinalizationDependent)
+comment: 
+'A dependent that can be registered with a WeakArray
+instance to receive notification about terminal objects.
+'!
+
+
+"December 14, 2009 -> 0:36:3"!
+
+! (Delta mirrorFor: #FinalizationDependent) methodsFor: 'dependencies' !
+update: aspect with: victim
+
+	#finalize == aspect ifFalse: [^self].
+	victim finalize! !
+
+"December 14, 2009 -> 0:36:10"!
+
+Delta define: #FinalizationNotifier as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 14, 2009 -> 0:36:10"!
+
+(Delta mirrorFor: #FinalizationNotifier)
+comment: 
+''!
+
+
+"December 14, 2009 -> 0:36:10"!
+
+! (Delta mirrorFor: #FinalizationNotifier) methodsFor: 'restricted-finalization' !
+finalize
+
+	Transcript cr; print: self! !
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+
+
+"December 14, 2009 -> 0:36:21"!
+
+(Delta mirrorFor: #VM)
+comment: 
+'(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.'!
+
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: class
+
+	^{{primitiveNew: class
+			tenured: false
+			ifFail: [:e| self handleNew: class failure: e]}}! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+new: indexableClass size: size
+
+	^{{primitiveIndexedObjectNew: indexableClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNew: indexableClass
+										size: size
+										failure: e]}}! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newBytes: byteClass size: size
+
+	^{{primitiveIndexedByteNew: byteClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNewBytes: byteClass
+										size: size
+										failure: e]}}! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'allocation' !
+newDoubleBytes: doubleByteClass size: size
+
+	^{{primitiveIndexedDoubleByteNew: doubleByteClass
+			size: size
+			tenured: false
+			ifFail: [:e| self handleNewDoubleBytes: doubleByteClass
+										size: size
+										failure: e]}}! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'benchmarking' !
+benchmarkNew: iterations
+
+	|elapsed|
+	self resetProfiler.
+	self engageProfiler.
+	elapsed := Time millisecondsToRun: [
+								VM privateBenchmarkNew: iterations].
+	self disengageProfiler.
+	self printProfile.
+	Transcript cr; show: elapsed printString.! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'benchmarking' !
+benchmarkNewNew: iterations
+
+	|elapsed|
+	self resetProfiler.
+	self engageProfiler.
+	self resetAllocCounts.
+	elapsed := Time millisecondsToRun: [
+								VM privateBenchmarkNewNew: iterations].
+	self disengageProfiler.
+	self printProfile.
+	Transcript cr; show: elapsed printString.
+	Transcript cr; show: self allocFailures printString! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'benchmarking' !
+privateBenchmarkNew: iterations
+
+	iterations timesRepeat: [Object new3]! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'benchmarking' !
+privateBenchmarkNewNew: iterations
+
+	iterations timesRepeat: [VM new: Object]! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
+compiledCodeOnly: value <True|False>
+	self booleanAt: #CompiledCodeOnly put: value! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
+traceDoubleByteArrayPrimitives: value <True|False>
+	self booleanAt: #TraceDoubleByteArrayPrims put: value! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
+traceProxyPrimitives: value <True|False>
+	self booleanAt: #TraceProxyPrims put: value! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
+useInliningDatabase ^<Boolean>
+
+	^VM booleanAt: #UseInliningDatabase! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
+useInliningDatabase: f <Boolean>
+
+	VM booleanAt: #UseInliningDatabase put: f! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
+wizardMode ^<True|False>
+	^self booleanAt: #WizardMode! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'boolean flags' !
+wizardMode: value <True|False>
+	self booleanAt: #WizardMode put: value! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+invocationCounterLimit ^ <Int>
+
+	^{{primitiveInterpreterInvocationCounterLimit}}! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+invocationCounterLimit: limit <Int>
+
+	{{primitiveSetInterpreterInvocationCounterLimitTo: limit
+		ifFail: [ :err <Symbol> | self error: err ]}}! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+printCompilation ^<Boolean>
+
+	^self vmFlagAt: #PrintCompilation! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+printCompilation: flag <Boolean>
+
+	self vmFlagAt: #PrintCompilation put: flag! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+printInlining ^<Boolean>
+
+	^self vmFlagAt: #PrintInlining! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+printInlining: flag <Boolean>
+
+	flag
+		ifTrue: [ self printCompilation: flag. ].
+	self vmFlagAt: #PrintInlining put: flag! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+printScavenge ^<Boolean>
+
+	^self vmFlagAt: #PrintScavenge! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+printScavenge: flag <Boolean>
+
+	self vmFlagAt: #PrintScavenge put: flag! !
+
+"December 14, 2009 -> 0:36:21"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+printZone
+
+	{{primitivePrintZone}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+recompilation ^<Boolean>
+
+	^self vmFlagAt: #UseRecompilation! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'debugging' !
+recompilation: flag <Boolean>
+
+	self vmFlagAt: #UseRecompilation put: flag! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+collectGarbage
+
+	{{self primitiveGarbageCollect}}.
+	WeakArray signalFinalization! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+deferredGC
+
+	GCSemaphore := Semaphore new.
+	[self collectGarbage.
+	GCSemaphore signal] fork! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+initializeGCProcess
+
+GCProcess := [| delay |
+							delay := Delay forMilliseconds: 500.
+							[delay wait.
+							VM objectMemorySize > 0.95
+								ifTrue: [VM collectGarbage]] repeat] fork! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+isGCPending
+
+	^GCSemaphore notNil! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+needsNewGCProcess
+
+	^GCProcess isNil
+		or: [(GCProcess running
+					or: [GCProcess suspended]) not]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+objectMemorySize
+
+	^{{self primitiveObjectMemorySize}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+scavengeGarbage
+	"Collect very recent garbage.  This is fast, but does not collect all garbage.
+		(i.e. it scavenges the object nursery) "
+
+	{{self primitiveScavenge}}.
+	WeakArray signalFinalization! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+startGCProcess
+
+	self needsNewGCProcess
+		ifTrue: [self initializeGCProcess]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+stopGCProcess
+
+	self needsNewGCProcess
+		ifFalse: [GCProcess terminate]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'garbage collection' !
+waitForGC
+
+	GCSemaphore isNil
+		ifTrue: [self deferredGC]
+		ifFalse:[GCSemaphore wait.
+					GCSemaphore := nil]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'integer flags' !
+numberOfBlockAllocations
+	^self smallIntegerAt: #NumberOfBlockAllocations! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'integer flags' !
+numberOfContextAllocations
+	^self smallIntegerAt: #NumberOfContextAllocations! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'integer flags' !
+survivorSpaceSize
+
+	^(self smallIntegerAt: #SurvivorSize) * 1024! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'integer operations' !
+numberOfMethodInvocations
+	^{{primitiveNumberOfMethodInvocations}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'integer operations' !
+numberOfNMethodInvocations
+	^{{primitiveNumberOfNMethodInvocations}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'lookup' !
+numberOfLookupCacheMisses
+	"Number of lookups that missed both the primary and secondary lookup cache"
+	^{{primitiveNumberOfLookupCacheMisses}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'lookup' !
+numberOfPrimaryLookupCacheHits
+	"Number of lookups where the result were located in the primary cache"
+	^{{primitiveNumberOfPrimaryLookupCacheHits}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'lookup' !
+numberOfSecondaryLookupCacheHits
+	"Number of lookups where the result were located in the secondary cache"
+	^{{primitiveNumberOfPrimaryLookupCacheHits}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
+booleanAt: name <Symbol> ^<SmallInteger>
+	^{{primitiveBooleanFlagAt: name ifFail: [:err | self error: self]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
+booleanAt: name <Symbol> put: value <True|False> ^<SmallInteger>
+	^{{primitiveBooleanFlagAt: name put: value ifFail: [:err | self error: err]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
+error: msg <Symbol> ^ <Boolean>
+	"ignore flags that are not defined in product version"
+	^ false! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
+smallIntegerAt: name <Symbol> ^<SmallInteger>
+	^{{primitiveSmallIntegerFlagAt: name ifFail: [:err | self error: self]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
+smallIntegerAt: name <Symbol> put: value <SmallInteger> ^<SmallInteger>
+	^{{primitiveSmallIntegerFlagAt: name put: value  ifFail: [:err | self error: self]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
+vmFlagAt: name <Symbol>  ^<Boolean>
+
+	^{{primitiveBooleanFlagAt: name
+			ifFail: [ :err <Symbol> | self error: err ]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private' !
+vmFlagAt: name <Symbol> put:  flag <Boolean>
+
+	{{primitiveBooleanFlagAt: name put: flag
+			ifFail: [ :err <Symbol> | self error: err ]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+K
+
+	^1024! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+allocFailures
+
+	^AllocFailureCount! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+allocate: allocateBlock ifExpand: expansionBlock
+
+	^allocateBlock
+			value: false
+			value: [:e|
+							self reportNonAllocationFailure: e.
+							self spaceToScavenge
+									ifTrue: [self scavengeAndAllocate: allocateBlock
+															ifExpand: expansionBlock]
+									ifFalse: [self collectAndAllocate: allocateBlock
+															ifExpand: expansionBlock]]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+canScavenge
+
+	^{{primitiveCanScavenge}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	self collectIfPossible.
+	self growIfNecessary.
+	^[allocateBlock
+			value: false
+			value: [:e|
+						self reportNonAllocationFailure: e.
+						allocateBlock
+							value: true
+							value: [:e1|
+										self reportNonAllocationFailure: e1.
+										expansionBlock value.
+										allocateBlock
+											value: true
+											value: [:e2| nil error: e2]]]]
+			ensure: [self shrinkIfPossible]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectIfPossible
+
+	self canScavenge
+		ifTrue: [self collectGarbage]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expand
+
+	|expansionSize|
+	expansionSize := (self smallIntegerAt: #ObjectHeapExpandSize) * self K.
+	self expand: expansionSize! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expand: expansionSize
+
+	{{primitiveExpandMemory: expansionSize}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expand: class size: size
+
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops + size) * self oopSize! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expandBytes: class size: size
+
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops * self oopSize + size)! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expandDoubleBytes: class size: size
+
+	|nonIndexableSizeInOops|
+	nonIndexableSizeInOops := self fixedSize: class.
+	self expand: (nonIndexableSizeInOops * self oopSize + (size * 2))! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expansionCount
+
+	^ {{primitiveExpansions}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+expansionSize
+
+	^(self smallIntegerAt: #ObjectHeapExpandSize) * self K! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+fixedSize: class
+
+	^ {{primitiveBehaviorNonIndexableSizeOf: class ifFail: [:err| nil error: err]}} + 1! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+freeSpace
+
+	^{{primitiveFreeSpace}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+growBarrier
+
+	^(self smallIntegerAt: #ObjectHeapExpandSize) * VM K! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+growIfNecessary
+
+	self freeSpace < self growBarrier
+		ifTrue: [self expand]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleFailure: error allocate: allocateBlock ifExpand: expansionBlock
+
+	self reportNonAllocationFailure: error.
+	^self spaceToScavenge
+				ifTrue: [self scavengeAndAllocate: allocateBlock
+										ifExpand: expansionBlock]
+				ifFalse: [self collectAndAllocate: allocateBlock
+										ifExpand: expansionBlock]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNew: class failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock| self new: class tenured: tenured ifFail: failBlock]
+			ifExpand: [self expand]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNew: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock| self new: class size: size tenured: tenured ifFail: failBlock]
+			ifExpand: [self expand: class size: size]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewBytes: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								self newBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expandBytes: class size: size]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+handleNewDoubleBytes: class size: size failure: error
+
+	self incFailureCount.
+	^self handleFailure: error
+			allocate: [:tenured :failBlock|
+								self newDoubleBytes: class
+										size: size
+										tenured: tenured
+										ifFail: failBlock]
+			ifExpand: [self expandDoubleBytes: class size: size]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+incFailureCount
+
+	AllocFailureCount isNil
+		ifTrue: [AllocFailureCount := 1]
+		ifFalse: [AllocFailureCount := AllocFailureCount + 1]! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+new: class ifFail: failureBlock
+
+	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+new: class size: size ifFail: failureBlock
+
+	^{{primitiveNew: class
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+new: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedObjectNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+new: class tenured: tenured ifFail: failureBlock
+
+	^{{primitiveNew: class
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newBytes: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedByteNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+newDoubleBytes: class size: size tenured: tenured ifFail: failureBlock
+
+	^{{primitiveIndexedDoubleByteNew: class
+			size: size
+			tenured: tenured
+			ifFail: [:e| failureBlock value: e]}}! !
+
+"December 14, 2009 -> 0:36:22"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+oopSize
+
+	^{{primitiveSizeOfOop}}! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+reportNonAllocationFailure: errorSymbol
+
+	(errorSymbol == #FailedAllocation)
+		ifFalse: [nil error: errorSymbol printString, ' reported during allocation']! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+resetAllocCounts
+
+	ScavengeCount := 0.
+	AllocFailureCount := 0.! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+resetScavengeCount
+
+	ScavengeCount := 0! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeAndAllocate: allocateBlock ifExpand: expansionBlock
+
+	|expansions |
+	expansions := self expansionCount.
+	self scavengeIfPossible.
+	^(expansions ~~ self expansionCount)
+			ifTrue: [self collectAndAllocate: allocateBlock
+								ifExpand: expansionBlock]
+			ifFalse: [allocateBlock
+								value: false
+								value: [:e1| self reportNonAllocationFailure: e1.
+													allocateBlock
+															value: true
+															value: [:e2| self reportNonAllocationFailure: e2.
+																				self collectAndAllocate: allocateBlock
+																						ifExpand: expansionBlock]]]! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+scavengeIfPossible
+
+	self canScavenge
+		ifTrue: [self scavengeGarbage]! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrink: size
+
+	{{primitiveShrinkMemory: size}}! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrinkBarrier
+
+	^(self smallIntegerAt: #ObjectHeapExpandSize) * 3 * VM K! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+shrinkIfPossible
+
+	self freeSpace > self shrinkBarrier
+		ifTrue: [|amountToShrink|
+						amountToShrink := self freeSpace - self shrinkBarrier.
+						self shrink: amountToShrink]! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+spaceToScavenge
+
+	^self freeSpace > (2 * self survivorSpaceSize)	! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'profiling' !
+disengageProfiler
+
+	{{primitiveFlatProfilerDisengage}}.! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'profiling' !
+engageProfiler
+
+	{{primitiveFlatProfilerEngage: Processor activeProcess ifFail: [:e| nil error: e]}}.! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'profiling' !
+printProfile
+
+	{{primitiveFlatProfilerPrint}}! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'profiling' !
+resetProfiler
+	{{primitiveFlatProfilerReset}}! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'system control' !
+quit
+	"Terminate the virtual machine"
+
+	{{primitiveQuit}}.! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'system control' !
+quitUI
+	"Terminate the user interface"
+	
+	{{<user ExternalProxy PostQuitMessage> arg: 0}}.
+! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'wrappers' !
+nmethodHistogram: blk
+	{{primitiveClearNMethodCounters}}.
+	blk value.
+	{{primitivePrintNMethodCounterHistogram: 20 ifFail: [:err | self error: err]}}! !
+
+"December 14, 2009 -> 0:36:23"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'wrappers' !
+traceLookupMissesFor: blk <[]>
+	|a b c| 
+	a := VM numberOfPrimaryLookupCacheHits.
+	b := VM numberOfSecondaryLookupCacheHits.
+	c := VM numberOfLookupCacheMisses.
+
+	blk  value.
+
+	Transcript
+					show:  (VM numberOfPrimaryLookupCacheHits - a) printString; tab
+				;	show:  (VM numberOfSecondaryLookupCacheHits - b) printString; tab
+				;	show:  (VM numberOfLookupCacheMisses - c) printString; cr.
+! !
+
+"December 14, 2009 -> 0:36:52"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 14, 2009 -> 0:36:52"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 14, 2009 -> 0:37:25"!
+
+"System saved" !
