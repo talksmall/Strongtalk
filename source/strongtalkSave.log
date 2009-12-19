@@ -109748,3 +109748,20 @@ hasFinalizationProcess
 "December 19, 2009 -> 17:51:39"!
 
 "System saved" !
+"December 19, 2009 -> 19:14:33"!
+
+! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'command line arguments' !
+runScript: filename <Str>
+
+	[	| file <FilePath> |
+		file := FilePath for: filename.
+		file exists
+			ifFalse: [	Transcript show: 'Error: script file ''', filename, ''' not found.'; cr.
+							^self	].
+		file charInputStream fileIn.
+		VM quit
+	] fork! !
+
+"December 19, 2009 -> 19:14:57"!
+
+"System saved" !

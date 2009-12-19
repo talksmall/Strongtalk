@@ -284,7 +284,8 @@ runScript: filename <Str>
 		file exists
 			ifFalse: [	Transcript show: 'Error: script file ''', filename, ''' not found.'; cr.
 							^self	].
-		file charInputStream fileIn
+		file charInputStream fileIn.
+		VM quit
 	] fork! !
 
 ! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'library class initialization' !
