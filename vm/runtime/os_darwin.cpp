@@ -57,9 +57,9 @@ void os_dump_context2(ucontext_t *context) {
 #endif
 }
 void os_dump_context() {
-	ucontext_t context;
-	getcontext(&context);
-	os_dump_context2(&context);
+//	ucontext_t context;
+//	getcontext(&context);
+//	os_dump_context2(&context);
 }
 
 static int    main_thread_id;

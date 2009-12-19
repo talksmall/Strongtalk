@@ -1,0 +1,6 @@
+| sem process |
+sem := Semaphore new.
+process := ["sem wait" Processor yield. Transcript cr; show: 'shouldn''t get here'; cr] fork.
+Processor yield.
+process terminate.
+sem signal !

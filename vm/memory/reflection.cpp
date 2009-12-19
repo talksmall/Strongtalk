@@ -565,7 +565,7 @@ bool ClassChange::compute_needed_schema_change() {
     return true;
   }
 
-  for (int index = new_class_mixin->number_of_instVars(); index > 0; index--) {
+  for (index = new_class_mixin->number_of_instVars(); index > 0; index--) {
     if (new_class_mixin->instVar_at(index) != old_class_mixin->instVar_at(index)) {
       set_reason_for_schema_change("class instance variables have changed");
       return true;
