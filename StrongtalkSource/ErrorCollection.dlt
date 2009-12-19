@@ -1,0 +1,34 @@
+Delta define: #ErrorCollection as: (
+(Class subclassOf: 'Error' instanceVariables: 'errors <OrderedCollection[Error]>')) !
+
+(Delta mirrorFor: #ErrorCollection) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ErrorCollection) group: 'Unclassified'!
+
+(Delta mirrorFor: #ErrorCollection)
+comment: 
+''!
+
+! (Delta mirrorFor: #ErrorCollection) classSide methodsFor: 'instance creation' !
+
+
+errors: errors <OrderedCollection[Error]>
+
+	^ self new
+			errors: errors;
+			yourself! !
+
+! (Delta mirrorFor: #ErrorCollection) methodsFor: 'accessing' !
+
+
+errors
+
+	^errors! !
+
+! (Delta mirrorFor: #ErrorCollection) methodsFor: 'private-initialization' !
+
+
+errors: someErrors <OrderedCollection[Error]>
+
+	errors := OrderedCollection withAll: someErrors! !
+

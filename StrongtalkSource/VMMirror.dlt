@@ -17,8 +17,9 @@ Use and distribution of this software is subject to the terms of the attached so
 on: o <Object> ^ <VMMirror>
 
 	"This is not object-oriented at all but it keeps the VM reflection system separate."
-	| format <Symbol> |
-	format := {{primitiveBehaviorVMType: o class ifFail: [:e <CompressedSymbol> | self error: e]}}.
+	| format <Symbol> class <Behavior> |
+	class := Reflection classOf: o.
+	format := {{primitiveBehaviorVMType: class ifFail: [:e <CompressedSymbol> | self error: e]}}.
 	format = #Oops ifTrue: [ ^OopsVMMirror new reflectee: o ].
 	format = #SmallInteger ifTrue: [ ^SmallIntegerVMMirror new reflectee: o ].
 	format = #Symbol ifTrue: [	^SymbolVMMirror new reflectee: o ].
@@ -80,7 +81,11 @@ reflectee ^ <Object>
 
 reflectee: r <Object>
 
-	reflectee := r! !
+	reflectee := r!
+
+reflecteeClassName
+
+	^(Reflection classOf: self reflectee) name! !
 
 ! (Delta mirrorFor: #VMMirror) methodsFor: 'iteration' !
 

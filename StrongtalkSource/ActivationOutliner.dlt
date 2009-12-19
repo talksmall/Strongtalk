@@ -195,7 +195,7 @@ safePrintString: aValue
 
 	^[aValue printString]
 		on: Error
-		do: [:ex|'??instance of ', aValue class name]!
+		do: [:ex|'??instance of ', (Reflection classOf: aValue) name]!
 
 selector ^<Symbol>
 

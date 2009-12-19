@@ -641,10 +641,8 @@ class: cl <Class> isClassKindOf: othercl <Class> ^<Boolean>
 	up := cl.
 	[	up = othercl
 			ifTrue: [ ^true ].
-		up = Object
-	] whileFalse:
-		  [ up := Class coerce: (up superclassIfAbsent: [ self shouldNotHappen ]) ].
-	^false!
+		up := Class coerce: (up superclassIfAbsent: [ ^false ])
+	] repeat!
 
 class: s <Class> isOrIsSubclassOfOneOf: matches <Cltn[Class]> ^<Boolean>
 	"returns true if s or one of its superclasses other than Object is in currentMatches"

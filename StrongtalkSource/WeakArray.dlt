@@ -61,10 +61,10 @@ checkNotification
 
 finalizationBlock
 
-	^[[[self checkNotification]
+	^[[[self checkNotification.
+		 self finalizationSemaphore wait] repeat]
 			on: Error
-			do: [:error| self handleFinalizationError: error] .
-		self finalizationSemaphore wait] repeat]!
+			do: [:error| self handleFinalizationError: error]]!
 
 finalizationPriority
 
@@ -87,8 +87,7 @@ handleFinalizationError: error
 
 hasFinalizationProcess
 
-	^self finalizationProcess notNil
-		and: [self finalizationProcess running]!
+	^self finalizationProcess notNil!
 
 initFinalizationSemaphore
 

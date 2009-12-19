@@ -68,7 +68,7 @@ safePrinting: b <Boolean>
 
 windowTitle ^ <Str>
 
-	^'Inspector on ', self mirror reflectee class name! !
+	^'Inspector on ', self mirror reflecteeClassName! !
 
 ! (Delta mirrorFor: #Inspector) methodsFor: 'control' !
 
@@ -386,7 +386,15 @@ updateColumn
 updateNonsafeFields: queue <SharedQueue[Tuple[Int, Str]]>
 	"Compute unsafe print stings and push them on queue"
 	
-	[	self oops do: [ :t <Tuple[Int,Object]> | queue nextPut: t at1 ,, (self printOop: t at2) ]
+	| errors |
+	errors := OrderedCollection new.
+	[	self oops do: [ :t <Tuple[Int,Object]> |
+								[queue nextPut: t at1 ,, (self printOop: t at2)]
+									on: Error
+									do: [:ex| errors add: ex.
+											ex return]].
+		errors isEmpty
+			ifFalse: [(ErrorCollection errors: errors) signal]
 	] ensure:[ 
 		queue close ]! !
 

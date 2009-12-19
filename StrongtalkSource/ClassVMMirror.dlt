@@ -192,9 +192,7 @@ depth ^ <Integer>
 
 "Return the classes depth in the hierarchy"
 
-^self reflectee = Object 
-   ifTrue:[0]
-   ifFalse:[self superclass depth + 1]
+^self superclassDepth + 1
                
 
 !
@@ -401,6 +399,28 @@ subclassesSkipAnonymous  ^<Cltn[Class]>
 superclass  ^<ClassVMMirror> 
 	
 ^ClassVMMirror on: (self reflectee superclassIfAbsent:[^nil]).
+!
+
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+!
+
+superclassDepth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
 ! !
 
 ! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'iteration' !

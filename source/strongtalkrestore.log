@@ -1,105 +1,1907 @@
 
-"October 17, 2009 -> 11:33:48"!
+"December 15, 2009 -> 23:56:38"!
 
 Delta define: #Top as: (
 (Class subclassOf: 'Object' instanceVariables: '')) !
 
 
-"October 17, 2009 -> 14:28:53"!
+"December 16, 2009 -> 0:5:2"!
 
-Delta define: #Top as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| self error: 'Unable to change superclass of ', self name, ' to ', class name]}}
+! !
 
+"December 16, 2009 -> 0:7:8"!
 
-"October 17, 2009 -> 14:59:8"!
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
 
-Delta define: #Top as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+"December 16, 2009 -> 0:7:26"!
 
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
 
-"October 17, 2009 -> 15:0:19"!
+"December 16, 2009 -> 0:13:44"!
 
-! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
-doesNotUnderstand: m <Message> ^<BottomType>
-	"Processor stopWithError: (ProcessDoesNotUnderstandError new message: m)"
-	(MessageNotUnderstood message: m) signal! !
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclassDepth ^ <Integer>
 
-"October 17, 2009 -> 15:35:54"!
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
+! !
+
+"December 16, 2009 -> 0:14:16"!
 
 ! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
 depth ^ <Integer>
 
 "Return the classes depth in the hierarchy"
 
-^self superclass isNil
-   ifTrue:[0]
-   ifFalse:[self superclass depth + 1]
+^self superclassDepth + 1
                
 
 ! !
 
-"October 17, 2009 -> 15:36:25"!
+"December 16, 2009 -> 0:15:24"!
 
-! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
-articleFor: s <Str> ^<Str>
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
 
-	^(s at: 1) isVowel
-			ifTrue: [ 'an' ]
-			ifFalse: [ 'a' ]! !
+	nil error: 'MNU'! !
 
-"October 17, 2009 -> 15:36:47"!
+"December 16, 2009 -> 0:15:50"!
 
-! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
-class ^<Object class>
-	"Return the effective class of this object.  This is reflective, and thus indiscriminate
-	  use is considered bad style.
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
 
-	  Unlike in some other Smalltalk implementations, it
-	  is ok to override this method to return something other than the real class of the
-	  receiver, in situations where one class is trying to completely emulate another.
+	^(MessageNotUnderstood message: message)
+			signal! !
 
-	  If you are writing Strongtalk code that needs to send a class message that you have
-	  written to the receiver's class, you should use the #actualClass message, which is
-	  private.
+"December 16, 2009 -> 0:17:33"!
 
-	  Truly reflective tools such as inspectors, etc. that need to get at the actual class
-	  of an object o should use the message (Reflection classOf: o).  The idea behind this
-	  scheme is that an object should be able (as much as feasible) to hide its
-	  implementation behind its message interface (including its actual class) from
-	  user code.  This allows, for example, forwarding objects (or proxies, etc), to act
-	  as if they have the same class as the object they are forwarding to, without breaking
-	  any system invariant, or breaking debugging and inspecting tools.  At the moment,
-	  the only exception to this rule is that the #== message may not be overridden, for
-	  performance reasons."
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
 
-	^{{self primitiveClass}}! !
 
-"October 17, 2009 -> 15:37:6"!
+"December 16, 2009 -> 0:17:33"!
 
-! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
-printOn: strm <CharOutputStream>
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| self error: 'Unable to change superclass of ', self name, ' to ', class name]}}
+! !
 
-	| nm <Str> |
-	nm := self class name.
-	strm	nextPutAll: (self articleFor: nm);
-			nextPut: Character space;
-			nextPutAll: nm.! !
+"December 16, 2009 -> 0:17:33"!
 
-"October 17, 2009 -> 15:37:17"!
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
 
-! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
-print
+"December 16, 2009 -> 0:17:33"!
 
-	self printOn: Platform errorStream.
-	Platform errorStream cr.! !
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
 
-"October 17, 2009 -> 15:37:26"!
+"December 16, 2009 -> 0:17:33"!
 
-! (Delta mirrorFor: #Top) methodsFor: 'private-error handling' !
-printString ^<Str>
-	"Return a string that holds a readable but terse representation of the receiver"
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclassDepth ^ <Integer>
 
-	| strm <CharWriteStream> |
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
+! !
+
+"December 16, 2009 -> 0:17:33"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclassDepth + 1
+               
+
+! !
+
+"December 16, 2009 -> 0:17:33"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	nil error: 'MNU'! !
+
+"December 16, 2009 -> 0:17:33"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	^(MessageNotUnderstood message: message)
+			signal! !
+
+"December 16, 2009 -> 0:26:37"!
+
+! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'instance creation' !
+on: o <Object> ^ <VMMirror>
+
+	"This is not object-oriented at all but it keeps the VM reflection system separate."
+	| format <Symbol> class <Behavior> |
+	class := Reflection classOf: o.
+	format := {{primitiveBehaviorVMType: class ifFail: [:e <CompressedSymbol> | self error: e]}}.
+	format = #Oops ifTrue: [ ^OopsVMMirror new reflectee: o ].
+	format = #SmallInteger ifTrue: [ ^SmallIntegerVMMirror new reflectee: o ].
+	format = #Symbol ifTrue: [	^SymbolVMMirror new reflectee: o ].
+	format = #Method ifTrue: [ ^MethodVMMirror new reflectee: o ].
+	format = #Array ifTrue: [	^ArrayVMMirror new reflectee: o ].
+	format = #ByteArray ifTrue: [	^ByteArrayVMMirror new reflectee: o ].
+	format = #Block ifTrue: [	^BlockVMMirror new reflectee: o ].
+	format = #Context ifTrue: [	^ContextVMMirror new reflectee: o ].
+	format = #Process ifTrue: [	^ProcessVMMirror new reflectee: o ].
+	format = #Proxy ifTrue: [	^ProxyVMMirror new reflectee: o ].
+	format = #Activation ifTrue: [	^ActivationVMMirror new reflectee: o ].
+	format = #Mixin ifTrue: [	^MixinVMMirror new reflectee: o ].
+	format = #GlobalAssociation ifTrue: [	^GlobalAssociationVMMirror new reflectee: o ].
+	format = #Float ifTrue: [ ^FloatVMMirror new reflectee: o ].
+	format = #WeakArray ifTrue: [	^WeakArrayVMMirror new reflectee: o ].
+	format = #DoubleByteArray ifTrue: [	^DoubleByteArrayVMMirror new reflectee: o ].
+	format = #FloatValueArray ifTrue: [	^FloatValueArrayVMMirror new reflectee: o ].
+	format = #Class ifTrue: [	
+		format := {{primitiveBehaviorVMType: o ifFail: [:e <CompressedSymbol> | self error: e]}}.
+		format = #Oops ifTrue: [	^OopsClassVMMirror new reflectee: o ].
+		format = #SmallInteger ifTrue: [ ^SmallIntegerClassVMMirror new reflectee: o ].
+		format = #Symbol ifTrue: [	^SymbolClassVMMirror new reflectee: o ].
+		format = #Method ifTrue: [ ^MethodClassVMMirror new reflectee: o ].
+		format = #Array ifTrue: [	^ArrayClassVMMirror new reflectee: o ].
+		format = #ByteArray ifTrue: [	^ByteArrayClassVMMirror new reflectee: o ].
+		format = #Block ifTrue: [	^BlockClassVMMirror new reflectee: o ].
+		format = #Context ifTrue: [	^ContextClassVMMirror new reflectee: o ].
+		format = #Process ifTrue: [	^ProcessClassVMMirror new reflectee: o ].
+		format = #Proxy ifTrue: [	^ProxyClassVMMirror new reflectee: o ].
+		format = #Activation ifTrue: [	^ActivationClassVMMirror new reflectee: o ].
+		format = #Mixin ifTrue: [	^MixinClassVMMirror new reflectee: o ].
+		format = #GlobalAssociation ifTrue: [	^GlobalAssociationClassVMMirror new reflectee: o ].
+		format = #Float ifTrue: [ ^FloatClassVMMirror new reflectee: o ].
+		format = #WeakArray ifTrue: [	^WeakArrayClassVMMirror new reflectee: o ].
+		format = #DoubleByteArray ifTrue: [	^DoubleByteArrayClassVMMirror new reflectee: o ].
+		format = #FloatValueArray ifTrue: [	^FloatValueArrayClassVMMirror new reflectee: o ].
+		format = #Class  ifTrue: [	^ClassClassVMMirror new reflectee: o ].
+	].
+	self shouldNotHappen.
+! !
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| self error: 'Unable to change superclass of ', self name, ' to ', class name]}}
+! !
+
+"December 16, 2009 -> 0:31:29"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:31:29"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:31:29"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclassDepth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
+! !
+
+"December 16, 2009 -> 0:31:29"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclassDepth + 1
+               
+
+! !
+
+"December 16, 2009 -> 0:31:29"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	nil error: 'MNU'! !
+
+"December 16, 2009 -> 0:31:29"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	^(MessageNotUnderstood message: message)
+			signal! !
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:31:29"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| self error: 'Unable to change superclass of ', self name, ' to ', class name]}}
+! !
+
+"December 16, 2009 -> 0:31:30"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:31:30"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:31:30"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclassDepth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
+! !
+
+"December 16, 2009 -> 0:31:30"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclassDepth + 1
+               
+
+! !
+
+"December 16, 2009 -> 0:31:30"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	nil error: 'MNU'! !
+
+"December 16, 2009 -> 0:31:30"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	^(MessageNotUnderstood message: message)
+			signal! !
+
+"December 16, 2009 -> 0:31:30"!
+
+! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'instance creation' !
+on: o <Object> ^ <VMMirror>
+
+	"This is not object-oriented at all but it keeps the VM reflection system separate."
+	| format <Symbol> class <Behavior> |
+	class := Reflection classOf: o.
+	format := {{primitiveBehaviorVMType: class ifFail: [:e <CompressedSymbol> | self error: e]}}.
+	format = #Oops ifTrue: [ ^OopsVMMirror new reflectee: o ].
+	format = #SmallInteger ifTrue: [ ^SmallIntegerVMMirror new reflectee: o ].
+	format = #Symbol ifTrue: [	^SymbolVMMirror new reflectee: o ].
+	format = #Method ifTrue: [ ^MethodVMMirror new reflectee: o ].
+	format = #Array ifTrue: [	^ArrayVMMirror new reflectee: o ].
+	format = #ByteArray ifTrue: [	^ByteArrayVMMirror new reflectee: o ].
+	format = #Block ifTrue: [	^BlockVMMirror new reflectee: o ].
+	format = #Context ifTrue: [	^ContextVMMirror new reflectee: o ].
+	format = #Process ifTrue: [	^ProcessVMMirror new reflectee: o ].
+	format = #Proxy ifTrue: [	^ProxyVMMirror new reflectee: o ].
+	format = #Activation ifTrue: [	^ActivationVMMirror new reflectee: o ].
+	format = #Mixin ifTrue: [	^MixinVMMirror new reflectee: o ].
+	format = #GlobalAssociation ifTrue: [	^GlobalAssociationVMMirror new reflectee: o ].
+	format = #Float ifTrue: [ ^FloatVMMirror new reflectee: o ].
+	format = #WeakArray ifTrue: [	^WeakArrayVMMirror new reflectee: o ].
+	format = #DoubleByteArray ifTrue: [	^DoubleByteArrayVMMirror new reflectee: o ].
+	format = #FloatValueArray ifTrue: [	^FloatValueArrayVMMirror new reflectee: o ].
+	format = #Class ifTrue: [	
+		format := {{primitiveBehaviorVMType: o ifFail: [:e <CompressedSymbol> | self error: e]}}.
+		format = #Oops ifTrue: [	^OopsClassVMMirror new reflectee: o ].
+		format = #SmallInteger ifTrue: [ ^SmallIntegerClassVMMirror new reflectee: o ].
+		format = #Symbol ifTrue: [	^SymbolClassVMMirror new reflectee: o ].
+		format = #Method ifTrue: [ ^MethodClassVMMirror new reflectee: o ].
+		format = #Array ifTrue: [	^ArrayClassVMMirror new reflectee: o ].
+		format = #ByteArray ifTrue: [	^ByteArrayClassVMMirror new reflectee: o ].
+		format = #Block ifTrue: [	^BlockClassVMMirror new reflectee: o ].
+		format = #Context ifTrue: [	^ContextClassVMMirror new reflectee: o ].
+		format = #Process ifTrue: [	^ProcessClassVMMirror new reflectee: o ].
+		format = #Proxy ifTrue: [	^ProxyClassVMMirror new reflectee: o ].
+		format = #Activation ifTrue: [	^ActivationClassVMMirror new reflectee: o ].
+		format = #Mixin ifTrue: [	^MixinClassVMMirror new reflectee: o ].
+		format = #GlobalAssociation ifTrue: [	^GlobalAssociationClassVMMirror new reflectee: o ].
+		format = #Float ifTrue: [ ^FloatClassVMMirror new reflectee: o ].
+		format = #WeakArray ifTrue: [	^WeakArrayClassVMMirror new reflectee: o ].
+		format = #DoubleByteArray ifTrue: [	^DoubleByteArrayClassVMMirror new reflectee: o ].
+		format = #FloatValueArray ifTrue: [	^FloatValueArrayClassVMMirror new reflectee: o ].
+		format = #Class  ifTrue: [	^ClassClassVMMirror new reflectee: o ].
+	].
+	self shouldNotHappen.
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| self error: 'Unable to change superclass of ', self name, ' to ', class name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclassDepth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclassDepth + 1
+               
+
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	nil error: 'MNU'! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	^(MessageNotUnderstood message: message)
+			signal! !
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| self error: 'Unable to change superclass of ', self name, ' to ', class name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclassDepth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclassDepth + 1
+               
+
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	nil error: 'MNU'! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	^(MessageNotUnderstood message: message)
+			signal! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'instance creation' !
+on: o <Object> ^ <VMMirror>
+
+	"This is not object-oriented at all but it keeps the VM reflection system separate."
+	| format <Symbol> class <Behavior> |
+	class := Reflection classOf: o.
+	format := {{primitiveBehaviorVMType: class ifFail: [:e <CompressedSymbol> | self error: e]}}.
+	format = #Oops ifTrue: [ ^OopsVMMirror new reflectee: o ].
+	format = #SmallInteger ifTrue: [ ^SmallIntegerVMMirror new reflectee: o ].
+	format = #Symbol ifTrue: [	^SymbolVMMirror new reflectee: o ].
+	format = #Method ifTrue: [ ^MethodVMMirror new reflectee: o ].
+	format = #Array ifTrue: [	^ArrayVMMirror new reflectee: o ].
+	format = #ByteArray ifTrue: [	^ByteArrayVMMirror new reflectee: o ].
+	format = #Block ifTrue: [	^BlockVMMirror new reflectee: o ].
+	format = #Context ifTrue: [	^ContextVMMirror new reflectee: o ].
+	format = #Process ifTrue: [	^ProcessVMMirror new reflectee: o ].
+	format = #Proxy ifTrue: [	^ProxyVMMirror new reflectee: o ].
+	format = #Activation ifTrue: [	^ActivationVMMirror new reflectee: o ].
+	format = #Mixin ifTrue: [	^MixinVMMirror new reflectee: o ].
+	format = #GlobalAssociation ifTrue: [	^GlobalAssociationVMMirror new reflectee: o ].
+	format = #Float ifTrue: [ ^FloatVMMirror new reflectee: o ].
+	format = #WeakArray ifTrue: [	^WeakArrayVMMirror new reflectee: o ].
+	format = #DoubleByteArray ifTrue: [	^DoubleByteArrayVMMirror new reflectee: o ].
+	format = #FloatValueArray ifTrue: [	^FloatValueArrayVMMirror new reflectee: o ].
+	format = #Class ifTrue: [	
+		format := {{primitiveBehaviorVMType: o ifFail: [:e <CompressedSymbol> | self error: e]}}.
+		format = #Oops ifTrue: [	^OopsClassVMMirror new reflectee: o ].
+		format = #SmallInteger ifTrue: [ ^SmallIntegerClassVMMirror new reflectee: o ].
+		format = #Symbol ifTrue: [	^SymbolClassVMMirror new reflectee: o ].
+		format = #Method ifTrue: [ ^MethodClassVMMirror new reflectee: o ].
+		format = #Array ifTrue: [	^ArrayClassVMMirror new reflectee: o ].
+		format = #ByteArray ifTrue: [	^ByteArrayClassVMMirror new reflectee: o ].
+		format = #Block ifTrue: [	^BlockClassVMMirror new reflectee: o ].
+		format = #Context ifTrue: [	^ContextClassVMMirror new reflectee: o ].
+		format = #Process ifTrue: [	^ProcessClassVMMirror new reflectee: o ].
+		format = #Proxy ifTrue: [	^ProxyClassVMMirror new reflectee: o ].
+		format = #Activation ifTrue: [	^ActivationClassVMMirror new reflectee: o ].
+		format = #Mixin ifTrue: [	^MixinClassVMMirror new reflectee: o ].
+		format = #GlobalAssociation ifTrue: [	^GlobalAssociationClassVMMirror new reflectee: o ].
+		format = #Float ifTrue: [ ^FloatClassVMMirror new reflectee: o ].
+		format = #WeakArray ifTrue: [	^WeakArrayClassVMMirror new reflectee: o ].
+		format = #DoubleByteArray ifTrue: [	^DoubleByteArrayClassVMMirror new reflectee: o ].
+		format = #FloatValueArray ifTrue: [	^FloatValueArrayClassVMMirror new reflectee: o ].
+		format = #Class  ifTrue: [	^ClassClassVMMirror new reflectee: o ].
+	].
+	self shouldNotHappen.
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| self error: 'Unable to change superclass of ', self name, ' to ', class name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclassDepth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclassDepth + 1
+               
+
+! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	nil error: 'MNU'! !
+
+"December 16, 2009 -> 0:47:37"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	^(MessageNotUnderstood message: message)
+			signal! !
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:37"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 0:47:38"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| self error: 'Unable to change superclass of ', self name, ' to ', class name]}}
+! !
+
+"December 16, 2009 -> 0:47:38"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperClassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:47:38"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name]}}
+! !
+
+"December 16, 2009 -> 0:47:38"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclassDepth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclass isNil
+   ifTrue:[0]
+   ifFalse:[self superclass depth]
+               
+
+! !
+
+"December 16, 2009 -> 0:47:38"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+depth ^ <Integer>
+
+"Return the classes depth in the hierarchy"
+
+^self superclassDepth + 1
+               
+
+! !
+
+"December 16, 2009 -> 0:47:38"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	nil error: 'MNU'! !
+
+"December 16, 2009 -> 0:47:38"!
+
+! (Delta mirrorFor: #Top) methodsFor: 'proxy support' !
+doesNotUnderstand: message <Message>
+
+	^(MessageNotUnderstood message: message)
+			signal! !
+
+"December 16, 2009 -> 0:47:38"!
+
+! (Delta mirrorFor: #VMMirror) classSide methodsFor: 'instance creation' !
+on: o <Object> ^ <VMMirror>
+
+	"This is not object-oriented at all but it keeps the VM reflection system separate."
+	| format <Symbol> class <Behavior> |
+	class := Reflection classOf: o.
+	format := {{primitiveBehaviorVMType: class ifFail: [:e <CompressedSymbol> | self error: e]}}.
+	format = #Oops ifTrue: [ ^OopsVMMirror new reflectee: o ].
+	format = #SmallInteger ifTrue: [ ^SmallIntegerVMMirror new reflectee: o ].
+	format = #Symbol ifTrue: [	^SymbolVMMirror new reflectee: o ].
+	format = #Method ifTrue: [ ^MethodVMMirror new reflectee: o ].
+	format = #Array ifTrue: [	^ArrayVMMirror new reflectee: o ].
+	format = #ByteArray ifTrue: [	^ByteArrayVMMirror new reflectee: o ].
+	format = #Block ifTrue: [	^BlockVMMirror new reflectee: o ].
+	format = #Context ifTrue: [	^ContextVMMirror new reflectee: o ].
+	format = #Process ifTrue: [	^ProcessVMMirror new reflectee: o ].
+	format = #Proxy ifTrue: [	^ProxyVMMirror new reflectee: o ].
+	format = #Activation ifTrue: [	^ActivationVMMirror new reflectee: o ].
+	format = #Mixin ifTrue: [	^MixinVMMirror new reflectee: o ].
+	format = #GlobalAssociation ifTrue: [	^GlobalAssociationVMMirror new reflectee: o ].
+	format = #Float ifTrue: [ ^FloatVMMirror new reflectee: o ].
+	format = #WeakArray ifTrue: [	^WeakArrayVMMirror new reflectee: o ].
+	format = #DoubleByteArray ifTrue: [	^DoubleByteArrayVMMirror new reflectee: o ].
+	format = #FloatValueArray ifTrue: [	^FloatValueArrayVMMirror new reflectee: o ].
+	format = #Class ifTrue: [	
+		format := {{primitiveBehaviorVMType: o ifFail: [:e <CompressedSymbol> | self error: e]}}.
+		format = #Oops ifTrue: [	^OopsClassVMMirror new reflectee: o ].
+		format = #SmallInteger ifTrue: [ ^SmallIntegerClassVMMirror new reflectee: o ].
+		format = #Symbol ifTrue: [	^SymbolClassVMMirror new reflectee: o ].
+		format = #Method ifTrue: [ ^MethodClassVMMirror new reflectee: o ].
+		format = #Array ifTrue: [	^ArrayClassVMMirror new reflectee: o ].
+		format = #ByteArray ifTrue: [	^ByteArrayClassVMMirror new reflectee: o ].
+		format = #Block ifTrue: [	^BlockClassVMMirror new reflectee: o ].
+		format = #Context ifTrue: [	^ContextClassVMMirror new reflectee: o ].
+		format = #Process ifTrue: [	^ProcessClassVMMirror new reflectee: o ].
+		format = #Proxy ifTrue: [	^ProxyClassVMMirror new reflectee: o ].
+		format = #Activation ifTrue: [	^ActivationClassVMMirror new reflectee: o ].
+		format = #Mixin ifTrue: [	^MixinClassVMMirror new reflectee: o ].
+		format = #GlobalAssociation ifTrue: [	^GlobalAssociationClassVMMirror new reflectee: o ].
+		format = #Float ifTrue: [ ^FloatClassVMMirror new reflectee: o ].
+		format = #WeakArray ifTrue: [	^WeakArrayClassVMMirror new reflectee: o ].
+		format = #DoubleByteArray ifTrue: [	^DoubleByteArrayClassVMMirror new reflectee: o ].
+		format = #FloatValueArray ifTrue: [	^FloatValueArrayClassVMMirror new reflectee: o ].
+		format = #Class  ifTrue: [	^ClassClassVMMirror new reflectee: o ].
+	].
+	self shouldNotHappen.
+! !
+
+"December 16, 2009 -> 0:48:26"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+safePrintString: aValue
+
+	^[aValue printString]
+		on: Error
+		do: [:ex|'??instance of ', (Reflection classOf: aValue) name]! !
+
+"December 16, 2009 -> 0:51:42"!
+
+! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'printing' !
+safePrintString ^ <Str>
+
+	| strm <CharWriteStream> cn <Str> |
+	nil == self reflectee ifTrue: [ ^nil printString ].
+	true == self reflectee ifTrue: [ ^true printString ].	
+	false == self reflectee ifTrue: [ ^false printString ].
 	strm := CharacterReadWriteStream on: (String new: 8).
-	self printOn: strm.
-	^strm contentsWritten! !
+	cn := (Reflection classOf: self reflectee) name.
+	strm	nextPutAll: (self articleFor: cn);
+				nextPut: Character space;
+				nextPutAll: cn.
+	^strm contentsWritten
+! !
+
+"December 16, 2009 -> 1:4:39"!
+
+! (Delta mirrorFor: #ClassHierarchyOutliner) methodsFor: 'private' !
+class: cl <Class> isClassKindOf: othercl <Class> ^<Boolean>
+
+	| up <Class> |
+	up := cl.
+	[	up = othercl
+			ifTrue: [ ^true ].
+		up := Class coerce: (up superclassIfAbsent: [ ^false ])
+	] repeat! !
+
+"December 16, 2009 -> 1:5:32"!
+
+Delta define: #ErrorCollection as: (
+(Class subclassOf: 'Error' instanceVariables: '')) !
+
+
+"December 16, 2009 -> 1:6:14"!
+
+Delta define: #ErrorCollection as: (
+(Class subclassOf: 'Error' instanceVariables: 'errors <OrderedCollection[Error]>')) !
+
+
+"December 16, 2009 -> 1:6:51"!
+
+! (Delta mirrorFor: #ErrorCollection) classSide methodsFor: 'instance creation' !
+errors: errors <OrderedCollection[Error]>
+
+	^ self new
+			errors: errors;
+			yourself! !
+
+"December 16, 2009 -> 1:7:59"!
+
+! (Delta mirrorFor: #ErrorCollection) methodsFor: 'private-initialization' !
+errors: someErrors <OrderedCollection[Error]>
+
+	errors := OrderedCollection withAll: someErrors! !
+
+"December 16, 2009 -> 1:8:22"!
+
+! (Delta mirrorFor: #ErrorCollection) methodsFor: 'accessing' !
+errors
+
+	^errors! !
+
+"December 16, 2009 -> 1:9:32"!
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'private' !
+updateNonsafeFields: queue <SharedQueue[Tuple[Int, Str]]>
+	"Compute unsafe print stings and push them on queue"
+	
+	| errors |
+	errors := OrderedCollection new.
+	[	self oops do: [ :t <Tuple[Int,Object]> |
+								[queue nextPut: t at1 ,, (self printOop: t at2)]
+									on: Error
+									do: [:ex| errors add: ex.
+											ex return]].
+		errors isEmpty
+			ifFalse: [(ErrorCollection errors: errors) signal]
+	] ensure:[ 
+		queue close ]! !
+
+"December 16, 2009 -> 1:12:30"!
+
+Delta define: #Top as: (
+(Class subclassOf: 'Object' instanceVariables: 'delegate')) !
+
+
+"December 16, 2009 -> 1:16:20"!
+
+! (Delta mirrorFor: #VMMirror) methodsFor: 'accessing' !
+reflecteeClassName
+
+	^(Reflection classOf: self reflectee) name! !
+
+"December 16, 2009 -> 1:16:32"!
+
+! (Delta mirrorFor: #Inspector) methodsFor: 'accessing' !
+windowTitle ^ <Str>
+
+	^'Inspector on ', self mirror reflecteeClassName! !
+
+"December 17, 2009 -> 1:30:58"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 17, 2009 -> 1:30:58"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 19, 2009 -> 17:32:23"!
+
+(Delta mirrorFor: #Processes) removeDefinitionIfFail: [] !
+

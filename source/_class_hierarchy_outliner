@@ -17,10 +17,21 @@ windowTitle!
 7933423!
 accessing!
 0Str! !
-computeSubclasses!
-7937726!
-private!
-1! !
+#instanceVariableString!
+subclasses <Cltn[AbstractClassMirror]>
+sorted <Boolean>
+showAnonymousInvocations <Boolean>
+labelButton <ToggleButton>
+lastSearch <Str>
+lastEventTime <Integer>
+lastSearchNumber <Integer>
+matchingClasses <Cltn[Class]>
+	"These are the classes that are are matched by the
+		current filter (not including non-matching superclasses)"
+matchingClassesAndSuperclasses <Cltn[Class]>
+	"This is the union of matchingClasses and their superclass chains"
+filterView <TextView[Str]>
+	"The field that shows what we are filtering on"! !
 labelButton!
 7941659!
 private!
@@ -50,8 +61,10 @@ fileOutMatchingDefinitionsToFile:!
 7949927!
 control!
 0FilePath:! !
-#superclassTypeString!
-MirrorOutliner[AbstractClassMirror]! !
+buildDefaultMatches!
+7935905!
+private!
+1! !
 subclasses:!
 7943536!
 private!
@@ -60,39 +73,28 @@ hasFilter!
 7941073!
 private!
 1Boolean! !
-filterOnAllUIClasses!
-7958670!
-filtering utilities!
+lastSearch:!
+7942115!
+private!
+1Str:! !
+promptForAdditionalFilter!
+7951047!
+control!
 0! !
-typecheckingMenu!
-7947634!
-menus!
-0Menu! !
 clearFilter!
 7948483!
 control!
 0! !
 #branded!
 true! !
-andFilterOnCommentsContaining:!
-7958274!
-filtering utilities!
-0Str:! !
-#instanceVariableString!
-subclasses <Cltn[AbstractClassMirror]>
-sorted <Boolean>
-showAnonymousInvocations <Boolean>
-labelButton <ToggleButton>
-lastSearch <Str>
-lastEventTime <Integer>
-lastSearchNumber <Integer>
-matchingClasses <Cltn[Class]>
-	"These are the classes that are are matched by the
-		current filter (not including non-matching superclasses)"
-matchingClassesAndSuperclasses <Cltn[Class]>
-	"This is the union of matchingClasses and their superclass chains"
-filterView <TextView[Str]>
-	"The field that shows what we are filtering on"! !
+findSubclass:!
+7950222!
+control!
+0Boolean:! !
+initialOpenState!
+7941267!
+private!
+1Boolean! !
 classPainter!
 7937491!
 private!
@@ -109,10 +111,10 @@ matchingClasses!
 7931574!
 accessing!
 0Cltn[Class]! !
-getFilterOnCommentsContaining:!
-7960234!
-filtering utilities!
-0Str:[AbstractClassMirror,^Boolean]! !
+filterMenu!
+7945385!
+menus!
+0Menu! !
 matchingClassesAndSuperclasses!
 7932113!
 accessing!
@@ -131,16 +133,16 @@ menus!
 0Boolean! !
 #revision!
 $Revision: 1.13 $! !
-class:isOrIsSubclassOfOneOf:!
-7936833!
-private!
-1Class:Cltn[Class]:Boolean! !
+andFilter:!
+7929527!
+accessing!
+0[AbstractClassMirror,^Boolean]:! !
 #classVariableString!
 BoldClassPainter <Painter>! !
-lastSearch:!
-7942115!
-private!
-1Str:! !
+getFilterForSubclasses!
+7959868!
+filtering utilities!
+0[AbstractClassMirror,^Boolean]! !
 sorted:!
 7943392!
 private!
@@ -165,10 +167,10 @@ toggleShowAnonymousInvocations!
 7952799!
 control!
 0! !
-fileOutDefinitionTo:!
-7938768!
+lastSearch!
+7941972!
 private!
-1CharOutputStream:! !
+1Str! !
 allClasses!
 7933587!
 private!
@@ -181,10 +183,10 @@ orSubclasses!
 7960966!
 filtering utilities!
 0! !
-refreshLabelButton!
-7942620!
-private!
-1! !
+asImbeddedVisualOpen:!
+7962101!
+utility!
+0Boolean:Visual! !
 character:focus:event:interceptor:!
 7955578!
 event processing!
@@ -193,40 +195,40 @@ filter:!
 7930252!
 accessing!
 0[AbstractClassMirror,^Boolean]:! !
-update:with:!
-7955035!
-dependencies!
-0Object:Object:! !
+closeRequest:!
+7948816!
+control!
+0[]:! !
 #group!
 outliner! !
 typecheckAll!
 7953007!
 control!
 0! !
-menuBar!
-7947038!
+buildVisualTop:!
+7936165!
+private!
+1Boolean:Visual! !
+typecheckingMenu!
+7947634!
 menus!
 0Menu! !
-filterView!
-7931279!
-accessing!
-0TextView[Str]! !
 buildFindButtons!
 7957588!
 toolbar!
 0! !
-findSubclass:!
-7950222!
-control!
-0Boolean:! !
+andFilterOnCommentsContaining:!
+7958274!
+filtering utilities!
+0Str:! !
 initialPacifiedState!
 7941489!
 private!
 1Boolean! !
-asImbeddedVisualOpen:!
-7962101!
-utility!
-0Boolean:Visual! !
+computeSubclasses!
+7937726!
+private!
+1! !
 promptForSubclassFilter!
 7951813!
 control!
@@ -243,10 +245,10 @@ keyDown:focus:event:interceptor:!
 7956276!
 event processing!
 0Symbol:Visual:UIEvent:ApplicationInterceptor:Boolean! !
-filterMenu!
-7945385!
-menus!
-0Menu! !
+getFilterOnCommentsContaining:!
+7960234!
+filtering utilities!
+0Str:[AbstractClassMirror,^Boolean]! !
 fileOutMatchingClasses!
 7949019!
 control!
@@ -283,18 +285,16 @@ update!
 7943730!
 updating!
 0! !
-getFilterForSubclasses!
-7959868!
+filterOnAllUIClasses!
+7958670!
 filtering utilities!
-0[AbstractClassMirror,^Boolean]! !
+0! !
 filterIncludingSupers!
 7930956!
 accessing!
 0[AbstractClassMirror,^Boolean]! !
-buildDefaultMatches!
-7935905!
-private!
-1! !
+#superclassTypeString!
+MirrorOutliner[AbstractClassMirror]! !
 filterOnUserClasses!
 7959683!
 filtering utilities!
@@ -311,18 +311,18 @@ matchingClasses:matchingClassesAndSuperclasses:!
 7931801!
 accessing!
 0Cltn[Class]:Cltn[Class]:! !
-lastSearch!
-7941972!
+fileOutDefinitionTo:!
+7938768!
 private!
-1Str! !
+1CharOutputStream:! !
 restrictToSubhierarchy!
 7952445!
 control!
 0! !
-initialOpenState!
-7941267!
+refreshLabelButton!
+7942620!
 private!
-1Boolean! !
+1! !
 filterOnUIUserClasses!
 7959436!
 filtering utilities!
@@ -339,16 +339,16 @@ buildBody!
 7934189!
 private!
 1Visual! !
-closeRequest:!
-7948816!
-control!
-0[]:! !
+update:with:!
+7955035!
+dependencies!
+0Object:Object:! !
 expandAndSetFocusForClass:!
 7938125!
 private!
 1AbstractClassMirror:! !
 class:isClassKindOf:!
-7936474!
+35726536!
 private!
 1Class:Class:Boolean! !
 selectSearchFocus!
@@ -363,10 +363,10 @@ subclasses!
 7933198!
 accessing!
 0Cltn[AbstractClassMirror]! !
-andFilter:!
-7929527!
-accessing!
-0[AbstractClassMirror,^Boolean]:! !
+class:isOrIsSubclassOfOneOf:!
+7936833!
+private!
+1Class:Cltn[Class]:Boolean! !
 filterOnCommentsContaining:!
 7959065!
 filtering utilities!
@@ -375,14 +375,14 @@ orFilter:!
 7932385!
 accessing!
 0[AbstractClassMirror,^Boolean]:! !
-buildVisualTop:!
-7936165!
-private!
-1Boolean:Visual! !
-promptForAdditionalFilter!
-7951047!
-control!
-0! !
+menuBar!
+7947038!
+menus!
+0Menu! !
+filterView!
+7931279!
+accessing!
+0TextView[Str]! !
 sortSubclasses!
 7942938!
 private!
