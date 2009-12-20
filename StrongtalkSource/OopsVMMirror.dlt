@@ -11,6 +11,20 @@ comment:
  (c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
 Use and distribution of this software is subject to the terms of the attached source license.'!
 
+! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'accessing' !
+
+
+instVarAt: index <SmallInt> ^ <Object>
+
+	^self reflectee fileOutInstVarAt: index + self reflectee fileOutHeaderSize!
+
+instVarAt: index <SmallInt> put: value <Object>
+
+	{{ primitiveInstVarOf: self reflectee
+			at: index + self reflectee fileOutHeaderSize
+			put: value
+			ifFail: [:err | self error: 'Unable to set instance variable, ', index printString, ', of ', self reflectee printString] }}! !
+
 ! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'iteration' !
 
 

@@ -86,7 +86,7 @@ PRIM_DECL_2(oopPrimitives::instVarAt, oop receiver, oop index) {
   int raw_index = smiOop(index)->value() - 1;
 
   if (!memOop(receiver)->is_within_instVar_bounds(raw_index))
-    markSymbol(vmSymbols::out_of_bounds());
+    return markSymbol(vmSymbols::out_of_bounds());
 
   return memOop(receiver)->instVarAt(raw_index);
 }
@@ -116,7 +116,7 @@ PRIM_DECL_3(oopPrimitives::instVarAtPut, oop receiver, oop index, oop value) {
   int raw_index = smiOop(index)->value() - 1;
 
   if (!memOop(receiver)->is_within_instVar_bounds(raw_index))
-    markSymbol(vmSymbols::out_of_bounds());
+    return markSymbol(vmSymbols::out_of_bounds());
 
   return memOop(receiver)->instVarAtPut(raw_index, value);
 }

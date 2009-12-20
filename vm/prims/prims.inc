@@ -2518,22 +2518,22 @@ static primitive_desc primitive_251 = {
 	errors_251
 };
 
-static char* signature_252[] = { "Object", "Object", "SmallInteger", "Object"};
+static char* signature_252[] = { "Symbol", "Reciever", "Object", "SmallInteger"};
 static char* errors_252[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_252 = {
-	"primitiveInstVarAt:put:ifFail:", 
-	fntype(&oopPrimitives::instVarAtPut), 
+	"primitiveInstVarNameFor:at:ifFail:", 
+	fntype(&oopPrimitives::instance_variable_name_at), 
 	1376259, 
 	signature_252, 
 	errors_252
 };
 
-static char* signature_253[] = { "Symbol", "Reciever", "Object", "SmallInteger"};
+static char* signature_253[] = { "Object", "Object", "SmallInteger", "Object"};
 static char* errors_253[] = { "OutOfBounds", NULL};
 static primitive_desc primitive_253 = {
-	"primitiveInstVarNameFor:at:ifFail:", 
-	fntype(&oopPrimitives::instance_variable_name_at), 
-	1376259, 
+	"primitiveInstVarOf:at:put:ifFail:", 
+	fntype(&oopPrimitives::instVarAtPut), 
+	327683, 
 	signature_253, 
 	errors_253
 };

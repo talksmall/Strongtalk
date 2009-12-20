@@ -55,9 +55,10 @@ class oopPrimitives : AllStatic {
   static PRIM_DECL_2(instance_variable_name_at, oop obj, oop index);
 
   //%prim
-  // <Object> primitiveInstVarAt: index     <SmallInteger>
-  //                         put: contents  <Object>
-  //                      ifFail: failBlock <PrimFailBlock> ^<Object> =
+  // <NoReceiver> primitiveInstVarOf: obj       <Object>
+  //                              at: index     <SmallInteger>
+  //                             put: contents  <Object>
+  //                          ifFail: failBlock <PrimFailBlock> ^<Object> =
   //   Internal { error = #(OutOfBounds)
   //              name  = 'oopPrimitives::instVarAtPut' }
   //%
