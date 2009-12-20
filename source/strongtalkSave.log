@@ -109765,3 +109765,132 @@ runScript: filename <Str>
 "December 19, 2009 -> 19:14:57"!
 
 "System saved" !
+"December 20, 2009 -> 1:0:43"!
+
+! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'accessing' !
+instVarAt: index <SmallInt> put: value <Object>
+
+	{{ primitiveInstVarOf: self reflectee
+			at: index + self reflectee fileOutHeaderSize
+			put: value
+			ifFail: [:err | self error: 'Unable to set instance variable, ', index printString, ', of ', self reflectee printString] }}! !
+
+"December 20, 2009 -> 1:0:43"!
+
+! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'accessing' !
+instVarAt: index <SmallInt> ^ <Object>
+
+	^self reflectee fileOutInstVarAt: index! !
+
+"December 20, 2009 -> 1:2:33"!
+
+"System saved" !
+"December 20, 2009 -> 11:21:41"!
+
+! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'accessing' !
+instVarAt: index <SmallInt> ^ <Object>
+
+	^self reflectee fileOutInstVarAt: index + self reflectee fileOutHeaderSize! !
+
+"December 20, 2009 -> 11:21:54"!
+
+"System saved" !
+"December 20, 2009 -> 11:36:29"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+showItBlock ^<[]>
+
+	^[| oop <Object> pstr <Str> result <Visual> |
+	oop := self computeValueIfFail: [^self].
+	pstr := oop printString.
+	result := (StringGlyph for: pstr painter: self showItPainter) asVisual withBackdrop: self showItBackdrop.
+	result := (PressHandler for: result) onPress: [ (Inspector on: oop) launch ].
+	result := (PopUpMenuHandler for: result) menuBlock: [ self showItMenuFor: result text: pstr ].
+	self replaceModelFrom: self selectionEnd to: self selectionEnd withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: result)).
+	self selection: self selectionEnd ,, self selectionEnd]
+! !
+
+"December 20, 2009 -> 11:36:46"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+showIt
+
+	self showItBlock fork
+! !
+
+"December 20, 2009 -> 11:38:32"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+inspectItBlock ^ <[]>
+
+	^[(Inspector on: (self computeValueIfFail: [^self])) launch]
+! !
+
+"December 20, 2009 -> 11:39:15"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+inspectIt
+
+	self inspectItBlock fork
+! !
+
+"December 20, 2009 -> 11:46:5"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+inspectItBlock ^ <[]>
+
+	^[| success result |
+		success := true.
+		result := self computeValueIfFail: [success := false].
+		success ifTrue: [(Inspector on: result) launch]]! !
+
+"December 20, 2009 -> 11:48:16"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+computeValueIfSuccess: block <[X]>
+
+	block value: (self computeValueIfFail: [^self])! !
+
+"December 20, 2009 -> 11:49:9"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+inspectItBlock ^ <[]>
+
+	^[self computeValueIfSuccess: [:result | (Inspector on: result) launch]]! !
+
+"December 20, 2009 -> 11:52:47"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+showItBlock ^<[]>
+
+	^[self computeValueIfSuccess: [:oop | | pstr <Str> result <Visual> |
+													pstr := oop printString.
+													result := (StringGlyph
+																		for: pstr
+																		painter: self showItPainter) asVisual
+																		withBackdrop: self showItBackdrop.
+													result := (PressHandler for: result)
+																		onPress: [ (Inspector on: oop) launch ].
+													result := (PopUpMenuHandler for: result)
+																		menuBlock: [ self showItMenuFor: result text: pstr ].
+													self replaceModelFrom: self selectionEnd
+															to: self selectionEnd
+															withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: result)).
+													self selection: self selectionEnd ,, self selectionEnd]]
+! !
+
+"December 20, 2009 -> 11:55:3"!
+
+"System saved" !
+"December 20, 2009 -> 12:4:36"!
+
+"System saved" !
+"December 20, 2009 -> 12:5:29"!
+
+"System saved" !
+"December 20, 2009 -> 12:5:36"!
+
+"System saved" !
+"December 20, 2009 -> 12:6:24"!
+
+"System saved" !
