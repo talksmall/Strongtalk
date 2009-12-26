@@ -24,7 +24,19 @@ currentDirectory ^<FilePath>
 			}} isNull
 				ifTrue: [ Win32 handleError ]
 				ifFalse: [ self new pattern: buf asString ]
-	  ] ensure: [ buf free ]! !
+	  ] ensure: [ buf free ]!
+
+currentDirectory: file <FilePath>
+
+	| name result setCurrentDirectory |
+	name := file name asString asAlien.
+	[result := Alien new: 4.
+	setCurrentDirectory := Alien lookup: 'SetCurrentDirectoryA' inLibrary: 'kernel32.dll'.
+	setCurrentDirectory
+		primFFICallResult: result
+		with: name pointer.
+	(result boolAt: 1) ifFalse: [self error: 'Could not change directory']]
+		ensure: [name free]! !
 
 ! (Delta mirrorFor: #Win32FilePath) methodsFor: 'accessing' !
 

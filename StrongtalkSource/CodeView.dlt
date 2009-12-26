@@ -148,18 +148,19 @@ showItBlock ^<[]>
 
 	^[self computeValueIfSuccess: [:oop | | pstr <Str> result <Visual> |
 													pstr := oop printString.
-													result := (StringGlyph
-																		for: pstr
-																		painter: self showItPainter) asVisual
-																		withBackdrop: self showItBackdrop.
-													result := (PressHandler for: result)
-																		onPress: [ (Inspector on: oop) launch ].
-													result := (PopUpMenuHandler for: result)
-																		menuBlock: [ self showItMenuFor: result text: pstr ].
-													self replaceModelFrom: self selectionEnd
-															to: self selectionEnd
-															withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: result)).
-													self selection: self selectionEnd ,, self selectionEnd]]
+													self inSessionProcessDo: [
+														result := (StringGlyph
+																			for: pstr
+																			painter: self showItPainter) asVisual
+																			withBackdrop: self showItBackdrop.
+														result := (PressHandler for: result)
+																			onPress: [ (Inspector on: oop) launch ].
+														result := (PopUpMenuHandler for: result)
+																			menuBlock: [ self showItMenuFor: result text: pstr ].
+														self replaceModelFrom: self selectionEnd
+																to: self selectionEnd
+																withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: result)).
+														self selection: self selectionEnd ,, self selectionEnd]]]
 ! !
 
 ! (Delta mirrorFor: #CodeView) methodsFor: 'event processing' !

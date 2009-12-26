@@ -1,0 +1,43 @@
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>
+cwd <FilePath>')) !
+
+(Delta mirrorFor: #FilePathTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #FilePathTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #FilePathTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #FilePathTest) methodsFor: 'restricted-test support' !
+
+
+setUp
+
+	cwd := FilePath currentDirectory.
+	tmpDir := FilePath for: 'tmpDir'.
+	self deny: tmpDir exists.
+	tmpDir createDirectoryIfFail: 
+		[:err |
+		created := false.
+		self error: err].
+	created := true!
+
+tearDown
+
+	FilePath currentDirectory: cwd.
+	created
+		ifTrue: [FilePath tryToDeleteTestDir: tmpDir]! !
+
+! (Delta mirrorFor: #FilePathTest) methodsFor: 'testing' !
+
+
+testContainingDirectoryOfFileInCurrentDirectoryShouldBeDot
+
+	FilePath currentDirectory: tmpDir.
+	file := FilePath for: 'testfile'.
+	self assert: '.' = file containingDirectory name! !
+

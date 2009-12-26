@@ -35,11 +35,23 @@ typecheckingMenu ^ <Menu>
 ! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
 
 
+buildToolBar
+
+	super buildToolBar.
+	self toolBar addSpace.
+	self toolBar
+		addButtonWithImageFrom: 'resources/sunit.bmp'
+		action: [:b | self launchSUnit]!
+
 definitionTitle ^ <Str>
 
 	^'Class'!
 
 entryPainter ^ <Painter>
 
-	^self classPainter! !
+	^self classPainter!
+
+launchSUnit
+
+TestRunner openOn: self mirror reflectee! !
 

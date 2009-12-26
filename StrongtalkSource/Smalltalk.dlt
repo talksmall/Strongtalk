@@ -5,7 +5,8 @@ Delta define: #Smalltalk as: (
 	DependencyObject <NotifyingObject>
 		"We have an explicit dependency object since one has to mix in
 			NotifyingObject mixin to get dependency behavior. Smalltalk is
-			currently just a class, so this is not possible."') !
+			currently just a class, so this is not possible."
+	FileInDirectory <FilePath>') !
 
 (Delta mirrorFor: #Smalltalk) revision: '$Revision: 1.25 $'!
 
@@ -222,11 +223,34 @@ recompileAllMethods
 ! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
 
 
+fileInDirectory ^ <FilePath>
+
+	FileInDirectory isNil
+		ifTrue: [FileInDirectory := FilePath currentDirectory].
+	^FileInDirectory!
+
+fileInDirectory: directory <FilePath>
+
+	FileInDirectory := directory!
+
+fileInFromAbsFile: file <FilePath>
+
+	| stream <CharInputStream> savedDirectory <FilePath> |
+	Transcript cr; show: 'Filing in from file ', file name.
+	savedDirectory := self fileInDirectory.
+	self fileInDirectory: file containingDirectory.
+	[stream := file charInputStream.
+	[ stream fileIn ] ensure: [ stream close ]]
+		ensure: [self fileInDirectory: savedDirectory]!
+
 fileInFromFile: file <FilePath>
 
-	| stream <CharInputStream> |
-	stream := file charInputStream.
-	[ stream fileIn ] ensure: [ stream close ].!
+	| absFile <FilePath> |
+	absFile := file isAbsolute
+						ifTrue: [file]
+						ifFalse: [self fileInDirectory, file].
+	
+	self fileInFromAbsFile: absFile!
 
 fileInWorld
 "Temporary hack to build clean source base. Use this only if you know
@@ -318,7 +342,7 @@ fileOutWorldToFile: file <FilePath>
 
 defaultFileoutRevision ^ <Str>
 
-	^'$Revi', 'sion:$'			"Protect string from RCS !!"!
+	^'"$Revi', 'sion:$"'			"Protect string from RCS !!"!
 
 fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
 
@@ -326,9 +350,9 @@ fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroup
 	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
 	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
 	(self groupFor: w directory: dir openGroups: ogs)
-		nextPutAll: 'Delta fileIn: ', m fileName printString, ' !!'; cr; flush.
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
 	(self groupFor: m group directory: dir openGroups: ogs)
-		nextPutAll: 'Delta fileIn: ', m fileName printString, ' !!'; cr; flush.
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
 !
 
 groupFileExtension ^ <Str>

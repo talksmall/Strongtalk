@@ -23,6 +23,10 @@ currentDirectory ^<FilePath>
 
 	^Platform pathClass currentDirectory!
 
+currentDirectory: file <FilePath>
+
+	^Platform pathClass currentDirectory: file!
+
 for: name <Str>  ^<FilePath>
 
 	^Platform pathClass new pattern: name! !
@@ -76,7 +80,11 @@ containingDirectory ^<FilePath>
 
 	"use when coerce: works with mixins"
 "	^FilePath coerce: super containingDirectory"
-	^guaranteed <FilePath> (super containingDirectory)!
+	| directory <FilePath> |
+	directory := guaranteed <FilePath> (super containingDirectory).
+	^directory isNil
+		ifTrue: [FilePath for: '.']
+		ifFalse: [directory]!
 
 elements ^<SeqCltn[FilePath]>
 

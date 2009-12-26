@@ -1,5 +1,5 @@
 Delta define: #TestRunner as: (
-(Class subclassOf: 'NotifyingObject mixin |> Application' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
 
 (Delta mirrorFor: #TestRunner) revision: '$Revision:$'!
 
@@ -14,13 +14,15 @@ comment:
 ! (Delta mirrorFor: #TestRunner) classSide methodsFor: 'instance creation' !
 
 
-new
-
-        ^super new initialize!
-
 open
 	"(TestRunner open)"
-        ^super new launch! !
+        ^self new launch!
+
+openOn: testClass <Class>
+	"(TestRunner open)"
+        ^self new
+        	selectTestClass: testClass;
+        	launch! !
 
 ! (Delta mirrorFor: #TestRunner) methodsFor: 'accessing' !
 
@@ -119,20 +121,32 @@ initialize
 ! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
 
 
+addSubclass
+
+	self addSubclassTo: (self selectedTestClass isNil
+										ifTrue: [TestCase]
+										ifFalse: [self selectedTestClass])!
+
+browseSelectedTest
+
+	(ClassOutliner for: (Mirror on: self selectedTestClass)) launch!
+
 buildBareVisualTop: top
 
 	| testsColumn failureColumn errorColumn listEqualizer buttonEqualizer
-	  textEqualizer resultsRow resultsColumn testList errorsList failuresList |
+	  textEqualizer resultsRow resultsColumn errorsList failuresList |
+	Smalltalk addDependent: self.
 	listEqualizer := Equalizer forX.
 	buttonEqualizer := Equalizer forY.
 	textEqualizer := Equalizer forX.
 	passFailText := self textViewOn: #passFail.
 	detailsText := self textViewOn: #details.
-	testList := ListModel
+	testsList := (ListModel
 							on: self
 							items: #tests
 							selected: #selectedSuite
-							select: #selectedSuite:.
+							select: #selectedSuite:)
+								withPopUpMenuSource: [self listBoxPopUpMenu].
 	failuresList := ListModel
 									on: self
 									items: #failuresList
@@ -144,7 +158,7 @@ buildBareVisualTop: top
 									selected: #selectedErrorTest
 									select: #debugErrorTest:.
 	testsColumn := Column holding: (OrderedCollection
-																		with: (listEqualizer for: testList with3DBorder)
+																		with: (listEqualizer for: testsList with3DBorder)
 																		with: (buttonEqualizer for: (Button labeled: self refreshButtonLabel
 																																		action: [:b| self refreshTests]))).
 	failureColumn := Column holding: (OrderedCollection
@@ -179,6 +193,18 @@ frameWithBorderAndBackdrop: visual
 			backdrop: (Painter new);
 			yourself!
 
+listBoxPopUpMenu ^<Menu>
+
+	^Menu new
+		name: 'Actions';
+		add: (MenuAction new
+					name: 'Add test class';
+					action: [self addSubclass]);
+		add: (MenuAction new
+					name: 'Browse';
+					active: [self selectedTestClass notNil];
+					action: [self browseSelectedTest])!
+
 textViewOn: aspect
 
 	^TextModel
@@ -191,6 +217,14 @@ textViewOn: aspect
 visualAllocated
 
 "	self refreshWindow"! !
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'private-control' !
+
+
+closeRequest: toClose <[]>
+
+	Smalltalk removeDependent: self.
+	super closeRequest: toClose! !
 
 ! (Delta mirrorFor: #TestRunner) methodsFor: 'processing' !
 
@@ -220,7 +254,7 @@ runOneTest
                 ["
 	testSuite notNil
 		ifTrue: [self runWindow.
-						result := testSuite asSymbol sunitAsClass suite run.
+						result := self selectedTestClass suite run.
 						self updateWindow: result]
  		ifFalse: [self runWindow.
 						self displayPassFail: 'No Test Suite Selected']
@@ -238,6 +272,11 @@ runTests
 				self updateWindow: result]
 	"]."
 !
+
+selectTestClass: testClass <Class>
+
+	testClass isNil ifTrue: [^self].
+	self selectedSuite: (tests indexOf: testClass name)!
 
 selectedErrorTest
         ^selectedErrorTest!
@@ -259,7 +298,11 @@ selectedSuite: anInteger
         selectedErrorTest := 0.
         self changed: #selectedFailureTest.             "added rew"
         self changed: #selectedErrorTest.               "added rew" 
-        self changed: #selectedSuite! !
+        self changed: #selectedSuite!
+
+selectedTestClass
+
+	^testSuite isNil ifFalse: [testSuite asSymbol sunitAsClass]! !
 
 ! (Delta mirrorFor: #TestRunner) methodsFor: 'test processing' !
 
@@ -361,9 +404,14 @@ runWindow
 
         self refreshWindow:  'Running...'!
 
+update: aspect with: value
+
+	self inSessionProcessDo: [self refreshTests]!
+
 updateAll
 
 	self changed: #tests.
+	self changed: #selectedSuite.
 	self changed: #details.
 	self changed: #passFail.
 	self refreshWindow!
