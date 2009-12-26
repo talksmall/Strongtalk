@@ -109894,3 +109894,1872 @@ showItBlock ^<[]>
 "December 20, 2009 -> 12:6:24"!
 
 "System saved" !
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPut: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPutAll: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPut: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPutAll: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+defaultFileoutRevision ^ <Str>
+
+	^'"$Revi', 'sion:$"'			"Protect string from RCS !!"! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextChunkPut: revision; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+    	| result <Alien> name <Alien> setCurrentDirectory <Alien> |
+    	setCurrentDirectory := Alien lookup: 'SetCurrentDirectoryA' inLibrary: 'kernel32.dll'.
+    	result := Alien new: 4.
+    	name := file name asString asAlien.
+    	[setCurrentDirectory
+    		primFFICallResult: result
+    		with: name pointer.
+    	result asBoolean ifFalse: [self error: 'Unable to cd to directory ', file name]]
+    		ensure: [name free]
+	! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #FilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+	^Platform pathClass currentDirectory: file! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPut: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPutAll: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPut: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPutAll: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:46"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+defaultFileoutRevision ^ <Str>
+
+	^'"$Revi', 'sion:$"'			"Protect string from RCS !!"! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextChunkPut: revision; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+    	| result <Alien> name <Alien> setCurrentDirectory <Alien> |
+    	setCurrentDirectory := Alien lookup: 'SetCurrentDirectoryA' inLibrary: 'kernel32.dll'.
+    	result := Alien new: 4.
+    	name := file name asString asAlien.
+    	[setCurrentDirectory
+    		primFFICallResult: result
+    		with: name pointer.
+    	result asBoolean ifFalse: [self error: 'Unable to cd to directory ', file name]]
+    		ensure: [name free]
+	! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #FilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+	^Platform pathClass currentDirectory: file! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+showItBlock ^<[]>
+
+	^[self computeValueIfSuccess: [:oop | | pstr <Str> result <Visual> |
+													pstr := oop printString.
+													self inSessionProcessDo: [
+														result := (StringGlyph
+																			for: pstr
+																			painter: self showItPainter) asVisual
+																			withBackdrop: self showItBackdrop.
+														result := (PressHandler for: result)
+																			onPress: [ (Inspector on: oop) launch ].
+														result := (PopUpMenuHandler for: result)
+																			menuBlock: [ self showItMenuFor: result text: pstr ].
+														self replaceModelFrom: self selectionEnd
+																to: self selectionEnd
+																withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: result)).
+														self selection: self selectionEnd ,, self selectionEnd]]]
+! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPut: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPutAll: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPut: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPutAll: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+defaultFileoutRevision ^ <Str>
+
+	^'"$Revi', 'sion:$"'			"Protect string from RCS !!"! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextChunkPut: revision; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+    	| result <Alien> name <Alien> setCurrentDirectory <Alien> |
+    	setCurrentDirectory := Alien lookup: 'SetCurrentDirectoryA' inLibrary: 'kernel32.dll'.
+    	result := Alien new: 4.
+    	name := file name asString asAlien.
+    	[setCurrentDirectory
+    		primFFICallResult: result
+    		with: name pointer.
+    	result asBoolean ifFalse: [self error: 'Unable to cd to directory ', file name]]
+    		ensure: [name free]
+	! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #FilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+	^Platform pathClass currentDirectory: file! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPut: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPutAll: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: ', m fileName printString, ' !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPut: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextPut: $"; nextPutAll: revision; nextPut: $"; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+fileOutDefinition: m <Mirror> directory: dir <FilePath> world: w <Str> openGroups: ogs <Dictionary[Str, CharOutputStream]>
+
+	| defStream <CharOutputStream> |
+	defStream := CharacterInputOutputConverter on: (dir, (FilePath for: m fileName)) writeStream.
+	[ (DefinitionWriter for: m) fileOutOn: defStream ] ensure: [ defStream close ].
+	(self groupFor: w directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
+	(self groupFor: m group directory: dir openGroups: ogs)
+		nextPutAll: 'Delta fileInFromFile: (FilePath for: ', m fileName printString, ') !!'; cr; flush.
+! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+defaultFileoutRevision ^ <Str>
+
+	^'"$Revi', 'sion:$"'			"Protect string from RCS !!"! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file out-private' !
+groupFor: name <Str>  directory: dir <FilePath> openGroups: ogs <Dictionary[Str, CharOutputStream]> ^ <CharOutputStream>
+
+	| file <FilePath> rs <CharInputStream> ws <CharOutputStream> revision <Str> |
+	(ws := ogs at: name ifAbsent: [ nil ]) notNil
+		ifTrue: [	^ws ].
+	file := dir, (FilePath for: (name, self groupFileExtension)).
+	file exists
+		ifTrue: 	[	rs := file charInputStream.
+							[ revision := rs nextChunk ] ensure: [ rs close ] ]
+		ifFalse: 	[	revision := self defaultFileoutRevision ].
+	ws := file charOutputStream.
+	ws nextChunkPut: revision; cr.
+	^ogs at: name put: ws! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+    	| result <Alien> name <Alien> setCurrentDirectory <Alien> |
+    	setCurrentDirectory := Alien lookup: 'SetCurrentDirectoryA' inLibrary: 'kernel32.dll'.
+    	result := Alien new: 4.
+    	name := file name asString asAlien.
+    	[setCurrentDirectory
+    		primFFICallResult: result
+    		with: name pointer.
+    	result asBoolean ifFalse: [self error: 'Unable to cd to directory ', file name]]
+    		ensure: [name free]
+	! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #FilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+	^Platform pathClass currentDirectory: file! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #CodeView) methodsFor: 'control' !
+showItBlock ^<[]>
+
+	^[self computeValueIfSuccess: [:oop | | pstr <Str> result <Visual> |
+													pstr := oop printString.
+													self inSessionProcessDo: [
+														result := (StringGlyph
+																			for: pstr
+																			painter: self showItPainter) asVisual
+																			withBackdrop: self showItBackdrop.
+														result := (PressHandler for: result)
+																			onPress: [ (Inspector on: oop) launch ].
+														result := (PopUpMenuHandler for: result)
+																			menuBlock: [ self showItMenuFor: result text: pstr ].
+														self replaceModelFrom: self selectionEnd
+																to: self selectionEnd
+																withGlyphs: (Array[Array[Glyph]] with: (Array[Glyph] with: result)).
+														self selection: self selectionEnd ,, self selectionEnd]]]
+! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Win32FilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+	| name result setCurrentDirectory |
+	name := file name asString asAlien.
+	[result := Alien new: 4.
+	setCurrentDirectory := Alien lookup: 'SetCurrentDirectoryA' inLibrary: 'kernel32.dll'.
+	setCurrentDirectory
+		primFFICalloutResult: result
+		with: name pointer.
+	result asBoolean ifFalse: [self error: 'Could not change directory']]
+		ensure: [name free]! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Win32FilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+	| name result setCurrentDirectory |
+	name := file name asString asAlien.
+	[result := Alien new: 4.
+	setCurrentDirectory := Alien lookup: 'SetCurrentDirectoryA' inLibrary: 'kernel32.dll'.
+	setCurrentDirectory
+		primFFICallResult: result
+		with: name pointer.
+	result asBoolean ifFalse: [self error: 'Could not change directory']]
+		ensure: [name free]! !
+
+"December 24, 2009 -> 2:8:47"!
+
+! (Delta mirrorFor: #Win32FilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+	| name result setCurrentDirectory |
+	name := file name asString asAlien.
+	[result := Alien new: 4.
+	setCurrentDirectory := Alien lookup: 'SetCurrentDirectoryA' inLibrary: 'kernel32.dll'.
+	setCurrentDirectory
+		primFFICallResult: result
+		with: name pointer.
+	(result boolAt: 1) ifFalse: [self error: 'Could not change directory']]
+		ensure: [name free]! !
+
+"December 24, 2009 -> 2:11:23"!
+
+"System saved" !
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+    	| result <Alien> name <Alien> chdir <Alien> |
+    	chdir := Alien lookup: 'chdir' inLibrary: 'libc.so.6'.
+    	result := Alien new: 4.
+    	name := file name asString asAlien.
+    	[chdir
+    		primFFICallResult: result
+    		with: name pointer.
+    	result asSignedLong = 0 ifFalse: [self error: 'Unable to cd to directory ', file name]]
+    		ensure: [name free]
+	! !
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #FilePathTest) methodsFor: 'restricted-test support' !
+setUp
+
+	tmpDir := FilePath for: 'tmpDir'.
+	self deny: tmpDir exists.
+	tmpDir createDirectoryIfFail: 
+		[:err |
+		created := false.
+		self error: err].
+	created := true.
+	file := tmpDir, (FilePattern for: 'tmpFile')! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #FilePathTest) methodsFor: 'restricted-test support' !
+tearDown
+
+	created
+		ifTrue: [FilePath tryToDeleteTestDir: tmpDir]! !
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>
+cwd <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>
+cwd <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>
+cwd <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #FilePathTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'created <Boolean>
+tmpDir <FilePath>
+file <FilePath>
+cwd <FilePath>')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #FilePathTest) methodsFor: 'restricted-test support' !
+setUp
+
+	cwd := FilePath currentDirectory.
+	tmpDir := FilePath for: 'tmpDir'.
+	self deny: tmpDir exists.
+	tmpDir createDirectoryIfFail: 
+		[:err |
+		created := false.
+		self error: err].
+	created := true.
+	file := tmpDir, (FilePattern for: 'tmpFile')! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #FilePathTest) methodsFor: 'restricted-test support' !
+tearDown
+
+	FilePath currentDirectory: cwd.
+	created
+		ifTrue: [FilePath tryToDeleteTestDir: tmpDir]! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #FilePathTest) methodsFor: 'restricted-test support' !
+setUp
+
+	cwd := FilePath currentDirectory.
+	tmpDir := FilePath for: 'tmpDir'.
+	self deny: tmpDir exists.
+	tmpDir createDirectoryIfFail: 
+		[:err |
+		created := false.
+		self error: err].
+	created := true! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #FilePathTest) methodsFor: 'testing' !
+testContainingDirectoryOfFileInCurrentDirectoryShouldBeDot
+
+	FilePath currentDirectory: tmpDir.
+	file := FilePath for: 'testfile'.
+	self assert: '.' = file containingDirectory name! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'accessing' !
+containingDirectory ^<FilePath>
+
+	"use when coerce: works with mixins"
+"	^FilePath coerce: super containingDirectory"
+	| directory <FilePath> |
+	directory := guaranteed <FilePath> (super containingDirectory).
+	^directory ifNil: [FilePath for: '.']! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'accessing' !
+containingDirectory ^<FilePath>
+
+	"use when coerce: works with mixins"
+"	^FilePath coerce: super containingDirectory"
+	| directory <FilePath> |
+	directory := guaranteed <FilePath> (super containingDirectory).
+	^directory isNil
+		ifTrue: [FilePath for: '.']
+		ifFalse: [directory]! !
+
+"December 24, 2009 -> 16:4:38"!
+
+(Delta mirrorFor: #TestRunner) classSide removeMethod: #new ifAbsent: [] !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #TestRunner) classSide methodsFor: 'instance creation' !
+open
+	"(TestRunner open)"
+        ^self new launch! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+buildBareVisualTop: top
+
+	| testsColumn failureColumn errorColumn listEqualizer buttonEqualizer
+	  textEqualizer resultsRow resultsColumn testList errorsList failuresList |
+	listEqualizer := Equalizer forX.
+	buttonEqualizer := Equalizer forY.
+	textEqualizer := Equalizer forX.
+	passFailText := self textViewOn: #passFail.
+	detailsText := self textViewOn: #details.
+	testList := (ListModel
+							on: self
+							items: #tests
+							selected: #selectedSuite
+							select: #selectedSuite:)
+								withPopUpMenuSource: [^self listBoxPopUpMenu].
+	failuresList := ListModel
+									on: self
+									items: #failuresList
+									selected: #selectedFailureTest
+									select: #debugFailureTest:.
+	errorsList := ListModel
+									on: self
+									items: #errorsList
+									selected: #selectedErrorTest
+									select: #debugErrorTest:.
+	testsColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: testList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self refreshButtonLabel
+																																		action: [:b| self refreshTests]))).
+	failureColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: failuresList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self runButtonLabel
+																																		action: [:b| self runTests]))).
+	errorColumn := Column holding: (OrderedCollection
+																			with: (listEqualizer for: errorsList with3DBorder)
+																			with: (buttonEqualizer for: (Button labeled: self runOneButtonLabel
+																																			action: [:b| self runOneTest]))).
+	resultsRow := Row holding: (OrderedCollection
+																with: failureColumn
+																with: errorColumn).
+	resultsColumn := Column holding: (OrderedCollection
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: passFailText imbeddedVisual))
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: detailsText imbeddedVisual))
+																			with: (textEqualizer for: resultsRow)).
+	self updateAll.
+	^ApplicationInterceptor
+			for: (Row holding: (OrderedCollection
+													with: testsColumn
+													with: resultsColumn))
+			application: self! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+listBoxPopUpMenu ^<Menu>
+
+	^Menu new
+		name: 'Actions';
+		add: (MenuAction new
+					name: 'Add test class';
+					action: [])! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+buildBareVisualTop: top
+
+	| testsColumn failureColumn errorColumn listEqualizer buttonEqualizer
+	  textEqualizer resultsRow resultsColumn testList errorsList failuresList |
+	listEqualizer := Equalizer forX.
+	buttonEqualizer := Equalizer forY.
+	textEqualizer := Equalizer forX.
+	passFailText := self textViewOn: #passFail.
+	detailsText := self textViewOn: #details.
+	testList := (ListModel
+							on: self
+							items: #tests
+							selected: #selectedSuite
+							select: #selectedSuite:)
+								withPopUpMenuSource: [self listBoxPopUpMenu].
+	failuresList := ListModel
+									on: self
+									items: #failuresList
+									selected: #selectedFailureTest
+									select: #debugFailureTest:.
+	errorsList := ListModel
+									on: self
+									items: #errorsList
+									selected: #selectedErrorTest
+									select: #debugErrorTest:.
+	testsColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: testList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self refreshButtonLabel
+																																		action: [:b| self refreshTests]))).
+	failureColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: failuresList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self runButtonLabel
+																																		action: [:b| self runTests]))).
+	errorColumn := Column holding: (OrderedCollection
+																			with: (listEqualizer for: errorsList with3DBorder)
+																			with: (buttonEqualizer for: (Button labeled: self runOneButtonLabel
+																																			action: [:b| self runOneTest]))).
+	resultsRow := Row holding: (OrderedCollection
+																with: failureColumn
+																with: errorColumn).
+	resultsColumn := Column holding: (OrderedCollection
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: passFailText imbeddedVisual))
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: detailsText imbeddedVisual))
+																			with: (textEqualizer for: resultsRow)).
+	self updateAll.
+	^ApplicationInterceptor
+			for: (Row holding: (OrderedCollection
+													with: testsColumn
+													with: resultsColumn))
+			application: self! !
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+Delta define: #TestRunner as: (
+(Class subclassOf: 'ProgrammingEnvironment mixin |> (NotifyingObject mixin |> Application)' instanceVariables: 'result details passFail failures errors tests testSuite passFailText detailsText lastPass testsList selectedFailureTest selectedErrorTest selectedSuite ')) !
+
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+listBoxPopUpMenu ^<Menu>
+
+	^Menu new
+		name: 'Actions';
+		add: (MenuAction new
+					name: 'Add test class';
+					action: [self addSubclassTo: (Mirror on: TestCase)])! !
+
+"December 24, 2009 -> 16:4:38"!
+
+! (Delta mirrorFor: #BlockDependent) methodsFor: 'dependencies' !
+update: aspect
+
+	self update: aspect with: nil! !
+
+"December 24, 2009 -> 16:4:52"!
+
+"System saved" !
+"December 24, 2009 -> 19:5:23"!
+
+! (Delta mirrorFor: #NotifyingObject) methodsFor: 'accessing' !
+removeDependent: o <Object>
+
+	self dependents remove: o ifAbsent: []! !
+
+"December 24, 2009 -> 19:5:23"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+update: aspect with: value
+
+	self refreshTests! !
+
+"December 24, 2009 -> 19:5:23"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'private-control' !
+closeRequest: toClose <[]>
+
+	Smalltalk removeDependent: self.
+	super closeRequest: toClose! !
+
+"December 24, 2009 -> 19:5:23"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+buildBareVisualTop: top
+
+	| testsColumn failureColumn errorColumn listEqualizer buttonEqualizer
+	  textEqualizer resultsRow resultsColumn testList errorsList failuresList |
+	Smalltalk addDependent: self.
+	listEqualizer := Equalizer forX.
+	buttonEqualizer := Equalizer forY.
+	textEqualizer := Equalizer forX.
+	passFailText := self textViewOn: #passFail.
+	detailsText := self textViewOn: #details.
+	testList := (ListModel
+							on: self
+							items: #tests
+							selected: #selectedSuite
+							select: #selectedSuite:)
+								withPopUpMenuSource: [self listBoxPopUpMenu].
+	failuresList := ListModel
+									on: self
+									items: #failuresList
+									selected: #selectedFailureTest
+									select: #debugFailureTest:.
+	errorsList := ListModel
+									on: self
+									items: #errorsList
+									selected: #selectedErrorTest
+									select: #debugErrorTest:.
+	testsColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: testList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self refreshButtonLabel
+																																		action: [:b| self refreshTests]))).
+	failureColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: failuresList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self runButtonLabel
+																																		action: [:b| self runTests]))).
+	errorColumn := Column holding: (OrderedCollection
+																			with: (listEqualizer for: errorsList with3DBorder)
+																			with: (buttonEqualizer for: (Button labeled: self runOneButtonLabel
+																																			action: [:b| self runOneTest]))).
+	resultsRow := Row holding: (OrderedCollection
+																with: failureColumn
+																with: errorColumn).
+	resultsColumn := Column holding: (OrderedCollection
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: passFailText imbeddedVisual))
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: detailsText imbeddedVisual))
+																			with: (textEqualizer for: resultsRow)).
+	self updateAll.
+	^ApplicationInterceptor
+			for: (Row holding: (OrderedCollection
+													with: testsColumn
+													with: resultsColumn))
+			application: self! !
+
+"December 24, 2009 -> 19:6:10"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+update: aspect with: value
+
+	self inSessionDo: [self refreshTests]! !
+
+"December 24, 2009 -> 19:6:24"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+update: aspect with: value
+
+	self inSessionProcessDo: [self refreshTests]! !
+
+"December 24, 2009 -> 19:6:55"!
+
+Delta define: #NewTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"December 24, 2009 -> 19:7:12"!
+
+(Delta mirrorFor: #NewTest) removeDefinitionIfFail: [] !
+
+
+"December 24, 2009 -> 19:10:16"!
+
+"System saved" !
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+buildBareVisualTop: top
+
+	| testsColumn failureColumn errorColumn listEqualizer buttonEqualizer
+	  textEqualizer resultsRow resultsColumn errorsList failuresList |
+	Smalltalk addDependent: self.
+	listEqualizer := Equalizer forX.
+	buttonEqualizer := Equalizer forY.
+	textEqualizer := Equalizer forX.
+	passFailText := self textViewOn: #passFail.
+	detailsText := self textViewOn: #details.
+	testsList := (ListModel
+							on: self
+							items: #tests
+							selected: #selectedSuite
+							select: #selectedSuite:)
+								withPopUpMenuSource: [self listBoxPopUpMenu].
+	failuresList := ListModel
+									on: self
+									items: #failuresList
+									selected: #selectedFailureTest
+									select: #debugFailureTest:.
+	errorsList := ListModel
+									on: self
+									items: #errorsList
+									selected: #selectedErrorTest
+									select: #debugErrorTest:.
+	testsColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: testsList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self refreshButtonLabel
+																																		action: [:b| self refreshTests]))).
+	failureColumn := Column holding: (OrderedCollection
+																		with: (listEqualizer for: failuresList with3DBorder)
+																		with: (buttonEqualizer for: (Button labeled: self runButtonLabel
+																																		action: [:b| self runTests]))).
+	errorColumn := Column holding: (OrderedCollection
+																			with: (listEqualizer for: errorsList with3DBorder)
+																			with: (buttonEqualizer for: (Button labeled: self runOneButtonLabel
+																																			action: [:b| self runOneTest]))).
+	resultsRow := Row holding: (OrderedCollection
+																with: failureColumn
+																with: errorColumn).
+	resultsColumn := Column holding: (OrderedCollection
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: passFailText imbeddedVisual))
+																			with: (textEqualizer for: (self frameWithBorderAndBackdrop: detailsText imbeddedVisual))
+																			with: (textEqualizer for: resultsRow)).
+	self updateAll.
+	^ApplicationInterceptor
+			for: (Row holding: (OrderedCollection
+													with: testsColumn
+													with: resultsColumn))
+			application: self! !
+
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+listBoxPopUpMenu ^<Menu>
+
+	^Menu new
+		name: 'Actions';
+		add: (MenuAction new
+					name: 'Add test class';
+					action: [self addSubclassTo: (Mirror on: TestCase)]);
+		add: (MenuAction new
+					name: 'Browse';
+					action: [self browseSelectedTest])! !
+
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+browseSelectedTest! !
+
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'processing' !
+selectedTestClass
+
+	^testSuite isNil ifFalse: [testSuite asSymbol sunitAsClass]! !
+
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'processing' !
+runOneTest
+        "Cursor execute showWhile:
+                ["
+	testSuite notNil
+		ifTrue: [self runWindow.
+						result := self selectedTestClass suite run.
+						self updateWindow: result]
+ 		ifFalse: [self runWindow.
+						self displayPassFail: 'No Test Suite Selected']
+       "]"! !
+
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+listBoxPopUpMenu ^<Menu>
+
+	^Menu new
+		name: 'Actions';
+		add: (MenuAction new
+					name: 'Add test class';
+					action: [self addSubclassTo: (Mirror on: TestCase)]);
+		add: (MenuAction new
+					name: 'Browse';
+					active: [self selectedTestClass notNil];
+					action: [self browseSelectedTest])! !
+
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+browseSelectedTest
+
+	(ClassOutliner for: (Mirror on: self selectedTestClass)) launch! !
+
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+addSubclass
+
+	self addSubclassTo: (self selectedTestClass isNil
+										ifTrue: [TestCase]
+										ifFalse: [self selectedTestClass])! !
+
+"December 24, 2009 -> 21:20:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'interface opening' !
+listBoxPopUpMenu ^<Menu>
+
+	^Menu new
+		name: 'Actions';
+		add: (MenuAction new
+					name: 'Add test class';
+					action: [self addSubclass]);
+		add: (MenuAction new
+					name: 'Browse';
+					active: [self selectedTestClass notNil];
+					action: [self browseSelectedTest])! !
+
+"December 24, 2009 -> 21:20:52"!
+
+"System saved" !
+"December 25, 2009 -> 11:47:32"!
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
+asAlien
+
+	^self asString asAlien! !
+
+"December 25, 2009 -> 11:47:43"!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+buildToolBar
+
+	super buildToolBar.
+	self toolBar addSpace.
+	self toolBar
+		addButtonWithImageFrom: 'resources/sunit.png'
+		action: [:b | Transcript cr; show: 'SUnit pressed!!']! !
+
+"December 25, 2009 -> 11:48:16"!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+buildToolBar
+
+	super buildToolBar.
+	self toolBar addSpace.
+	self toolBar
+		addButtonWithImageFrom: 'resources/sunit.bmp'
+		action: [:b | Transcript cr; show: 'SUnit pressed!!']! !
+
+"December 25, 2009 -> 11:48:56"!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+buildToolBar
+
+	super buildToolBar.
+	self toolBar addSpace.
+	self toolBar
+		addButtonWithImageFrom: 'resources/sunit.bmp'
+		action: [:b | TestRunner open]! !
+
+"December 25, 2009 -> 11:49:38"!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+launchSunit
+
+TestRunner open! !
+
+"December 25, 2009 -> 11:49:57"!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+launchSUnit
+
+TestRunner open! !
+
+"December 25, 2009 -> 11:49:58"!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+buildToolBar
+
+	super buildToolBar.
+	self toolBar addSpace.
+	self toolBar
+		addButtonWithImageFrom: 'resources/sunit.bmp'
+		action: [:b | self launchSUnit]! !
+
+"December 25, 2009 -> 12:34:51"!
+
+(Delta mirrorFor: #ClassOutliner) removeMethod: #launchSunit ifAbsent: [] !
+
+
+"December 25, 2009 -> 12:40:55"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'processing' !
+selectTestClass: testClass <Class>
+
+	testClass isNil ifTrue: [^self].
+	self selectedSuite: (tests indexOf: testClass name)! !
+
+"December 25, 2009 -> 12:40:57"!
+
+! (Delta mirrorFor: #TestRunner) classSide methodsFor: 'instance creation' !
+openOn: testClass <Class>
+	"(TestRunner open)"
+        ^self new
+        	selectTestClass: testClass;
+        	launch! !
+
+"December 25, 2009 -> 12:41:16"!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+launchSUnit
+
+TestRunner openOn: self mirror reflectee! !
+
+"December 25, 2009 -> 12:45:13"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+updateAll
+
+	self changed: #tests.
+	self changed: #selectedSuite.
+	self changed: #details.
+	self changed: #passFail.
+	self refreshWindow! !
+
+"December 25, 2009 -> 12:46:10"!
+
+"System saved" !
+"December 26, 2009 -> 23:28:25"!
+
+Delta define: #Smalltalk as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'InitializingTypeInfo <Boolean>
+	ClassesWithSubclasses <IdentitySet[Class]> 
+	Cache <IdentityDict[Symbol, GlobalAssociation]>
+	DependencyObject <NotifyingObject>
+		"We have an explicit dependency object since one has to mix in
+			NotifyingObject mixin to get dependency behavior. Smalltalk is
+			currently just a class, so this is not possible."
+	FileInDirectory <FilePath>') !
+
+
+"December 26, 2009 -> 23:29:17"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
+fileInDirectory
+
+	FileInDirectory isNil
+		ifTrue: [FileInDirectory := FilePath currentDirectory].
+	^FileInDirectory! !
+
+"December 26, 2009 -> 23:29:42"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
+fileInDirectory: directory <FilePath>
+
+	FileInDirectory := directory! !
+
+"December 26, 2009 -> 23:29:51"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
+fileInDirectory ^ <FilePath>
+
+	FileInDirectory isNil
+		ifTrue: [FileInDirectory := FilePath currentDirectory].
+	^FileInDirectory! !
+
+"December 26, 2009 -> 23:31:28"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'testing' !
+isFullPath
+
+	self subclassResponsibility! !
+
+"December 26, 2009 -> 23:32:26"!
+
+(Delta mirrorFor: #FilePath) removeMethod: #isFullPath ifAbsent: [] !
+
+
+"December 26, 2009 -> 23:36:2"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
+fileInFromAbsFile: file <FilePath>
+
+	| stream <CharInputStream> |
+	stream := file charInputStream.
+	[ stream fileIn ] ensure: [ stream close ].! !
+
+"December 26, 2009 -> 23:36:44"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
+fileInFromFile: file <FilePath>
+
+	| absFile <FilePath> |
+	absFile := file isAbsolute
+						ifTrue: [file]
+						ifFalse: [self fileInDirectory, file].
+	
+	self fileInFromAbsFile: absFile! !
+
+"December 26, 2009 -> 23:38:34"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
+fileInFromAbsFile: file <FilePath>
+
+	| stream <CharInputStream> savedDirectory <FilePath> |
+	savedDirectory := self fileInDirectory.
+	self fileInDirectory: file containingDirectory.
+	[stream := file charInputStream.
+	[ stream fileIn ] ensure: [ stream close ]]
+		ensure: [self fileInDirectory: savedDirectory]! !
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:39:35"!
+
+(Delta mirrorFor: #UnsafeAlien)
+comment: 
+''!
+
+
+"December 26, 2009 -> 23:39:35"!
+
+! (Delta mirrorFor: #UnsafeAlien) classSide methodsFor: 'instance creation' !
+forPointerTo: bytes <IndexedByteInstanceVariables> ^ <UnsafeAlien>
+
+	^self new
+		nonPointerObject: bytes;
+		yourself
+		! !
+
+"December 26, 2009 -> 23:39:35"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'accessing' !
+object
+
+	^nonPointerObject! !
+
+"December 26, 2009 -> 23:39:35"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'initialization' !
+nonPointerObject: bytes <IndexedByteInstanceVariables>
+
+	nonPointerObject := bytes! !
+
+"December 26, 2009 -> 23:40:54"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
+fileInFromAbsFile: file <FilePath>
+
+	| stream <CharInputStream> savedDirectory <FilePath> |
+	Transcript cr; show: 'Filing in from file ', file name.
+	savedDirectory := self fileInDirectory.
+	self fileInDirectory: file containingDirectory.
+	[stream := file charInputStream.
+	[ stream fileIn ] ensure: [ stream close ]]
+		ensure: [self fileInDirectory: savedDirectory]! !
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"December 26, 2009 -> 23:41:6"!
+
+(Delta mirrorFor: #UnsafeAlien)
+comment: 
+''!
+
+
+"December 26, 2009 -> 23:41:6"!
+
+! (Delta mirrorFor: #UnsafeAlien) classSide methodsFor: 'instance creation' !
+forPointerTo: bytes <IndexedByteInstanceVariables> ^ <UnsafeAlien>
+
+	^self new
+		nonPointerObject: bytes;
+		yourself
+		! !
+
+"December 26, 2009 -> 23:41:6"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'accessing' !
+object
+
+	^nonPointerObject! !
+
+"December 26, 2009 -> 23:41:6"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'initialization' !
+nonPointerObject: bytes <IndexedByteInstanceVariables>
+
+	nonPointerObject := bytes! !
+
+"December 26, 2009 -> 23:42:34"!
+
+"System saved" !

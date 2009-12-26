@@ -1,25 +1,89 @@
 
-"December 20, 2009 -> 1:3:17"!
+"December 24, 2009 -> 21:44:34"!
 
-! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'accessing' !
-instVarAt: index <SmallInt> ^ <Object>
-
-	^self reflectee fileOutInstVarAt: index + self reflectee fileOutHeaderSize! !
-
-"December 20, 2009 -> 3:19:1"!
-
-Delta define: #ClassTestIvars123 as: (
-(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+Delta define: #ToolbarTest as: (
+(Class subclassOf: 'Application' instanceVariables: '')) !
 
 
-"December 20, 2009 -> 3:19:1"!
+"December 24, 2009 -> 21:44:59"!
 
-(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
+hasToolbar
+
+	^true! !
+
+"December 24, 2009 -> 21:46:0"!
+
+! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
+toolbar
+
+	^Toolbar new
+		addButtonWithImageFrom: 'resources/sunit.png'
+		action: [:b | Transcript cr; show: 'SUnit pressed!!'];
+		yourself! !
+
+"December 24, 2009 -> 21:46:9"!
+
+! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
+toolbar
+
+	^ToolBar new
+		addButtonWithImageFrom: 'resources/sunit.png'
+		action: [:b | Transcript cr; show: 'SUnit pressed!!'];
+		yourself! !
+
+"December 24, 2009 -> 21:46:18"!
+
+(Delta mirrorFor: #Toolbar) removeDefinitionIfFail: [] !
 
 
-"December 20, 2009 -> 3:19:45"!
+"December 24, 2009 -> 21:50:37"!
 
-! (Delta mirrorFor: #OopsVMMirror) methodsFor: 'accessing' !
-instVarAt: index <SmallInt> ^ <Object>
+! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
+buildBareVisualTop: top
 
-	^self reflectee fileOutInstVarAt: index + self reflectee fileOutHeaderSize! !
+	^Glue xStretchy! !
+
+"December 24, 2009 -> 21:51:24"!
+
+! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
+buildBareVisualTop: top
+
+	^Glue yStretchy! !
+
+"December 24, 2009 -> 21:56:11"!
+
+! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
+buildToolBar
+
+	super buildToolBar.
+	self toolBar addSpace.
+	self toolBar
+		addButtonWithImageFrom: 'resources/sunit.png'
+		action: [:b | Transcript cr; show: 'SUnit pressed!!']! !
+
+"December 24, 2009 -> 21:58:35"!
+
+(Delta mirrorFor: #ClassOutliner) removeMethod: #buildToolBar ifAbsent: [] !
+
+
+"December 24, 2009 -> 22:48:37"!
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
+asAlien
+
+	^self asString asAlien! !
+
+"December 24, 2009 -> 23:7:28"!
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
+asAlien
+
+	^self asString asAlien! !
+
+"December 24, 2009 -> 23:8:58"!
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
+asAlien
+
+	^self asString asAlien! !
