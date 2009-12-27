@@ -111763,3 +111763,319 @@ nonPointerObject: bytes <IndexedByteInstanceVariables>
 "December 26, 2009 -> 23:42:34"!
 
 "System saved" !
+"December 27, 2009 -> 12:26:26"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:26:26"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:26:58"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:26:58"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:27:50"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+updateAll
+
+	self changed: #tests.
+	"self changed: #selectedSuite."
+	self changed: #details.
+	self changed: #passFail.
+	self refreshWindow! !
+
+"December 27, 2009 -> 12:27:56"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:27:56"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:28:10"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+updateAll
+
+	self changed: #tests.
+	self changed: #selectedSuite.
+	self changed: #details.
+	self changed: #passFail.
+	self refreshWindow! !
+
+"December 27, 2009 -> 12:32:14"!
+
+! (Delta mirrorFor: #TextModel) methodsFor: 'notification' !
+update: anAspect
+
+	anAspect == aspect
+		ifTrue: [view
+						inSessionProcessDo: [view model: (model perform: aspect)]]! !
+
+"December 27, 2009 -> 12:32:45"!
+
+! (Delta mirrorFor: #TextModel) methodsFor: 'notification' !
+update: anAspect
+
+	anAspect == aspect
+		ifTrue: [model
+						inSessionProcessDo: [view model: (model perform: aspect)]]! !
+
+"December 27, 2009 -> 12:32:56"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:32:56"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:33:29"!
+
+! (Delta mirrorFor: #TextModel) methodsFor: 'notification' !
+update: anAspect
+
+Transcript cr; show: 'Updating text view'.
+	anAspect == aspect
+		ifTrue: [model
+						inSessionProcessDo: [view model: (model perform: aspect)]]! !
+
+"December 27, 2009 -> 12:33:37"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:33:37"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:34:17"!
+
+! (Delta mirrorFor: #TextModel) methodsFor: 'notification' !
+update: anAspect
+
+	anAspect == aspect
+		ifTrue: [
+			Transcript cr; show: 'Updating text view'.
+			model inSessionProcessDo: [view model: (model perform: aspect)]]! !
+
+"December 27, 2009 -> 12:34:28"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:34:28"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:35:49"!
+
+! (Delta mirrorFor: #TextModel) methodsFor: 'notification' !
+update: anAspect
+
+	anAspect == aspect
+		ifTrue: [
+			| newText |
+			newText := (model perform: aspect).
+			Transcript cr; show: 'Updating text view ', aspect, ' = ', newText.
+			model inSessionProcessDo: [view model: newText]]! !
+
+"December 27, 2009 -> 12:36:14"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:36:14"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:48:50"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+updateAll
+
+	self changed: #tests.
+	self changed: #selectedSuite.
+	self changed: #details.
+	self changed: #passFail.
+	"self refreshWindow"! !
+
+"December 27, 2009 -> 12:49:3"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:49:3"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:49:33"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:49:33"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:51:29"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+update: aspect with: value
+self halt.
+	self inSessionProcessDo: [self refreshTests]! !
+
+"December 27, 2009 -> 12:51:37"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:52:21"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 12:53:27"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+update: aspect with: value
+"notification from Delta of update to classes in system"
+	self inSessionProcessDo: [self refreshTests]! !
+
+"December 27, 2009 -> 12:58:16"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+refreshTests
+
+        tests := self buildTests.
+        self changed: #tests.
+        testSuite := nil.
+        selectedSuite := 0.
+        selectedFailureTest := 0.
+        selectedErrorTest := 0.
+        self changed: #selectedFailureTest.             "added rew"
+        self changed: #selectedErrorTest.               "added rew"
+        self changed: #selectedSuite.
+        "self refreshWindow"! !
+
+"December 27, 2009 -> 12:58:25"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 12:58:25"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 13:0:58"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+refreshTests
+
+        tests := self buildTests.
+        self changed: #tests.
+        testSuite := nil.
+        selectedSuite := 0.
+        selectedFailureTest := 0.
+        selectedErrorTest := 0.
+        self changed: #selectedFailureTest.             "added rew"
+        self changed: #selectedErrorTest.               "added rew"
+        self changed: #selectedSuite.
+        self refreshWindow! !
+
+"December 27, 2009 -> 13:1:17"!
+
+! (Delta mirrorFor: #ClassTest) methodsFor: 'fixture' !
+tearDown
+
+	self classFixture isNil
+		ifFalse: [(Mirror on: self classFixture) removeDefinitionIfFail: [:err| self signalFailure: err]].
+	Processor yield! !
+
+"December 27, 2009 -> 13:1:25"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 13:1:25"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 13:7:27"!
+
+! (Delta mirrorFor: #TextModel) methodsFor: 'notification' !
+update: anAspect
+
+	anAspect == aspect
+		ifTrue: [
+			| newText |
+			newText := (model perform: aspect).
+			newText = 'N/A'
+				ifTrue: [self halt].
+			Transcript cr; show: 'Updating text view ', aspect, ' = ', newText.
+			model inSessionProcessDo: [view model: newText]]! !
+
+"December 27, 2009 -> 13:7:38"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 13:7:38"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 13:11:19"!
+
+! (Delta mirrorFor: #TestRunner) methodsFor: 'updating' !
+update: aspect with: value
+"notification from Delta of update to classes in system"
+	self inSessionProcessDo: [self refreshTests].
+	Processor yield! !
+
+"December 27, 2009 -> 13:12:2"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 27, 2009 -> 13:12:2"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 27, 2009 -> 13:31:10"!
+
+"System saved" !
