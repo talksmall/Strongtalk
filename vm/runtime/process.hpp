@@ -372,7 +372,12 @@ class DeltaProcess: public Process {
   static DeltaProcess* _scheduler_process;
   static bool          _is_idle;
 
-  // sets the active process
+  // The launch function for a new thread
+  static int launch_delta(DeltaProcess* process);
+
+ public:
+
+  // sets the active process (note: public only to support testing)
   static void set_active(DeltaProcess* p) {
     _active_delta_process = p;
     if (_active_delta_process->state() != uncommon) {
@@ -382,11 +387,6 @@ class DeltaProcess: public Process {
 
   // sets the scheduler process
   static void set_scheduler(DeltaProcess* p) { _scheduler_process = p; }
-
-  // The launch function for a new thread
-  static int launch_delta(DeltaProcess* process);
-
- public:
     
   // returns the active delta process
   static DeltaProcess* active()    { return _active_delta_process; }

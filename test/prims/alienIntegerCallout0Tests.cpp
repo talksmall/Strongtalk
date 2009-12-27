@@ -3,6 +3,7 @@
 #include "test.h"
 #include "delta.hpp"
 #include "testUtils.hpp"
+#include "testProcess.hpp"
 #include <time.h>
 
 using namespace easyunit;

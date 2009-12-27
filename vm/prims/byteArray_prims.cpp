@@ -825,20 +825,24 @@ typedef void (__stdcall *call_out_func_args)(void*, void*, oop, oop*);
 
 PRIM_DECL_2(byteArrayPrimitives::alienCallResult0, oop receiver, oop argument) {
   PROLOGUE_2("alienCallResult0", receiver, argument);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResult(argument);
 
   PersistentHandle resultHandle(argument);
   call_out_func_0 entry = call_out_func_0(StubRoutines::alien_call_entry(0));
-  
+
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle));
-  
+  DLLs::exit_async_call(&process);
+
   return receiver;
 }
 
 PRIM_DECL_3(byteArrayPrimitives::alienCallResult1, oop receiver, oop argument1, oop argument2) {
   PROLOGUE_3("alienCallResult1", receiver, argument1, argument2);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResultArgs(argument1);
   checkAlienCalloutArg1(argument2);
@@ -846,15 +850,18 @@ PRIM_DECL_3(byteArrayPrimitives::alienCallResult1, oop receiver, oop argument1, 
   PersistentHandle resultHandle(argument1);
   call_out_func_1 entry = call_out_func_1(StubRoutines::alien_call_entry(1));
   
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle),
         alienArg(argument2));
+  DLLs::exit_async_call(&process);
 
   return receiver;
 }
 
 PRIM_DECL_4(byteArrayPrimitives::alienCallResult2, oop receiver, oop argument1, oop argument2, oop argument3) {
   PROLOGUE_4("alienCallResult2", receiver, argument1, argument2, argument3);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResultArgs(argument1);
   checkAlienCalloutArg1(argument2);
@@ -863,16 +870,19 @@ PRIM_DECL_4(byteArrayPrimitives::alienCallResult2, oop receiver, oop argument1, 
   PersistentHandle resultHandle(argument1);
   call_out_func_2 entry = call_out_func_2(StubRoutines::alien_call_entry(2));
   
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle),
         alienArg(argument2),
         alienArg(argument3));
+  DLLs::exit_async_call(&process);
   
   return receiver;
 }
 
 PRIM_DECL_5(byteArrayPrimitives::alienCallResult3, oop receiver, oop argument1, oop argument2, oop argument3, oop argument4) {
   PROLOGUE_5("alienCallResult3", receiver, argument1, argument2, argument3, argument4);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResultArgs(argument1);
   checkAlienCalloutArg1(argument2);
@@ -882,11 +892,13 @@ PRIM_DECL_5(byteArrayPrimitives::alienCallResult3, oop receiver, oop argument1, 
   PersistentHandle resultHandle(argument1);
   call_out_func_3 entry = call_out_func_3(StubRoutines::alien_call_entry(3));
   
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle),
         alienArg(argument2),
         alienArg(argument3),
         alienArg(argument4));
+  DLLs::exit_async_call(&process);
   
   return receiver;
 }
@@ -895,6 +907,7 @@ PRIM_DECL_6(byteArrayPrimitives::alienCallResult4, oop receiver, oop argument1, 
             oop argument3, oop argument4, oop argument5) {
   PROLOGUE_6("alienCallResult4", receiver, argument1, argument2, argument3, argument4, 
     argument5);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResultArgs(argument1);
   checkAlienCalloutArg1(argument2);
@@ -905,12 +918,14 @@ PRIM_DECL_6(byteArrayPrimitives::alienCallResult4, oop receiver, oop argument1, 
   PersistentHandle resultHandle(argument1);
   call_out_func_4 entry = call_out_func_4(StubRoutines::alien_call_entry(4));
   
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle),
         alienArg(argument2),
         alienArg(argument3),
         alienArg(argument4),
         alienArg(argument5));
+  DLLs::exit_async_call(&process);
   
   return receiver;
 }
@@ -919,6 +934,7 @@ PRIM_DECL_7(byteArrayPrimitives::alienCallResult5, oop receiver, oop argument1, 
             oop argument3, oop argument4, oop argument5, oop argument6) {
   PROLOGUE_7("alienCallResult5", receiver, argument1, argument2, argument3, argument4, 
     argument5, argument6);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResultArgs(argument1);
   checkAlienCalloutArg1(argument2);
@@ -930,6 +946,7 @@ PRIM_DECL_7(byteArrayPrimitives::alienCallResult5, oop receiver, oop argument1, 
   PersistentHandle resultHandle(argument1);
   call_out_func_5 entry = call_out_func_5(StubRoutines::alien_call_entry(5));
   
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle),
         alienArg(argument2),
@@ -937,6 +954,7 @@ PRIM_DECL_7(byteArrayPrimitives::alienCallResult5, oop receiver, oop argument1, 
         alienArg(argument4),
         alienArg(argument5),
         alienArg(argument6));
+  DLLs::exit_async_call(&process);
   
   return receiver;
 }
@@ -945,6 +963,7 @@ PRIM_DECL_8(byteArrayPrimitives::alienCallResult6, oop receiver, oop argument1, 
             oop argument3, oop argument4, oop argument5, oop argument6, oop argument7) {
   PROLOGUE_8("alienCallResult6", receiver, argument1, argument2, argument3, argument4, 
     argument5, argument6, argument7);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResultArgs(argument1);
   checkAlienCalloutArg1(argument2);
@@ -957,6 +976,7 @@ PRIM_DECL_8(byteArrayPrimitives::alienCallResult6, oop receiver, oop argument1, 
   PersistentHandle resultHandle(argument1);
   call_out_func_6 entry = call_out_func_6(StubRoutines::alien_call_entry(6));
   
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle),
         alienArg(argument2),
@@ -965,6 +985,7 @@ PRIM_DECL_8(byteArrayPrimitives::alienCallResult6, oop receiver, oop argument1, 
         alienArg(argument5),
         alienArg(argument6),
         alienArg(argument7));
+  DLLs::exit_async_call(&process);
   
   return receiver;
 }
@@ -972,6 +993,7 @@ PRIM_DECL_9(byteArrayPrimitives::alienCallResult7, oop receiver, oop argument1, 
     oop argument3, oop argument4, oop argument5, oop argument6, oop argument7, oop argument8) {
   PROLOGUE_9("alienCallResult7", receiver, argument1, argument2, argument3, argument4, 
     argument5, argument6, argument7, argument8);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResultArgs(argument1);
   checkAlienCalloutArg1(argument2);
@@ -985,6 +1007,7 @@ PRIM_DECL_9(byteArrayPrimitives::alienCallResult7, oop receiver, oop argument1, 
   PersistentHandle resultHandle(argument1);
   call_out_func_7 entry = call_out_func_7(StubRoutines::alien_call_entry(7));
   
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle),
         alienArg(argument2),
@@ -994,12 +1017,14 @@ PRIM_DECL_9(byteArrayPrimitives::alienCallResult7, oop receiver, oop argument1, 
         alienArg(argument6),
         alienArg(argument7),
         alienArg(argument8));
+  DLLs::exit_async_call(&process);
   
   return receiver;
 }
 
 PRIM_DECL_3(byteArrayPrimitives::alienCallResultWithArguments, oop receiver, oop argument1, oop argument2) {
   PROLOGUE_3("alienCallResultWithArguments", receiver, argument1, argument2);
+  DeltaProcess* process;
   checkAlienCalloutReceiver(receiver);
   checkAlienCalloutResultArgs(argument1);
 
@@ -1010,10 +1035,12 @@ PRIM_DECL_3(byteArrayPrimitives::alienCallResultWithArguments, oop receiver, oop
   PersistentHandle resultHandle(argument1);
   call_out_func_args entry = call_out_func_args(StubRoutines::alien_call_with_args_entry());
   
+  DLLs::enter_async_call(&process);
   entry(alienAddress(receiver),
         alienResult(resultHandle),
         as_smiOop(length),
         objArrayOop(argument2)->objs(1));
+  DLLs::exit_async_call(&process);
 
   return receiver;
 }

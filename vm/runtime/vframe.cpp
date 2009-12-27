@@ -609,6 +609,10 @@ contextOop compiledVFrame::compute_canonical_context(ScopeDesc* scope, const com
     // This scope does not allocate an interpreter contextOop
     if (scope->isMethodScope()) return NULL;
 
+    if (!scope->method()->expectsContext() && 
+         scope->method()->parent()->allocatesInterpretedContext()) {
+      warning("May be allocating context when unneeded");
+    }
     return compute_canonical_parent_context(scope, vf, con);
   }
 

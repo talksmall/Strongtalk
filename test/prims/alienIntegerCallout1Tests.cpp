@@ -110,6 +110,7 @@ SETUP(AlienIntegerCallout1Tests) {
   allocateAlien(invalidFunctionAlien, 8,  0);
   allocateUnsafe(unsafeAlien, unsafeContents);
 
+
   memset(address, 0, 8);
 }
 
