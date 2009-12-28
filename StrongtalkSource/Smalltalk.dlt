@@ -1023,6 +1023,19 @@ referencesToGlobalName: name <Symbol> ^ <SeqCltn[Tuple[Mirror, Symbol]]>
 				ifTrue: [	result add: m,,method selector ] ] ].
 	^result asSortedCollection: [ :t1 <Tuple[Mirror, Symbol]> :t2 <Tuple[Mirror, Symbol]> | t1 at1 name < t2 at1 name or: [ t1 at1 name = t2 at1 name and: [ t1 at2 <= t2 at2 ] ] ].!
 
+referencesToInstVarName: name <Symbol> for: holder <Mixin> ^ <SeqCltn[Tuple[Mirror, Symbol]]>
+
+	| result <OrderedCollection[Tuple[Mirror, Symbol]]> |
+	result := OrderedCollection[Tuple[Mirror, Symbol]] new.
+	self classesAndMixinsReflectiveDo: [ :m <ClassMirror|MixinMirror> |
+		(m inheritsFrom: holder)
+			ifTrue: [m compiledMethodsDo: [ :method <Method> | 		"We use compiled methods here since otherwise type info will have to be loaded"
+							(method referencesInstVarName: name for: m mixin reflectee)
+								ifTrue: [	result add: m,,method selector ]]]].
+	^result asSortedCollection: [ :t1 <Tuple[Mirror, Symbol]> :t2 <Tuple[Mirror, Symbol]> |
+												t1 at1 name < t2 at1 name
+													or: [ t1 at1 name = t2 at1 name and: [ t1 at2 <= t2 at2 ] ] ].!
+
 renameGroup: grp <Dict[Symbol, Symbol]>
 
 self definitionsReflectiveDo:[: dm <Mirror> |

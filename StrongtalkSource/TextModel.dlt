@@ -41,5 +41,10 @@ on: aModel aspect: anAspect
 update: anAspect
 
 	anAspect == aspect
-		ifTrue: [view model: (model perform: aspect)]! !
+		ifTrue: [
+			| newText |
+			newText := (model perform: aspect).
+			view model: newText.
+			view visual hasMedium
+				ifTrue:[view displayNowIfInvalid]]! !
 

@@ -221,6 +221,14 @@ copyWithout: el <Object> ^<VarSeqCltn[EX]>
 		a return type of String, use #stringCopyWithout:"
 	^guaranteed <VarSeqCltn[EX]> (self copyReplaceAll: (Array[Object] with: el) with: '')!
 
+lastNonBlank
+
+	self size to: 1 by: -1 do: [:i|
+		(self at: i) isSeparator
+			ifFalse: [^i]].
+	^0
+	!
+
 stringCopyFrom: start <Int> to: stop <Int>   ^<String>
 	"Like #copyFrom:to:, but has a stronger return type for strings"
 
@@ -249,7 +257,12 @@ stringCopyWithSize: s <Int> ^<String>
 	| a <String> |
 	a := String new: s.
 	a replaceFrom: 1 to: (self size min: s) with: self.
-	^a! !
+	^a!
+
+trimBlanks
+
+	^self stringCopyFrom: 1 to: self lastNonBlank
+	! !
 
 ! (Delta mirrorFor: #ReadString) methodsFor: 'fake brands' !
 

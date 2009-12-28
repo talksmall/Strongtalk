@@ -160,7 +160,9 @@ buildBareVisualTop: top
 	testsColumn := Column holding: (OrderedCollection
 																		with: (listEqualizer for: testsList with3DBorder)
 																		with: (buttonEqualizer for: (Button labeled: self refreshButtonLabel
-																																		action: [:b| self refreshTests]))).
+																																		action: [:b| self
+																																							refreshTests;
+																																							refreshWindow]))).
 	failureColumn := Column holding: (OrderedCollection
 																		with: (listEqualizer for: failuresList with3DBorder)
 																		with: (buttonEqualizer for: (Button labeled: self runButtonLabel
@@ -216,7 +218,7 @@ textViewOn: aspect
 
 visualAllocated
 
-"	self refreshWindow"! !
+	self refreshWindow! !
 
 ! (Delta mirrorFor: #TestRunner) methodsFor: 'private-control' !
 
@@ -386,7 +388,7 @@ refreshTests
         self changed: #selectedFailureTest.             "added rew"
         self changed: #selectedErrorTest.               "added rew"
         self changed: #selectedSuite.
-        self refreshWindow!
+        "self refreshWindow"!
 
 refreshWindow
 
@@ -405,8 +407,8 @@ runWindow
         self refreshWindow:  'Running...'!
 
 update: aspect with: value
-
-	self inSessionProcessDo: [self refreshTests]!
+"notification from Delta of update to classes in system"
+	self refreshTests!
 
 updateAll
 
@@ -414,7 +416,7 @@ updateAll
 	self changed: #selectedSuite.
 	self changed: #details.
 	self changed: #passFail.
-	self refreshWindow!
+	"self refreshWindow"!
 
 updateDetails: aTestResult
 

@@ -15,7 +15,8 @@ comment:
 tearDown
 
 	self classFixture isNil
-		ifFalse: [(Mirror on: self classFixture) removeDefinitionIfFail: [:err| self signalFailure: err]]! !
+		ifFalse: [(Mirror on: self classFixture) removeDefinitionIfFail: [:err| self signalFailure: err]].
+	Processor yield! !
 
 ! (Delta mirrorFor: #ClassTest) methodsFor: 'testing' !
 

@@ -21,7 +21,26 @@ locator ^ <ClassVarLocator>
 
 
 referencesToInstVar
-! !
+
+	self instVarNames size = 1
+		ifTrue: [^self referencesToInstVar: (self instVarNames anElement)].
+	self launchListDialogWithPainter: Painter default
+		title: 'Select instance variable'
+		contents: self instVarNames
+		multi: false
+		action: [:items|
+			self referencesToInstVar: (self instVarNames at: items anElement)]!
+
+referencesToInstVar: instVar <Symbol>
+
+	| references |
+	references := Smalltalk 
+							referencesToInstVarName: instVar
+							for: self mixin reflectee.
+	self
+		launchSelectorListWithPainter: Painter default
+		title: 'References to instance variable "', instVar, '"'
+		contents: references! !
 
 ! (Delta mirrorFor: #InstanceVariableOutliner) methodsFor: 'menus' !
 
@@ -49,6 +68,21 @@ aspectForUpdate ^ <Symbol>
 header ^ <Str>
 
 	^'Instance variables'!
+
+instVarNames
+
+	| names |
+	names := OrderedCollection new.
+	self mirror instanceVariablesDo: [:var|
+		names add: var name].
+	^names
+		!
+
+mixin
+
+	^self mirror isMixin
+		ifTrue: [self mirror]
+		ifFalse: [self mirror mixin]!
 
 modelAsCharGlyphs ^ <CharGlyphs>
 

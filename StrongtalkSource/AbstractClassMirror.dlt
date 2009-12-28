@@ -96,6 +96,12 @@ immediateHeirs  ^<OrdCltn[ClassMirror]>
 self deltaHack.
 	^self subclasses!
 
+inheritsFrom: aMixin <Mixin> ^ <Boolean>
+
+	self mixin reflectee == aMixin ifTrue: [^true].
+	^(ClassVMMirror on: self reflectee)
+			inheritsFrom: aMixin!
+
 instanceSide ^ <ClassMirror>
 
 ^self actualClass on: self reflectee instanceClass!

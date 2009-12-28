@@ -291,6 +291,16 @@ immediateSubclassesOf: c <Class> ^ <Cltn[Class]>
 ^ClassMirror subclassHierarchy at: c
 																ifAbsent:[OrderedCollection[Class] new]!
 
+inheritsFrom: aMixin <Mixin>
+
+	self mixin reflectee == aMixin
+		ifTrue: [^true].
+	self superclasses do: [:sc|
+		(ClassVMMirror on: sc) mixin reflectee == aMixin
+			ifTrue: [^true]].
+	^false
+!
+
 instanceSide  ^<ClassVMMirror> 
 
 	^self class on: self reflectee instanceClass.
@@ -419,6 +429,21 @@ superclassDepth ^ <Integer>
 ^self superclass isNil
    ifTrue:[0]
    ifFalse:[self superclass depth]
+               
+
+!
+
+superclasses ^ <Cltn[Class]>
+
+"Return the class' superclasses"
+
+	|superclasses sc|
+	superclasses := OrderedCollection new.
+	sc := self superclass.
+	[sc notNil]
+		whileTrue: [superclasses add: sc reflectee.
+							sc := sc superclass].
+	^superclasses
                
 
 ! !
