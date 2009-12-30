@@ -15,21 +15,24 @@ Use and distribution of this software is subject to the terms of the attached so
 
 currentDirectory ^<FilePath>
 
-    | buf <CString> buflen <Int> |
+    | buf <CString> buflen <Int> getcwd <Alien> |
     buflen := 1000.
-    buf := CString new malloc: buflen.
-    ^[      {{<kernel ExternalProxy GetCurrentDirectoryA>
-                size: buflen
-                buf: buf
-            }} isNull
-                ifTrue: [ Win32 handleError ]
-                ifFalse: [ self new pattern: buf asString ]
+    buf := Alien newC: buflen.
+    getcwd := Alien lookup: 'getcwd' inLibrary: self libcName.
+    ^[|result|
+    	getcwd
+    		primFFICallResult: (result := Alien new: 4)
+    		with: buf pointer
+    		with: buflen.
+    	result asUnsignedLong = 0
+    		ifTrue: [self error: 'Unable to get current directory']
+            ifFalse: [self new pattern: buf asString ]
       ] ensure: [ buf free ]!
 
 currentDirectory: file <FilePath>
 
     	| result <Alien> name <Alien> chdir <Alien> |
-    	chdir := Alien lookup: 'chdir' inLibrary: 'libc.so.6'.
+    	chdir := Alien lookup: 'chdir' inLibrary: self libcName.
     	result := Alien new: 4.
     	name := file name asString asAlien.
     	[chdir
@@ -37,7 +40,11 @@ currentDirectory: file <FilePath>
     		with: name pointer.
     	result asSignedLong = 0 ifFalse: [self error: 'Unable to cd to directory ', file name]]
     		ensure: [name free]
-	! !
+	!
+
+libcName
+
+	^'libc.so.6'! !
 
 ! (Delta mirrorFor: #UnixFilePath) methodsFor: 'accessing' !
 
