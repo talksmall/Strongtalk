@@ -22,7 +22,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 */
 
 #ifdef WIN32
-
+#define STACK_SIZE ThreadStackSize * K
 # include "incls/_os.cpp.incl"
 
 #include <windows.h>
@@ -34,7 +34,6 @@ typedef struct _thread_start {
 } thread_start;
 
 int WINAPI startThread(void* params);
-#define STACK_SIZE 512*1024
 
 class Thread : public CHeapObj {
   static GrowableArray<Thread*>* threads;

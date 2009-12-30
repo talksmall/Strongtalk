@@ -263,6 +263,7 @@ class debugFlags {
   product(ReservedPICSize                    ,   4*K, "Maximum size of PIC cache (in Kbytes)"                                       ) \
   product(PICSize                            ,   128, "size of PIC cache (in Kbytes)"                                               ) \
   product(JumpTableSize                      ,   8*K, "size of jump table"                                                          ) \
+  product(ThreadStackSize                    ,   512, "Size (in K) of each thread's stack"                                                          ) \
                                                                                                                                       \
 /* compiler parameters */                                                                                                             \
   product(CompilerInstrsSize                 ,  50*K, "max. size of nmethod instrs"                                                 ) \
