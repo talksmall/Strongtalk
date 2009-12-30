@@ -27,12 +27,94 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 #include <windows.h>
 #include <signal.h>
+typedef struct _thread_start {
+  int (*main)(void*);
+  void* parameter;
+  void* stackLimit;
+} thread_start;
 
+int WINAPI startThread(void* params);
+#define STACK_SIZE 512*1024
+
+class Thread : public CHeapObj {
+  static GrowableArray<Thread*>* threads;
+  static Event* thread_created;
+  HANDLE thread_handle;
+  int    thread_id;
+  void*  stack_limit;
+  
+  static void initialize() {
+    threads = new(true) GrowableArray<Thread*>(10, true);
+    thread_created = os::create_event(false);
+  }
+  static void release() {
+  }
+  static bool equals(void* token, Thread* element) {
+    return token == (void*) element;
+  }
+  Thread(HANDLE handle, int id, void* stackLimit) : thread_handle(handle), thread_id(id), stack_limit(stackLimit) {
+    int index = threads->find(NULL, equals);
+    if (index < 0)
+      threads->append(this);
+    else
+      threads->at_put(index, this);
+  }
+  virtual ~Thread() {
+    int index = threads->find(this);
+    threads->at_put(index, NULL);
+  }
+
+  static Thread* createThread(int main(void* parameter), void* parameter, int* id_addr) {
+    ThreadCritical tc;
+    thread_start params;
+    params.main = main;
+    params.parameter = parameter;
+    
+    os::reset_event(thread_created);
+    HANDLE result = CreateThread(NULL, STACK_SIZE, (LPTHREAD_START_ROUTINE) startThread, &params, 0, (unsigned long*) id_addr);
+    if (result == NULL) return NULL;
+    
+    os::wait_for_event(thread_created);
+    
+    return new Thread(result, *id_addr, params.stackLimit);
+  }
+
+  static Thread* findThread(int thread_id) {
+    for (int index = 0; index < threads->length(); index++) {
+      Thread* thread = threads->at(index);
+      if (thread == NULL) continue;
+      if (thread->thread_id == thread_id)
+        return thread;
+    }
+    return NULL;
+  }
+
+  friend class os;
+  friend int WINAPI startThread(void*);
+  friend void os_init();
+  friend void os_exit();
+};
+
+int WINAPI startThread(void* params) {
+  char* spptr;
+  __asm mov spptr, esp;
+  ((thread_start*) params)->stackLimit = spptr - STACK_SIZE + os::vm_page_size();
+
+  int (*main)(void*) = ((thread_start*) params)->main;
+  void* parameter    = ((thread_start*) params)->parameter;
+
+  os::signal_event(Thread::thread_created);
+  return main(parameter);
+}
+
+Event* Thread::thread_created = NULL;
+GrowableArray<Thread*>* Thread::threads = NULL;
 
 static HANDLE main_process;
-static HANDLE main_thread;
+//static HANDLE main_thread;
 static int    main_thread_id;
 static HANDLE watcher_thread;
+static Thread* main_thread;
 
 static FILETIME process_creation_time;
 static FILETIME process_exit_time;
@@ -74,18 +156,22 @@ void os::breakpoint() {
 
 Thread* os::starting_thread(int* id_addr) {
   *id_addr = main_thread_id;
-  return (Thread*) main_thread;
+  return main_thread;
 }
 
 Thread* os::create_thread(int main(void* parameter), void* parameter, int* id_addr) {
-  HANDLE result = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) main, parameter, 0, (unsigned long*) id_addr);
-  if (result == NULL) return NULL;
-  return (Thread*) result;
+  return Thread::createThread(main, parameter, id_addr);
 }
 
+void* os::stack_limit(Thread* thread) {
+  return thread->stack_limit;
+}
 void os::terminate_thread(Thread* thread) {
-  TerminateThread((HANDLE) thread, 0);
-  CloseHandle((HANDLE) thread);
+  HANDLE handle = thread->thread_handle;
+  delete thread;
+
+  TerminateThread(handle, 0);
+  CloseHandle(handle);
 }
 
 void os::delete_event(Event* event) {
@@ -352,11 +438,11 @@ void os::transfer_and_continue(Thread* from_thread, Event* from_event, Thread* t
 }
 
 void os::suspend_thread(Thread* thread) {
-  SuspendThread(thread);
+  SuspendThread(thread->thread_handle);
 }
 
 void os::resume_thread(Thread* thread) {
-  ResumeThread(thread);
+  ResumeThread(thread->thread_handle);
 }
 
 void os::sleep(int ms) {
@@ -366,7 +452,7 @@ void os::sleep(int ms) {
 void os::fetch_top_frame(Thread* thread, int** sp, int** fp, char** pc) {
   CONTEXT context;
   context.ContextFlags = CONTEXT_CONTROL;
-  if (GetThreadContext(thread, &context)) {
+  if (GetThreadContext(thread->thread_handle, &context)) {
     *sp = (int*)  context.Esp;
     *fp = (int*)  context.Ebp;
     *pc = (char*) context.Eip;
@@ -497,6 +583,7 @@ int os::error_code() {
 
 void os_init() {
   ThreadCritical::intialize();
+  Thread::initialize();
 
   if (hInstance == NULL) {
     hInstance = GetModuleHandle(NULL);
@@ -520,13 +607,16 @@ void os_init() {
 
   SetConsoleCtrlHandler(&HandlerRoutine, TRUE);
 
+  HANDLE threadHandle;
   // Initialize main_process and main_thread
   main_process = GetCurrentProcess();  // Remember main_process is a pseudo handle
   if (!DuplicateHandle(main_process, GetCurrentThread(), main_process,
-                       &main_thread, THREAD_ALL_ACCESS, FALSE, 0)) {
+                       &threadHandle, THREAD_ALL_ACCESS, FALSE, 0)) {
     fatal("DuplicateHandle failed\n");
   }
   main_thread_id = (int) GetCurrentThreadId();
+
+  main_thread = new Thread(threadHandle, main_thread_id, NULL);
 
   // Setup Windows Exceptions
   
@@ -542,6 +632,7 @@ void os_init() {
 }
 
 void os_exit() {
+  Thread::release();
   ThreadCritical::release();
 }
 

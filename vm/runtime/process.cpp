@@ -296,8 +296,13 @@ VM_Operation* VMProcess::_vm_operation = NULL;
 
 // ======= DeltaProcess ========
 
+extern "C" char* active_stack_limit() {
+  return (char*) &DeltaProcess::_active_stack_limit;
+}
+
 Process*           Process::_current_process             = NULL;
 DeltaProcess* DeltaProcess::_active_delta_process        = NULL;
+char*         DeltaProcess::_active_stack_limit          = NULL;
 DeltaProcess* DeltaProcess::_scheduler_process           = NULL;
 bool          DeltaProcess::_is_idle                     = false;
 
@@ -486,6 +491,7 @@ DeltaProcess::DeltaProcess(oop receiver, symbolOop selector) {
 
   _event       = os::create_event(false);
   _thread      = os::create_thread((int (*)(void*)) &launch_delta, (void*) this, &_thread_id);
+  _stack_limit = (char*)os::stack_limit(_thread);
 
   _unwind_head = NULL;
 

@@ -2124,7 +2124,14 @@ void InterpreterGenerator::call_native(Register entry) {
 
 extern "C" char* method_entry_point = NULL;		// for interpreter_asm.asm (remove if not used anymore)
 extern "C" char* block_entry_point  = NULL;		// for interpreter_asm.asm (remove if not used anymore)
+extern "C" char* active_stack_limit();                  // address of pointer to the current process' stack limit
 
+extern "C" void check_stack_overflow() {
+  if (!DeltaProcess::active()->is_scheduler())
+    DeltaProcess::active()->suspend(stack_overflow);
+  else
+    fatal("Stack overflow in scheduler");
+}
 void InterpreterGenerator::generate_method_entry_code() {
 // This generates the code sequence called to activate methodOop execution.
 // It is usually called via the call_method() macro, which saves the old
@@ -2134,7 +2141,8 @@ void InterpreterGenerator::generate_method_entry_code() {
   const int code_offset    = methodOopDesc::codes_byte_offset();
 
   assert(!_method_entry.is_bound(), "code has been generated before");
-  Label start_setup, counter_overflow, start_execution, handle_counter_overflow, is_interpreted;
+  Label start_setup, counter_overflow, start_execution, handle_counter_overflow, is_interpreted, 
+    handle_stack_overflow, continue_from_stack_overflow;
 
   // eax: receiver
   // ebx: 000000xx
@@ -2163,6 +2171,9 @@ void InterpreterGenerator::generate_method_entry_code() {
   masm->jcc(Assembler::aboveEqual, counter_overflow);			// treat invocation counter overflow
   masm->bind(start_execution);						// continuation point after overflow
   masm->movl(eax, edi);						// initialize temp0
+  masm->cmpl(esp, Address(int(active_stack_limit()), relocInfo::external_word_type));
+  masm->jcc(Assembler::lessEqual, handle_stack_overflow);
+  masm->bind(continue_from_stack_overflow);
   jump_ebx();								// start execution
 
   // invocation counter overflow
@@ -2221,6 +2232,10 @@ void InterpreterGenerator::generate_method_entry_code() {
   // edi: context (= initial value for temp0)
   // parameters on stack
   masm->jmp(start_setup);
+
+  masm->bind(handle_stack_overflow);
+  masm->call_C((char*)&check_stack_overflow, relocInfo::external_word_type);
+  masm->jmp(continue_from_stack_overflow);
 }
 
 

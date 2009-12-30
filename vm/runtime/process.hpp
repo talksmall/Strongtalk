@@ -86,9 +86,10 @@ class Process: public PrintableCHeapObj {
   void basic_transfer(Process* target);
 
   // OS data associated with the process
-  Thread* _thread;    // Native thread
-  int     _thread_id; // Native thread id (set by OS when created)
-  Event*  _event;     // Thread lock
+  Thread* _thread;     // Native thread
+  int     _thread_id;  // Native thread id (set by OS when created)
+  Event*  _event;      // Thread lock
+  char*   _stack_limit;// lower limit of stack
 
   static Process* _current_process;       //  active Delta process or vm process
 };
@@ -170,6 +171,8 @@ class DebugInfo: public ValueObj {
     frameBreakpoint = NULL;
   }
 };
+
+extern "C" char* active_stack_limit();
 
 class DeltaProcess: public Process {
  private:
@@ -371,15 +374,17 @@ class DeltaProcess: public Process {
   static DeltaProcess* _active_delta_process; 
   static DeltaProcess* _scheduler_process;
   static bool          _is_idle;
+  static char*         _active_stack_limit;
 
   // The launch function for a new thread
   static int launch_delta(DeltaProcess* process);
 
  public:
-
   // sets the active process (note: public only to support testing)
   static void set_active(DeltaProcess* p) {
     _active_delta_process = p;
+    _active_stack_limit = p->_stack_limit;
+
     if (_active_delta_process->state() != uncommon) {
       _active_delta_process->set_state(running);
     }
@@ -427,6 +432,8 @@ class DeltaProcess: public Process {
   // async dll completes
   static Event* _async_dll_completion_event;
   friend class VMProcess; // to allow access to _process_has_terminated
+  friend class InterpreterGenerator;
+  friend char* active_stack_limit();
 };
 
 

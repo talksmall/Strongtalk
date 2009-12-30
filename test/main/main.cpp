@@ -64,7 +64,9 @@ TestDeltaProcess::TestDeltaProcess(): DeltaProcess(NULL, NULL) {
   int ignore;
   Processes::remove(this);
   os::terminate_thread(_thread); // don't want to launch delta!
-  os::create_thread((int (*)(void*)) &launch_tests, this, &ignore);
+  _thread = os::create_thread((int (*)(void*)) &launch_tests, this, &ignore);
+  _stack_limit = (char*)os::stack_limit(_thread);
+
   oop process = newProcess();
   assert(process->is_process(), "Should be process");
   set_processObj(processOop(process));
@@ -74,7 +76,9 @@ TestDeltaProcess::TestDeltaProcess(fn launchfn): DeltaProcess(NULL, NULL) {
   int ignore;
   Processes::remove(this);
   os::terminate_thread(_thread); // don't want to launch delta!
-  os::create_thread((osfn) launchfn, this, &ignore);
+  _thread = os::create_thread((osfn) launchfn, this, &ignore);
+  _stack_limit = (char*)os::stack_limit(_thread);
+  
   oop process = newProcess();
   assert(process->is_process(), "Should be process");
   set_processObj(processOop(process));

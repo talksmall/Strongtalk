@@ -817,6 +817,8 @@ void CodeGenerator::endOfNode(Node* node) {
 
 
 // Individual nodes
+extern "C" char* active_stack_limit();
+extern "C" void check_stack_overflow();
 
 void CodeGenerator::aPrologueNode(PrologueNode* node) {
   // set unverified entry point
@@ -902,6 +904,11 @@ void CodeGenerator::aPrologueNode(PrologueNode* node) {
   Label start;
   _masm->jmp(start);
 
+  Label handle_stack_overflow, continue_after_stack_overflow;
+  _masm->bind(handle_stack_overflow);
+  _masm->call_C((char*)&check_stack_overflow, relocInfo::runtime_call_type);
+  _masm->jmp(continue_after_stack_overflow);
+
   // call to recompiler - if the nmethod turns zombie, this will be overwritten
   // by a call to the zombie handler (see also comment in nmethod)
   _masm->bind(recompile_stub_call);
@@ -910,6 +917,9 @@ void CodeGenerator::aPrologueNode(PrologueNode* node) {
   _masm->call(StubRoutines::recompile_stub_entry(), relocInfo::runtime_call_type);
 
   _masm->bind(start);
+  _masm->cmpl(esp, Address(int(active_stack_limit()), relocInfo::external_word_type));
+  _masm->jcc(Assembler::less, handle_stack_overflow);
+  _masm->bind(continue_after_stack_overflow);
 }
 
 

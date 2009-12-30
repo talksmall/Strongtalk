@@ -646,9 +646,17 @@ static void verify_context_chain(Register closure, int chain_length, Register te
   // otherwise continue
 }
 
+extern "C" void check_stack_overflow();
+extern "C" char* active_stack_limit();
 
 void PrologueNode::gen() {
   BasicNode::gen();
+
+  // stub for handling stack overflows
+  Label handle_stack_overflow, continue_after_stack_overflow;
+  theMacroAssm->bind(handle_stack_overflow);
+  theMacroAssm->call_C((char*)&check_stack_overflow, relocInfo::runtime_call_type);
+  theMacroAssm->jmp(continue_after_stack_overflow);
 
   // call to recompiler - if the nmethod turns zombie, this will be overwritten by a call to the zombie handler
   // (see also comment in nmethod)
@@ -755,6 +763,10 @@ void PrologueNode::gen() {
   }
   // check for recompilation (do this last so stack frame is initialized properly)
   checkRecompilation(recompile_stub_call, temp2);
+
+  theMacroAssm->cmpl(esp, Address(int(active_stack_limit()), relocInfo::external_word_type));
+  theMacroAssm->jcc(Assembler::less, handle_stack_overflow);
+  theMacroAssm->bind(continue_after_stack_overflow);
 }
 
 

@@ -79,6 +79,7 @@ class os {
   static Thread* starting_thread(int* id_addr);
   static Thread* create_thread(int main(void* parameter), void* parameter, int* id_addr);
   static Event*  create_event(bool initial_state);
+  static void*   stack_limit(Thread* thread);
 
   static int  current_thread_id();
   static void wait_for_event(Event* event);
