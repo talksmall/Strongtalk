@@ -20,7 +20,9 @@ run: suite
 	[Transcript cr.
 	result := suite run.
 	Transcript cr;
-		print: result]
+		print: result; cr;
+		print: result failures; cr;
+		print: result errors]
 			ensure: [suite removeDependentFromHierarchy: runner]!
 
 runAll
