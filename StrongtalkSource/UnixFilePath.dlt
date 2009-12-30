@@ -26,7 +26,7 @@ currentDirectory ^<FilePath>
     		with: buflen.
     	result asUnsignedLong = 0
     		ifTrue: [self error: 'Unable to get current directory']
-            ifFalse: [self new pattern: buf asString ]
+            ifFalse: [self for: buf strcpy ]
       ] ensure: [ buf free ]!
 
 currentDirectory: file <FilePath>
