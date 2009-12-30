@@ -115318,3 +115318,62 @@ update: anAspect
 "December 28, 2009 -> 17:37:23"!
 
 "System saved" !
+"December 30, 2009 -> 14:39:34"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+libcName
+
+	^'libc.6.so'! !
+
+"December 30, 2009 -> 14:44:26"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+currentDirectory ^<FilePath>
+
+    | buf <CString> buflen <Int> getcwd <Alien> |
+    buflen := 1000.
+    buf := Alien newC: buflen.
+    getcwd := Alien lookup: 'getcwd' inLibrary: self libcName.
+    ^[|result|
+    	getcwd
+    		primFFICallResult: (result := Alien new: 4)
+    		with: buf pointer
+    		with: buflen.
+    	result asUnsignedLong = 0
+    		ifTrue: [self error: 'Unable to get current directory']
+            ifFalse: [self new pattern: buf asString ]
+      ] ensure: [ buf free ]! !
+
+"December 30, 2009 -> 14:45:9"!
+
+! (Delta mirrorFor: #MacOSXFilePath) classSide methodsFor: 'private' !
+libcName
+
+	^'libc.dylib'! !
+
+"December 30, 2009 -> 14:45:27"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+libcName
+
+	^'libc.so.6'! !
+
+"December 30, 2009 -> 14:45:42"!
+
+! (Delta mirrorFor: #UnixFilePath) classSide methodsFor: 'instance creation' !
+currentDirectory: file <FilePath>
+
+    	| result <Alien> name <Alien> chdir <Alien> |
+    	chdir := Alien lookup: 'chdir' inLibrary: self libcName.
+    	result := Alien new: 4.
+    	name := file name asString asAlien.
+    	[chdir
+    		primFFICallResult: result
+    		with: name pointer.
+    	result asSignedLong = 0 ifFalse: [self error: 'Unable to cd to directory ', file name]]
+    		ensure: [name free]
+	! !
+
+"December 30, 2009 -> 14:48:22"!
+
+"System saved" !
