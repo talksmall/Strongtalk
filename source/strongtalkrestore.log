@@ -1,89 +1,27 @@
 
-"December 24, 2009 -> 21:44:34"!
+"December 30, 2009 -> 15:40:12"!
 
-Delta define: #ToolbarTest as: (
-(Class subclassOf: 'Application' instanceVariables: '')) !
-
-
-"December 24, 2009 -> 21:44:59"!
-
-! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
-hasToolbar
-
-	^true! !
-
-"December 24, 2009 -> 21:46:0"!
-
-! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
-toolbar
-
-	^Toolbar new
-		addButtonWithImageFrom: 'resources/sunit.png'
-		action: [:b | Transcript cr; show: 'SUnit pressed!!'];
-		yourself! !
-
-"December 24, 2009 -> 21:46:9"!
-
-! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
-toolbar
-
-	^ToolBar new
-		addButtonWithImageFrom: 'resources/sunit.png'
-		action: [:b | Transcript cr; show: 'SUnit pressed!!'];
-		yourself! !
-
-"December 24, 2009 -> 21:46:18"!
-
-(Delta mirrorFor: #Toolbar) removeDefinitionIfFail: [] !
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
 
 
-"December 24, 2009 -> 21:50:37"!
+"December 30, 2009 -> 15:40:12"!
 
-! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
-buildBareVisualTop: top
-
-	^Glue xStretchy! !
-
-"December 24, 2009 -> 21:51:24"!
-
-! (Delta mirrorFor: #ToolbarTest) methodsFor: 'toolbar' !
-buildBareVisualTop: top
-
-	^Glue yStretchy! !
-
-"December 24, 2009 -> 21:56:11"!
-
-! (Delta mirrorFor: #ClassOutliner) methodsFor: 'private' !
-buildToolBar
-
-	super buildToolBar.
-	self toolBar addSpace.
-	self toolBar
-		addButtonWithImageFrom: 'resources/sunit.png'
-		action: [:b | Transcript cr; show: 'SUnit pressed!!']! !
-
-"December 24, 2009 -> 21:58:35"!
-
-(Delta mirrorFor: #ClassOutliner) removeMethod: #buildToolBar ifAbsent: [] !
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
 
 
-"December 24, 2009 -> 22:48:37"!
+"December 30, 2009 -> 15:47:30"!
 
-! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
-asAlien
+! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
+run: suite
 
-	^self asString asAlien! !
-
-"December 24, 2009 -> 23:7:28"!
-
-! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
-asAlien
-
-	^self asString asAlien! !
-
-"December 24, 2009 -> 23:8:58"!
-
-! (Delta mirrorFor: #Symbol) methodsFor: 'converting' !
-asAlien
-
-	^self asString asAlien! !
+	| runner result |
+	runner := self new.
+	suite addDependentToHierarchy: runner.
+	[Transcript cr.
+	result := suite run.
+	Transcript cr;
+		print: result; cr;
+		print: result failures; cr;
+		print: result errors]
+			ensure: [suite removeDependentFromHierarchy: runner]! !

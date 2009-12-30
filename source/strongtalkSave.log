@@ -115377,3 +115377,33 @@ currentDirectory: file <FilePath>
 "December 30, 2009 -> 14:48:22"!
 
 "System saved" !
+"December 30, 2009 -> 15:49:48"!
+
+! (Delta mirrorFor: #TextTestRunner) classSide methodsFor: 'instance creation' !
+run: suite
+
+	| runner result |
+	runner := self new.
+	suite addDependentToHierarchy: runner.
+	[Transcript cr.
+	result := suite run.
+	Transcript cr;
+		print: result; cr;
+		print: result failures; cr;
+		print: result errors]
+			ensure: [suite removeDependentFromHierarchy: runner]! !
+
+"December 30, 2009 -> 15:50:7"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"December 30, 2009 -> 15:50:7"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"December 30, 2009 -> 15:50:39"!
+
+"System saved" !
