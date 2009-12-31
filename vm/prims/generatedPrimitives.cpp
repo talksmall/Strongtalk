@@ -221,6 +221,7 @@ char* GeneratedPrimitives::patch(char* name, char* entry_point) {
 
 char* GeneratedPrimitives::patch(char* name, char* entry_point, int argument) {
   char formated_name[100];
+  assert(strlen(name) < 100, "primitive name longer the 100 characters - buffer overrun");
   sprintf(formated_name, name, argument);
   primitives::patch(formated_name, entry_point);
   return entry_point;

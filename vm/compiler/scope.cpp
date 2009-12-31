@@ -812,6 +812,7 @@ void InlinedScope::genCode() {
 void print_selector_cr(symbolOop selector) {
   char buffer[100];
   int length = selector->length();
+  assert(length < 100, "selector longer than 99 characters - buffer overrun");
   strncpy(buffer, selector->chars(), length);
   buffer[length] = '\0';
   std->print_cr("%s", buffer);

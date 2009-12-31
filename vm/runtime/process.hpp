@@ -173,6 +173,7 @@ class DebugInfo: public ValueObj {
 };
 
 extern "C" char* active_stack_limit();
+extern "C" void check_stack_overflow();
 
 class DeltaProcess: public Process {
  private:
@@ -371,10 +372,11 @@ class DeltaProcess: public Process {
 
  // Static operations
  private:
-  static DeltaProcess* _active_delta_process; 
-  static DeltaProcess* _scheduler_process;
-  static bool          _is_idle;
-  static char*         _active_stack_limit;
+  static DeltaProcess*  _active_delta_process; 
+  static DeltaProcess*  _scheduler_process;
+  static bool           _is_idle;
+  static volatile char* _active_stack_limit;
+  static volatile bool  _interrupt;
 
   // The launch function for a new thread
   static int launch_delta(DeltaProcess* process);
@@ -419,7 +421,7 @@ class DeltaProcess: public Process {
  private: 
   static volatile bool _process_has_terminated;
   static ProcessState  _state_of_terminated_process;
-
+  static void check_stack_overflow();
  public:
   // Called whenever a async dll call completes
   static void async_dll_call_completed();
@@ -427,6 +429,7 @@ class DeltaProcess: public Process {
   // Waits for a completed async call or timeout.
   // Returns whether the timer expired. 
   static bool wait_for_async_dll(int timeout_in_ms);
+  static void preempt_active();
  private:
   // Event for waking up the process scheduler when a
   // async dll completes
@@ -434,6 +437,7 @@ class DeltaProcess: public Process {
   friend class VMProcess; // to allow access to _process_has_terminated
   friend class InterpreterGenerator;
   friend char* active_stack_limit();
+  friend void check_stack_overflow();
 };
 
 

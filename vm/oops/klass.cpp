@@ -379,33 +379,26 @@ void Klass::print_klass() {
 }
 
 char* Klass::delta_name() {
-  char buffer[100];
+  bool meta = false;
   int offset = as_klassOop()->blueprint()->lookup_inst_var(oopFactory::new_symbol("name"));
   symbolOop name = NULL;
   if (offset >= 0) {
     name = symbolOop(as_klassOop()->raw_at(offset));
     if (!name->is_symbol()) name = NULL;
   }
-  if (name != NULL) {
-    strncpy(buffer, name->chars(), name->length());
-    buffer[name->length()] = '\0';
-  } else {
-    bool meta;
+  if (name == NULL) {
     name = Universe::find_global_key_for(as_klassOop(), &meta);
-    if (name) {
-      strncpy(buffer, name->chars(), name->length());
-      if (meta) {
-        strcpy(buffer + name->length(), " class");
-        buffer[name->length() + 6] = '\0';
-      } else 
-        buffer[name->length()] = '\0';
-    } else {
-      return NULL;
-    }
+    if (!name) return NULL;
   }
-  int length = strlen(buffer);
-  char* toReturn = NEW_RESOURCE_ARRAY(char, length + 1);
-  strcpy(toReturn, buffer);
+
+  int length = name->length() + (meta ? 7 : 1);
+  char* toReturn = NEW_RESOURCE_ARRAY(char, length);
+  strncpy(toReturn, name->chars(), name->length());
+
+  if (meta)
+    strcpy(toReturn + name->length(), " class");
+  toReturn[length-1] = '\0';
+
   return toReturn;
 }
 

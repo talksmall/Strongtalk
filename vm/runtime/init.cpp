@@ -48,6 +48,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
   template(sweeper_init)				\
   template(fprofiler_init)				\
   template(systemAverage_init)				\
+  template(preemption_init)				\
   template(generatedPrimitives_init_after_interpreter)	\
 
   

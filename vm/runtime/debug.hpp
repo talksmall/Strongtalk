@@ -106,6 +106,7 @@ class debugFlags {
                                                                                                                                       \
   develop(UseTimers                          , true , "Tells whether the VM should use timers (only used at startup)"               ) \
   develop(SweeperUseTimer                    , true , "Tells whether the sweeper should use timer interrupts or compile events"     ) \
+  develop(EnableProcessPreemption            , false, "Enables or disables preemption of running Smalltalk processes"               ) \
                                                                                                                                       \
 /* transition */                                                                                                                      \
   develop(HasActivationClass                 , true,  "Transition variable: tell whether the system has an activation class"        ) \

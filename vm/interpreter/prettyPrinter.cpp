@@ -429,6 +429,7 @@ class scopeNode : public astNode {
     char num[10];
     output->newline();
     output->print("#");
+    assert(frame_index <= 999999999, "frame index too large for buffer - buffer overrun");
     sprintf(num, "%d", frame_index);
     output->print(num);
     output->print(", receiver \"");

@@ -100,7 +100,7 @@ bool byteArrayOopDesc::copy_null_terminated(char* buffer, int max_length) {
   // %not optimized
   int len = length();
   bool is_truncated = false;
-  if (len > max_length) {
+  if (len >= max_length) {
     len = max_length - 1;
     is_truncated = true;
   }

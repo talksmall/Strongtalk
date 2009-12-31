@@ -87,14 +87,14 @@ void CompiledDLL_Cache::print() {
 
 dll_func DLLs::lookup(symbolOop name, DLL* library) {
   char buffer[200];
-  name->copy_null_terminated(buffer, 200);
+  assert(!name->copy_null_terminated(buffer, 200), "DLL function name longer than 200 chars - truncated");
   return os::dll_lookup(buffer, library);
 }
 
 
 DLL* DLLs::load(symbolOop name) {
   char buffer[200];
-  name->copy_null_terminated(buffer, 200);
+  assert(!name->copy_null_terminated(buffer, 200), "DLL library name longer than 200 chars - truncated");
   return os::dll_load(buffer);
 }
 

@@ -2126,12 +2126,8 @@ extern "C" char* method_entry_point = NULL;		// for interpreter_asm.asm (remove 
 extern "C" char* block_entry_point  = NULL;		// for interpreter_asm.asm (remove if not used anymore)
 extern "C" char* active_stack_limit();                  // address of pointer to the current process' stack limit
 
-extern "C" void check_stack_overflow() {
-  if (!DeltaProcess::active()->is_scheduler())
-    DeltaProcess::active()->suspend(stack_overflow);
-  else
-    fatal("Stack overflow in scheduler");
-}
+extern "C" void check_stack_overflow();
+
 void InterpreterGenerator::generate_method_entry_code() {
 // This generates the code sequence called to activate methodOop execution.
 // It is usually called via the call_method() macro, which saves the old
@@ -2234,7 +2230,12 @@ void InterpreterGenerator::generate_method_entry_code() {
   masm->jmp(start_setup);
 
   masm->bind(handle_stack_overflow);
+  masm->pushl(eax);
   masm->call_C((char*)&check_stack_overflow, relocInfo::external_word_type);
+  masm->popl(eax);
+  restore_esi();
+  restore_ebx();
+  load_ebx();
   masm->jmp(continue_from_stack_overflow);
 }
 

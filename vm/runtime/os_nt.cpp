@@ -512,7 +512,7 @@ void real_time_tick(int delay_time);
 // timer interrupts.
 
 DWORD WINAPI WatcherMain(LPVOID lpvParam) {
-  const int delay_interval = 10; // Delay 10 ms
+  const int delay_interval = 1; // Delay 1 ms
   while(1) {
     Sleep(delay_interval);
     real_time_tick(delay_interval);

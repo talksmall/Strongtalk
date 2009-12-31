@@ -601,8 +601,8 @@ ThreadCritical::~ThreadCritical() {
 void real_time_tick(int delay_time);
 
 void* watcherMain(void* ignored) {
-  const struct timespec delay = { 0, 10 * 1000 * 1000 };
-  const int delay_interval = 10; // Delay 10 ms
+  const struct timespec delay = { 0, 1 * 1000 * 1000 };
+  const int delay_interval = 1; // Delay 1 ms
   while(1) {
     int status = nanosleep(&delay, NULL);
     if (!status) return 0;

@@ -290,7 +290,8 @@ void DebugInfo::reset() {
   }
 }
 
-bool DeltaProcess::stepping = false;
+bool DeltaProcess::stepping   = false;
+
 VMProcess*    VMProcess::_vm_process   = NULL;
 VM_Operation* VMProcess::_vm_operation = NULL;
 
@@ -300,16 +301,17 @@ extern "C" char* active_stack_limit() {
   return (char*) &DeltaProcess::_active_stack_limit;
 }
 
-Process*           Process::_current_process             = NULL;
-DeltaProcess* DeltaProcess::_active_delta_process        = NULL;
-char*         DeltaProcess::_active_stack_limit          = NULL;
-DeltaProcess* DeltaProcess::_scheduler_process           = NULL;
-bool          DeltaProcess::_is_idle                     = false;
+Process*            Process::_current_process             = NULL;
+DeltaProcess*  DeltaProcess::_active_delta_process        = NULL;
+volatile char* DeltaProcess::_active_stack_limit          = NULL;
+DeltaProcess*  DeltaProcess::_scheduler_process           = NULL;
+bool           DeltaProcess::_is_idle                     = false;
+volatile bool  DeltaProcess::_interrupt = false;
 
-volatile bool DeltaProcess::_process_has_terminated      = false;
-ProcessState  DeltaProcess::_state_of_terminated_process = initialized;
+volatile bool  DeltaProcess::_process_has_terminated      = false;
+ProcessState   DeltaProcess::_state_of_terminated_process = initialized;
 
-Event*        DeltaProcess::_async_dll_completion_event  = NULL;
+Event*         DeltaProcess::_async_dll_completion_event  = NULL;
 
 void DeltaProcess::transfer(ProcessState reason, DeltaProcess* target) {
   // change time_stamp for target
@@ -513,8 +515,31 @@ frame DeltaProcess::profile_top_frame() {
   frame result((oop*)sp, fp, pc);
   return result;
 }
-
-
+static int interruptions = 0;
+void DeltaProcess::check_stack_overflow() {
+  bool isInterrupted = false;
+  if (EnableProcessPreemption) {
+    ThreadCritical tc;
+    isInterrupted = _interrupt;
+    _interrupt = false;
+  }
+  if (isInterrupted) {
+    assert(EnableProcessPreemption, "Should not be interrupted unless preemption enabled");
+    //interruptions++;
+    _active_stack_limit = active()->_stack_limit;
+    //if (interruptions % 1000 == 0)
+    //  warning("Interruptions: %d", interruptions);
+    if (DeltaProcess::active()->is_scheduler())
+      return;
+    active()->suspend(yielded);
+  } else if (!active()->is_scheduler())
+    active()->suspend(stack_overflow);
+  else
+    fatal("Stack overflow in scheduler");
+}
+extern "C" void check_stack_overflow() {
+  DeltaProcess::check_stack_overflow();
+}
 DeltaProcess::~DeltaProcess() {
   processObj()->set_process(NULL);
   if (Processes::includes(this)) {
@@ -522,6 +547,12 @@ DeltaProcess::~DeltaProcess() {
   }
 }
 
+void DeltaProcess::preempt_active() {
+  assert(EnableProcessPreemption, "Should preempt active process when preemption not enabled");
+  ThreadCritical tc;
+  _interrupt = true;
+  _active_stack_limit = (char*)0x7fffffff;
+}
 void DeltaProcess::print() {
   processObj()->print_value();
   std->print(" ");

@@ -87,6 +87,7 @@ oop_prims.obj \
 oopFactory.obj \
 os.obj \
 ostream.obj \
+preemption.obj \
 prettyPrinter.obj \
 prim.obj \
 printlayout.obj \
@@ -447,6 +448,9 @@ os.obj os.i: \
 
 ostream.obj ostream.i: \
  $(VM_PATH)ostream.cpp $(VM_PATH)_ostream.cpp.incl $(VM_PATH)_precompiled
+
+preemption.obj preemption.i: \
+ $(VM_PATH)preemption.cpp $(VM_PATH)_preemption.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)task.hpp $(VM_PATH)preemption.hpp
 
 prettyPrinter.obj prettyPrinter.i: \
  $(VM_PATH)prettyPrinter.cpp $(VM_PATH)_prettyPrinter.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)prettyPrinter.hpp $(VM_PATH)tempDecoder.hpp $(VM_PATH)dByteArrayOop.hpp
