@@ -300,7 +300,8 @@ void FreeHeap(void* p) {
 // The global operator new should never be called since it will usually indicate
 // a memory leak.  Use CHeapObj as the base class of such objects to make it explicit
 // that they're allocated on the C heap.
-void* operator new(size_t size) {
-  fatal("should not call global (default) operator new");
-  return (void *) AllocateHeap(size, "global operator new");
-}
+// Commented out to prevent conflict with dynamically loaded routines.
+//void* operator new(size_t size) {
+//  fatal("should not call global (default) operator new");
+//  return (void *) AllocateHeap(size, "global operator new");
+//}
