@@ -114,32 +114,32 @@ public:
 			pthread_cond_wait(&notifier, &mutex);
 	}
 	Event(bool state) {
-		_signalled = state;
-        int result;
-        usleep(1000); // pause for signal on other thread to exit
+    _signalled = state;
+    int result;
+    usleep(1000); // pause for signal on other thread to exit
 		result = pthread_mutex_init(&mutex, NULL);
-        if (result) {
-            fatal1("Failed to init Event mutex: %d", result);
-        }
-		result = pthread_cond_init(&notifier, NULL);
-        if (result) {
-            fatal1("Failed to init Event condition variable: %d", result);
-        }            
-	}
+    if (result) {
+      fatal1("Failed to init Event mutex: %d", result);
+    }
+    result = pthread_cond_init(&notifier, NULL);
+    if (result) {
+      fatal1("Failed to init Event condition variable: %d", result);
+    }            
+  }
 	~Event() {
-        int result;
-        result = pthread_mutex_unlock(&mutex);
-        if (result) {
-            warning("Failed to unlock Event mutex: %d", result);
-        }
-		result = pthread_mutex_destroy(&mutex);
-        if (result) {
-            warning("Failed to destroy Event mutex: %d", result);
-        }
-		result = pthread_cond_destroy(&notifier);
-        if (result) {
-            warning("Failed to destroy Event condition variable: %d", result);
-        }            
+    int result;
+    result = pthread_mutex_unlock(&mutex);
+    if (result) {
+      warning("Failed to unlock Event mutex: %d", result);
+    }
+    result = pthread_mutex_destroy(&mutex);
+    if (result) {
+      warning("Failed to destroy Event mutex: %d", result);
+    }
+    result = pthread_cond_destroy(&notifier);
+    if (result) {
+      warning("Failed to destroy Event condition variable: %d", result);
+    }            
 	}
 };
 
@@ -166,13 +166,14 @@ private:
 	pthread_t _threadId;
 //	clockid_t _clockId;
 	int _thread_index;
+  void* stackLimit;
 	
 	static void init() {
 		ThreadCritical lock;
 		_threads = new(true) GrowableArray<Thread*>(10, true);
 		
 	}
-	Thread(pthread_t threadId) : _threadId(threadId), suspendEvent(false) {
+	Thread(pthread_t threadId, void* stackLimit) : _threadId(threadId), suspendEvent(false), stackLimit(stackLimit) {
 		ThreadCritical lock;
 //		pthread_getcpuclockid(_threadId, &_clockId);
 		_thread_index = _threads->length();
@@ -225,31 +226,53 @@ Thread* os::starting_thread(int* id_addr) {
 typedef struct {
 	int (*main)(void* parameter);
 	void* parameter;
+  char* stackLimit;
 } thread_args_t;
 
+static Event* threadCreated = NULL;
+
+#define STACK_SIZE ThreadStackSize * K
+
 void* mainWrapper(void* args) {
-	thread_args_t* wrapperArgs = (thread_args_t*) args;
+  char* stackptr;
+  asm("movl %%esp, %0;" : "=a"(stackptr));
+  
+  int (*threadMain)(void*) = ((thread_args_t*) args)->main;
+  void* parameter = ((thread_args_t*) args)->parameter;
+  ((thread_args_t*) args)->stackLimit = stackptr - STACK_SIZE + os::vm_page_size();
 	int* result = (int*) malloc(sizeof(int));
-	*result = wrapperArgs->main(wrapperArgs->parameter);
-	free(args);
+	threadCreated->signal();
+	*result = threadMain(parameter);
 	return (void *) result; 
 }
 
-// 1 reference process.cpp
 Thread* os::create_thread(int threadStart(void* parameter), void* parameter, int* id_addr) {
 	pthread_t threadId;
-	thread_args_t* threadArgs = (thread_args_t*) malloc(sizeof(thread_args_t));
-	threadArgs->main = threadStart;
-	threadArgs->parameter = parameter;
-	int status = pthread_create(&threadId, NULL, &mainWrapper, threadArgs);
-	if (status != 0) {
-		fatal1("Unable to create thread. status = %d", status);
-	}
-	Thread* thread = new Thread(threadId);
+  thread_args_t threadArgs;
+  {
+    ThreadCritical tc;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, STACK_SIZE);
+    
+    threadCreated->reset();
+    threadArgs.main = threadStart;
+    threadArgs.parameter = parameter;
+    
+    int status = pthread_create(&threadId, &attr, &mainWrapper, &threadArgs);
+    if (status != 0) {
+      fatal1("Unable to create thread. status = %d", status);
+    }
+  }
+  threadCreated->waitFor();
+	Thread* thread = new Thread(threadId, threadArgs.stackLimit);
 	*id_addr = thread->_thread_index;
 	return thread;
 }
 
+void* os::stack_limit(Thread* thread) {
+  return thread->stackLimit;
+}
 // 1 reference process.cpp
 void os::terminate_thread(Thread* thread) {
     int result = pthread_cancel(thread->_threadId);
@@ -604,7 +627,7 @@ static void initialize_performance_counter() {
 // No references
 void os::initialize_system_info() {
     Thread::init();
-    main_thread = new Thread(pthread_self());
+    main_thread = new Thread(pthread_self(), NULL);
     initialize_performance_counter();
 }
 
@@ -705,7 +728,9 @@ void os_init() {
 	install_signal_handlers();
 	os::initialize_system_info();
 	
-    pthread_setconcurrency(1);
+  pthread_setconcurrency(1);
+  
+  threadCreated = new Event(false);
     
 	if (EnableTasks) {
 		pthread_t watcherThread;
