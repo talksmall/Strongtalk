@@ -115448,3 +115448,71 @@ currentDirectory ^<FilePath>
 "December 30, 2009 -> 22:31:35"!
 
 "System saved" !
+"January 1, 2010 -> 13:54:24"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+canCollect
+
+	^self canScavenge! !
+
+"January 1, 2010 -> 13:54:32"!
+
+! (Delta mirrorFor: #VM) classSide methodsFor: 'private - allocation' !
+collectIfPossible
+
+	self canCollect
+		ifTrue: [self collectGarbage]! !
+
+"January 1, 2010 -> 13:55:20"!
+
+Delta define: #VM as: (
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount Expansions LastCollection') !
+
+
+"January 1, 2010 -> 13:59:3"!
+
+(Delta mirrorFor: #Object) classSide removeMethod: #oldnew ifAbsent: [] !
+
+
+"January 1, 2010 -> 14:12:44"!
+
+"System saved" !
+"January 3, 2010 -> 13:16:47"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'accessing' !
+stat: block ifFail: failBlock
+
+    | statBuffer <StatBuffer> 
+    	status <ExternalProxy> |
+    statBuffer := self StatBuffer new.
+    statBuffer allocate.
+    [ status := {{<libc ExternalProxy fstat>
+            			name: self handle
+            			buffer: statBuffer    }}.
+	^status asSmallInteger == -1
+		ifTrue: [failBlock value]
+		ifFalse: [ block value: statBuffer ]]
+			ensure: [ statBuffer free]
+
+	! !
+
+"January 3, 2010 -> 13:16:56"!
+
+(Delta mirrorFor: #MacOSXFilePath) removeMethod: #statBufferClass ifAbsent: [] !
+
+
+"January 3, 2010 -> 13:17:25"!
+
+! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
+StatBuffer
+
+	^MacOSXStatBuffer! !
+
+"January 3, 2010 -> 13:17:33"!
+
+(Delta mirrorFor: #MacOSXFileDescriptor) removeMethod: #statBufferClass ifAbsent: [] !
+
+
+"January 3, 2010 -> 13:47:54"!
+
+"System saved" !
