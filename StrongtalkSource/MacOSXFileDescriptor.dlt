@@ -26,7 +26,7 @@ stat: block ifFail: failBlock
 
     | statBuffer <StatBuffer> 
     	status <ExternalProxy> |
-    statBuffer := self statBufferClass new.
+    statBuffer := self StatBuffer new.
     statBuffer allocate.
     [ status := {{<libc ExternalProxy fstat>
             			name: self handle
@@ -41,6 +41,10 @@ stat: block ifFail: failBlock
 ! (Delta mirrorFor: #MacOSXFileDescriptor) methodsFor: 'private' !
 
 
+StatBuffer
+
+	^MacOSXStatBuffer!
+
 lseek: handle position: p <Int> whence: whence <Int>
     "%todo: support large integer positions for extremely large files"
     | padding |
@@ -51,9 +55,5 @@ lseek: handle position: p <Int> whence: whence <Int>
         				fd: handle
         				offsetLow: p
         				offsetHigh: padding
-        				whence: whence }}!
-
-statBufferClass
-
-	^MacOSXStatBuffer! !
+        				whence: whence }}! !
 

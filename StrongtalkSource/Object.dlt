@@ -61,31 +61,6 @@ new3 ^<Instance>
 	^{{self primitiveNew2IfFail: [ :err <Symbol> |]}}
 "
 	^guaranteed <Instance> (super new)
-"!
-
-oldnew ^<Instance>
-	"Create and return an initialized instance of this class."
-
-	"%remove when inlining working:"
-	^{{self primitiveNewIfFail: [ :err <Symbol> |
-		VM scavengeGarbage.
-		{{self primitiveNewIfFail: [:err <Symbol> |
-			Transcript show: err; cr.
-			VM isGCPending
-				ifTrue: [VM waitForGC.
-							{{self primitiveNewIfFail: [:err <Symbol> |
-								VM expand: (VMMirror on: self) instanceSize.
-								VM deferredGC.
-								{{self primitiveNewIfFail: [:err <Symbol> |
-																		self error: err]}}]}}]
-				ifFalse: [VM expand: (VMMirror on: self) instanceSize.
-							VM deferredGC.
-							{{self primitiveNewIfFail: [:err <Symbol> |
-																	self error: err]}}].
-			]}}
-		]}}
-"
-	^guaranteed <Instance> (super new)
 "! !
 
 ! (Delta mirrorFor: #Object) classSide methodsFor: 'private' !

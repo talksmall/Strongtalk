@@ -928,7 +928,9 @@ bool PrimNode::canBeEliminated() const {
   // should test arg types to make sure prim won't fail
   // for now, treat cloning etc. special
   if (_pdesc->can_be_constant_folded()) return true;	// not safe!
-  if (_pdesc->fn() == fntype(&behaviorPrimitives::allocate) ||
+  //%TODO these references get replaced with generated versions
+  // so these tests will fail - fix this
+  if (_pdesc->fn() == fntype(&behaviorPrimitives::allocate) || 
     _pdesc->fn() == fntype(&primitiveNew0) ||
     _pdesc->fn() == fntype(&primitiveNew1) ||
     _pdesc->fn() == fntype(&primitiveNew2) ||
@@ -2078,11 +2080,11 @@ bool TArithRRNode::copyPropagate(BB* bb, Use* u, PReg* d, bool replace) {
     oop c2 = ((ConstPReg*)_oper)->constant;
     oop result;
     switch (_op) {
-      case tAddArithOp  : result = smiOopPrimitives_add(c1, c2);	break;
-      case tSubArithOp  : result = smiOopPrimitives_subtract(c1, c2);	break;
-      case tMulArithOp  : result = smiOopPrimitives_multiply(c1, c2);	break;
-      case tDivArithOp  : result = smiOopPrimitives_div(c1, c2);	break;
-      case tModArithOp  : result = smiOopPrimitives_mod(c1, c2);	break;
+      case tAddArithOp  : result = GeneratedPrimitives::smiOopPrimitives_add(c1, c2);	break;
+      case tSubArithOp  : result = GeneratedPrimitives::smiOopPrimitives_subtract(c1, c2);	break;
+      case tMulArithOp  : result = GeneratedPrimitives::smiOopPrimitives_multiply(c1, c2);	break;
+      case tDivArithOp  : result = GeneratedPrimitives::smiOopPrimitives_div(c1, c2);	break;
+      case tModArithOp  : result = GeneratedPrimitives::smiOopPrimitives_mod(c1, c2);	break;
       case tAndArithOp  : result = smiOopPrimitives::bitAnd(c1, c2);	break;
       case tOrArithOp   : result = smiOopPrimitives::bitOr(c1, c2);	break;
       case tXOrArithOp  : result = smiOopPrimitives::bitXor(c1, c2);	break;

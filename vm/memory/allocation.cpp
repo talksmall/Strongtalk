@@ -279,9 +279,94 @@ NoGCVerifier::~NoGCVerifier() {
   }
 }
 
+static bool canUseMalloc = true;
+extern "C" void safefree(void* p) {
+  if (!ThreadCritical::initialized()) {
+    free(p);
+    return;
+  }
+
+  {
+    ThreadCritical tc;
+    //__asm {
+    //  push ecx;
+    //  push eax;
+    //  mov  ecx, 0;
+    //  spinLoop: ;
+    //  mfence;
+    //  mov  eax, 1;
+    //  lock cmpxchg canUseMalloc, ecx;
+    //  jne spinLoop;
+    //  sfence;
+    //  pop eax;
+    //  pop ecx;
+    //}
+    free(p);
+
+    //canUseMalloc = true;
+    //__asm sfence;
+  }
+}
+
+extern "C" void* safemalloc(int size) {
+  if (!ThreadCritical::initialized()) {
+    return malloc(size);
+  }
+  {
+  ThreadCritical tc;
+  //__asm {
+  //  push ecx;
+  //  push eax;
+  //  mov  ecx, 0;
+  //  spinLoop: ;
+  //  mfence;
+  //  mov  eax, 1;
+  //  lock cmpxchg canUseMalloc, ecx;
+  //  jne spinLoop;
+  //  sfence;
+  //  pop eax;
+  //  pop ecx;
+  //}
+
+  void* p = malloc(size);
+
+  //canUseMalloc = true;
+  //__asm sfence;
+  return p;
+  }
+}
+
+extern "C" void* safecalloc(int size, char filler) {
+  if (!ThreadCritical::initialized()) {
+    return calloc(size, filler);
+  }
+  {
+  ThreadCritical tc;
+  //__asm {
+  //  push ecx;
+  //  push eax;
+  //  mov  ecx, 0;
+  //  spinLoop: ;
+  //  mfence;
+  //  mov  eax, 1;
+  //  lock cmpxchg canUseMalloc, ecx;
+  //  jne spinLoop;
+  //  sfence;
+  //  pop eax;
+  //  pop ecx;
+  //}
+
+  void* p = calloc(size, filler);
+
+  //canUseMalloc = true;
+  //__asm sfence;
+  return p;
+  }
+}
+
 char* AllocatePageAligned(int size, char* name) {
   int page_size = Universe::page_size();
-  char* block = (char*)align(malloc(size + page_size), page_size);
+  char* block = (char*)align(safemalloc(size + page_size), page_size);
   if (PrintHeapAllocation)
     lprintf("Malloc (page-aligned) %s: %d = %#lx\n", name, size, block);
   return block;
@@ -290,11 +375,11 @@ char* AllocatePageAligned(int size, char* name) {
 char* AllocateHeap(int size, char* name) {
   if (PrintHeapAllocation)
     lprintf("Heap %7d %s\n", size, name);
-  return (char*) malloc(size);
+  return (char*) safemalloc(size);
 }
 
 void FreeHeap(void* p) {
-  free(p);
+  safefree(p);
 }
 
 // The global operator new should never be called since it will usually indicate

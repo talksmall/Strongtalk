@@ -587,7 +587,11 @@ extern "C" bool EnableTasks;
 
 pthread_mutex_t ThreadSection; 
 
-void ThreadCritical::intialize() { pthread_mutex_init(&ThreadSection, NULL); }
+bool ThreadCritical::_initialized = false;
+void ThreadCritical::intialize() {
+  pthread_mutex_init(&ThreadSection, NULL);
+  _initialized = true;
+}
 void ThreadCritical::release()   { pthread_mutex_destroy(&ThreadSection);     }
 
 ThreadCritical::ThreadCritical() {

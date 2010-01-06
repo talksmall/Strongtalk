@@ -1,5 +1,5 @@
 Delta define: #VM as: (
-(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount') !
+(Class subclassOf: 'Object' instanceVariables: '') classVariables: 'GCProcess GCSemaphore ScavengeCount AllocFailureCount Expansions LastCollection') !
 
 (Delta mirrorFor: #VM) revision: '$Revision: 1.5 $'!
 
@@ -306,6 +306,10 @@ allocate: allocateBlock ifExpand: expansionBlock
 									ifFalse: [self collectAndAllocate: allocateBlock
 															ifExpand: expansionBlock]]!
 
+canCollect
+
+	^self canScavenge!
+
 canScavenge
 
 	^{{primitiveCanScavenge}}!
@@ -330,7 +334,7 @@ collectAndAllocate: allocateBlock ifExpand: expansionBlock
 
 collectIfPossible
 
-	self canScavenge
+	self canCollect
 		ifTrue: [self collectGarbage]!
 
 expand

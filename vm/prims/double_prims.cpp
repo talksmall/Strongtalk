@@ -392,8 +392,8 @@ PRIM_DECL_3(doubleOopPrimitives::mandelbrot, oop re, oop im, oop n) {
 
 static void trap() { assert(false, "This primitive should be patched"); };
 
-extern "C" oop PRIM_API double_subtract(oop receiver, oop argument) 	{ trap(); return NULL; };
-extern "C" oop PRIM_API double_divide(oop receiver, oop argument) 	{ trap(); return NULL; };
-extern "C" oop PRIM_API double_add(oop receiver, oop argument) 		{ trap(); return NULL; };
-extern "C" oop PRIM_API double_multiply(oop receiver, oop argument) 	{ trap(); return NULL; };
-extern "C" oop PRIM_API double_from_smi(oop receiver) 			{ trap(); return NULL; };
+extern "C" oop PRIM_API double_subtract(oop receiver, oop argument) 	{ trap(); return markSymbol(vmSymbols::primitive_trap()); };
+extern "C" oop PRIM_API double_divide(oop receiver, oop argument) 	{ trap(); return markSymbol(vmSymbols::primitive_trap()); };
+extern "C" oop PRIM_API double_add(oop receiver, oop argument) 		{ trap(); return markSymbol(vmSymbols::primitive_trap()); };
+extern "C" oop PRIM_API double_multiply(oop receiver, oop argument) 	{ trap(); return markSymbol(vmSymbols::primitive_trap()); };
+extern "C" oop PRIM_API double_from_smi(oop receiver) 			{ trap(); return markSymbol(vmSymbols::primitive_trap()); };

@@ -169,33 +169,33 @@ PRIM_DECL_1(block_is_optimized, oop receiver){
 // empty functions, we'll patch them later
 static void trap() { assert(false, "This primitive should be patched"); };
 
-extern "C" oop primitiveValue0(oop blk) { trap(); return NULL; }
-extern "C" oop primitiveValue1(oop blk, oop arg1) { trap(); return NULL; }
-extern "C" oop primitiveValue2(oop blk, oop arg1, oop arg2) { trap(); return NULL; }
-extern "C" oop primitiveValue3(oop blk, oop arg1, oop arg2, oop arg3) { trap(); return NULL; }
-extern "C" oop primitiveValue4(oop blk, oop arg1, oop arg2, oop arg3, oop arg4) { trap(); return NULL; }
-extern "C" oop primitiveValue5(oop blk, oop arg1, oop arg2, oop arg3, oop arg4, oop arg5) { trap(); return NULL; }
+extern "C" oop primitiveValue0(oop blk) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
+extern "C" oop primitiveValue1(oop blk, oop arg1) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
+extern "C" oop primitiveValue2(oop blk, oop arg1, oop arg2) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
+extern "C" oop primitiveValue3(oop blk, oop arg1, oop arg2, oop arg3) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
+extern "C" oop primitiveValue4(oop blk, oop arg1, oop arg2, oop arg3, oop arg4) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
+extern "C" oop primitiveValue5(oop blk, oop arg1, oop arg2, oop arg3, oop arg4, oop arg5) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
 extern "C" oop primitiveValue6(oop blk, oop arg1, oop arg2, oop arg3, oop arg4, oop arg5,
-                               oop arg6) { trap(); return NULL; }
+                               oop arg6) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
 extern "C" oop primitiveValue7(oop blk, oop arg1, oop arg2, oop arg3, oop arg4, oop arg5,
-                               oop arg6, oop arg7) { trap(); return NULL; }
+                               oop arg6, oop arg7) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
 extern "C" oop primitiveValue8(oop blk, oop arg1, oop arg2, oop arg3, oop arg4, oop arg5,
-                               oop arg6, oop arg7, oop arg8) { trap(); return NULL; }
+                               oop arg6, oop arg7, oop arg8) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
 extern "C" oop primitiveValue9(oop blk, oop arg1, oop arg2, oop arg3, oop arg4, oop arg5,
-                               oop arg6, oop arg7, oop arg8, oop arg9) { trap(); return NULL; }
+                               oop arg6, oop arg7, oop arg8, oop arg9) { trap(); return markSymbol(vmSymbols::primitive_trap()); }
 
-extern "C" blockClosureOop allocateBlock0() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock1() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock2() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock3() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock4() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock5() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock6() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock7() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock8() { trap(); return NULL; };
-extern "C" blockClosureOop allocateBlock9() { trap(); return NULL; };
+extern "C" blockClosureOop allocateBlock0() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock1() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock2() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock3() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock4() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock5() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock6() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock7() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock8() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" blockClosureOop allocateBlock9() { trap(); return blockClosureOop(markSymbol(vmSymbols::primitive_trap())); };
 
-extern "C" contextOop allocateContext(smiOop nofVars) { trap(); return NULL; };
-extern "C" contextOop allocateContext0() { trap(); return NULL; };
-extern "C" contextOop allocateContext1() { trap(); return NULL; };
-extern "C" contextOop allocateContext2() { trap(); return NULL; };
+extern "C" contextOop allocateContext(smiOop nofVars) { trap(); return contextOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" contextOop allocateContext0() { trap(); return contextOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" contextOop allocateContext1() { trap(); return contextOop(markSymbol(vmSymbols::primitive_trap())); };
+extern "C" contextOop allocateContext2() { trap(); return contextOop(markSymbol(vmSymbols::primitive_trap())); };

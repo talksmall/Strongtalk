@@ -97,7 +97,8 @@ class Thread : public CHeapObj {
 int WINAPI startThread(void* params) {
   char* spptr;
   __asm mov spptr, esp;
-  ((thread_start*) params)->stackLimit = spptr - STACK_SIZE + os::vm_page_size();
+  int stackHeadroom = 2 * os::vm_page_size();
+  ((thread_start*) params)->stackLimit = spptr - STACK_SIZE + stackHeadroom;
 
   int (*main)(void*) = ((thread_start*) params)->main;
   void* parameter    = ((thread_start*) params)->parameter;
@@ -545,7 +546,11 @@ LARGE_INTEGER counter;
 
 CRITICAL_SECTION ThreadSection;
 
-void ThreadCritical::intialize() { InitializeCriticalSection(&ThreadSection); }
+bool ThreadCritical::_initialized = false;
+void ThreadCritical::intialize() { 
+  InitializeCriticalSection(&ThreadSection); 
+  _initialized = true;
+}
 void ThreadCritical::release()   { DeleteCriticalSection(&ThreadSection);     }
 
 ThreadCritical::ThreadCritical() {

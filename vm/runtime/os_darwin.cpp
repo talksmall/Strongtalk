@@ -239,7 +239,8 @@ void* mainWrapper(void* args) {
   
   int (*threadMain)(void*) = ((thread_args_t*) args)->main;
   void* parameter = ((thread_args_t*) args)->parameter;
-  ((thread_args_t*) args)->stackLimit = stackptr - STACK_SIZE + os::vm_page_size();
+  int stackHeadroom = 2 * os::vm_page_size();
+  ((thread_args_t*) args)->stackLimit = stackptr - STACK_SIZE + stackHeadroom;
 	int* result = (int*) malloc(sizeof(int));
 	threadCreated->signal();
 	*result = threadMain(parameter);
@@ -649,7 +650,11 @@ extern "C" bool EnableTasks;
 
 pthread_mutex_t ThreadSection; 
 
-void ThreadCritical::intialize() { pthread_mutex_init(&ThreadSection, NULL); }
+bool ThreadCritical::_initialized = false;
+void ThreadCritical::intialize() {
+  pthread_mutex_init(&ThreadSection, NULL);
+  _initialized = true;
+}
 void ThreadCritical::release()   { pthread_mutex_destroy(&ThreadSection);     }
 
 ThreadCritical::ThreadCritical() {

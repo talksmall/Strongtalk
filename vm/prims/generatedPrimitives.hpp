@@ -117,6 +117,7 @@ class GeneratedPrimitives: AllStatic {
   // helpers for generation and patch
   static char* patch(char* name, char* entry_point);
   static char* patch(char* name, char* entry_point, int argument);
+  static oop   invoke(char* op, oop receiver, oop argument);
   friend class PrimitivesGenerator;
 
  public:
@@ -131,6 +132,15 @@ class GeneratedPrimitives: AllStatic {
 
   // Support for profiling
   static bool contains(char* pc)            	{ return (_code <= pc) && (pc < &_code[_code_size]); }
+
+  // Support for compiler constant folding
+  static oop smiOopPrimitives_add(oop receiver, oop argument);
+  static oop smiOopPrimitives_subtract(oop receiver, oop argument);
+  static oop smiOopPrimitives_multiply(oop receiver, oop argument);
+  static oop smiOopPrimitives_mod(oop receiver, oop argument);
+  static oop smiOopPrimitives_div(oop receiver, oop argument);
+  static oop smiOopPrimitives_quo(oop receiver, oop argument);
+  static oop smiOopPrimitives_remainder(oop receiver, oop argument);
 
   static void patch_primitiveValue();
   static void init();				// must be called in system initialization phase

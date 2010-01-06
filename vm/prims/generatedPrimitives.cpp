@@ -297,6 +297,32 @@ void GeneratedPrimitives::patch_primitiveValue() {
   
 }
 
+typedef oop (__stdcall *smiOp)(oop,oop);
+oop GeneratedPrimitives::invoke(char* op, oop receiver, oop argument) {
+  assert(_is_initialized, "Generated primitives have not been initialized");
+  return ((smiOp) op)(argument, receiver);
+}
+oop GeneratedPrimitives::smiOopPrimitives_add(oop receiver, oop argument) {
+  return invoke(_smiOopPrimitives_add, receiver, argument);
+}
+oop GeneratedPrimitives::smiOopPrimitives_subtract(oop receiver, oop argument) {
+  return invoke(_smiOopPrimitives_subtract, receiver, argument);
+}
+oop GeneratedPrimitives::smiOopPrimitives_multiply(oop receiver, oop argument) {
+  return invoke(_smiOopPrimitives_multiply, receiver, argument);
+}
+oop GeneratedPrimitives::smiOopPrimitives_mod(oop receiver, oop argument) {
+  return invoke(_smiOopPrimitives_mod, receiver, argument);
+}
+oop GeneratedPrimitives::smiOopPrimitives_div(oop receiver, oop argument) {
+  return invoke(_smiOopPrimitives_div, receiver, argument);
+}
+oop GeneratedPrimitives::smiOopPrimitives_quo(oop receiver, oop argument) {
+  return invoke(_smiOopPrimitives_quo, receiver, argument);
+}
+oop GeneratedPrimitives::smiOopPrimitives_remainder(oop receiver, oop argument) {
+  return invoke(_smiOopPrimitives_remainder, receiver, argument);
+}
 void generatedPrimitives_init_before_interpreter() {
   GeneratedPrimitives::init();
 }

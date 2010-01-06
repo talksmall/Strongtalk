@@ -122,11 +122,13 @@ class os {
 // interrupts
 class ThreadCritical {
  private:
+  static bool _initialized;
   friend void os_init();
   friend void os_exit();
   static void intialize();
   static void release();
  public:
+  static bool initialized() { return _initialized; }
   ThreadCritical();
   ~ThreadCritical();
 };
