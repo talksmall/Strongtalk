@@ -12,6 +12,15 @@ comment:
 ! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
 
 
+testBeginsWith
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source beginsWith: 'El').
+	self assert: ('Elvis' beginsWith: 'El').
+	self deny: (source beginsWith: 'vis').
+	self deny: (source beginsWith: 'the').!
+
 testEndsWith
 
 	| source |

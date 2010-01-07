@@ -138,6 +138,10 @@ sameAs: other <Str> ^<Boolean>
 	"%todo: remove when using inherited types"
 	^(self compare: other) >= 0!
 
+beginsWith: chars <SequenceableCollection[Character]>
+
+	^(chars, '*') match: self ignoreCase: false!
+
 compare: other <Str>  ^<Int>
 
 	| mySize <Int> otherSize <Int> |
@@ -155,10 +159,7 @@ compare: other <Str>  ^<Int>
 
 endsWith: chars <SequenceableCollection[Character]>
 
-	| indices <Collection[Integer]> |
-	indices := (self indicesOfSubCollection: chars).
-	indices isEmpty ifTrue: [^false].
-	^indices last + chars size - 1 = self size! !
+	^('*', chars) match: self ignoreCase: false! !
 
 ! (Delta mirrorFor: #ReadString) methodsFor: 'converting' !
 
