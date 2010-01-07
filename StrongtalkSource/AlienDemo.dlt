@@ -1,0 +1,34 @@
+Delta define: #AlienDemo as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #AlienDemo) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AlienDemo) group: 'Unclassified'!
+
+(Delta mirrorFor: #AlienDemo)
+comment: 
+''!
+
+! (Delta mirrorFor: #AlienDemo) methodsFor: 'MacOS examples' !
+
+
+exampleNSOpenPanel
+	"AlienDemo new exampleNSOpenPanel"
+	| panel files |
+	(ObjectiveCClassAlien lookup: 'NSApplication' inFramework: 'AppKit') sharedApplication.
+	panel:= (ObjectiveCClassAlien lookup: 'NSOpenPanel' inFramework: 'AppKit') openPanel.
+	panel
+		setAllowsOtherFileTypes: true asAlien;
+		setAllowsMultipleSelection: true asAlien;
+		setCanChooseDirectories: false asAlien;
+		setCanChooseFiles: true asAlien.
+	(panel runModalForDirectory: nil asAlien file: nil asAlien types: nil asAlien) = 0 ifTrue:
+		[^self].
+	files:= panel filenames.
+	0 to: files count - 1 do:
+		[:i|
+		Transcript
+			cr;
+			nextPutAll: (files objectAtIndex: i) UTF8String strcpyUTF8;
+			flush]! !
+

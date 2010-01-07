@@ -1,5 +1,5 @@
 Delta define: #SystemInitializer as: (
-(Class subclassOf: 'Object' instanceVariables: '')) !
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'initializers')) !
 
 (Delta mirrorFor: #SystemInitializer) revision: '$Revision: 1.6 $'!
 
@@ -291,6 +291,18 @@ runScript: filename <Str>
 ! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'library class initialization' !
 
 
+addInitializer: aClass after: predecessor
+
+	(self initializers includes: aClass) ifTrue: [^self].
+	predecessor isNil
+		ifTrue: [self initializers add: aClass]
+		ifFalse: [self initializers add: aClass after: predecessor]!
+
+initializers
+
+	initializers isNil ifTrue: [initializers := OrderedCollection new].
+	^initializers!
+
 run
 	"This is the entry point for normal execution."
 	
@@ -335,5 +347,6 @@ runNonCriticalClassInitializers
 	Workspace initialize.
 
 	HTMLElement initialize.
-	HTMLParser initialize.! !
+	HTMLParser initialize.
+	self initializers do: [:each | each initialize]! !
 

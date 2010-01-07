@@ -1,0 +1,278 @@
+Delta define: #ObjectiveCAlien as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'ClassGetClassMethodAlien
+ClassGetInstanceMethodAlien
+ClassSelectorAlien
+EightByteParameterTypes
+FourByteParameterTypes
+ObjCLookUpClassAlien
+ObjCMsgSendAlien
+MethodTypeMap
+MethodTypeResultMap
+SelectorTable
+SelGetNameAlien
+SelRegisterNameAlien
+TypeQualifiers
+TypeQualifierCodes') !
+
+(Delta mirrorFor: #ObjectiveCAlien) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ObjectiveCAlien) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #ObjectiveCAlien)
+comment: 
+''!
+
+! (Delta mirrorFor: #ObjectiveCAlien) classSide methodsFor: 'class initialization' !
+
+
+initialize
+"
+ObjectiveCAlien initialize
+"
+	SystemInitializer addInitializer: self after: nil.
+	Platform == MacOSXPlatform ifFalse: [^self].
+	self initializeMethodTypeMap.
+	self initializeSelectors!
+
+initializeMethodTypeMap
+	"self initializeMethodTypeMap"
+	"ObjectiveCAlien initializeMethodTypeMap"
+	"See /usr/include/objc/objc_class.h and
+	 The Objective-C 2.0 Programming Language, Ch 12: The Runtime System, sec: Type Encodings."
+	MethodTypeMap := IdentityDictionary new: 32.
+	MethodTypeMap
+		at: $@ "_C_ID"			put: [ObjectiveCAlien new];
+		at: $# "_C_CLASS"		put: [ObjectiveCClassAlien new];
+		at: $: "_C_SEL"			put: [Alien new: 4];
+		at: $c "_CHR"			put: [Alien new: 1];
+		at: $C "_C_UCHR"		put: [Alien new: 1];
+		at: $s "_C_SHT"		put: [Alien new: 2];
+		at: $S "_C_USHT"		put: [Alien new: 2];
+		at: $i "_C_INT"			put: [Alien new: 4];
+		at: $I "_C_UINT"		put: [Alien new: 4];
+		at: $l "_C_LNG"			put: [Alien new: 4];
+		at: $L "_C_ULNG"		put: [Alien new: 4];
+		at: $f "_C_FLT"			put: [Alien new: 4];
+		at: $d "_C_DBL"		put: [Alien new: 8];
+		"at: $b" "_C_BFLD"		"put: [];"
+		at: $v "_C_VOID"		put: nil;
+		"at: $?" "_C_UNDEF"	"put: [];"
+		at: $^ "_C_PTR"		put: [Alien forPointer: 0];
+		at: $* "_CHARPTR"		put: [Alien forPointer: 0].
+		"at: $[" "_C_ARY_B"	"put: [];"
+		"at: $]" "_C_ARY_E"	"put: [];"
+		"at: $(" "_C_UNION_B"	"put: [];"
+		"at: $)" "_C_UNION_E"	"put: [];"
+		"at: ${" "_C_STRUCT_B""put: [];"
+		"at: $}" "_C_STRUCT_E""put: []."
+
+	FourByteParameterTypes := '@#:cCsSiIlLf^*'.
+	EightByteParameterTypes := 'd'.
+
+"#define _C_CONST			'r'
+#define _C_IN				'n'
+#define _C_INOUT			'N'
+#define _C_OUT			'o'
+#define _C_BYCOPY		'O'
+#define _C_BYREF			'R'
+#define _C_ONEWAY		'V'
+#define _C_GCINVISIBLE	'!!'
+"
+	TypeQualifiers := 'nNoOrRV!!'.
+	TypeQualifierCodes := TypeQualifiers asByteArray.
+					
+	MethodTypeResultMap := IdentityDictionary new: 32.
+	MethodTypeResultMap
+		at: $c "_CHR"			put: [:alien| alien unsignedByteAt: 1];
+		at: $C "_C_UCHR"		put: [:alien| alien unsignedByteAt: 1];
+		at: $s "_C_SHT"		put: [:alien| alien signedShortAt: 1];
+		at: $S "_C_USHT"		put: [:alien| alien unsignedShortAt: 1];
+		at: $i "_C_INT"			put: [:alien| alien signedLongAt: 1];
+		at: $I "_C_UINT"		put: [:alien| alien unsignedLongAt: 1];
+		at: $l "_C_LNG"			put: [:alien| alien signedLongAt: 1];
+		at: $L "_C_ULNG"		put: [:alien| alien unsignedLongAt: 1];
+		at: $f "_C_FLT"			put: [:alien| alien floatAt: 1];
+		at: $d "_C_DBL"		put: [:alien| alien doubleAt: 1].
+!
+
+initializeSelectors
+
+	SelectorTable := Dictionary new.
+	ClassGetClassMethodAlien := self lookup: 'class_getClassMethod' inLibrary: '/usr/lib/libobjc.dylib'.
+	ClassGetInstanceMethodAlien := self lookup: 'class_getInstanceMethod' inLibrary: '/usr/lib/libobjc.dylib'.
+	ObjCLookUpClassAlien := self lookup: 'objc_lookUpClass' inLibrary: '/usr/lib/libobjc.dylib'.
+	ObjCMsgSendAlien := self lookup: 'objc_msgSend' inLibrary: '/usr/lib/libobjc.dylib'.
+	SelRegisterNameAlien := self lookup: 'sel_registerName' inLibrary: '/usr/lib/libobjc.dylib'.
+	SelGetNameAlien := self lookup: 'sel_getName' inLibrary: '/usr/lib/libobjc.dylib'.
+	ClassSelectorAlien := self asObjectiveCSelector: #objectiveCclass! !
+
+! (Delta mirrorFor: #ObjectiveCAlien) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+
+	^4! !
+
+! (Delta mirrorFor: #ObjectiveCAlien) classSide methodsFor: 'objective-c runtime' !
+
+
+argumentListFromMArgs: margs <ObjectiveCMArgs> numArgs: numArgs <Integer> withSignature: signature <String> ^<Array>
+	| sigStream offset |
+	sigStream := signature readStream.
+	offset := 9. "Skip self and selector"
+	^(1 to: numArgs) collect:
+		[:ign| | code arg |
+		 [TypeQualifiers includes: (code := sigStream next)] whileTrue.
+		 code == $S
+			ifTrue:
+				[arg := ObjectiveCSmalltalkObjectProxy smalltalkObjectForAddress: (margs unsignedLongAt: offset)]
+			ifFalse:
+				[arg := (MethodTypeMap at: code ifAbsent: [self error: 'unknown code in Objective-C signature']) value.
+				 arg replaceFrom: 1 to: arg dataSize with: margs startingAt: offset].
+		 offset := offset + ((EightByteParameterTypes includes: code) ifTrue: [8] ifFalse: [4]).
+		 code == $^ ifTrue: [sigStream next].
+		 (MethodTypeResultMap at: code ifAbsent: [[:thing| thing]]) value: arg]!
+
+asObjectiveCSelector: aSelector
+	"Answer an Alien for the Objective-C selector corresponding to aSelector.
+	 Support selectors that clash with Smalltalk selectors and varargs methods.
+
+	 Selectors that clash with Smalltalk (e.g. class), if sent would be understood
+	 as regular Smalltalk selectors, and hence not forwarded to Objective-C by the
+	 doesNotUnderstand: method.  Support thesde by allowing selectors to begin
+	 with ``objectiveC'', and stripping this prefix when finding the corresponding
+	 Objective-C selector. 
+
+	Smalltalk has no support for varargs, and as of 10.4 the Mac OS X frameworks
+	contain no occurrences of the keywork ``va:''.  So support varargs by stripping
+	all trailing occurrences of ``va:''"
+	^SelectorTable
+		at: aSelector
+		ifAbsentPut:
+			[| selectorString stringAlien objectiveCSelector |
+			selectorString := (aSelector beginsWith: 'objectiveC')
+								ifTrue: [aSelector copyFrom: 11 to: aSelector size]
+								ifFalse: [aSelector asString].
+			[selectorString endsWith: 'va:'] whileTrue:
+				[selectorString := selectorString copyFrom: 1 to: selectorString size - 3].
+			stringAlien := selectorString asAlien.
+			SelRegisterNameAlien
+				primFFICallResult: (objectiveCSelector := Alien new: 4)
+				with:  stringAlien pointer.
+			stringAlien free.
+			objectiveCSelector]!
+
+encodeSimpleSignature: aString
+	"Take a string encoding an Objective-C method signature without argument size or offsets
+	 and decorate it with sizes and offsets."
+	"ObjectiveCAlien encodeSimpleSignature: '@@::^v'"
+
+	| size offset decoration index prefix ch |
+	size := offset := 0.
+	decoration := String new writeStream.
+	index := 1.
+	[TypeQualifiers includes: (ch := aString at: index)] whileTrue: [index := index + 1].
+	"Special hack for pointer types."
+	ch = $^ ifTrue: [index := index + 1]. "For now handle only a single character following ^"
+	prefix := index.
+	index := index + 1.
+	[index <= aString size] whileTrue:
+		[[ch := aString at: index.
+		  TypeQualifiers includes: ch] whileTrue: [decoration nextPut: ch. index := index + 1].
+		 size := (FourByteParameterTypes includes: ch)
+					ifTrue: [4]
+					ifFalse:
+						[(EightByteParameterTypes includes: ch)
+							ifTrue: [8]
+							ifFalse: [self error: 'unrecognized or unhandled type character']].
+		 index := index + 1.
+		 (decoration nextPut: ch) = $^ ifTrue: "Special hack for pointer types."
+			[decoration nextPut: (aString at: index). "For now handle only a single character following ^"
+			 index := index + 1].
+		 decoration print: offset.
+		 offset := offset + size].
+	^(aString copyFrom: 1 to: prefix), offset printString, (decoration contents)!
+
+frameworkLibraryNameFor: frameworkName
+"this is wrong not all frameworks are version C. Use Current?"
+	^'/System/Library/Frameworks/', frameworkName,
+			'.framework/Versions/C/', frameworkName!
+
+lookup: globalOrClassName <String> inFramework: frameworkName <String> ^<ObjectiveCClassAlien | nil>
+	"Looks up a global or a class and answers a suitable Alien.
+	 If receiver is ObjectiveCAlien result is an ObjectiveCAlien for some global variable (e.g. NSApp).
+	 If receiver is ObjectiveCClassAlien result is an ObjectiveCClassAlien for some class (e.g. NSApplication).
+	 i.e. the client must know whether they're asking for a global or a class."
+	^self
+		lookup: globalOrClassName
+		inLibrary: (self frameworkLibraryNameFor: frameworkName)!
+
+returnTypeCharacterForMethodTypes: methodTypes <Alien> ^<Character>
+	"Answer the return type of an Objective-C method given an Alien for its method_types."
+	| index code |
+	index := 1.
+	[TypeQualifierCodes includes: (code := methodTypes unsignedByteAt: index)] whileTrue:
+		[index := index + 1].
+	^Character value: code!
+
+valueOfDatum: global <String> inFramework: frameworkName <String> ^<ObjectiveCClassAlien | nil>
+	"Fetches the value of a global and answers an ObjectiveCAlien."
+	^self forPointer: ((self
+									lookup: global
+									inLibrary: (self frameworkLibraryNameFor: frameworkName))
+										unsignedLongAt: 1)! !
+
+! (Delta mirrorFor: #ObjectiveCAlien) methodsFor: 'accessing' !
+
+
+isa
+	| address |
+	^(address := self unsignedLongAt: 1) ~= 0 ifTrue:
+		[ObjectiveCClassAlien forPointer: ((Alien forPointer: address) unsignedLongAt: 1)]! !
+
+! (Delta mirrorFor: #ObjectiveCAlien) methodsFor: 'coercing' !
+
+
+asSmalltalkSelector
+	"Assume the receiver is an Alien for a SEL.  Answer its correspondng Smaltalk selector, or raise an error."
+	^(SelGetNameAlien
+			primFFICallResult: (Alien forPointer: 0)
+			with: self) strcpy asSymbol!
+
+id
+	"Answer the receiver's id. This coerces direct, pointer and indirect ObjectiveC objects correctly."
+	^self addressField! !
+
+! (Delta mirrorFor: #ObjectiveCAlien) methodsFor: 'message forwarding' !
+
+
+doesNotUnderstand: aMessage
+	| method returnTypeCharacter result |
+	method := self objectiveCMethodForSelectorAlien: (self class asObjectiveCSelector: aMessage selector).
+	method isNil ifTrue:
+		["Might also check if selector is not already forward: and if
+		  so try sending forward: of the selector and arguments?"
+		 ^super doesNotUnderstand: aMessage].
+	returnTypeCharacter := self class returnTypeCharacterForMethodTypes: method methodTypes.
+	"If MethodTypeMap doesn't include returnTypeCharacter then we haven't
+	implemented handling that return type yet."
+	result := method implementation
+				primFFICallResult: (MethodTypeMap at: returnTypeCharacter) value
+				withArguments: {self. method rawSelector}, aMessage arguments.
+	^(MethodTypeResultMap
+			at: returnTypeCharacter
+			ifAbsent: [^result])
+		value: result! !
+
+! (Delta mirrorFor: #ObjectiveCAlien) methodsFor: 'objective-c runtime' !
+
+
+objectiveCMethodForSelectorAlien: selectorAlien
+	| pointer |
+	pointer := ClassGetInstanceMethodAlien
+						primFFICallResult: (Alien new: 4)
+						with: self isa
+						with: selectorAlien.
+	^(pointer := pointer unsignedLongAt: 1) ~= 0 ifTrue:
+		[ObjectiveCMethod atAddress: pointer]! !
+

@@ -37,6 +37,13 @@ unicodeAt: index <Int> ^<Int>
 
   ^self primitiveAt: index! !
 
+! (Delta mirrorFor: #CompressedSymbol) methodsFor: 'coercing' !
+
+
+asByteArray
+
+	^ByteArray withAll: (self collect: [:ch| ch asciiValue])! !
+
 ! (Delta mirrorFor: #CompressedSymbol) methodsFor: 'comparing' !
 
 

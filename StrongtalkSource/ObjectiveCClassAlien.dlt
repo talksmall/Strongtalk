@@ -1,0 +1,55 @@
+Delta define: #ObjectiveCClassAlien as: (
+(Class subclassOf: 'ObjectiveCAlien' instanceVariables: '')) !
+
+(Delta mirrorFor: #ObjectiveCClassAlien) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ObjectiveCClassAlien) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #ObjectiveCClassAlien)
+comment: 
+''!
+
+! (Delta mirrorFor: #ObjectiveCClassAlien) classSide methodsFor: 'coercing' !
+
+
+makeNSStringFrom: string <String>
+	| NSString |
+	NSString := self lookup: 'NSString' inFramework: 'Foundation'.
+	^string isEmpty
+		ifTrue: [NSString string]
+		ifFalse: [NSString alloc initWithUTF8String: string isoToUtf8 asAlien pointer]! !
+
+! (Delta mirrorFor: #ObjectiveCClassAlien) classSide methodsFor: 'objective-c runtime' !
+
+
+lookup: className <String> ^<ObjectiveCClassAlien | nil>
+	| classAlien stringAlien |
+	ObjCLookUpClassAlien
+		primFFICallResult: (classAlien := self new)
+		with: (stringAlien := className asAlien) pointer.
+	stringAlien free.
+	^(classAlien unsignedLongAt: 1) ~= 0 ifTrue: [classAlien]!
+
+lookup: className <String> inLibrary: aLibraryName <String> ^<ObjectiveCClassAlien | nil>
+	self ensureLoaded: aLibraryName.
+	^self lookup: className! !
+
+! (Delta mirrorFor: #ObjectiveCClassAlien) methodsFor: 'coercing' !
+
+
+asObjectiveCClass ^<ObjectiveCClass>
+	"Answer a struct objc_class object (ObjectiveCClass) for the receivers class."
+	^ObjectiveCClass atAddress: (self unsignedLongAt: 1)! !
+
+! (Delta mirrorFor: #ObjectiveCClassAlien) methodsFor: 'objective-c runtime' !
+
+
+objectiveCMethodForSelector: selectorAlien
+	| pointer |
+	pointer := ClassGetClassMethodAlien
+						primFFICallResult: (Alien new: 4)
+						with: self
+						with: selectorAlien.
+	^(pointer := pointer unsignedLongAt: 1) ~= 0 ifTrue:
+		[ObjectiveCMethod atAddress: pointer]! !
+
