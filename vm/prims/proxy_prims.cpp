@@ -100,14 +100,11 @@ PRIM_DECL_1(proxyOopPrimitives::isAllOnes, oop receiver) {
   return proxyOop(receiver)->is_allOnes() ? trueObj : falseObj;
 }
 
-extern "C" void safefree(void*);
-extern "C" void* safemalloc(int);
-extern "C" void* safecalloc(int, char);
 PRIM_DECL_2(proxyOopPrimitives::malloc, oop receiver, oop size) {
   PROLOGUE_2("malloc", receiver, size);
   ASSERT_RECEIVER;
   if (!size->is_smi()) return markSymbol(vmSymbols::first_argument_has_wrong_type());
-  proxyOop(receiver)->set_pointer(safemalloc(smiOop(size)->value()));
+  proxyOop(receiver)->set_pointer(os::malloc(smiOop(size)->value()));
   return receiver;
 }
 
@@ -115,13 +112,13 @@ PRIM_DECL_2(proxyOopPrimitives::calloc, oop receiver, oop size) {
   PROLOGUE_2("calloc", receiver, size);
   ASSERT_RECEIVER;
   if (!size->is_smi()) return markSymbol(vmSymbols::first_argument_has_wrong_type());
-  proxyOop(receiver)->set_pointer(safecalloc(smiOop(size)->value(), 1));
+  proxyOop(receiver)->set_pointer(os::calloc(smiOop(size)->value(), 1));
   return receiver;
 }
 PRIM_DECL_1(proxyOopPrimitives::free, oop receiver) {
   PROLOGUE_1("free", receiver);
   ASSERT_RECEIVER;
-  safefree(proxyOop(receiver)->get_pointer());
+  os::free(proxyOop(receiver)->get_pointer());
   proxyOop(receiver)->null_pointer();
   return receiver;
 }

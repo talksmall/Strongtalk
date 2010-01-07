@@ -549,11 +549,8 @@ DeltaProcess::~DeltaProcess() {
 
 void DeltaProcess::preempt_active() {
   assert(EnableProcessPreemption, "Should not preempt active process when preemption not enabled");
-  {
-    ThreadCritical tc;
-    _interrupt = true;
-    _active_stack_limit = (char*)0x7fffffff;
-  }
+  _interrupt = true;
+  _active_stack_limit = (char*)0x7fffffff;
 }
 void DeltaProcess::print() {
   processObj()->print_value();

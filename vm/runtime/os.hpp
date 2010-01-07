@@ -67,13 +67,18 @@ class os {
   static void* get_prevInstance();
   static int   get_nCmdShow();
 
-  // OS interface to Virtual Memory
+  // OS interface to Virtual Memory - used for object memory allocations
   static int   vm_page_size() { return _vm_page_size; }
   static char* reserve_memory(int size);
   static bool  commit_memory(char* addr, int size);
   static bool  uncommit_memory(char* addr, int size);
   static bool  release_memory(char* addr, int size);
   static bool  guard_memory(char* addr, int size);
+  
+  // OS interface to C memory routines - used for small allocations
+  static void* malloc(int size);
+  static void* calloc(int size, char filler);
+  static void  free(void* p);
 
   // threads
   static Thread* starting_thread(int* id_addr);

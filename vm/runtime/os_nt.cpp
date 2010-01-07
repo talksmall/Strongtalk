@@ -426,6 +426,33 @@ bool os::guard_memory(char* addr, int size) {
   return VirtualProtect(addr, size, PAGE_READWRITE | PAGE_GUARD, &old_status) ? true : false;
 }
 
+void* os::malloc(int size) {
+  if (!ThreadCritical::initialized()) {
+    return ::malloc(size);
+  } else {
+    ThreadCritical tc;
+    return ::malloc(size);
+  }
+}
+
+void* os::calloc(int size, char filler) {
+  if (!ThreadCritical::initialized()) {
+    return ::calloc(size, filler);
+  } else {
+    ThreadCritical tc;
+    return ::calloc(size, filler);
+  }
+}
+
+void os::free(void* p) {
+  if (!ThreadCritical::initialized()) {
+    ::free(p);
+  } else {
+    ThreadCritical tc;
+    ::free(p);
+  }
+}
+
 void os::transfer(Thread* from_thread, Event* from_event, Thread* to_thread, Event* to_event) {
   ResetEvent((HANDLE) from_event);
   SetEvent((HANDLE) to_event);

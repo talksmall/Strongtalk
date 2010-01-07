@@ -510,6 +510,18 @@ bool os::guard_memory(char* addr, int size) {
 	return false;
 }
 
+void* os::malloc(int size) {
+  return ::malloc(size);
+}
+
+void* os::calloc(int size, char filler) {
+  return ::calloc(size, filler);
+}
+
+void os::free(void* p) {
+  ::free(p);
+}
+
 // 1 reference - process.cpp
 void os::transfer(Thread* from_thread, Event* from_event, Thread* to_thread, Event* to_event) {
 	from_event->reset();
