@@ -116283,3 +116283,43 @@ exampleNSOpenPanel
 "January 7, 2010 -> 2:23:1"!
 
 "System saved" !
+"January 7, 2010 -> 23:14:17"!
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case sensitive' !
+endsWith: chars <SequenceableCollection[Character]>
+
+	^('*', chars) match: self ignoreCase: false! !
+
+"January 7, 2010 -> 23:15:32"!
+
+! (Delta mirrorFor: #StringTest) methodsFor: 'testing' !
+testBeginsWith
+
+	| source |
+	source := 'Elvis' asString.
+	self assert: (source beginsWith: 'El').
+	self assert: ('Elvis' beginsWith: 'El').
+	self deny: (source beginsWith: 'vis').
+	self deny: (source beginsWith: 'the').! !
+
+"January 7, 2010 -> 23:15:51"!
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'comparing-case sensitive' !
+beginsWith: chars <SequenceableCollection[Character]>
+
+	^(chars, '*') match: self ignoreCase: false! !
+
+"January 7, 2010 -> 23:16:13"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"January 7, 2010 -> 23:16:13"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"January 7, 2010 -> 23:16:52"!
+
+"System saved" !
