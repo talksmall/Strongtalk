@@ -1482,7 +1482,10 @@ void StubRoutines::push_alien_arg(MacroAssembler *masm, Label &nextArg) {
 
     masm->bind(nextArg);
 }
-
+extern "C" {
+  void PRIM_API enter_async_call(DeltaProcess**);
+  void PRIM_API exit_async_call(DeltaProcess**);
+}
 char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
   Label no_result, ptr_result, short_ptr_result, short_result, argLoopStart;
   Label isSMI, isDirect, startMove, isPointer, nextArg, moveLoopHead, moveLoopEnd, 
@@ -1493,12 +1496,14 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
   Address result(ebp,12);
   Address argCount(ebp,16);
   Address argArray(ebp,20);
+  Address proc(ebp,-16);
   char* entry_point = masm->pc();
 
   masm->enter();
   masm->pushl(esi);                                       // preserve registers
   masm->pushl(edi);
   masm->pushl(ebx);
+  masm->subl(esp, 4);                                     // process pointer
 
   masm->movl(edi, argArray);                              // start of the oops in the array
   masm->movl(ebx, argCount);
@@ -1535,8 +1540,11 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
     masm->jmp(argLoopStart);
   masm->bind(argLoopExit);
 
-  masm->movl(eax, fnptr);
-  masm->call(eax);                              // call the alien function
+  masm->leal(eax, proc);
+  masm->pushl(eax);
+  masm->call((char*)enter_async_call, relocInfo::external_word_type);
+
+  masm->call(fnptr);                            // call the alien function
 
   masm->movl(ecx, result);                      // result alien
   
@@ -1572,7 +1580,9 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
   masm->movl(Address(esi), eax);                
   
   masm->bind(no_result);
-  
+  masm->leal(eax, proc);
+  masm->pushl(eax);
+  masm->call((char*) exit_async_call, relocInfo::external_word_type);
   masm->movl(esi, Address(ebp, -4));            // restore registers
   masm->movl(edi, Address(ebp, -8));
   masm->movl(ebx, Address(ebp, -12));
@@ -1586,10 +1596,12 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
   Label no_result, ptr_result, short_ptr_result, short_result, pushArgs;
   Address fnptr(ebp,8);
   Address result(ebp,12);
+  Address proc(ebp,-8);
   char* entry_point = masm->pc();
 
   masm->enter();
   masm->pushl(esi);                             // preserve registers
+  masm->subl(esp, 4);                           // process pointer
 
   masm->movl(edx, esp);
   for (int arg = 0; arg < args; arg++) {
@@ -1622,8 +1634,11 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
     push_alien_arg(masm, moveLoopEnd);
   }
 
-  masm->movl(eax, fnptr);
-  masm->call(eax);                              // call the alien function
+  masm->leal(eax, proc);
+  masm->pushl(eax);
+  masm->call((char*)enter_async_call, relocInfo::external_word_type);
+
+  masm->call(fnptr);                            // call the alien function
 
   masm->movl(ecx, result);                      // result alien
   
@@ -1659,6 +1674,9 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
   masm->movl(Address(esi), eax);                
   
   masm->bind(no_result);
+  masm->leal(eax, proc);
+  masm->pushl(eax);
+  masm->call((char*) exit_async_call, relocInfo::external_word_type);
   
   masm->movl(esi, Address(ebp, -4));            // restore registers
   masm->leave();

@@ -172,7 +172,6 @@ dll_func DLLs::lookup_and_patch_CompiledDLL_Cache() {
   return function;
 }
 
-
 void DLLs::enter_async_call(DeltaProcess** addr) {
   DeltaProcess* proc = DeltaProcess::active();
   *addr = proc; // proc will be retrieved in dll_enter_async_call
@@ -190,5 +189,14 @@ void DLLs::exit_async_call(DeltaProcess** addr) {
 
 void DLLs::exit_sync_call(DeltaProcess** addr) {
   // nothing to do here for now
+}
+
+extern "C" {
+  void PRIM_API enter_async_call(DeltaProcess** addr) {
+    DLLs::enter_async_call(addr);
+  }
+  void PRIM_API exit_async_call(DeltaProcess** addr) {
+    DLLs::exit_async_call(addr);
+  }
 }
 
