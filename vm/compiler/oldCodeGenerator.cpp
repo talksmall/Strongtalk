@@ -1289,16 +1289,11 @@ void ContextInitNode::gen() {
   for (int i = nofTemps() - 1; i >= 0; i--) {
     PReg* src = _initializers->at(i)->preg();
     PReg* dest;
-    if (src->isBlockPReg()) {
+    if (src->isBlockPReg() && wasEliminated()) {
       // Blocks aren't actually assigned (at the PReg level) so that the inlining info isn't lost.
-      if (wasEliminated()) {
-        continue;				// there's no assignment (context was eliminated)
-      } else {
-	dest = contents()->at(i)->preg();	// fake destination created by compiler
-      }
-    } else {
-      dest = contents()->at(i)->preg();
-    }
+      continue;				// there's no assignment (context was eliminated)
+	}
+    dest = contents()->at(i)->preg();
     assign(this, src, dest, temp1, temp2, temp3, false);
   }
   // NB: no store check necessary (done in ContextCreateNode)

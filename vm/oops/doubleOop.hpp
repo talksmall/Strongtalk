@@ -36,7 +36,7 @@ class doubleOopDesc: public memOopDesc {
 
  public:
   // type conversion
-  friend doubleOop as_doubleOop(void* p) { return doubleOop(as_memOop(p)); }
+	friend doubleOop as_doubleOop(void* p);
 
   // sizing
   static int header_size()  { return sizeof(doubleOopDesc)/oopSize; }
@@ -52,3 +52,4 @@ class doubleOopDesc: public memOopDesc {
 
   friend class doubleKlass;
 };
+inline doubleOop as_doubleOop(void* p) { return doubleOop(as_memOop(p)); }

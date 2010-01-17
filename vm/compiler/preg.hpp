@@ -316,7 +316,7 @@ class ConstPReg : public PReg {
   char* name() const;
   bool verify() const;
 };
-
+ConstPReg* new_ConstPReg(InlinedScope* s, oop c);
 
 
 #ifdef not_yet_used

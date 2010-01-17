@@ -33,8 +33,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 class objArrayOopDesc: public memOopDesc {
  public:
   // constructor
-  friend objArrayOop as_objArrayOop(void* p) {
-    return objArrayOop(as_memOop(p)); }
+	friend objArrayOop as_objArrayOop(void* p);
 
   void bootstrap_object(bootstrap* st);
 
@@ -101,7 +100,8 @@ class objArrayOopDesc: public memOopDesc {
   oop* begin_indexables() const { return objs(1); }
   oop* end_indexables()   const { return begin_indexables() + length(); }
 };
-
+inline objArrayOop as_objArrayOop(void* p) {
+    return objArrayOop(as_memOop(p)); }
 
 class weakArrayOopDesc: public objArrayOopDesc {
  public:

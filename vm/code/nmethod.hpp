@@ -311,7 +311,8 @@ class nmethod : public OopNCode {
    // Restores the nmethod 
    void restore_from_patch(nmethod_patch* data);
 };
-
+nmethod* findNMethod(void* start);
+nmethod* new_nmethod(Compiler* c);
 inline nmethod* nmethod_from_insts(char* insts)
 {	// for efficiency
     nmethod* nm = (nmethod*) insts - 1;

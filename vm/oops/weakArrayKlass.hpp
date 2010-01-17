@@ -52,7 +52,7 @@ class weakArrayKlass: public objArrayKlass {
   // Sizing
   int oop_header_size() const { return weakArrayOopDesc::header_size(); }
 };
-
+void set_weakArrayKlass_vtbl(Klass* k);
 // The weak array register is used during memory management to
 // split the object scanning into two parts:
 //   1. Transively traverse all object except the indexable part

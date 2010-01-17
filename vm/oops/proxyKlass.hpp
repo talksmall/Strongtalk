@@ -59,3 +59,4 @@ class proxyKlass: public memOopKlass {
   // class creation
   friend void set_proxyKlass_vtbl(Klass* k);
 };
+void set_proxyKlass_vtbl(Klass* k);

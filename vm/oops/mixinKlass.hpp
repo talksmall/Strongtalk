@@ -59,3 +59,4 @@ class mixinKlass: public memOopKlass {
   // class creation
   friend void set_mixinKlass_vtbl(Klass* k);
 };
+void set_mixinKlass_vtbl(Klass* k);

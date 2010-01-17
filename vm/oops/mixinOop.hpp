@@ -47,7 +47,7 @@ class mixinOopDesc: public memOopDesc {
   mixinOopDesc* addr() const { return (mixinOopDesc*)memOopDesc::addr(); }
 
  public:
-  friend mixinOop as_mixinOop(void* p) { return mixinOop(as_memOop(p)); }
+	friend mixinOop as_mixinOop(void* p);
 
   // sizing
   static int header_size() { return sizeof(mixinOopDesc)/oopSize; }
@@ -111,3 +111,4 @@ class mixinOopDesc: public memOopDesc {
 
   friend class mixinKlass;
 };
+inline mixinOop as_mixinOop(void* p) { return mixinOop(as_memOop(p)); }

@@ -45,3 +45,4 @@ class smiKlass: public Klass {
   // printing operations
   void oop_print_value(oop obj, outputStream* st);
 };
+void set_smiKlass_vtbl(Klass* k);

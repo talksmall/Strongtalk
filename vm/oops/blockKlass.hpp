@@ -68,7 +68,7 @@ class blockClosureKlass: public memOopKlass {
   // class creation
   friend void set_blockClosureKlass_vtbl(Klass* k);
 };
-
+void set_blockClosureKlass_vtbl(Klass* k);
 class contextKlass: public memOopKlass {
  public:
   // testers
@@ -112,6 +112,6 @@ class contextKlass: public memOopKlass {
   // class creation
   friend void set_contextKlass_vtbl(Klass* k);
 };
-
+void set_contextKlass_vtbl(Klass* k);
 
 

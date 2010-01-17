@@ -42,7 +42,7 @@ class proxyOopDesc: public memOopDesc {
   // field offsets for code generation
   static int pointer_byte_offset() { return (2 * oopSize) - Mem_Tag; }
 
-  friend proxyOop as_proxyOop(void* p) { return proxyOop(as_memOop(p)); }
+	friend proxyOop as_proxyOop(void* p);
 
   // sizing
   static int header_size() { return sizeof(proxyOopDesc)/oopSize; }
@@ -103,3 +103,4 @@ class proxyOopDesc: public memOopDesc {
 
   friend class proxyKlass;
 };
+inline proxyOop as_proxyOop(void* p) { return proxyOop(as_memOop(p)); }

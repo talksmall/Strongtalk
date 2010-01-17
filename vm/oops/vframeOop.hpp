@@ -50,8 +50,7 @@ class vframeOopDesc: public memOopDesc {
 
   int time_stamp() const		{ return addr()->_time_stamp->value(); }
   void set_time_stamp(int t)		{ STORE_OOP(&addr()->_time_stamp, as_smiOop(t)); }
-
-  friend vframeOop as_vframeOop(void* p) { return vframeOop(as_memOop(p)); }
+  friend vframeOop as_vframeOop(void* p);
 
   // sizing
   static int header_size() { return sizeof(vframeOopDesc)/oopSize; }
@@ -62,6 +61,5 @@ class vframeOopDesc: public memOopDesc {
  private:
    friend class vframeKlass;
 };
+inline vframeOop as_vframeOop(void* p) { return vframeOop(as_memOop(p)); }
 
-
-;

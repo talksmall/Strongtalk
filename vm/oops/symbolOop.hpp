@@ -27,11 +27,11 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 class symbolOopDesc: public byteArrayOopDesc {
  public:
   // constructor
-  friend symbolOop as_symbolOop(void* p) {
-    return symbolOop(as_byteArrayOop(p)); }
+	friend symbolOop as_symbolOop(void* p);
   
   // memory operations
   symbolOop scavenge();
   bool verify();
   void print_symbol_on(outputStream* st = NULL);
 };
+inline symbolOop as_symbolOop(void* p) { return symbolOop(as_byteArrayOop(p)); }

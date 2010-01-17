@@ -69,3 +69,4 @@ class doubleValueArrayKlass: public memOopKlass {
   bool oop_is_doubleValueArray() const { return true; }
   bool oop_is_indexable() const        { return true; }
 };
+void set_doubleValueArrayKlass_vtbl(Klass* k);

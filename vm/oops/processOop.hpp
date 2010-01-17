@@ -30,7 +30,7 @@ class processOopDesc: public memOopDesc {
   processOopDesc* addr() { return (processOopDesc*)memOopDesc::addr();}
     
  public:
-  friend processOop as_processOop(void* p) { return processOop(as_memOop(p)); }
+	friend processOop as_processOop(void* p);
 
   DeltaProcess* process() { return addr()->_process; }
   void set_process(DeltaProcess* p)  { 
@@ -58,4 +58,4 @@ class processOopDesc: public memOopDesc {
 
   friend class processKlass;
 };
-
+inline processOop as_processOop(void* p) { return processOop(as_memOop(p)); }

@@ -63,3 +63,4 @@ class symbolKlass: public byteArrayKlass {
   // class creation
   friend void set_symbolKlass_vtbl(Klass* k);
 };
+void set_symbolKlass_vtbl(Klass* k);

@@ -62,3 +62,4 @@ class doubleKlass: public memOopKlass {
   // class creation
   friend void set_doubleKlass_vtbl(Klass* k);
 };
+void set_doubleKlass_vtbl(Klass* k);

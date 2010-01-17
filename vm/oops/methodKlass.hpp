@@ -66,3 +66,4 @@ class methodKlass : public memOopKlass {
   methodOop constructMethod(oop name, int flags, int nofArgs, objArrayOop debugInfo,
 			                byteArrayOop bytes, objArrayOop oops);
 };
+void set_methodKlass_vtbl(Klass* k);

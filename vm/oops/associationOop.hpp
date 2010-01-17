@@ -41,8 +41,7 @@ class associationOopDesc: public memOopDesc {
   associationOopDesc* addr() const {
     return (associationOopDesc*) memOopDesc::addr(); }
 
-  friend associationOop as_associationOop(void* p) {
-    return associationOop(as_memOop(p)); }
+	friend associationOop as_associationOop(void* p);
 
   // sizing
   static int header_size()	{ return sizeof(associationOopDesc)/oopSize; }
@@ -63,3 +62,6 @@ class associationOopDesc: public memOopDesc {
   static int is_constant_offset() { return 4; } // offset of the is_constant field in words
   friend class associationKlass;
 };
+inline associationOop as_associationOop(void* p) {
+    return associationOop(as_memOop(p));
+}

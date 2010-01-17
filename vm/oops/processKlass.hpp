@@ -60,3 +60,4 @@ class processKlass: public memOopKlass {
   // sizing
   int object_size() const;
 };
+void set_processKlass_vtbl(Klass* k);

@@ -74,3 +74,4 @@ class objArrayKlass: public memOopKlass {
   // Sizing
   int oop_header_size() const { return objArrayOopDesc::header_size(); }
 };
+void set_objArrayKlass_vtbl(Klass* k);

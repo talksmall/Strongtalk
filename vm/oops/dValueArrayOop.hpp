@@ -32,8 +32,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 class doubleValueArrayOopDesc: public memOopDesc {
   public:
   // constructor
-  friend doubleValueArrayOop as_doubleValueArrayOop(void* p) {
-    return doubleValueArrayOop(as_memOop(p)); }
+	friend doubleValueArrayOop as_doubleValueArrayOop(void* p);
 
   void bootstrap_object(bootstrap* st);
 
@@ -79,4 +78,5 @@ class doubleValueArrayOopDesc: public memOopDesc {
 
   friend class doubleValueArrayKlass;
 };
-
+inline doubleValueArrayOop as_doubleValueArrayOop(void* p) {
+    return doubleValueArrayOop(as_memOop(p)); }

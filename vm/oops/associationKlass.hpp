@@ -67,3 +67,4 @@ class associationKlass: public memOopKlass {
   // sizing
   int oop_header_size() const { return associationOopDesc::header_size(); }
 };
+void set_associationKlass_vtbl(Klass* k);

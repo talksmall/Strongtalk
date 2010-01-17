@@ -82,3 +82,4 @@ class memOopKlass: public Klass {
   // sizing
   int oop_header_size() const { return memOopDesc::header_size(); }
 };
+void set_memOopKlass_vtbl(Klass* k);

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		8DD76F6A0486A84900D96B5E /* strongtalk.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6859E8B029090EE04C91782 /* strongtalk.1 */; };
+		AAB82D7B10FD4A6A00032AF3 /* preemption.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAB82D7910FD4A6A00032AF3 /* preemption.cpp */; };
 		AAD8D7960FE58CA80085D95A /* assembler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAD8D5FE0FE58CA80085D95A /* assembler.cpp */; };
 		AAD8D7970FE58CA80085D95A /* codeBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAD8D6000FE58CA80085D95A /* codeBuffer.cpp */; };
 		AAD8D7980FE58CA80085D95A /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAD8D6020FE58CA80085D95A /* location.cpp */; };
@@ -212,6 +213,8 @@
 
 /* Begin PBXFileReference section */
 		8DD76F6C0486A84900D96B5E /* strongtalk */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = strongtalk; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAB82D7910FD4A6A00032AF3 /* preemption.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = preemption.cpp; sourceTree = "<group>"; };
+		AAB82D7A10FD4A6A00032AF3 /* preemption.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = preemption.hpp; sourceTree = "<group>"; };
 		AAD8D5FE0FE58CA80085D95A /* assembler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = assembler.cpp; sourceTree = "<group>"; };
 		AAD8D5FF0FE58CA80085D95A /* assembler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = assembler.hpp; sourceTree = "<group>"; };
 		AAD8D6000FE58CA80085D95A /* codeBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = codeBuffer.cpp; sourceTree = "<group>"; };
@@ -1232,6 +1235,8 @@
 		AAD8D7450FE58CA80085D95A /* runtime */ = {
 			isa = PBXGroup;
 			children = (
+				AAB82D7910FD4A6A00032AF3 /* preemption.cpp */,
+				AAB82D7A10FD4A6A00032AF3 /* preemption.hpp */,
 				AAD8D7460FE58CA80085D95A /* abort.cpp */,
 				AAD8D7470FE58CA80085D95A /* abort.hpp */,
 				AAD8D7480FE58CA80085D95A /* arguments.cpp */,
@@ -1757,6 +1762,7 @@
 				AAD8D8580FE58CA80085D95A /* objectIDTable.cpp in Sources */,
 				AAD8D8590FE58CA80085D95A /* ostream.cpp in Sources */,
 				AAD8D9E20FE6A4950085D95A /* os_darwin.cpp in Sources */,
+				AAB82D7B10FD4A6A00032AF3 /* preemption.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1795,13 +1801,14 @@
 				GCC_ENABLE_ASM_KEYWORD = YES;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
-				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PFE_FILE_C_DIALECTS = "c c++";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DEBUG,
 					ASSERT,
 					DELTA_COMPILER,
 				);
+				GCC_VERSION = 4.0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -1822,7 +1829,8 @@
 				);
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx10.6;
+				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Debug;
 		};

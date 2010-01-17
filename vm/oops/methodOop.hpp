@@ -69,7 +69,7 @@ class methodOopDesc : public memOopDesc {
     return get_unsigned_bitfield((int)size_and_flags(), method_args_mask_bitno, method_args_mask_size); }
 
  public:
-  friend methodOop as_methodOop(void* p) { return methodOop(as_memOop(p)); }
+	friend methodOop as_methodOop(void* p);
 
   void bootstrap_object(bootstrap* st);
 
@@ -334,6 +334,7 @@ class methodOopDesc : public memOopDesc {
 
   friend class methodKlass;
 };
+inline methodOop as_methodOop(void* p) { return methodOop(as_memOop(p)); }
 
 class StopInSelector : public ValueObj {
 private:

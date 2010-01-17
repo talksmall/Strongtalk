@@ -78,3 +78,4 @@ class byteArrayKlass: public memOopKlass {
   bool oop_is_indexable() const { return true; }
 
 };
+void set_byteArrayKlass_vtbl(Klass* k);

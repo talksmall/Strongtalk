@@ -38,7 +38,7 @@ class blockClosureOopDesc: public memOopDesc {
   static int method_or_entry_byte_offset() { return (2 * oopSize) - Mem_Tag; }
   static int context_byte_offset()	   { return (3 * oopSize) - Mem_Tag; }
 
-  friend blockClosureOop as_blockClosureOop(void* p) { return blockClosureOop(as_memOop(p)); }
+	friend blockClosureOop as_blockClosureOop(void* p);
 
   static blockClosureOop create_clean_block(int nofArgs, char* entry_point);	// create a clean block
 
@@ -74,7 +74,7 @@ class blockClosureOopDesc: public memOopDesc {
 
   friend class blockClosureKlass;
 };
-
+inline blockClosureOop as_blockClosureOop(void* p) { return blockClosureOop(as_memOop(p)); }
 // Contexts contain the heap-allocated local variables of a method, i.e., the locals
 // and arguments that are uplevel-accessed by blocks.  They are variable-length, what's
 // shown below is just the common prefix which is followed by the words containing the
@@ -96,7 +96,7 @@ class contextOopDesc: public memOopDesc {
   // NOTE: the frame is needed in case of a non local return.
   contextOop addr() const 		{ return contextOop(memOopDesc::addr()); }
  public:
-  friend contextOop as_contextOop(void* p) { return contextOop(as_memOop(p)); }
+	friend contextOop as_contextOop(void* p);
 
   void set_parent(oop h) 		{ STORE_OOP(&addr()->_parent, h); }
   oop  parent() const 			{ return addr()->_parent; }
@@ -145,4 +145,4 @@ class contextOopDesc: public memOopDesc {
 
   friend class contextKlass;
 };
-
+inline contextOop as_contextOop(void* p) { return contextOop(as_memOop(p)); }

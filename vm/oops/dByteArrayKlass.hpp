@@ -69,3 +69,4 @@ class doubleByteArrayKlass: public memOopKlass {
   bool oop_is_doubleByteArray() const { return true; }
   bool oop_is_indexable() const       { return true; }
 };
+void set_doubleByteArrayKlass_vtbl(Klass* k);

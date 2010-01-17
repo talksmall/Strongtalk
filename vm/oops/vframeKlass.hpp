@@ -59,3 +59,4 @@ class vframeKlass: public memOopKlass {
   // class creation
   friend void set_vframeKlass_vtbl(Klass* k);
 };
+void set_vframeKlass_vtbl(Klass* k);
