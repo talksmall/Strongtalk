@@ -8,6 +8,7 @@ using namespace easyunit;
 
 extern "C" int expansion_count;
 DECLARE(IndirectAlienPrimsTests)
+  HeapResourceMark * rm;
   klassOop byteArrayClass;
   byteArrayOop alien, invalidAlien;
   byteArrayOop largeUnsignedInteger;
@@ -53,6 +54,7 @@ DECLARE(IndirectAlienPrimsTests)
 END_DECLARE
 
 SETUP(IndirectAlienPrimsTests) {
+  rm = new HeapResourceMark();
   klassOop byteArrayClass = Universe::byteArrayKlassObj();
   PersistentHandle ah(byteArrayClass->klass_part()->allocateObjectSize(8));
   PersistentHandle iah(byteArrayClass->klass_part()->allocateObjectSize(8));
@@ -79,6 +81,8 @@ SETUP(IndirectAlienPrimsTests) {
 }
 
 TEARDOWN(IndirectAlienPrimsTests){
+  delete rm;
+  rm = NULL;
 }
 
 TESTF(IndirectAlienPrimsTests, alienUnsignedByteAtPutShouldSetUnsignedByte) {

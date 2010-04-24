@@ -2,7 +2,7 @@
 #include "incls/_delta.cpp.incl"
 #include "incls/_shell.cpp.incl"
 #include "processOop.hpp"
-#include "handle.hpp"
+//#include "handle.hpp"
 #include "testharness.h"
 #include <windows.h>
 #include "testProcess.hpp"

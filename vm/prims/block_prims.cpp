@@ -136,14 +136,22 @@ extern "C" oop  nlr_result;
 
 PRIM_DECL_2(unwindprotect, oop receiver, oop protectBlock) {
   PROLOGUE_2("unwindprotect", receiver, protectBlock);
-  PersistentHandle pb(protectBlock);
-  oop res = Delta::call(receiver, vmSymbols::value());
+  oop block, res;
+  {
+    PersistentHandle *pb = new PersistentHandle(protectBlock);
+    res = Delta::call(receiver, vmSymbols::value());
+    block = pb->as_oop();
+    delete pb;
+  }
 
   if (have_nlr_through_C) {
     unwindInfo enabler;
-    oop    res  = Delta::call(pb.as_oop(), vmSymbols::value(), nlr_result);
+    PersistentHandle* result = new PersistentHandle(res);
+    Delta::call(block, vmSymbols::value(), nlr_result);
     // Now since we have to continue the first non-local-return
     // the nlr_result must be correct.
+    res = result->as_oop();
+    delete result;
   }
 
   return res;

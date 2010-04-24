@@ -30,7 +30,45 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 
 class HandleMark;
 class Handle;
+class FunctionProcessClosure;
+extern "C" volatile void* handleCallBack(int index, int params);
 
+class BaseHandle {
+  const char* label;
+  bool log;
+  oop saved;
+  BaseHandle* next;
+  BaseHandle* prev;
+protected:
+  void push();
+  virtual BaseHandle* first() = 0;
+  virtual void setFirst(BaseHandle*) = 0;
+  BaseHandle(oop toSave, bool log, const char* label);
+  void oops_do(void f(oop*));
+public:
+  void pop();
+  oop* asPointer() {
+    return &saved;
+  }
+  oop as_oop() {
+    return saved;
+  }
+  klassOop as_klassOop() {
+    return klassOop(saved);
+  }
+  friend class FunctionProcessClosure;
+  friend volatile void* handleCallBack(int index, int params);
+};
+
+class StackHandle : public BaseHandle, StackObj {
+protected:
+  BaseHandle* first();
+  void setFirst(BaseHandle* handle);
+public:
+  StackHandle(oop toSave, bool log = false, const char* label = "");
+  ~StackHandle();
+  static void all_oops_do(void f(oop*));
+};
 // PersistentHandles can preserve a memOop without occupying space in the Handles
 // array and do not require a HandleMark. This means they can be used in contexts
 // where a thread switch may occur (eg. surrounding a delta call). 
@@ -51,6 +89,9 @@ public:
   }
   klassOop as_klassOop() {
     return klassOop(saved);
+  }
+  oop* asPointer() {
+    return &saved;
   }
   static void oops_do(void f(oop*));
 };

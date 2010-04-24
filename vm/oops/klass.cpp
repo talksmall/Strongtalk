@@ -326,7 +326,14 @@ methodOop Klass::lookup(symbolOop selector) {
   while (true) {
     methodOop result = current->local_lookup(selector);
     if (result)                          return result;
-    if (current->superKlass() == nilObj) return NULL;
+    if (current->superKlass() == nilObj) {
+      ResourceMark rm;
+      MissingMethodBuilder builder(selector);
+      builder.build();
+      methodOop method = builder.method();
+      current->add_method(method);
+      return method;
+    }
     current = current->superKlass()->klass_part();
   }
   return NULL;

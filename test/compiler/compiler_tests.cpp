@@ -3,7 +3,7 @@
 # include "incls/_vmOperations.cpp.incl"
 # include "incls/_delta.cpp.incl"
 # include "recompile.hpp"
-#include "handle.hpp"
+//#include "handle.hpp"
 #include "test.h"
 #include "testProcess.hpp"
 
@@ -21,6 +21,7 @@ public:
 };
 
 DECLARE(CompilerTests)
+  HeapResourceMark *rm;
   int count;
   nmethod* seed;
   nmethod* alloc_nmethod(LookupKey* key, int size) {
@@ -125,8 +126,8 @@ DECLARE(CompilerTests)
 END_DECLARE
 
 SETUP(CompilerTests) {
+  rm = new HeapResourceMark();
   count = 0;
-
 }
 
 TEARDOWN(CompilerTests){
@@ -135,6 +136,8 @@ TEARDOWN(CompilerTests){
   Universe::code->flush(); // free all nmethods
   Universe::code->compact();
   Universe::methodOops_do(&CompilerTestsDeclareTest::resetInvocationCounter);
+  delete rm;
+  rm = NULL;
 }
 
 TESTF(CompilerTests, compileContentsDo) {

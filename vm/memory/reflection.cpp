@@ -532,7 +532,8 @@ void ClassChange::setup_schema_change() {
 bool ClassChange::compute_needed_schema_change() {
   // Be dependent on the super change 
   if (   new_super()->is_klass()
-      && !new_super()->klass_part()->has_same_layout_as(old_klass()->klass_part()->superKlass())) {
+      && !(new_super()->klass_part()->has_same_layout_as(old_klass()->klass_part()->superKlass())
+      &&   new_super()->klass()->klass_part()->has_same_layout_as(old_klass()->klass()->klass_part()->superKlass()))) {
     set_reason_for_schema_change("super class has changed");
     return true;
   }

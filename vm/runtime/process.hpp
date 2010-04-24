@@ -191,6 +191,7 @@ class DeltaProcess: public Process {
 
   int           _time_stamp;
   DebugInfo     debug;               // debug info used while stepping
+  bool          _isCallback;
   friend class VMProcess;
  public:
   static bool stepping;
@@ -198,6 +199,9 @@ class DeltaProcess: public Process {
   DeltaProcess(oop receiver, symbolOop selector);
   ~DeltaProcess();
 
+  void setIsCallback(bool isCallback) {
+    _isCallback = isCallback;
+  }
   virtual void applyStepping() {
     debug.apply();
   }
@@ -282,13 +286,15 @@ class DeltaProcess: public Process {
 
  private:
   unwindInfo* _unwind_head; // points to the most recent unwind protect activation.
-
+  BaseHandle* _firstHandle;
  private:
   void set_state(ProcessState s) { _state = s; }
 
  public:
   // State operations
-  
+   BaseHandle* firstHandle() { return _firstHandle; }
+   void setFirstHandle(BaseHandle* handle) { _firstHandle = handle; }
+
   // returns whether this process has a stack.
   bool has_stack() const;
   // returns whether this process is ready for execution.
@@ -438,6 +444,7 @@ class DeltaProcess: public Process {
   friend class InterpreterGenerator;
   friend char* active_stack_limit();
   friend void check_stack_overflow();
+  friend class StackHandle;
 };
 
 

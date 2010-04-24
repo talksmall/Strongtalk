@@ -496,8 +496,9 @@ DeltaProcess::DeltaProcess(oop receiver, symbolOop selector) {
   _stack_limit = (char*)os::stack_limit(_thread);
 
   _unwind_head = NULL;
-
+  _firstHandle = NULL;
   _time_stamp  = 0;
+  _isCallback  = false;
 
   LOG_EVENT1("creating process %#lx", this);
 
@@ -507,6 +508,17 @@ DeltaProcess::DeltaProcess(oop receiver, symbolOop selector) {
   Processes::add(this);
 }
 
+extern "C" void popStackHandles(char* nextFrame) {
+  DeltaProcess* active = DeltaProcess::active();
+  if (active->thread_id() != os::current_thread_id()) {
+    active = Processes::find_from_thread_id(os::current_thread_id());
+  }
+  BaseHandle* current = active->firstHandle();
+  while (current && (char*) current < nextFrame) {
+    current->pop();
+    current = active->firstHandle();
+  }
+}
 frame DeltaProcess::profile_top_frame() {
   int*  sp;
   int*  fp;

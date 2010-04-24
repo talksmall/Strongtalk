@@ -1,13 +1,14 @@
 # include "incls/_precompiled.incl"
 # include "incls/_proxy_prims.cpp.incl"
 #include "test.h"
-#include "handle.hpp"
+//#include "handle.hpp"
 #include "testUtils.hpp"
 
 using namespace easyunit;
 
 extern "C" int expansion_count;
 DECLARE(ProxyPrimsTests)
+  HeapResourceMark *rm;
   proxyOop proxy, subProxy, validProxy;
   doubleOop doubleValue;
   smiOop smi0, smi1;
@@ -22,6 +23,7 @@ void checkMarkedSymbol(char* message, oop result, symbolOop expected) {
 END_DECLARE
 
 SETUP(ProxyPrimsTests) {
+  rm = new HeapResourceMark();
   PersistentHandle proxyClass(Universe::find_global("ExternalProxy"));
   PersistentHandle proxyHandle(proxyClass.as_klassOop()->klass_part()->allocateObject());
   PersistentHandle subProxyHandle(proxyClass.as_klassOop()->klass_part()->allocateObject());
@@ -40,6 +42,8 @@ SETUP(ProxyPrimsTests) {
 }
 
 TEARDOWN(ProxyPrimsTests){
+  delete rm;
+  rm = NULL;
 }
 
 TESTF(ProxyPrimsTests, smiAtPutShouldFailWhenPointerIsNULL) {

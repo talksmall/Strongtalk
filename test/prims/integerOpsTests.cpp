@@ -5,7 +5,7 @@
 using namespace easyunit;
 
 DECLARE(IntegerOpsTest)
-ResourceMark rm;
+HeapResourceMark *rm;
 Integer *x, *y, *z;
 
 #define ASSERT_EQUALS_M2(expected, actual, prefix)\
@@ -65,11 +65,14 @@ char* report(char*prefix, char* expected, char* actual) {
 END_DECLARE
 
 SETUP(IntegerOpsTest) {
+  rm = new HeapResourceMark();
   x = (Integer*)NEW_RESOURCE_ARRAY(Digit, 5);
   y = (Integer*)NEW_RESOURCE_ARRAY(Digit, 5);
   z = (Integer*)NEW_RESOURCE_ARRAY(Digit, 5);
 }
 TEARDOWN(IntegerOpsTest){
+  delete rm;
+  rm = NULL;
 }
 
 TESTF(IntegerOpsTest, largeIntegerDivShouldReturnZeroWhenYLargerThanX) {
@@ -702,6 +705,16 @@ TESTF(IntegerOpsTest, xorResultSizeInBytesWithBothPositive) {
   CHECK_XOR_SIZE("123456781234567812345678",
                  "1234567812345678",
                  sizeof(int) + (3 * sizeof(Digit)));
+}
+TESTF(IntegerOpsTest, orResultSizeInBytesWithSecondZero) {
+  CHECK_OR_SIZE("1234567812345678",
+                "0",
+                sizeof(int) + (2 * sizeof(Digit)));
+}
+TESTF(IntegerOpsTest, orResultSizeInBytesWithFirstZero) {
+  CHECK_OR_SIZE("0",
+                "1234567812345678",
+                sizeof(int) + (2 * sizeof(Digit)));
 }
 TESTF(IntegerOpsTest, ashResultSizeInBytesWhenNoShift) {
   CHECK_ASH_SIZE("2",

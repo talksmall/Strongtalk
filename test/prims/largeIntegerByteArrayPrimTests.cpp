@@ -10,7 +10,7 @@ extern "C" int expansion_count;
 typedef oop(PRIM_API divfn)(oop, oop);
 
 DECLARE(LargeIntegerByteArrayPrimsTests)
-ResourceMark rm;
+HeapResourceMark *rm;
 PersistentHandle *x, *y, *z;
 char resultString[100];
 
@@ -99,6 +99,7 @@ Integer& as_Integer(PersistentHandle *handle) {
 END_DECLARE
 
 SETUP(LargeIntegerByteArrayPrimsTests) {
+  rm = new HeapResourceMark();
   x = new PersistentHandle(oopFactory::new_byteArray(24));
   y = new PersistentHandle(oopFactory::new_byteArray(24));
 }
@@ -106,6 +107,8 @@ TEARDOWN(LargeIntegerByteArrayPrimsTests){
   delete x;
   delete y;
   delete z;
+  delete rm;
+  rm = NULL;
 }
 
 TESTF(LargeIntegerByteArrayPrimsTests, largeIntegerQuoShouldReturnCorrectResultForTwoPositive) {
@@ -355,4 +358,28 @@ TESTF(LargeIntegerByteArrayPrimsTests, hash) {
 
   ASSERT_TRUE_M(result->is_smi(), "Should be SMI");
   ASSERT_EQUALS_M2((0x12345678 ^ 0xffffffff ^ -2) >> 2, result->value(), "Wrong hash");
+}
+TESTF(LargeIntegerByteArrayPrimsTests, unsignedCmpShouldBeLessThanZeroWhenFirstSmaller) {
+  IntegerOps::string_to_Integer("00000001", 16, as_Integer(x));
+  IntegerOps::string_to_Integer("ffffffff", 16, as_Integer(y));
+
+  int result = IntegerOps::unsigned_cmp(as_Integer(x), as_Integer(y));
+
+  ASSERT_TRUE_M(result < 0, "Wrong cmp");
+}
+TESTF(LargeIntegerByteArrayPrimsTests, unsignedCmpShouldBeGreaterThanZeroWhenFirstSmaller) {
+  IntegerOps::string_to_Integer("ffffffff", 16, as_Integer(x));
+  IntegerOps::string_to_Integer("00000001", 16, as_Integer(y));
+
+  int result = IntegerOps::unsigned_cmp(as_Integer(x), as_Integer(y));
+
+  ASSERT_TRUE_M(result > 0, "Wrong cmp");
+}
+TESTF(LargeIntegerByteArrayPrimsTests, unsignedCmpShouldBeZeroWhenEqual) {
+  IntegerOps::string_to_Integer("ffffffff", 16, as_Integer(x));
+  IntegerOps::string_to_Integer("ffffffff", 16, as_Integer(y));
+
+  int result = IntegerOps::unsigned_cmp(as_Integer(x), as_Integer(y));
+
+  ASSERT_TRUE_M(result == 0, "Wrong cmp");
 }

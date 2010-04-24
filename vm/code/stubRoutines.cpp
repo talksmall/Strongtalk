@@ -823,6 +823,7 @@ extern "C" char*    C_frame_return_addr;
 
 extern "C" int*	    last_Delta_fp;	// ebp of the last Delta frame before a C call
 extern "C" oop*	    last_Delta_sp;	// esp of the last Delta frame before a C call
+extern "C" void popStackHandles(char* nextFrame);
 
 char* StubRoutines::generate_call_delta(MacroAssembler* masm) {
 // This is the general Delta entry point. All code that is calling the interpreter or
@@ -842,7 +843,7 @@ char* StubRoutines::generate_call_delta(MacroAssembler* masm) {
 
   char* nlr_return_from_Delta_entry = generate_nlr_return_from_Delta(masm);
   
-  Label _loop, _no_args, _is_compiled, _return, _nlr_test, _nlr_setup;
+  Label _loop, _no_args, _is_compiled, _return, _nlr_test, _nlr_setup, _stack_ok;
 
   // extern "C" oop call_delta(void* method, oop receiver, int nofArgs, oop* args)
   // incoming arguments
@@ -863,10 +864,19 @@ char* StubRoutines::generate_call_delta(MacroAssembler* masm) {
 
   masm->pushl(edi);	// save registers for C calling convetion
   masm->pushl(esi);
+  masm->movl(edi, Address(esp, 12));
 
   // reset last Delta frame
   masm->reset_last_Delta_frame();
-      
+  // test for stack corruption
+  masm->testl(edi, edi);
+  masm->jcc(Assembler::equal, _stack_ok);
+  masm->cmpl(esp, edi);
+  masm->jcc(Assembler::less, _stack_ok);
+  // break because of stack corruption
+  //masm->int3();
+  
+  masm->bind(_stack_ok);      
   // setup calling stack frame with arguments
   masm->movl(ebx, nofArgs);	// get no. of arguments
   masm->movl(ecx, args);	// pointer to first argument
@@ -895,7 +905,7 @@ char* StubRoutines::generate_call_delta(MacroAssembler* masm) {
   // ecx: methodOop (if not compiled)
   // edx: calling address
   // Note: no zombie nmethods possible -> no 2nd ic_info word required
- masm->bind(_is_compiled);	
+ masm->bind(_is_compiled);
   masm->call(edx);
  _return_from_Delta = masm->pc();
   masm->ic_info(_nlr_test, 0);
@@ -921,13 +931,25 @@ char* StubRoutines::generate_call_delta(MacroAssembler* masm) {
   masm->movl(edx, Address(ecx, -oopSize)); // get return address of the first C function called
   // store return address for nlr_return_from_Delta
   masm->movl(Address((int)&C_frame_return_addr, relocInfo::external_word_type), edx);
-
 //  masm->hlt();
 
 //  char* nlr_return_from_Delta_addr = StubRoutines::nlr_return_from_Delta();
 //  assert(nlr_return_from_Delta_addr, "nlr_return_from_Delta not initialized yet");
 //  masm->movl(Address(ecx, -oopSize), (int)nlr_return_from_Delta_addr);  // patch return address
   masm->movl(Address(ecx, -oopSize), (int)nlr_return_from_Delta_entry);  // patch return address
+  masm->pushl(eax);
+  masm->pushl(ebx);
+  masm->pushl(edx);
+  masm->pushl(edi);
+  masm->pushl(esi);
+  masm->pushl(ecx);
+  masm->call((char*)&popStackHandles, relocInfo::external_word_type);
+  masm->popl(ecx);
+  masm->popl(esi);
+  masm->popl(edi);
+  masm->popl(edx);
+  masm->popl(ebx);
+  masm->popl(eax);
 
  masm->bind(_nlr_setup);
   // setup global NLR variables
@@ -1540,9 +1562,9 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
     masm->jmp(argLoopStart);
   masm->bind(argLoopExit);
 
-  masm->leal(eax, proc);
-  masm->pushl(eax);
-  masm->call((char*)enter_async_call, relocInfo::external_word_type);
+  //masm->leal(eax, proc);
+  //masm->pushl(eax);
+  //masm->call((char*)enter_async_call, relocInfo::external_word_type);
 
   masm->call(fnptr);                            // call the alien function
 
@@ -1553,7 +1575,7 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
   
   //masm->int3(); //debug
                                                 // get the start of the alien area
-  masm->movl(ecx, Address(ecx, PersistentHandle::savedOffset()));
+  masm->movl(ecx, Address(ecx));
   masm->movl(esi, Address(ecx, memOopDesc::klass_byte_offset()));
 
   masm->movl(esi, Address(esi, klassOopDesc::nonIndexableSizeOffset()));
@@ -1580,9 +1602,9 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
   masm->movl(Address(esi), eax);                
   
   masm->bind(no_result);
-  masm->leal(eax, proc);
-  masm->pushl(eax);
-  masm->call((char*) exit_async_call, relocInfo::external_word_type);
+  //masm->leal(eax, proc);
+  //masm->pushl(eax);
+  //masm->call((char*) exit_async_call, relocInfo::external_word_type);
   masm->movl(esi, Address(ebp, -4));            // restore registers
   masm->movl(edi, Address(ebp, -8));
   masm->movl(ebx, Address(ebp, -12));
@@ -1601,7 +1623,7 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
 
   masm->enter();
   masm->pushl(esi);                             // preserve registers
-  masm->subl(esp, 4);                           // process pointer
+  masm->subl(esp, 4);                           // make space for process pointer
 
   masm->movl(edx, esp);
   for (int arg = 0; arg < args; arg++) {
@@ -1634,9 +1656,9 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
     push_alien_arg(masm, moveLoopEnd);
   }
 
-  masm->leal(eax, proc);
-  masm->pushl(eax);
-  masm->call((char*)enter_async_call, relocInfo::external_word_type);
+  //masm->leal(eax, proc);
+  //masm->pushl(eax);
+  //masm->call((char*)enter_async_call, relocInfo::external_word_type);
 
   masm->call(fnptr);                            // call the alien function
 
@@ -1647,7 +1669,7 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
   
   //masm->int3(); //debug
                                                 // get the start of the alien area
-  masm->movl(ecx, Address(ecx, PersistentHandle::savedOffset()));
+  masm->movl(ecx, Address(ecx));
   masm->movl(esi, Address(ecx, memOopDesc::klass_byte_offset()));
 
   masm->movl(esi, Address(esi, klassOopDesc::nonIndexableSizeOffset()));
@@ -1674,9 +1696,9 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
   masm->movl(Address(esi), eax);                
   
   masm->bind(no_result);
-  masm->leal(eax, proc);
-  masm->pushl(eax);
-  masm->call((char*) exit_async_call, relocInfo::external_word_type);
+  //masm->leal(eax, proc);
+  //masm->pushl(eax);
+  //masm->call((char*) exit_async_call, relocInfo::external_word_type);
   
   masm->movl(esi, Address(ebp, -4));            // restore registers
   masm->leave();

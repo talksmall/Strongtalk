@@ -29,6 +29,70 @@ int Handles::_top   = 0;
 int Handles::_size  = 20;
 oop Handles::_array[20];
 
+BaseHandle::BaseHandle(oop toSave, bool log, const char* label) 
+  : saved(toSave), log(log), label(label) {}
+void BaseHandle::push() {
+  next = first();
+  prev = NULL;
+  if (next) {
+    if (log) {
+      char msg[200];
+      sprintf(msg, "unpopped StackHandle '%s->%s' : 0x%x->0x%x", label, 
+        next->label, this, next);
+      assert((char*) this < (char*) next, msg);
+    }
+    next->prev = this;
+  }
+  if (log)
+    std->print_cr("Pushing handle '%s': 0x%x", label, this);
+  setFirst(this);
+}
+void BaseHandle::pop() {
+  if (log)
+    std->print_cr("Popping handle '%s': 0x%x", label, this);
+  if (prev) {
+    prev->next = next;
+  } else {
+    setFirst(next);
+  }
+  if (next)
+    next->prev = prev;
+}
+void BaseHandle::oops_do(void f(oop*)){
+  for (BaseHandle* current = this;
+       current;
+       current = current->next)
+    f(&current->saved);
+}
+class FunctionProcessClosure: public ProcessClosure {
+  void (*function)(oop*);
+public:
+  FunctionProcessClosure(void f(oop*)) {
+    function = f;
+  }
+  void do_process(DeltaProcess* p) {
+    if (p->firstHandle())
+      p->firstHandle()->oops_do(function);
+  }
+};
+void StackHandle::all_oops_do(void f(oop*)) {
+  FunctionProcessClosure closure(f);
+  Processes::process_iterate(&closure);
+}
+BaseHandle* StackHandle::first() {
+  return DeltaProcess::active()->firstHandle();
+}
+void StackHandle::setFirst(BaseHandle* handle) {
+  DeltaProcess::active()->setFirstHandle(handle);
+}
+StackHandle::StackHandle(oop toSave, bool log, const char* label) 
+  : BaseHandle(toSave, log, label) {
+  push();
+}
+StackHandle::~StackHandle() {
+  pop();
+}
+
 PersistentHandle::PersistentHandle(oop toSave) : saved(toSave) {
   next = first;
   prev = NULL;
@@ -72,4 +136,5 @@ void Handles::oops_do(void f(oop*)) {
     f(&_array[index]);
   }
   PersistentHandle::oops_do(f);
+  StackHandle::all_oops_do(f);
 }

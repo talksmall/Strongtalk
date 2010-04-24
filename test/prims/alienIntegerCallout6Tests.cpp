@@ -60,6 +60,7 @@ extern "C" int PRIM_API forceScavenge6(int ignore1, int ignore2, int ignore3, in
 }
 
 DECLARE(AlienIntegerCallout6Tests)
+HeapResourceMark *rm;
 GrowableArray<PersistentHandle**> *handles;
 PersistentHandle *resultAlien, *addressAlien, *pointerAlien, *functionAlien; 
 PersistentHandle *directAlien, *invalidFunctionAlien;
@@ -126,7 +127,7 @@ void checkArgnPassed(int argIndex, int argValue, void**functionArray) {
     arg[index] = argIndex == index ? asOop(argValue) : smi0;
   oop result = callout(arg);
 
-  ASSERT_TRUE_M(result == functionAlien->as_oop(), "Should return receiver");
+  ASSERT_TRUE_M(result == resultAlien->as_oop(), "Should return result alien");
   checkIntResult("wrong result", argValue, resultAlien);
 }
 void checkArgnPtrPassed(int argIndex, oop pointer, void**functionArray) {
@@ -136,7 +137,7 @@ void checkArgnPtrPassed(int argIndex, oop pointer, void**functionArray) {
     arg[index] = argIndex == index ? pointer : smi0;
   oop result = callout(arg);
 
-  ASSERT_TRUE_M(result == functionAlien->as_oop(), "Should return receiver");
+  ASSERT_TRUE_M(result == resultAlien->as_oop(), "Should return result alien");
   checkIntResult("wrong result", -1, resultAlien);
 }
 void checkIllegalArgnPassed(int argIndex, oop pointer) {
@@ -173,6 +174,7 @@ void checkIllegalArgnPassed(int argIndex, oop pointer) {
 END_DECLARE
 
 SETUP(AlienIntegerCallout6Tests) {
+  rm = new HeapResourceMark();
   smi0 = as_smiOop(0);
   smi1 = as_smiOop(1);
   smim1 = as_smiOop(-1);
@@ -206,6 +208,8 @@ TEARDOWN(AlienIntegerCallout6Tests){
     release(handles->pop());
   free(handles);
   handles = NULL;
+  delete rm;
+  rm = NULL;
 }
 TESTF(AlienIntegerCallout6Tests, alienCallResult6ShouldCallIntArgFunction) {
   for (int arg = 0; arg < argCount; arg++)

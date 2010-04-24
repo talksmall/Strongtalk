@@ -7,12 +7,13 @@
 using namespace easyunit;
 
 DECLARE(errorTests)
-  ResourceMark mark;
+  HeapResourceMark *mark;
   Notifier* saved;
   TestNotifier* notifier;
 END_DECLARE
 
 SETUP(errorTests) {
+  mark = new HeapResourceMark();
   saved = Notifier::current;
   notifier = new TestNotifier;
   Notifier::current = notifier;
@@ -20,6 +21,8 @@ SETUP(errorTests) {
 
 TEARDOWN(errorTests){
   Notifier::current = saved;
+  delete mark;
+  mark = NULL;
 }
 TESTF(errorTests, strcmp) {
   ASSERT_EQUALS(0, strcmp("format arg1", "format arg1"));

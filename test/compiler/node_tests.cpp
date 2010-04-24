@@ -7,7 +7,7 @@
 using namespace easyunit;
 
 DECLARE(UncommonSendNodeTests)
-  ResourceMark mark;
+  HeapResourceMark *mark;
   UncommonSendNode* node;
   GrowableArray<PReg*>* exprStack;
   Notifier* saved;
@@ -23,6 +23,7 @@ DECLARE(UncommonSendNodeTests)
 END_DECLARE
 
 SETUP(UncommonSendNodeTests) {
+  mark = new HeapResourceMark();
   saved = Notifier::current;
   notifier = new TestNotifier;
   Notifier::current = notifier;
@@ -44,6 +45,8 @@ TEARDOWN(UncommonSendNodeTests){
   node = NULL;
   Notifier::current = saved;
   notifier = NULL;
+  delete mark;
+  mark = NULL;
 }
 
 TESTF(UncommonSendNodeTests, construction) {

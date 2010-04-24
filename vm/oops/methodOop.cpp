@@ -520,6 +520,9 @@ int methodOopDesc::estimated_inline_cost(klassOop receiverKlass) {
     extern bool SuperSendsAreAlwaysInlined;
     if (Bytecodes::is_super_send(c.code()) && SuperSendsAreAlwaysInlined && receiverKlass) {
       klassOop mh = receiverKlass->klass_part()->lookup_method_holder_for(this);
+      // TODO: the following is wrong. A super send may use a different selector than
+      // the containing method. It's bad style, but legal. Need to lookup the selector
+      // for the send, not the containing method's selector. slr 13/04/2010
       methodOop superMethod = mh ? lookupCache::compile_time_super_lookup(mh, selector()) : NULL;
       if (superMethod) cost += superMethod->estimated_inline_cost(receiverKlass);
     }

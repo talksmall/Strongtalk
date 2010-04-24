@@ -49,6 +49,7 @@ generatedPrimitives.obj \
 generation.obj \
 growableArray.obj \
 handle.obj \
+hCodeBuffer.obj \
 ic_iterator.obj \
 init.obj \
 interpretedIC.obj \
@@ -74,6 +75,7 @@ methodIterator.obj \
 methodOop.obj \
 methodKlass.obj \
 methodPrinter.obj \
+missingMethodBuilder.obj \
 mixin_prims.obj \
 mixinKlass.obj \
 mixinOop.obj \
@@ -216,7 +218,7 @@ bits.obj bits.i: \
  $(VM_PATH)bits.cpp $(VM_PATH)_bits.cpp.incl $(VM_PATH)_precompiled
 
 block_prims.obj block_prims.i: \
- $(VM_PATH)block_prims.cpp $(VM_PATH)_block_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)prim_def.hpp $(VM_PATH)block_prims.hpp $(VM_PATH)delta.hpp $(VM_PATH)handle.hpp $(VM_PATH)prim_impl.hpp
+ $(VM_PATH)block_prims.cpp $(VM_PATH)_block_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)prim_def.hpp $(VM_PATH)block_prims.hpp $(VM_PATH)delta.hpp $(VM_PATH)prim_impl.hpp
 
 block_prims_gen.obj block_prims_gen.i: \
  $(VM_PATH)block_prims_gen.cpp $(VM_PATH)_block_prims_gen.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)generatedPrimitives.hpp
@@ -234,7 +236,7 @@ bytecodes.obj bytecodes.i: \
  $(VM_PATH)bytecodes.cpp $(VM_PATH)_bytecodes.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)disclaimer.hpp
 
 byteArray_prims.obj byteArray_prims.i: \
- $(VM_PATH)byteArray_prims.cpp $(VM_PATH)_byteArray_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)prim_def.hpp $(VM_PATH)byteArray_prims.hpp $(VM_PATH)integerOps.hpp $(VM_PATH)prim_impl.hpp $(VM_PATH)symbolTable.hpp $(VM_PATH)handle.hpp $(VM_PATH)stubRoutines.hpp
+ $(VM_PATH)byteArray_prims.cpp $(VM_PATH)_byteArray_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)prim_def.hpp $(VM_PATH)byteArray_prims.hpp $(VM_PATH)integerOps.hpp $(VM_PATH)prim_impl.hpp $(VM_PATH)symbolTable.hpp $(VM_PATH)stubRoutines.hpp
 
 byteArrayKlass.obj byteArrayKlass.i: \
  $(VM_PATH)byteArrayKlass.cpp $(VM_PATH)_byteArrayKlass.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)byteArrayKlass.hpp
@@ -333,7 +335,10 @@ growableArray.obj growableArray.i: \
  $(VM_PATH)growableArray.cpp $(VM_PATH)_growableArray.cpp.incl $(VM_PATH)_precompiled
 
 handle.obj handle.i: \
- $(VM_PATH)handle.cpp $(VM_PATH)_handle.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)handle.hpp
+ $(VM_PATH)handle.cpp $(VM_PATH)_handle.cpp.incl $(VM_PATH)_precompiled
+
+hCodeBuffer.obj hCodeBuffer.i: \
+ $(VM_PATH)hCodeBuffer.cpp $(VM_PATH)_hCodeBuffer.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)hCodeBuffer.hpp $(VM_PATH)objArrayKlass.hpp
 
 ic_iterator.obj ic_iterator.i: \
  $(VM_PATH)ic_iterator.cpp $(VM_PATH)_ic_iterator.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)compiledPIC.hpp
@@ -357,7 +362,7 @@ key.obj key.i: \
  $(VM_PATH)key.cpp $(VM_PATH)_key.cpp.incl $(VM_PATH)_precompiled
 
 klass.obj klass.i: \
- $(VM_PATH)klass.cpp $(VM_PATH)_klass.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)bootstrap.hpp $(VM_PATH)klassKlass.hpp $(VM_PATH)mixinOop.hpp
+ $(VM_PATH)klass.cpp $(VM_PATH)_klass.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)bootstrap.hpp $(VM_PATH)klassKlass.hpp $(VM_PATH)hCodeBuffer.hpp $(VM_PATH)missingMethodBuilder.hpp $(VM_PATH)mixinOop.hpp
 
 klassKlass.obj klassKlass.i: \
  $(VM_PATH)klassKlass.cpp $(VM_PATH)_klassKlass.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)klassKlass.hpp $(VM_PATH)objectIDTable.hpp
@@ -410,6 +415,9 @@ methodKlass.obj methodKlass.i: \
 methodPrinter.obj methodPrinter.i: \
  $(VM_PATH)methodPrinter.cpp $(VM_PATH)_methodPrinter.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)methodPrinter.hpp
 
+missingMethodBuilder.obj missingMethodBuilder.i: \
+ $(VM_PATH)missingMethodBuilder.cpp $(VM_PATH)_missingMethodBuilder.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)hCodeBuffer.hpp $(VM_PATH)missingMethodBuilder.hpp $(VM_PATH)methodKlass.hpp
+
 mixin_prims.obj mixin_prims.i: \
  $(VM_PATH)mixin_prims.cpp $(VM_PATH)_mixin_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)prim_def.hpp $(VM_PATH)mixin_prims.hpp $(VM_PATH)mixinOop.hpp $(VM_PATH)prim_impl.hpp
 
@@ -423,7 +431,7 @@ nativeInstruction.obj nativeInstruction.i: \
  $(VM_PATH)nativeInstruction.cpp $(VM_PATH)_nativeInstruction.cpp.incl $(VM_PATH)_precompiled
 
 objArray_prims.obj objArray_prims.i: \
- $(VM_PATH)objArray_prims.cpp $(VM_PATH)_objArray_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)handle.hpp $(VM_PATH)prim_def.hpp $(VM_PATH)objArray_prims.hpp $(VM_PATH)prim_impl.hpp
+ $(VM_PATH)objArray_prims.cpp $(VM_PATH)_objArray_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)prim_def.hpp $(VM_PATH)objArray_prims.hpp $(VM_PATH)prim_impl.hpp
 
 objArrayKlass.obj objArrayKlass.i: \
  $(VM_PATH)objArrayKlass.cpp $(VM_PATH)_objArrayKlass.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)objArrayKlass.hpp $(VM_PATH)weakArrayKlass.hpp
@@ -522,7 +530,7 @@ stackChunk.obj stackChunk.i: \
  $(VM_PATH)stackChunk.cpp $(VM_PATH)_stackChunk.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)stackChunk.hpp
 
 stubRoutines.obj stubRoutines.i: \
- $(VM_PATH)stubRoutines.cpp $(VM_PATH)_stubRoutines.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)compiledPIC.hpp $(VM_PATH)disclaimer.hpp $(VM_PATH)handle.hpp $(VM_PATH)dispatchTable.hpp $(VM_PATH)interpreter.hpp $(VM_PATH)prim_def.hpp $(VM_PATH)proxyOop.hpp $(VM_PATH)vmOperations.hpp $(VM_PATH)recompile.hpp $(VM_PATH)stubRoutines.hpp $(VM_PATH)savedRegisters.hpp $(VM_PATH)abort.hpp $(VM_PATH)uncommonBranch.hpp
+ $(VM_PATH)stubRoutines.cpp $(VM_PATH)_stubRoutines.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)compiledPIC.hpp $(VM_PATH)disclaimer.hpp $(VM_PATH)dispatchTable.hpp $(VM_PATH)interpreter.hpp $(VM_PATH)prim_def.hpp $(VM_PATH)proxyOop.hpp $(VM_PATH)vmOperations.hpp $(VM_PATH)recompile.hpp $(VM_PATH)stubRoutines.hpp $(VM_PATH)savedRegisters.hpp $(VM_PATH)abort.hpp $(VM_PATH)uncommonBranch.hpp
 
 sweeper.obj sweeper.i: \
  $(VM_PATH)sweeper.cpp $(VM_PATH)_sweeper.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)mixinOop.hpp $(VM_PATH)timer.hpp $(VM_PATH)sweeper.hpp $(VM_PATH)task.hpp
@@ -552,10 +560,10 @@ timer.obj timer.i: \
  $(VM_PATH)timer.cpp $(VM_PATH)_timer.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)timer.hpp
 
 universe.obj universe.i: \
- $(VM_PATH)universe.cpp $(VM_PATH)_universe.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)abort.hpp $(VM_PATH)byteArrayKlass.hpp $(VM_PATH)disclaimer.hpp $(VM_PATH)doubleKlass.hpp $(VM_PATH)klassKlass.hpp $(VM_PATH)objArrayKlass.hpp $(VM_PATH)processOop.hpp $(VM_PATH)processKlass.hpp $(VM_PATH)dispatchTable.hpp $(VM_PATH)interpreter.hpp $(VM_PATH)inliningdb.hpp $(VM_PATH)shell.hpp $(VM_PATH)smiKlass.hpp $(VM_PATH)symbolTable.hpp $(VM_PATH)symbolKlass.hpp $(VM_PATH)objectIDTable.hpp $(VM_PATH)printlayout.hpp $(VM_PATH)prettyPrinter.hpp $(VM_PATH)mixinOop.hpp $(VM_PATH)delta.hpp $(VM_PATH)handle.hpp
+ $(VM_PATH)universe.cpp $(VM_PATH)_universe.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)abort.hpp $(VM_PATH)byteArrayKlass.hpp $(VM_PATH)disclaimer.hpp $(VM_PATH)doubleKlass.hpp $(VM_PATH)klassKlass.hpp $(VM_PATH)objArrayKlass.hpp $(VM_PATH)processOop.hpp $(VM_PATH)processKlass.hpp $(VM_PATH)dispatchTable.hpp $(VM_PATH)interpreter.hpp $(VM_PATH)inliningdb.hpp $(VM_PATH)shell.hpp $(VM_PATH)smiKlass.hpp $(VM_PATH)symbolTable.hpp $(VM_PATH)symbolKlass.hpp $(VM_PATH)objectIDTable.hpp $(VM_PATH)printlayout.hpp $(VM_PATH)prettyPrinter.hpp $(VM_PATH)mixinOop.hpp $(VM_PATH)delta.hpp
 
 universe.more.obj universe.more.i: \
- $(VM_PATH)universe.more.cpp $(VM_PATH)_universe.more.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)abort.hpp $(VM_PATH)byteArrayKlass.hpp $(VM_PATH)doubleKlass.hpp $(VM_PATH)klassKlass.hpp $(VM_PATH)objArrayKlass.hpp $(VM_PATH)processOop.hpp $(VM_PATH)processKlass.hpp $(VM_PATH)rSet.inline.hpp $(VM_PATH)smiKlass.hpp $(VM_PATH)symbolTable.hpp $(VM_PATH)symbolKlass.hpp $(VM_PATH)timer.hpp $(VM_PATH)weakArrayKlass.hpp $(VM_PATH)vmOperations.hpp $(VM_PATH)handle.hpp
+ $(VM_PATH)universe.more.cpp $(VM_PATH)_universe.more.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)abort.hpp $(VM_PATH)byteArrayKlass.hpp $(VM_PATH)doubleKlass.hpp $(VM_PATH)klassKlass.hpp $(VM_PATH)objArrayKlass.hpp $(VM_PATH)processOop.hpp $(VM_PATH)processKlass.hpp $(VM_PATH)rSet.inline.hpp $(VM_PATH)smiKlass.hpp $(VM_PATH)symbolTable.hpp $(VM_PATH)symbolKlass.hpp $(VM_PATH)timer.hpp $(VM_PATH)weakArrayKlass.hpp $(VM_PATH)vmOperations.hpp
 
 util.obj util.i: \
  $(VM_PATH)util.cpp $(VM_PATH)_util.cpp.incl $(VM_PATH)_precompiled
@@ -567,7 +575,7 @@ vframe.obj vframe.i: \
  $(VM_PATH)vframe.cpp $(VM_PATH)_vframe.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)pcDesc.hpp $(VM_PATH)prettyPrinter.hpp $(VM_PATH)tempDecoder.hpp $(VM_PATH)savedRegisters.hpp $(VM_PATH)stackChunk.hpp
 
 vframe_prims.obj vframe_prims.i: \
- $(VM_PATH)vframe_prims.cpp $(VM_PATH)_vframe_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)handle.hpp $(VM_PATH)prettyPrinter.hpp $(VM_PATH)prim_def.hpp $(VM_PATH)prim_impl.hpp $(VM_PATH)processOop.hpp $(VM_PATH)tempDecoder.hpp $(VM_PATH)vframe_prims.hpp $(VM_PATH)vframeOop.hpp
+ $(VM_PATH)vframe_prims.cpp $(VM_PATH)_vframe_prims.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)prettyPrinter.hpp $(VM_PATH)prim_def.hpp $(VM_PATH)prim_impl.hpp $(VM_PATH)processOop.hpp $(VM_PATH)tempDecoder.hpp $(VM_PATH)vframe_prims.hpp $(VM_PATH)vframeOop.hpp
 
 vframeOop.obj vframeOop.i: \
  $(VM_PATH)vframeOop.cpp $(VM_PATH)_vframeOop.cpp.incl $(VM_PATH)_precompiled $(VM_PATH)processOop.hpp $(VM_PATH)vframeOop.hpp

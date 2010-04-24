@@ -8,8 +8,8 @@
 
 using namespace easyunit;
 
-
 DECLARE(AlienIntegerCallout0Tests)
+  HeapResourceMark *rm;
   byteArrayOop fnAlien;
   byteArrayOop invalidFunctionAlien;
   byteArrayOop resultAlien, addressAlien, pointerAlien, argumentAlien;
@@ -44,6 +44,7 @@ DECLARE(AlienIntegerCallout0Tests)
 END_DECLARE
 
 SETUP(AlienIntegerCallout0Tests) {
+  rm = new HeapResourceMark();
   smi0 = as_smiOop(0);
   smi1 = as_smiOop(1);
 
@@ -68,11 +69,15 @@ SETUP(AlienIntegerCallout0Tests) {
 }
 
 TEARDOWN(AlienIntegerCallout0Tests){
+  delete rm;
+  rm = NULL;
 }
 
-TESTF(AlienIntegerCallout0Tests, alienCallResult0ShouldReturnAlien) {
+TESTF(AlienIntegerCallout0Tests, alienCallResult0ShouldReturnResultAlien) {
+  clock_t clockResult = clock();
+
   oop result = byteArrayPrimitives::alienCallResult0(resultAlien, fnAlien);
-  ASSERT_TRUE_M(result == fnAlien, "should return receiver");
+  ASSERT_TRUE_M(result == resultAlien, "should return result alien");
 }
 
 TESTF(AlienIntegerCallout0Tests, alienCallResult0ShouldReturnMarkedResultForNonAlien) {

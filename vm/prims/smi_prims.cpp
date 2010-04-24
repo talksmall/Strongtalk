@@ -119,7 +119,7 @@ PRIM_DECL_2(smiOopPrimitives::bitShift, oop receiver, oop argument) {
         return smiOop(int(receiver) << n);
       }
     }
-    return vmSymbols::smi_overflow();
+    return markSymbol(vmSymbols::smi_overflow());
   } else {
     // arithmetic shift right
     if (n < -maxShiftCnt) n = -maxShiftCnt;

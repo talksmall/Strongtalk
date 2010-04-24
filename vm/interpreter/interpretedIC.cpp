@@ -619,7 +619,8 @@ oop* InterpretedIC::inline_cache_miss() {
     update_inline_cache(ic, &f, ic->send_code(), klass, result);
     return NULL;
   } else {
-    return cacheMissResult(does_not_understand(receiver, ic, &f), ic->nof_arguments())->objs(1);
+    return cacheMissResult(does_not_understand(receiver, ic, &f), 
+      ic->nof_arguments() + (ic->argument_spec() == Bytecodes::args_only ? 0 : 1))->objs(1);
   }
 }
 

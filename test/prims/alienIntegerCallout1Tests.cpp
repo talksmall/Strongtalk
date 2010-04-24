@@ -34,6 +34,7 @@ extern "C" char* PRIM_API argUnsafe1(char* a) {
 }
 
 DECLARE(AlienIntegerCallout1Tests)
+HeapResourceMark *rm;
 GrowableArray<PersistentHandle**> *handles;
 PersistentHandle *resultAlien, *addressAlien, *pointerAlien, *functionAlien; 
 PersistentHandle *directAlien, *invalidFunctionAlien, *unsafeAlien, *unsafeContents;
@@ -98,6 +99,7 @@ void setAddress(void* p, PersistentHandle* alien) {
 END_DECLARE
 
 SETUP(AlienIntegerCallout1Tests) {
+  rm = new HeapResourceMark();
   smi0 = as_smiOop(0);
   smi1 = as_smiOop(1);
   handles = new(true) GrowableArray<PersistentHandle**>(5);
@@ -110,7 +112,6 @@ SETUP(AlienIntegerCallout1Tests) {
   allocateAlien(invalidFunctionAlien, 8,  0);
   allocateUnsafe(unsafeAlien, unsafeContents);
 
-
   memset(address, 0, 8);
 }
 
@@ -119,6 +120,8 @@ TEARDOWN(AlienIntegerCallout1Tests){
     release(handles->pop());
   free(handles);
   handles = NULL;
+  delete rm;
+  rm = NULL;
 }
 
 TESTF(AlienIntegerCallout1Tests, alienCallResult1ShouldCallFunction) {

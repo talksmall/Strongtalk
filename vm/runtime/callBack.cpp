@@ -105,6 +105,7 @@ extern "C" volatile void* handleCallBack(int index, int params) {
     DLLs::exit_async_call(&proc);
   }
  
+  DeltaProcess::active()->setIsCallback(true);
 
   oop res = Delta::call(Universe::callBack_receiver(),
                         Universe::callBack_selector(),
@@ -120,6 +121,10 @@ extern "C" volatile void* handleCallBack(int index, int params) {
 
   if (have_nlr_through_C) {
     // Continues the NLR after at the next Delta frame
+    BaseHandle* handle = DeltaProcess::active()->firstHandle();
+    if (handle && ((char*) handle < (char*)DeltaProcess::active()->last_Delta_fp()))
+      handle->pop();
+
     ErrorHandler::continue_nlr_in_delta();
   }
 

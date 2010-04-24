@@ -226,6 +226,17 @@ class ResourceMark: StackObj {
   ~ResourceMark();
 };
 
+class HeapResourceMark: public CHeapObj, public ResourceMark {
+public:
+  HeapResourceMark() : ResourceMark() {};
+  void* operator new(size_t size) {
+    return CHeapObj::operator new(size);
+  }
+  void operator delete(void* p) {
+    CHeapObj::operator delete(p);
+  }
+};
+
 class FinalResourceMark: public ResourceMark {
  public:
   FinalResourceMark();

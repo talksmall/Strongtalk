@@ -659,7 +659,8 @@ int IntegerOps::unsigned_cmp(Integer& x, Integer& y) {
   if (xl == yl && xl > 0) {
     int i = xl - 1;
     while (i > 0 && x[i] == y[i]) i--;
-    return int(x[i] - y[i]);
+    if (x[i] < y[i]) return -1;
+    return x[i] != y[i];
   } else {
     return xl - yl;
   }
@@ -764,7 +765,7 @@ int IntegerOps::and_result_size_in_bytes(Integer& x, Integer& y) {
 
 int IntegerOps::or_result_size_in_bytes (Integer& x, Integer& y) {
   int digitLength;
-  if (x.is_positive() && y.is_positive())
+  if (!x.is_negative() && !y.is_negative())
     digitLength = max(x.length(), y.length());
   else if (y.is_positive())
     digitLength = x.length();

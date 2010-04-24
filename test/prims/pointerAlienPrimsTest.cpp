@@ -7,6 +7,7 @@
 using namespace easyunit;
 
 DECLARE(PointerAlienPrimsTests)
+  HeapResourceMark *rm;
   byteArrayOop alien, invalidAlien;
   byteArrayOop largeUnsignedInteger;
   byteArrayOop largeSignedInteger;
@@ -51,6 +52,7 @@ DECLARE(PointerAlienPrimsTests)
 END_DECLARE
 
 SETUP(PointerAlienPrimsTests) {
+  rm = new HeapResourceMark();
   PersistentHandle ah(Universe::byteArrayKlassObj()->klass_part()->allocateObjectSize(8));
   PersistentHandle iah(Universe::byteArrayKlassObj()->klass_part()->allocateObjectSize(8));
   PersistentHandle lu(Universe::byteArrayKlassObj()->klass_part()->allocateObjectSize(8));
@@ -76,6 +78,8 @@ SETUP(PointerAlienPrimsTests) {
 }
 
 TEARDOWN(PointerAlienPrimsTests){
+  delete rm;
+  rm = NULL;
 }
 
 TESTF(PointerAlienPrimsTests, alienUnsignedByteAtPutShouldSetUnsignedByte) {
