@@ -1,0 +1,34 @@
+Delta define: #SymbolTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #SymbolTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SymbolTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #SymbolTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #SymbolTest) methodsFor: 'testing' !
+
+
+testNumArgsWith1
+
+	self assert: 'arg:' numArgs = 1!
+
+testNumArgsWith2
+
+	self assert: 'arg:arg:' numArgs = 2!
+
+testNumArgsWithConsecutiveColons
+
+	self assert: 'arg::' numArgs = -1!
+
+testNumArgsWithNone
+
+	self assert: 'arg' numArgs = 0!
+
+testNumArgsWithPunctuation
+
+	self assert: '-' numArgs = 1! !
+

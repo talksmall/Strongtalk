@@ -1,0 +1,33 @@
+Delta define: #ObjectiveCForwardSignature as: (
+(Class subclassOf: 'Alien' instanceVariables: '')) !
+
+(Delta mirrorFor: #ObjectiveCForwardSignature) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ObjectiveCForwardSignature) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #ObjectiveCForwardSignature)
+comment: 
+''!
+
+! (Delta mirrorFor: #ObjectiveCForwardSignature) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+	"- forward: (SEL)sel : (marg_list)args
+	 == forward(id receiver, SEL forwardSel, SEL selectorToForward, marg_list args)"
+	^16! !
+
+! (Delta mirrorFor: #ObjectiveCForwardSignature) methodsFor: 'accessing' !
+
+
+args
+	^ObjectiveCMArgs forPointer: (self unsignedLongAt: 13)!
+
+receiverAddress
+	^self unsignedLongAt: 1!
+
+selector
+	^ObjectiveCAlien new
+		unsignedLongAt: 1 put: (self unsignedLongAt: 9);
+		yourself! !
+

@@ -1,0 +1,39 @@
+Delta define: #MacOSXExampleModalDelegate as: (
+(Class subclassOf: 'Object' instanceVariables: 'application')) !
+
+(Delta mirrorFor: #MacOSXExampleModalDelegate) revision: '$Revision:$'!
+
+(Delta mirrorFor: #MacOSXExampleModalDelegate) group: 'Aliens-Examples'!
+
+(Delta mirrorFor: #MacOSXExampleModalDelegate)
+comment: 
+'Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+
+! (Delta mirrorFor: #MacOSXExampleModalDelegate) classSide methodsFor: 'accessing' !
+
+
+signatures
+
+	^Dictionary new
+		at: #'alertDidEnd:returnCode:contextInfo:' put: 'v@:@i^v';
+		at: #retain put: '@@:';
+		yourself! !
+
+! (Delta mirrorFor: #MacOSXExampleModalDelegate) methodsFor: 'initialize-release' !
+
+
+alertDidEnd: alertAlien  returnCode: returnCode  contextInfo: contextInfo 
+	
+	application stopModalWithCode: returnCode
+
+	"(self compiledMethodAt: #alertDidEnd:returnCode:contextInfo:) pragmas anyOne arguments first"!
+
+forApplication: app
+	application := app!
+
+retain
+! !
+

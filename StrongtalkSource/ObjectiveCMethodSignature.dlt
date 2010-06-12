@@ -1,0 +1,60 @@
+Delta define: #ObjectiveCMethodSignature as: (
+(Class subclassOf: 'ObjectiveCAlien' instanceVariables: '') classVariables: 'NSMethodSignature') !
+
+(Delta mirrorFor: #ObjectiveCMethodSignature) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ObjectiveCMethodSignature) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #ObjectiveCMethodSignature)
+comment: 
+''!
+
+! (Delta mirrorFor: #ObjectiveCMethodSignature) classSide methodsFor: 'instance creation' !
+
+
+NSMethodSignature ^<ObjectiveCClassAlien>
+
+	NSMethodSignature isNil
+		ifTrue: [NSMethodSignature := ObjectiveCClassAlien lookup: 'NSMethodSignature'].
+	^NSMethodSignature!
+
+fromAlien: alien
+
+	^(self new)
+			unsignedLongAt: 1 put: (alien unsignedLongAt: 1);
+			yourself!
+
+fromTypes: typeString <String>
+
+	^(self fromAlien: (self NSMethodSignature signatureWithObjCTypes: typeString asAlien pointer))! !
+
+! (Delta mirrorFor: #ObjectiveCMethodSignature) methodsFor: 'accessing' !
+
+
+argSize: index <SmallInteger> ^<Integer>
+
+	^self lengthFor: (self argType: index)!
+
+argType: index <SmallInteger> ^<String>
+
+	^(self getArgumentTypeAtIndex: index) strcpy! !
+
+! (Delta mirrorFor: #ObjectiveCMethodSignature) methodsFor: 'private' !
+
+
+NSMethodSignature ^<ObjectiveCClassAlien>
+
+	^self class NSMethodSignature!
+
+lengthFor: type <String> ^<Integer>
+
+	^(self NSMethodSignature signatureWithObjCTypes: (type, '8@0:4') asAlien pointer)
+				methodReturnLength! !
+
+! (Delta mirrorFor: #ObjectiveCMethodSignature) methodsFor: 'testing' !
+
+
+isVoidReturn
+
+	^(super methodReturnType unsignedByteAt: 1) == $v asciiValue! !
+

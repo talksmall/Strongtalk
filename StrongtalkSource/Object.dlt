@@ -104,6 +104,13 @@ isSupportedBy: o <Object> ^<Boolean>
 	self coerce: o else: [ ^false ].
 	^true! !
 
+! (Delta mirrorFor: #Object) classSide methodsFor: 'squeak support' !
+
+
+ensureNotifiedAtStartupAfter: aClass
+
+	SystemInitializer addInitializer: self after: aClass! !
+
 ! (Delta mirrorFor: #Object) classSide methodsFor: 'utility' !
 
 
@@ -660,6 +667,10 @@ finalize
 	 "
 
 	^self == other!
+
+ifNil: block <[]>
+
+	^self!
 
 isNil ^<Boolean>
 	"test whether the receiver is nil.  This method should not be overridden by application programmers."

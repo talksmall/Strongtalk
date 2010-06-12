@@ -1,0 +1,35 @@
+Delta define: #ObjectiveCNSInvocation as: (
+(Class subclassOf: 'ObjectiveCAlien' instanceVariables: '')) !
+
+(Delta mirrorFor: #ObjectiveCNSInvocation) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ObjectiveCNSInvocation) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #ObjectiveCNSInvocation)
+comment: 
+''!
+
+! (Delta mirrorFor: #ObjectiveCNSInvocation) methodsFor: 'accessing' !
+
+
+args
+
+	| argCount args signature |
+	signature := self methodSignature.
+	argCount := signature numberOfArguments.
+	args := OrderedCollection new.
+	2 to: argCount - 1 do: [:i| | arg |
+		arg := ObjectiveCAlien newGC: (signature argSize: i).
+		self getArgument: arg pointer atIndex: i.
+		args add: arg].
+	^args asArray!
+
+args: args <Array[ObjectiveCAlien]>
+
+	1 to: args size do: [:i| self setArgument: (args at: i) pointer
+													atIndex: i + 1]!
+
+methodSignature
+
+	^ObjectiveCMethodSignature fromAlien: super methodSignature! !
+

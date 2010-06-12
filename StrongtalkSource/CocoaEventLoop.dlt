@@ -1,0 +1,26 @@
+Delta define: #CocoaEventLoop as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #CocoaEventLoop) revision: '$Revision:$'!
+
+(Delta mirrorFor: #CocoaEventLoop) group: 'Unclassified'!
+
+(Delta mirrorFor: #CocoaEventLoop)
+comment: 
+''!
+
+! (Delta mirrorFor: #CocoaEventLoop) classSide methodsFor: 'restricted' !
+
+
+initialize
+
+	SystemInitializer addInitializer: self after: MainProcess.
+	(Platform == MacOSXPlatform)
+		ifFalse: [^self].
+	MainProcess soleInstance schedule: [self runEventLoop]!
+
+runEventLoop
+
+	|main|
+	! !
+

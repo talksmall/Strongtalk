@@ -28,6 +28,14 @@ DLLLibrary: name
         DLLDict at: name put: (self DLLLoad: name)
     ]!
 
+DLLLoad2: name
+
+	|block|
+	block := [:lib| ^lib].
+    self tryDLLLoad: name asSymbol ifSuccess: block.
+    self tryDLLLoad: (name, '.dylib') asSymbol ifSuccess: block.
+    self error: 'Cannot find library ', name!
+
 DLLLoad: name
     | r n |
     r := ExternalProxy new.
@@ -45,7 +53,21 @@ DLLLookup: name <Str> in: library <Str>
 DLLMapName: name <Str> ^<Str>
 	(name endsWith: '.dylib') ifTrue: [^name].
     name = 'libc' ifTrue: [^'libc.dylib'].
-    ^name, '.dylib'! !
+    ^name, '.dylib'!
+
+tryDLLLoad: name <Str> ifFail: block <[X]> ^ <ExternalProxy>
+
+	| r |
+    r := ExternalProxy new.
+    ^{{primitiveDLLLoad: name
+    		result: r 
+    		ifFail: [:err | block value: err]}}!
+
+tryDLLLoad: name <Str> ifSuccess: block <[X]>
+
+	| r |
+    r := self tryDLLLoad: name ifFail: [:err| ^self].
+    block value: r! !
 
 ! (Delta mirrorFor: #MacOSXPlatform) classSide methodsFor: 'clipboard access' !
 

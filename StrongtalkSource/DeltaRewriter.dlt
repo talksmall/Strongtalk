@@ -233,12 +233,10 @@ normalSendNode: node
 	self if: [ sel = #repeat				] with: recv nofArgs: 0	do: [ result := DeltaLoop new repeat: recv.										^ self ].
 	self if: [ sel = #timesRepeat:	] with: arg1 nofArgs: 0	do: [ result := DeltaLoop new do: recv timesRepeat: arg1.			^ self ].
 	self if: [ sel = #to:do:				] with: arg2 nofArgs: 1	do: [ result := DeltaLoop new from: recv to: arg1 do: arg2.			^ self ].
-	self if: [ sel = #to:by:do:			] with: arg3 nofArgs: 1 do: [
-		arg2 isIntNode ifTrue: [
+	self if: [ sel = #to:by:do: and: [arg2 isIntNode]] with: arg3 nofArgs: 1 do: [
 			"inline only if step is a constant"
 			result := DeltaLoop new from: recv to: arg1 by: arg2 do: arg3.
 			^ self
-		]
 	].
 
 	"Hardwired value message"
@@ -530,5 +528,77 @@ where n is the size of the tuple"
 		].
 ^(DeltaCascadedSend new to: tup cascade:(DeltaMessage new send: #yourself with: #()))
 	"(Array new:  n) at: 1 put:: e1 ; ...  at: n put: en; yourself"
-	 apply: self "visit elements"! !
+	 apply: self "visit elements"!
+
+xxxnormalSendNode: node
+	| recv msg sel arg1 arg2 arg3 |
+	self assert: [ node isNormalSendNode ].
+	recv := self rewrite: node recv.
+
+	recv isFloatValue ifTrue: [
+		result := self rewrite: node asFloatOperationOn: recv.
+		result notNil ifTrue: [ ^ self ].
+		"no FloatValue operation found"
+		AutoFloatConversion
+			ifTrue: [ recv := DeltaFloatUnaryOpToOop new f: #asFloat x: recv ]
+			ifFalse: [ self at: node error: 'not a supported FloatValue operation' ]
+	].
+
+	"Prepare arguments for normal message sends"
+	msg := self rewriteAsOop: node msg.
+	sel := msg selector.
+	msg nofArgs >= 1 ifTrue: [ arg1 := msg args at: 1 ].
+	msg nofArgs >= 2 ifTrue: [ arg2 := msg args at: 2 ].
+	msg nofArgs >= 3 ifTrue: [ arg3 := msg args at: 3 ].
+
+	"Self & Super sends"
+	(sel ~= #== and: [ sel ~= #~~ ]) ifTrue: [
+		(recv isRefNode and: [ recv decl isReceiverNode ])	ifTrue: [ result := DeltaSelfSend new send: msg.						^ self ]
+	].
+	(recv isRefNode and: [ recv decl isSuperVarNode ])		ifTrue: [ result := DeltaSuperSend new send: msg.					^ self ].
+
+	"Hardwired asFloatValue message"
+	sel = #asFloatValue ifTrue: [
+		result :=
+			EnableFloatValues
+				ifTrue: [ DeltaFloatify new obj: recv ]
+				ifFalse: [ recv "simply ignore conversion" ].
+		^ self
+	].
+
+	"Hardwired ifTrue: / ifFalse: messages"
+	self if: [ sel = #ifTrue:				] with: arg1 nofArgs: 0	do: [ result := DeltaIf new if: recv is: true then: arg1.						^ self ].
+	self if: [ sel = #ifFalse:			] with: arg1 nofArgs: 0	do: [ result := DeltaIf new if: recv is: false then: arg1.					^ self ].
+	self if: [ sel = #ifTrue:ifFalse:	] with: arg1 and: arg2	do: [ result := DeltaIf new if: recv is: true then: arg1 else: arg2.	^ self ].
+	self if: [ sel = #ifFalse:ifTrue:	] with: arg1 and: arg2	do: [ result := DeltaIf new if: recv is: false then: arg1 else: arg2.	^ self ].
+
+	"Hardwired and: / or: messages"
+	self if: [ sel = #and:					] with: arg1 nofArgs: 0	do: [ result := DeltaAndOr new if: recv and: arg1.							^ self ].
+	self if: [ sel = #or:					] with: arg1 nofArgs: 0	do: [ result := DeltaAndOr new if: recv or: arg1.								^ self ].
+
+	"Hardwired whileTrue: / whileFalse: messages"
+	self if: [ sel = #whileTrue			] with: recv nofArgs: 0	do: [ result := DeltaLoop new while: true do: recv.							^ self ].
+	self if: [ sel = #whileFalse		] with: recv nofArgs: 0	do: [ result := DeltaLoop new while: false do: recv.						^ self ].
+	self if: [ sel = #whileTrue:		] with: recv and: arg1	do: [ result := DeltaLoop new while: recv is: true do: arg1.			^ self ].
+	self if: [ sel = #whileFalse:		] with: recv and: arg1	do: [ result := DeltaLoop new while: recv is: false do: arg1.			^ self ].
+
+	"Hardwired repeat: / timesRepeat: / to:do: / to:by:do: messages"
+	self if: [ sel = #repeat				] with: recv nofArgs: 0	do: [ result := DeltaLoop new repeat: recv.										^ self ].
+	self if: [ sel = #timesRepeat:	] with: arg1 nofArgs: 0	do: [ result := DeltaLoop new do: recv timesRepeat: arg1.			^ self ].
+	self if: [ sel = #to:do:				] with: arg2 nofArgs: 1	do: [ result := DeltaLoop new from: recv to: arg1 do: arg2.			^ self ].
+	self if: [ sel = #to:by:do:			] with: arg3 nofArgs: 1 do: [
+		arg2 isIntNode ifTrue: [
+			"inline only if step is a constant"
+			result := DeltaLoop new from: recv to: arg1 by: arg2 do: arg3.
+			^ self
+		]
+	].
+
+	"Hardwired value message"
+"
+	self if: [ sel = #value				] with: recv nofArgs: 0 do: [ result := DeltaInlinedBlock new block: recv.							^ self ].
+"
+
+	"No rewriting"
+	result := DeltaNormalSend new to: recv send: msg! !
 

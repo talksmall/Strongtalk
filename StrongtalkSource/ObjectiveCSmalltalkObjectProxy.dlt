@@ -1,5 +1,10 @@
 Delta define: #ObjectiveCSmalltalkObjectProxy as: (
-(Class subclassOf: 'ObjectiveCObject' instanceVariables: '')) !
+(Class subclassOf: 'ObjectiveCObject' instanceVariables: '') classVariables: 'AddressToBothInstancesMap
+ObjectiveCSmalltalkProxyClassAlien
+SendbackCallback
+ForwardCallback
+SignatureCallback
+SmalltalkToObjectiveCInstanceMap') !
 
 (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy) revision: '$Revision:$'!
 
@@ -7,5 +12,212 @@ Delta define: #ObjectiveCSmalltalkObjectProxy as: (
 
 (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy)
 comment: 
-''!
+'This class handles forwarding messages from Objective-C back into Smalltalk.  It creates a class in Objective-C that has a forward: instance 
+method. Its instances exist only in Objective-C.  The class variable AddressToBothInstancesMap is keyed by Objective-C instance address 
+and has pairs of {ObjectiveCSmalltalkObjectProxy, Smalltalk object} as instances.  The Objective-C methods (forward: and ...) of 
+ObjectiveCSmalltalkProxy are FFI callbacks.
+
+/*
+ *  Class Template
+ */
+struct ObjectiveCSmalltalkProxy {
+    struct objc_class *isa;
+};
+
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  
+   You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+
+! (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy) classSide methodsFor: 'class initialization' !
+
+
+ensureNotifiedAtStartup
+	"ObjectiveCSmalltalkProxy needs to be notified at system startup to initialize elements of the Objective-C ABI."
+	self ~~ ObjectiveCSmalltalkObjectProxy ifTrue: [^self].
+	self ensureNotifiedAtStartupAfter: ObjectiveCClass!
+
+initialize
+	"self initialize"
+	self ensureNotifiedAtStartup.
+	self startUp: true! !
+
+! (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+"/*
+   *  Class Template
+   */
+struct ObjectiveCSmalltalkProxy {
+    struct objc_class *isa;
+};"
+	^4!
+
+for: anObject "<Object> ^<ObjectiveCSmalltalkObjectProxy>"
+	^SmalltalkToObjectiveCInstanceMap
+		at: anObject
+		ifAbsentPut:
+			[| proxy |
+			AddressToBothInstancesMap
+				at: (proxy := self new) addressField
+				put: {proxy. anObject}.
+			proxy]!
+
+new "^<ObjectiveCSmalltalkObjectProxy>"
+
+	|instance|
+	(instance := self ObjectiveCSmalltalkProxyClass alloc) init.
+	^(self forPointer: instance id)!
+
+new: dataSize "<Integer>"
+	"Use for: instead"
+	self shouldNotImplement!
+
+newC: dataSize "<Integer>"
+	"Use for: instead"
+	self shouldNotImplement!
+
+xnew "^<ObjectiveCSmalltalkObjectProxy>"
+	^(self forPointer: (self Cmalloc: self dataSize)) initialize!
+
+xxxnew "^<ObjectiveCSmalltalkObjectProxy>"
+
+	|instance|
+	(instance := self ObjectiveCSmalltalkProxyClass alloc) init.
+	^(self forPointer: instance id)! !
+
+! (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy) classSide methodsFor: 'private-instance creation' !
+
+
+ObjectiveCSmalltalkProxyClass
+
+	ObjectiveCSmalltalkProxyClassAlien
+		isNil ifTrue:  [self installSmalltalkProxyClass].
+	^ObjectiveCSmalltalkProxyClassAlien! !
+
+! (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy) classSide methodsFor: 'system startup' !
+
+
+defaultSignatureFor: selector
+
+	|stream|
+	stream := CharacterReadWriteStream on: (String new: selector numberOfArguments + 3).
+	stream nextPutAll: 'v@:'.
+	selector numberOfArguments timesRepeat: [stream nextPut: $@].
+	^stream contentsWritten!
+
+installSmalltalkProxyClass
+	"ObjectiveCSmalltalkObjectProxy installSmalltalkProxyClass"
+	ObjectiveCClass
+		createClassNamed: 'SmalltalkProxy'
+		superclass: 'Object'
+		into: [:class :metaclass|
+			"SendbackCallback is here simply to prevent the Callback being
+			 garbage collected and the thunk being finalizewd as a result."
+			SendbackCallback := Callback
+									block: [:args :callbackResult |
+												| pair result resultAlien invocation |
+												invocation := args invocation.
+												pair := AddressToBothInstancesMap at: invocation target id.
+												result := pair first forward: invocation to: pair last.
+												invocation methodSignature isVoidReturn
+													ifFalse: ["callbackResult returnInteger: (resultAlien := self for: result) addressField."
+																	invocation setReturnValue: (self for: result) pointer]]
+									argsClass: ObjectiveCForwardInvocationArguments.
+			SignatureCallback := Callback
+									block: [:args :callbackResult|
+													| signatureTypes target |
+													target := (AddressToBothInstancesMap at: args receiver id) last.
+													signatureTypes := ([target class signatures
+																								at: args selector asSmalltalkSelector
+																								ifAbsent: []]
+																							on: MessageNotUnderstood
+																							do: [:err|]) ifNil: [self defaultSignatureFor: args selector asSmalltalkSelector].
+													callbackResult returnInteger: (ObjectiveCMethodSignature fromTypes: signatureTypes) id]
+									argsClass: ObjectiveCMethodSignatureForSelectorArguments.
+			class
+				addMethod: (ObjectiveCAlien asObjectiveCSelector: #'methodSignatureForSelector:')
+				implementation: SignatureCallback thunk
+				signature: '@12@0:4:8'.
+			class
+				addMethod: (ObjectiveCAlien asObjectiveCSelector: #'forwardInvocation:')
+				implementation: SendbackCallback thunk
+				signature: 'v12@0:4@8'].
+	ObjectiveCSmalltalkProxyClassAlien := ObjectiveCClassAlien lookup: 'SmalltalkProxy'!
+
+startUp: resuming
+	"Partially initialize, clearing the mapping tables.
+	Leave installing the proxy class to the instance side's intialize
+	method, hence making initialization as lazy as possible."
+
+	"ObjectiveCSmalltalkObjectProxy startUp: true"
+	resuming ifFalse: [^self].
+	AddressToBothInstancesMap := Dictionary new.
+	SmalltalkToObjectiveCInstanceMap := IdentityDictionary new.
+	ObjectiveCSmalltalkProxyClassAlien := nil. "acts as initialization flag."
+	"This code now moved to ObjectiveCSmalltalkObjectProxy>>initialize."
+	"SmalltalkImage current platformName = 'Mac OS' ifFalse: [^self].
+	self installSmalltalkProxyClass"! !
+
+! (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy) methodsFor: 'instance initalization' !
+
+
+initialize
+	ObjectiveCSmalltalkProxyClassAlien isNil ifTrue: "acts as initialization flag."
+		[self class installSmalltalkProxyClass].
+	self isa: ObjectiveCSmalltalkProxyClassAlien! !
+
+! (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy) methodsFor: 'memory management' !
+
+
+release
+	| pair |
+	pair := AddressToBothInstancesMap removeKey: self addressField ifAbsent: [].
+	SmalltalkToObjectiveCInstanceMap removeKey: pair last ifAbsent: [].
+	self free! !
+
+! (Delta mirrorFor: #ObjectiveCSmalltalkObjectProxy) methodsFor: 'message forwarding' !
+
+
+forward: invocation <ObjectiveCNSInvocation> to: aSmalltalkObject <Object> ^<Object>
+	| selector args |
+	selector := invocation selector asSmalltalkSelector.
+	args :=  invocation args.
+	^[selector == #release
+			ifTrue: [self release]
+			ifFalse: [aSmalltalkObject
+								perform: selector
+								withArguments: args]]
+		ensure: [invocation args: args]!
+
+forward: anObjectiveCSelectorAlien to: aSmalltalkObject with: anObjectiveCMArgs "^<Object>"
+	| smalltalkSelector args method pragmas |
+	smalltalkSelector := anObjectiveCSelectorAlien asSmalltalkSelector.
+	args :=  ObjectiveCAlien
+				argumentListFromMArgs: anObjectiveCMArgs
+				numArgs: smalltalkSelector numArgs
+				withSignature: (((method := aSmalltalkObject class lookupSelector: smalltalkSelector) notNil
+								and: [(pragmas := method pragmas select: [:p| p keyword == #objectiveCSignature:]) notEmpty])
+									ifTrue: [pragmas anyOne arguments first]
+									ifFalse: [String new: smalltalkSelector numArgs withAll: $S]).
+	^aSmalltalkObject
+		perform: smalltalkSelector
+		withArguments: args!
+
+xxxforward: anObjectiveCSelectorAlien to: aSmalltalkObject with: anObjectiveCMArgs "^<Object>"
+	| smalltalkSelector args method pragmas |
+	smalltalkSelector := anObjectiveCSelectorAlien asSmalltalkSelector.
+	args :=  ObjectiveCAlien
+				argumentListFromMArgs: anObjectiveCMArgs
+				numArgs: smalltalkSelector numArgs
+				withSignature: (((method := aSmalltalkObject class lookupSelector: smalltalkSelector) notNil
+								and: [(pragmas := method pragmas select: [:p| p keyword == #objectiveCSignature:]) notEmpty])
+									ifTrue: [pragmas anyOne arguments first]
+									ifFalse: [String new: smalltalkSelector numArgs withAll: $S]).
+	^aSmalltalkObject
+		perform: smalltalkSelector
+		withArguments: args! !
 

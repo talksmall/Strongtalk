@@ -7,5 +7,47 @@ Delta define: #ObjectiveCObject as: (
 
 (Delta mirrorFor: #ObjectiveCObject)
 comment: 
-''!
+'Access to the raw structure of an ObjectiveC object.  Do not confuse this with ObjectiveCAlien, wich is a Smalltalk proxy for an ObjectiveC object.  
+This is an indirect object (a struct, if you like); ObjectiveCAlien is a direct pointer to an object (a reference to an Objective-C object).
+
+@interface Object
+{
+    Class isa;  /* A pointer to the instance''s class structure */
+}
+
+Effectively:
+struct objc_object {
+    struct objc_class *isa;
+};
+
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  
+   You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+
+! (Delta mirrorFor: #ObjectiveCObject) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+	^4! !
+
+! (Delta mirrorFor: #ObjectiveCObject) methodsFor: 'accessing' !
+
+
+isa
+	| address |
+	^(address := self unsignedLongAt: 1) = 0 ifFalse:
+		[ObjectiveCClass atAddress: address]!
+
+isa: anObjectiveCClassAlienOrNil
+	self unsignedLongAt: 1 put: anObjectiveCClassAlienOrNil id! !
+
+! (Delta mirrorFor: #ObjectiveCObject) methodsFor: 'coercing' !
+
+
+id
+	"Answer the receiver's id. This coerces direct, pointer and indirect ObjectiveC objects correctly."
+	^self addressField! !
 

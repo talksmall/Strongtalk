@@ -109,7 +109,7 @@ newCString: string <String> ^ <Alien>
 
 newForCallbackArgs
 
-	^(self new: 8)
+	^(self primitiveNew: 8)
 		size: self dataSize negated;
 		yourself!
 
@@ -152,10 +152,7 @@ lookupOrNil: symbolName <String> inLibrary: libraryName <String> ^ <Alien>
 
 primLoadLibrary: libraryName
 
-	|proxy|
-	proxy := ExternalProxy new.
-	{{primitiveDLLLoad: libraryName result: proxy ifFail: [:err|] }}.
-	^proxy asInteger! !
+	^(Platform DLLLoad2: libraryName) asInteger! !
 
 ! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
 
@@ -233,7 +230,7 @@ floatAt: index <Integer> put: double <Float> ^<Float>
 
 pointer
 
-	self isPointer ifTrue: [self error:  'One cannot take the address of pointer Alien instances; they may move, and are already pointers'].
+	self isPointer ifTrue: [^self].
 	^self class forPointer: self address!
 
 signedByteAt: index <Integer> ^<Integer>
@@ -345,20 +342,23 @@ unsignedShortAt: index <Integer> put: short <Integer>^<Integer>
 
 primFFICallResult: result <Alien>
 
-	{{self primitiveAlienCallResult: result ifFail: [:err| self error: err]}}!
+	{{self primitiveAlienCallResult: result ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
 			with: arg1
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger> with: arg2 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
 			with: arg1
 			with: arg2
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -369,7 +369,8 @@ with: arg3 <Alien|SmallInteger> ^ <Alien>
 			with: arg1
 			with: arg2
 			with: arg3
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -382,7 +383,8 @@ with: arg4 <Alien|SmallInteger> ^ <Alien>
 			with: arg2
 			with: arg3
 			with: arg4
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -397,7 +399,8 @@ with: arg5 <Alien|SmallInteger> ^ <Alien>
 			with: arg3
 			with: arg4
 			with: arg5
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -414,7 +417,8 @@ with: arg6 <Alien|SmallInteger> ^ <Alien>
 			with: arg4
 			with: arg5
 			with: arg6
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -433,7 +437,8 @@ with: arg7 <Alien|SmallInteger> ^ <Alien>
 			with: arg5
 			with: arg6
 			with: arg7
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -447,7 +452,8 @@ with: arg8 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
 			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8 }
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -462,7 +468,8 @@ with: arg9 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
 			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9 }
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -478,7 +485,8 @@ with: arg10 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
 			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10 }
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -495,7 +503,8 @@ with: arg11 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
 			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11 }
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 with: arg1 <Alien|SmallInteger>
@@ -513,14 +522,16 @@ with: arg12 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
 			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11. arg12 }
-			ifFail: [:err| self error: err]}}!
+			ifFail: [:err| self error: err]}}.
+	^result!
 
 primFFICallResult: result <Alien|UndefinedObject>
 withArguments: arguments <Array[Alien|SmallInteger]> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
 			withArguments: arguments
-			ifFail: [:err| self error: err]}}! !
+			ifFail: [:err| self error: err]}}.
+	^result! !
 
 ! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
 

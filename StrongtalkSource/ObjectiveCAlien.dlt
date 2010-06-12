@@ -12,7 +12,8 @@ SelectorTable
 SelGetNameAlien
 SelRegisterNameAlien
 TypeQualifiers
-TypeQualifierCodes') !
+TypeQualifierCodes
+ReturnTypeHandlers') !
 
 (Delta mirrorFor: #ObjectiveCAlien) revision: '$Revision:$'!
 
@@ -39,6 +40,33 @@ initializeMethodTypeMap
 	"ObjectiveCAlien initializeMethodTypeMap"
 	"See /usr/include/objc/objc_class.h and
 	 The Objective-C 2.0 Programming Language, Ch 12: The Runtime System, sec: Type Encodings."
+	ReturnTypeHandlers := IdentityDictionary new: 32.
+	ReturnTypeHandlers
+		at: $@ "_C_ID"					put: (FixedSizeTypeHandler forClass: ObjectiveCAlien);
+		at: $# "_C_CLASS"			put: (FixedSizeTypeHandler forClass: ObjectiveCClassAlien);
+		at: $: "_C_SEL"					put: (FixedSizeTypeHandler forClass: ObjectiveCAlien);
+		at: $c "_CHR"						put: FixedSizeTypeHandler forByte;
+		at: $C "_C_UCHR"			put: FixedSizeTypeHandler forUnsignedByte;
+		at: $s "_C_SHT"					put: FixedSizeTypeHandler forShort;
+		at: $S "_C_USHT"				put: FixedSizeTypeHandler forUnsignedShort;
+		at: $i "_C_INT"					put: FixedSizeTypeHandler forLong;
+		at: $I "_C_UINT"					put: FixedSizeTypeHandler forUnsignedLong;
+		at: $l "_C_LNG"					put: FixedSizeTypeHandler forLong;
+		at: $L "_C_ULNG"				put: FixedSizeTypeHandler forUnsignedLong;
+		at: $f "_C_FLT"					put: FixedSizeTypeHandler forFloat;
+		at: $d "_C_DBL"					put: FixedSizeTypeHandler forDouble;
+		"at: $b" "_C_BFLD"		"put: [];"
+		at: $v "_C_VOID"				put: FixedSizeTypeHandler forVoid;
+		"at: $?" "_C_UNDEF"	"put: [];"
+		at: $^ "_C_PTR"					put: FixedSizeTypeHandler forPointer;
+		at: $* "_CHARPTR"			put: FixedSizeTypeHandler forPointer;
+		at: $[ "_C_ARY_B"			put: FixedSizeTypeHandler forPointer;
+		"at: $]" "_C_ARY_E"	"put: [];"
+		at: $( "_C_UNION_B"		put: StructTypeHandler new;
+		"at: $)" "_C_UNION_E"	"put: [];"
+		at: ${ "_C_STRUCT_B"	put: StructTypeHandler new.
+		"at: $}" "_C_STRUCT_E""put: []."
+
 	MethodTypeMap := IdentityDictionary new: 32.
 	MethodTypeMap
 		at: $@ "_C_ID"			put: [ObjectiveCAlien new];
@@ -196,7 +224,7 @@ encodeSimpleSignature: aString
 frameworkLibraryNameFor: frameworkName
 "this is wrong not all frameworks are version C. Use Current?"
 	^'/System/Library/Frameworks/', frameworkName,
-			'.framework/Versions/C/', frameworkName!
+			'.framework/Versions/Current/', frameworkName!
 
 lookup: globalOrClassName <String> inFramework: frameworkName <String> ^<ObjectiveCClassAlien | nil>
 	"Looks up a global or a class and answers a suitable Alien.
@@ -227,6 +255,11 @@ valueOfDatum: global <String> inFramework: frameworkName <String> ^<ObjectiveCCl
 
 isa
 	| address |
+	^(address := self addressField) ~= 0 ifTrue:
+		[ObjectiveCClassAlien forPointer: ((Alien forPointer: address) unsignedLongAt: 1)]!
+
+xxxisa
+	| address |
 	^(address := self unsignedLongAt: 1) ~= 0 ifTrue:
 		[ObjectiveCClassAlien forPointer: ((Alien forPointer: address) unsignedLongAt: 1)]! !
 
@@ -256,13 +289,15 @@ doesNotUnderstand: aMessage
 	returnTypeCharacter := self class returnTypeCharacterForMethodTypes: method methodTypes.
 	"If MethodTypeMap doesn't include returnTypeCharacter then we haven't
 	implemented handling that return type yet."
-	result := method implementation
+	^(ReturnTypeHandlers at: returnTypeCharacter)
+		send: method receiver: self arguments: aMessage arguments
+	"result := method implementation
 				primFFICallResult: (MethodTypeMap at: returnTypeCharacter) value
 				withArguments: {self. method rawSelector}, aMessage arguments.
 	^(MethodTypeResultMap
 			at: returnTypeCharacter
 			ifAbsent: [^result])
-		value: result! !
+		value: result"! !
 
 ! (Delta mirrorFor: #ObjectiveCAlien) methodsFor: 'objective-c runtime' !
 

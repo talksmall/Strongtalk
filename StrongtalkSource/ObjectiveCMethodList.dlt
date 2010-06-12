@@ -1,0 +1,59 @@
+Delta define: #ObjectiveCMethodList as: (
+(Class subclassOf: 'Alien' instanceVariables: '')) !
+
+(Delta mirrorFor: #ObjectiveCMethodList) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ObjectiveCMethodList) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #ObjectiveCMethodList)
+comment: 
+'struct objc_method_list {
+    struct objc_method_list *obsolete;
+
+    int method_count;
+#ifdef __alpha__
+    int space;
+#endif
+    struct objc_method method_list[1];  /* variable length structure */
+};
+
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+
+! (Delta mirrorFor: #ObjectiveCMethodList) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+	^20
+	
+"struct objc_method_list {
+    struct objc_method_list *obsolete;
+
+    int method_count;
+#ifdef __alpha__
+    int space;
+#endif
+    struct objc_method method_list[1];  /* variable length structure */
+};
+"! !
+
+! (Delta mirrorFor: #ObjectiveCMethodList) methodsFor: 'accessing' !
+
+
+method: oneRelativeIndex "<Integer>" put: method "<ObjectiveCMethod>"
+	| methodsBaseIndex |
+	methodsBaseIndex := 9 + (oneRelativeIndex - 1 * ObjectiveCMethod dataSize).
+	self
+		unsignedLongAt: methodsBaseIndex put: (method unsignedLongAt: 1);
+		unsignedLongAt: methodsBaseIndex + 4 put: (method unsignedLongAt: 5);
+		unsignedLongAt: methodsBaseIndex + 8 put: (method unsignedLongAt: 9).!
+
+methodCount
+	^self signedLongAt: 5!
+
+methodCount: anInteger
+	self signedLongAt: 5 put: anInteger! !
+

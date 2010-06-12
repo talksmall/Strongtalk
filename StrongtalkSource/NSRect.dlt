@@ -1,0 +1,62 @@
+Delta define: #NSRect as: (
+(Class subclassOf: 'Alien' instanceVariables: '')) !
+
+(Delta mirrorFor: #NSRect) revision: '$Revision:$'!
+
+(Delta mirrorFor: #NSRect) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #NSRect)
+comment: 
+''!
+
+! (Delta mirrorFor: #NSRect) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+"typedef struct _NSRect {
+   NSPoint origin;
+   NSSize size;
+} NSRect;
+
+typedef struct _NSPoint {
+   float x;
+   float y;
+} NSPoint;
+
+typedef struct _NSSize {
+   float width;
+   float height;
+} NSSize;"
+
+	^16!
+
+x: x y: y width: width height: height
+	^self new x: x; y: y; width: width; height: height; yourself! !
+
+! (Delta mirrorFor: #NSRect) methodsFor: 'accessing' !
+
+
+height
+	^self floatAt: 13!
+
+height: aFloat
+	self floatAt: 13 put: aFloat asFloat!
+
+width
+		^self floatAt: 9!
+
+width: aFloat
+	self floatAt: 9 put: aFloat asFloat!
+
+x
+	^self floatAt: 1!
+
+x: aFloat
+	^self floatAt: 1 put: aFloat!
+
+y
+	^self floatAt: 5!
+
+y: aFloat
+	^self floatAt: 5 put: aFloat! !
+

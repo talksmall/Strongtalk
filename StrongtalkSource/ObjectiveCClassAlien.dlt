@@ -17,7 +17,8 @@ makeNSStringFrom: string <String>
 	NSString := self lookup: 'NSString' inFramework: 'Foundation'.
 	^string isEmpty
 		ifTrue: [NSString string]
-		ifFalse: [NSString alloc initWithUTF8String: string isoToUtf8 asAlien pointer]! !
+		ifFalse: ["NSString alloc initWithUTF8String: string isoToUtf8 asAlien pointer"
+			NSString alloc initWithCString: string asAlien pointer encoding: 1]! !
 
 ! (Delta mirrorFor: #ObjectiveCClassAlien) classSide methodsFor: 'objective-c runtime' !
 
@@ -39,12 +40,21 @@ lookup: className <String> inLibrary: aLibraryName <String> ^<ObjectiveCClassAli
 
 asObjectiveCClass ^<ObjectiveCClass>
 	"Answer a struct objc_class object (ObjectiveCClass) for the receivers class."
-	^ObjectiveCClass atAddress: (self unsignedLongAt: 1)! !
+	^ObjectiveCClass atAddress: (self addressField)! !
 
 ! (Delta mirrorFor: #ObjectiveCClassAlien) methodsFor: 'objective-c runtime' !
 
 
 objectiveCMethodForSelector: selectorAlien
+	| pointer |
+	pointer := ClassGetClassMethodAlien
+						primFFICallResult: (Alien new: 4)
+						with: self
+						with: selectorAlien.
+	^(pointer := pointer unsignedLongAt: 1) ~= 0 ifTrue:
+		[ObjectiveCMethod atAddress: pointer]!
+
+objectiveCMethodForSelectorAlien: selectorAlien
 	| pointer |
 	pointer := ClassGetClassMethodAlien
 						primFFICallResult: (Alien new: 4)

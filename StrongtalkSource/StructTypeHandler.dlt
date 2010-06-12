@@ -1,0 +1,41 @@
+Delta define: #StructTypeHandler as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #StructTypeHandler) revision: '$Revision:$'!
+
+(Delta mirrorFor: #StructTypeHandler) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #StructTypeHandler)
+comment: 
+''!
+
+! (Delta mirrorFor: #StructTypeHandler) methodsFor: 'forwarding' !
+
+
+send: method receiver: receiver arguments: arguments
+
+	^method returnLength <=8
+		ifTrue: [self normalSend: method receiver: receiver arguments: arguments]
+		ifFalse: [self structSend: method receiver: receiver arguments: arguments]! !
+
+! (Delta mirrorFor: #StructTypeHandler) methodsFor: 'private-forwarding' !
+
+
+normalSend: method receiver: receiver arguments: arguments
+
+	|result|
+	result := Alien new: method returnLength.
+	method implementation
+		primFFICallResult: result
+		withArguments: {receiver. method rawSelector}, arguments.
+	^result!
+
+structSend: method receiver: receiver arguments: arguments
+
+	|result|
+	result := Alien newC: method returnLength.
+	method implementation
+		primFFICallResult: nil
+		withArguments: {result pointer. receiver. method rawSelector}, arguments.
+	^result! !
+

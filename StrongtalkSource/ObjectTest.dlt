@@ -1,0 +1,27 @@
+Delta define: #ObjectTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #ObjectTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ObjectTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ObjectTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #ObjectTest) methodsFor: 'testing' !
+
+
+testTildaCreatesOneArgBlock
+
+	self assert: ((#symb ~ #asString)
+								value: 'ignored') = 'symb' asString!
+
+testTildaWithOneArgSelectorCreatesOneArgBlock
+
+	self assert: ((#symb ~ #at:) value: 1) = $s!
+
+testTildaWithTwoArgSelectorShouldThrow
+
+	self should: [#symb ~ #at:put:] raise: Error! !
+

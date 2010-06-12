@@ -1,5 +1,6 @@
 Delta define: #ObjectiveCMethod as: (
-(Class subclassOf: 'Alien' instanceVariables: '')) !
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
 
 (Delta mirrorFor: #ObjectiveCMethod) revision: '$Revision:$'!
 
@@ -7,5 +8,88 @@ Delta define: #ObjectiveCMethod as: (
 
 (Delta mirrorFor: #ObjectiveCMethod)
 comment: 
-''!
+'/*
+ *  Method Template
+ */
+typedef struct objc_method *Method;
+
+struct objc_method {
+    SEL method_name;
+    char *method_types;
+    IMP method_imp;
+};
+
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+
+! (Delta mirrorFor: #ObjectiveCMethod) classSide methodsFor: 'initialization' !
+
+
+initialize
+
+	SystemInitializer
+		addInitializer: self
+		after: ObjectiveCAlien.
+	Platform == MacOSXPlatform ifFalse: [^self].
+	MethodGetReturnType := self lookup: 'method_getReturnType' inLibrary: '/usr/lib/libobjc.dylib'.
+	NSMethodSignature := ObjectiveCClassAlien
+          											lookup: 'NSMethodSignature'
+            										inFramework: 'Foundation'! !
+
+! (Delta mirrorFor: #ObjectiveCMethod) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+	"typedef struct objc_method *Method;
+
+	struct objc_method {
+	    SEL method_name;
+	    char *method_types;
+	    IMP method_imp;
+	};"
+
+	^12! !
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+
+
+implementation
+	^Alien forPointer: (self unsignedLongAt: 9)!
+
+methodTypes
+	^Alien forPointer: (self unsignedLongAt: 5)!
+
+methodTypesString
+	^(Alien forPointer: (self unsignedLongAt: 5)) strcpy!
+
+rawSelector
+	^Alien forPointer: (self unsignedLongAt: 1)!
+
+returnLength
+
+	^self signature methodReturnLength!
+
+returnType
+
+	^self signature methodReturnType!
+
+selector
+	^ObjectiveCAlien forPointer: (self unsignedLongAt: 1)!
+
+signature ^<Alien>
+
+	^(ObjectiveCMethodSignature new)
+		unsignedLongAt: 1 put: ((NSMethodSignature signatureWithObjCTypes: self methodTypes) asUnsignedLong);
+		yourself! !
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'instance initalization' !
+
+
+selector: selector "<ObjectiveCAlien>" methodTypes: string "<char * Alien>" implementation: functionPointer "<id (*IMP)(id, SEL, ...) Alien> ^<self>"
+	self unsignedLongAt: 1 put: (selector unsignedLongAt: 1).
+	self unsignedLongAt: 5 put: string address.
+	self unsignedLongAt: 9 put: (functionPointer unsignedLongAt: 1)! !
 

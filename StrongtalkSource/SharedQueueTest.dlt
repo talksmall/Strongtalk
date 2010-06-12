@@ -1,0 +1,43 @@
+Delta define: #SharedQueueTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'empty process nonEmpty')) !
+
+(Delta mirrorFor: #SharedQueueTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SharedQueueTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #SharedQueueTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #SharedQueueTest) methodsFor: 'testing' !
+
+
+setUp
+
+	empty := SharedQueue new.
+	nonEmpty := SharedQueue new.
+	nonEmpty nextPut: 1!
+
+tearDown
+
+	(process isNil or: [process dead])
+		ifFalse: [process terminate]!
+
+testEmptyQueueNextOrNilShouldBeNil
+
+	| result started|
+	started := false.
+	result := 0.
+	process := [	started := true.
+							result := empty nextOrNil] fork.
+	Processor yield.
+	self assert: started.
+	self assert: result isNil!
+
+testNonEmptyQueueNextOrNilShouldNotBeNil
+
+	| result |
+	process := [result := nonEmpty nextOrNil] fork.
+	Processor yield.
+	self assert: result = 1! !
+

@@ -291,12 +291,23 @@ runScript: filename <Str>
 ! (Delta mirrorFor: #SystemInitializer) classSide methodsFor: 'library class initialization' !
 
 
+addInitializer: aClass
+
+	self addInitializer: aClass after: nil!
+
 addInitializer: aClass after: predecessor
 
-	(self initializers includes: aClass) ifTrue: [^self].
+	|initializers|
+	initializers := self initializers.
+	(initializers includes: aClass)
+		ifTrue: [(predecessor isNil or: [(initializers includes: predecessor) not])
+							ifTrue: [^self].
+						(initializers indexOf: predecessor) < (initializers indexOf: aClass)
+							ifTrue: [^self]].
+	initializers remove: aClass ifAbsent: [].
 	predecessor isNil
-		ifTrue: [self initializers add: aClass]
-		ifFalse: [self initializers add: aClass after: predecessor]!
+		ifTrue: [initializers add: aClass]
+		ifFalse: [initializers add: aClass after: predecessor]!
 
 initializers
 

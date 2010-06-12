@@ -3,7 +3,7 @@ Delta define: #AlienDemo as: (
 
 (Delta mirrorFor: #AlienDemo) revision: '$Revision:$'!
 
-(Delta mirrorFor: #AlienDemo) group: 'Unclassified'!
+(Delta mirrorFor: #AlienDemo) group: 'Aliens-Examples'!
 
 (Delta mirrorFor: #AlienDemo)
 comment: 
@@ -11,6 +11,30 @@ comment:
 
 ! (Delta mirrorFor: #AlienDemo) methodsFor: 'MacOS examples' !
 
+
+exampleCqsort
+	"Call the libc qsort function (which requires a callback)."
+	"AlienDemo new exampleCqsort"
+	"(Time millisecondsToRun: [100 timesRepeat: [Alien exampleCqsort]]) / 100.0"
+	| cb rand nElements sizeofDouble values orig sort |
+	rand:= Random new.
+	values:= Alien newC: (nElements:= 100) * (sizeofDouble:= 8).
+	1 to: values dataSize by: sizeofDouble do:
+		[:i| values doubleAt: i put: rand next].
+	orig:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	cb:= Callback
+			block: [:args :result|
+					result returnInteger: ((args first doubleAt: 1) - (args second doubleAt: 1)) sign]
+			argsClass: QsortCompare.
+	(Alien lookup: 'qsort' inLibrary: 'libc')
+		primFFICallResult: nil
+		with: values pointer
+		with: nElements
+		with: sizeofDouble
+		with: cb thunk.
+	sort:= (1 to: values dataSize by: sizeofDouble) collect: [:i| values doubleAt: i].
+	values free.
+	^orig -> sort!
 
 exampleNSOpenPanel
 	"AlienDemo new exampleNSOpenPanel"
@@ -29,6 +53,77 @@ exampleNSOpenPanel
 		[:i|
 		Transcript
 			cr;
-			nextPutAll: (files objectAtIndex: i) UTF8String strcpyUTF8;
-			flush]! !
+			nextPutAll: (files objectAtIndex: i) "UTF8String" strcpy"UTF8";
+			flush]!
+
+exampleOpenWindowWithModalAlert
+	"AlienDemo new  exampleOpenWindowWithModalAlert" 
+	"doesn't work anymore - modal stuff is unstable"
+	| NSTitledWindowMask NSClosableWindowMask
+	  NSMiniaturizableWindowMask NSResizableWindowMask
+	  NSTexturedBackgroundWindowMask
+	  NSBackingStoreBuffered
+	  app win pool lert rc |
+	NSTitledWindowMask:= 1 "<< 0".
+	NSClosableWindowMask:= 1 "<<" bitShift: 1.
+	NSMiniaturizableWindowMask:= 1 "<<" bitShift: 2.
+	NSResizableWindowMask:= 1 "<<" bitShift: 3.
+	NSTexturedBackgroundWindowMask:= 1 "<<" bitShift: 8.
+	NSBackingStoreBuffered:= 2.
+
+	app:= (ObjectiveCClassAlien lookup: 'NSApplication' inFramework: 'AppKit') sharedApplication.
+	pool:= (ObjectiveCClassAlien lookup: 'NSAutoreleasePool' inFramework: 'Foundation') alloc init.
+
+	win:= (ObjectiveCClassAlien lookup: 'NSWindow' inFramework: 'AppKit') alloc
+			initWithContentRect: (NSRect x: 250.0 y: 150.0 width: 300.0 height: 200.0)
+			styleMask: NSTitledWindowMask "|" + NSClosableWindowMask "|"+ NSMiniaturizableWindowMask
+					   "|" + NSResizableWindowMask "|" + NSTexturedBackgroundWindowMask
+			backing: NSBackingStoreBuffered
+			defer: false asAlien.
+	win setTitle: (self makeNSStringFrom: 'Hello!!!!').
+	lert:= (ObjectiveCClassAlien lookup: 'NSAlert' inFramework: 'AppKit')
+				alertWithMessageText: (self makeNSStringFrom: 'Be Alert!!!!')
+				defaultButton: (self makeNSStringFrom: 'Lerts')
+				alternateButton: (self makeNSStringFrom: 'We')
+				otherButton: (self makeNSStringFrom: 'Need')
+				informativeTextWithFormat: (self makeNSStringFrom: 'some %s & %@')
+				va: 'text' asAlien pointer
+				va: (self makeNSStringFrom: 'string').
+
+	lert beginSheetModalForWindow: win
+		modalDelegate: (ObjectiveCSmalltalkObjectProxy for: (MacOSXExampleModalDelegate new forApplication: app))
+		didEndSelector: (ObjectiveCAlien asObjectiveCSelector: #alertDidEnd:returnCode:contextInfo:)
+		contextInfo: nil asAlien.
+	rc:= app runModalForWindow: win.
+	win close.
+	pool release.
+	^rc!
+
+examplePrintf
+	"Call the libc printf function."
+	"AlienDemo new  examplePrintf"
+	| r s |
+	(Alien lookup: 'printf' inLibrary: 'libc')
+		primFFICallResult: (r:= Alien new: 4)
+		withArguments: {(s:= ('Hello World %d %x !!!!!!!!', (String with: Character lf)) asAlien) pointer.
+						 123.
+						 48879}.
+	s free.
+	^r signedLongAt: 1!
+
+exampleSprintf
+	"Call the libc sprintf function."
+	"AlienDemo new exampleSprintf"
+	| r s |
+	(Alien lookup: 'sprintf' inLibrary:  'libc')
+		primFFICallResult: (r:= Alien new: 4)
+		withArguments: {"UnsafeAlien forPointerTo:" (s:= Alien newGC: 1024) pointer.
+						 "UnsafeAlien forPointerTo: "('Hello World %d %x !!!!!!!!', (String with: Character lf)) asAlien pointer.
+						 123.
+						 48879}.
+	^s strcpy
+	"^s copyFrom: 1 to: (r signedLongAt: 1) - 1" "trim the null byte"!
+
+makeNSStringFrom: string <String> ^<Alien>
+	^ObjectiveCClassAlien makeNSStringFrom: string! !
 

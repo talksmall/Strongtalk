@@ -28,11 +28,19 @@ DLLLibrary: name
         DLLDict at: name put: (self DLLLoad: name)
     ]!
 
+DLLLoad2: name
+
+	|block|
+	block := [:lib| ^lib].
+    self tryDLLLoad: name ifSuccess: block.
+    self tryDLLLoad: (name, '.dll') asSymbol ifSuccess: block.
+    self tryDLLLoad: (name, '32.dll') asSymbol ifSuccess: block.
+    self error: 'Cannot find library ', name!
+
 DLLLoad: name
-    | r n |
-    r := ExternalProxy new.
+    | n |
     n := (self DLLMapName: name) asSymbol.
-    ^{{primitiveDLLLoad: n result: r ifFail: [ :err | self error: err]}}!
+    ^self tryDLLLoad: n ifFail: [ :err | self error: err]!
 
 DLLLookup: name <Str> in: library <Str>
     "Convert library into proxy"
@@ -43,12 +51,26 @@ DLLLookup: name <Str> in: library <Str>
     ^r!
 
 DLLMapName: name <Str> ^<Str>
-    name = 'user'       ifTrue: [^'USER32.DLL'].
-    name = 'gdi'            ifTrue: [^'GDI32.DLL'].
-    name = 'kernel'     ifTrue: [^'KERNEL32.DLL'].
-    name = 'comdlg'     ifTrue: [^'COMDLG32.DLL'].
+    name asLowercase = 'user'       ifTrue: [^'USER32.DLL'].
+    name asLowercase = 'gdi'            ifTrue: [^'GDI32.DLL'].
+    name asLowercase = 'kernel'    ifTrue: [^'KERNEL32.DLL'].
+    name asLowercase = 'comdlg'     ifTrue: [^'COMDLG32.DLL'].
     "self error: 'Mapping ', name, ' not found'"
-    ^name! !
+    ^name!
+
+tryDLLLoad: name <Str> ifFail: block <[X]> ^ <ExternalProxy>
+
+	| r |
+    r := ExternalProxy new.
+    ^{{primitiveDLLLoad: name
+    		result: r 
+    		ifFail: [:err | block value: err]}}!
+
+tryDLLLoad: name <Str> ifSuccess: block <[X]>
+
+	| r |
+    r := self tryDLLLoad: name ifFail: [:err| ^self].
+    block value: r! !
 
 ! (Delta mirrorFor: #Win32Platform) classSide methodsFor: 'clipboard access' !
 

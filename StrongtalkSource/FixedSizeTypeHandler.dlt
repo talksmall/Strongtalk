@@ -1,0 +1,120 @@
+Delta define: #FixedSizeTypeHandler as: (
+(Class subclassOf: 'Object' instanceVariables: 'resultBlock
+allocBlock')) !
+
+(Delta mirrorFor: #FixedSizeTypeHandler) revision: '$Revision:$'!
+
+(Delta mirrorFor: #FixedSizeTypeHandler) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #FixedSizeTypeHandler)
+comment: 
+''!
+
+! (Delta mirrorFor: #FixedSizeTypeHandler) classSide methodsFor: 'instance creation' !
+
+
+forByte
+
+	^(self new)
+		initSize: 1
+		resultBlock: [:alien| alien signedByteAt: 1]!
+
+forClass: alienClass
+
+	^(self new)
+		initAllocBlock: [alienClass new] resultBlock: [:alien| alien];
+		yourself!
+
+forDouble
+
+	^(self new)
+		initSize: 8
+		resultBlock: [:alien| alien doubleAt: 1]!
+
+forFloat
+
+	^(self new)
+		initSize: 4
+		resultBlock: [:alien| alien floatAt: 1]!
+
+forLong
+
+	^(self new)
+		initSize: 4
+		resultBlock: [:alien| alien signedLongAt: 1]!
+
+forPointer
+
+	^(self new)
+		initAllocBlock: [Alien forPointer: 0] resultBlock: [:alien| alien];
+		yourself!
+
+forShort
+
+	^(self new)
+		initSize: 2
+		resultBlock: [:alien| alien signedShortAt: 1]!
+
+forUnsignedByte
+
+	^(self new)
+		initSize: 1
+		resultBlock: [:alien| alien unsignedByteAt: 1]!
+
+forUnsignedLong
+
+	^(self new)
+		initSize: 4
+		resultBlock: [:alien| alien unsignedLongAt: 1]!
+
+forUnsignedShort
+
+	^(self new)
+		initSize: 2
+		resultBlock: [:alien| alien unsignedShortAt: 1]!
+
+forVoid
+
+	^(self new)
+		initAllocBlock: [nil] resultBlock: [:alien| nil];
+		yourself!
+
+size: size
+
+	^(self new)
+		initSize: size;
+		yourself! !
+
+! (Delta mirrorFor: #FixedSizeTypeHandler) methodsFor: 'forwarding' !
+
+
+send: method receiver: receiver arguments: arguments
+
+	|result|
+	result := allocBlock value.
+	method implementation
+		primFFICallResult: result
+		withArguments: {receiver. method rawSelector}, arguments.
+	^resultBlock value: result! !
+
+! (Delta mirrorFor: #FixedSizeTypeHandler) methodsFor: 'initialization' !
+
+
+initAllocBlock: alloc
+
+	self initAllocBlock: alloc resultBlock: [:alien| alien]!
+
+initAllocBlock: alloc resultBlock: block
+
+	allocBlock := alloc.
+	resultBlock := block!
+
+initSize: newSize
+
+	self initSize: newSize resultBlock: [:alien| alien]!
+
+initSize: newSize resultBlock: block
+
+	allocBlock := [Alien new: newSize].
+	resultBlock := block! !
+

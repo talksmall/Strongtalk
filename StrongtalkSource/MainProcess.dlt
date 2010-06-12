@@ -1,0 +1,84 @@
+Delta define: #MainProcess as: (
+(Class subclassOf: 'Process' instanceVariables: 'actions <SharedQueue[[]]>' classInstanceVariables: 'soleInstance <MainProcess>')) !
+
+(Delta mirrorFor: #MainProcess) revision: '$Revision:$'!
+
+(Delta mirrorFor: #MainProcess) group: 'Unclassified'!
+
+(Delta mirrorFor: #MainProcess)
+comment: 
+'I represent a process running on the main thread of the OS process.
+There should only ever be one active instance of me and it should be
+created by the VM.
+
+Actions may be scheduled to run on this thread by sending the message
+#schedule: and passing a zero arg block as argument. Actions are
+scheduled in FIFO order. Each runs to completion before the next is
+scheduled.'!
+
+! (Delta mirrorFor: #MainProcess) classSide methodsFor: 'accessing' !
+
+
+soleInstance
+
+	^soleInstance! !
+
+! (Delta mirrorFor: #MainProcess) classSide methodsFor: 'restricted' !
+
+
+initialize
+
+	SystemInitializer addInitializer: self.
+	soleInstance := (self new)
+										initialize;
+										yourself!
+
+start
+
+	soleInstance start! !
+
+! (Delta mirrorFor: #MainProcess) methodsFor: 'private' !
+
+
+fileOutOn: d <Dumper>
+
+	nil fileOutOn: d!
+
+recordMainProcess
+
+	{{ self primitiveRecordMainProcessIfFail: [:ex | self error: 'Only one allowed'] }}!
+
+run
+
+	[self runNext] whileTrue!
+
+runNext
+
+	actions next value
+		"on: Error
+		do: [:ex| [ex signal] fork]".
+	^true! !
+
+! (Delta mirrorFor: #MainProcess) methodsFor: 'restricted' !
+
+
+initialize
+
+	actions := SharedQueue[[]] new.
+	self recordMainProcess.
+	self register.
+	self resume!
+
+start
+
+	self recordId.
+	actions := SharedQueue[[]] new.
+	self run! !
+
+! (Delta mirrorFor: #MainProcess) methodsFor: 'scheduling' !
+
+
+schedule: block <[]>
+
+	actions nextPut: block! !
+

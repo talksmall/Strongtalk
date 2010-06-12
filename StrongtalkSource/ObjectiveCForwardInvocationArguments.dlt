@@ -1,0 +1,25 @@
+Delta define: #ObjectiveCForwardInvocationArguments as: (
+(Class subclassOf: 'Alien' instanceVariables: '')) !
+
+(Delta mirrorFor: #ObjectiveCForwardInvocationArguments) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ObjectiveCForwardInvocationArguments) group: 'OSX-ObjectiveCSupport'!
+
+(Delta mirrorFor: #ObjectiveCForwardInvocationArguments)
+comment: 
+''!
+
+! (Delta mirrorFor: #ObjectiveCForwardInvocationArguments) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+
+	^12! !
+
+! (Delta mirrorFor: #ObjectiveCForwardInvocationArguments) methodsFor: 'accessing' !
+
+
+invocation
+
+	^ObjectiveCNSInvocation forPointer: (self unsignedLongAt: 9)! !
+

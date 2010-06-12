@@ -1,5 +1,5 @@
 Delta define: #ObjectiveCClass as: (
-(Class subclassOf: 'ObjectiveCObject' instanceVariables: '')) !
+(Class subclassOf: 'ObjectiveCObject' instanceVariables: '') classVariables: 'CLSCLASS CLSMETA ObjcAddClassAlien ObjcAddMethodAlien ObjcAddMethodsAlien ObjcAllocateClassPairAlien ObjcRegisterClassPairAlien') !
 
 (Delta mirrorFor: #ObjectiveCClass) revision: '$Revision:$'!
 
@@ -7,5 +7,222 @@ Delta define: #ObjectiveCClass as: (
 
 (Delta mirrorFor: #ObjectiveCClass)
 comment: 
-''!
+'/*
+ *  Class Template
+ */
+struct objc_class {
+    struct objc_class *isa;
+    struct objc_class *super_class;
+    const char *name;
+    long version;
+    long info;
+    long instance_size;
+    struct objc_ivar_list *ivars;
+
+    struct objc_method_list **methodLists;
+
+    struct objc_cache *cache;
+    struct objc_protocol_list *protocols;
+};
+
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+
+! (Delta mirrorFor: #ObjectiveCClass) classSide methodsFor: 'class creation' !
+
+
+createClassDefinitionOnRuntimeOneNamed: className "<String>" superclassName: superclassName "<String> ^<nil | Array of: ObjectiveCClass>"
+	"Objective-C 1.0 version of creating a class (10.4 and prior).
+	 See CreateClassDefinition in`Objective-C 1 Runtime Reference'.
+	 In Leopard, which has the Objective-C 2.0 run-time, we can simply use objc_allocateClassPair."
+	| supercls newClass newMetaclass rootClass |
+
+	(supercls := ObjectiveCClassAlien lookup: superclassName) ifNil: [^nil].
+	supercls := supercls asObjectiveCClass.
+	(ObjectiveCClassAlien lookup: className) ifNotNil: [^nil].
+
+	rootClass := supercls.
+	[rootClass superclass notNil] whileTrue:
+		[rootClass := rootClass superclass].
+
+	newClass := self newC.
+	newMetaclass := self newC.
+	newClass isa: newMetaclass.
+	newMetaclass isa: rootClass isa.
+	newClass info: CLSCLASS.
+	newMetaclass info: CLSMETA.
+	newClass objectiveCname: className.
+	newMetaclass  objectiveCname: newClass objectiveCname.
+	newClass methodLists: ((Alien newC: 4) signedLongAt: 1 put: -1; yourself).
+	newMetaclass methodLists: ((Alien newC: 4) signedLongAt: 1 put: -1; yourself).
+	newClass superclass: supercls.
+	newMetaclass superclass: supercls isa.
+	newClass instanceSize: supercls instanceSize.
+	newMetaclass instanceSize: newMetaclass superclass instanceSize.
+
+	ObjcAddClassAlien
+		primFFICallResult: nil
+		with: newClass address.
+
+	^Array with: newClass with: newMetaclass!
+
+createClassNamed: className "<String>" superclass: superclassName "<String>" into: binaryBlock "<[:class <ObjectiveCClass> :metaclass <ObjectiveCClass>| <^Type>]> ^<Type>"
+	| classPairOrNil classAlien classStruct |
+	ObjcAllocateClassPairAlien isNil ifTrue:
+		["objc_allocateClasPair unavailable.  use the 1.0 run-time"
+		  classPairOrNil := self createClassDefinitionOnRuntimeOneNamed: className "<String>" superclassName: superclassName.
+		 ^classPairOrNil isNil
+			ifTrue: [self error: 'Could not create class']
+			ifFalse: [binaryBlock valueWithArguments: classPairOrNil]].
+
+	"Use the 2.0 run-time."
+	classAlien := ObjcAllocateClassPairAlien
+						primFFICallResult: (ObjectiveCClassAlien forPointer: 0)
+						with: (ObjectiveCClassAlien lookup: superclassName)
+						with: className asAlien pointer
+						with: 0.
+	^classAlien address = 0
+		ifTrue: [self error: 'Could not create class']
+		ifFalse:
+			[classStruct := classAlien asObjectiveCClass.
+			ObjcRegisterClassPairAlien
+				primFFICallResult: nil
+				with: classAlien.
+			 binaryBlock value: classStruct value: classAlien isa asObjectiveCClass]! !
+
+! (Delta mirrorFor: #ObjectiveCClass) classSide methodsFor: 'class initialization' !
+
+
+ensureNotifiedAtStartup
+	"ObjectiveCClass needs to be notified at system startup to initialize elements of the Objective-C ABI."
+	self ~~ ObjectiveCClass ifTrue: [^self].
+	self ensureNotifiedAtStartupAfter: ObjectiveCAlien!
+
+initialize
+	"self initialize"
+	self ensureNotifiedAtStartup.
+	self startUp: true! !
+
+! (Delta mirrorFor: #ObjectiveCClass) classSide methodsFor: 'instance creation' !
+
+
+dataSize
+	^40
+
+"/*
+ *  Class Template
+ */
+struct objc_class {
+    struct objc_class *isa;
+    struct objc_class *super_class;
+    const char *name;
+    long version;
+    long info;
+    long instance_size;
+    struct objc_ivar_list *ivars;
+
+    struct objc_method_list **methodLists;
+
+    struct objc_cache *cache;
+    struct objc_protocol_list *protocols;
+};"! !
+
+! (Delta mirrorFor: #ObjectiveCClass) classSide methodsFor: 'system startup' !
+
+
+startUp: resuming
+	(resuming and: [Platform == MacOSXPlatform]) ifFalse: [^self].
+
+	"info flags"
+	CLSCLASS := 16r1.
+	CLSMETA := 16r2.
+	"CLSINITIALIZED := 16r4.
+	CLSPOSING  := 16r8.
+	CLSMAPPED  := 16r10.
+	CLSFLUSHCACHE := 16r20.
+	CLSGROWCACHE  := 16r40.
+	CLSNEEDBIND   := 16r80.
+	CLSMETHODARRAY    := 16r100."
+
+
+	"Objective-C 2.0 runtime (Leopard)"
+	ObjcAllocateClassPairAlien := self lookupOrNil: 'objc_allocateClassPair' inLibrary: '/usr/lib/libobjc.dylib'.
+	ObjcRegisterClassPairAlien := self lookupOrNil: 'objc_registerClassPair' inLibrary: '/usr/lib/libobjc.dylib'.
+	ObjcAddMethodAlien := self lookupOrNil: 'class_addMethod' inLibrary: '/usr/lib/libobjc.dylib'.
+	"Objective-C 1.0 runtime (Tiger)"
+	ObjcAddClassAlien := self lookupOrNil: 'objc_addClass' inLibrary: '/usr/lib/libobjc.dylib'.
+	ObjcAddMethodsAlien := self lookupOrNil: 'class_addMethods' inLibrary: '/usr/lib/libobjc.dylib'.! !
+
+! (Delta mirrorFor: #ObjectiveCClass) methodsFor: 'accessing' !
+
+
+info: anInteger 
+	self signedLongAt: 17 put: anInteger!
+
+instanceSize
+	^self signedLongAt: 21!
+
+instanceSize: anInteger 
+	self signedLongAt: 21 put: anInteger!
+
+methodLists: anAlien "<ObjectiveCMethodLists>" 
+	self unsignedLongAt: 29 put: anAlien address!
+
+objectiveCname "^<Alien char *>"
+	^Alien
+		atAddress: (self unsignedLongAt: 9)
+		dataSize: (self strlenThroughPointerAt: 9) + 1!
+
+objectiveCname: anAlienOrString
+	self unsignedLongAt: 9 put: anAlienOrString asAlien address!
+
+superclass
+	| address |
+	^(address := self unsignedLongAt: 5) = 0 ifFalse:
+		[ObjectiveCClass atAddress: address]!
+
+superclass: anAlienOrNil
+	self unsignedLongAt: 5 put: (anAlienOrNil isNil ifTrue: [0] ifFalse: [anAlienOrNil address])! !
+
+! (Delta mirrorFor: #ObjectiveCClass) methodsFor: 'coercing' !
+
+
+asObjectiveCClassAlien
+	"Answer an ObjectiveC object for the receiver's struct objc_class."
+	^ObjectiveCClassAlien atAddress: self address! !
+
+! (Delta mirrorFor: #ObjectiveCClass) methodsFor: 'method dictionary' !
+
+
+addMethod: selector "<Alien>" implementation: functionPointer "<FFICallbackThunk|Alien>"  signature: signature "<String>" 
+	ObjcAddMethodAlien notNil
+		ifTrue: [self rt2addMethod: selector "<Alien>" implementation: functionPointer  signature: signature]
+		ifFalse: [self rt1addMethod: selector "<Alien>" implementation: functionPointer  signature: signature]!
+
+rt1addMethod: selector "<Alien>" implementation: functionPointer "<FFICallbackThunk|Alien>" signature: signature "<String>" 
+	| methodList |
+	methodList := ObjectiveCMethodList newC
+						methodCount: 1;
+						method: 1 put: (ObjectiveCMethod new
+											selector: selector
+											methodTypes: (ObjectiveCAlien encodeSimpleSignature: signature) asAlien
+											implementation: functionPointer).
+	ObjcAddMethodsAlien
+		primFFICallResult: nil
+		with: self address
+		with: methodList address!
+
+rt2addMethod: selector "<Alien>" implementation: functionPointer "<FFICallbackThunk|Alien>" signature: signature "<String>" 
+	| boolAlien |
+	ObjcAddMethodAlien
+		primFFICallResult: (boolAlien := Alien new: 4)
+		with: self pointer
+		with: selector
+		with: functionPointer
+		with: signature asAlien pointer.
+	(boolAlien unsignedLongAt: 1) = 0 ifTrue:
+		[self error: 'class_addMethod failed']! !
 
