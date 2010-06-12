@@ -1,5 +1,40 @@
 Class
-#group!
-OSX-ObjectiveCSupport! !
+isa!
+36233915!
+accessing!
+0! !
+#categories!
+accessing!
+coercing! !
+isa:!
+36234128!
+accessing!
+0:! !
 #superclassTypeString!
 Alien! !
+#group!
+OSX-ObjectiveCSupport! !
+id!
+36234324!
+coercing!
+0! !
+#comment!
+Access to the raw structure of an ObjectiveC object.  Do not confuse this with ObjectiveCAlien, wich is a Smalltalk proxy for an ObjectiveC object.  
+This is an indirect object (a struct, if you like); ObjectiveCAlien is a direct pointer to an object (a reference to an Objective-C object).
+
+@interface Object
+{
+    Class isa;  /* A pointer to the instance's class structure */
+}
+
+Effectively:
+struct objc_object {
+    struct objc_class *isa;
+};
+
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''License''); you may not use this file except in compliance with the License.  
+   You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+! !

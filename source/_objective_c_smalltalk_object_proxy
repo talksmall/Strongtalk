@@ -1,5 +1,55 @@
 Class
-#group!
-OSX-ObjectiveCSupport! !
+#categories!
+message forwarding!
+instance initalization!
+memory management! !
 #superclassTypeString!
 ObjectiveCObject! !
+#group!
+OSX-ObjectiveCSupport! !
+forward:to:!
+36421904!
+message forwarding!
+0ObjectiveCNSInvocation:Object:Object! !
+#comment!
+This class handles forwarding messages from Objective-C back into Smalltalk.  It creates a class in Objective-C that has a forward: instance 
+method. Its instances exist only in Objective-C.  The class variable AddressToBothInstancesMap is keyed by Objective-C instance address 
+and has pairs of {ObjectiveCSmalltalkObjectProxy, Smalltalk object} as instances.  The Objective-C methods (forward: and ...) of 
+ObjectiveCSmalltalkProxy are FFI callbacks.
+
+/*
+ *  Class Template
+ */
+struct ObjectiveCSmalltalkProxy {
+    struct objc_class *isa;
+};
+
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''License''); you may not use this file except in compliance with the License.  
+   You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+! !
+release!
+36422442!
+memory management!
+0! !
+#classVariableString!
+AddressToBothInstancesMap
+ObjectiveCSmalltalkProxyClassAlien
+SendbackCallback
+ForwardCallback
+SignatureCallback
+SmalltalkToObjectiveCInstanceMap! !
+xxxforward:to:with:!
+36300435!
+message forwarding!
+0:::! !
+initialize!
+36263751!
+instance initalization!
+0! !
+forward:to:with:!
+36253806!
+message forwarding!
+0:::! !
