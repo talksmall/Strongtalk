@@ -196,7 +196,7 @@ class DeltaProcess: public Process {
  public:
   static bool stepping;
   // constructor
-  DeltaProcess(oop receiver, symbolOop selector);
+  DeltaProcess(oop receiver, symbolOop selector, bool createThread = true);
   ~DeltaProcess();
 
   void setIsCallback(bool isCallback) {
@@ -378,7 +378,8 @@ class DeltaProcess: public Process {
 
  // Static operations
  private:
-  static DeltaProcess*  _active_delta_process; 
+  static DeltaProcess*  _active_delta_process;
+  static DeltaProcess*  _main_process;
   static DeltaProcess*  _scheduler_process;
   static bool           _is_idle;
   static volatile char* _active_stack_limit;
@@ -403,6 +404,14 @@ class DeltaProcess: public Process {
     
   // returns the active delta process
   static DeltaProcess* active()    { return _active_delta_process; }
+
+  static void set_main(DeltaProcess* p) {
+    _main_process = p;
+  }
+  // returns the process representing the main thread
+  static DeltaProcess* main() {
+    return _main_process;
+  }
 
   // tells whether the system is idle (waiting in wait_for_async_dll).
   static bool is_idle() { return _is_idle; }
@@ -436,6 +445,11 @@ class DeltaProcess: public Process {
   // Returns whether the timer expired. 
   static bool wait_for_async_dll(int timeout_in_ms);
   static void preempt_active();
+
+  // create and run the main process - ie. the process for the initial thread
+  static void createMainProcess();
+  static void runMainProcess();
+
  private:
   // Event for waking up the process scheduler when a
   // async dll completes

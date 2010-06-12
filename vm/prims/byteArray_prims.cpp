@@ -91,6 +91,13 @@ PRIM_DECL_1(byteArrayPrimitives::size, oop receiver) {
   return as_smiOop(byteArrayOop(receiver)->length());
 }
 
+PRIM_DECL_1(byteArrayPrimitives::numberOfArguments, oop receiver) {
+  PROLOGUE_1("numberOfArguments", receiver);
+  ASSERT_RECEIVER;
+  // do the operation
+  return as_smiOop(byteArrayOop(receiver)->number_of_arguments());
+}
+
 PRIM_DECL_2(byteArrayPrimitives::at, oop receiver, oop index) {
   PROLOGUE_2("at", receiver, index);
   ASSERT_RECEIVER;
@@ -792,15 +799,15 @@ PRIM_DECL_2(byteArrayPrimitives::alienSetSize, oop receiver, oop argument) {
 PRIM_DECL_1(byteArrayPrimitives::alienGetAddress, oop receiver) {
   PROLOGUE_1("alienGetAddress", receiver);
   checkAlienReceiver(receiver);
-  if (alienSize(receiver) > 0)
-    return markSymbol(vmSymbols::illegal_state());
+//  if (alienSize(receiver) > 0)
+//    return markSymbol(vmSymbols::illegal_state());
 
-  int address = (int)alienAddress(receiver);
-  int size = IntegerOps::int_to_Integer_result_size_in_bytes(address);
+  unsigned int address = (unsigned int)alienAddress(receiver);
+  int size = IntegerOps::unsigned_int_to_Integer_result_size_in_bytes(address);
 
   oop largeInteger = Universe::find_global("LargeInteger");
   oop z = klassOop(largeInteger)->klass_part()->allocateObjectSize(size);
-  IntegerOps::int_to_Integer(address, byteArrayOop(z)->number());
+  IntegerOps::unsigned_int_to_Integer(address, byteArrayOop(z)->number());
   return simplified(byteArrayOop(z));
 }
 
@@ -813,7 +820,7 @@ PRIM_DECL_2(byteArrayPrimitives::alienSetAddress, oop receiver, oop argument) {
      !(argument->is_byteArray() && byteArrayOop(argument)->number().signum() > 0))
     return markSymbol(vmSymbols::first_argument_has_wrong_type());
 
-  int value;
+  unsigned int value;
   if (argument->is_smi())
     value = smiOop(argument)->value();
   else {

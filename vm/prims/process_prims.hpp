@@ -57,6 +57,13 @@ class processOopPrimitives : AllStatic {
   static PRIM_DECL_0(stop);
 
   //%prim
+  // <Process> primitiveRecordMainProcessIfFail: failBlock <PrimFailBlock> ^<Object> =
+  //   Internal { doc   = 'Records the receiver as the main process'
+  //              name  = 'processOopPrimitives::setMainProcess' }
+  //%
+  static PRIM_DECL_1(setMainProcess, oop process);
+
+  //%prim
   // <NoReceiver> primitiveProcessActiveProcess ^<Object> =
   //   Internal { doc   = 'Returns the active process'
   //              name  = 'processOopPrimitives::activeProcess' }

@@ -233,18 +233,24 @@ static Event* threadCreated = NULL;
 
 #define STACK_SIZE ThreadStackSize * K
 
-void* mainWrapper(void* args) {
+char* calcStackLimit() {
   char* stackptr;
   asm("movl %%esp, %0;" : "=a"(stackptr));
+  stackptr = (char*) align(stackptr, os::vm_page_size());
   
-  int (*threadMain)(void*) = ((thread_args_t*) args)->main;
-  void* parameter = ((thread_args_t*) args)->parameter;
   int stackHeadroom = 2 * os::vm_page_size();
-  ((thread_args_t*) args)->stackLimit = stackptr - STACK_SIZE + stackHeadroom;
-	int* result = (int*) malloc(sizeof(int));
-	threadCreated->signal();
-	*result = threadMain(parameter);
-	return (void *) result; 
+  return stackptr - STACK_SIZE + stackHeadroom;
+}
+void* mainWrapper(void* args) {
+  thread_args_t * targs = (thread_args_t*) args;
+  targs->stackLimit = calcStackLimit();
+	
+  int (*threadMain)(void*) = targs->main;
+  void* parameter = targs->parameter;
+  int* result = (int*) malloc(sizeof(int));
+  threadCreated->signal();
+  *result = threadMain(parameter);
+  return (void *) result; 
 }
 
 Thread* os::create_thread(int threadStart(void* parameter), void* parameter, int* id_addr) {
@@ -640,7 +646,7 @@ static void initialize_performance_counter() {
 // No references
 void os::initialize_system_info() {
     Thread::init();
-    main_thread = new Thread(pthread_self(), NULL);
+    main_thread = new Thread(pthread_self(), calcStackLimit());
     initialize_performance_counter();
 }
 

@@ -811,6 +811,10 @@ int IntegerOps::copy_result_size_in_bytes(Integer& x) {
 }
 
 
+int IntegerOps::unsigned_int_to_Integer_result_size_in_bytes(unsigned int i) {
+  return Integer::length_to_size_in_bytes(i != 0);
+}
+
 int IntegerOps::int_to_Integer_result_size_in_bytes(int i) {
   return Integer::length_to_size_in_bytes(i != 0);
 }

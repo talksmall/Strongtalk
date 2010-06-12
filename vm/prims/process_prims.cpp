@@ -77,7 +77,18 @@ PRIM_DECL_0(processOopPrimitives::stop) {
   }
   return DeltaProcess::active()->processObj();
 }
+PRIM_DECL_1(processOopPrimitives::setMainProcess, oop receiver) {
+  PROLOGUE_1("setMainProcess", receiver);
 
+  if (!receiver->is_process())
+    return markSymbol(vmSymbols::receiver_has_wrong_type());
+
+  processOop process = processOop(receiver);
+  DeltaProcess::main()->set_processObj(process);
+  process->set_process(DeltaProcess::main());
+
+  return receiver;
+}
 PRIM_DECL_1(processOopPrimitives::transferTo, oop process) {
   PROLOGUE_1("transferTo", process);
 

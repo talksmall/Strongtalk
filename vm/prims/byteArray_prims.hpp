@@ -59,7 +59,15 @@ class byteArrayPrimitives : AllStatic {
   //              name  = 'byteArrayPrimitives::size' }
   //%
   static PRIM_DECL_1(size, oop receiver); 
-
+  
+  //%prim
+  // <IndexedByteInstanceVariables>
+  //   primitiveSymbolNumberOfArguments ^<SmallInteger> =
+  //   Internal { flags = #(Pure IndexedByte)
+  //              name  = 'byteArrayPrimitives::numberOfArguments' }
+  //%
+  static PRIM_DECL_1(numberOfArguments, oop receiver); 
+  
   //%prim
   // <IndexedByteInstanceVariables>
   //   primitiveIndexedByteAt: index <SmallInteger>

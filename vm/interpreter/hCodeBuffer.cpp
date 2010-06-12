@@ -48,7 +48,7 @@ byteArrayOop HCodeBuffer::bytes() {
   byteArrayOop result = byteArrayOop(klass->allocateObjectSize(byteLength()));
 
   for (int index = 0; index < byteLength(); index++)
-    result->byte_at_put(index + 1, _bytes->at(index));
+    result->byte_at_put(index + 1, (unsigned char) _bytes->at(index));
   
   return result;
 }

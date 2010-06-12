@@ -1219,7 +1219,6 @@ char* StubRoutines::generate_handle_pascal_callback_stub(MacroAssembler* masm) {
   masm->pushl(edx); 		// &params
   masm->pushl(ecx); 		// index
   masm->call((char*)handleCallBack, relocInfo::runtime_call_type);
-  masm->addl(esp, 2*oopSize); 	// pop the arguments
 
   // restore number of bytes in parameter list
   masm->popl(edx);
@@ -1249,6 +1248,7 @@ char* StubRoutines::generate_handle_C_callback_stub(MacroAssembler* masm) {
   // Incomming arguments:
   // eax = index               (passed on to Delta)
 
+  Label stackOK;
    char* entry_point = masm->pc();
 
    // create link
@@ -1264,10 +1264,16 @@ char* StubRoutines::generate_handle_C_callback_stub(MacroAssembler* masm) {
    masm->addl(edx, 20); //  (esi, edi, ebx, fp, return address)
 
    // eax = handleCallBack(index, &params)
+   masm->pushl(esp);
    masm->pushl(edx); // &params
    masm->pushl(ecx); // index
    masm->call((char*)handleCallBack, relocInfo::runtime_call_type);
-
+   masm->addl(esp, 2*oopSize); 	// pop the arguments
+   masm->popl(esi);
+   masm->cmpl(esi, esp);
+   masm->jcc(Assembler::equal, stackOK);
+   masm->int3();
+   masm->bind(stackOK);
    // restore registers for Pascal calling convention
    masm->popl(esi);
    masm->popl(edi);
@@ -1561,13 +1567,22 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
 
     masm->jmp(argLoopStart);
   masm->bind(argLoopExit);
-
-  //masm->leal(eax, proc);
-  //masm->pushl(eax);
-  //masm->call((char*)enter_async_call, relocInfo::external_word_type);
-
+#ifdef ASYNC_ALIEN
+  masm->leal(eax, proc);
+  masm->pushl(eax);
+  masm->call((char*)enter_async_call, relocInfo::external_word_type);
+#endif
   masm->call(fnptr);                            // call the alien function
 
+#ifdef ASYNC_ALIEN
+  masm->pushl(eax);
+  masm->leal(eax, proc);
+  masm->pushl(edx);
+  masm->pushl(eax);
+  masm->call((char*) exit_async_call, relocInfo::external_word_type);
+  masm->popl(edx);
+  masm->popl(eax);
+#endif
   masm->movl(ecx, result);                      // result alien
   
   masm->testl(ecx, ecx);
@@ -1583,7 +1598,8 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
                                                 // ecx now points to start of alien contents
   masm->movl(esi, Address(ecx));
   masm->testl(esi, esi);                        
-  masm->jcc(Assembler::lessEqual, ptr_result);
+  masm->jcc(Assembler::less, ptr_result);
+  masm->jcc(Assembler::equal, short_result);
   
   masm->cmpl(esi, 4);                           // direct result
   masm->jcc(Assembler::equal, short_result);
@@ -1593,7 +1609,7 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
 
   masm->jmp(no_result);
 
-  masm->bind(ptr_result);                       // indirect/pointer result
+  masm->bind(ptr_result);                       // indirect result
   masm->cmpl(esi, -4);
   masm->movl(esi, Address(ecx, 4));
   masm->jcc(Assembler::equal, short_ptr_result);
@@ -1602,9 +1618,6 @@ char* StubRoutines::generate_alien_call_with_args(MacroAssembler* masm) {
   masm->movl(Address(esi), eax);                
   
   masm->bind(no_result);
-  //masm->leal(eax, proc);
-  //masm->pushl(eax);
-  //masm->call((char*) exit_async_call, relocInfo::external_word_type);
   masm->movl(esi, Address(ebp, -4));            // restore registers
   masm->movl(edi, Address(ebp, -8));
   masm->movl(ebx, Address(ebp, -12));
@@ -1655,12 +1668,23 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
 
     push_alien_arg(masm, moveLoopEnd);
   }
-
-  //masm->leal(eax, proc);
-  //masm->pushl(eax);
-  //masm->call((char*)enter_async_call, relocInfo::external_word_type);
+#ifdef ASYNC_ALIEN
+  masm->leal(eax, proc);
+  masm->pushl(eax);
+  masm->call((char*)enter_async_call, relocInfo::external_word_type);
+#endif
 
   masm->call(fnptr);                            // call the alien function
+
+#ifdef ASYNC_ALIEN
+  masm->pushl(eax);
+  masm->leal(eax, proc);
+  masm->pushl(edx);
+  masm->pushl(eax);
+  masm->call((char*) exit_async_call, relocInfo::external_word_type);
+  masm->popl(edx);
+  masm->popl(eax);
+#endif
 
   masm->movl(ecx, result);                      // result alien
   
@@ -1677,7 +1701,8 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
                                                 // ecx now points to start of alien contents
   masm->movl(esi, Address(ecx));
   masm->testl(esi, esi);                        
-  masm->jcc(Assembler::lessEqual, ptr_result);
+  masm->jcc(Assembler::less, ptr_result);
+  masm->jcc(Assembler::equal, short_result);
   
   masm->cmpl(esi, 4);                           // direct result
   masm->jcc(Assembler::equal, short_result);
@@ -1696,9 +1721,6 @@ char* StubRoutines::generate_alien_call(MacroAssembler* masm, int args) {
   masm->movl(Address(esi), eax);                
   
   masm->bind(no_result);
-  //masm->leal(eax, proc);
-  //masm->pushl(eax);
-  //masm->call((char*) exit_async_call, relocInfo::external_word_type);
   
   masm->movl(esi, Address(ebp, -4));            // restore registers
   masm->leave();

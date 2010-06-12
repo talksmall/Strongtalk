@@ -141,6 +141,7 @@ class IntegerOps: AllStatic {
   static void xor_one_positive(Integer& positive, Integer& negative, Integer& z);
   static int  copy_result_size_in_bytes(Integer& x);
   static int  int_to_Integer_result_size_in_bytes(int i);
+  static int  unsigned_int_to_Integer_result_size_in_bytes(unsigned int i);
   static int  double_to_Integer_result_size_in_bytes(double x);
   static int  string_to_Integer_result_size_in_bytes(char* s, int base);
   static int  Integer_to_string_result_size_in_bytes(Integer& x, int base);

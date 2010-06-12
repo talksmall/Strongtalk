@@ -194,8 +194,6 @@ void VMProcess::activate_system() {
     assoc->set_value(proc);
   }
 
-  DeltaProcess::initialize_async_dll_event();
-
   // Create the initial process
   DeltaProcess::set_scheduler(new DeltaProcess(proc, oopFactory::new_symbol("start")));
 
@@ -303,6 +301,7 @@ extern "C" char* active_stack_limit() {
 
 Process*            Process::_current_process             = NULL;
 DeltaProcess*  DeltaProcess::_active_delta_process        = NULL;
+DeltaProcess*  DeltaProcess::_main_process                = NULL;
 volatile char* DeltaProcess::_active_stack_limit          = NULL;
 DeltaProcess*  DeltaProcess::_scheduler_process           = NULL;
 bool           DeltaProcess::_is_idle                     = false;
@@ -414,7 +413,11 @@ void DeltaProcess::transfer_and_continue() {
 }
 
 bool DeltaProcess::wait_for_async_dll(int timeout_in_ms) {
-  os::reset_event(_async_dll_completion_event);
+  if (!os::wait_for_event_or_timer(_async_dll_completion_event, 0)) {
+    os::reset_event(_async_dll_completion_event);
+    return false;
+  }
+
   if (Processes::has_completed_async_call()) return true;
 
   if (TraceProcessEvents) {
@@ -425,6 +428,8 @@ bool DeltaProcess::wait_for_async_dll(int timeout_in_ms) {
   bool result = os::wait_for_event_or_timer(_async_dll_completion_event, timeout_in_ms);
   _is_idle = false;
 
+  if (!result)
+    os::reset_event(_async_dll_completion_event);
 
   if (TraceProcessEvents) {
     std->print_cr(result ? " {timeout}" : " {async}");
@@ -455,6 +460,19 @@ void DeltaProcess::wait_for_control() {
 
 extern "C" bool have_nlr_through_C;
 
+void DeltaProcess::createMainProcess() {
+  oop mainProcess = Universe::find_global("MainProcess");
+  symbolOop start = oopFactory::new_symbol("start");
+  DeltaProcess* thisProcess = new DeltaProcess(mainProcess, start, false);
+  DeltaProcess::set_main(thisProcess);
+  DeltaProcess::initialize_async_dll_event();
+}
+void DeltaProcess::runMainProcess() {
+  DeltaProcess* mainProcess = DeltaProcess::main();
+  assert(mainProcess, "main process has not been assigned yet");
+  launch_delta(mainProcess);
+}
+
 // Code entry point for at Delta process
 int DeltaProcess::launch_delta(DeltaProcess* process) {
   // Wait until we get the torch
@@ -483,7 +501,7 @@ int DeltaProcess::launch_delta(DeltaProcess* process) {
   return 0;
 }
 
-DeltaProcess::DeltaProcess(oop receiver, symbolOop selector) {
+DeltaProcess::DeltaProcess(oop receiver, symbolOop selector, bool createThread) {
   _receiver    = receiver;
   _selector    = selector;
 
@@ -492,7 +510,10 @@ DeltaProcess::DeltaProcess(oop receiver, symbolOop selector) {
   _is_terminating = false;
 
   _event       = os::create_event(false);
-  _thread      = os::create_thread((int (*)(void*)) &launch_delta, (void*) this, &_thread_id);
+
+  _thread = createThread
+    ? os::create_thread((int (*)(void*)) &launch_delta, (void*) this, &_thread_id)
+    : os::starting_thread(&_thread_id);
   _stack_limit = (char*)os::stack_limit(_thread);
 
   _unwind_head = NULL;
@@ -1050,7 +1071,7 @@ double DeltaProcess::system_time() {
 DeltaProcess* Processes::processList = NULL;
 
 void Processes::start(VMProcess* p) {
-  processList = NULL;
+  // processList = NULL;
   // activate the vm process
   p->activate_system();
 }

@@ -39,12 +39,6 @@ int vmProcessMain(void* ignored) {
   Processes::start(new VMProcess);
   return 0;
 }
-void launchVMProcess() {
-  int ignored;
-  Thread* vmThread = os::create_thread(&vmProcessMain, NULL, &ignored);
-  Event* waitForever = os::create_event(false);
-  os::wait_for_event(waitForever);
-}
 int vm_main(int argc, char* argv[]) {
   parse_arguments(argc, argv);		// overrides default flag settings
   init_globals();
@@ -54,6 +48,10 @@ int vm_main(int argc, char* argv[]) {
   if (UseInliningDatabase)
     InliningDatabase::load_index_file();
 
-  launchVMProcess();
+  int ignored;
+
+  DeltaProcess::createMainProcess();
+  os::create_thread(&vmProcessMain, NULL, &ignored);
+  DeltaProcess::runMainProcess();
   return 0;
 }
