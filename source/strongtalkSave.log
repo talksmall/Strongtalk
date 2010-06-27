@@ -126083,3 +126083,235 @@ args: args <Array[ObjectiveCAlien]>
 "June 5, 2010 -> 18:26:41"!
 
 "System saved" !
+"June 27, 2010 -> 18:23:5"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buildActions ^ <Visual>
+
+	| row <Row[Visual]> |
+
+	row := Row[Button] new.
+	row add: (self buttonLabeled: 'Step into'
+						action: [:b <Button> | debugger singleStep: self activation]).
+	row add: (self buttonLabeled: 'Step over'
+						action: [:b <Button> | debugger stepNext: self activation]).
+	row add: (self buttonLabeled: 'Step out'
+						action: [:b <Button> | debugger stepReturn: self activation]).
+	row add: Glue xStretchy.
+	^row! !
+
+"June 27, 2010 -> 18:23:5"!
+
+! (Delta mirrorFor: #ActivationOutliner) methodsFor: 'private' !
+buttonLabeled: string action: block
+	^(Button
+			labeled: string
+			action: block)
+			stretchy: false;
+			yourself! !
+
+"June 27, 2010 -> 18:23:5"!
+
+! (Delta mirrorFor: #Behavior) methodsFor: 'bootstrap-temporary' !
+includesBehavior: aClass	^self == aClass or: [(VMMirror on: self) superclasses includes: aClass]! !
+
+"June 27, 2010 -> 18:23:5"!
+
+! (Delta mirrorFor: #BlockWithOneArgument) methodsFor: 'evaluating' !
+valueWithPossibleArgument: a <A1> ^ <R>	^self value: a! !
+
+"June 27, 2010 -> 18:23:5"!
+
+! (Delta mirrorFor: #BlockWithoutArguments) methodsFor: 'evaluating' !
+valueWithPossibleArgument: a <Object> ^ <R>	^self value! !
+
+"June 27, 2010 -> 18:23:5"!
+
+! (Delta mirrorFor: #Callback) methodsFor: 'accessing' !
+thunk ^<Alien>	^Alien thunk: self asInteger! !
+
+"June 27, 2010 -> 18:23:5"!
+
+! (Delta mirrorFor: #ClassVMMirror) methodsFor: 'accessing' !
+superclass: class <Class> 
+	
+{{primitiveSetSuperclassOf: self reflectee
+	toClass: class
+	ifFail: [:err| |name|
+				class isNil
+					ifTrue: [name := nil]
+					ifFalse: [name := class name].
+				self error: 'Unable to change superclass of ', self name, ' to ', name , '.' , err]}}
+! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+bitClear: o <X> ^<Self|X>
+
+	^(self bitOr: o) - o! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+| o
+
+	^self bitOr: o! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #LargeInteger) methodsFor: 'converting' !
+asAlien ^<Alien|SmallInt>
+
+	^self < 0
+		ifTrue: [Alien forLong: self]
+		ifFalse: [Alien forULong: self]
+! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #LargeInteger) methodsFor: 'restricted-double dispatching' !
+bitAndFromInteger: o <Integer> ^<Integer>
+
+	^{{self primitiveIndexedByteLargeIntegerAnd: o asLargeInteger
+					ifFail: [ :err <Symbol> | self error: err ]
+		}}! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #LargeInteger) methodsFor: 'restricted-double dispatching' !
+bitOrFromInteger: o <Integer> ^<Integer>
+
+	^{{self primitiveIndexedByteLargeIntegerOr: o asLargeInteger
+					ifFail: [ :err <Symbol> | self error: err ]
+		}}! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Message) methodsFor: 'control' !
+sendTo: anObject
+
+	^anObject perform: self selector withArguments: self arguments! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+ifNil: action <[] | [Self]> 	^self! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+ifNil: nilBlock ifNotNil: ifNotNilBlock	^ifNotNilBlock valueWithPossibleArgument: self! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+ifNotNil: action <[] | [Self]> 	^action valueWithPossibleArgument: self! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'testing' !
+ifNotNil: ifNotNilBlock ifNil: nilBlock	^ifNotNilBlock valueWithPossibleArgument: self! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'converting' !
+asSortedList: block
+
+	^self asSortedCollection: block! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'testing' !
+dead	^self status == #Killed || self status == #Completed || self status == #Dead! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'testing' !
+isActiveProcess        ^Processor activeProcess == self! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'copying' !
+copyWith: el
+
+	^self concatenate: (String with: el)! !
+
+"June 27, 2010 -> 18:23:6"!
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'copying' !
+withBlanksTrimmed
+
+	^self trimBlanks
+	! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'testing' !
+hasPositiveExtent
+	^ (self corner x > self origin x)
+			and: [self corner y > self origin y]! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'bit operations' !
+bitShift: numBits <Int> ^<Int>
+
+	^{{self primitiveBitShift: numBits
+		ifFail: [ :err <Symbol> | self asLargeInteger bitShift: numBits ]}}! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #SmallInteger) methodsFor: 'converting' !
+asAlien ^<Alien|SmallInt>
+
+	^self! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #Smalltalk) classSide methodsFor: 'file in - temporary' !
+fileIn: fileName <String>
+
+self fileInFromFile: (FilePath for: fileName)! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'testing' !
+ifNil: action <[] | [Self]> 
+	^action valueWithPossibleArgument: self! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'testing' !
+ifNil: nilBlock ifNotNil: ifNotNilBlock
+	^nilBlock valueWithPossibleArgument: self! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'testing' !
+ifNotNil: action <[] | [Self]> 
+	^self! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #UndefinedObject) methodsFor: 'testing' !
+ifNotNil: ifNotNilBlock ifNil: nilBlock
+	^nilBlock valueWithPossibleArgument: self! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'accessing' !
+localName
+
+	^self elements last name! !
+
+"June 27, 2010 -> 18:23:7"!
+
+! (Delta mirrorFor: #Win32FilePath) methodsFor: 'accessing' !
+pathNameDelimiter
+
+	^$\! !
+
+"June 27, 2010 -> 18:25:1"!
+
+"System saved" !
