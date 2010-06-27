@@ -82,6 +82,8 @@ superclassIfAbsent: fail <[^X def]> ^<Behavior | X>
 ! (Delta mirrorFor: #Behavior) methodsFor: 'bootstrap-temporary' !
 
 
+includesBehavior: aClass	^self == aClass or: [(VMMirror on: self) superclasses includes: aClass]!
+
 isMixinInvocation ^ <Boolean>
 	self deltaHack.
 	Smalltalk initializingTypeInfo ifFalse: [self error: 'Should not be called'].

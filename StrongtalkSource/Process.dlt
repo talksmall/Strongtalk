@@ -219,9 +219,9 @@ yield
 ! (Delta mirrorFor: #Process) methodsFor: 'testing' !
 
 
-dead
+dead	^self status == #Killed || self status == #Completed || self status == #Dead!
 
-	^self status == #Killed!
+isActiveProcess        ^Processor activeProcess == self!
 
 running ^<Boolean>
 	"Not suspended, dying, or dead. (This includes processes blocked in async dll calls)"

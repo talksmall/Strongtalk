@@ -294,6 +294,10 @@ containsPoint: p <Point> ^<Boolean>
 
 	^p >= self origin and: [ p < self corner ]!
 
+hasPositiveExtent
+	^ (self corner x > self origin x)
+			and: [self corner y > self origin y]!
+
 intersects: other <Rect> ^<Boolean>
 
 	^self origin < other corner and: [ other origin < self corner ]!

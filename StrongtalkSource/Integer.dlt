@@ -113,6 +113,10 @@ bitAt: index <Int> ^<Int>
 
 	^1 bitAnd: (self bitShift: (1 - index))!
 
+bitClear: o <X> ^<Self|X>
+
+	^(self bitOr: o) - o!
+
 bitInvert ^<Int>
 
 	^-1 - self!
@@ -143,7 +147,11 @@ rawBitShift: numBits <Int> ^<Int>
 	"This is like bit shift, except that the result is truncated to a smallinteger, rather than
 		overflowing to a largeinteger.  The receiver cannot be a largeinteger."
 
-	self error: 'this message only works for small integers'! !
+	self error: 'this message only works for small integers'!
+
+| o
+
+	^self bitOr: o! !
 
 ! (Delta mirrorFor: #Integer) methodsFor: 'comparison' !
 

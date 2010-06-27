@@ -108,6 +108,13 @@ bitXor: arg <Number> ^ <Int>
 ! (Delta mirrorFor: #LargeInteger) methodsFor: 'converting' !
 
 
+asAlien ^<Alien|SmallInt>
+
+	^self < 0
+		ifTrue: [Alien forLong: self]
+		ifFalse: [Alien forULong: self]
+!
+
 asFloat ^ <Float>
 
 	^{{ self primitiveIndexedByteLargeIntegerAsFloatIfFail: [ :err <Symbol> | self error: err ] }}
@@ -187,6 +194,18 @@ addFromInteger: o <Integer> ^<Integer>
 
 	^{{self primitiveIndexedByteLargeIntegerAdd: o asLargeInteger
 			ifFail: [ :err <Symbol> | self error: err ]
+		}}!
+
+bitAndFromInteger: o <Integer> ^<Integer>
+
+	^{{self primitiveIndexedByteLargeIntegerAnd: o asLargeInteger
+					ifFail: [ :err <Symbol> | self error: err ]
+		}}!
+
+bitOrFromInteger: o <Integer> ^<Integer>
+
+	^{{self primitiveIndexedByteLargeIntegerOr: o asLargeInteger
+					ifFail: [ :err <Symbol> | self error: err ]
 		}}!
 
 equalFromInteger: o <Integer> ^<Boolean>

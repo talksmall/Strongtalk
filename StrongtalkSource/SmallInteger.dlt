@@ -105,7 +105,7 @@ bitOr: o <X> ^<Self|X>
 bitShift: numBits <Int> ^<Int>
 
 	^{{self primitiveBitShift: numBits
-		ifFail: [ :err <Symbol> | super bitShift: numBits ]}}!
+		ifFail: [ :err <Symbol> | self asLargeInteger bitShift: numBits ]}}!
 
 bitXor: o <X> ^<Self|X>
 		{where X <Integer> is arg 1}
@@ -175,6 +175,10 @@ bareBitShift: numBits <SmallInt> ^<SmallInt>
 
 ! (Delta mirrorFor: #SmallInteger) methodsFor: 'converting' !
 
+
+asAlien ^<Alien|SmallInt>
+
+	^self!
 
 asFloat ^<Float>
 

@@ -51,7 +51,11 @@ perform ^<Object>
 	"Perform the message specified by the receiver, and return the result.  This
 	  is NOT typesafe"
 
-	^self receiver perform: self selector withArguments: self arguments! !
+	^self receiver perform: self selector withArguments: self arguments!
+
+sendTo: anObject
+
+	^anObject perform: self selector withArguments: self arguments! !
 
 ! (Delta mirrorFor: #Message) methodsFor: 'initialization' !
 

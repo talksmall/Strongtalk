@@ -47,9 +47,17 @@ printOn: strm <CharOutputStream>
 ! (Delta mirrorFor: #UndefinedObject) methodsFor: 'testing' !
 
 
-ifNil: block <[]>
+ifNil: action <[] | [Self]> 
+	^action valueWithPossibleArgument: self!
 
-	^block value!
+ifNil: nilBlock ifNotNil: ifNotNilBlock
+	^nilBlock valueWithPossibleArgument: self!
+
+ifNotNil: action <[] | [Self]> 
+	^self!
+
+ifNotNil: ifNotNilBlock ifNil: nilBlock
+	^nilBlock valueWithPossibleArgument: self!
 
 isNil ^<Boolean>
 

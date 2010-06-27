@@ -207,6 +207,10 @@ asUppercase ^<String>
 			copy at: i put: (other at: i - sz) ].
 	^copy!
 
+copyWith: el
+
+	^self concatenate: (String with: el)!
+
 copyWithSize: s <Int> ^<VarSeqCltn[EX]>
 	{where EX is returnType of #anElement message of receiverType}
 
@@ -263,6 +267,11 @@ stringCopyWithSize: s <Int> ^<String>
 trimBlanks
 
 	^self stringCopyFrom: 1 to: self lastNonBlank
+	!
+
+withBlanksTrimmed
+
+	^self trimBlanks
 	! !
 
 ! (Delta mirrorFor: #ReadString) methodsFor: 'fake brands' !

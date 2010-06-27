@@ -158,7 +158,11 @@ asOrderedCollection ^<OrdCltn[EX]>
 		{where EX is returnType of #anElement message of receiverType}
 
 	"the guarantee is safe because of the inference clause"
-	^guaranteed <OrdCltn[EX]> self! !
+	^guaranteed <OrdCltn[EX]> self!
+
+asSortedList: block
+
+	^self asSortedCollection: block! !
 
 ! (Delta mirrorFor: #OrderedCollection) methodsFor: 'copying' !
 

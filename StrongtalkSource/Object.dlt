@@ -668,9 +668,13 @@ finalize
 
 	^self == other!
 
-ifNil: block <[]>
+ifNil: action <[] | [Self]> 	^self!
 
-	^self!
+ifNil: nilBlock ifNotNil: ifNotNilBlock	^ifNotNilBlock valueWithPossibleArgument: self!
+
+ifNotNil: action <[] | [Self]> 	^action valueWithPossibleArgument: self!
+
+ifNotNil: ifNotNilBlock ifNil: nilBlock	^ifNotNilBlock valueWithPossibleArgument: self!
 
 isNil ^<Boolean>
 	"test whether the receiver is nil.  This method should not be overridden by application programmers."
