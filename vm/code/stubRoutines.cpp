@@ -1219,6 +1219,7 @@ char* StubRoutines::generate_handle_pascal_callback_stub(MacroAssembler* masm) {
   masm->pushl(edx); 		// &params
   masm->pushl(ecx); 		// index
   masm->call((char*)handleCallBack, relocInfo::runtime_call_type);
+  masm->addl(esp, 2*oopSize); 	// pop the arguments
 
   // restore number of bytes in parameter list
   masm->popl(edx);
