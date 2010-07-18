@@ -37,6 +37,7 @@ CompiledLoop::CompiledLoop() {
   _hoistableTests = NULL;
   _loopBranch = NULL;
   _isCountingUp = true;	  // initial guess
+  _scope = NULL; // in case loop creationg is aborted
 }
 
 

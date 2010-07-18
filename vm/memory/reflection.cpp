@@ -499,6 +499,7 @@ void ClassChange::update_class(bool class_vars_changed,
 
   if (old_klass()->klass_part()->superKlass() != new_super()) {
     old_klass()->klass_part()->set_superKlass(new_super());
+    old_klass()->klass()->klass_part()->set_superKlass(new_super()->klass());
   }
 }
 
