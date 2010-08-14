@@ -393,8 +393,10 @@ divideFromRationalNumber: o <RationalNumber> ^<Number>
 	^o asFloat / self!
 
 divideFromSmallInteger: o <SmallInteger> ^<Number>
-	"%generated code- do not modify"
-	^o asFloat / self!
+
+	^self isZero
+		ifTrue: [(ZeroDivide dividend: o) signal]
+		ifFalse: [o asFloat / self]!
 
 equalFromFloat: o <Float> ^<Boolean>
 	"%generated code- do not modify"
@@ -498,6 +500,10 @@ subtractFromSmallInteger: o <SmallInteger> ^<Number>
 even ^<Boolean>
 
 	^(self \\ 2) = 0!
+
+isZero
+
+	^self = self zero!
 
 negative ^<Boolean>
 

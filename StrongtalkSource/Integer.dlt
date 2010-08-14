@@ -434,6 +434,12 @@ bitOrFromInteger: arg <Integer>
 
 	self unimplemented!
 
+divideFromFloat: o <Float> ^<Number>
+
+	^self isZero
+			ifTrue: [(ZeroDivide dividend: o) signal]
+			ifFalse: [o / self asFloat]!
+
 equalFromInteger: o <Integer> ^<Boolean>
 
 	^o = self asLargeInteger!

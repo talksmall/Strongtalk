@@ -1,0 +1,31 @@
+Delta define: #IntegerTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #IntegerTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #IntegerTest) group: 'NumberTests'!
+
+(Delta mirrorFor: #IntegerTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #IntegerTest) methodsFor: 'initialize-release' !
+
+
+setUp
+!
+
+tearDown
+! !
+
+! (Delta mirrorFor: #IntegerTest) methodsFor: 'tests' !
+
+
+testDivideByFloatZero
+
+	self should: [1 / 0.0] raise: ZeroDivide!
+
+testDivideByIntegerZero
+
+	self should: [1 / 0] raise: ZeroDivide! !
+
