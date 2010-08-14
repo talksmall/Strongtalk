@@ -376,6 +376,7 @@ void NodeBuilder::while_node(WhileNode* node) {
   generate_subinterval(node->expr_code(), true);
   Expr* cond = exprStack()->pop();
   if (abortIfDead(cond)) {
+    assert(false, "to allow a breakpoint");
     return;	  // condition ends dead --> loop is never executed
   }
   if (false && cond->isConstantExpr()) {

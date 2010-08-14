@@ -95,6 +95,12 @@ PRIM_DECL_2(behaviorPrimitives::setSuperclass, oop receiver, oop newSuper) {
   }
   receiverClass->set_superKlass(newSuperclass);
   
+  Universe::flush_inline_caches_in_methods();
+  Universe::code->clear_inline_caches();
+
+  lookupCache::flush();
+  DeltaCallCache::clearAll();
+
   return receiver;
 }
 

@@ -37,7 +37,7 @@ CompiledLoop::CompiledLoop() {
   _hoistableTests = NULL;
   _loopBranch = NULL;
   _isCountingUp = true;	  // initial guess
-  _scope = NULL; // in case loop creationg is aborted
+  _scope = NULL; // in case loop creation is aborted
 }
 
 
@@ -181,7 +181,7 @@ int CompiledLoop::findStartOfSend(int bci) {
 
 char* CompiledLoop::findUpperBound() {
   // find upper bound and loop variable
-  int condBCI = findStartOfSend(_endOfCond->bci() - InterpretedIC::size);
+  int condBCI = _endOfCond ? findStartOfSend(_endOfCond->bci() - InterpretedIC::size) : IllegalBCI;
   if (condBCI == IllegalBCI) return "loop condition: no send found";
   // first find comparison in loop condition
   Expr* loopCond = _scope->exprStackElems()->at(condBCI);
@@ -493,6 +493,7 @@ void CompiledLoop::checkForArraysDefinedInLoop() {
 
 
 void CompiledLoop::optimize() {
+  if (!_scope) return;
   // general loop optimizations
   hoistTypeTests();
   findRegCandidates();
