@@ -69,11 +69,27 @@ ensureLoaded: libraryName
 								unsignedLongAt: 1 put: (self primLoadLibrary: libraryName);
 								yourself]!
 
+forLong: long
+
+	((long > 16r7FFFFFFF) or: [long < -16r80000000])
+		ifTrue: [self error: 'Out of range'].
+	^(self new: 4)
+		signedLongAt: 1 put: long;
+		yourself!
+
 forPointer: pointer <Integer> ^<X>
 
 	^(self primitiveNew: 8)
 		size: 0;
 		addressField: pointer;
+		yourself!
+
+forULong: ulong
+
+	((ulong > 16rFFFFFFFF) or: [ulong < 0])
+		ifTrue: [self error: 'Out of range'].
+	^(self new: 4)
+		unsignedLongAt: 1 put: ulong;
 		yourself!
 
 new
@@ -109,7 +125,7 @@ newCString: string <String> ^ <Alien>
 
 newForCallbackArgs
 
-	^(self primitiveNew: 8)
+	^(self new: 8)
 		size: self dataSize negated;
 		yourself!
 
@@ -134,7 +150,11 @@ rawNewC: size <Integer> ^ <X>
 	^(self primitiveNew: 8)
 		size: size negated;
 		addressField: (self Cmalloc: size);
-		initialize! !
+		initialize!
+
+thunk: address <Integer> ^ <Alien>
+
+	^self forPointer: address! !
 
 ! (Delta mirrorFor: #Alien) classSide methodsFor: 'libraries' !
 
@@ -340,6 +360,10 @@ unsignedShortAt: index <Integer> put: short <Integer>^<Integer>
 ! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
 
 
+asAliens: array <Array> ^ <Array[Alien]>
+
+	^array collect: [:el| el asAlien]!
+
 primFFICallResult: result <Alien>
 
 	{{self primitiveAlienCallResult: result ifFail: [:err| self error: err]}}.
@@ -348,15 +372,15 @@ primFFICallResult: result <Alien>
 primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			with: arg1
+			with: arg1 asAlien
 			ifFail: [:err| self error: err]}}.
 	^result!
 
 primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger> with: arg2 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			with: arg1
-			with: arg2
+			with: arg1 asAlien
+			with: arg2 asAlien
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -366,9 +390,9 @@ with: arg2 <Alien|SmallInteger>
 with: arg3 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			with: arg1
-			with: arg2
-			with: arg3
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -379,10 +403,10 @@ with: arg3 <Alien|SmallInteger>
 with: arg4 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			with: arg1
-			with: arg2
-			with: arg3
-			with: arg4
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			with: arg4 asAlien
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -394,11 +418,11 @@ with: arg4 <Alien|SmallInteger>
 with: arg5 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			with: arg1
-			with: arg2
-			with: arg3
-			with: arg4
-			with: arg5
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			with: arg4 asAlien
+			with: arg5 asAlien
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -411,12 +435,12 @@ with: arg5 <Alien|SmallInteger>
 with: arg6 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			with: arg1
-			with: arg2
-			with: arg3
-			with: arg4
-			with: arg5
-			with: arg6
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			with: arg4 asAlien
+			with: arg5 asAlien
+			with: arg6 asAlien
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -430,13 +454,13 @@ with: arg6 <Alien|SmallInteger>
 with: arg7 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			with: arg1
-			with: arg2
-			with: arg3
-			with: arg4
-			with: arg5
-			with: arg6
-			with: arg7
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			with: arg4 asAlien
+			with: arg5 asAlien
+			with: arg6 asAlien
+			with: arg7 asAlien
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -451,7 +475,7 @@ with: arg7 <Alien|SmallInteger>
 with: arg8 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8 }
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8 })
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -467,7 +491,7 @@ with: arg8 <Alien|SmallInteger>
 with: arg9 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9 }
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9 })
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -484,7 +508,7 @@ with: arg9 <Alien|SmallInteger>
 with: arg10 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10 }
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10 })
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -502,7 +526,7 @@ with: arg10 <Alien|SmallInteger>
 with: arg11 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11 }
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11 })
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -521,7 +545,7 @@ with: arg11 <Alien|SmallInteger>
 with: arg12 <Alien|SmallInteger> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			withArguments: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11. arg12 }
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11. arg12 })
 			ifFail: [:err| self error: err]}}.
 	^result!
 
@@ -529,7 +553,7 @@ primFFICallResult: result <Alien|UndefinedObject>
 withArguments: arguments <Array[Alien|SmallInteger]> ^ <Alien>
 
 	{{self primitiveAlienCallResult: result
-			withArguments: arguments
+			withArguments: (self asAliens: arguments)
 			ifFail: [:err| self error: err]}}.
 	^result! !
 
@@ -587,7 +611,7 @@ free
 
 freeAfter: aBlock <[Alien]>
 
-	[aBlock value: self]
+	^[aBlock value: self]
 		ensure: [self free]! !
 
 ! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
