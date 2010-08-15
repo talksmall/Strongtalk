@@ -126315,3 +126315,2911 @@ pathNameDelimiter
 "June 27, 2010 -> 18:25:1"!
 
 "System saved" !
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+Delta define: #Integer as: (
+(Class subclassOf: 'RationalNumber' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:38"!
+
+(Delta mirrorFor: #Integer)
+comment: 
+'%notes:
+    - This class implements generalized algorithms that handle both large and small integers.
+    -  >,>=,<= are not implemented here for generalized integers; the Magnitude versions
+          are fine.  SmallInteger implements its own for efficiency.
+    * When the generalized algorithms are written, they should be designed to coerce either or
+          both of receiver and argument to largeinteger format if they are smallintegers, because
+         the overflow/underflow code in SmallInteger depends on that.
+
+Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+'!
+
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) classSide methodsFor: 'utility' !
+readFrom: s <CharInputStream> ^<Int>
+
+	| negative <Boolean> i <Int> |
+	s atEnd
+		ifTrue: [ ^ 0 ].
+	negative := s peek = $-.
+	negative
+		ifTrue: [ s next ].
+	i := 0.
+	[ s atEnd not and: [ s peek isDigit ] ]
+		whileTrue: [	i := (i*10) + s next digitValue
+	].
+	negative
+		ifTrue: [ i := i negated ].
+	^i! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+denominator ^<Integer>
+	^1! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+hash ^<Int>
+
+	^self! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+hexDigitAt: nybble <Int> ^<Character>
+	"Return the hex character for the ith nybble (4 bits, index of lowest sig. = 1)"
+
+	^'0123456789ABCDEF'
+		at: ((self bitShift: (nybble - 1 * 4) negated) bitAnd: 16rF) + 1! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+identityHash ^<Int>
+
+	^self! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+negated ^<Int>
+
+	^self zero - self! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'accessing' !
+numerator ^<Integer>
+	^self! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'benchmarking' !
+benchFib  "Handy send-heavy benchmark"
+	"(result // seconds to run) = approx calls per second"
+	" | r t |
+	  t _ Time millisecondsToRun: [r _ 26 benchFib].
+	  (r * 1000) // t"
+	"138000 on a Mac 8100/100"
+	^ self < 2
+		ifTrue: [1] 
+		ifFalse: [(self-1) benchFib + (self-2) benchFib + 1]! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'benchmarking' !
+recurse
+	self > 0 ifTrue: [
+		(self - 1) recurse.
+		(self - 1) recurse.
+	]! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'benchmarking' !
+sumTo: end <Int>  ^<Int>
+	| sum <Int> | 
+	sum := 0.
+	self to: end do: [ :i <Int> | sum := sum + i ].
+	^sum! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+allMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) = mask! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+anyMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) ~= 0! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+bitAnd: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^o bitAndFromInteger: self! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+bitAt: index <Int> ^<Int>
+	"Return the bit at the specified bit index, with the low bit being index 1"
+
+	^1 bitAnd: (self bitShift: (1 - index))! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+bitClear: o <X> ^<Self|X>
+
+	^(self bitOr: o) - o! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+bitInvert ^<Int>
+
+	^-1 - self! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+bitOr: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^o bitOrFromInteger: self! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+bitShift: shift <Int> ^<Int>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+bitXor: o <X> ^<Self|X>
+		{where X <Integer> is arg 1}
+
+	^o bitXorFromInteger: self! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+highBit ^<SmallInt>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:38"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+noMask: mask <Integer> ^<Boolean>
+
+	^(self bitAnd: mask) = 0! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+rawBitShift: numBits <Int> ^<Int>
+	"This is like bit shift, except that the result is truncated to a smallinteger, rather than
+		overflowing to a largeinteger.  The receiver cannot be a largeinteger."
+
+	self error: 'this message only works for small integers'! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'bit operations' !
+| o
+
+	^self bitOr: o! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'comparison' !
+< a <Number> ^<Boolean>
+
+	^a lessFromInteger: self! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'comparison' !
+= a <Object> ^<Boolean>
+
+"%todo: use this typesafe version when coerce: is fast
+	^(Number coerce: a else: [ ^false ]) equalFromInteger: self
+"
+	^a Number
+		ifTrue: [ (guaranteed <Number> a) equalFromInteger: self ]
+		ifFalse: [ false ]
+! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'comparison' !
+@= other <ExternalData> ^<Boolean>
+	"Compares two ExternalData objects to each other.  This will coerce between integers and proxies
+	  as needed"
+	"%opt- this builds two proxies when comparing two integers; use double dispatching instead"
+
+	^other = self asExternalProxy! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'comparison' !
+@~= other <ExternalData> ^<Boolean>
+	"Compares two ExternalData objects to each other.  This will coerce between integers and proxies
+	  as needed"
+
+	^(self @= other) not! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'constants' !
+unit ^<Integer>
+
+	^1! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'constants' !
+zero ^<Integer>
+
+	^0! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'converting' !
+asExternalProxy ^<ExternalProxy>
+
+	^ExternalProxy forInt: self! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'converting' !
+asFloat ^<Float>
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'converting' !
+asInteger ^<Integer>
+
+	^self! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'iteration' !
+timesRepeat: f <[]> ^<Object>
+
+	1 to: self do: [ :i <Int> |
+		f value  ].
+	^nil! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'iteration' !
+to: stop <Int> by: step <Int> do: f <[Int]> ^<Object>
+
+	| v <Int> |
+	v := self.
+	step < 0
+		ifFalse: [ [ v <= stop ]
+					whileTrue: [	f value: v.
+								v := v + step  ]]
+		ifTrue: [ [ v >= stop ]
+					whileTrue: [ f value: v.
+								v := v + step  ]].
+	^nil! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'iteration' !
+to: stop <Int> do: f <[Int]> ^<Object>
+
+	| v <Int> |
+	v := self.
+	[ v <= stop ]
+		whileTrue: [	f value: v.
+					v := v + 1  ].
+	^nil! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'iteration' !
+to: stop <Int> intervals: n <Int> do: f <[Int]> ^<Object>
+	"Evaluate f with n + 1 values as evenly spaced 
+	 as possible between the
+	 receiver and stop, inclusive."
+
+	| interval <RationalNumber> current <RationalNumber> |
+	interval := (stop - self) / n.
+	current := self.
+	n + 1 timesRepeat:
+		[	f value: current asInteger.
+			current := current + interval.	].! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'mathematical functions' !
+factorial ^<Int>
+
+	self assert: [ self >= self zero ].
+	^self <= 1
+		ifTrue: [ 1 ]
+		ifFalse: [ self * (self - 1) factorial ]! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'mathematical functions' !
+nfib ^<Int>
+	^self <= 1
+			ifTrue: [1]
+			ifFalse: [(self - 1) nfib +
+							(self - 2) nfib +
+							1]! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+* a <Number> ^<X>
+			{where X <Number> is returnType of #multiplyFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a multiplyFromInteger: self)! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
++ a <Number> ^<X>
+			{where X <Number> is returnType of #addFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a addFromInteger: self)! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+- a <Number> ^<X>
+			{where X <Number> is returnType of #subtractFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a subtractFromInteger: self)! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+/ a <Number> ^<X>
+			{where X <Number> is returnType of #divideFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a divideFromInteger: self)! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+// arg <Number> ^<Int>
+
+	"%todo: fix when coerce is fast"
+	| cl <Class> |
+	cl := arg class.
+	^cl == LargeInteger
+		ifTrue: [ self asLargeInteger // arg ]
+		ifFalse: [ cl == SmallInteger
+							ifTrue: [ self asLargeInteger // (guaranteed <SmallInteger> arg) asLargeInteger ]
+							ifFalse: [ super // arg ]
+					 ]! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+\\ a <Number> ^<X>
+			{where X <Number> is returnType of #moduloFromInteger: message of arg 1}
+	"%generated code- do not modify"
+	^guaranteed <X> (a moduloFromInteger: self)! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+abs ^<Integer>
+
+	^self < self zero
+		ifTrue: [ self negated ]
+		ifFalse: [ self ]! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+ceiling ^<Int>
+
+	^self! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+floor ^<Int>
+
+	^self! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+gcd: other <Integer> ^<Integer>
+	"greatest common divisor"
+
+	| myabs <Int> otherabs <Int> lower <Int> higher <Int> |
+	myabs := self abs.
+	otherabs := other abs.
+
+	myabs < otherabs
+		ifTrue: [	lower := myabs.
+						higher := otherabs.	]
+		ifFalse: [	lower := otherabs.
+						higher := myabs.		].
+	[ lower == 0 ]
+		whileFalse:
+			[	| oldHigher <Int> |
+				oldHigher := higher.
+				higher := lower.
+				lower := oldHigher \\ lower.	].
+	^higher! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+rem: a <Number> ^<X>
+			{where X <Number> is returnType of #remFromInteger: message of arg 1}
+	^guaranteed <X> (a remFromInteger: self)! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'operations' !
+truncated ^<Int>
+
+	^self! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'printing' !
+printBareHexDigits: nDigits <Int> on: strm <CharOutputStream>
+
+	nDigits to: 1 by: -1
+		do: [ :i <Int> |
+					strm put: (self hexDigitAt: i) ]! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'printing' !
+printBareHexOn: strm <CharOutputStream>
+
+	(self = (self bitAnd: 16rF))
+		ifFalse: [ (self bitShift: -4) printBareHexOn: strm ].
+	strm put: (self hexDigitAt: 1).! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'printing' !
+printHexOn: strm <CharOutputStream>
+
+	strm putAll: '16r'.
+	self printBareHexOn: strm.! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'printing' !
+printOn: strm <CharOutputStream>
+
+	self printOn: strm radix: 10! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'printing' !
+printOn: strm <CharOutputStream> radix: radix <Int>
+
+	| abs <Int> |
+	self negative
+		ifTrue: [	strm nextPut: $-.
+						abs := self negated. ]
+		ifFalse: [	abs := self. ].
+	abs printNonNegativeOn: strm radix: radix! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'private-proxy double dispatching' !
+bitAndFromSmallInteger: other <SmallInteger> ^<ExternalData>
+
+	^self bitAnd: other! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'private-proxy double dispatching' !
+bitOrFromSmallInteger: other <SmallInteger> ^<Int>
+
+	^self bitOr: other! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'proxy operations' !
+externalBitAnd: other <ExternalData> ^<ExternalData>
+
+	"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'proxy operations' !
+externalBitOr: other <ExternalData> ^<ExternalData>
+
+		"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'proxy operations' !
+hasBitsSet: mask <ExternalData> ^<Boolean>
+
+	"this happens only if receiver is a largeinteger, since
+		these messages are overridden in SmallInteger"
+	self error: 'Attempt to do external data operations on a LargeInteger'! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+addFromInteger: o <Integer> ^<Integer>
+
+	^o + self asLargeInteger! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+addFromSmallInteger: o <SmallInteger> ^<Integer>
+	"%generated code- do not modify"
+	^self addFromInteger: o! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+bitAndFromInteger: arg <Integer>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+bitOrFromInteger: arg <Integer>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+divideFromFloat: o <Float> ^<Number>
+
+	^self isZero
+			ifTrue: [(ZeroDivide dividend: o) signal]
+			ifFalse: [o / self asFloat]! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+equalFromInteger: o <Integer> ^<Boolean>
+
+	^o = self asLargeInteger! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+equalFromSmallInteger: o <SmallInteger> ^<Boolean>
+	"%generated code- do not modify"
+	^self equalFromInteger: o! !
+
+"August 15, 2010 -> 13:16:39"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+lessFromInteger: o <Integer> ^<Boolean>
+
+	^o < self asLargeInteger! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+lessFromSmallInteger: o <SmallInteger> ^<Boolean>
+	"%generated code- do not modify"
+	^self lessFromInteger: o! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+moduloFromInteger: o <Integer> ^<Integer>
+
+	| tmp <Int> |
+	tmp :=  self asLargeInteger.
+	^o - ((o // tmp) * tmp)! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+moduloFromSmallInteger: o <SmallInteger> ^<Integer>
+	"%generated code- do not modify"
+	^o \\ self! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+multiplyFromInteger: o <Integer> ^<Integer>
+
+	^o * self asLargeInteger! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+multiplyFromSmallInteger: o <SmallInteger> ^<Integer>
+	"%generated code- do not modify"
+	^self multiplyFromInteger: o! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+remFromInteger: o <Integer> ^<Integer>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+subtractFromInteger: o <Integer> ^<Integer>
+
+	^o - self asLargeInteger! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-double dispatching' !
+subtractFromSmallInteger: o <SmallInteger> ^<Integer>
+	"%generated code- do not modify"
+	^self subtractFromInteger: o! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-to integers' !
+printNonNegativeOn: strm <CharOutputStream> radix: radix <Int>
+	"Like printOn:radix:, but assumes the receiver is nonnegative"
+
+	| digit <Int> |
+	self >= radix
+		ifTrue: [	(self // radix) printNonNegativeOn: strm radix: radix.
+						digit := self \\ radix. ]
+		ifFalse: [ digit := self ].
+	strm put: (Character digitValue: digit).! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'restricted-to large integers' !
+asLargeInteger ^<LargeInteger>
+	"This message must ONLY be sent by large integers to construct a temporary large integer
+		during mixed-mode integer operations.  The result of this message must NEVER be
+		used by other code, since large integers that can be encoded as SmallIntegers
+		are never supposed to exist outside the large integer class"
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:40"!
+
+! (Delta mirrorFor: #Integer) methodsFor: 'truncation and rounding' !
+rounded ^<Int>
+
+	^self! !
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+Delta define: #Number as: (
+(Class subclassOf: 'Magnitude[Number] mixin |> Object' instanceVariables: '') abstract) !
+
+
+"August 15, 2010 -> 13:16:56"!
+
+(Delta mirrorFor: #Number)
+comment: 
+'Tags: %BlueBook %User
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.3 $
+'!
+
+
+"August 15, 2010 -> 13:16:56"!
+
+! (Delta mirrorFor: #Number) classSide methodsFor: 'instance creation' !
+new ^<Instance>
+
+	self shouldNotImplement! !
+
+"August 15, 2010 -> 13:16:56"!
+
+! (Delta mirrorFor: #Number) classSide methodsFor: 'testing' !
+test
+	"self test"
+
+	self	testEquals;
+		testRelationals;
+		testArithmetic.! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) classSide methodsFor: 'testing' !
+testArithmetic
+	"self testArithmetic"
+	| eps <Float> |
+	eps := 0.00000001.
+	
+		"+"
+		[ 3+3 = 6 ] verify. [ 1+(2/3) = (5/3) ] verify. [ 1 + 2.0 isWithin: eps of: 3.0 ] verify.
+		[ 3.0 + 3.0 isWithin: eps of:  6.0 ] verify. [ 1.0 + (2/3) isWithin: eps of: 5/3 ] verify. [ 1.0 + 2 isWithin: eps of: 3.0] verify.
+		[ (1/3 + 1/6) = (2/9) ] verify. [ 2/3 + (1 asFloat/ 3 asFloat) isWithin: eps of: 1 ] verify.
+
+		"-"
+		[ 3-1 = 2 ] verify. [ 1-(2/3) = (1/3) ] verify. [ 1 - 2.0 isWithin: eps of: -1.0 ] verify.
+		[ 3.0 - 2.0 isWithin: eps of:  1.0 ] verify. [ 1.0 - (2/3) isWithin: eps of: 1/3 ] verify. [ 1.0 - 2 isWithin: eps of: -1.0] verify.
+		[ (1/3 - 1/6) = (-1/9) ] verify. [ 4/3 - (1 asFloat/ 3 asFloat) isWithin: eps of: 1 ] verify.
+
+		"*"
+		[ 2*3 = 6 ] verify. [ 2*3.0 isWithin: eps of: 6.0 ] verify. [ 3*(1/3) = 1 ] verify.
+		[ 2.0 *3.0 isWithin: eps of: 6.0 ] verify. [ 2.0*(1/2) isWithin: eps of: 1 ] verify. [ 2.0 * 3 isWithin: eps of: 6 ] verify.
+		[ 2/3 * (1/3) = (2/9) ] verify. [ 2/3 * (1 asFloat / 3 asFloat) isWithin: eps of: 2/9 ] verify. [ 2/3 * 2 = (4/3) ] verify.
+
+		"/"
+		[ 6/3 = 2 ] verify. [ 6/3.0 isWithin: eps of: 2 ] verify. [ 3/(1/3) = 9 ] verify.
+		[ 6.0 / 2 isWithin: eps of: 3 ] verify. [ 6.0 / 2.0 isWithin: eps of: 3 ] verify. [ 6.0 / (1/3) isWithin: eps of: 18 ] verify. 
+		[ 2/3/(1/2) = (4/3) ] verify. [ 2/3/0.5 isWithin: eps of: 4/3 ] verify. [ 2/3/2 = (1/3) ] verify.
+
+		"//"
+		[ 7 // 2 = 3 ] verify. [ 7 // 2.0 isWithin: eps of: 3 ] verify. [ 7 // (1/2) = 14 ] verify. [ -7 // 2 = -4 ] verify.
+		[ 7.0 // 2.0 = 3 ] verify. [ 7.0 // 2 isWithin: eps of: 3 ] verify. [ 7.0 // (1/2) = 14 ] verify. [ -7.0 // 2 = -4 ] verify.
+		[ 7/3 // (2/3) = 3 ] verify. [  -7/3 // (2/3) = -4 ] verify.
+
+		"\\"
+		[ 7 \\ 2 = 1 ] verify. [ 7 \\ 2.0 isWithin: eps of: 1 ] verify. [ (7+ 1/3) \\ (1/2) = (1/6) ] verify. [ -7 \\ 2 = 1 ] verify.
+		[ 7.0 \\ 2.0 isWithin: eps of: 1.0 ] verify.
+		[ 7.0 \\ 2 isWithin: eps of: 1 ] verify.
+		[ (7.0 + (1/3) asFloat) \\ (1/2) isWithin: eps of: 1/3 ] verify.
+		[ -7.0 \\ 2 isWithin: eps of: 1 ] verify.
+		[ 7/3 \\ (2/3) = (1/3) ] verify. [  -7/3 \\ (2/3) = (1/3) ] verify.
+! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) classSide methodsFor: 'testing' !
+testEquals
+	"self testEquals"
+
+	"=, ~="
+	[ 123 == 123 ] verify. [ (-2 == -3) not ] verify.
+	[ 123 = 123 ] verify. [ 123 ~= -123 ] verify.
+	[ 123 = (246/2) ] verify. [ 123 ~= (246/3) ] verify.
+	[ 123 = 123.0 ] verify. [ 123 ~= 123.1 ] verify.
+
+	[ 123.0 = 123.0 ] verify. [ 123.0 ~= 123.4 ] verify.
+	[ 123.0 = 123 ] verify. [ 123.0 ~= 124 ] verify.
+	[ 0.5 = (1/2) ] verify. [ -0.5 = (1/-2) ] verify. [ 0.5 ~= (1/3) ] verify.
+
+	[ (3/4) = (6/8) ] verify. [ (3/4) ~= (1/4) ] verify.
+	[ (1/3) = (1.0 / 3.0) ] verify. [ (1/3) ~= 0.33333 ] verify.
+	[ (2/3) * 3 = 2 ] verify.
+	[ (-10/-5) = 2 ] verify. [ (-10/5) = -2 ] verify. [ (10/-5) = -2 ] verify.
+
+! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) classSide methodsFor: 'testing' !
+testRelationals
+	"self testRelationals"
+
+	"<"
+	[ 123 < 125 ] verify. [ (123 < 122) not ] verify.
+	[ 123 < 124.0 ] verify. [ (123 < 122.0) not ] verify.
+	[ 2 < (11/5) ] verify. [ (2 < (9/5)) not ] verify.
+
+	[ 123.0 < 124.0 ] verify. 
+	[ 123.0 < 124 ] verify.
+	[ 2.0 < (11/5) ] verify.
+
+	[ (11/5) < (12/5) ] verify. [ ((11/5) < (9/5)) not ] verify. [ (9/5) < (10/5) ] verify.
+	[ ((11/5) < (11/5)) not ] verify.
+	[ (-4/5) < 0 ] verify. [ (4/-5) < (-3/5) ] verify. [ (2/3) < (-4/-3) ] verify.
+	[ 2/3 < 1 ] verify. [ (4/3 < 1) not ] verify.
+	[ 2/3 < 1.0 ] verify. [ (4/3 < 1.0) not ] verify.
+
+	">"
+	[ 123 > 122 ] verify. [ (121 > 122) not ] verify.
+	[ 123 > 122.0 ] verify. [ (123 > 124.0) not ] verify.
+	[ 2 > (9/5) ] verify. [ (2 > (11/5)) not ] verify.
+
+	[ 124.0 > 123.0 ] verify. 
+	[ 124.0 > 123 ] verify.
+	[ 2.0 > (9/5) ] verify.
+
+	[ (12/5) > (11/5) ] verify. [ ((9/5) > (11/5)) not ] verify. [ (10/5) > (9/5) ] verify.
+	[ ((11/5) > (11/5)) not ] verify.
+	[ (-4/5) > -1 ] verify. [ (3/-5) > (-4/5) ] verify. [ (4/3) > (-2/-3) ] verify.
+	[ 2/3 > 0 ] verify. [ (4/3 > 2) not ] verify.
+	[ 2/3 > 0.0 ] verify. [ (4/3 > 2.0) not ] verify.
+
+	"<="
+	[ 1 <= 2 ] verify. [ 2 <= 2 ] verify. [ (2 <= 1)not ] verify.
+	[ 1.0 <= 2.0 ] verify. [ 2.0 <= 2.0 ] verify. [ (2.0 <= 1.0)not ] verify.
+	[ 0.666 <= (2/3) ] verify. [ (0.666 <= (1/3) ) not ] verify.
+
+	">="
+	[ 1 >= 0 ] verify. [ (1 >= 2) not ] verify. [ 1 >= 1 ] verify.
+	[ 1.0 >= 0.0 ] verify. [ (1.0 >= 2.0) not ] verify. [ 1.0 >= 1.0 ] verify.
+	[ 0.66 >= (1/3)  ] verify. [ (0.66 >= (2/3)) not ] verify.
+	[ (1/3) >= (1/3) ] verify. [ (2/3) >= (1/3) ] verify.
+
+	">"
+	[ 1 > 0 ] verify. [ (1 > 2) not ] verify. [ (1 > 1) not ] verify.
+	[ 1.0 > 0.0 ] verify. [ (1.0 > 2.0) not ] verify. [ (1.0 > 1.0) not ] verify.
+	[ 0.66 > (1/3)  ] verify. [ (0.66 > (2/3)) not ] verify.
+	[ ((1/3) > (1/3)) not ] verify. [ (2/3) > (1/3) ] verify.
+
+	"min:"
+	[ (4 min: 5) = 4 ] verify. [ (5 min: 4) = 4 ] verify. [  (5 min: 4.0) = 4.0 ] verify. [ (1 min: 2/3)  = (2/3) ] verify.
+
+	"max:"
+	[ (5 max: 4) = 5 ] verify. [ (5 max: 4) = 5 ] verify. [  (5 max: 4.0) = 5 ] verify. [ (1 max: 4/3)  = (4/3) ] verify.
+
+	"between:and:"
+	[ 2 between: 1 and: 3 ] verify. [ 3 between: 3 and: 4 ] verify. [ (2 between: 3 and: 4) not ] verify.
+
+! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
+higherOf: aNumber <Number> ^<Number>
+    ^(self min: aNumber)! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
+isAbove: aNumber <Number> ^<Boolean>
+    ^self < aNumber! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
+isLeftOf: aNumber <Number> ^<Boolean>
+    ^self < aNumber! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
+leftMost: aNumber <Number> ^<Number>
+    ^(self min: aNumber)! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
+lowerOf: aNumber <Number> ^<Number>
+    ^(self max: aNumber)! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
+rightMost: aNumber <Number> ^<Number>
+    ^(self max: aNumber)! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'constants' !
+unit ^<Number>
+	"The unit value, in whatever representation is appropriate for each subclass"
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'constants' !
+zero ^<Number>
+	"zero, in whatever representation is appropriate for each subclass"
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'converting' !
+@ yval <Number>  ^<Point>
+	"return a point with the receiver as x, and yval as y"
+
+	^Point x: self y: yval! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'converting' !
+asFloat ^<Float>
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'converting' !
+asInteger ^<Integer>
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'converting' !
+degreesToRadians ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'converting' !
+radiansToDegrees ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'copying' !
+copy ^<Instance>
+	^self! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'fake brands' !
+Number ^<Boolean>
+
+	^true! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'iteration' !
+to: stop <Number> ^<Interval>
+
+	^Interval from: self to: stop! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'iteration' !
+to: stop <Number> by: step <Number> ^<Interval>
+
+	^Interval from: self to: stop by: step! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+arcCos ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+arcSin ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+arcTan ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+cos ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+exp ^<Number>
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+floorLog: radix <Number> ^<Int>
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+ln ^<Number>
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+log: o <Number> ^<Number>
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+raisedTo: power <Number> ^<Number>
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+raisedToInteger: power <Int> ^<Number>
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+sin ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+sqrt ^<Number>
+	
+	^self asFloat sqrt! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'mathematical functions' !
+tan ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:57"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+* a <Number> ^<Number>
+			{where X <Number> is arg 1}
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
++ a <Number> ^<Number>
+			{where X <Number> is arg 1}
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+- a <Number> ^<Number>
+			{where X <Number> is arg 1}
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+/ a <Number> ^<Number>
+			{where X <Number> is arg 1}
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+// arg <Number> ^<Int>
+	"Integer quotient with truncation towards negative infinity"
+
+	^(self / arg) floor! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+\\ a <Number> ^<Number>
+			{where X <Number> is arg 1}
+	"Modulo, implemented with truncation towards negative infinity"
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+abs ^<Number>
+
+	^self < self zero
+		ifTrue: [ self negated ]
+		ifFalse: [ self ]! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+isWithin: epsilon <Number> of: other <Number> ^<Boolean>
+	"Test whether the 'distance' from the receiver to other is less than or equal to
+	  epsilon. This is the right way to compare floating point numbers, or numbers in different
+	  representations, for equality"
+
+	^(self - other) abs <= epsilon! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+negated ^<Number>
+
+	^self zero - self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+quo: n <Number> ^<Int>
+	"Integer quotient with truncation towards zero"
+
+	^(self / n) truncated ! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+reciprocol ^<Number>
+
+	^self unit/self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+rem: n <Number> ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'operations' !
+squared ^<Number>
+
+	^self * self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+addFromFloat: o <Float> ^<Number>
+	"%generated code- do not modify"
+	^self asFloat + o! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+addFromInteger: o <Integer> ^<Number>
+	"%generated code- do not modify"
+	^self + o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+addFromRationalNumber: o <RationalNumber> ^<Number>
+	"%generated code- do not modify"
+	^self + o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+addFromSmallInteger: o <SmallInteger> ^<Number>
+	"%generated code- do not modify"
+	^self + o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+bitAndFromInteger: arg <Integer> ^ <Integer>
+
+	^arg bitAnd: self asInteger! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+bitOrFromInteger: arg <Integer> ^ <Integer>
+
+	^arg bitOr: self asInteger! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+bitXorFromInteger: arg <Integer> ^ <Integer>
+
+	^arg bitXor: self asInteger! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+divideFromFloat: o <Float> ^<Number>
+	"%generated code- do not modify"
+	^o / self asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+divideFromInteger: o <Integer> ^<Number>
+	"%generated code- do not modify"
+	^o asFloat / self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+divideFromRationalNumber: o <RationalNumber> ^<Number>
+	"%generated code- do not modify"
+	^o asFloat / self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+divideFromSmallInteger: o <SmallInteger> ^<Number>
+
+	^self isZero
+		ifTrue: [(ZeroDivide dividend: o) signal]
+		ifFalse: [o asFloat / self]! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+equalFromFloat: o <Float> ^<Boolean>
+	"%generated code- do not modify"
+	^o = self asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+equalFromInteger: o <Integer> ^<Boolean>
+	"%generated code- do not modify"
+	^self = o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+equalFromRationalNumber: o <RationalNumber> ^<Boolean>
+	"%generated code- do not modify"
+	^self = o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+equalFromSmallInteger: o <SmallInteger> ^<Boolean>
+	"%generated code- do not modify"
+	^self = o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+expandRect: r <Rect> ^<Rect>
+
+	^Rectangle
+		left: r left - self
+		right: r right + self
+		top: r top - self
+		bottom: r bottom + self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+insetRect: r <Rect> ^<Rect>
+
+	^Rectangle
+		left: r left + self
+		right: r right - self
+		top: r top + self
+		bottom: r bottom - self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+lessFromFloat: o <Float> ^<Boolean>
+	"%generated code- do not modify"
+	^o < self asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+lessFromInteger: o <Integer> ^<Boolean>
+	"%generated code- do not modify"
+	^o asFloat < self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+lessFromRationalNumber: o <RationalNumber> ^<Boolean>
+	"%generated code- do not modify"
+	^o asFloat < self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+lessFromSmallInteger: o <SmallInteger> ^<Boolean>
+	"%generated code- do not modify"
+	^o asFloat < self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+moduloFromFloat: o <Float> ^<Number>
+	"%generated code- do not modify"
+	^o \\ self asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+moduloFromInteger: o <Integer> ^<Number>
+	"%generated code- do not modify"
+	^o asFloat \\ self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+moduloFromRationalNumber: o <RationalNumber> ^<Number>
+	"%generated code- do not modify"
+	^o asFloat \\ self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+moduloFromSmallInteger: o <SmallInteger> ^<Number>
+	"%generated code- do not modify"
+	^o asFloat \\ self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+multiplyFromFloat: o <Float> ^<Number>
+	"%generated code- do not modify"
+	^self asFloat * o! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+multiplyFromInteger: o <Integer> ^<Number>
+	"%generated code- do not modify"
+	^self * o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+multiplyFromRationalNumber: o <RationalNumber> ^<Number>
+	"%generated code- do not modify"
+	^self * o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+multiplyFromSmallInteger: o <SmallInteger> ^<Number>
+	"%generated code- do not modify"
+	^self * o asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+subtractFromFloat: o <Float> ^<Number>
+	"%generated code- do not modify"
+	^o - self asFloat! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+subtractFromInteger: o <Integer> ^<Number>
+	"%generated code- do not modify"
+	^o asFloat - self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+subtractFromRationalNumber: o <RationalNumber> ^<Number>
+	"%generated code- do not modify"
+	^o asFloat - self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'restricted-double dispatching' !
+subtractFromSmallInteger: o <SmallInteger> ^<Number>
+	"%generated code- do not modify"
+	^o asFloat - self! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'testing' !
+even ^<Boolean>
+
+	^(self \\ 2) = 0! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'testing' !
+isZero
+
+	^self = self zero! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'testing' !
+negative ^<Boolean>
+
+	^self < self zero! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'testing' !
+odd ^<Boolean>
+
+	^(self \\ 2) ~= 0! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'testing' !
+positive ^<Boolean>
+
+	^self >= self zero! !
+
+"August 15, 2010 -> 13:16:58"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'testing' !
+sign ^<Number>
+
+	^self > self zero
+		ifTrue: [ self unit ]
+		ifFalse: [ self < self zero ifTrue: [ self unit negated ] ifFalse: [ self zero ] ]! !
+
+"August 15, 2010 -> 13:16:59"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'testing' !
+strictlyPositive ^<Boolean>
+
+	^self > self zero! !
+
+"August 15, 2010 -> 13:16:59"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'truncation and rounding' !
+ceiling ^<Int>
+	"Return the receiver truncated to the nearest integer towards positive infinity"
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:59"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'truncation and rounding' !
+floor ^<Int>
+	"Return the receiver truncated to the nearest integral value towards negative infinity"
+
+	| t <Int> |
+	^self < self zero
+		ifFalse: [ self truncated ]
+		ifTrue: [	
+				t := self truncated.
+				t = self
+					ifTrue: [ t ]
+					ifFalse: [ t - 1 ]	]! !
+
+"August 15, 2010 -> 13:16:59"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'truncation and rounding' !
+roundTo: n <Number> ^<Number>
+
+	self unimplemented! !
+
+"August 15, 2010 -> 13:16:59"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'truncation and rounding' !
+rounded ^<Int>
+	"The nearest integral value to the receiver.  When this is ambiguous (e.g. -1.5), choose the
+		integral value farthest away from 0 (in the above example, -2)."
+
+"%todo: use the version below when quo: is implemented for doubles
+	^((self + self + self sign) quo: (self unit + self unit)) asInteger
+"
+
+	^self negative
+		ifFalse: [ (self + 0.5d) truncated ]
+		ifTrue: [ (self - 0.5d) truncated ]! !
+
+"August 15, 2010 -> 13:16:59"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'truncation and rounding' !
+truncateTo: grid <Number> ^<Number>
+
+	^(self quo: grid) * grid! !
+
+"August 15, 2010 -> 13:16:59"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'truncation and rounding' !
+truncated ^<Int>
+	"Return the receiver truncated to the nearest integral value towards 0."
+
+	self subclassResponsibility! !
+
+"August 15, 2010 -> 13:17:9"!
+
+Delta define: #IntegerTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"August 15, 2010 -> 13:17:9"!
+
+(Delta mirrorFor: #IntegerTest)
+comment: 
+''!
+
+
+"August 15, 2010 -> 13:17:9"!
+
+! (Delta mirrorFor: #IntegerTest) methodsFor: 'initialize-release' !
+setUp
+! !
+
+"August 15, 2010 -> 13:17:9"!
+
+! (Delta mirrorFor: #IntegerTest) methodsFor: 'initialize-release' !
+tearDown
+! !
+
+"August 15, 2010 -> 13:17:9"!
+
+! (Delta mirrorFor: #IntegerTest) methodsFor: 'tests' !
+testDivideByFloatZero
+
+	self should: [1 / 0.0] raise: ZeroDivide! !
+
+"August 15, 2010 -> 13:17:9"!
+
+! (Delta mirrorFor: #IntegerTest) methodsFor: 'tests' !
+testDivideByIntegerZero
+
+	self should: [1 / 0] raise: ZeroDivide! !
+
+"August 15, 2010 -> 13:17:19"!
+
+Delta define: #FloatTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"August 15, 2010 -> 13:17:19"!
+
+(Delta mirrorFor: #FloatTest)
+comment: 
+''!
+
+
+"August 15, 2010 -> 13:17:19"!
+
+! (Delta mirrorFor: #FloatTest) methodsFor: 'tests' !
+testDivideByIntegerZero
+
+	self should: [1.0 / 0] raise: ZeroDivide! !
+
+"August 15, 2010 -> 13:18:5"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"August 15, 2010 -> 13:18:5"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:42"!
+
+Delta define: #UnsafeAlien as: (
+(Class subclassOf: 'Object' instanceVariables: 'nonPointerObject <IndexedByteInstanceVariables>')) !
+
+
+"August 15, 2010 -> 13:18:43"!
+
+(Delta mirrorFor: #UnsafeAlien)
+comment: 
+''!
+
+
+"August 15, 2010 -> 13:18:43"!
+
+! (Delta mirrorFor: #UnsafeAlien) classSide methodsFor: 'instance creation' !
+forPointerTo: bytes <IndexedByteInstanceVariables> ^ <UnsafeAlien>
+
+	^self new
+		nonPointerObject: bytes;
+		yourself
+		! !
+
+"August 15, 2010 -> 13:18:43"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'accessing' !
+object
+
+	^nonPointerObject! !
+
+"August 15, 2010 -> 13:18:43"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'conversion' !
+asAlien
+
+	^self! !
+
+"August 15, 2010 -> 13:18:43"!
+
+! (Delta mirrorFor: #UnsafeAlien) methodsFor: 'initialization' !
+nonPointerObject: bytes <IndexedByteInstanceVariables>
+
+	nonPointerObject := bytes! !
+
+"August 15, 2010 -> 13:19:1"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"August 15, 2010 -> 13:19:1"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"August 15, 2010 -> 13:43:2"!
+
+! (Delta mirrorFor: #PointerAlienTest) methodsFor: 'testing' !
+testPointer
+
+	self assert: alien pointer == alien! !
+
+"August 15, 2010 -> 13:43:33"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"August 15, 2010 -> 13:43:33"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"August 15, 2010 -> 13:45:42"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"August 15, 2010 -> 13:45:42"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"August 15, 2010 -> 13:50:38"!
+
+"System saved" !
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+Delta define: #Alien as: (
+(Class subclassOf: 'ByteArray' instanceVariables: '') classVariables: 'GCMallocedAliens LoadedLibraries') !
+
+
+"August 15, 2010 -> 14:5:8"!
+
+(Delta mirrorFor: #Alien)
+comment: 
+''!
+
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'class initialization' !
+initialize
+
+	LoadedLibraries isNil ifTrue: 
+		[LoadedLibraries := Dictionary new].
+	GCMallocedAliens isNil ifTrue:
+		[GCMallocedAliens := AlienWeakTable newForOwner: self]! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+atAddress: pointer <Integer> ^<X>
+
+	^(self primitiveNew: 8)
+		size: self dataSize negated;
+		addressField: pointer;
+		yourself! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+atAddress: pointer <Integer> dataSize: dataSize <Integer> ^<X>
+
+	^(self primitiveNew: 8)
+		size: dataSize negated;
+		addressField: pointer;
+		yourself! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+autoFreeAfter: action <[X, ^ Y]>
+	"Evaluate the action, which must be a 1-argument block.
+	 The argument passed to the action is a block the action
+	 can use to register Aliens created inside the action.
+	 Such aliens will be freed as soon as the action completes.
+	 Return the value returned from the action. See usage
+	 example at the bottom of the method. "
+	
+	| toFree |
+	toFree := OrderedCollection new.
+	^[action value: [:alien | toFree add: alien]]
+		ensure: [toFree do: [:each | each free]]
+		
+"
+	Alien autoFreeAfter:
+		[:autoFree | | foo bar |
+		foo := autoFree value: (Alien newCString: 'foo').
+		bar := autoFree value: (Alien newCString: 'bar').
+		...]
+"! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+dataSize
+
+	^self subclassResponsibility! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+ensureLoaded: libraryName
+
+	^self loadedLibraries
+		at: libraryName
+		ifAbsentPut: [(Alien new: 4)
+								unsignedLongAt: 1 put: (self primLoadLibrary: libraryName);
+								yourself]! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+forLong: long
+
+	((long > 16r7FFFFFFF) or: [long < -16r80000000])
+		ifTrue: [self error: 'Out of range'].
+	^(self new: 4)
+		signedLongAt: 1 put: long;
+		yourself! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+forPointer: pointer <Integer> ^<X>
+
+	^(self primitiveNew: 8)
+		size: 0;
+		addressField: pointer;
+		yourself! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+forULong: ulong
+
+	((ulong > 16rFFFFFFFF) or: [ulong < 0])
+		ifTrue: [self error: 'Out of range'].
+	^(self new: 4)
+		unsignedLongAt: 1 put: ulong;
+		yourself! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+new
+
+	^self new: self dataSize! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+new: size <Integer> ^ <X>
+
+	^(self primitiveNew: size + 4)
+		size: size;
+		initialize! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+newC
+
+	^self newC: self dataSize! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+newC: size <Integer> ^ <X>
+
+	^(self primitiveNew: 8)
+		size: size negated;
+		addressField: (self Ccalloc: size);
+		initialize! !
+
+"August 15, 2010 -> 14:5:8"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+newCString: string <String> ^ <Alien>
+
+	^(Alien rawNewC: string size + 1)
+		replaceFrom: 1
+		to: string size
+		with: string
+		startingAt: 1;
+		unsignedByteAt: string size + 1 put: 0;
+		yourself! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+newForCallbackArgs
+
+	^(self new: 8)
+		size: self dataSize negated;
+		yourself! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+newGC
+
+	^self newGC: self dataSize! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+newGC: size <Integer> ^<X>
+
+	| alien address |
+	alien := self primitiveNew: 8.
+	alien size: size negated.
+	address := self Ccalloc: size.
+	self gcMallocedAliens add: alien.
+	^alien
+		addressField: address;
+		initialize
+		! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+rawNewC: size <Integer> ^ <X>
+
+	^(self primitiveNew: 8)
+		size: size negated;
+		addressField: (self Cmalloc: size);
+		initialize! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+thunk: address <Integer> ^ <Alien>
+
+	^(self forPointer: address)
+			size: 4;
+			yourself! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'libraries' !
+lookup: symbolName <String> inLibrary: libraryName <String> ^ <Alien>
+
+	^self forPointer: ((Alien ensureLoaded: libraryName)
+										primFindSymbol: symbolName)! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'libraries' !
+lookupOrNil: symbolName <String> inLibrary: libraryName <String> ^ <Alien>
+
+	^[self lookup: symbolName inLibrary: libraryName]
+			on: NotFoundError
+			do: [:err| nil]! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'libraries' !
+primLoadLibrary: libraryName
+
+	^(Platform DLLLoad2: libraryName) asInteger! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+gcMallocedAliens ^<WeakSet>
+
+	GCMallocedAliens isNil
+		ifTrue: [GCMallocedAliens := WeakSet new.
+					GCMallocedAliens addWeakDependent: (
+						BlockDependent updateBlock: [:aspect :alien | alien free])].
+	^GCMallocedAliens! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - accessing' !
+loadedLibraries
+
+	LoadedLibraries isNil ifTrue: 
+		[LoadedLibraries := Dictionary new].
+	^LoadedLibraries! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - memory allocation' !
+Ccalloc: size <Integer> ^ <Integer>
+
+	^{{self primitiveAlienCalloc: size
+			ifFail: [:err| self error: 'Failed to calloc alien: ', err]}}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'private - memory allocation' !
+Cmalloc: size <Integer> ^ <Integer>
+
+	^{{self primitiveAlienMalloc: size
+			ifFail: [:err| self error: 'Failed to malloc alien: ', err]}}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+address ^<Integer>
+
+	^self size <= 0
+		ifTrue: [self addressField]
+		ifFalse: [self error: 'One cannot take the address of direct Alien instances; they may move']! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+boolAt: index <Integer> ^<Boolean>
+
+	^(self at: 1) ~~ 0! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+boolAt: index <Integer> put: value <Boolean> ^<Boolean>
+
+	self at: 1 put: (value ifTrue: [1] ifFalse: [0]).
+	^value! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+dataSize ^<Integer>
+
+	^self size abs! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+doubleAt: index <Integer> ^<Float>
+
+	^{{self primitiveAlienDoubleAt: index
+				ifFail: [:err| self error: 'Unable to get double ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+doubleAt: index <Integer> put: double <Float> ^<Float>
+
+	^{{self primitiveAlienDoubleAt: index
+				put: double
+				ifFail: [:err| self error: 'Unable to set double ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+floatAt: index <Integer> ^<Double>
+
+	^{{self primitiveAlienFloatAt: index
+				ifFail: [:err| self error: 'Unable to get float ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+floatAt: index <Integer> put: double <Float> ^<Float>
+
+	^{{self primitiveAlienFloatAt: index
+				put: double
+				ifFail: [:err| self error: 'Unable to set float ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+pointer
+
+	self isPointer ifTrue: [self error:  'One cannot take the address of pointer Alien instances; they may move, and are already pointers'].
+	^self class forPointer: self address! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+signedByteAt: index <Integer> ^<Integer>
+
+	^{{self primitiveAlienSignedByteAt: index
+				ifFail: [:err| self error: 'Unable to get signed byte ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+signedByteAt: index <Integer> put: byte <Integer> ^<Integer>
+
+	^{{self primitiveAlienSignedByteAt: index
+				put: byte
+				ifFail: [:err| self error: 'Unable to set signed byte ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+signedLongAt: index <Integer> ^<Integer>
+
+	^{{self primitiveAlienSignedLongAt: index
+				ifFail: [:err| self error: 'Unable to get signed long ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+signedLongAt: index <Integer> put: long <Integer>^<Integer>
+
+	^{{self primitiveAlienSignedLongAt: index
+				put: long
+				ifFail: [:err| self error: 'Unable to get signed long ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+signedShortAt: index <Integer> ^<Integer>
+
+	^{{self primitiveAlienSignedShortAt: index
+				ifFail: [:err| self error: 'Unable to get signed short ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+signedShortAt: index <Integer> put: short <Integer> ^<Integer>
+
+	^{{self primitiveAlienSignedShortAt: index
+				put: short
+				ifFail: [:err| self error: 'Unable to set signed short ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+strcpy
+
+	^self strcpyFrom: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+strcpyFrom: startIndex
+
+	|string length offset|
+	length := self strlenStartingAt: startIndex.
+	string := String new: length.
+	offset := startIndex - 1.
+	1 to: length do: [:i|
+		string at: i put: (Character value: (self unsignedByteAt: i + offset))].
+	^string! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+strcpyUTF8
+
+	^self strcpyUTF8From: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+strcpyUTF8From: startIndex
+
+	^self unimplemented! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+strlen
+
+	^self strlenStartingAt: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+strlenStartingAt: startIndex
+
+	self dataSize == 0
+		ifTrue: [^self rawStrlenStartingAt: startIndex].
+	startIndex to: self dataSize do: [:i| (self unsignedByteAt: i) == 0
+																ifTrue: [^ i - startIndex]].
+	^self dataSize - startIndex + 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+unsignedByteAt: index <Integer> ^<Integer>
+
+	^{{self primitiveAlienUnsignedByteAt: index
+				ifFail: [:err| self error: 'Unable to get unsigned byte ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+unsignedByteAt: index <Integer> put: byte <Integer|Character> ^<Integer>
+
+	|c|
+	c := byte isCharacter
+				ifTrue: [byte asciiValue]
+				ifFalse: [byte].
+	^{{self primitiveAlienUnsignedByteAt: index
+				put: c
+				ifFail: [:err| self error: 'Unable to set unsigned byte ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+unsignedLongAt: index <Integer> ^<Integer>
+
+	^{{self primitiveAlienUnsignedLongAt: index
+				ifFail: [:err| self error: 'Unable to get unsigned long ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+unsignedLongAt: index <Integer> put: long <Integer>^<Integer>
+
+	^{{self primitiveAlienUnsignedLongAt: index
+				put: long
+				ifFail: [:err| self error: 'Unable to set unsigned long ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+unsignedShortAt: index <Integer> ^<Integer>
+
+	^{{self primitiveAlienUnsignedShortAt: index
+				ifFail: [:err| self error: 'Unable to get unsigned short ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+unsignedShortAt: index <Integer> put: short <Integer>^<Integer>
+
+	^{{self primitiveAlienUnsignedShortAt: index
+				put: short
+				ifFail: [:err| self error: 'Unable to set unsigned short ', err] }}! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+asAliens: array <Array> ^ <Array[Alien]>
+
+	^array collect: [:el| el asAlien]! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien>
+
+	{{self primitiveAlienCallResult: result ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1 asAlien
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject> with: arg1 <Alien|SmallInteger> with: arg2 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1 asAlien
+			with: arg2 asAlien
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			with: arg4 asAlien
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			with: arg4 asAlien
+			with: arg5 asAlien
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			with: arg4 asAlien
+			with: arg5 asAlien
+			with: arg6 asAlien
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			with: arg1 asAlien
+			with: arg2 asAlien
+			with: arg3 asAlien
+			with: arg4 asAlien
+			with: arg5 asAlien
+			with: arg6 asAlien
+			with: arg7 asAlien
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8 })
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger>
+with: arg9 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9 })
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger>
+with: arg9 <Alien|SmallInteger>
+with: arg10 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10 })
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger>
+with: arg9 <Alien|SmallInteger>
+with: arg10 <Alien|SmallInteger>
+with: arg11 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11 })
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+with: arg1 <Alien|SmallInteger>
+with: arg2 <Alien|SmallInteger>
+with: arg3 <Alien|SmallInteger>
+with: arg4 <Alien|SmallInteger>
+with: arg5 <Alien|SmallInteger>
+with: arg6 <Alien|SmallInteger>
+with: arg7 <Alien|SmallInteger>
+with: arg8 <Alien|SmallInteger>
+with: arg9 <Alien|SmallInteger>
+with: arg10 <Alien|SmallInteger>
+with: arg11 <Alien|SmallInteger>
+with: arg12 <Alien|SmallInteger> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: (self asAliens: { arg1. arg2. arg3. arg4. arg5. arg6. arg7. arg8. arg9. arg10. arg11. arg12 })
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'callouts' !
+primFFICallResult: result <Alien|UndefinedObject>
+withArguments: arguments <Array[Alien|SmallInteger]> ^ <Alien>
+
+	{{self primitiveAlienCallResult: result
+			withArguments: (self asAliens: arguments)
+			ifFail: [:err| self error: err]}}.
+	^result! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+asAlien
+
+	^self! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+asExternalProxy ^<ExternalProxy>
+
+	^ExternalProxy
+		forHigh: (self unsignedShortAt: 3)
+		low: (self unsignedShortAt: 1)! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+asSignedByte
+
+	^self signedByteAt: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+asSignedLong
+
+	^self signedLongAt: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+asSignedShort
+
+	^self signedShortAt: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+asUnsignedByte
+
+	^self unsignedByteAt: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+asUnsignedLong
+
+	^self unsignedLongAt: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'converting' !
+asUnsignedShort
+
+	^self unsignedShortAt: 1! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'instance initialization' !
+initialize
+	"Subclasses may override to perform specific initialization"! !
+
+"August 15, 2010 -> 14:5:9"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'memory management' !
+free
+
+	{{primitiveAlienFree: self addressField
+		ifFail: [:err| self error: 'Could not free alien: ', err]}}.
+	self addressField: 0! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'memory management' !
+freeAfter: aBlock <[Alien]>
+
+	^[aBlock value: self]
+		ensure: [self free]! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+addressField ^<Integer>
+
+	^{{ self primitiveAlienAddressIfFail: [:err| self error: 'failed to get address of alien ', err] }}! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+addressField: anInteger <Integer>
+
+	^{{ self primitiveAlienAddress: anInteger
+					ifFail: [:err| self error: 'failed to set address of alien ', err] }}! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+at: index <Integer> ^ <SmallInteger>
+
+	^self unsignedByteAt: index! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+at: index <Integer> put: byte <SmallInteger> ^ <SmallInteger>
+
+	^self unsignedByteAt: index put: byte! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+primFindSymbol: symbolName <String> ^ <Integer>
+
+	|result library|
+	result := ExternalProxy new.
+	library := self asExternalProxy.
+	{{primitiveDLLLookup: symbolName asSymbol
+			in: library
+			result: result
+			ifFail: [:err | err == #NotFound
+									ifTrue: [NotFoundError signal]
+									ifFalse: [self error: err]]}}.
+	^result asInteger	! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+rawStrlenStartingAt: startIndex
+
+	|index|
+	index := startIndex.
+	[(self unsignedByteAt: index) == 0]
+		whileFalse: [index := index + 1].
+	^index - startIndex! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+signedFourByteLimit
+
+	^self smallIntLimit * 4! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+size ^<Integer>
+
+	^{{self primitiveAlienSizeIfFail: [:err| self error: 'failed to get alien size: ', err] }}! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+size: anInteger <Integer>
+
+	{{self primitiveAlienSize: anInteger
+				ifFail: [:err| self error: 'failed to set alien size: ', err] }}! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+smallIntLimit
+
+	^SmallInteger maxVal + 1! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+strlenThroughPointerAt: index
+
+	^(Alien forPointer: (self unsignedLongAt: index))
+		rawStrlenStartingAt: 1! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'private - accessing' !
+unsignedFourByteLimit
+
+	^self smallIntLimit * 8! !
+
+"August 15, 2010 -> 14:5:10"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'testing' !
+isPointer
+
+	^self size == 0! !
+
+"August 15, 2010 -> 14:5:33"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"August 15, 2010 -> 14:5:33"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"August 15, 2010 -> 14:8:25"!
+
+! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
+pointer
+
+	self isPointer ifTrue: [^self].
+	^self class forPointer: self address! !
+
+"August 15, 2010 -> 14:8:33"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"August 15, 2010 -> 14:8:33"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"August 15, 2010 -> 15:24:34"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+thunk: address <Integer> ^ <Alien>
+
+	^self forPointer: address! !
+
+"August 15, 2010 -> 15:24:44"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"August 15, 2010 -> 15:24:44"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"August 15, 2010 -> 15:26:19"!
+
+"System saved" !
