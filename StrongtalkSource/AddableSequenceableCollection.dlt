@@ -143,6 +143,13 @@ removeAt: index <Int> ^<E>
 	self remove: 1 at: index.
 	^el!
 
+removeAt: index <Int>  ifAbsent: f <[^X def]> ^<E|X>
+
+	| el <E> |
+	el := self at: index ifAbsent: [^f value].
+	self remove: 1 at: index.
+	^el!
+
 removeEvery: val <E> ^<E>
 
 	^self removeEvery: val startingAt: 1!
@@ -307,6 +314,35 @@ makeSpace: slots <Int> beforeIndex: i <Int> ^<Int>
 				self startGap: self startGap - slots.
 				newI	].!
 
+makeSpaceAtStart: nslots <Int> ^<Int>
+	"Make sure that there are at least nslots of unused capacity at the low
+	 end of contents.  The # of slots added at the beginning is returned."
+
+	|	newGap <Int>
+		diff <Int>
+		newContents <AbsoluteArray[E]>
+		sz <Int>
+		newLastIndex <Int> |
+	(self isEmpty and: [nslots <= self contents size])
+		ifTrue: [	self startGap: nslots.
+						self lastIndex: nslots.
+						^nslots].
+	sz := self size.
+	newGap := nslots max: sz.
+	diff := newGap - self startGap.
+	newLastIndex := newGap + sz.
+	newContents := AbsoluteArray[E] new:
+	self contents size + diff.
+	newContents
+		replaceFrom: newGap + 1
+		to: newLastIndex
+		with: self contents
+		startingAt: self firstIndex.
+	self	startGap: newGap;
+		contents: newContents;
+		lastIndex: newLastIndex.
+	^diff!
+
 needSpaceAtEnd: slots <Int>
 
 	slots > self endGap
@@ -319,26 +355,7 @@ needSpaceAtStart: nslots <Int> ^<Int>
 	 end of contents.  The # of slots added at the beginning is returned."
 
 	^nslots > self startGap
-		ifTrue: [	|	newGap <Int>
-					diff <Int>
-					newContents <AbsoluteArray[E]>
-					sz <Int>
-					newLastIndex <Int> |
-				sz := self size.
-				newGap := nslots max: sz.
-				diff := newGap - self startGap.
-				newLastIndex := newGap + sz.
-				newContents := AbsoluteArray[E] new:
-					self contents size + diff.
-				newContents
-					replaceFrom: newGap + 1
-					to: newLastIndex
-					with: self contents
-					startingAt: self firstIndex.
-				self	startGap: newGap;
-					contents: newContents;
-					lastIndex: newLastIndex.
-				diff	]
+		ifTrue: [	self makeSpaceAtStart: nslots]
 		ifFalse: [ 0 ]!
 
 postCopy
