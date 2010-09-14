@@ -83,11 +83,14 @@ add: el <E> after: existing <E> ^<E>
 
 	| index <Int> |
 	index := self indexOf: existing.
+	index = 0
+		ifTrue: [self notFound: existing].
 	index = self size
 		ifFalse: [ index := self makeSpace: 1
 											beforeIndex: index + self startGap + 1 ]
 		ifTrue: [	self needSpaceAtEnd: 1.
-						index := index + self startGap + 1.	].
+						index := index + self startGap + 1.	
+						self lastIndex: index].
 	^self contents at: index put: el.!
 
 add: el <E> afterIndex: i <Int> ^<E>
@@ -98,6 +101,8 @@ add: el <E> before: existing <E> ^<E>
 
 	| index <Int> |
 	index := self indexOf: existing.
+	index = 0
+		ifTrue: [self notFound: existing].
 	index := self makeSpace: 1 beforeIndex: index + self startGap.
 	^self contents at: index put: el.!
 
@@ -107,12 +112,13 @@ add: el <E> beforeIndex: i <Int> ^<E>
 	i > self size
 		ifFalse: [	index := self makeSpace: 1 beforeIndex: i + self startGap.	]
 		ifTrue: [	self needSpaceAtEnd: 1.
-						index := i + self startGap. ].
+						index := i + self startGap.
+						self lastIndex: index ].
 	^self contents at: index put: el.!
 
 addAllFirst: c <Cltn[E]> ^<Cltn[E]>
 
-	c do: [ :el <E> | 	self addFirst: el ].
+	c reverseDo: [ :el <E> | 	self addFirst: el ].
 	^c!
 
 addAllLast: c <Cltn[E]> ^<Cltn[E]>
@@ -223,7 +229,11 @@ thatCanAlsoHoldElementsOf: other <SeqCltn[X]>
 		{where X is returnType of #anElement message of arg 2;
 		     where EX is returnType of #anElement message of receiverType}
 
-	^(OrderedCollection[EX | X] new: size) size: size! !
+	^(OrderedCollection[EX | X] new: size) size: size!
+
+notFound: missing
+
+	^self error: '', missing, ' not found in collection'! !
 
 ! (Delta mirrorFor: #OrderedCollection) methodsFor: 'stack operations' !
 

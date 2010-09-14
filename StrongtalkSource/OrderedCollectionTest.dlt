@@ -1,0 +1,439 @@
+Delta define: #OrderedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'fixture
+empty
+full
+wasAbsent')) !
+
+(Delta mirrorFor: #OrderedCollectionTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #OrderedCollectionTest) group: 'Collections-Tests'!
+
+(Delta mirrorFor: #OrderedCollectionTest)
+comment: 
+''!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'fixture' !
+
+
+setUp
+
+	fixture := OrderedCollection new.
+	empty := OrderedCollection new.
+	full := OrderedCollection new.
+	full add: 5; add: 2; add: 4; add:3.
+	wasAbsent := false! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+
+
+testAdd
+
+	full add: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1!
+
+testAddAll
+
+	full addAll: (Array with: 1 with: 3).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3!
+
+testAddResizing
+
+	|size|
+	empty add: 1.
+	size := empty contents size.
+	100 timesRepeat: [
+		empty remove: 1.
+		empty add: 1].
+	self assert: size = empty contents size
+		description: empty contents size printString!
+
+testInclude
+
+	full include: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1!
+
+testIncludeAll
+
+	full includeAll: (Array with: 1 with: 6).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 6!
+
+testRepeatedAdd
+
+	fixture add: 1.
+	fixture add: 3.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 1.
+	self assert: (fixture at: 2) = 3! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:after:' !
+
+
+testAddAfterFirst
+
+	full add: 1 after: 5.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 5.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 2!
+
+testAddAfterLast
+
+	full add: 1 after: 3.
+	self assert: full size = 5.
+	self assert: (full at: 4) = 3.
+	self assert: (full at: 5) = 1!
+
+testAddAfterMiddle
+
+	full add: 1 after: 2.
+	self assert: full size = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 1.
+	self assert: (full at: 4) = 4!
+
+testAddAfterMissing
+
+	self should: [full add: 1 after: -1] raise: Error! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:afterIndex:' !
+
+
+testAddAfterIndexAtEnd
+
+	full add: 1 afterIndex: full size.
+	self assert: full size = 5.
+	self assert: (full at: 4) = 3.
+	self assert: (full at: 5) = 1!
+
+testAddAfterIndexAtStart
+
+	full add: 1 afterIndex: 1.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 5.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 2!
+
+testAddAfterIndexInMiddle
+
+	full add: 1 afterIndex: 2.
+	self assert: full size = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 1.
+	self assert: (full at: 4) = 4! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:before:' !
+
+
+testAddBeforeMissing
+
+	self should: [full add: 1 before: -1] raise: Error!
+
+testAddBefore
+
+	fixture add: 1.
+	fixture add: 3 before: 1.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:beforeIndex:' !
+
+
+testAddBeforeIndexAtEnd
+
+	full add: 1 beforeIndex: full size.
+	self assert: full size = 5.
+	self assert: (full at: 4) = 1.
+	self assert: (full at: 5) = 3!
+
+testAddBeforeIndexAtStart
+
+	full add:1 beforeIndex: 1.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 1.
+	self assert: (full at: 2) = 5!
+
+testAddBeforeIndexInMiddle
+
+	full add: 1 beforeIndex: 3.
+	self assert: full size = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 1.
+	self assert: (full at: 4) = 4! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addFirst:' !
+
+
+testAddAllFirst
+
+	full addAllFirst: (Array with: 6 with: 1).
+	self assert: full size = 6.
+	self assert: (full at: 1) = 6.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 5!
+
+testAddFirst
+
+	full addFirst: 1.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 1.
+	self assert: (full at: 2) = 5!
+
+testRepeatedAddFirst
+
+	full addFirst: 1.
+	full addFirst: 6.
+	self assert: full size = 6.
+	self assert: (full at: 1) = 6.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 5! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addLast:' !
+
+
+testAddAllLast
+
+	full addAllLast: (Array with: 1 with: 3).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3!
+
+testAddLast
+
+	full addLast: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1!
+
+testRepeatedAddLast
+
+	full add: 1.
+	full add: 3.
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:' !
+
+
+testAtIfAbsentWhenEmpty
+
+	empty at: 1 ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent!
+
+testAtWhenEmpty
+
+	self should: [empty at: 1] raise: Error!
+
+testAt
+
+	self assert: (full at: 1) = 5! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:put:' !
+
+
+testAtPut
+
+	full at: 1 put: 1.
+	self assert: full size = 4.
+	self assert: (full at: 1) = 1!
+
+testAtPutMissing
+
+	self should: [empty at: 1 put: 1]
+		raise: Error! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing conversions' !
+
+
+testAsArray
+
+	fixture add: 1.
+	self assert: fixture asArray = (Array with: 1)!
+
+testAsOrderedCollection
+
+	fixture add: 1.
+	self assert: fixture asOrderedCollection = fixture!
+
+testAsSortedCollection
+
+	self assert: full asSortedCollection = (SortedCollection
+																				with: 2
+																				with: 3
+																				with: 4
+																				with: 5)! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing equality' !
+
+
+testDoubleEquals
+
+	self deny: full == (OrderedCollection with: 5 with: 2 with: 4 with: 3).
+	self assert: full == full!
+
+testEquals
+
+	self assert: full = (OrderedCollection with: 5 with: 2 with: 4 with: 3).
+	self deny: full = (OrderedCollection with: 2 with: 4 with: 3).
+	self deny: full = nil.
+	self deny: full = full asArray! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing indexOf:' !
+
+
+testIndexOf
+
+	self assert: (full indexOf: 5) = 1!
+
+testIndexOfIfAbsent
+
+	empty indexOf: 5 ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent!
+
+testIndexOfIfAbsentWhenPresent
+
+	self assert: (full indexOf: 5 ifAbsent: [wasAbsent := true]) = 1.
+	self deny: wasAbsent!
+
+testIndexOfMissing
+
+	self assert: (empty indexOf: 1) = 0! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+
+
+testRemove
+
+	fixture add: 1.
+	fixture remove: 1.
+	self assert: fixture isEmpty!
+
+testRemoveFromFull
+
+	full remove: 5.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)!
+
+testRemoveIfAbsentWhenEmpty
+
+	|wasAbsent|
+	wasAbsent := false.
+	empty remove: 1 ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent!
+
+testRemoveWhenEmpty
+
+	self should: [empty remove: 1] raise: Error! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:at:' !
+
+
+testRemoveAt2
+
+	full remove: 1 at: 1.
+	self assert: full size = 3.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)!
+
+testRemoveAt2WhenEmpty
+
+	self should: [empty remove: 1 at: 1] raise: Error!
+
+testRemoveAtShouldRemoveTwo
+
+	full remove: 2 at: 1.
+	self assert: full size = 2.
+	self assert: full = (OrderedCollection with: 4 with: 3)! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAll' !
+
+
+testRemoveAll
+
+	full removeAll.
+	self assert: full = empty!
+
+testRemoveAllElements
+
+	full removeAll: (Array with: 5 with: 4 with: 2 with: 3).
+	self assert: full = empty! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+
+
+testRemoveAt
+
+	full removeAt: 1.
+	self assert: full size = 3.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)!
+
+testRemoveAtIfAbsentWhenEmpty
+
+	empty
+		removeAt: 1
+		ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent!
+
+testRemoveAtIfAbsentWhenNotEmpty
+
+	full
+		removeAt: 1
+		ifAbsent: [wasAbsent := true].
+	self deny: wasAbsent.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)!
+
+testRemoveAtWhenEmpty
+
+	self should: [empty removeAt: 1] raise: Error! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeFirst' !
+
+
+testRemoveFirstWhenEmpty
+
+	self should: [empty removeFirst] raise: Error!
+
+testRemoveFirst
+
+	self assert: full removeFirst = 5.
+	self assert: full size = 3.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeLast' !
+
+
+testRemoveLast
+
+	self assert: full removeLast = 3.
+	self deny: (full includes: 3).
+	self assert: full = (OrderedCollection with: 5 with: 2 with: 4)!
+
+testRemoveLastWhenEmpty
+
+	self should: [empty removeLast] raise: Error! !
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing with:' !
+
+
+testWith
+
+	empty with: 1.
+	self assert: empty size = 1!
+
+testWithAddsToEnd
+
+	full with: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1!
+
+testWithAllAddsToEnd
+
+	full withAll: (Array with: 1 with: 3).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3! !
+
