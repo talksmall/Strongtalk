@@ -21,10 +21,10 @@ endGap!
 2504224!
 private!
 1Int! !
-initCapacity:!
-2508277!
-initialization-private!
-1Int:! !
+lastIndex!
+2504988!
+private!
+1Int! !
 contents!
 2503910!
 private!
@@ -48,10 +48,17 @@ iterating!
 private-internal accessing!
 withable!
 adding/removing! !
-startGap:!
-2508107!
+#comment!
+AddableSequenceableCollections are SequenceableCollections that support the
+Extensible protocol, and which support indexing in constant time.
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.
+! !
+makeSpaceAtStart:!
+54173898!
 private!
-1Int:! !
+1Int:Int! !
 removeFirst!
 2503416!
 accessing!
@@ -66,16 +73,20 @@ firstIndex!
 2504398!
 private!
 1Int! !
+removeAt:ifAbsent:!
+54161280!
+accessing!
+2Int:[^X def]:E|X! !
 makeSpace:beforeIndex:!
 2505296!
 private!
 1Int:Int:Int! !
 #branded!
 true! !
-lastIndex:!
-2505139!
-private!
-1Int:! !
+at:!
+7916685!
+accessing!
+0Int:E! !
 removeEvery:!
 2502917!
 accessing!
@@ -83,17 +94,17 @@ accessing!
 #supportedProtocolString!
 Extensible[E]! !
 needSpaceAtStart:!
-2506715!
+54171664!
 private!
 1Int:Int! !
 internalOffset!
 2509646!
 private-internal accessing!
 1Int! !
-indexOf:ifAbsent:!
-2500936!
-accessing!
-2Object:[^X def]:Int|X! !
+withAll:!
+6267459!
+withable!
+0Cltn[E]:! !
 removeAll!
 2502233!
 accessing!
@@ -140,26 +151,26 @@ removeAt:!
 2502696!
 accessing!
 0Int:E! !
-remove:!
-5999626!
-adding/removing!
-0E:E! !
+startGap:!
+2508107!
+private!
+1Int:! !
 size!
 2503743!
 accessing!
 0Int! !
 remove:at:!
-2501441!
+54175813!
 accessing!
 0Int:Int:! !
 remove:ifAbsent:!
 2502001!
 accessing!
 2E:[^X def]:E|X! !
-withAll:!
-6267459!
-withable!
-0Cltn[E]:! !
+initCapacity:!
+2508277!
+initialization-private!
+1Int:! !
 size:!
 6015691!
 accessing!
@@ -170,22 +181,19 @@ accessing!
 2X def:Int:X! !
 #subtype!
 true! !
-at:!
-7916685!
-accessing!
-0Int:E! !
+lastIndex:!
+2505139!
+private!
+1Int:! !
 #instanceVariableString!
 contents <Array[E]>
 startGap <Int>  "number of empty slots at the beginning of contents"
 lastIndex <Int>  "(internal) index of last occupied table entry"
 		! !
-#comment!
-AddableSequenceableCollections are SequenceableCollections that support the
-Extensible protocol, and which support indexing in constant time.
-
-(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
-Use and distribution of this software is subject to the terms of the attached source license.
-! !
+remove:!
+5999626!
+adding/removing!
+0E:E! !
 #abstract!
 true! !
 internalRangeCheck:!
@@ -200,10 +208,10 @@ include:ifNew:!
 6267841!
 adding/removing!
 0E:[]:E! !
-lastIndex!
-2504988!
-private!
-1Int! !
+indexOf:ifAbsent:!
+2500936!
+accessing!
+2Object:[^X def]:Int|X! !
 do:!
 2508984!
 iterating!
