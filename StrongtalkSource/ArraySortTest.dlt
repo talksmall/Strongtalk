@@ -1,15 +1,15 @@
-Delta define: #SortedCollectionTest as: (
+Delta define: #ArraySortTest as: (
 (Class subclassOf: 'TestCase' instanceVariables: '')) !
 
-(Delta mirrorFor: #SortedCollectionTest) revision: '$Revision:$'!
+(Delta mirrorFor: #ArraySortTest) revision: '$Revision:$'!
 
-(Delta mirrorFor: #SortedCollectionTest) group: 'Collections-Tests'!
+(Delta mirrorFor: #ArraySortTest) group: 'Collections-Tests'!
 
-(Delta mirrorFor: #SortedCollectionTest)
+(Delta mirrorFor: #ArraySortTest)
 comment: 
 ''!
 
-! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
 
 
 testSortOneElement
@@ -18,7 +18,7 @@ testSortOneElement
 	array := Array with: 1.
 	expected := Array with: 1.
 	
-	array sortUsing: [:a :b| a < b].
+	array newSortUsing: [:a :b| a < b].
 	self assert: array = expected!
 
 testSortSimpleCollection
@@ -35,7 +35,7 @@ testSortThreeElementsRandom
 	array := Array with: 3 with: 1 with: 2.
 	expected := Array with: 1 with: 2 with: 3.
 	
-	array sortUsing: [:a :b| a < b].
+	array newSortUsing: [:a :b| a < b].
 	self assert: array = expected!
 
 testSortThreeElementsReversed
@@ -53,7 +53,7 @@ testSortTwoElements
 	array := Array with: 1 with: 2.
 	expected := Array with: 1 with: 2.
 	
-	array sortUsing: [:a :b| a < b].
+	array newSortUsing: [:a :b| a < b].
 	self assert: array = expected!
 
 testSortTwoElementsReversed
@@ -62,7 +62,7 @@ testSortTwoElementsReversed
 	array := Array with: 2 with: 1.
 	expected := Array with: 1 with: 2.
 	
-	array sortUsing: [:a :b| a < b].
+	array newSortUsing: [:a :b| a < b].
 	self assert: array = expected!
 
 testSortedCollection
@@ -74,6 +74,8 @@ testSortedCollection
 				[ :i <Int> |
 					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
 			"Transcript show: 'c size = '; print: c size; cr."
-			self should: [ (c asSortedCollection: [ :i1 <Int> :i2 <Int> | i1 <= i2 ]) isSorted ]
+			self should: [ |blk|
+									blk := [ :i1 <Int> :i2 <Int> | i1 < i2 ].
+									(c sortUsing: blk) isSortedBy: blk ]
 				description: 'collection should be sorted'].! !
 
