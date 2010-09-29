@@ -129223,3 +129223,2161 @@ Delta define: #ClassTestIvars123 as: (
 "August 15, 2010 -> 15:26:19"!
 
 "System saved" !
+"September 2, 2010 -> 0:17:1"!
+
+(Delta mirrorFor: #NS1) removeDefinitionIfFail: [] !
+
+
+"September 2, 2010 -> 0:17:6"!
+
+(Delta mirrorFor: #NS2) removeDefinitionIfFail: [] !
+
+
+"September 2, 2010 -> 0:17:10"!
+
+(Delta mirrorFor: #NewspeakObject) removeDefinitionIfFail: [] !
+
+
+"September 2, 2010 -> 0:17:20"!
+
+"System saved" !
+"September 12, 2010 -> 11:22:22"!
+
+Delta define: #OrderedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 12, 2010 -> 11:23:4"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAdd
+
+	! !
+
+"September 12, 2010 -> 11:23:44"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'fixture' !
+setUp
+
+! !
+
+"September 12, 2010 -> 11:24:5"!
+
+Delta define: #OrderedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'fixture')) !
+
+
+"September 12, 2010 -> 11:24:22"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'fixture' !
+setUp
+
+	fixture := OrderedCollection new! !
+
+"September 12, 2010 -> 11:24:34"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAdd
+
+	fixture add: 1! !
+
+"September 12, 2010 -> 11:24:53"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAdd
+
+	fixture add: 1.
+	self assert: fixture size = 1! !
+
+"September 12, 2010 -> 11:25:20"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAdd
+
+	fixture add: 1.
+	self assert: fixture size = 1.
+	self assert: (fixture at: 1) = 1! !
+
+"September 12, 2010 -> 11:26:38"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testRepeatedAdd
+
+	fixture add: 1.
+	fixture add: 3.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 1.
+	self assert: (fixture at: 2) = 3! !
+
+"September 12, 2010 -> 11:27:7"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddFirst
+
+	fixture add: 1.
+	fixture addFirst: 3.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+"September 12, 2010 -> 11:27:31"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddLast
+
+	fixture add: 3.
+	fixture addLast: 1.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+"September 12, 2010 -> 11:28:8"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfter
+
+	fixture add: 3.
+	fixture add: 1 after: 3.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+"September 12, 2010 -> 11:33:29"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+add: el <E> after: existing <E> ^<E>
+
+	| index <Int> |
+	index := self indexOf: existing.
+	index = self size
+		ifFalse: [ index := self makeSpace: 1
+											beforeIndex: index + self startGap + 1 ]
+		ifTrue: [	self needSpaceAtEnd: 1.
+						index := index + self startGap + 1.	
+						self lastIndex: index].
+	^self contents at: index put: el.! !
+
+"September 12, 2010 -> 11:34:46"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBefore
+
+	fixture add: 1.
+	fixture add: 3 before: 1.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+"September 12, 2010 -> 11:35:48"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndex
+
+	fixture add: 1.
+	fixture add: 3 beforeIndex: 1.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+"September 12, 2010 -> 11:36:25"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterIndex
+
+	fixture add: 3.
+	fixture add: 1 afterIndex: 1.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+"September 12, 2010 -> 11:39:14"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+add: el <E> beforeIndex: i <Int> ^<E>
+
+	| index <Int> |
+	i > self size
+		ifFalse: [	index := self makeSpace: 1 beforeIndex: i + self startGap.	]
+		ifTrue: [	self needSpaceAtEnd: 1.
+						index := i + self startGap.
+						self lastIndex: index ].
+	^self contents at: index put: el.! !
+
+"September 12, 2010 -> 11:39:27"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtEnd
+
+	fixture add: 1.
+	fixture add: 3 beforeIndex: 1.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+"September 12, 2010 -> 11:39:44"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtStart
+
+	fixture add: 1.
+	fixture add: 3 beforeIndex: 1.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 3.
+	self assert: (fixture at: 2) = 1! !
+
+"September 12, 2010 -> 11:40:44"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtEnd
+
+	fixture add: 1.
+	fixture add: 2.
+	fixture add: 3 beforeIndex: 2.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 1.
+	self assert: (fixture at: 2) = 3.
+	self assert: (fixture at: 3) = 2! !
+
+"September 12, 2010 -> 11:41:54"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtEnd
+
+	fixture add: 1.
+	fixture add: 2.
+	fixture add: 3 beforeIndex: 2.
+	self assert: fixture size = 3.
+	self assert: (fixture at: 1) = 1.
+	self assert: (fixture at: 2) = 3.
+	self assert: (fixture at: 3) = 2! !
+
+"September 12, 2010 -> 11:42:54"!
+
+Delta define: #OrderedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'fixture
+empty
+full')) !
+
+
+"September 12, 2010 -> 11:44:1"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'fixture' !
+setUp
+
+	fixture := OrderedCollection new.
+	empty := OrderedCollection new.
+	full := OrderedCollection new.
+	full add: 5; add: 2; add: 4; add:3! !
+
+"September 12, 2010 -> 11:45:47"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtEnd
+
+	fixture add: 1 beforeIndex: full size.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 4.
+	self assert: (full at: 4) = 1.
+	self assert: (full at: 5) = 3! !
+
+"September 12, 2010 -> 11:46:43"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtEnd
+
+	full add: 1 beforeIndex: full size.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 4.
+	self assert: (full at: 4) = 1.
+	self assert: (full at: 5) = 3! !
+
+"September 12, 2010 -> 11:48:17"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterIndexInMiddle
+
+	full add: 1 afterIndex: 2.
+	self assert: full size = 5.
+	self assert: (full at: 3) = 1! !
+
+"September 12, 2010 -> 11:48:43"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtEnd
+
+	full add: 1 beforeIndex: full size.
+	self assert: (full at: 4) = 1.
+	self assert: (full at: 5) = 3! !
+
+"September 12, 2010 -> 11:49:43"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtEnd
+
+	full add: 1 beforeIndex: full size.
+	self assert: full size = 5.
+	self assert: (full at: 4) = 1.
+	self assert: (full at: 5) = 3! !
+
+"September 12, 2010 -> 11:51:26"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexAtStart
+
+	full add:1 beforeIndex: 1.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 1.
+	self assert: (full at: 2) = 5! !
+
+"September 12, 2010 -> 11:53:3"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexInMiddle
+
+	fixture add: 1 beforeIndex: 3.
+	self assert: full size = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 1.
+	self assert: (full at: 4) = 4! !
+
+"September 12, 2010 -> 11:53:23"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeIndexInMiddle
+
+	full add: 1 beforeIndex: 3.
+	self assert: full size = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 1.
+	self assert: (full at: 4) = 4! !
+
+"September 12, 2010 -> 11:53:58"!
+
+(Delta mirrorFor: #OrderedCollectionTest) removeMethod: #testAddBeforeIndex ifAbsent: [] !
+
+
+"September 12, 2010 -> 11:55:14"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterIndexInMiddle
+
+	full add: 1 afterIndex: 2.
+	self assert: full size = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 1.
+	self assert: (full at: 4) = 4! !
+
+"September 12, 2010 -> 11:56:24"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterIndexAtStart
+
+	full add: 1 afterIndex: 1.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 5.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 2! !
+
+"September 12, 2010 -> 11:57:5"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterIndexAtEnd
+
+	full add: 1 afterIndex: full size.
+	self assert: full size = 5.
+	self assert: (full at: 4) = 3.
+	self assert: (full at: 5) = 1! !
+
+"September 12, 2010 -> 11:59:1"!
+
+(Delta mirrorFor: #OrderedCollectionTest) removeMethod: #testAddAfterIndex ifAbsent: [] !
+
+
+"September 12, 2010 -> 12:0:4"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterLast
+
+	full add: 1 after: 3.
+	self assert: full size = 5.
+	self assert: (full at: 4) = 3.
+	self assert: (full at: 5) = 1! !
+
+"September 12, 2010 -> 12:0:56"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterFirst
+
+	full add: 1 after: 5.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 5.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 2! !
+
+"September 12, 2010 -> 12:3:7"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterMiddle
+
+	full add: 1 after: 2.
+	self assert: full size = 5.
+	self assert: (full at: 2) = 2.
+	self assert: (full at: 3) = 1.
+	self assert: (full at: 4) = 4! !
+
+"September 12, 2010 -> 12:3:16"!
+
+(Delta mirrorFor: #OrderedCollectionTest) removeMethod: #testAddAfter ifAbsent: [] !
+
+
+"September 12, 2010 -> 12:4:45"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddAfterMissing
+
+	self should: [full add: 1 after: -1] raise: Error! !
+
+"September 12, 2010 -> 12:18:26"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+add: el <E> after: existing <E> ^<E>
+
+	| index <Int> |
+	index := self indexOf: existing.
+	index = 0
+		ifTrue: [self error: '', existing, ' not found in collection'].
+	index = self size
+		ifFalse: [ index := self makeSpace: 1
+											beforeIndex: index + self startGap + 1 ]
+		ifTrue: [	self needSpaceAtEnd: 1.
+						index := index + self startGap + 1.	
+						self lastIndex: index].
+	^self contents at: index put: el.! !
+
+"September 12, 2010 -> 12:18:52"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing' !
+testAddBeforeMissing
+
+	self should: [full add: 1 before: -1] raise: Error! !
+
+"September 12, 2010 -> 12:20:22"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+notFound: missing
+
+	^self error: '', missing, ' not found in collection'! !
+
+"September 12, 2010 -> 12:20:56"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+add: el <E> after: existing <E> ^<E>
+
+	| index <Int> |
+	index := self indexOf: existing.
+	index = 0
+		ifTrue: [self notFound: existing].
+	index = self size
+		ifFalse: [ index := self makeSpace: 1
+											beforeIndex: index + self startGap + 1 ]
+		ifTrue: [	self needSpaceAtEnd: 1.
+						index := index + self startGap + 1.	
+						self lastIndex: index].
+	^self contents at: index put: el.! !
+
+"September 12, 2010 -> 12:21:0"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+add: el <E> before: existing <E> ^<E>
+
+	| index <Int> |
+	index := self indexOf: existing.
+	index = 0
+		ifTrue: [self notFound: existing].
+	index := self makeSpace: 1 beforeIndex: index + self startGap.
+	^self contents at: index put: el.! !
+
+"September 12, 2010 -> 12:25:31"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testAddLast
+
+	full add: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1! !
+
+"September 12, 2010 -> 12:25:40"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testAdd
+
+	full add: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1! !
+
+"September 12, 2010 -> 12:26:24"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addLast:' !
+testAddLast
+
+	full addLast: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1! !
+
+"September 12, 2010 -> 12:27:5"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testRepeatedAddLast
+
+	fixture add: 1.
+	fixture add: 3.
+	self assert: fixture size = 2.
+	self assert: (fixture at: 1) = 1.
+	self assert: (fixture at: 2) = 3! !
+
+"September 12, 2010 -> 12:28:46"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addLast:' !
+testRepeatedAddLast
+
+	full add: 1.
+	full add: 3.
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3! !
+
+"September 12, 2010 -> 14:37:1"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addLast:' !
+testAddFirst
+
+	full addFirst: 1.
+	self assert: full size = 5.
+	self assert: (full at: 1) = 1.
+	self assert: (full at: 2) = 5! !
+
+"September 12, 2010 -> 14:38:15"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addFirst:' !
+testRepeatedAddFirst
+
+	full addFirst: 1.
+	full addFirst: 6.
+	self assert: full size = 6.
+	self assert: (full at: 1) = 6.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 5! !
+
+"September 12, 2010 -> 14:40:39"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addFirst:' !
+testAtPut
+
+	full at: 1 put: 1.
+	self assert: full size = 4.
+	self assert: (full at: 1) = 1! !
+
+"September 12, 2010 -> 14:41:29"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:put:' !
+testAtPutMissing
+
+	self should: [empty at: 1 put: 1]
+		raise: Error! !
+
+"September 12, 2010 -> 14:42:15"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:put:' !
+testWith
+
+	empty with: 1.
+	self assert: empty size = 1! !
+
+"September 12, 2010 -> 14:42:57"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing with:' !
+testWithAddsToEnd
+
+	full with: 1.
+	self assert: full size = 5! !
+
+"September 12, 2010 -> 14:43:18"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing with:' !
+testWithAddsToEnd
+
+	full with: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1! !
+
+"September 12, 2010 -> 15:13:26"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addFirst:' !
+testAddAllFirst
+
+	full addAllFirst: (Array with: 6 with: 2).
+	self assert: full size = 6.
+	self assert: (full at: 1) = 6.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 5! !
+
+"September 12, 2010 -> 15:13:38"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addFirst:' !
+testAddAllFirst
+
+	full addAllFirst: (Array with: 6 with: 1).
+	self assert: full size = 6.
+	self assert: (full at: 1) = 6.
+	self assert: (full at: 2) = 1.
+	self assert: (full at: 3) = 5! !
+
+"September 12, 2010 -> 15:16:7"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+addAllFirst: c <Cltn[E]> ^<Cltn[E]>
+
+	c reversedo: [ :el <E> | 	self addFirst: el ].
+	^c! !
+
+"September 12, 2010 -> 15:16:18"!
+
+! (Delta mirrorFor: #OrderedCollection) methodsFor: 'accessing' !
+addAllFirst: c <Cltn[E]> ^<Cltn[E]>
+
+	c reverseDo: [ :el <E> | 	self addFirst: el ].
+	^c! !
+
+"September 12, 2010 -> 15:17:13"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addLast:' !
+testAddAllLast
+
+	full addAllFirst: (Array with: 1 with: 3).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3! !
+
+"September 12, 2010 -> 15:19:32"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addLast:' !
+testAddAllLast
+
+	full addAllLast: (Array with: 1 with: 3).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3! !
+
+"September 12, 2010 -> 15:20:21"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing addLast:' !
+testAddAll
+
+	full addAll: (Array with: 1 with: 3).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3! !
+
+"September 12, 2010 -> 15:21:19"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing with:' !
+testWithAllAddsToEnd
+
+	full withAll: (Array with: 1 with: 3).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3! !
+
+"September 12, 2010 -> 15:22:54"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing with:' !
+testAsArray
+
+	fixture add: 1.
+	self assert: fixture asArray = (Array with: 1)! !
+
+"September 12, 2010 -> 15:23:36"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing conversions' !
+testAsOrderedCollection
+
+	fixture add: 1.
+	self assert: fixture asOrderedCollection = fixture! !
+
+"September 12, 2010 -> 15:24:57"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing conversions' !
+testAsSortedCollection
+
+	self assert: full asSortedCollection = (SortedCollection
+																				with: 2
+																				with: 3
+																				with: 4
+																				with: 5)! !
+
+"September 12, 2010 -> 15:25:44"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing conversions' !
+testRemoveWhenEmpty
+
+	self should: [empty remove: 1] raise: Error! !
+
+"September 12, 2010 -> 15:27:26"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+testRemoveIfAbsentWhenEmpty
+
+	|wasAbsent|
+	wasAbsent := false.
+	empty remove: 1 ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent! !
+
+"September 12, 2010 -> 15:28:25"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+testRemove
+
+	fixture add: 1.
+	fixture remove: 1.
+	self assert: fixture isEmpty! !
+
+"September 12, 2010 -> 15:29:42"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+testRemoveFromFull
+
+	full remove: 5.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)! !
+
+"September 12, 2010 -> 15:30:49"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+testEquals
+
+	self assert: full = (OrderedCollection with: 5 with: 2 with: 4 with: 3)! !
+
+"September 12, 2010 -> 15:31:15"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+testEquals
+
+	self assert: full = (OrderedCollection with: 5 with: 2 with: 4 with: 3).
+	self deny: full = (OrderedCollection with: 2 with: 4 with: 3)! !
+
+"September 12, 2010 -> 15:31:33"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+testEquals
+
+	self assert: full = (OrderedCollection with: 5 with: 2 with: 4 with: 3).
+	self deny: full = (OrderedCollection with: 2 with: 4 with: 3).
+	self deny: full = nil! !
+
+"September 12, 2010 -> 15:31:53"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+testEquals
+
+	self assert: full = (OrderedCollection with: 5 with: 2 with: 4 with: 3).
+	self deny: full = (OrderedCollection with: 2 with: 4 with: 3).
+	self deny: full = nil.
+	self deny: full = full asArray! !
+
+"September 12, 2010 -> 15:32:51"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing equality' !
+testDoubleEquals
+
+	self deny: full == (OrderedCollection with: 5 with: 2 with: 4 with: 3).
+	self assert: full == full! !
+
+"September 12, 2010 -> 15:33:29"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:' !
+testRemoveAt
+
+	fixture add: 1.
+	fixture removeAt: 1.
+	self assert: fixture isEmpty! !
+
+"September 12, 2010 -> 15:34:18"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAt
+
+	full removeAt: 1.
+	self assert: full size = 3! !
+
+"September 12, 2010 -> 15:35:14"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAt
+
+	full removeAt: 1.
+	self assert: full size = 3.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)! !
+
+"September 12, 2010 -> 15:35:51"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAtWhenEmpty
+
+	self should: [empty removeAt: 1] raise: Error! !
+
+"September 12, 2010 -> 15:36:48"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAtIfAbsentWhenEmpty
+
+	|wasAbsent|
+	wasAbsent := false.
+	empty
+		removeAt: 1
+		ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent! !
+
+"September 12, 2010 -> 16:6:48"!
+
+(Delta mirrorFor: #OrderedCollectionTest) removeMethod: #testRemoveAtIfAbsentWhenEmpty ifAbsent: [] !
+
+
+"September 12, 2010 -> 16:9:6"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAtIfAbsentWhenEmpty
+
+	|wasAbsent|
+	wasAbsent := false.
+	empty
+		removeAt: 1
+		ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent! !
+
+"September 12, 2010 -> 16:12:47"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'accessing' !
+removeAt: index <Int>  ifAbsent: f <[^X def]> ^<E|X>
+
+	| el <E> |
+	el := self at: index ifAbsent: [^f value].
+	self remove: 1 at: index.
+	^el! !
+
+"September 12, 2010 -> 16:19:39"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testAt
+
+	self assert: (full at: 1) = 5! !
+
+"September 12, 2010 -> 16:20:34"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:' !
+testAtWhenEmpty
+
+	self should: [empty at: 1] raise: Error! !
+
+"September 12, 2010 -> 16:21:56"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:' !
+testAtIfAbsentWhenEmpty
+
+	|wasAbsent|
+	wasAbsent := false.
+	empty at: 1 ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent! !
+
+"September 12, 2010 -> 16:22:11"!
+
+Delta define: #OrderedCollectionTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: 'fixture
+empty
+full
+wasAbsent')) !
+
+
+"September 12, 2010 -> 16:22:24"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'fixture' !
+setUp
+
+	fixture := OrderedCollection new.
+	empty := OrderedCollection new.
+	full := OrderedCollection new.
+	full add: 5; add: 2; add: 4; add:3.
+	wasAbsent := false! !
+
+"September 12, 2010 -> 16:22:34"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:' !
+testAtIfAbsentWhenEmpty
+
+	empty at: 1 ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent! !
+
+"September 12, 2010 -> 16:22:47"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAtIfAbsentWhenEmpty
+
+	empty
+		removeAt: 1
+		ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent! !
+
+"September 12, 2010 -> 16:32:33"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAt2
+
+	full remove: 1 at: 1.
+	self assert: full size = 3.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)! !
+
+"September 12, 2010 -> 16:36:53"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:at:' !
+testRemoveAtShouldRemoveTwo
+
+	full remove: 2 at: 1.
+	self assert: full size = 2.
+	self assert: full = (OrderedCollection with: 4 with: 3)! !
+
+"September 12, 2010 -> 16:37:38"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing remove:at:' !
+testRemoveAt2WhenEmpty
+
+	self should: [empty remove: 1 at: 1] raise: Error! !
+
+"September 12, 2010 -> 16:38:31"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAtIfAbsentWhenNotEmpty
+
+	full
+		removeAt: 1
+		ifAbsent: [wasAbsent := true].
+	self deny: wasAbsent! !
+
+"September 12, 2010 -> 16:39:9"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAt:' !
+testRemoveAtIfAbsentWhenNotEmpty
+
+	full
+		removeAt: 1
+		ifAbsent: [wasAbsent := true].
+	self deny: wasAbsent.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)! !
+
+"September 12, 2010 -> 16:57:4"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:' !
+testIndexOfWhenEmpty
+
+	self assert: (empty indexOf: 1) = 0! !
+
+"September 12, 2010 -> 16:57:27"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing at:' !
+testIndexOfMissing
+
+	self assert: (empty indexOf: 1) = 0! !
+
+"September 12, 2010 -> 16:57:30"!
+
+(Delta mirrorFor: #OrderedCollectionTest) removeMethod: #testIndexOfWhenEmpty ifAbsent: [] !
+
+
+"September 12, 2010 -> 16:58:35"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing indexOf:' !
+testIndexOf
+
+	self assert: (full indexOf: 5) = 1! !
+
+"September 12, 2010 -> 17:1:58"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing indexOf:' !
+testIndexOfIfAbsent
+
+	empty indexOf: 5 ifAbsent: [wasAbsent := true].
+	self assert: wasAbsent! !
+
+"September 12, 2010 -> 17:2:17"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing indexOf:' !
+testIndexOfIfAbsentWhenPresent
+
+	full indexOf: 5 ifAbsent: [wasAbsent := true].
+	self deny: wasAbsent! !
+
+"September 12, 2010 -> 17:2:41"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing indexOf:' !
+testIndexOfIfAbsentWhenPresent
+
+	self assert: (full indexOf: 5 ifAbsent: [wasAbsent := true]) = 1.
+	self deny: wasAbsent! !
+
+"September 12, 2010 -> 18:43:29"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testIncludeAll
+
+	full includeAll: (Array with: 1 with: 3).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 3! !
+
+"September 12, 2010 -> 18:44:58"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testInclude
+
+	full include: 1.
+	self assert: full size = 5.
+	self assert: (full at: 5) = 1! !
+
+"September 12, 2010 -> 18:51:55"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testIncludeAll
+
+	full includeAll: (Array with: 1 with: 6).
+	self assert: full size = 6.
+	self assert: (full at: 5) = 1.
+	self assert: (full at: 6) = 6! !
+
+"September 12, 2010 -> 18:53:51"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAll' !
+testRemoveAll
+
+	full removeAll.
+	self assert: full = empty! !
+
+"September 12, 2010 -> 18:54:39"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeAll' !
+testRemoveAllElements
+
+	full removeAll: (Array with: 5 with: 4 with: 2 with: 3).
+	self assert: full = empty! !
+
+"September 12, 2010 -> 18:56:56"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeFirst' !
+testRemoveFirst
+
+	self assert: full removeFirst = 5.
+	self assert: full size = 3.
+	self assert: full = (OrderedCollection with: 4 with: 2 with: 3)! !
+
+"September 12, 2010 -> 18:57:12"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeFirst' !
+testRemoveFirst
+
+	self assert: full removeFirst = 5.
+	self assert: full size = 3.
+	self assert: full = (OrderedCollection with: 2 with: 4 with: 3)! !
+
+"September 12, 2010 -> 18:57:52"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeFirst' !
+testRemoveFirstWhenEmpty
+
+	self should: [empty removeFirst] raise: Error! !
+
+"September 12, 2010 -> 18:58:24"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeFirst' !
+testRemoveLastWhenEmpty
+
+	self should: [empty removeLast] raise: Error! !
+
+"September 12, 2010 -> 18:59:9"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeLast' !
+testRemoveLast
+
+	self assert: full removeLast = 3! !
+
+"September 12, 2010 -> 18:59:27"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeLast' !
+testRemoveLast
+
+	self assert: full removeLast = 3.
+	self deny: (full includes: 3)! !
+
+"September 12, 2010 -> 18:59:56"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeLast' !
+testRemoveLast
+
+	self assert: full removeLast = 3.
+	self deny: (full includes: 3).
+	self assert: full = (OrderedCollection with: 5 with: 4 with: 2)! !
+
+"September 12, 2010 -> 19:0:18"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing removeLast' !
+testRemoveLast
+
+	self assert: full removeLast = 3.
+	self deny: (full includes: 3).
+	self assert: full = (OrderedCollection with: 5 with: 2 with: 4)! !
+
+"September 13, 2010 -> 1:58:50"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'accessing' !
+remove: nElements <Int> at: i <Int>
+
+	| el <E> internal <Int> |
+	el := self at: i.
+	internal := self startGap + i.
+	self internalRangeCheck: internal.
+	self internalRangeCheck: (internal + nElements) - 1.
+	nElements = self size
+		ifTrue: [self startGap: self lastIndex.
+						^self].
+	internal  to: lastIndex - nElements
+		 do: [ :index <Int> |
+			  self contents at: index put: (self contents at: index + nElements).	].
+	self contents putNilAt: self lastIndex.
+	self lastIndex: self lastIndex - nElements.! !
+
+"September 13, 2010 -> 2:2:20"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testAddResizing
+
+	|size|
+	empty add: 1.
+	size := empty contents size.
+	empty remove: 1.
+	empty add: 1.
+	self assert: size = empty contents size
+	! !
+
+"September 13, 2010 -> 2:2:46"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testAddResizing
+
+	|size|
+	empty add: 1.
+	size := empty contents size.
+	empty remove: 1.
+	empty add: 1.
+	empty remove: 1.
+	empty add: 1.
+	self assert: size = empty contents size
+	! !
+
+"September 13, 2010 -> 2:3:19"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testAddResizing
+
+	|size|
+	empty add: 1.
+	size := empty contents size.
+	1000 timesRepeat: [
+		empty remove: 1.
+		empty add: 1].
+	self assert: size = empty contents size! !
+
+"September 13, 2010 -> 2:5:58"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testAddResizing
+
+	|size|
+	empty add: 1.
+	size := empty contents size.
+	1000 timesRepeat: [
+		empty remove: 1.
+		empty add: 1].
+	self assert: size = empty contents size
+		description: empty contents size printString! !
+
+"September 13, 2010 -> 2:7:38"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testAddResizing
+
+	|size|
+	empty add: 1.
+	size := empty contents size.
+	5 timesRepeat: [
+		empty remove: 1.
+		empty add: 1].
+	self assert: size = empty contents size
+		description: empty contents size printString! !
+
+"September 13, 2010 -> 2:20:18"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private' !
+makeSpaceAtStart: nslots <Int> ^<Int>
+	"Make sure that there are at least nslots of unused capacity at the low
+	 end of contents.  The # of slots added at the beginning is returned."
+
+	|	newGap <Int>
+		diff <Int>
+		newContents <AbsoluteArray[E]>
+		sz <Int>
+		newLastIndex <Int> |
+	sz := self size.
+	newGap := nslots max: sz.
+	diff := newGap - self startGap.
+	newLastIndex := newGap + sz.
+	newContents := AbsoluteArray[E] new:
+	self contents size + diff.
+	newContents
+		replaceFrom: newGap + 1
+		to: newLastIndex
+		with: self contents
+		startingAt: self firstIndex.
+	self	startGap: newGap;
+		contents: newContents;
+		lastIndex: newLastIndex.
+	^diff! !
+
+"September 13, 2010 -> 2:20:56"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private' !
+needSpaceAtStart: nslots <Int> ^<Int>
+	"Make sure that there are at least nslots of unused capacity at the low
+	 end of contents.  The # of slots added at the beginning is returned."
+
+	^nslots > self startGap
+		ifTrue: [	self makeSpaceAtStart: nslots]
+		ifFalse: [ 0 ]! !
+
+"September 13, 2010 -> 2:25:5"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private' !
+makeSpaceAtStart: nslots <Int> ^<Int>
+	"Make sure that there are at least nslots of unused capacity at the low
+	 end of contents.  The # of slots added at the beginning is returned."
+
+	|	newGap <Int>
+		diff <Int>
+		newContents <AbsoluteArray[E]>
+		sz <Int>
+		newLastIndex <Int> |
+	(self isEmpty and: [nslots < self contents size])
+		ifTrue: [self startGap: nslots.
+						self lastIndex: nslots.
+						^0].
+	sz := self size.
+	newGap := nslots max: sz.
+	diff := newGap - self startGap.
+	newLastIndex := newGap + sz.
+	newContents := AbsoluteArray[E] new:
+	self contents size + diff.
+	newContents
+		replaceFrom: newGap + 1
+		to: newLastIndex
+		with: self contents
+		startingAt: self firstIndex.
+	self	startGap: newGap;
+		contents: newContents;
+		lastIndex: newLastIndex.
+	^diff! !
+
+"September 13, 2010 -> 2:27:2"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private' !
+makeSpaceAtStart: nslots <Int> ^<Int>
+	"Make sure that there are at least nslots of unused capacity at the low
+	 end of contents.  The # of slots added at the beginning is returned."
+
+	|	newGap <Int>
+		diff <Int>
+		newContents <AbsoluteArray[E]>
+		sz <Int>
+		newLastIndex <Int> |
+	(self isEmpty and: [nslots <= self contents size])
+		ifTrue: [self startGap: nslots.
+						self lastIndex: nslots.
+						^0].
+	sz := self size.
+	newGap := nslots max: sz.
+	diff := newGap - self startGap.
+	newLastIndex := newGap + sz.
+	newContents := AbsoluteArray[E] new:
+	self contents size + diff.
+	newContents
+		replaceFrom: newGap + 1
+		to: newLastIndex
+		with: self contents
+		startingAt: self firstIndex.
+	self	startGap: newGap;
+		contents: newContents;
+		lastIndex: newLastIndex.
+	^diff! !
+
+"September 13, 2010 -> 23:10:53"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'private' !
+makeSpaceAtStart: nslots <Int> ^<Int>
+	"Make sure that there are at least nslots of unused capacity at the low
+	 end of contents.  The # of slots added at the beginning is returned."
+
+	|	newGap <Int>
+		diff <Int>
+		newContents <AbsoluteArray[E]>
+		sz <Int>
+		newLastIndex <Int> |
+	(self isEmpty and: [nslots <= self contents size])
+		ifTrue: [	self startGap: nslots.
+						self lastIndex: nslots.
+						^nslots].
+	sz := self size.
+	newGap := nslots max: sz.
+	diff := newGap - self startGap.
+	newLastIndex := newGap + sz.
+	newContents := AbsoluteArray[E] new:
+	self contents size + diff.
+	newContents
+		replaceFrom: newGap + 1
+		to: newLastIndex
+		with: self contents
+		startingAt: self firstIndex.
+	self	startGap: newGap;
+		contents: newContents;
+		lastIndex: newLastIndex.
+	^diff! !
+
+"September 13, 2010 -> 23:12:53"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'accessing' !
+remove: nElements <Int> at: i <Int>
+
+	| el <E> internal <Int> |
+	el := self at: i.
+	internal := self startGap + i.
+	self internalRangeCheck: internal.
+	self internalRangeCheck: (internal + nElements) - 1.
+	"nElements = self size
+		ifTrue: [self startGap: self lastIndex.
+						^self]."
+	internal  to: lastIndex - nElements
+		 do: [ :index <Int> |
+			  self contents at: index put: (self contents at: index + nElements).	].
+	self contents putNilAt: self lastIndex.
+	self lastIndex: self lastIndex - nElements.! !
+
+"September 13, 2010 -> 23:13:10"!
+
+! (Delta mirrorFor: #OrderedCollectionTest) methodsFor: 'testing add:' !
+testAddResizing
+
+	|size|
+	empty add: 1.
+	size := empty contents size.
+	100 timesRepeat: [
+		empty remove: 1.
+		empty add: 1].
+	self assert: size = empty contents size
+		description: empty contents size printString! !
+
+"September 13, 2010 -> 23:13:43"!
+
+! (Delta mirrorFor: #AddableSequenceableCollection) methodsFor: 'accessing' !
+remove: nElements <Int> at: i <Int>
+
+	| el <E> internal <Int> |
+	el := self at: i.
+	internal := self startGap + i.
+	self internalRangeCheck: internal.
+	self internalRangeCheck: (internal + nElements) - 1.
+	internal  to: lastIndex - nElements
+		 do: [ :index <Int> |
+			  self contents at: index put: (self contents at: index + nElements).	].
+	self contents putNilAt: self lastIndex.
+	self lastIndex: self lastIndex - nElements.! !
+
+"September 13, 2010 -> 23:14:3"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 13, 2010 -> 23:14:3"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 13, 2010 -> 23:17:8"!
+
+"System saved" !
+"September 22, 2010 -> 23:50:45"!
+
+(Delta mirrorFor: #OSProcess) removeDefinitionIfFail: [] !
+
+
+"September 22, 2010 -> 23:50:54"!
+
+"System saved" !
+"September 26, 2010 -> 18:16:35"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortOneElement
+	
+	|array expected|
+	array := Array with: 1.
+	expected := Array with: 1.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 26, 2010 -> 18:17:6"!
+
+"System saved" !
+"September 28, 2010 -> 1:10:14"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortTwoElements
+	
+	|array expected|
+	array := Array with: 1 with: 2.
+	expected := Array with: 1 with: 2.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 1:10:14"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortTwoElementsReversed
+	
+	|array expected|
+	array := Array with: 2 with: 1.
+	expected := Array with: 1 with: 2.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 1:10:14"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortThreeElementsReversed
+	
+	|array expected|
+	array := Array with: 3 with: 2 with: 1.
+	expected := Array with: 1 with: 2 with: 3.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 1:10:14"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortThreeElementsRandom
+	
+	|array expected|
+	array := Array with: 3 with: 1 with: 2.
+	expected := Array with: 1 with: 2 with: 3.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 1:11:5"!
+
+"System saved" !
+"September 28, 2010 -> 1:14:48"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'SortedCollectionTest' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:14:57"!
+
+Delta define: #ArraySortTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+
+"September 28, 2010 -> 1:15:42"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortOneElement
+	
+	|array expected|
+	array := Array with: 1.
+	expected := Array with: 1.
+	
+	array newSortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 1:16:21"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+newSortUsing: compare <[E,E,^Boolean]>
+	"Sort the elements of the collection using the specified comparison test, which must return true if
+	  its first argument should not appear after its second argument (e.g. <=).   This is handy when you
+	  want to sort an existing collection, rather than create a new SortedCollection, or if you need to
+	  perform a number of changes without sorting, and then resort explicitly.  Note that this does NOT
+	  cause the receiver to stay sorted after later changes, unlike a SortedCollection."
+
+	self newSort: 1 to: self size using: compare! !
+
+"September 28, 2010 -> 1:16:31"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+newSort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[compare value: x value: (ati := self at: i)]
+					whileFalse: [i := i + 1].
+				[compare value: (atj := self at: j) value: x]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self sort: l to: j using: compare].
+	i < r ifTrue: [self sort: i to: r using: compare].! !
+
+"September 28, 2010 -> 1:18:46"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+newSort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	and: [(compare value: ati value: x) not]]
+					whileFalse: [i := i + 1].
+				[compare value: (atj := self at: j) value: x]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self sort: l to: j using: compare].
+	i < r ifTrue: [self sort: i to: r using: compare].! !
+
+"September 28, 2010 -> 1:19:53"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+newSort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	and: [(compare value: ati value: x) not]]
+					whileFalse: [i := i + 1].
+				[atj := self at: j.
+				 (compare value: atj value: x)
+				 	and: [(compare value: x value: atj) noy]]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self sort: l to: j using: compare].
+	i < r ifTrue: [self sort: i to: r using: compare].! !
+
+"September 28, 2010 -> 1:22:58"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortOneElement
+	
+	|array expected|
+	array := Array with: 1.
+	expected := Array with: 1.
+	
+	array sortUsing: [:a :b| a < b] halt.
+	self assert: array = expected! !
+
+"September 28, 2010 -> 1:23:23"!
+
+! (Delta mirrorFor: #SortedCollectionTest) methodsFor: 'testing' !
+testSortOneElement
+	
+	|array expected|
+	array := Array with: 1.
+	expected := Array with: 1.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 1:23:30"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortOneElement
+	
+	|array expected|
+	array := Array with: 1.
+	expected := Array with: 1.
+	
+	array newSortUsing: [:a :b| a < b] halt.
+	self assert: array = expected! !
+
+"September 28, 2010 -> 1:53:47"!
+
+"System saved" !
+"September 28, 2010 -> 21:3:29"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+newSort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	or: [(compare value: ati value: x) not]]
+					whileFalse: [i := i + 1].
+				[atj := self at: j.
+				 (compare value: atj value: x)
+				 	and: [(compare value: x value: atj) noy]]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self sort: l to: j using: compare].
+	i < r ifTrue: [self sort: i to: r using: compare].! !
+
+"September 28, 2010 -> 21:7:48"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+newSort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	or: [(compare value: ati value: x) not]]
+					whileFalse: [i := i + 1].
+				[atj := self at: j.
+				 (compare value: atj value: x)
+				 	or: [(compare value: x value: atj) not]]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self sort: l to: j using: compare].
+	i < r ifTrue: [self sort: i to: r using: compare].! !
+
+"September 28, 2010 -> 21:8:26"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortOneElement
+	
+	|array expected|
+	array := Array with: 1.
+	expected := Array with: 1.
+	
+	array newSortUsing: [:a :b| a < b] "halt".
+	self assert: array = expected! !
+
+"September 28, 2010 -> 21:8:46"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortOneElement
+	
+	|array expected|
+	array := Array with: 1.
+	expected := Array with: 1.
+	
+	array newSortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 21:9:24"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortSimpleCollection
+
+	self should: [#(5 3 1) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 3 5) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 5 3) asSortedCollection asArray = #(1 3 5)].
+	self should: [#(1 2 1)asSortedCollection asArray = #(1 1 2)].
+	self should: [#(1 2 1 2)asSortedCollection asArray = #(1 1 2 2)].! !
+
+"September 28, 2010 -> 21:10:1"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortThreeElementsRandom
+	
+	|array expected|
+	array := Array with: 3 with: 1 with: 2.
+	expected := Array with: 1 with: 2 with: 3.
+	
+	array newSortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 21:10:38"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+newSort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	or: [(compare value: ati value: x) not]]
+					whileFalse: [i := i + 1].
+				[atj := self at: j.
+				 (compare value: atj value: x)
+				 	or: [(compare value: x value: atj) not]]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self newSort: l to: j using: compare].
+	i < r ifTrue: [self newSort: i to: r using: compare].! !
+
+"September 28, 2010 -> 21:11:2"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortThreeElementsReversed
+	
+	|array expected|
+	array := Array with: 3 with: 2 with: 1.
+	expected := Array with: 1 with: 2 with: 3.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 21:11:14"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortTwoElements
+	
+	|array expected|
+	array := Array with: 1 with: 2.
+	expected := Array with: 1 with: 2.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 21:11:27"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortTwoElementsReversed
+	
+	|array expected|
+	array := Array with: 2 with: 1.
+	expected := Array with: 1 with: 2.
+	
+	array sortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 21:12:28"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ (c newSortUsing: [ :i1 <Int> :i2 <Int> | i1 < i2 ]) isSorted ]
+				description: 'collection should be sorted'].! !
+
+"September 28, 2010 -> 21:14:27"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortTwoElementsReversed
+	
+	|array expected|
+	array := Array with: 2 with: 1.
+	expected := Array with: 1 with: 2.
+	
+	array newSortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 21:14:38"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortTwoElements
+	
+	|array expected|
+	array := Array with: 1 with: 2.
+	expected := Array with: 1 with: 2.
+	
+	array newSortUsing: [:a :b| a < b].
+	self assert: array = expected! !
+
+"September 28, 2010 -> 21:18:53"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ |blk|
+									blk := [ :i1 <Int> :i2 <Int> | i1 < i2 ].
+									(c newSortUsing: blk) isSortedBy: blk ]
+				description: 'collection should be sorted'].! !
+
+"September 28, 2010 -> 21:22:15"!
+
+! (Delta mirrorFor: #ArraySortTest) methodsFor: 'tests' !
+testSortedCollection
+	|r c s index|
+	r := Random new.
+	1 to: 500 do:
+		[:j|	c := Array[Int] new: j.
+			1 to: j do:
+				[ :i <Int> |
+					c at: i put: (r next * (SmallInteger maxVal - 1)) asInteger	].
+			"Transcript show: 'c size = '; print: c size; cr."
+			self should: [ |blk|
+									blk := [ :i1 <Int> :i2 <Int> | i1 < i2 ].
+									(c sortUsing: blk) isSortedBy: blk ]
+				description: 'collection should be sorted'].! !
+
+"September 28, 2010 -> 21:22:35"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+sort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	or: [(compare value: ati value: x) not]]
+					whileFalse: [i := i + 1].
+				[atj := self at: j.
+				 (compare value: atj value: x)
+				 	or: [(compare value: x value: atj) not]]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self newSort: l to: j using: compare].
+	i < r ifTrue: [self newSort: i to: r using: compare].! !
+
+"September 28, 2010 -> 21:22:50"!
+
+! (Delta mirrorFor: #VarSequenceableCollection) methodsFor: 'utility' !
+sort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	or: [(compare value: ati value: x) not]]
+					whileFalse: [i := i + 1].
+				[atj := self at: j.
+				 (compare value: atj value: x)
+				 	or: [(compare value: x value: atj) not]]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self sort: l to: j using: compare].
+	i < r ifTrue: [self sort: i to: r using: compare].! !
+
+"September 28, 2010 -> 21:23:27"!
+
+Delta define: #ClassTestIvars123 as: (
+(Class subclassOf: 'Object' instanceVariables: 'one' classInstanceVariables: 'two three')) !
+
+
+"September 28, 2010 -> 21:23:27"!
+
+(Delta mirrorFor: #ClassTestIvars123) removeDefinitionIfFail: [] !
+
+
+"September 28, 2010 -> 21:25:4"!
+
+"System saved" !
+"September 29, 2010 -> 19:27:33"!
+
+"System saved" !
