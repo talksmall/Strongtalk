@@ -184,6 +184,60 @@ defaultSort: l <Int> to: r <Int>
 	l < j ifTrue: [self defaultSort: l to: j ].
 	i < r ifTrue: [self defaultSort: i to: r ].!
 
+newSort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
+
+	| i <Int> j <Int> x <E> m <Int> n <Int> |
+	i := l.
+	j := r.
+	n := ((r - l) + 1).
+	n == 0
+		ifTrue: [ ^self ].
+
+	"Pick the partition value.  For <=7 elements, use the middle element.
+		For more than 7 but <= 40, use a median of three elements.  For > 40,
+		use a median of three medians of three"
+	m := (l + r) // 2.
+	n > 7
+		ifTrue: [	| pl <Int> pn <Int> s <Int> |
+						pl := l.
+						pn := r.
+						n > 40
+							ifTrue: [	s :=  n // 8.
+											pl := self medianOf: pl and: pl+s and: pl+s+s using: compare.
+											m := self medianOf: m-s and: m and: m+s using: compare.
+											pn := self medianOf: (pn-s)-s and: pn-s and: pn using: compare.	].
+						m := self medianOf: pl and: m and: pn using: compare.		].
+	x := self at: m.
+
+	[i <= j]
+		whileTrue: 
+			[	| ati <E> atj <E> |
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	or: [(compare value: ati value: x) not]]
+					whileFalse: [i := i + 1].
+				[atj := self at: j.
+				 (compare value: atj value: x)
+				 	or: [(compare value: x value: atj) not]]
+					whileFalse: [j := j - 1].
+				i <= j
+					ifTrue: [	self at: i put: atj.
+									self at: j put: ati.
+									i := i + 1.
+									j := j - 1.	]
+			].
+	l < j ifTrue: [self newSort: l to: j using: compare].
+	i < r ifTrue: [self newSort: i to: r using: compare].!
+
+newSortUsing: compare <[E,E,^Boolean]>
+	"Sort the elements of the collection using the specified comparison test, which must return true if
+	  its first argument should not appear after its second argument (e.g. <=).   This is handy when you
+	  want to sort an existing collection, rather than create a new SortedCollection, or if you need to
+	  perform a number of changes without sorting, and then resort explicitly.  Note that this does NOT
+	  cause the receiver to stay sorted after later changes, unlike a SortedCollection."
+
+	self newSort: 1 to: self size using: compare!
+
 sort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
 
 	| i <Int> j <Int> x <E> m <Int> n <Int> |
@@ -212,9 +266,13 @@ sort: l <Int> to: r <Int> using: compare <[E,E,^Boolean]>
 	[i <= j]
 		whileTrue: 
 			[	| ati <E> atj <E> |
-			 	[compare value: x value: (ati := self at: i)]
+			 	[ati := self at: i.
+			 	 (compare value: x value: ati)
+			 	 	or: [(compare value: ati value: x) not]]
 					whileFalse: [i := i + 1].
-				[compare value: (atj := self at: j) value: x]
+				[atj := self at: j.
+				 (compare value: atj value: x)
+				 	or: [(compare value: x value: atj) not]]
 					whileFalse: [j := j - 1].
 				i <= j
 					ifTrue: [	self at: i put: atj.
