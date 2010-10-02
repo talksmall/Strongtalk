@@ -161,7 +161,9 @@ rawNewC: size <Integer> ^ <X>
 
 thunk: address <Integer> ^ <Alien>
 
-	^self forPointer: address! !
+	^(self forPointer: address)
+			size: 4;
+			yourself! !
 
 ! (Delta mirrorFor: #Alien) classSide methodsFor: 'libraries' !
 
@@ -210,6 +212,11 @@ Cmalloc: size <Integer> ^ <Integer>
 
 	^{{self primitiveAlienMalloc: size
 			ifFail: [:err| self error: 'Failed to malloc alien: ', err]}}! !
+
+! (Delta mirrorFor: #Alien) methodsFor: 'Newspeak support' !
+
+
+new! !
 
 ! (Delta mirrorFor: #Alien) methodsFor: 'accessing' !
 
