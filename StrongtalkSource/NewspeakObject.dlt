@@ -1,22 +1,101 @@
 Delta define: #NewspeakObject as: (
-(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'enclosingObject')) !
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'metadata')) !
 
 (Delta mirrorFor: #NewspeakObject) revision: '$Revision:$'!
 
-(Delta mirrorFor: #NewspeakObject) group: 'Unclassified'!
+(Delta mirrorFor: #NewspeakObject) group: 'Newspeak-Brazil-Stubs'!
 
 (Delta mirrorFor: #NewspeakObject)
 comment: 
-''!
+'Class NewspeakObject is the root of the object hierarchy in the Newspeak programming language, and provides behavior common to all objects.
 
-! (Delta mirrorFor: #NewspeakObject) classSide methodsFor: 'accessing' !
+For each protocol P in the system, this class provides a method "isP" which answers true if and only if the receiver is an instance of a class which implements the protocol P.
+
+Discussion:
+
+Unlike other systems inspired by Smalltalk, the number of methods in this class is deliberately kept to a minimum. Behavior should only be provided by this class if it should be considered part of the core set of features available to *all* Newspeak programmers.
+
+The security model of the Newspeak programming language is based on capabilities and it is essential that capabilities cannot leak through behavior provided by this class. For example, this class provides no mechanism for accessing instance variables of its instances. Instead such capabilities are provided to the debugger and other tools through mirror based reflection modules.
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+
+! (Delta mirrorFor: #NewspeakObject) classSide methodsFor: 'metadata' !
 
 
-enclosingObject
+metadata
+	metadata isNil
+		ifTrue:[
+			metadata := 
+				(Mirror on: self) isMixinInvocation
+					ifTrue:[MixinApplicationMetadata new]
+					ifFalse:[DefiningClassMetadata new]
+		].
+	^metadata! !
 
-	^enclosingObject!
+! (Delta mirrorFor: #NewspeakObject) classSide methodsFor: 'private' !
 
-enclosingObject: value
 
-	enclosingObject := value! !
+basicNew
+
+	^self primitiveNew! !
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+
+
+Array ^ <Array class>
+	"Answers the class Array or a compatible object.
+	May be overridden in subclasses."
+	^Array!
+
+Character ^ <Character class>
+	"Answers the class Character or a compatible object.
+	May be overridden in subclasses."
+	^Character!
+
+Error ^ <Error class>
+	"Answers the class Error or a compatible object.
+	May be overridden in subclasses."
+	^NewspeakError!
+
+Float ^ <Float class>
+	"Answers the class Float or a compatible object.
+	May be overridden in subclasses."
+	^Float!
+
+Integer ^ <Integer class>
+	"Answers the class Integer or a compatible object.
+	May be overridden in subclasses."
+	^Integer!
+
+Object ^ <Object class>
+	"Answers the class Object or a compatible object.
+	May be overridden in subclasses."
+	^NewspeakObject!
+
+String ^ <String class>
+	"Answers the class String or a compatible object.
+	May be overridden in subclasses."
+	^String!
+
+Symbol ^ <Symbol class>
+	"Answers the class Symbol or a compatible object.
+	May be overridden in subclasses."
+	^Symbol!
+
+assert: condition <[^Boolean]> message: message <String>
+	"Raises an error with the given message if and only if condition evaluates to false."
+	self inProduction
+		ifFalse: [ 
+			condition isBlock ifFalse: [self Error signal: 'Block required'].
+			condition verify: message
+			 ]!
+
+canonicalRepresentation ^ <Self | CanonicalRepresentation>
+	"Answers the canonical representation of the receiver, that is, either the receiver itself or an instance of CanonicalRepresentation."
+	^self!
+
+new
+	"Does nothing. May be overriden in subclasses."! !
 

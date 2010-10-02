@@ -1,0 +1,705 @@
+Delta define: #NativeSession as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'SystemScope MessageBox BrazilMappingForWin32 brazil List SmalltalkImage WorldState watchdogProcess module_slot Delay Preferences ToolSet OSProcess desktop_slot Desktop NsFFISessionManager InputSensor Smalltalk suspendedDesktop_slot') classVariables: 'MixinMetadata_NativeSession EnclosingObjects_NativeSession') !
+
+(Delta mirrorFor: #NativeSession) revision: '$Revision: 0.0 $'!
+
+(Delta mirrorFor: #NativeSession) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #NativeSession)
+comment: 
+'Captures the native UI state used by Brazil.'!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+
+
+debugUsingPlatform: platform 
+|  SmalltalkImage  Utilities  NsToolSet  initials  currentImage  currentImageName  isChild |
+ SmalltalkImage := platform System SmalltalkImage.
+ Utilities := platform System Utilities.
+ NsToolSet := platform NsToolSet NsToolSet.
+( SmalltalkImage current  snapshot:true andQuit:false) ifTrue:[ 
+^nil.
+].
+ initials := Utilities authorInitialsPerSe.
+ currentImage := SmalltalkImage current.
+ currentImageName := currentImage imageName.
+ currentImage closeSourceFiles.
+ currentImage saveChangesInFileNamed:( currentImage fullNameForChangesNamed:'NativeSession').
+ currentImage imageName:( currentImage fullNameForImageNamed:'NativeSession').
+ isChild := currentImage  snapshot:true andQuit:false.
+ currentImage closeSourceFiles.
+ isChild ifFalse:[ 
+ currentImage imageName: currentImageName.
+].
+ currentImage openSourceFiles.
+ Utilities setAuthorInitials: initials.
+ isChild ifFalse:[ 
+ NsToolSet launchImageNamed:( currentImage fullNameForImageNamed:'NativeSession').
+].
+^ self.
+
+!
+
+drawAttentionToConsole 
+ self  drawAttentionToConsoleIfTrue:[ 
+true.
+].
+^ self.
+
+!
+
+drawAttentionToConsoleIfTrue: attentionNeeded 
+ self soleInstanceIfNotNil:[ : it | 
+ it isRunningMorphic ifFalse:[ 
+ it NsFFISessionManager schedule:[ 
+ attentionNeeded value ifTrue:[ 
+ it flashSqueakWindow.
+].
+].
+].
+].
+^ self.
+
+!
+
+enclosingObjects: eos EnclosingObjects_NativeSession := eos !
+
+goMorphic 
+ self soleInstance goMorphic.
+^ self.
+
+!
+
+goNative 
+ self soleInstance goNative.
+^ self.
+
+!
+
+mixinMetadata: mmd MixinMetadata_NativeSession := mmd !
+
+prepareForNewVmSession 
+ self soleInstanceIfNotNil:[ : it | 
+ it cleanupForNewImageSession.
+].
+ self reset.
+ self soleInstance.
+( self environment at:#'NsPlatform') soleInstance brazil resetDesktop.
+^ self.
+
+!
+
+shutDown: quitting 
+^ self.
+
+!
+
+start 
+ self soleInstance start.
+^ self.
+
+!
+
+startUp: resuming 
+ resuming ifTrue:[ 
+ self soleInstance setupDesktopForNewSession.
+].
+^ self.
+
+!
+
+stop 
+ self soleInstanceIfNotNil:[ : s | 
+ s stop.
+].
+ self reset.
+^ self.
+
+!
+
+turnOffIfError: onError 
+ self soleInstanceIfNotNil:[ : it | 
+ it turnOffIfError: onError.
+].
+^ self.
+
+!
+
+usingPlatform: platform 
+^ self basicNew usingPlatform: platform.
+
+! !
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+
+
+BrazilMappingForWin32 ^BrazilMappingForWin32!
+
+BrazilMappingForWin32: BrazilMappingForWin32_val BrazilMappingForWin32 := BrazilMappingForWin32_val!
+
+Delay ^Delay!
+
+Delay: Delay_val Delay := Delay_val!
+
+Desktop ^Desktop!
+
+Desktop: Desktop_val Desktop := Desktop_val!
+
+InputSensor ^InputSensor!
+
+InputSensor: InputSensor_val InputSensor := InputSensor_val!
+
+List ^List!
+
+List: List_val List := List_val!
+
+MessageBox ^MessageBox!
+
+MessageBox: MessageBox_val MessageBox := MessageBox_val!
+
+NativeSession_1_init: platform 
+ self List: platform Collections OrderedCollection.
+ self BrazilMappingForWin32: platform BrazilForWindows BrazilMappingForWin32.
+ self brazil: platform NsPlatform soleInstance brazil.
+ self Desktop: self  brazil containers Desktop.
+ self MessageBox: self  brazil tools MessageBox.
+ self WorldState: platform Morphic WorldState.
+ self OSProcess: platform OSProcess OSProcess.
+ self Smalltalk: platform Smalltalk.
+ self InputSensor: platform Kernel InputSensor.
+ self Delay: platform Kernel Delay.
+ self SmalltalkImage: platform System SmalltalkImage.
+ self NsFFISessionManager: platform NativeSession NsFFISessionManager.
+ self ToolSet: platform System ToolSet.
+ self Preferences: platform System Preferences.
+ self SystemScope: platform SystemScope SystemScope.
+ self suspendedDesktop_slot: self  brazil theDesktop.
+ self module_slot:nil.
+ self desktop_slot:nil.
+ self watchdogProcess:nil.
+^ self.
+
+!
+
+NativeSession_superInit_usingPlatform: platform 
+super  new.
+^ self.
+
+!
+
+NsFFISessionManager ^NsFFISessionManager!
+
+NsFFISessionManager: NsFFISessionManager_val NsFFISessionManager := NsFFISessionManager_val!
+
+OSProcess ^OSProcess!
+
+OSProcess: OSProcess_val OSProcess := OSProcess_val!
+
+Preferences ^Preferences!
+
+Preferences: Preferences_val Preferences := Preferences_val!
+
+Smalltalk ^Smalltalk!
+
+Smalltalk: Smalltalk_val Smalltalk := Smalltalk_val!
+
+SmalltalkImage ^SmalltalkImage!
+
+SmalltalkImage: SmalltalkImage_val SmalltalkImage := SmalltalkImage_val!
+
+SystemScope ^SystemScope!
+
+SystemScope: SystemScope_val SystemScope := SystemScope_val!
+
+ToolSet ^ToolSet!
+
+ToolSet: ToolSet_val ToolSet := ToolSet_val!
+
+WorldState ^WorldState!
+
+WorldState: WorldState_val WorldState := WorldState_val!
+
+alwaysAllowClose 
+^[ : w | 
+true.
+] fixTemps.
+
+!
+
+anyVisibleWindows 
+|  isWindow  isWindowVisible  sqHandle |
+ isWindow := self  module api IsWindow.
+ isWindowVisible := self  module api IsWindowVisible.
+ self  module windowsSession topLevelWindowsDo:[ : i | 
+(( isWindow boolValue: i) and:[ 
+ isWindowVisible boolValue: i.
+]) ifTrue:[ 
+^true.
+].
+].
+ sqHandle := self  squeakWindowHandle.
+^( isWindow boolValue: sqHandle) and:[ 
+ isWindowVisible boolValue: sqHandle.
+].
+
+!
+
+approveClosingLastWindow: window 
+( self  desktop windows select:[ : each | 
+ each ~~ window and:[ 
+ each isOpen.
+].
+]) isEmpty not ifTrue:[ 
+^true.
+].
+ self  Preferences inPackagedImage  ifTrue:[ 
+ self  confirmQuit.
+] ifFalse:[ 
+ self  confirmSaveOrQuit.
+].
+^false.
+
+!
+
+brazil ^brazil!
+
+brazil: brazil_val brazil := brazil_val!
+
+checkForVisibleWindows 
+ self  anyVisibleWindows ifTrue:[ 
+^ self.
+].
+ self  ToolSet quit.
+ self  watchdogProcess isNil ifFalse:[ 
+ self   show:true squeakWindow: self  squeakWindowHandle.
+].
+^ self.
+
+!
+
+cleanupForNewImageSession 
+ self  watchdogProcess:nil.
+ self  module ifNotNil:[ : it | 
+ it resetForNewImageSession.
+].
+( self  desktop notNil and:[ 
+ self  desktop isMorphic not.
+]) ifTrue:[ 
+ self  desktop discardMappings.
+].
+^ self.
+
+!
+
+confirmQuit 
+|  answer |
+ answer := self  MessageBox new yesNo:'Do you want to quit?'; 
+ open.
+ answer ==#'yes' ifTrue:[ 
+ self  quit.
+].
+^ self.
+
+!
+
+confirmSaveOrQuit 
+|  answer |
+ answer := self  MessageBox new yesNoCancel:'Save changes before quitting?'; 
+ open.
+ answer ==#'yes' ifTrue:[ 
+ self  saveThenQuit.
+].
+ answer ==#'no' ifTrue:[ 
+ self  quit.
+].
+^ self.
+
+!
+
+desktop 
+^ self  desktop_slot value.
+
+!
+
+desktop_slot ^desktop_slot!
+
+desktop_slot: desktop_slot_val desktop_slot := desktop_slot_val!
+
+drawAttentionToSqueakWindow: handle 
+|  api |
+ api := self  module api.
+ api GetForegroundWindow unsignedValue = handle ifFalse:[ 
+ api FlashWindow  value: handle value:1.
+].
+^ self.
+
+!
+
+enableApproveClosingLastWindow 
+^[ : w | 
+ self  approveClosingLastWindow: w.
+] fixTemps.
+
+!
+
+flashSqueakWindow 
+|  api  handle |
+ self  isRunningMorphic ifTrue:[ 
+^ self.
+].
+ api := self  module api.
+ handle := self  squeakWindowHandle.
+ handle ~=0 ifTrue:[ 
+ self  module windowsSession enableAll.
+ self   show:true squeakWindow: handle.
+ self  drawAttentionToSqueakWindow: handle.
+].
+^ self.
+
+!
+
+focusSqueakWindow 
+|  api  handle |
+ self  isRunningMorphic ifTrue:[ 
+^ self.
+].
+ api := self  module api.
+ handle := self  squeakWindowHandle.
+ handle ~=0 ifTrue:[ 
+ self   show:true squeakWindow: handle.
+ api SetActiveWindow value: handle.
+].
+^ self.
+
+!
+
+goMorphic 
+|  newOrExistingMorphicDesktop |
+ self  isRunningMorphic ifTrue:[ 
+^ self.
+].
+ self  focusSqueakWindow.
+ self  suspendedDesktop ifNotNil:[ : currentDesktop | 
+ currentDesktop agent ifNotNil:[ : it | 
+ it isMorphic ifTrue:[ 
+ newOrExistingMorphicDesktop := currentDesktop.
+].
+].
+].
+ self  switchToDesktop:( newOrExistingMorphicDesktop ifNil:[ 
+ self  brazil newMorphicDesktop.
+]).
+ self  brazil theDesktop windowClosePermission: self  alwaysAllowClose; 
+ positionWindowsWithinVisibleScreenArea.
+ self  Preferences inPackagedImage ifTrue:[ 
+^ self.
+].
+( self  brazil theDesktop windows select:[ : each | 
+ each isOpen.
+]) isEmpty not ifFalse:[ 
+ self  ToolSet default openClassBrowser.
+].
+^ self.
+
+!
+
+goNative 
+ self  NsFFISessionManager soleInstanceIfNotNil:[ : it | 
+ it platformHasNativeEventLoop  ifTrue:[ 
+ self  switchToDesktop: self  desktop.
+ self  desktop windowClosePermission: self  enableApproveClosingLastWindow.
+ self  module squeakWindowHandle: self  squeakWindowHandle.
+ self  Preferences inPackagedImage ifTrue:[ 
+^ self.
+].
+( self  desktop windows select:[ : each | 
+ each isOpen.
+]) isEmpty not ifFalse:[ 
+ self  ToolSet default openClassBrowser.
+].
+] ifFalse:[ 
+ self  MessageBox new ok:'Native mode is not available on this OS.'; 
+ open.
+].
+].
+^ self.
+
+!
+
+hasUserInterrupted 
+|  peekMessage  translateMessage  syskeydown  syschar  remove |
+ peekMessage := self  module api PeekMessage.
+ translateMessage := self  module api TranslateMessage.
+ syskeydown := self  module api WM_SYSKEYDOWN.
+ syschar := self  module api WM_SYSCHAR.
+ remove := self  module api PM_REMOVE.
+ self  module api MSG newC freeAfter:[ : msg | 
+( peekMessage  boolValue: msg address value:0 value: syskeydown value: syskeydown value: remove) ifTrue:[ 
+ translateMessage boolValue: msg address.
+].
+( peekMessage  boolValue: msg address value:0 value: syschar value: syschar value: remove) ifTrue:[ 
+^ msg wParam =$. asciiValue and:[ 
+( msg lParam bitAnd:1073741824) ~=0.
+].
+].
+].
+^false.
+
+!
+
+isHeadless 
+^ self  Preferences inPackagedImage.
+
+!
+
+isRunningMorphic 
+^( self  brazil theDesktop ifNil:[ 
+^true.
+]) isMorphic.
+
+!
+
+isRunningNative 
+^ self  isRunningMorphic not.
+
+!
+
+isWindows 
+^( self  OSProcess ifNil:[ 
+^false.
+]) isWindows.
+
+!
+
+module 
+^ self  module_slot value.
+
+!
+
+module_slot ^module_slot!
+
+module_slot: module_slot_val module_slot := module_slot_val!
+
+quit 
+ self  WorldState addDeferredUIMessage:[ 
+ self  SmalltalkImage current  snapshot:false andQuit:true.
+].
+^ self.
+
+!
+
+saveThenQuit 
+ self  WorldState addDeferredUIMessage:[ 
+ self  SmalltalkImage current  snapshot:true andQuit:true.
+].
+^ self.
+
+!
+
+setupDesktopForNewSession 
+ self  isWindows ifFalse:[ 
+^ self  goMorphic.
+].
+ self  InputSensor default shiftPressed not  ifTrue:[ 
+ self  goNative.
+] ifFalse:[ 
+ self  goMorphic.
+].
+ self  watchdog.
+^ self.
+
+!
+
+setupUsingPlatform: platform 
+ self  isWindows ifTrue:[ 
+^ self  setupWin32NativeSessionUsingPlatform: platform.
+].
+ self  module_slot:[ 
+nil.
+].
+ self  desktop_slot:[ 
+nil.
+].
+^ self.
+
+!
+
+setupWin32NativeSessionUsingPlatform: platform 
+ self  module_slot:( self future:[ 
+( self  BrazilMappingForWin32 platform: platform) useDoubleBuffering:true; 
+ yourself.
+]).
+ self  desktop_slot:( self future:[ 
+ self  Desktop withMapping: self  module agentFactory.
+]).
+^ self.
+
+!
+
+show: show squeakWindow: handle 
+|  api |
+ api := self  module api.
+ handle ~=0 ifTrue:[ 
+ api ShowWindow  value: handle value:( show  ifTrue:[ 
+ api SW_SHOW.
+] ifFalse:[ 
+ api SW_HIDE.
+]).
+].
+^ self.
+
+!
+
+squeakWindowClassName 
+^ self  SystemScope soleInstance systemName ,'WindowClass'.
+
+!
+
+squeakWindowHandle 
+^( self  module api Alien newCString: self  squeakWindowClassName) freeAfter:[ : classNameBuffer | 
+ self  module api FindWindow  unsignedValue: classNameBuffer address value:0.
+].
+
+!
+
+start 
+ self  Smalltalk addToShutDownList: self class; 
+ addToStartUpList: self class.
+^ self.
+
+!
+
+stop 
+ self  Smalltalk removeFromShutDownList: self class; 
+ removeFromStartUpList: self class.
+^ self.
+
+!
+
+suspendedDesktop 
+^ self  suspendedDesktop_slot ifNil:[ 
+ self  brazil theDesktop.
+].
+
+!
+
+suspendedDesktop_slot ^suspendedDesktop_slot!
+
+suspendedDesktop_slot: suspendedDesktop_slot_val suspendedDesktop_slot := suspendedDesktop_slot_val!
+
+switchToDesktop: newDesktop 
+|  oldDesktop |
+ oldDesktop := self  suspendedDesktop.
+ self  suspendedDesktop_slot:nil.
+ self  brazil theDesktop: newDesktop.
+ oldDesktop == newDesktop ifTrue:[ 
+^ self.
+].
+ oldDesktop ifNotNil:[ 
+|  oldWindows |
+ oldWindows := self Array withAll: oldDesktop windows.
+ oldWindows do:[ : each | 
+[ 
+ oldDesktop remove: each.
+ newDesktop add: each.
+] ifError:[ : msg | 
+ msg out.
+ newDesktop remove: each.
+].
+].
+].
+^ self.
+
+!
+
+turnOffIfError: onError 
+ self  NsFFISessionManager soleInstanceIfNotNil:[ : ffiSession | 
+( self  OSProcess isWindows and:[ 
+ ffiSession nativeIoVmFlag value >1.
+]) ifTrue:[ 
+^ onError valueWithPossibleArgument:'Cannot terminate native I/O processing. Please try again after restarting the image.'.
+].
+ self  goMorphic.
+ ffiSession releaseTheWorld.
+].
+^ self.
+
+!
+
+useArialFont 
+ self  useFont: self  module windowsSession fontMapper arialFont.
+^ self.
+
+!
+
+useConsolasFont 
+ self  useFont: self  module windowsSession fontMapper consolasFont.
+^ self.
+
+!
+
+useFont: font 
+|  fontMapper |
+ fontMapper := self  module windowsSession fontMapper.
+ fontMapper defaultFont = font ifTrue:[ 
+^ self.
+].
+ fontMapper defaultFont: font.
+ fontMapper resetForNewImageSession.
+^ self.
+
+!
+
+useGeorgiaFont 
+ self  useFont: self  module windowsSession fontMapper georgiaFont.
+^ self.
+
+!
+
+useVerdanaFont 
+ self  useFont: self  module windowsSession fontMapper verdanaFont.
+^ self.
+
+!
+
+usingPlatform: platform 
+ self NativeSession_superInit_usingPlatform: platform.
+ self NativeSession_1_init: platform.
+ self  setupUsingPlatform: platform.
+^ self.
+
+!
+
+watchdog 
+|  delay |
+ self  watchdogProcess ifNotNil:[ : it | 
+^ it.
+].
+ delay := self  Delay forSeconds:3.
+ self  watchdogProcess:[ 
+ delay wait.
+[ 
+ self  watchdogProcess isNil not and:[ 
+ self  watchdogProcess isActiveProcess.
+].
+] whileTrue:[ 
+ self  checkForVisibleWindows.
+ delay wait.
+].
+] newProcess.
+ self  watchdogProcess priority:39; 
+ name:'Native Session Watchdog'; 
+ resume.
+^ self  watchdogProcess.
+
+!
+
+watchdogProcess ^watchdogProcess!
+
+watchdogProcess: watchdogProcess_val watchdogProcess := watchdogProcess_val!
+
+win32api 
+^ self  module api.
+
+! !
+

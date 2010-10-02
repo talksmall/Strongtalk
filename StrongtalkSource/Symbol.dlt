@@ -34,6 +34,22 @@ sunitAsClass
  
         ^SUnitNameResolver classNamed: self! !
 
+! (Delta mirrorFor: #Symbol) methodsFor: 'Newspeak support' !
+
+
+numArgs
+ 
+ 	|count colons|
+ 	colons := OrderedCollection new.
+ 	self keysAndValuesDo: [:i :c| c = $: ifTrue: [colons add: i]].
+ 	1 to: colons size - 1 do: [:i|
+ 		(colons at: i) + 1= (colons at: i + 1) ifTrue: [^ -1]].
+ 	count := colons size.
+ 	^count = 0
+ 		ifTrue: [self detect: [:c| c isAlphaNumeric] ifNone: [^1].
+ 						0]
+ 		ifFalse: [count]! !
+
 ! (Delta mirrorFor: #Symbol) methodsFor: 'comparing' !
 
 

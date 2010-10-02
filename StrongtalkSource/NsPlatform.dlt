@@ -1,0 +1,76 @@
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: 'brazil win32API')) !
+
+(Delta mirrorFor: #NsPlatform) revision: '$Revision:$'!
+
+(Delta mirrorFor: #NsPlatform) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #NsPlatform)
+comment: 
+'Newspeak Platform.'!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'mnu' !
+
+
+doesNotUnderstand: msg
+	^Smalltalk at: msg selector ifAbsent:[super doesNotUnderstand: msg]
+	! !
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'modules' !
+
+
+brazil
+
+	brazil isNil ifTrue: [
+		brazil := self Brazil usingPlatform: self].
+	^brazil! !
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+
+
+Balloon!
+
+BrazilForMorphic!
+
+BrazilForWindows!
+
+Collections!
+
+Exceptions!
+
+Files!
+
+Graphics!
+
+Kernel!
+
+Mirrors!
+
+Morphic!
+
+NativeSession
+
+	^NativeSessionPackage!
+
+Newspeak2!
+
+NsFFI
+
+	^NsFFIPackage new!
+
+Numbers!
+
+Streams!
+
+Win32API
+
+	win32API isNil
+		ifTrue: [win32API := Win32APIPackage platform: self].
+	^win32API!
+
+blackMarket!
+
+collections!
+
+streams! !
+

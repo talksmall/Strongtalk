@@ -1,0 +1,37 @@
+Delta define: #DefiningClassMetadata as: (
+(Class subclassOf: 'SystemMetadata' instanceVariables: 'enclosing nestedClasses')) !
+
+(Delta mirrorFor: #DefiningClassMetadata) revision: '$Revision:$'!
+
+(Delta mirrorFor: #DefiningClassMetadata) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #DefiningClassMetadata)
+comment: 
+''!
+
+! (Delta mirrorFor: #DefiningClassMetadata) classSide methodsFor: 'instance creation' !
+
+
+new ^ <Instance>
+ 	^super new initialize! !
+
+! (Delta mirrorFor: #DefiningClassMetadata) methodsFor: 'accessing' !
+
+
+addNestedClass: c
+	nestedClasses 
+		at: c name asSymbol 
+		put: (Mirror on: c)!
+
+enclosingMixin: m 
+	enclosing := m!
+
+nestedMixins ^ <Map[Symbol, Class]>
+	^nestedClasses! !
+
+! (Delta mirrorFor: #DefiningClassMetadata) methodsFor: 'initialization' !
+
+
+initialize
+	nestedClasses := IdentityDictionary[Symbol, Class] new! !
+

@@ -141,6 +141,33 @@ sunitRemoveDependent: anObject
  
         self removeDependent: anObject! !
 
+! (Delta mirrorFor: #Object) methodsFor: 'Newspeak support' !
+
+
+clone ^<Instance>
+	"Create and return a copy of the receiver.  Objects that are immutable and cannot be copied may return
+	 themselves.  Objects contained by this object that are externally accessible objects and  are 	 considered
+	 'separate' from  the receiver (such as the elements of a collection) are not copied.
+
+	Subclasses must override postCopy if they contain private information that should not be shared
+	after a copy."
+
+	^self copy!
+
+flag: symbol
+
+	^self!
+
+isText
+
+	^false!
+
+~ symbol
+
+	symbol numArgs = 0 ifTrue: [^[:ignored | self perform: symbol]].
+	symbol numArgs = 1 ifTrue: [^[:arg| self perform: symbol with: arg]].
+	self error: 'Only one or two args supported.'! !
+
 ! (Delta mirrorFor: #Object) methodsFor: 'accessing' !
 
 

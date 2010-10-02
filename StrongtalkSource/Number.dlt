@@ -150,6 +150,35 @@ testRelationals
 
 ! !
 
+! (Delta mirrorFor: #Number) methodsFor: 'Newspeak support' !
+
+
+** n <Integer>^ <Number>
+	^self raisedToInteger: n!
+
+raisedToInteger: power <Int> ^<Number>
+"Naive, perhaps, but it's a start"
+	power = 0 ifTrue:[^1].
+	^power > 0 
+		ifTrue:[
+			(1 to: power) inject:1 into:[:prod <Number>  :n <Number> | 
+				self * prod
+				]
+			]
+		ifFalse:[
+			(-1  to: power by: -1) inject:1 into:[:prod <Number>  :n <Number> | 
+				prod  / self
+				]		
+		]!
+
+x
+
+	^self!
+
+y
+
+	^self! !
+
 ! (Delta mirrorFor: #Number) methodsFor: 'benchmarking' !
 
 
@@ -264,9 +293,6 @@ log: o <Number> ^<Number>
 	self unimplemented!
 
 raisedTo: power <Number> ^<Number>
-	self unimplemented!
-
-raisedToInteger: power <Int> ^<Number>
 	self unimplemented!
 
 sin ^<Number>

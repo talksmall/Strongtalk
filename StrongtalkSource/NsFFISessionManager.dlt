@@ -1,0 +1,533 @@
+Delta define: #NsFFISessionManager as: (
+(Class subclassOf: 'Singleton' instanceVariables: 'deferredActionsSlot
+processIoEvents
+ioEventProcess
+processStackChanged
+deferredInstallmentsSlot
+userAbortWatcher
+api') classVariables: 'MixinMetadata_NsFFISessionManager EnclosingObjects_NsFFISessionManager') !
+
+(Delta mirrorFor: #NsFFISessionManager) revision: '$Revision: 0.0 $'!
+
+(Delta mirrorFor: #NsFFISessionManager) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #NsFFISessionManager)
+comment: 
+'Manages all state related to the current VM process.
+Responsibilites include:
+
+	* draining events from native I/O event queue
+	* scheduling of actions in the native I/O event thread
+	* manage native callbacks
+	* handle errors in debugging (allowing for debugging of such errors)
+
+Note: this class is work in progress. These responsibilites are currently managed by
+the class ''''Alien'''' and will be moved here.'!
+
+! (Delta mirrorFor: #NsFFISessionManager) classSide methodsFor: 'unclassified' !
+
+
+enclosingObjects: eos EnclosingObjects_NsFFISessionManager := eos !
+
+logFatalError: error 
+|  fn |
+ fn :='fatal-error.txt'.
+ self CrLfFileStream  forceNewFileNamed: fn do:[ : s | 
+ s nextPutAll:'Application crashed during start up at: '.
+ self DateAndTime now asLocal printOn: s.
+ s cr; 
+ flush.
+ self Preferences inPackagedImage ifTrue:[ 
+^ self.
+].
+ error exception ifNotNil:[ : it | 
+|  stack |
+ stack := it signalerContext.
+[ 
+ stack isNil.
+] whileFalse:[ 
+ stack printOn: s.
+ s cr; 
+ flush.
+ stack := stack sender.
+].
+].
+].
+^ self.
+
+!
+
+mixinMetadata: mmd MixinMetadata_NsFFISessionManager := mmd !
+
+new 
+^ self basicNew new.
+
+!
+
+prepareForNewVmSession 
+[ 
+^ self soleInstance prepareForNewVmSession.
+]  on: self UnhandledError do:[ : ex | 
+[ 
+ self  logFatalError: self error.
+]  on: self UnhandledError do:[ 
+nil.
+].
+ self Preferences inPackagedImage ifTrue:[ 
+ self Smalltalk quitPrimitive.
+].
+].
+^false.
+
+!
+
+schedule: deferredAction 
+ self soleInstanceIfNotNil:[ : it | 
+ it scheduleDeferredAction: deferredAction.
+^ self.
+].
+ deferredAction forkAt:30.
+^ self.
+
+!
+
+usingPlatform: ignored 
+^ self new initialize.
+
+! !
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+
+
+NsFFISessionManager_1_init 
+ | platform |
+ self processIoEvents:nil.
+ self ioEventProcess:nil.
+ self deferredActionsSlot:nil.
+ self deferredInstallmentsSlot:nil.
+ self processStackChanged:nil.
+ self userAbortWatcher:nil.
+ platform := NsPlatform soleInstance.
+ api := platform Win32API Win32API usingPlatform: platform.
+^ self.
+
+!
+
+NsFFISessionManager_superInit_new 
+super  new.
+^ self.
+
+!
+
+abortIfIoEventProcess: description 
+ self  ioEventProcess isActiveProcess ifTrue:[ 
+ self Abort signal: description.
+].
+^ self.
+
+!
+
+abortIoProcess: process 
+ self  unwindRecursiveInterpretersIn: process.
+ process signalException: self GiveUp.
+ process resume.
+ self  spawnIoEventProcess.
+^ self.
+
+!
+
+checkUserAbort 
+ self NativeSession soleInstanceIfNotNil:[ : it | 
+ it hasUserInterrupted ifTrue:[ 
+ self  debugIoProcess: self  ioEventProcess.
+].
+].
+^ self.
+
+!
+
+debugIoProcess: process 
+ self  unwindRecursiveInterpretersIn: process.
+ self  spawnIoEventProcess.
+ process debugWithTitle:'User Interrupt'.
+^ self.
+
+!
+
+deferredActions 
+ self  deferredActionsSlot
+ 		ifNil: [self  deferredActionsSlot: SharedQueue new].
+ ^self  deferredActionsSlot!
+
+deferredActionsDo: action 
+[ 
+ action value:( self  deferredActions nextOrNil ifNil:[ 
+^ self.
+]).
+true.
+] whileTrue.
+^ self.
+
+!
+
+deferredActionsSlot ^deferredActionsSlot!
+
+deferredActionsSlot: deferredActionsSlot_val deferredActionsSlot := deferredActionsSlot_val!
+
+deferredInstallments 
+ self  deferredInstallmentsSlot
+ 		ifNil: [self  deferredInstallmentsSlot: SharedQueue new].
+ ^self  deferredInstallmentsSlot!
+
+deferredInstallmentsDo: action 
+ action value:( self  deferredInstallments nextOrNil ifNil:[ 
+^ self.
+]).
+^ self.
+
+!
+
+deferredInstallmentsSlot ^deferredInstallmentsSlot!
+
+deferredInstallmentsSlot: deferredInstallmentsSlot_val deferredInstallmentsSlot := deferredInstallmentsSlot_val!
+
+doWithSpecialErrorHandling: action 
+^[	self  restartUserAbortWatcher.
+	[action
+		on: GiveUp
+		do:[ : ex | nil]]
+			ifCurtailed: [nil]]
+	on: Error
+	do:[ :ex |
+ 			self  ioEventProcess isActiveProcess
+ 				ifTrue: [self  spawnIoEventProcess].
+ 			ex pass]
+
+!
+
+drainEventsWhileFalse: doneValueProvider 
+|  delay |
+ delay := "self" Delay forMilliseconds:50.
+ self  ioEventProcess isActiveProcess ifTrue:[ 
+^[ 
+ doneValueProvider value.
+] whileFalse:[ 
+ self  processOneRoundOfIoEvents.
+ delay wait.
+].
+].
+" self Project uiProcess isActiveProcess ifTrue:[ 
+|  world |
+ world := self World.
+^[ 
+ doneValueProvider value.
+] whileFalse:[ 
+ world doOneCycle.
+].
+]."
+[ 
+ doneValueProvider value.
+] whileFalse:[ 
+ delay wait.
+].
+^ self.
+
+!
+
+drainNativeEventQueue 
+ "self  terminateUserAbortWatcher.
+ self Alien primDrainOSEventQueue."
+ api MSG newC
+ 	freeAfter: [	:msg |
+ 							[api PeekMessage
+ 								boolValue: msg pointer
+ 								value: 0
+ 								value: 0
+ 								value: 0
+ 								value: api PM_REMOVE]
+ 									whileTrue: [api DispatchMessage value: msg pointer]].
+^ self.
+
+!
+
+initialize 
+ self  releaseTheWorld.
+^ self.
+
+!
+
+invokeCallback: thunkPtr stack: stackPtr 
+|  resultProxy |
+ resultProxy := self  doWithSpecialErrorHandling:[ 
+ self Callback  evaluateCallbackForThunk: thunkPtr stack: stackPtr.
+].
+ resultProxy ifNil:[ 
+( resultProxy := self FFICallbackReturnValue new) returnInteger:0.
+].
+^ resultProxy.
+
+!
+
+ioEventProcess ^ioEventProcess!
+
+ioEventProcess: ioEventProcess_val ioEventProcess := ioEventProcess_val!
+
+ioEventProcessLoop 
+|  delay |
+ delay := Delay forMilliseconds:50.
+ "self  takeIoProcessing."
+ [[	self  processIoEvents and: [self  ioEventProcess isActiveProcess]]
+		whileTrue: [	self  processOneRoundOfIoEvents.
+								[delay wait]
+									on: Error
+									do: [delay := Delay forMilliseconds: 50]]]
+		on: GiveUp
+		do: [nil].
+ "self releaseIoProcessing."
+ ^self
+
+!
+
+nativeIoVmFlag 
+^ self IntegerFlagAlien forInIoProcessEventsFlag.
+
+!
+
+new 
+ self NsFFISessionManager_superInit_new.
+ self NsFFISessionManager_1_init.
+^ self.
+
+!
+
+platformHasNativeEventLoop 
+^OSProcess isWindows.
+
+!
+
+prepareForNewVmSession 
+|  resumingInEventLoop |
+ resumingInEventLoop := self  ioEventProcess isActiveProcess.
+ self  processIoEvents:false.
+ self  terminateUserAbortWatcher.
+ self IllegalAlien prepareForNewVmSession.
+ self Alien prepareForNewVmSession.
+ self FFICallbackThunk prepareForNewVmSession.
+ self Smalltalk  at:#'NativeSession' ifPresent:[ : it | 
+ it prepareForNewVmSession.
+].
+ self  takeOverTheWorld.
+^ resumingInEventLoop.
+
+!
+
+processIoEvents ^processIoEvents!
+
+processIoEvents: processIoEvents_val processIoEvents := processIoEvents_val!
+
+processOneRoundOfIoEvents 
+ self  drainNativeEventQueue.
+ self  ioEventProcess isActiveProcess ifFalse:[ 
+^ self.
+].
+ self  deferredActionsDo:[ : deferredAction | 
+ self  drainNativeEventQueue.
+ self  doWithSpecialErrorHandling: deferredAction.
+ self  ioEventProcess isActiveProcess ifFalse:[ 
+^ self.
+].
+].
+ self  deferredInstallmentsDo:[ : deferredAction | 
+ self  drainNativeEventQueue.
+ self  doWithSpecialErrorHandling: deferredAction.
+ self  ioEventProcess isActiveProcess ifFalse:[ 
+^ self.
+].
+].
+^ self.
+
+!
+
+processStackChanged ^processStackChanged!
+
+processStackChanged: processStackChanged_val processStackChanged := processStackChanged_val!
+
+releaseIoProcessing 
+ self OSProcess isWindows ifFalse:[ 
+^ self.
+].
+ self  nativeIoVmFlag decrement.
+^ self.
+
+!
+
+releaseTheWorld 
+ self  processIoEvents:false.
+ self  ioEventProcess:[ 
+nil.
+] fork.
+ self  terminateUserAbortWatcher.
+^ self.
+
+!
+
+restartUserAbortWatcher 
+ "self  ioEventProcess isActiveProcess ifFalse:[ 
+^ self.
+].
+ self  terminateUserAbortWatcher.
+ self  spawnUserAbortWatcher."
+^ self.
+
+!
+
+resumeIoEventProcess: process 
+ self  ioEventProcess: process.
+ self  ioEventProcess resume.
+^ self.
+
+!
+
+scheduleDeferredAction: action 
+ action ifNil:[ 
+^ self.
+].
+ self  deferredActions nextPut: action.
+^ self.
+
+!
+
+scheduleDeferredInstallment: action 
+ action ifNil:[ 
+^ self.
+].
+ self  deferredInstallments nextPut: action.
+^ self.
+
+!
+
+spawnIoEventProcess 
+ self  processIoEvents ifFalse:[^ self].
+ "self  nativeIoVmFlag increment."
+ self  ioEventProcess: [self  ioEventProcessLoop] newProcess.
+ self  ioEventProcess
+ 	priority:45; 
+ 	name:'Native I/O Event Process'; 
+ 	resume.
+^ self!
+
+spawnIoEventProcessIfThisIsIt: process 
+ process == self  ioEventProcess ifTrue:[ 
+ self  ioEventProcess:[ 
+nil.
+] newProcess.
+ self  unwindRecursiveInterpretersIn: process.
+ self  spawnIoEventProcess.
+].
+^ self.
+
+!
+
+spawnUserAbortWatcher 
+ self  userAbortWatcher:[ 
+ self  userAbortWatcherLoop.
+] newProcess.
+ self  userAbortWatcher priority:60; 
+ name:'Native user abort watcher'; 
+ resume.
+^ self.
+
+!
+
+takeIoProcessing 
+ self OSProcess isWindows ifFalse:[ 
+^ self.
+].
+ self  nativeIoVmFlag increment.
+^ self.
+
+!
+
+takeOverTheWorld 
+ self  platformHasNativeEventLoop ifFalse:[ 
+^ self.
+].
+ self  processIoEvents ==true ifTrue:[ 
+ self error:'already processing events synchronously'.
+].
+ self  processIoEvents:true.
+ self  processStackChanged ifNil:[ 
+ self  processStackChanged: Semaphore new.
+].
+ self  spawnIoEventProcess.
+^ self.
+
+!
+
+terminateActiveProcess 
+|  process |
+ process := self Processor activeProcess.
+ process == self  ioEventProcess ifTrue:[ 
+ self GiveUp signal.
+].
+ self Project spawnNewProcessIfThisIsUI: process.
+ process terminate.
+^ self.
+
+!
+
+terminateUserAbortWatcher 
+ self  userAbortWatcher ifNotNil:[ : it | 
+ it terminate.
+].
+^ self.
+
+!
+
+unwindRecursiveInterpretersIn: process 
+^ self.
+
+!
+
+userAbortWatcher ^userAbortWatcher!
+
+userAbortWatcher: userAbortWatcher_val userAbortWatcher := userAbortWatcher_val!
+
+userAbortWatcherLoop 
+( self Delay forMilliseconds:500) wait.
+ self   whileTrue:[ 
+ self  userAbortWatcher isActiveProcess.
+] do:[ 
+ self  checkUserAbort.
+] everyMilliseconds:50.
+^ self.
+
+!
+
+usingPlatform: ignored 
+ self  initialize.
+^ self.
+
+!
+
+whileTrue: condition do: action everyMilliseconds: ms 
+|  delay |
+ delay := self Delay forMilliseconds: ms.
+[ 
+[ 
+ condition value.
+] whileTrue:[ 
+ action value.
+[ 
+ delay wait.
+]  on: self Error do:[ 
+ delay := self Delay forMilliseconds:50.
+].
+].
+]  on: self GiveUp do:[ 
+nil.
+].
+^ self.
+
+! !
+

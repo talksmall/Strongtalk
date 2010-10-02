@@ -1,0 +1,52 @@
+Delta define: #NamedSlotFinder as: (
+(Class subclassOf: 'ObjectIterator' instanceVariables: 'slotName <String> slotValue <Object> found <Boolean>')) !
+
+(Delta mirrorFor: #NamedSlotFinder) revision: '$Revision:$'!
+
+(Delta mirrorFor: #NamedSlotFinder) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #NamedSlotFinder)
+comment: 
+''!
+
+! (Delta mirrorFor: #NamedSlotFinder) classSide methodsFor: 'instance creation' !
+
+
+forSlot: s <String> ^ <Instance>
+	^self new slotName: s! !
+
+! (Delta mirrorFor: #NamedSlotFinder) methodsFor: 'access' !
+
+
+getValueFor: o <OopsVMMirror>  ^ <Object>
+	^self getValueFor: o ifFail:[Error signal].
+	!
+
+getValueFor: o <OopsVMMirror> ifFail: fblk <[^R def]>  ^ <Object>
+	o iterateInstanceVariables: self.
+	found ifFalse: [^fblk value].
+	found := false.
+	^slotValue
+	! !
+
+! (Delta mirrorFor: #NamedSlotFinder) methodsFor: 'initialization' !
+
+
+initialize
+	super initialize.
+	found := false.!
+
+slotName: s <String>
+	self initialize.
+	slotName := s
+	! !
+
+! (Delta mirrorFor: #NamedSlotFinder) methodsFor: 'named parts' !
+
+
+name: n <Str> oop: value <Object>
+	n = slotName ifTrue:[
+		found := true.
+		slotValue := value
+	]! !
+

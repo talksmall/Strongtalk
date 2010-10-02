@@ -56,6 +56,16 @@ on: class<Class> ^ <Instance>
 
  ^(self classFor: class) on: class! !
 
+! (Delta mirrorFor: #AbstractClassMirror) methodsFor: 'Newspeak support' !
+
+
+slots ^ <OrderedCollection[DeltaInstVar]>
+"Return all instance variables of the class - locally declared and inherited"
+	| ivars |
+	ivars := reflectee = Object ifTrue:[OrderedCollection new] ifFalse:[self superclass slots].
+	self mixin instanceVariablesDo:[: iv | ivars add: iv].
+	^ivars! !
+
 ! (Delta mirrorFor: #AbstractClassMirror) methodsFor: 'Unclassified' !
 
 

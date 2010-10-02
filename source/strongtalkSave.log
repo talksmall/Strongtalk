@@ -131381,3 +131381,4555 @@ Delta define: #ClassTestIvars123 as: (
 "September 29, 2010 -> 19:27:33"!
 
 "System saved" !
+"October 2, 2010 -> 11:10:47"!
+
+! (Delta mirrorFor: #Alien) classSide methodsFor: 'instance creation' !
+basicNew
+ 
+ 	^self new: self dataSize! !
+
+"October 2, 2010 -> 12:0:15"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'Newspeak support' !
+name: string! !
+
+"October 2, 2010 -> 12:0:28"!
+
+! (Delta mirrorFor: #Process) methodsFor: 'Newspeak support' !
+name
+ 
+ 	^self printString
+! !
+
+"October 2, 2010 -> 12:2:43"!
+
+! (Delta mirrorFor: #AbstractClassMirror) methodsFor: 'Newspeak port' !
+slots ^ <OrderedCollection[DeltaInstVar]>
+"Return all instance variables of the class - locally declared and inherited"
+	| ivars |
+	ivars := reflectee = Object ifTrue:[OrderedCollection new] ifFalse:[self superclass slots].
+	self mixin instanceVariablesDo:[: iv | ivars add: iv].
+	^ivars! !
+
+"October 2, 2010 -> 12:3:17"!
+
+! (Delta mirrorFor: #Block) methodsFor: 'Newspeak support' !
+reentrant
+
+	^self! !
+
+"October 2, 2010 -> 12:4:9"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+entries
+
+	|entries|
+	self isDirectory ifFalse: [^OrderedCollection with: self].
+	entries := OrderedCollection new.
+	self , (FilePattern for: '*') pathsDo: [:path| entries add: path].
+	^entries! !
+
+"October 2, 2010 -> 12:4:22"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+/ string
+
+	^(FilePath for: string) isAbsolute
+		ifTrue: [FilePath for: string]
+		ifFalse: [self, (FilePattern for: string)]! !
+
+"October 2, 2010 -> 12:4:32"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+directoryEntry
+
+	^self! !
+
+"October 2, 2010 -> 12:4:46"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+directoryEntryFor: string
+
+	^self / string! !
+
+"October 2, 2010 -> 12:4:54"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+fileSize
+
+	|fd|
+	fd := self open: #read ifFail: [:err| self error: 'Can''t open file'].
+	[^fd size]
+		ensure: [fd close]! !
+
+"October 2, 2010 -> 12:5:4"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+fullName
+
+	^self name! !
+
+"October 2, 2010 -> 12:5:15"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+fullNameFor: string
+
+	^(FilePath for: string) isAbsolute
+		ifTrue: [string]
+		ifFalse: [self, (FilePattern for: string)]! !
+
+"October 2, 2010 -> 12:5:24"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+modificationTime
+
+	^0! !
+
+"October 2, 2010 -> 12:5:32"!
+
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+pathName
+
+	^self name! !
+
+"October 2, 2010 -> 12:6:18"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'Newspeak support' !
+raisedToInteger: power <Int> ^<Number>
+"Naive, perhaps, but it's a start"
+	power = 0 ifTrue:[^1].
+	^power > 0 
+		ifTrue:[
+			(1 to: power) inject:1 into:[:prod <Number>  :n <Number> | 
+				self * prod
+				]
+			]
+		ifFalse:[
+			(-1  to: power by: -1) inject:1 into:[:prod <Number>  :n <Number> | 
+				prod  / self
+				]		
+		]! !
+
+"October 2, 2010 -> 12:6:31"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'Newspeak support' !
+** n <Integer>^ <Number>
+	^self raisedToInteger: n! !
+
+"October 2, 2010 -> 12:6:40"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'Newspeak support' !
+x
+
+	^self! !
+
+"October 2, 2010 -> 12:6:49"!
+
+! (Delta mirrorFor: #Number) methodsFor: 'Newspeak support' !
+y
+
+	^self! !
+
+"October 2, 2010 -> 12:7:36"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'Newspeak support' !
+clone ^<Instance>
+	"Create and return a copy of the receiver.  Objects that are immutable and cannot be copied may return
+	 themselves.  Objects contained by this object that are externally accessible objects and  are 	 considered
+	 'separate' from  the receiver (such as the elements of a collection) are not copied.
+
+	Subclasses must override postCopy if they contain private information that should not be shared
+	after a copy."
+
+	^self copy! !
+
+"October 2, 2010 -> 12:8:6"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'Newspeak support' !
+flag: symbol
+
+	^self! !
+
+"October 2, 2010 -> 12:8:13"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'Newspeak support' !
+isText
+
+	^false! !
+
+"October 2, 2010 -> 12:8:40"!
+
+! (Delta mirrorFor: #Object) methodsFor: 'Newspeak support' !
+~ symbol
+
+	symbol numArgs = 0 ifTrue: [^[:ignored | self perform: symbol]].
+	symbol numArgs = 1 ifTrue: [^[:arg| self perform: symbol with: arg]].
+	self error: 'Only one or two args supported.'! !
+
+"October 2, 2010 -> 12:9:27"!
+
+! (Delta mirrorFor: #Point) methodsFor: 'Newspeak support' !
+translateBy: p <Point> ^<Point>
+
+	^self translatedBy: p! !
+
+"October 2, 2010 -> 12:10:11"!
+
+! (Delta mirrorFor: #ReadString) methodsFor: 'Newspeak support' !
+withSqueakLineEndings
+
+	^self! !
+
+"October 2, 2010 -> 12:10:42"!
+
+! (Delta mirrorFor: #Rectangle) methodsFor: 'Newspeak support' !
+translateFrom: aVisual to: anotherVisual
+ 
+ 	^self translateBy: aVisual globalOrigin - anotherVisual globalOrigin! !
+
+"October 2, 2010 -> 12:11:21"!
+
+! (Delta mirrorFor: #SharedQueue) methodsFor: 'Newspeak support' !
+nextOrNil
+ 
+ 	self monitor
+ 		critical: [^self head isNil
+ 							ifTrue: [nil]
+ 							ifFalse: [self next]]! !
+
+"October 2, 2010 -> 12:12:0"!
+
+! (Delta mirrorFor: #Symbol) methodsFor: 'Newspeak support' !
+numArgs
+ 
+ 	|count colons|
+ 	colons := OrderedCollection new.
+ 	self keysAndValuesDo: [:i :c| c = $: ifTrue: [colons add: i]].
+ 	1 to: colons size - 1 do: [:i|
+ 		(colons at: i) + 1= (colons at: i + 1) ifTrue: [^ -1]].
+ 	count := colons size.
+ 	^count = 0
+ 		ifTrue: [self detect: [:c| c isAlphaNumeric] ifNone: [^1].
+ 						0]
+ 		ifFalse: [count]! !
+
+"October 2, 2010 -> 12:14:15"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:14:15"!
+
+(Delta mirrorFor: #Color)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+black
+
+	^self new setRgb: 0! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+gray
+
+	^self gray: 0.5! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+gray: gray
+
+	^self new setRed: gray green: gray blue: gray! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+transparent
+
+	^self gray: 1.0! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+asColor
+
+	^self! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+asColorref
+
+	^(self red * 255) rounded +
+		((self green * 255) rounded bitShift: 8) +
+		((self blue * 255) rounded bitShift: 16)! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+blue
+
+	^(rgb bitAnd: 16r3FF) / 1023.0! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+green
+
+	^((rgb bitShift: -10) bitAnd: 16r3FF) / 1023.0! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+red
+
+	^(rgb bitShift: -20) / 1023.0! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+setRed: red green: green blue: blue
+
+	rgb := ((red * 1023.0) rounded bitShift: 20)
+		+ ((green * 1023.0) rounded bitShift: 10)
+		+ (blue * 1023.0) rounded! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+setRgb: anRgb
+
+	rgb := anRgb! !
+
+"October 2, 2010 -> 12:14:15"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'testing' !
+isTransparent
+
+	^false! !
+
+"October 2, 2010 -> 12:15:9"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:15:9"!
+
+(Delta mirrorFor: #FileDirectory)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:15:9"!
+
+! (Delta mirrorFor: #FileDirectory) classSide methodsFor: 'Newspeak-support' !
+default
+
+	^FilePath currentDirectory! !
+
+"October 2, 2010 -> 12:15:9"!
+
+! (Delta mirrorFor: #FileDirectory) classSide methodsFor: 'Newspeak-support' !
+default1
+
+	^FilePath currentDirectory! !
+
+"October 2, 2010 -> 12:16:52"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:16:52"!
+
+(Delta mirrorFor: #NsPackage)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:16:52"!
+
+! (Delta mirrorFor: #NsPackage) classSide methodsFor: 'mnu' !
+doesNotUnderstand: msg
+	^Smalltalk at: msg selector ifAbsent:[super doesNotUnderstand: msg]! !
+
+"October 2, 2010 -> 12:16:52"!
+
+! (Delta mirrorFor: #NsPackage) methodsFor: 'mnu' !
+doesNotUnderstand: msg
+	^Smalltalk at: msg selector ifAbsent:[super doesNotUnderstand: msg]! !
+
+"October 2, 2010 -> 12:18:23"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:18:23"!
+
+(Delta mirrorFor: #Singleton)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:18:23"!
+
+! (Delta mirrorFor: #Singleton) classSide methodsFor: 'instance creation' !
+new
+
+	^self soleInstance! !
+
+"October 2, 2010 -> 12:18:23"!
+
+! (Delta mirrorFor: #Singleton) classSide methodsFor: 'instance creation' !
+reset
+
+	soleInstance := nil! !
+
+"October 2, 2010 -> 12:18:23"!
+
+! (Delta mirrorFor: #Singleton) classSide methodsFor: 'instance creation' !
+soleInstance
+
+	soleInstance isNil
+		ifTrue: [((soleInstance := super new) new usingPlatform: NsPlatform soleInstance) initialize].
+	^soleInstance! !
+
+"October 2, 2010 -> 12:18:23"!
+
+! (Delta mirrorFor: #Singleton) methodsFor: 'iniitialization' !
+initialize! !
+
+"October 2, 2010 -> 12:18:23"!
+
+! (Delta mirrorFor: #Singleton) methodsFor: 'iniitialization' !
+new! !
+
+"October 2, 2010 -> 12:18:23"!
+
+! (Delta mirrorFor: #Singleton) methodsFor: 'iniitialization' !
+usingPlatform: ignored! !
+
+"October 2, 2010 -> 12:20:46"!
+
+(Delta mirrorFor: #NsPlatform) removeDefinitionIfFail: [] !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #CombinatorialParsing as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #BlocklessCombinatorialParsing as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #Newspeak2Grammar as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #Newspeak2AST as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #Newspeak2Parsing as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #Newspeak2StrongtalkMirrors as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:2"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:3"!
+
+Delta define: #Newspeak2StrongtalkCompilation as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:3"!
+
+Delta define: #MirrorGroups as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:3"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:3"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:3"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:3"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:3"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:3"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:21:23"!
+
+! (Delta mirrorFor: #Singleton) classSide methodsFor: 'instance creation' !
+soleInstance
+
+	soleInstance isNil
+		ifTrue: [((soleInstance := super new) new usingPlatform: NsPlatform soleInstance) initialize].
+	^soleInstance! !
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+
+"October 2, 2010 -> 12:22:26"!
+
+(Delta mirrorFor: #Color)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+black
+
+	^self new setRgb: 0! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+gray
+
+	^self gray: 0.5! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+gray: gray
+
+	^self new setRed: gray green: gray blue: gray! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+transparent
+
+	^self gray: 1.0! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+asColor
+
+	^self! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+asColorref
+
+	^(self red * 255) rounded +
+		((self green * 255) rounded bitShift: 8) +
+		((self blue * 255) rounded bitShift: 16)! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+blue
+
+	^(rgb bitAnd: 16r3FF) / 1023.0! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+green
+
+	^((rgb bitShift: -10) bitAnd: 16r3FF) / 1023.0! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+red
+
+	^(rgb bitShift: -20) / 1023.0! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+setRed: red green: green blue: blue
+
+	rgb := ((red * 1023.0) rounded bitShift: 20)
+		+ ((green * 1023.0) rounded bitShift: 10)
+		+ (blue * 1023.0) rounded! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+setRgb: anRgb
+
+	rgb := anRgb! !
+
+"October 2, 2010 -> 12:22:26"!
+
+! (Delta mirrorFor: #Color) methodsFor: 'testing' !
+isTransparent
+
+	^false! !
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #ColorForm as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #ColorForm)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #CrLfFileStream as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #CrLfFileStream)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #DefiningClassMetadata as: (
+(Class subclassOf: 'SystemMetadata' instanceVariables: 'enclosing nestedClasses')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #DefiningClassMetadata)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #DefiningClassMetadata) classSide methodsFor: 'instance creation' !
+new ^ <Instance>
+ 	^super new initialize! !
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #DefiningClassMetadata) methodsFor: 'accessing' !
+addNestedClass: c
+	nestedClasses 
+		at: c name asSymbol 
+		put: (Mirror on: c)! !
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #DefiningClassMetadata) methodsFor: 'accessing' !
+enclosingMixin: m 
+	enclosing := m! !
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #DefiningClassMetadata) methodsFor: 'accessing' !
+nestedMixins ^ <Map[Symbol, Class]>
+	^nestedClasses! !
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #DefiningClassMetadata) methodsFor: 'initialization' !
+initialize
+	nestedClasses := IdentityDictionary[Symbol, Class] new! !
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #DosFileDirectory as: (
+(Class subclassOf: 'FileDirectory' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #DosFileDirectory)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileDirectory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #FileDirectory)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #FileDirectory) classSide methodsFor: 'Newspeak-support' !
+default
+
+	^FilePath currentDirectory! !
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #FileDirectory) classSide methodsFor: 'Newspeak-support' !
+default1
+
+	^FilePath currentDirectory! !
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #FileStream as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #FileStream)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #GiveUp as: (
+(Class subclassOf: 'Error' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #GiveUp)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #GiveUp) methodsFor: 'unclassified' !
+defaultAction 
+ self Processor activeProcess terminate.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #GiveUp) methodsFor: 'unclassified' !
+isResumable 
+^false.
+
+! !
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #GradientFillStyle as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #GradientFillStyle)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+Delta define: #Language as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:27"!
+
+(Delta mirrorFor: #Language)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #Language) classSide methodsFor: 'utility' !
+syntheticNameSeparator ^ <String>
+	^self syntheticNameSeparatorCharacter asString! !
+
+"October 2, 2010 -> 12:22:27"!
+
+! (Delta mirrorFor: #Language) classSide methodsFor: 'utility' !
+syntheticNameSeparatorCharacter ^ <Character>
+	^$_! !
+
+"October 2, 2010 -> 12:22:28"!
+
+Delta define: #MixinApplicationMetadata as: (
+(Class subclassOf: 'SystemMetadata' instanceVariables: 'application ')) !
+
+
+"October 2, 2010 -> 12:22:28"!
+
+(Delta mirrorFor: #MixinApplicationMetadata)
+comment: 
+'Stored in Class'' instance variable metadata iff the class is a mixin application.
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #MixinApplicationMetadata) methodsFor: 'Unclassified' !
+definingClass ^<Class>
+
+
+	^SystemMetadata definingClassOf: application
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #MixinApplicationMetadata) methodsFor: 'Unclassified' !
+isMixinApplication 
+
+	^true
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+Delta define: #MorphicAgentFactory as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:28"!
+
+(Delta mirrorFor: #MorphicAgentFactory)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:28"!
+
+Delta define: #MorphicFontMapper as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:28"!
+
+(Delta mirrorFor: #MorphicFontMapper)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:28"!
+
+Delta define: #NamedSlotFinder as: (
+(Class subclassOf: 'ObjectIterator' instanceVariables: 'slotName <String> slotValue <Object> found <Boolean>')) !
+
+
+"October 2, 2010 -> 12:22:28"!
+
+(Delta mirrorFor: #NamedSlotFinder)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NamedSlotFinder) classSide methodsFor: 'instance creation' !
+forSlot: s <String> ^ <Instance>
+	^self new slotName: s! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NamedSlotFinder) methodsFor: 'access' !
+getValueFor: o <OopsVMMirror>  ^ <Object>
+	^self getValueFor: o ifFail:[Error signal].
+	! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NamedSlotFinder) methodsFor: 'access' !
+getValueFor: o <OopsVMMirror> ifFail: fblk <[^R def]>  ^ <Object>
+	o iterateInstanceVariables: self.
+	found ifFalse: [^fblk value].
+	found := false.
+	^slotValue
+	! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NamedSlotFinder) methodsFor: 'initialization' !
+initialize
+	super initialize.
+	found := false.! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NamedSlotFinder) methodsFor: 'initialization' !
+slotName: s <String>
+	self initialize.
+	slotName := s
+	! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NamedSlotFinder) methodsFor: 'named parts' !
+name: n <Str> oop: value <Object>
+	n = slotName ifTrue:[
+		found := true.
+		slotValue := value
+	]! !
+
+"October 2, 2010 -> 12:22:28"!
+
+Delta define: #NativeSession as: (
+(Class subclassOf: 'NewspeakObject' instanceVariables: 'SystemScope MessageBox BrazilMappingForWin32 brazil List SmalltalkImage WorldState watchdogProcess module_slot Delay Preferences ToolSet OSProcess desktop_slot Desktop NsFFISessionManager InputSensor Smalltalk suspendedDesktop_slot') classVariables: 'MixinMetadata_NativeSession EnclosingObjects_NativeSession') !
+
+
+"October 2, 2010 -> 12:22:28"!
+
+(Delta mirrorFor: #NativeSession)
+comment: 
+'Captures the native UI state used by Brazil.'!
+
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+debugUsingPlatform: platform 
+|  SmalltalkImage  Utilities  NsToolSet  initials  currentImage  currentImageName  isChild |
+ SmalltalkImage := platform System SmalltalkImage.
+ Utilities := platform System Utilities.
+ NsToolSet := platform NsToolSet NsToolSet.
+( SmalltalkImage current  snapshot:true andQuit:false) ifTrue:[ 
+^nil.
+].
+ initials := Utilities authorInitialsPerSe.
+ currentImage := SmalltalkImage current.
+ currentImageName := currentImage imageName.
+ currentImage closeSourceFiles.
+ currentImage saveChangesInFileNamed:( currentImage fullNameForChangesNamed:'NativeSession').
+ currentImage imageName:( currentImage fullNameForImageNamed:'NativeSession').
+ isChild := currentImage  snapshot:true andQuit:false.
+ currentImage closeSourceFiles.
+ isChild ifFalse:[ 
+ currentImage imageName: currentImageName.
+].
+ currentImage openSourceFiles.
+ Utilities setAuthorInitials: initials.
+ isChild ifFalse:[ 
+ NsToolSet launchImageNamed:( currentImage fullNameForImageNamed:'NativeSession').
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+drawAttentionToConsole 
+ self  drawAttentionToConsoleIfTrue:[ 
+true.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+drawAttentionToConsoleIfTrue: attentionNeeded 
+ self soleInstanceIfNotNil:[ : it | 
+ it isRunningMorphic ifFalse:[ 
+ it NsFFISessionManager schedule:[ 
+ attentionNeeded value ifTrue:[ 
+ it flashSqueakWindow.
+].
+].
+].
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+enclosingObjects: eos EnclosingObjects_NativeSession := eos ! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+goMorphic 
+ self soleInstance goMorphic.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+goNative 
+ self soleInstance goNative.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+mixinMetadata: mmd MixinMetadata_NativeSession := mmd ! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+prepareForNewVmSession 
+ self soleInstanceIfNotNil:[ : it | 
+ it cleanupForNewImageSession.
+].
+ self reset.
+ self soleInstance.
+( self environment at:#'NsPlatform') soleInstance brazil resetDesktop.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+shutDown: quitting 
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+start 
+ self soleInstance start.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+startUp: resuming 
+ resuming ifTrue:[ 
+ self soleInstance setupDesktopForNewSession.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:28"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+stop 
+ self soleInstanceIfNotNil:[ : s | 
+ s stop.
+].
+ self reset.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+turnOffIfError: onError 
+ self soleInstanceIfNotNil:[ : it | 
+ it turnOffIfError: onError.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) classSide methodsFor: 'unclassified' !
+usingPlatform: platform 
+^ self basicNew usingPlatform: platform.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+BrazilMappingForWin32 ^BrazilMappingForWin32! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+BrazilMappingForWin32: BrazilMappingForWin32_val BrazilMappingForWin32 := BrazilMappingForWin32_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+Delay ^Delay! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+Delay: Delay_val Delay := Delay_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+Desktop ^Desktop! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+Desktop: Desktop_val Desktop := Desktop_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+InputSensor ^InputSensor! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+InputSensor: InputSensor_val InputSensor := InputSensor_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+List ^List! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+List: List_val List := List_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+MessageBox ^MessageBox! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+MessageBox: MessageBox_val MessageBox := MessageBox_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+NativeSession_1_init: platform 
+ self List: platform Collections OrderedCollection.
+ self BrazilMappingForWin32: platform BrazilForWindows BrazilMappingForWin32.
+ self brazil: platform NsPlatform soleInstance brazil.
+ self Desktop: self  brazil containers Desktop.
+ self MessageBox: self  brazil tools MessageBox.
+ self WorldState: platform Morphic WorldState.
+ self OSProcess: platform OSProcess OSProcess.
+ self Smalltalk: platform Smalltalk.
+ self InputSensor: platform Kernel InputSensor.
+ self Delay: platform Kernel Delay.
+ self SmalltalkImage: platform System SmalltalkImage.
+ self NsFFISessionManager: platform NativeSession NsFFISessionManager.
+ self ToolSet: platform System ToolSet.
+ self Preferences: platform System Preferences.
+ self SystemScope: platform SystemScope SystemScope.
+ self suspendedDesktop_slot: self  brazil theDesktop.
+ self module_slot:nil.
+ self desktop_slot:nil.
+ self watchdogProcess:nil.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+NativeSession_superInit_usingPlatform: platform 
+super  new.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+NsFFISessionManager ^NsFFISessionManager! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+NsFFISessionManager: NsFFISessionManager_val NsFFISessionManager := NsFFISessionManager_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+OSProcess ^OSProcess! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+OSProcess: OSProcess_val OSProcess := OSProcess_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+Preferences ^Preferences! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+Preferences: Preferences_val Preferences := Preferences_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+Smalltalk ^Smalltalk! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+Smalltalk: Smalltalk_val Smalltalk := Smalltalk_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+SmalltalkImage ^SmalltalkImage! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+SmalltalkImage: SmalltalkImage_val SmalltalkImage := SmalltalkImage_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+SystemScope ^SystemScope! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+SystemScope: SystemScope_val SystemScope := SystemScope_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+ToolSet ^ToolSet! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+ToolSet: ToolSet_val ToolSet := ToolSet_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+WorldState ^WorldState! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+WorldState: WorldState_val WorldState := WorldState_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+alwaysAllowClose 
+^[ : w | 
+true.
+] fixTemps.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+anyVisibleWindows 
+|  isWindow  isWindowVisible  sqHandle |
+ isWindow := self  module api IsWindow.
+ isWindowVisible := self  module api IsWindowVisible.
+ self  module windowsSession topLevelWindowsDo:[ : i | 
+(( isWindow boolValue: i) and:[ 
+ isWindowVisible boolValue: i.
+]) ifTrue:[ 
+^true.
+].
+].
+ sqHandle := self  squeakWindowHandle.
+^( isWindow boolValue: sqHandle) and:[ 
+ isWindowVisible boolValue: sqHandle.
+].
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+approveClosingLastWindow: window 
+( self  desktop windows select:[ : each | 
+ each ~~ window and:[ 
+ each isOpen.
+].
+]) isEmpty not ifTrue:[ 
+^true.
+].
+ self  Preferences inPackagedImage  ifTrue:[ 
+ self  confirmQuit.
+] ifFalse:[ 
+ self  confirmSaveOrQuit.
+].
+^false.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+brazil ^brazil! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+brazil: brazil_val brazil := brazil_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+checkForVisibleWindows 
+ self  anyVisibleWindows ifTrue:[ 
+^ self.
+].
+ self  ToolSet quit.
+ self  watchdogProcess isNil ifFalse:[ 
+ self   show:true squeakWindow: self  squeakWindowHandle.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+cleanupForNewImageSession 
+ self  watchdogProcess:nil.
+ self  module ifNotNil:[ : it | 
+ it resetForNewImageSession.
+].
+( self  desktop notNil and:[ 
+ self  desktop isMorphic not.
+]) ifTrue:[ 
+ self  desktop discardMappings.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+confirmQuit 
+|  answer |
+ answer := self  MessageBox new yesNo:'Do you want to quit?'; 
+ open.
+ answer ==#'yes' ifTrue:[ 
+ self  quit.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+confirmSaveOrQuit 
+|  answer |
+ answer := self  MessageBox new yesNoCancel:'Save changes before quitting?'; 
+ open.
+ answer ==#'yes' ifTrue:[ 
+ self  saveThenQuit.
+].
+ answer ==#'no' ifTrue:[ 
+ self  quit.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+desktop 
+^ self  desktop_slot value.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+desktop_slot ^desktop_slot! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+desktop_slot: desktop_slot_val desktop_slot := desktop_slot_val! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+drawAttentionToSqueakWindow: handle 
+|  api |
+ api := self  module api.
+ api GetForegroundWindow unsignedValue = handle ifFalse:[ 
+ api FlashWindow  value: handle value:1.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+enableApproveClosingLastWindow 
+^[ : w | 
+ self  approveClosingLastWindow: w.
+] fixTemps.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+flashSqueakWindow 
+|  api  handle |
+ self  isRunningMorphic ifTrue:[ 
+^ self.
+].
+ api := self  module api.
+ handle := self  squeakWindowHandle.
+ handle ~=0 ifTrue:[ 
+ self  module windowsSession enableAll.
+ self   show:true squeakWindow: handle.
+ self  drawAttentionToSqueakWindow: handle.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+focusSqueakWindow 
+|  api  handle |
+ self  isRunningMorphic ifTrue:[ 
+^ self.
+].
+ api := self  module api.
+ handle := self  squeakWindowHandle.
+ handle ~=0 ifTrue:[ 
+ self   show:true squeakWindow: handle.
+ api SetActiveWindow value: handle.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+goMorphic 
+|  newOrExistingMorphicDesktop |
+ self  isRunningMorphic ifTrue:[ 
+^ self.
+].
+ self  focusSqueakWindow.
+ self  suspendedDesktop ifNotNil:[ : currentDesktop | 
+ currentDesktop agent ifNotNil:[ : it | 
+ it isMorphic ifTrue:[ 
+ newOrExistingMorphicDesktop := currentDesktop.
+].
+].
+].
+ self  switchToDesktop:( newOrExistingMorphicDesktop ifNil:[ 
+ self  brazil newMorphicDesktop.
+]).
+ self  brazil theDesktop windowClosePermission: self  alwaysAllowClose; 
+ positionWindowsWithinVisibleScreenArea.
+ self  Preferences inPackagedImage ifTrue:[ 
+^ self.
+].
+( self  brazil theDesktop windows select:[ : each | 
+ each isOpen.
+]) isEmpty not ifFalse:[ 
+ self  ToolSet default openClassBrowser.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+goNative 
+ self  NsFFISessionManager soleInstanceIfNotNil:[ : it | 
+ it platformHasNativeEventLoop  ifTrue:[ 
+ self  switchToDesktop: self  desktop.
+ self  desktop windowClosePermission: self  enableApproveClosingLastWindow.
+ self  module squeakWindowHandle: self  squeakWindowHandle.
+ self  Preferences inPackagedImage ifTrue:[ 
+^ self.
+].
+( self  desktop windows select:[ : each | 
+ each isOpen.
+]) isEmpty not ifFalse:[ 
+ self  ToolSet default openClassBrowser.
+].
+] ifFalse:[ 
+ self  MessageBox new ok:'Native mode is not available on this OS.'; 
+ open.
+].
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+hasUserInterrupted 
+|  peekMessage  translateMessage  syskeydown  syschar  remove |
+ peekMessage := self  module api PeekMessage.
+ translateMessage := self  module api TranslateMessage.
+ syskeydown := self  module api WM_SYSKEYDOWN.
+ syschar := self  module api WM_SYSCHAR.
+ remove := self  module api PM_REMOVE.
+ self  module api MSG newC freeAfter:[ : msg | 
+( peekMessage  boolValue: msg address value:0 value: syskeydown value: syskeydown value: remove) ifTrue:[ 
+ translateMessage boolValue: msg address.
+].
+( peekMessage  boolValue: msg address value:0 value: syschar value: syschar value: remove) ifTrue:[ 
+^ msg wParam =$. asciiValue and:[ 
+( msg lParam bitAnd:1073741824) ~=0.
+].
+].
+].
+^false.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+isHeadless 
+^ self  Preferences inPackagedImage.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+isRunningMorphic 
+^( self  brazil theDesktop ifNil:[ 
+^true.
+]) isMorphic.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+isRunningNative 
+^ self  isRunningMorphic not.
+
+! !
+
+"October 2, 2010 -> 12:22:29"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+isWindows 
+^( self  OSProcess ifNil:[ 
+^false.
+]) isWindows.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+module 
+^ self  module_slot value.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+module_slot ^module_slot! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+module_slot: module_slot_val module_slot := module_slot_val! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+quit 
+ self  WorldState addDeferredUIMessage:[ 
+ self  SmalltalkImage current  snapshot:false andQuit:true.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+saveThenQuit 
+ self  WorldState addDeferredUIMessage:[ 
+ self  SmalltalkImage current  snapshot:true andQuit:true.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+setupDesktopForNewSession 
+ self  isWindows ifFalse:[ 
+^ self  goMorphic.
+].
+ self  InputSensor default shiftPressed not  ifTrue:[ 
+ self  goNative.
+] ifFalse:[ 
+ self  goMorphic.
+].
+ self  watchdog.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+setupUsingPlatform: platform 
+ self  isWindows ifTrue:[ 
+^ self  setupWin32NativeSessionUsingPlatform: platform.
+].
+ self  module_slot:[ 
+nil.
+].
+ self  desktop_slot:[ 
+nil.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+setupWin32NativeSessionUsingPlatform: platform 
+ self  module_slot:( self future:[ 
+( self  BrazilMappingForWin32 platform: platform) useDoubleBuffering:true; 
+ yourself.
+]).
+ self  desktop_slot:( self future:[ 
+ self  Desktop withMapping: self  module agentFactory.
+]).
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+show: show squeakWindow: handle 
+|  api |
+ api := self  module api.
+ handle ~=0 ifTrue:[ 
+ api ShowWindow  value: handle value:( show  ifTrue:[ 
+ api SW_SHOW.
+] ifFalse:[ 
+ api SW_HIDE.
+]).
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+squeakWindowClassName 
+^ self  SystemScope soleInstance systemName ,'WindowClass'.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+squeakWindowHandle 
+^( self  module api Alien newCString: self  squeakWindowClassName) freeAfter:[ : classNameBuffer | 
+ self  module api FindWindow  unsignedValue: classNameBuffer address value:0.
+].
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+start 
+ self  Smalltalk addToShutDownList: self class; 
+ addToStartUpList: self class.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+stop 
+ self  Smalltalk removeFromShutDownList: self class; 
+ removeFromStartUpList: self class.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+suspendedDesktop 
+^ self  suspendedDesktop_slot ifNil:[ 
+ self  brazil theDesktop.
+].
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+suspendedDesktop_slot ^suspendedDesktop_slot! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+suspendedDesktop_slot: suspendedDesktop_slot_val suspendedDesktop_slot := suspendedDesktop_slot_val! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+switchToDesktop: newDesktop 
+|  oldDesktop |
+ oldDesktop := self  suspendedDesktop.
+ self  suspendedDesktop_slot:nil.
+ self  brazil theDesktop: newDesktop.
+ oldDesktop == newDesktop ifTrue:[ 
+^ self.
+].
+ oldDesktop ifNotNil:[ 
+|  oldWindows |
+ oldWindows := self Array withAll: oldDesktop windows.
+ oldWindows do:[ : each | 
+[ 
+ oldDesktop remove: each.
+ newDesktop add: each.
+] ifError:[ : msg | 
+ msg out.
+ newDesktop remove: each.
+].
+].
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+turnOffIfError: onError 
+ self  NsFFISessionManager soleInstanceIfNotNil:[ : ffiSession | 
+( self  OSProcess isWindows and:[ 
+ ffiSession nativeIoVmFlag value >1.
+]) ifTrue:[ 
+^ onError valueWithPossibleArgument:'Cannot terminate native I/O processing. Please try again after restarting the image.'.
+].
+ self  goMorphic.
+ ffiSession releaseTheWorld.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+useArialFont 
+ self  useFont: self  module windowsSession fontMapper arialFont.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+useConsolasFont 
+ self  useFont: self  module windowsSession fontMapper consolasFont.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+useFont: font 
+|  fontMapper |
+ fontMapper := self  module windowsSession fontMapper.
+ fontMapper defaultFont = font ifTrue:[ 
+^ self.
+].
+ fontMapper defaultFont: font.
+ fontMapper resetForNewImageSession.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+useGeorgiaFont 
+ self  useFont: self  module windowsSession fontMapper georgiaFont.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+useVerdanaFont 
+ self  useFont: self  module windowsSession fontMapper verdanaFont.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+usingPlatform: platform 
+ self NativeSession_superInit_usingPlatform: platform.
+ self NativeSession_1_init: platform.
+ self  setupUsingPlatform: platform.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+watchdog 
+|  delay |
+ self  watchdogProcess ifNotNil:[ : it | 
+^ it.
+].
+ delay := self  Delay forSeconds:3.
+ self  watchdogProcess:[ 
+ delay wait.
+[ 
+ self  watchdogProcess isNil not and:[ 
+ self  watchdogProcess isActiveProcess.
+].
+] whileTrue:[ 
+ self  checkForVisibleWindows.
+ delay wait.
+].
+] newProcess.
+ self  watchdogProcess priority:39; 
+ name:'Native Session Watchdog'; 
+ resume.
+^ self  watchdogProcess.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+watchdogProcess ^watchdogProcess! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+watchdogProcess: watchdogProcess_val watchdogProcess := watchdogProcess_val! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NativeSession) methodsFor: 'unclassified' !
+win32api 
+^ self  module api.
+
+! !
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NativeSessionPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+(Delta mirrorFor: #NativeSessionPackage)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakError as: (
+(Class subclassOf: 'Error' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+(Delta mirrorFor: #NewspeakError)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakMirrors as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+(Delta mirrorFor: #NewspeakMirrors)
+comment: 
+'A quick and dirty emulation of the required elements of the mirror API.'!
+
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NewspeakMirrors) classSide methodsFor: 'instance creation' !
+usingLib: platform <NsPlatform> ^ <Instance>
+	^self new initialize! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NewspeakMirrors) methodsFor: 'access' !
+ObjectMirror 
+	^NewspeakObjectMirror! !
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'metadata')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+Delta define: #NewspeakObject as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'metadata')) !
+
+
+"October 2, 2010 -> 12:22:30"!
+
+(Delta mirrorFor: #NewspeakObject)
+comment: 
+'Class NewspeakObject is the root of the object hierarchy in the Newspeak programming language, and provides behavior common to all objects.
+
+For each protocol P in the system, this class provides a method "isP" which answers true if and only if the receiver is an instance of a class which implements the protocol P.
+
+Discussion:
+
+Unlike other systems inspired by Smalltalk, the number of methods in this class is deliberately kept to a minimum. Behavior should only be provided by this class if it should be considered part of the core set of features available to *all* Newspeak programmers.
+
+The security model of the Newspeak programming language is based on capabilities and it is essential that capabilities cannot leak through behavior provided by this class. For example, this class provides no mechanism for accessing instance variables of its instances. Instead such capabilities are provided to the debugger and other tools through mirror based reflection modules.
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NewspeakObject) classSide methodsFor: 'metadata' !
+metadata
+	metadata isNil
+		ifTrue:[
+			metadata := 
+				(Mirror on: self) isMixinInvocation
+					ifTrue:[MixinApplicationMetadata new]
+					ifFalse:[DefiningClassMetadata new]
+		].
+	^metadata! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NewspeakObject) classSide methodsFor: 'private' !
+basicNew
+
+	^self primitiveNew! !
+
+"October 2, 2010 -> 12:22:30"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+Array ^ <Array class>
+	"Answers the class Array or a compatible object.
+	May be overridden in subclasses."
+	^Array! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+Character ^ <Character class>
+	"Answers the class Character or a compatible object.
+	May be overridden in subclasses."
+	^Character! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+Error ^ <Error class>
+	"Answers the class Error or a compatible object.
+	May be overridden in subclasses."
+	^NewspeakError! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+Float ^ <Float class>
+	"Answers the class Float or a compatible object.
+	May be overridden in subclasses."
+	^Float! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+Integer ^ <Integer class>
+	"Answers the class Integer or a compatible object.
+	May be overridden in subclasses."
+	^Integer! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+Object ^ <Object class>
+	"Answers the class Object or a compatible object.
+	May be overridden in subclasses."
+	^NewspeakObject! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+String ^ <String class>
+	"Answers the class String or a compatible object.
+	May be overridden in subclasses."
+	^String! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+Symbol ^ <Symbol class>
+	"Answers the class Symbol or a compatible object.
+	May be overridden in subclasses."
+	^Symbol! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+assert: condition <[^Boolean]> message: message <String>
+	"Raises an error with the given message if and only if condition evaluates to false."
+	self inProduction
+		ifFalse: [ 
+			condition isBlock ifFalse: [self Error signal: 'Block required'].
+			condition verify: message
+			 ]! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+canonicalRepresentation ^ <Self | CanonicalRepresentation>
+	"Answers the canonical representation of the receiver, that is, either the receiver itself or an instance of CanonicalRepresentation."
+	^self! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObject) methodsFor: 'accessing' !
+new
+	"Does nothing. May be overriden in subclasses."! !
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee <Object> oopMirror <OopsVMMirror>')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee <Object> oopMirror <OopsVMMirror>')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee <Object> oopMirror <OopsVMMirror>')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee <Object> oopMirror <OopsVMMirror>')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+(Delta mirrorFor: #NewspeakObjectMirror)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) classSide methodsFor: 'instance creation' !
+reflecting: r <Object> ^ <Instance>
+	^self new reflectee: r! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'access' !
+getClassIfFail:  fblk <[Exception, ^R def]> ^ <ClassMirror> 
+	^Mirror on: reflectee actualClass "never fails on local objects"! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'access' !
+getSlot: slotName <Symbol> ifFail:  fblk <[Exception, ^R def]> ^ <ObjectMirror | R>
+	^self class reflecting: ((NamedSlotFinder forSlot: slotName) getValueFor: oopMirror ifFail: [^fblk value]).! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'access' !
+perform: selector <Symbol> with:  args <Array[Object]> ifFail:  fblk <[Exception, ^R def]>  ^ <ObjectMirror | R >
+	| result <Object> |
+	result := [reflectee perform: selector withArguments: args] on: Error do: [:ex <Error> | ^fblk value: ex].
+	^self class reflecting: result! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'access' !
+reflecteeIfFail:  fblk <[Exception]> ^ <ClassMirror> 
+	^reflectee "never fails on local objects"! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'access' !
+setClass: klass <Class | ClassMirror> ifFail:  fblk <[Exception, ^R def]> ^ <ClassMirror | R> 
+	^fblk value "always fails for now"! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'access' !
+setSlot: slotName <Symbol> to:  obj <Object> ifFail:  fblk <[Exception]>
+	self perform: (slotName, ':' ) asSymbol  with: {obj} ifFail: fblk! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'accessors' !
+reflectee ^ <Object>
+	^reflectee! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'accessors' !
+reflectee: r  <Object>
+	reflectee := r.
+	oopMirror := OopsVMMirror on: r! !
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+(Delta mirrorFor: #NsFFIPackage)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFIPackage) methodsFor: 'overrides' !
+UnsafeAlien
+
+	^UnsafeAlienProxy! !
+
+"October 2, 2010 -> 12:22:31"!
+
+Delta define: #NsFFISessionManager as: (
+(Class subclassOf: 'Singleton' instanceVariables: 'deferredActionsSlot
+processIoEvents
+ioEventProcess
+processStackChanged
+deferredInstallmentsSlot
+userAbortWatcher
+api') classVariables: 'MixinMetadata_NsFFISessionManager EnclosingObjects_NsFFISessionManager') !
+
+
+"October 2, 2010 -> 12:22:31"!
+
+(Delta mirrorFor: #NsFFISessionManager)
+comment: 
+'Manages all state related to the current VM process.
+Responsibilites include:
+
+	* draining events from native I/O event queue
+	* scheduling of actions in the native I/O event thread
+	* manage native callbacks
+	* handle errors in debugging (allowing for debugging of such errors)
+
+Note: this class is work in progress. These responsibilites are currently managed by
+the class ''''Alien'''' and will be moved here.'!
+
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) classSide methodsFor: 'unclassified' !
+enclosingObjects: eos EnclosingObjects_NsFFISessionManager := eos ! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) classSide methodsFor: 'unclassified' !
+logFatalError: error 
+|  fn |
+ fn :='fatal-error.txt'.
+ self CrLfFileStream  forceNewFileNamed: fn do:[ : s | 
+ s nextPutAll:'Application crashed during start up at: '.
+ self DateAndTime now asLocal printOn: s.
+ s cr; 
+ flush.
+ self Preferences inPackagedImage ifTrue:[ 
+^ self.
+].
+ error exception ifNotNil:[ : it | 
+|  stack |
+ stack := it signalerContext.
+[ 
+ stack isNil.
+] whileFalse:[ 
+ stack printOn: s.
+ s cr; 
+ flush.
+ stack := stack sender.
+].
+].
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) classSide methodsFor: 'unclassified' !
+mixinMetadata: mmd MixinMetadata_NsFFISessionManager := mmd ! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) classSide methodsFor: 'unclassified' !
+new 
+^ self basicNew new.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) classSide methodsFor: 'unclassified' !
+prepareForNewVmSession 
+[ 
+^ self soleInstance prepareForNewVmSession.
+]  on: self UnhandledError do:[ : ex | 
+[ 
+ self  logFatalError: self error.
+]  on: self UnhandledError do:[ 
+nil.
+].
+ self Preferences inPackagedImage ifTrue:[ 
+ self Smalltalk quitPrimitive.
+].
+].
+^false.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) classSide methodsFor: 'unclassified' !
+schedule: deferredAction 
+ self soleInstanceIfNotNil:[ : it | 
+ it scheduleDeferredAction: deferredAction.
+^ self.
+].
+ deferredAction forkAt:30.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) classSide methodsFor: 'unclassified' !
+usingPlatform: ignored 
+^ self new initialize.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+NsFFISessionManager_1_init 
+ | platform |
+ self processIoEvents:nil.
+ self ioEventProcess:nil.
+ self deferredActionsSlot:nil.
+ self deferredInstallmentsSlot:nil.
+ self processStackChanged:nil.
+ self userAbortWatcher:nil.
+ platform := NsPlatform soleInstance.
+ api := platform Win32API Win32API usingPlatform: platform.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+NsFFISessionManager_superInit_new 
+super  new.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+abortIfIoEventProcess: description 
+ self  ioEventProcess isActiveProcess ifTrue:[ 
+ self Abort signal: description.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+abortIoProcess: process 
+ self  unwindRecursiveInterpretersIn: process.
+ process signalException: self GiveUp.
+ process resume.
+ self  spawnIoEventProcess.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+checkUserAbort 
+ self NativeSession soleInstanceIfNotNil:[ : it | 
+ it hasUserInterrupted ifTrue:[ 
+ self  debugIoProcess: self  ioEventProcess.
+].
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+debugIoProcess: process 
+ self  unwindRecursiveInterpretersIn: process.
+ self  spawnIoEventProcess.
+ process debugWithTitle:'User Interrupt'.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:31"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+deferredActions 
+ self  deferredActionsSlot
+ 		ifNil: [self  deferredActionsSlot: SharedQueue new].
+ ^self  deferredActionsSlot! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+deferredActionsDo: action 
+[ 
+ action value:( self  deferredActions nextOrNil ifNil:[ 
+^ self.
+]).
+true.
+] whileTrue.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+deferredActionsSlot ^deferredActionsSlot! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+deferredActionsSlot: deferredActionsSlot_val deferredActionsSlot := deferredActionsSlot_val! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+deferredInstallments 
+ self  deferredInstallmentsSlot
+ 		ifNil: [self  deferredInstallmentsSlot: SharedQueue new].
+ ^self  deferredInstallmentsSlot! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+deferredInstallmentsDo: action 
+ action value:( self  deferredInstallments nextOrNil ifNil:[ 
+^ self.
+]).
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+deferredInstallmentsSlot ^deferredInstallmentsSlot! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+deferredInstallmentsSlot: deferredInstallmentsSlot_val deferredInstallmentsSlot := deferredInstallmentsSlot_val! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+doWithSpecialErrorHandling: action 
+^[	self  restartUserAbortWatcher.
+	[action
+		on: GiveUp
+		do:[ : ex | nil]]
+			ifCurtailed: [nil]]
+	on: Error
+	do:[ :ex |
+ 			self  ioEventProcess isActiveProcess
+ 				ifTrue: [self  spawnIoEventProcess].
+ 			ex pass]
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+drainEventsWhileFalse: doneValueProvider 
+|  delay |
+ delay := "self" Delay forMilliseconds:50.
+ self  ioEventProcess isActiveProcess ifTrue:[ 
+^[ 
+ doneValueProvider value.
+] whileFalse:[ 
+ self  processOneRoundOfIoEvents.
+ delay wait.
+].
+].
+" self Project uiProcess isActiveProcess ifTrue:[ 
+|  world |
+ world := self World.
+^[ 
+ doneValueProvider value.
+] whileFalse:[ 
+ world doOneCycle.
+].
+]."
+[ 
+ doneValueProvider value.
+] whileFalse:[ 
+ delay wait.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+drainNativeEventQueue 
+ "self  terminateUserAbortWatcher.
+ self Alien primDrainOSEventQueue."
+ api MSG newC
+ 	freeAfter: [	:msg |
+ 							[api PeekMessage
+ 								boolValue: msg pointer
+ 								value: 0
+ 								value: 0
+ 								value: 0
+ 								value: api PM_REMOVE]
+ 									whileTrue: [api DispatchMessage value: msg pointer]].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+initialize 
+ self  releaseTheWorld.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+invokeCallback: thunkPtr stack: stackPtr 
+|  resultProxy |
+ resultProxy := self  doWithSpecialErrorHandling:[ 
+ self Callback  evaluateCallbackForThunk: thunkPtr stack: stackPtr.
+].
+ resultProxy ifNil:[ 
+( resultProxy := self FFICallbackReturnValue new) returnInteger:0.
+].
+^ resultProxy.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+ioEventProcess ^ioEventProcess! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+ioEventProcess: ioEventProcess_val ioEventProcess := ioEventProcess_val! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+ioEventProcessLoop 
+|  delay |
+ delay := Delay forMilliseconds:50.
+ "self  takeIoProcessing."
+ [[	self  processIoEvents and: [self  ioEventProcess isActiveProcess]]
+		whileTrue: [	self  processOneRoundOfIoEvents.
+								[delay wait]
+									on: Error
+									do: [delay := Delay forMilliseconds: 50]]]
+		on: GiveUp
+		do: [nil].
+ "self releaseIoProcessing."
+ ^self
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+nativeIoVmFlag 
+^ self IntegerFlagAlien forInIoProcessEventsFlag.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+new 
+ self NsFFISessionManager_superInit_new.
+ self NsFFISessionManager_1_init.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+platformHasNativeEventLoop 
+^OSProcess isWindows.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+prepareForNewVmSession 
+|  resumingInEventLoop |
+ resumingInEventLoop := self  ioEventProcess isActiveProcess.
+ self  processIoEvents:false.
+ self  terminateUserAbortWatcher.
+ self IllegalAlien prepareForNewVmSession.
+ self Alien prepareForNewVmSession.
+ self FFICallbackThunk prepareForNewVmSession.
+ self Smalltalk  at:#'NativeSession' ifPresent:[ : it | 
+ it prepareForNewVmSession.
+].
+ self  takeOverTheWorld.
+^ resumingInEventLoop.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+processIoEvents ^processIoEvents! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+processIoEvents: processIoEvents_val processIoEvents := processIoEvents_val! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+processOneRoundOfIoEvents 
+ self  drainNativeEventQueue.
+ self  ioEventProcess isActiveProcess ifFalse:[ 
+^ self.
+].
+ self  deferredActionsDo:[ : deferredAction | 
+ self  drainNativeEventQueue.
+ self  doWithSpecialErrorHandling: deferredAction.
+ self  ioEventProcess isActiveProcess ifFalse:[ 
+^ self.
+].
+].
+ self  deferredInstallmentsDo:[ : deferredAction | 
+ self  drainNativeEventQueue.
+ self  doWithSpecialErrorHandling: deferredAction.
+ self  ioEventProcess isActiveProcess ifFalse:[ 
+^ self.
+].
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+processStackChanged ^processStackChanged! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+processStackChanged: processStackChanged_val processStackChanged := processStackChanged_val! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+releaseIoProcessing 
+ self OSProcess isWindows ifFalse:[ 
+^ self.
+].
+ self  nativeIoVmFlag decrement.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+releaseTheWorld 
+ self  processIoEvents:false.
+ self  ioEventProcess:[ 
+nil.
+] fork.
+ self  terminateUserAbortWatcher.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+restartUserAbortWatcher 
+ "self  ioEventProcess isActiveProcess ifFalse:[ 
+^ self.
+].
+ self  terminateUserAbortWatcher.
+ self  spawnUserAbortWatcher."
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+resumeIoEventProcess: process 
+ self  ioEventProcess: process.
+ self  ioEventProcess resume.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+scheduleDeferredAction: action 
+ action ifNil:[ 
+^ self.
+].
+ self  deferredActions nextPut: action.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+scheduleDeferredInstallment: action 
+ action ifNil:[ 
+^ self.
+].
+ self  deferredInstallments nextPut: action.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+spawnIoEventProcess 
+ self  processIoEvents ifFalse:[^ self].
+ "self  nativeIoVmFlag increment."
+ self  ioEventProcess: [self  ioEventProcessLoop] newProcess.
+ self  ioEventProcess
+ 	priority:45; 
+ 	name:'Native I/O Event Process'; 
+ 	resume.
+^ self! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+spawnIoEventProcessIfThisIsIt: process 
+ process == self  ioEventProcess ifTrue:[ 
+ self  ioEventProcess:[ 
+nil.
+] newProcess.
+ self  unwindRecursiveInterpretersIn: process.
+ self  spawnIoEventProcess.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+spawnUserAbortWatcher 
+ self  userAbortWatcher:[ 
+ self  userAbortWatcherLoop.
+] newProcess.
+ self  userAbortWatcher priority:60; 
+ name:'Native user abort watcher'; 
+ resume.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+takeIoProcessing 
+ self OSProcess isWindows ifFalse:[ 
+^ self.
+].
+ self  nativeIoVmFlag increment.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+takeOverTheWorld 
+ self  platformHasNativeEventLoop ifFalse:[ 
+^ self.
+].
+ self  processIoEvents ==true ifTrue:[ 
+ self error:'already processing events synchronously'.
+].
+ self  processIoEvents:true.
+ self  processStackChanged ifNil:[ 
+ self  processStackChanged: Semaphore new.
+].
+ self  spawnIoEventProcess.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+terminateActiveProcess 
+|  process |
+ process := self Processor activeProcess.
+ process == self  ioEventProcess ifTrue:[ 
+ self GiveUp signal.
+].
+ self Project spawnNewProcessIfThisIsUI: process.
+ process terminate.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+terminateUserAbortWatcher 
+ self  userAbortWatcher ifNotNil:[ : it | 
+ it terminate.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+unwindRecursiveInterpretersIn: process 
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+userAbortWatcher ^userAbortWatcher! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+userAbortWatcher: userAbortWatcher_val userAbortWatcher := userAbortWatcher_val! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+userAbortWatcherLoop 
+( self Delay forMilliseconds:500) wait.
+ self   whileTrue:[ 
+ self  userAbortWatcher isActiveProcess.
+] do:[ 
+ self  checkUserAbort.
+] everyMilliseconds:50.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+usingPlatform: ignored 
+ self  initialize.
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsFFISessionManager) methodsFor: 'unclassified' !
+whileTrue: condition do: action everyMilliseconds: ms 
+|  delay |
+ delay := self Delay forMilliseconds: ms.
+[ 
+[ 
+ condition value.
+] whileTrue:[ 
+ action value.
+[ 
+ delay wait.
+]  on: self Error do:[ 
+ delay := self Delay forMilliseconds:50.
+].
+].
+]  on: self GiveUp do:[ 
+nil.
+].
+^ self.
+
+! !
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPackage as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+(Delta mirrorFor: #NsPackage)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsPackage) classSide methodsFor: 'mnu' !
+doesNotUnderstand: msg
+	^Smalltalk at: msg selector ifAbsent:[super doesNotUnderstand: msg]! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsPackage) methodsFor: 'mnu' !
+doesNotUnderstand: msg
+	^Smalltalk at: msg selector ifAbsent:[super doesNotUnderstand: msg]! !
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: 'brazil win32API')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: 'brazil win32API')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: 'brazil win32API')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+Delta define: #NsPlatform as: (
+(Class subclassOf: 'Singleton' instanceVariables: 'brazil win32API')) !
+
+
+"October 2, 2010 -> 12:22:32"!
+
+(Delta mirrorFor: #NsPlatform)
+comment: 
+'Newspeak Platform.'!
+
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'mnu' !
+doesNotUnderstand: msg
+	^Smalltalk at: msg selector ifAbsent:[super doesNotUnderstand: msg]
+	! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'modules' !
+brazil
+
+	brazil isNil ifTrue: [
+		brazil := self Brazil usingPlatform: self].
+	^brazil! !
+
+"October 2, 2010 -> 12:22:32"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Balloon! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+BrazilForMorphic! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+BrazilForWindows! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Collections! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Exceptions! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Files! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Graphics! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Kernel! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Mirrors! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Morphic! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+NativeSession
+
+	^NativeSessionPackage! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Newspeak2! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+NsFFI
+
+	^NsFFIPackage new! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Numbers! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Streams! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+Win32API
+
+	win32API isNil
+		ifTrue: [win32API := Win32APIPackage platform: self].
+	^win32API! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+blackMarket! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+collections! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #NsPlatform) methodsFor: 'subsystems' !
+streams! !
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #OSProcess as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+(Delta mirrorFor: #OSProcess)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #OSProcess) classSide methodsFor: 'newspeak' !
+isWindows
+
+	^Platform == Win32Platform! !
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #PNGReadWriter as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+(Delta mirrorFor: #PNGReadWriter)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+(Delta mirrorFor: #Singleton)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #Singleton) classSide methodsFor: 'instance creation' !
+new
+
+	^self soleInstance! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #Singleton) classSide methodsFor: 'instance creation' !
+reset
+
+	soleInstance := nil! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #Singleton) classSide methodsFor: 'instance creation' !
+soleInstance
+
+	soleInstance isNil
+		ifTrue: [((soleInstance := super new) new usingPlatform: NsPlatform soleInstance) initialize].
+	^soleInstance! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #Singleton) methodsFor: 'iniitialization' !
+initialize! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #Singleton) methodsFor: 'iniitialization' !
+new! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #Singleton) methodsFor: 'iniitialization' !
+usingPlatform: ignored! !
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+(Delta mirrorFor: #SystemMetadata)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #SystemMetadata) classSide methodsFor: 'utility' !
+fullyQualifySimpleName: sn <Symbol> with: fqp <Symbol> ^<Symbol> 
+ 
+	^(fqp asString, Language syntheticNameSeparator, sn) asSymbol! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #SystemMetadata) classSide methodsFor: 'utility' !
+mixinNameOfClassNamed: className <String> ^<Symbol>
+	|
+	simpleNames <Collection[String]>
+	rawNames <Collection[String]>
+	lastIndex <Integer>
+	|
+	
+	lastIndex := 1.
+	rawNames := OrderedCollection[String] new.
+	(className indicesOfSubCollection: {Language syntheticNameSeparatorCharacter}) do:[: i |
+		rawNames add: (className copyFrom: lastIndex to: i-1).
+		lastIndex := i+1.
+		].
+	lastIndex <= className size ifTrue:[rawNames add: (className copyFrom: lastIndex to:  className size)].
+	rawNames size =1 ifTrue:[^className].
+	simpleNames := rawNames select:[:n <String>  | n first isDigit not].
+	self assert:[simpleNames size >= 2].
+	^(simpleNames reduce:[:sn1 <String>  :sn2 <String> | sn1, Language syntheticNameSeparator, sn2]) asSymbol! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #SystemMetadata) classSide methodsFor: 'utility' !
+mixinSlotNameFor: nestedName <String>
+	| mixinName <String> |
+ 
+	mixinName := self  mixinNameOfClassNamed: nestedName.
+	^mixinName, Language syntheticNameSeparator, 'slot'! !
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #SystemMetadata) methodsFor: 'mirror access' !
+Mirror ^ <Mirror class>
+	^Mirror! !
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'ns2Parser weakSubclasses')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'ns2Parser weakSubclasses')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+(Delta mirrorFor: #SystemMetadataClassSideData)
+comment: 
+'This class serves as the root of the class hierarchy representing Newspeak system metadata - metadata needed by the system itself. All this class does is:
+
+a.  Cache an NS2 parser in a class instance variable, to avoid recomputing it (and hence the grammar) all the time.  When we fully convert to NS2, we can store it in a module variable.
+
+b. Maintain a weak set of classes in the class variable weakSubclasses. This is used to track the subclasses of a class without producing a memory leak, which the normal Squeak implementation tends to do.
+
+Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #SystemMetadataClassSideData) classSide methodsFor: 'accessing' !
+privateWeakSubclasses
+
+	nil == weakSubclasses ifTrue: [ weakSubclasses := WeakSet new ].
+	^weakSubclasses! !
+
+"October 2, 2010 -> 12:22:33"!
+
+Delta define: #SystemScope as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:33"!
+
+(Delta mirrorFor: #SystemScope)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:33"!
+
+! (Delta mirrorFor: #SystemScope) classSide methodsFor: 'Newspeak-stubs' !
+SystemScope
+
+^SystemScope! !
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #TimeStamp as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+(Delta mirrorFor: #TimeStamp)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnhandledError as: (
+(Class subclassOf: 'Error' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+(Delta mirrorFor: #UnhandledError)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #UnsafeAlienProxy as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+(Delta mirrorFor: #UnsafeAlienProxy)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #UnsafeAlienProxy) classSide methodsFor: 'instance creation' !
+forPointerTo: string
+
+	^string asAlien pointer! !
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #WCharAlien as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+(Delta mirrorFor: #WCharAlien)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: 'win32APIClass win32apiPARAFORMAT platform windowProc wndClass giveUp winNMHDR
+winCharFormat winCharFormat2 winCharRange winFindData winGradientRect winMsg
+winMsgFilter winOpenFilename winPaintStruct winPoint winProcessInformation winRect
+winReqResize winScrollInfo winSecurityAttributes winStartupInfo winTrackMouseEvent
+winTriVertex winWindowPos')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: 'win32APIClass win32apiPARAFORMAT platform windowProc wndClass giveUp winNMHDR
+winCharFormat winCharFormat2 winCharRange winFindData winGradientRect winMsg
+winMsgFilter winOpenFilename winPaintStruct winPoint winProcessInformation winRect
+winReqResize winScrollInfo winSecurityAttributes winStartupInfo winTrackMouseEvent
+winTriVertex winWindowPos')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: 'win32APIClass win32apiPARAFORMAT platform windowProc wndClass giveUp winNMHDR
+winCharFormat winCharFormat2 winCharRange winFindData winGradientRect winMsg
+winMsgFilter winOpenFilename winPaintStruct winPoint winProcessInformation winRect
+winReqResize winScrollInfo winSecurityAttributes winStartupInfo winTrackMouseEvent
+winTriVertex winWindowPos')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: 'win32APIClass win32apiPARAFORMAT platform windowProc wndClass giveUp winNMHDR
+winCharFormat winCharFormat2 winCharRange winFindData winGradientRect winMsg
+winMsgFilter winOpenFilename winPaintStruct winPoint winProcessInformation winRect
+winReqResize winScrollInfo winSecurityAttributes winStartupInfo winTrackMouseEvent
+winTriVertex winWindowPos')) !
+
+
+"October 2, 2010 -> 12:22:34"!
+
+(Delta mirrorFor: #Win32APIPackage)
+comment: 
+''!
+
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) classSide methodsFor: 'instance creation' !
+platform: platform
+
+	^self new platform: platform! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32API
+
+	win32APIClass isNil
+		ifTrue: [win32APIClass := self combine: (Smalltalk at: #Win32API)
+																	with: (Smalltalk at: #CAPI)].
+	^win32APIClass! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiCHARFORMAT
+
+	winCharFormat isNil
+		ifTrue: [winCharFormat := self combine: (Smalltalk at: #Win32apiCHARFORMAT)
+																					with: (Smalltalk at: #Alien)].
+	^winCharFormat! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiCHARFORMAT2
+
+	winCharFormat2 isNil
+		ifTrue: [winCharFormat2 := self combine: (Smalltalk at: #Win32apiCHARFORMAT2)
+																					with: (Smalltalk at: #Alien)].
+	^winCharFormat2! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiCHARRANGE
+
+	winCharRange isNil
+		ifTrue: [winCharRange := self combine: (Smalltalk at: #Win32apiCHARRANGE)
+																					with: (Smalltalk at: #Alien)].
+	^winCharRange! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiFINDDATA
+
+	winFindData isNil
+		ifTrue: [winFindData := self combine: (Smalltalk at: #Win32apiFINDDATA)
+																					with: (Smalltalk at: #Alien)].
+	^winFindData! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiGRADIENTRECT
+
+	winGradientRect isNil
+		ifTrue: [winGradientRect := self combine: (Smalltalk at: #Win32apiGRADIENTRECT)
+																					with: (Smalltalk at: #Alien)].
+	^winGradientRect! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiMSG
+
+	winMsg isNil
+		ifTrue: [winMsg := self combine: (Smalltalk at: #Win32apiMSG)
+																					with: (Smalltalk at: #Alien)].
+	^winMsg! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiMSGFILTER
+
+	winMsgFilter isNil
+		ifTrue: [winMsgFilter := self combine: (Smalltalk at: #Win32apiMSGFILTER)
+																					with: (Smalltalk at: #Alien)].
+	^winMsgFilter! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiNMHDR
+	winNMHDR isNil
+		ifTrue: [winNMHDR := self combine: (Smalltalk at: #Win32apiNMHDR)
+																					with: (Smalltalk at: #Alien)].
+	^winNMHDR! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiOPENFILENAME
+
+	winOpenFilename isNil
+		ifTrue: [winOpenFilename := self combine: (Smalltalk at: #Win32apiOPENFILENAME)
+																					with: (Smalltalk at: #Alien)].
+	^winOpenFilename! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiPAINTSTRUCT
+
+	winPaintStruct isNil
+		ifTrue: [winPaintStruct := self combine: (Smalltalk at: #Win32apiPAINTSTRUCT)
+																					with: (Smalltalk at: #Alien)].
+	^winPaintStruct! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiPARAFORMAT
+
+	win32apiPARAFORMAT isNil
+		ifTrue: [win32apiPARAFORMAT := self combine: (Smalltalk at: #Win32apiPARAFORMAT)
+																					with: (Smalltalk at: #Alien)].
+	^win32apiPARAFORMAT! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiPOINT
+
+	winPoint isNil
+		ifTrue: [winPoint := self combine: (Smalltalk at: #Win32apiPOINT)
+																					with: (Smalltalk at: #Alien)].
+	^winPoint! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiPROCESSINFORMATION
+
+	winProcessInformation isNil
+		ifTrue: [winProcessInformation := self combine: (Smalltalk at: #Win32apiPROCESSINFORMATION)
+																					with: (Smalltalk at: #Alien)].
+	^winProcessInformation! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiRECT
+
+	winRect isNil
+		ifTrue: [winRect := self combine: (Smalltalk at: #Win32apiRECT)
+																					with: (Smalltalk at: #Alien)].
+	^winRect! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiREQRESIZE
+
+	winReqResize isNil
+		ifTrue: [winReqResize := self combine: (Smalltalk at: #Win32apiREQRESIZE)
+																					with: self Win32apiNMHDR].
+	^winReqResize! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiSCROLLINFO
+
+	winScrollInfo isNil
+		ifTrue: [winScrollInfo := self combine: (Smalltalk at: #Win32apiSCROLLINFO)
+																					with: (Smalltalk at: #Alien)].
+	^winScrollInfo! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiSECURITYATTRIBUTES
+
+	winSecurityAttributes isNil
+		ifTrue: [winSecurityAttributes := self combine: (Smalltalk at: #Win32apiSECURITYATTRIBUTES)
+																					with: (Smalltalk at: #Alien)].
+	^winSecurityAttributes! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiSTARTUPINFO
+
+	winStartupInfo isNil
+		ifTrue: [winStartupInfo := self combine: (Smalltalk at: #Win32apiSTARTUPINFO)
+																					with: (Smalltalk at: #Alien)].
+	^winStartupInfo! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiTRACKMOUSEEVENT
+
+	winTrackMouseEvent isNil
+		ifTrue: [winTrackMouseEvent := self combine: (Smalltalk at: #Win32apiTRACKMOUSEEVENT)
+																					with: (Smalltalk at: #Alien)].
+	^winTrackMouseEvent! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiTRIVERTEX
+
+	winTriVertex isNil
+		ifTrue: [winTriVertex := self combine: (Smalltalk at: #Win32apiTRIVERTEX)
+																					with: (Smalltalk at: #Alien)].
+	^winTriVertex! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiWINDOWPOS
+
+	winWindowPos isNil
+		ifTrue: [winWindowPos := self combine: (Smalltalk at: #Win32apiWINDOWPOS)
+																					with: (Smalltalk at: #Alien)].
+	^winWindowPos! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiWNDCLASS
+	wndClass isNil
+		ifTrue: [wndClass := self combine: (Smalltalk at: #Win32apiWNDCLASS)
+																					with: (Smalltalk at: #Alien)].
+	^wndClass! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+Win32apiWindowProc
+	windowProc isNil
+		ifTrue: [windowProc := self combine: (Smalltalk at: #Win32apiWindowProc)
+																					with: (Smalltalk at: #Alien)].
+	^windowProc! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+combine: subclass with: superclass
+
+| mirror class |
+mirror := (Mirror on: subclass) mixin |> (Mirror on: superclass).
+class := mirror reflectee.
+class mixinMetadata: subclass metadata.
+class enclosingObjects: (Array with: nil).
+^class
+		! !
+
+"October 2, 2010 -> 12:22:34"!
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'private-initialization' !
+platform: aPlatform
+
+	platform := aPlatform! !
+
+"October 2, 2010 -> 12:22:35"!
+
+Delta define: #WorldState as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+
+"October 2, 2010 -> 12:22:35"!
+
+(Delta mirrorFor: #WorldState)
+comment: 
+''!
+
+
+"October 2, 2010 -> 13:3:41"!
+
+"System saved" !

@@ -56,6 +56,16 @@ test
 	[ q next = 2 ] verify.
 	[ q contentsRemaining hasSameElementsAndOrderAs: c ] verify.! !
 
+! (Delta mirrorFor: #SharedQueue) methodsFor: 'Newspeak support' !
+
+
+nextOrNil
+ 
+ 	self monitor
+ 		critical: [^self head isNil
+ 							ifTrue: [nil]
+ 							ifFalse: [self next]]! !
+
 ! (Delta mirrorFor: #SharedQueue) methodsFor: 'accessing' !
 
 

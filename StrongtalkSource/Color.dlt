@@ -1,0 +1,72 @@
+Delta define: #Color as: (
+(Class subclassOf: 'Object' instanceVariables: 'rgb')) !
+
+(Delta mirrorFor: #Color) revision: '$Revision:$'!
+
+(Delta mirrorFor: #Color) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #Color)
+comment: 
+''!
+
+! (Delta mirrorFor: #Color) classSide methodsFor: 'accessing' !
+
+
+black
+
+	^self new setRgb: 0!
+
+gray
+
+	^self gray: 0.5!
+
+gray: gray
+
+	^self new setRed: gray green: gray blue: gray!
+
+transparent
+
+	^self gray: 1.0! !
+
+! (Delta mirrorFor: #Color) methodsFor: 'initialize' !
+
+
+asColor
+
+	^self!
+
+asColorref
+
+	^(self red * 255) rounded +
+		((self green * 255) rounded bitShift: 8) +
+		((self blue * 255) rounded bitShift: 16)!
+
+blue
+
+	^(rgb bitAnd: 16r3FF) / 1023.0!
+
+green
+
+	^((rgb bitShift: -10) bitAnd: 16r3FF) / 1023.0!
+
+red
+
+	^(rgb bitShift: -20) / 1023.0!
+
+setRed: red green: green blue: blue
+
+	rgb := ((red * 1023.0) rounded bitShift: 20)
+		+ ((green * 1023.0) rounded bitShift: 10)
+		+ (blue * 1023.0) rounded!
+
+setRgb: anRgb
+
+	rgb := anRgb! !
+
+! (Delta mirrorFor: #Color) methodsFor: 'testing' !
+
+
+isTransparent
+
+	^false! !
+

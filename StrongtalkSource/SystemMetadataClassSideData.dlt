@@ -1,0 +1,27 @@
+Delta define: #SystemMetadataClassSideData as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'ns2Parser weakSubclasses')) !
+
+(Delta mirrorFor: #SystemMetadataClassSideData) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SystemMetadataClassSideData) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #SystemMetadataClassSideData)
+comment: 
+'This class serves as the root of the class hierarchy representing Newspeak system metadata - metadata needed by the system itself. All this class does is:
+
+a.  Cache an NS2 parser in a class instance variable, to avoid recomputing it (and hence the grammar) all the time.  When we fully convert to NS2, we can store it in a module variable.
+
+b. Maintain a weak set of classes in the class variable weakSubclasses. This is used to track the subclasses of a class without producing a memory leak, which the normal Squeak implementation tends to do.
+
+Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+
+! (Delta mirrorFor: #SystemMetadataClassSideData) classSide methodsFor: 'accessing' !
+
+
+privateWeakSubclasses
+
+	nil == weakSubclasses ifTrue: [ weakSubclasses := WeakSet new ].
+	^weakSubclasses! !
+

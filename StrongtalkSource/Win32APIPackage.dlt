@@ -1,0 +1,207 @@
+Delta define: #Win32APIPackage as: (
+(Class subclassOf: 'NsPackage' instanceVariables: 'win32APIClass win32apiPARAFORMAT platform windowProc wndClass giveUp winNMHDR
+winCharFormat winCharFormat2 winCharRange winFindData winGradientRect winMsg
+winMsgFilter winOpenFilename winPaintStruct winPoint winProcessInformation winRect
+winReqResize winScrollInfo winSecurityAttributes winStartupInfo winTrackMouseEvent
+winTriVertex winWindowPos')) !
+
+(Delta mirrorFor: #Win32APIPackage) revision: '$Revision:$'!
+
+(Delta mirrorFor: #Win32APIPackage) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #Win32APIPackage)
+comment: 
+''!
+
+! (Delta mirrorFor: #Win32APIPackage) classSide methodsFor: 'instance creation' !
+
+
+platform: platform
+
+	^self new platform: platform! !
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'classes' !
+
+
+Win32API
+
+	win32APIClass isNil
+		ifTrue: [win32APIClass := self combine: (Smalltalk at: #Win32API)
+																	with: (Smalltalk at: #CAPI)].
+	^win32APIClass!
+
+Win32apiCHARFORMAT
+
+	winCharFormat isNil
+		ifTrue: [winCharFormat := self combine: (Smalltalk at: #Win32apiCHARFORMAT)
+																					with: (Smalltalk at: #Alien)].
+	^winCharFormat!
+
+Win32apiCHARFORMAT2
+
+	winCharFormat2 isNil
+		ifTrue: [winCharFormat2 := self combine: (Smalltalk at: #Win32apiCHARFORMAT2)
+																					with: (Smalltalk at: #Alien)].
+	^winCharFormat2!
+
+Win32apiCHARRANGE
+
+	winCharRange isNil
+		ifTrue: [winCharRange := self combine: (Smalltalk at: #Win32apiCHARRANGE)
+																					with: (Smalltalk at: #Alien)].
+	^winCharRange!
+
+Win32apiFINDDATA
+
+	winFindData isNil
+		ifTrue: [winFindData := self combine: (Smalltalk at: #Win32apiFINDDATA)
+																					with: (Smalltalk at: #Alien)].
+	^winFindData!
+
+Win32apiGRADIENTRECT
+
+	winGradientRect isNil
+		ifTrue: [winGradientRect := self combine: (Smalltalk at: #Win32apiGRADIENTRECT)
+																					with: (Smalltalk at: #Alien)].
+	^winGradientRect!
+
+Win32apiMSG
+
+	winMsg isNil
+		ifTrue: [winMsg := self combine: (Smalltalk at: #Win32apiMSG)
+																					with: (Smalltalk at: #Alien)].
+	^winMsg!
+
+Win32apiMSGFILTER
+
+	winMsgFilter isNil
+		ifTrue: [winMsgFilter := self combine: (Smalltalk at: #Win32apiMSGFILTER)
+																					with: (Smalltalk at: #Alien)].
+	^winMsgFilter!
+
+Win32apiNMHDR
+	winNMHDR isNil
+		ifTrue: [winNMHDR := self combine: (Smalltalk at: #Win32apiNMHDR)
+																					with: (Smalltalk at: #Alien)].
+	^winNMHDR!
+
+Win32apiOPENFILENAME
+
+	winOpenFilename isNil
+		ifTrue: [winOpenFilename := self combine: (Smalltalk at: #Win32apiOPENFILENAME)
+																					with: (Smalltalk at: #Alien)].
+	^winOpenFilename!
+
+Win32apiPAINTSTRUCT
+
+	winPaintStruct isNil
+		ifTrue: [winPaintStruct := self combine: (Smalltalk at: #Win32apiPAINTSTRUCT)
+																					with: (Smalltalk at: #Alien)].
+	^winPaintStruct!
+
+Win32apiPARAFORMAT
+
+	win32apiPARAFORMAT isNil
+		ifTrue: [win32apiPARAFORMAT := self combine: (Smalltalk at: #Win32apiPARAFORMAT)
+																					with: (Smalltalk at: #Alien)].
+	^win32apiPARAFORMAT!
+
+Win32apiPOINT
+
+	winPoint isNil
+		ifTrue: [winPoint := self combine: (Smalltalk at: #Win32apiPOINT)
+																					with: (Smalltalk at: #Alien)].
+	^winPoint!
+
+Win32apiPROCESSINFORMATION
+
+	winProcessInformation isNil
+		ifTrue: [winProcessInformation := self combine: (Smalltalk at: #Win32apiPROCESSINFORMATION)
+																					with: (Smalltalk at: #Alien)].
+	^winProcessInformation!
+
+Win32apiRECT
+
+	winRect isNil
+		ifTrue: [winRect := self combine: (Smalltalk at: #Win32apiRECT)
+																					with: (Smalltalk at: #Alien)].
+	^winRect!
+
+Win32apiREQRESIZE
+
+	winReqResize isNil
+		ifTrue: [winReqResize := self combine: (Smalltalk at: #Win32apiREQRESIZE)
+																					with: self Win32apiNMHDR].
+	^winReqResize!
+
+Win32apiSCROLLINFO
+
+	winScrollInfo isNil
+		ifTrue: [winScrollInfo := self combine: (Smalltalk at: #Win32apiSCROLLINFO)
+																					with: (Smalltalk at: #Alien)].
+	^winScrollInfo!
+
+Win32apiSECURITYATTRIBUTES
+
+	winSecurityAttributes isNil
+		ifTrue: [winSecurityAttributes := self combine: (Smalltalk at: #Win32apiSECURITYATTRIBUTES)
+																					with: (Smalltalk at: #Alien)].
+	^winSecurityAttributes!
+
+Win32apiSTARTUPINFO
+
+	winStartupInfo isNil
+		ifTrue: [winStartupInfo := self combine: (Smalltalk at: #Win32apiSTARTUPINFO)
+																					with: (Smalltalk at: #Alien)].
+	^winStartupInfo!
+
+Win32apiTRACKMOUSEEVENT
+
+	winTrackMouseEvent isNil
+		ifTrue: [winTrackMouseEvent := self combine: (Smalltalk at: #Win32apiTRACKMOUSEEVENT)
+																					with: (Smalltalk at: #Alien)].
+	^winTrackMouseEvent!
+
+Win32apiTRIVERTEX
+
+	winTriVertex isNil
+		ifTrue: [winTriVertex := self combine: (Smalltalk at: #Win32apiTRIVERTEX)
+																					with: (Smalltalk at: #Alien)].
+	^winTriVertex!
+
+Win32apiWINDOWPOS
+
+	winWindowPos isNil
+		ifTrue: [winWindowPos := self combine: (Smalltalk at: #Win32apiWINDOWPOS)
+																					with: (Smalltalk at: #Alien)].
+	^winWindowPos!
+
+Win32apiWNDCLASS
+	wndClass isNil
+		ifTrue: [wndClass := self combine: (Smalltalk at: #Win32apiWNDCLASS)
+																					with: (Smalltalk at: #Alien)].
+	^wndClass!
+
+Win32apiWindowProc
+	windowProc isNil
+		ifTrue: [windowProc := self combine: (Smalltalk at: #Win32apiWindowProc)
+																					with: (Smalltalk at: #Alien)].
+	^windowProc!
+
+combine: subclass with: superclass
+
+| mirror class |
+mirror := (Mirror on: subclass) mixin |> (Mirror on: superclass).
+class := mirror reflectee.
+class mixinMetadata: subclass metadata.
+class enclosingObjects: (Array with: nil).
+^class
+		! !
+
+! (Delta mirrorFor: #Win32APIPackage) methodsFor: 'private-initialization' !
+
+
+platform: aPlatform
+
+	platform := aPlatform! !
+

@@ -1,0 +1,37 @@
+Delta define: #Singleton as: (
+(Class subclassOf: 'Object' instanceVariables: '' classInstanceVariables: 'soleInstance')) !
+
+(Delta mirrorFor: #Singleton) revision: '$Revision:$'!
+
+(Delta mirrorFor: #Singleton) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #Singleton)
+comment: 
+''!
+
+! (Delta mirrorFor: #Singleton) classSide methodsFor: 'instance creation' !
+
+
+new
+
+	^self soleInstance!
+
+reset
+
+	soleInstance := nil!
+
+soleInstance
+
+	soleInstance isNil
+		ifTrue: [((soleInstance := super new) new usingPlatform: NsPlatform soleInstance) initialize].
+	^soleInstance! !
+
+! (Delta mirrorFor: #Singleton) methodsFor: 'iniitialization' !
+
+
+initialize!
+
+new!
+
+usingPlatform: ignored! !
+

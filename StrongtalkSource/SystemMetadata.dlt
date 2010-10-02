@@ -1,0 +1,49 @@
+Delta define: #SystemMetadata as: (
+(Class subclassOf: 'SystemMetadataClassSideData' instanceVariables: '')) !
+
+(Delta mirrorFor: #SystemMetadata) revision: '$Revision:$'!
+
+(Delta mirrorFor: #SystemMetadata) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #SystemMetadata)
+comment: 
+''!
+
+! (Delta mirrorFor: #SystemMetadata) classSide methodsFor: 'utility' !
+
+
+fullyQualifySimpleName: sn <Symbol> with: fqp <Symbol> ^<Symbol> 
+ 
+	^(fqp asString, Language syntheticNameSeparator, sn) asSymbol!
+
+mixinNameOfClassNamed: className <String> ^<Symbol>
+	|
+	simpleNames <Collection[String]>
+	rawNames <Collection[String]>
+	lastIndex <Integer>
+	|
+	
+	lastIndex := 1.
+	rawNames := OrderedCollection[String] new.
+	(className indicesOfSubCollection: {Language syntheticNameSeparatorCharacter}) do:[: i |
+		rawNames add: (className copyFrom: lastIndex to: i-1).
+		lastIndex := i+1.
+		].
+	lastIndex <= className size ifTrue:[rawNames add: (className copyFrom: lastIndex to:  className size)].
+	rawNames size =1 ifTrue:[^className].
+	simpleNames := rawNames select:[:n <String>  | n first isDigit not].
+	self assert:[simpleNames size >= 2].
+	^(simpleNames reduce:[:sn1 <String>  :sn2 <String> | sn1, Language syntheticNameSeparator, sn2]) asSymbol!
+
+mixinSlotNameFor: nestedName <String>
+	| mixinName <String> |
+ 
+	mixinName := self  mixinNameOfClassNamed: nestedName.
+	^mixinName, Language syntheticNameSeparator, 'slot'! !
+
+! (Delta mirrorFor: #SystemMetadata) methodsFor: 'mirror access' !
+
+
+Mirror ^ <Mirror class>
+	^Mirror! !
+

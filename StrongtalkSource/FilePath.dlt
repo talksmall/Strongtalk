@@ -67,6 +67,56 @@ tryToDeleteTestDir: dir <FilePath> ^<Boolean>
 	dir deleteIfFail: [ :err <Symbol> |  ^false ].
 	^true! !
 
+! (Delta mirrorFor: #FilePath) methodsFor: 'Newspeak support' !
+
+
+/ string
+
+	^(FilePath for: string) isAbsolute
+		ifTrue: [FilePath for: string]
+		ifFalse: [self, (FilePattern for: string)]!
+
+directoryEntry
+
+	^self!
+
+directoryEntryFor: string
+
+	^self / string!
+
+entries
+
+	|entries|
+	self isDirectory ifFalse: [^OrderedCollection with: self].
+	entries := OrderedCollection new.
+	self , (FilePattern for: '*') pathsDo: [:path| entries add: path].
+	^entries!
+
+fileSize
+
+	|fd|
+	fd := self open: #read ifFail: [:err| self error: 'Can''t open file'].
+	[^fd size]
+		ensure: [fd close]!
+
+fullName
+
+	^self name!
+
+fullNameFor: string
+
+	^(FilePath for: string) isAbsolute
+		ifTrue: [string]
+		ifFalse: [self, (FilePattern for: string)]!
+
+modificationTime
+
+	^0!
+
+pathName
+
+	^self name! !
+
 ! (Delta mirrorFor: #FilePath) methodsFor: 'accessing' !
 
 

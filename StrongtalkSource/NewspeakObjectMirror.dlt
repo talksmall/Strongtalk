@@ -1,0 +1,50 @@
+Delta define: #NewspeakObjectMirror as: (
+(Class subclassOf: 'Mirror' instanceVariables: 'reflectee <Object> oopMirror <OopsVMMirror>')) !
+
+(Delta mirrorFor: #NewspeakObjectMirror) revision: '$Revision:$'!
+
+(Delta mirrorFor: #NewspeakObjectMirror) group: 'Newspeak-Brazil-Stubs'!
+
+(Delta mirrorFor: #NewspeakObjectMirror)
+comment: 
+''!
+
+! (Delta mirrorFor: #NewspeakObjectMirror) classSide methodsFor: 'instance creation' !
+
+
+reflecting: r <Object> ^ <Instance>
+	^self new reflectee: r! !
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'access' !
+
+
+getClassIfFail:  fblk <[Exception, ^R def]> ^ <ClassMirror> 
+	^Mirror on: reflectee actualClass "never fails on local objects"!
+
+getSlot: slotName <Symbol> ifFail:  fblk <[Exception, ^R def]> ^ <ObjectMirror | R>
+	^self class reflecting: ((NamedSlotFinder forSlot: slotName) getValueFor: oopMirror ifFail: [^fblk value]).!
+
+perform: selector <Symbol> with:  args <Array[Object]> ifFail:  fblk <[Exception, ^R def]>  ^ <ObjectMirror | R >
+	| result <Object> |
+	result := [reflectee perform: selector withArguments: args] on: Error do: [:ex <Error> | ^fblk value: ex].
+	^self class reflecting: result!
+
+reflecteeIfFail:  fblk <[Exception]> ^ <ClassMirror> 
+	^reflectee "never fails on local objects"!
+
+setClass: klass <Class | ClassMirror> ifFail:  fblk <[Exception, ^R def]> ^ <ClassMirror | R> 
+	^fblk value "always fails for now"!
+
+setSlot: slotName <Symbol> to:  obj <Object> ifFail:  fblk <[Exception]>
+	self perform: (slotName, ':' ) asSymbol  with: {obj} ifFail: fblk! !
+
+! (Delta mirrorFor: #NewspeakObjectMirror) methodsFor: 'accessors' !
+
+
+reflectee ^ <Object>
+	^reflectee!
+
+reflectee: r  <Object>
+	reflectee := r.
+	oopMirror := OopsVMMirror on: r! !
+

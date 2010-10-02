@@ -11,30 +11,10 @@ stringCopyWith:!
 6294333!
 string copying!
 0Character:String! !
-#comment!
-This class implements most of the common protocol for string-like collections.
-It does not implement any mutation operations, since some subclasses aren't mutable.
-Subclasses must also decide how to actually store their contents, since this class simply works based on subclass'
-implementation of the #at: and #size messages.
-
-Compatibility note: The behaviors of <,<=,>=, and > are different than those defined in the BlueBook, since our
-versions are case sensitive.  This is done to preserve the important property that (a <= b) = (a < b or: [a = b]), 
-which is NOT true for the BlueBook definitions, since = is case sensitive.
-@<, @>, @<=, @>=, @~=, as well as @= (which is equivalent to #sameAs:)
-are provided as case insensitive comparison operators.
-
-Typing note:  In standard Smalltalks, many of the methods from SequenceableCollection, such as
-#copyReplaceFrom:to:, are not implemented in a semantically general manner for Strings, since you can
-only substitute characters.  This library generalizes these messages so they return Strings if possible,
-or some more general collection type like Array if necessary.  The tradeoff, however, is that the type
-system cannot tell statically whether a string is returned or not for the standard messages inherited
-from SeqCltn, so if you want to typecheck your code when using these messages on Strs, you should
-use the string forms of these messages (see the 'string copying' message category). - D.G.
-
-%optional unicodeAt:	- subclasses will usually want to reimplement this for speed
-
-(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
-Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $.! !
+sunitSubStrings!
+31029800!
+Camp Smalltalk!
+0! !
 indexOfStr:startingAt:caseSensitive:ifAbsent:!
 1581248!
 searching!
@@ -49,18 +29,22 @@ stringCopyReplaceAll:with:!
 1573033!
 copying!
 0Str:Str:String! !
-collection:matchesElementsAt:caseSensitive:!
-1580586!
-searching!
-0SeqCltn[Character]:Int:Boolean:Boolean! !
+beginsWith:!
+36049338!
+comparing-case sensitive!
+0SequenceableCollection[Character]:! !
 >=!
 1575301!
 comparing-case sensitive!
 0Str:Boolean! !
-asLowercase!
-1570315!
-converting!
-0String! !
+platformMatch:ignoreCase:!
+1580004!
+pattern matching!
+0Str:Boolean:Boolean! !
+withSqueakLineEndings!
+68725042!
+Newspeak support!
+0! !
 platformMatch:!
 1579815!
 pattern matching!
@@ -81,10 +65,8 @@ match:!
 6327458!
 pattern matching!
 0Str:Boolean! !
-copyWith:!
-36427395!
-copying!
-0:! !
+#abstract!
+true! !
 <=!
 1574536!
 comparing-case sensitive!
@@ -99,10 +81,10 @@ pattern matching!
 0Str:Boolean:Boolean! !
 #extensionsAreSubtypes!
 true! !
-asUppercase!
-1570877!
-converting!
-0String! !
+stringCopyFrom:to:!
+1572656!
+copying!
+0Int:Int:String! !
 ,!
 1571136!
 copying!
@@ -123,7 +105,8 @@ accessing!
 searching!
 restricted!
 string copying!
-Camp Smalltalk! !
+Camp Smalltalk!
+Newspeak support! !
 sunitMatch:!
 31029645!
 Camp Smalltalk!
@@ -200,10 +183,10 @@ match:ignoreCase:single:multiple:!
 1578342!
 pattern matching!
 0Str:Boolean:Character:Character:Boolean! !
-platformMatch:ignoreCase:!
-1580004!
-pattern matching!
-0Str:Boolean:Boolean! !
+asLowercase!
+1570315!
+converting!
+0String! !
 unicodeAt:!
 1580304!
 accessing!
@@ -214,28 +197,6 @@ copying!
 0! !
 #subtype!
 true! !
-stringCopyReplaceFrom:to:with:!
-1573433!
-copying!
-0Int:Int:Str:String! !
-stringCopyFrom:to:!
-1572656!
-copying!
-0Int:Int:String! !
-sunitSubStrings!
-31029800!
-Camp Smalltalk!
-0! !
-#abstract!
-true! !
-stringCopyWithSize:!
-6269367!
-copying!
-0Int:String! !
-beginsWith:!
-36049338!
-comparing-case sensitive!
-0SequenceableCollection[Character]:! !
 hashAt:!
 1569376!
 private!
@@ -244,6 +205,50 @@ lastNonBlank!
 35996574!
 copying!
 0! !
+#comment!
+This class implements most of the common protocol for string-like collections.
+It does not implement any mutation operations, since some subclasses aren't mutable.
+Subclasses must also decide how to actually store their contents, since this class simply works based on subclass'
+implementation of the #at: and #size messages.
+
+Compatibility note: The behaviors of <,<=,>=, and > are different than those defined in the BlueBook, since our
+versions are case sensitive.  This is done to preserve the important property that (a <= b) = (a < b or: [a = b]), 
+which is NOT true for the BlueBook definitions, since = is case sensitive.
+@<, @>, @<=, @>=, @~=, as well as @= (which is equivalent to #sameAs:)
+are provided as case insensitive comparison operators.
+
+Typing note:  In standard Smalltalks, many of the methods from SequenceableCollection, such as
+#copyReplaceFrom:to:, are not implemented in a semantically general manner for Strings, since you can
+only substitute characters.  This library generalizes these messages so they return Strings if possible,
+or some more general collection type like Array if necessary.  The tradeoff, however, is that the type
+system cannot tell statically whether a string is returned or not for the standard messages inherited
+from SeqCltn, so if you want to typecheck your code when using these messages on Strs, you should
+use the string forms of these messages (see the 'string copying' message category). - D.G.
+
+%optional unicodeAt:	- subclasses will usually want to reimplement this for speed
+
+(c) 1995-1997 Sun Microsystems, Inc. ALL RIGHTS RESERVED. 
+Use and distribution of this software is subject to the terms of the attached source license.   $Revision: 1.5 $.! !
+copyWith:!
+36427395!
+copying!
+0:! !
+stringCopyWithSize:!
+6269367!
+copying!
+0Int:String! !
+collection:matchesElementsAt:caseSensitive:!
+1580586!
+searching!
+0SeqCltn[Character]:Int:Boolean:Boolean! !
+stringCopyReplaceFrom:to:with:!
+1573433!
+copying!
+0Int:Int:Str:String! !
+asUppercase!
+1570877!
+converting!
+0String! !
 Str!
 6291898!
 fake brands!
