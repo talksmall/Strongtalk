@@ -1,0 +1,126 @@
+Delta define: #Win32apiWINDOWPOS as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiWINDOWPOS EnclosingObjects_Win32apiWINDOWPOS')!
+	(Delta mirrorFor: #Win32apiWINDOWPOS) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiWINDOWPOS) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiWINDOWPOS) comment: 'typedef struct {
+    HWND hwnd;
+    HWND hwndInsertAfter;
+    int x;
+    int y;
+    int cx;
+    int cy;
+    UINT flags;
+} WINDOWPOS;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiWINDOWPOS) methodsFor: 'unclassified'!
+	 cx 
+
+^ self signedLongAt:17.
+
+
+
+! 
+ cy 
+
+^ self signedLongAt:21.
+
+
+
+! 
+ asRectangle 
+
+^ self  x @ self  y extent:( self  cx @ self  cy).
+
+
+
+! 
+ hwnd 
+
+^ self unsignedLongAt:1.
+
+
+
+! 
+ flags 
+
+^ self signedLongAt:25.
+
+
+
+! 
+ Win32apiWINDOWPOS_1_init 
+
+^ self.
+
+
+
+! 
+ x 
+
+^ self signedLongAt:9.
+
+
+
+! 
+ y 
+
+^ self signedLongAt:13.
+
+
+
+! 
+ hwndInsertAfter 
+
+^ self unsignedLongAt:5.
+
+
+
+! 
+ Win32apiWINDOWPOS_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiWINDOWPOS_superInit_new.
+
+ self Win32apiWINDOWPOS_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiWINDOWPOS) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiWINDOWPOS := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiWINDOWPOS := mmd !
+	 dataSize 
+
+^28.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiWINDOWPOS enclosingObjects: (Array with: nil)!
+		Win32apiWINDOWPOS metadata enclosingMixin: nil !
+		Win32apiWINDOWPOS mixinMetadata: Win32apiWINDOWPOS metadata !
+		

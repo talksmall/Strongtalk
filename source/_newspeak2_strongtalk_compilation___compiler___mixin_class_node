@@ -1,0 +1,45 @@
+Class
+isExpressionNode!
+86817246!
+unclassified!
+0! !
+#categories!
+unclassified! !
+Newspeak2StrongtalkCompilation_Compiler_MixinClassNode_superInit_new!
+86817005!
+unclassified!
+0! !
+#superclassTypeString!
+NewspeakObject! !
+#group!
+newspeak! !
+#comment!
+A special AST node to represent access to the mixin class stored in a method. Recall that outer classes have accessors for their nested classes; these lazily manufacture the class, cache it, and later access the cached value.
+
+To do this, the accessor must apply the mixin of the nested class to the superclass. Said mixin is nested within the mixin that defined the accessor (the mixin of the outer class declaration), and can be accessed via the outer mixin's metadata slot.
+
+The issue then is how to get the outer mixin.  In Squeak, for example, the outer mixin is stored in the last literal of every one of its methods (what Squeak calls the ''methodClass''). To reach it, we must push the last literal of the method on to the operand stack.
+
+However, the accessor method is not specified at the byte code level; that would be tedious, and also tied to a specific implementation (the Squeak byte codes). It is much better to specify the method via an AST that is compiled (we could use source code, but the use of synthetic names makes that problematic). 
+
+In order to specify access to the mixin in the accessor method, we need to provide an AST that corresponds to the idea of ''accessing my mixin''. This is what this class does.
+
+The rewriter leaves this node untouched, while the lower layers of the compiler that deal with code generation produce suitable code for it - e.g., Squeak byte codes.
+
+! !
+#revision!
+$Revision: 0.0 $! !
+#classVariableString!
+MixinMetadata_Newspeak2StrongtalkCompilation_Compiler_MixinClassNode EnclosingObjects_Newspeak2StrongtalkCompilation_Compiler_MixinClassNode! !
+apply:!
+86816811!
+unclassified!
+0:! !
+Newspeak2StrongtalkCompilation_Compiler_MixinClassNode_1_init!
+86817421!
+unclassified!
+0! !
+new!
+86817642!
+unclassified!
+0! !

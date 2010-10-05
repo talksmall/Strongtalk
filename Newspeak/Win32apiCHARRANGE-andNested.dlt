@@ -1,0 +1,97 @@
+Delta define: #Win32apiCHARRANGE as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiCHARRANGE EnclosingObjects_Win32apiCHARRANGE')!
+	(Delta mirrorFor: #Win32apiCHARRANGE) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiCHARRANGE) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiCHARRANGE) comment: 'typedef struct _charrange {
+    LONG cpMin;
+    LONG cpMax;
+} CHARRANGE;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiCHARRANGE) methodsFor: 'unclassified'!
+	 Win32apiCHARRANGE_1_init 
+
+^ self.
+
+
+
+! 
+ cpMax 
+
+^ self signedLongAt:5.
+
+
+
+! 
+ cpMin 
+
+^ self signedLongAt:1.
+
+
+
+! 
+ cpMax: value 
+
+ self  signedLongAt:5 put: value.
+
+^ self.
+
+
+
+! 
+ cpMin: value 
+
+ self  signedLongAt:1 put: value.
+
+^ self.
+
+
+
+! 
+ Win32apiCHARRANGE_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiCHARRANGE_superInit_new.
+
+ self Win32apiCHARRANGE_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiCHARRANGE) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiCHARRANGE := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiCHARRANGE := mmd !
+	 dataSize 
+
+^8.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiCHARRANGE enclosingObjects: (Array with: nil)!
+		Win32apiCHARRANGE metadata enclosingMixin: nil !
+		Win32apiCHARRANGE mixinMetadata: Win32apiCHARRANGE metadata !
+		

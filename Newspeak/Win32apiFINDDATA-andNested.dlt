@@ -1,0 +1,314 @@
+Delta define: #Win32apiFINDDATA as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiFINDDATA EnclosingObjects_Win32apiFINDDATA')!
+	(Delta mirrorFor: #Win32apiFINDDATA) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiFINDDATA) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiFINDDATA) comment: 'typedef struct _WIN32_FIND_DATA {
+  DWORD dwFileAttributes;
+  FILETIME ftCreationTime;
+  FILETIME ftLastAccessTime;
+  FILETIME ftLastWriteTime;
+  DWORD nFileSizeHigh;
+  DWORD nFileSizeLow;
+  DWORD dwReserved0;
+  DWORD dwReserved1;
+  TCHAR cFileName[MAX_PATH];
+  TCHAR cAlternateFileName[14];
+} WIN32_FIND_DATA, 
+ *PWIN32_FIND_DATA, 
+ *LPWIN32_FIND_DATA;'!
+	! (Delta mirrorFor: #Win32apiFINDDATA) methodsFor: 'unclassified'!
+	 dwReserved0: newValue 
+
+^ self  unsignedLongAt: self  dwReserved0Offset put: newValue.
+
+
+
+! 
+ Win32apiFINDDATA_1_init 
+
+^ self.
+
+
+
+! 
+ ftLastWriteTimeOffset 
+
+^13.
+
+
+
+! 
+ Win32apiFINDDATA_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ nFileSizeLowOffset 
+
+^21.
+
+
+
+! 
+ ftLastAccessTime: newValue 
+
+^ self  unsignedLongAt: self  ftLastAccessTimeOffset put: newValue.
+
+
+
+! 
+ new 
+
+ self Win32apiFINDDATA_superInit_new.
+
+ self Win32apiFINDDATA_1_init.
+
+^ self.
+
+
+
+! 
+ dwReserved0 
+
+^ self unsignedLongAt: self  dwReserved0Offset.
+
+
+
+! 
+ dwFileAttributesOffset 
+
+^1.
+
+
+
+! 
+ nFileSizeLow: newValue 
+
+^ self  unsignedLongAt: self  nFileSizeLowOffset put: newValue.
+
+
+
+! 
+ cAlternateFileName: newValue 
+
+^ self  unsignedLongAt: self  cAlternateFileNameOffset put: newValue.
+
+
+
+! 
+ ftCreationTime 
+
+^ self unsignedLongAt: self  ftCreationTimeOffset.
+
+
+
+! 
+ ftLastAccessTimeOffset 
+
+^9.
+
+
+
+! 
+ dwFileAttributes: newValue 
+
+^ self  unsignedLongAt: self  dwFileAttributesOffset put: newValue.
+
+
+
+! 
+ nFileSizeHighOffset 
+
+^17.
+
+
+
+! 
+ ftCreationTimeOffset 
+
+^5.
+
+
+
+! 
+ dwReserved0Offset 
+
+^25.
+
+
+
+! 
+ ftCreationTime: newValue 
+
+^ self  unsignedLongAt: self  ftCreationTimeOffset put: newValue.
+
+
+
+! 
+ cAlternateFileName 
+
+^ self unsignedLongAt: self  cAlternateFileNameOffset.
+
+
+
+! 
+ dwReserved1: newValue 
+
+^ self  unsignedLongAt: self  dwReserved1Offset put: newValue.
+
+
+
+! 
+ dwReserved1Offset 
+
+^29.
+
+
+
+! 
+ nFileSizeLow 
+
+^ self unsignedLongAt: self  nFileSizeLowOffset.
+
+
+
+! 
+ cFileName 
+
+^ self unsignedLongAt: self  cFileNameOffset.
+
+
+
+! 
+ ftLastWriteTime: newValue 
+
+^ self  unsignedLongAt: self  ftLastWriteTimeOffset put: newValue.
+
+
+
+! 
+ cFileNameOffset 
+
+^33.
+
+
+
+! 
+ cAlternateFileNameOffset 
+
+^37.
+
+
+
+! 
+ dwReserved1 
+
+^ self unsignedLongAt: self  dwReserved1Offset.
+
+
+
+! 
+ ftLastAccessTime 
+
+^ self unsignedLongAt: self  ftLastAccessTimeOffset.
+
+
+
+! 
+ ftLastWriteTime 
+
+^ self unsignedLongAt: self  ftLastWriteTimeOffset.
+
+
+
+! 
+ cFileName: newValue 
+
+^ self  unsignedLongAt: self  cFileNameOffset put: newValue.
+
+
+
+! 
+ dwFileAttributes 
+
+^ self unsignedLongAt: self  dwFileAttributesOffset.
+
+
+
+! 
+ nFileSizeHigh 
+
+^ self unsignedLongAt: self  nFileSizeHighOffset.
+
+
+
+! 
+ nFileSizeHigh: newValue 
+
+^ self  unsignedLongAt: self  nFileSizeHighOffset put: newValue.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiFINDDATA) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiFINDDATA := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiFINDDATA := mmd !
+	 dataSize 
+
+^40.
+
+
+
+! 
+		 fields 
+
+^( self Array new:10)  at:1 put:'dwFileAttributes'; 
+
+  at:2 put:'ftCreationTime'; 
+
+  at:3 put:'ftLastAccessTime'; 
+
+  at:4 put:'ftLastWriteTime'; 
+
+  at:5 put:'nFileSizeHigh'; 
+
+  at:6 put:'nFileSizeLow'; 
+
+  at:7 put:'dwReserved0'; 
+
+  at:8 put:'dwReserved1'; 
+
+  at:9 put:'cFileName'; 
+
+  at:10 put:'cAlternateFileName'; 
+
+ yourself.
+
+
+
+! 
+		 typedefName 
+
+^'FIND_DATA'.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiFINDDATA enclosingObjects: (Array with: nil)!
+		Win32apiFINDDATA metadata enclosingMixin: nil !
+		Win32apiFINDDATA mixinMetadata: Win32apiFINDDATA metadata !
+		

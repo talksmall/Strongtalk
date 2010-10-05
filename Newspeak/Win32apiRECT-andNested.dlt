@@ -1,0 +1,152 @@
+Delta define: #Win32apiRECT as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiRECT EnclosingObjects_Win32apiRECT')!
+	(Delta mirrorFor: #Win32apiRECT) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiRECT) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiRECT) comment: 'typedef struct _RECT { 
+  LONG left; 
+  LONG top; 
+  LONG right; 
+  LONG bottom; 
+} RECT, *PRECT; 
+
+Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+	! (Delta mirrorFor: #Win32apiRECT) methodsFor: 'unclassified'!
+	 bottom: value 
+
+ self  signedLongAt:13 put: value.
+
+^ self.
+
+
+
+! 
+ left: value 
+
+ self  signedLongAt:1 put: value.
+
+^ self.
+
+
+
+! 
+ bottom 
+
+^ self signedLongAt:13.
+
+
+
+! 
+ left 
+
+^ self signedLongAt:1.
+
+
+
+! 
+ right 
+
+^ self signedLongAt:9.
+
+
+
+! 
+ initializeFromRectangle: rect 
+
+ self  left:(0 max: rect left rounded).
+
+ self  top:(0 max: rect top rounded).
+
+ self  right:(0 max: rect right rounded).
+
+ self  bottom:(0 max: rect bottom rounded).
+
+^ self.
+
+
+
+! 
+ top 
+
+^ self signedLongAt:5.
+
+
+
+! 
+ asRectangle 
+
+^ self  left @ self  top corner:( self  right @ self  bottom).
+
+
+
+! 
+ top: value 
+
+ self  signedLongAt:5 put: value.
+
+^ self.
+
+
+
+! 
+ right: value 
+
+ self  signedLongAt:9 put: value.
+
+^ self.
+
+
+
+! 
+ Win32apiRECT_1_init 
+
+^ self.
+
+
+
+! 
+ Win32apiRECT_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiRECT_superInit_new.
+
+ self Win32apiRECT_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiRECT) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiRECT := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiRECT := mmd !
+	 dataSize 
+
+^16.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiRECT enclosingObjects: (Array with: nil)!
+		Win32apiRECT metadata enclosingMixin: nil !
+		Win32apiRECT mixinMetadata: Win32apiRECT metadata !
+		

@@ -1,0 +1,774 @@
+Delta define: #BlocklessCombinatorialParsing as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' BlocklessCombinatorialParsing_ForwardReferenceParser_slot BlocklessCombinatorialParsing_CombinatorialParser_slot SuperAlternatingParser BlocklessCombinatorialParsing_AlternatingParser_slot List BlocklessCombinatorialParsing_ExecutableGrammar_slot ObjectMirror SuperSequentialParser Dictionary SuperCombinatorialParser BlocklessCombinatorialParsing_ForwardingWrappingParser_slot BlocklessCombinatorialParsing_SequentialParser_slot')
+	 classVariables: 'MixinMetadata_BlocklessCombinatorialParsing EnclosingObjects_BlocklessCombinatorialParsing')!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing) group: 'newspeak'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing) comment: 'A submodule that does not strictly require blocks to be used as inputs to the sequencing and
+ alternating  combinators
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing) methodsFor: 'unclassified'!
+	CombinatorialParser
+	| nestedClass enclosingObjectArray myNested depth |
+	BlocklessCombinatorialParsing_CombinatorialParser_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_BlocklessCombinatorialParsing 
+			nestedMixins at: #BlocklessCombinatorialParsing_CombinatorialParser.
+		myNested := (nestedClass mixin |>  (MixinMetadata_BlocklessCombinatorialParsing Mirror on: self  SuperCombinatorialParser)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_BlocklessCombinatorialParsing size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_BlocklessCombinatorialParsing at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		BlocklessCombinatorialParsing_CombinatorialParser_slot := myNested.
+		].
+	^BlocklessCombinatorialParsing_CombinatorialParser_slot! 
+SuperAlternatingParser ^SuperAlternatingParser! 
+ExecutableGrammar
+	| nestedClass enclosingObjectArray myNested depth |
+	BlocklessCombinatorialParsing_ExecutableGrammar_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_BlocklessCombinatorialParsing 
+			nestedMixins at: #BlocklessCombinatorialParsing_ExecutableGrammar.
+		myNested := (nestedClass mixin |>  (MixinMetadata_BlocklessCombinatorialParsing Mirror on: self  CombinatorialParser)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_BlocklessCombinatorialParsing size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_BlocklessCombinatorialParsing at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		BlocklessCombinatorialParsing_ExecutableGrammar_slot := myNested.
+		].
+	^BlocklessCombinatorialParsing_ExecutableGrammar_slot! 
+SuperCombinatorialParser ^SuperCombinatorialParser! 
+List ^List! 
+SequentialParser
+	| nestedClass enclosingObjectArray myNested depth |
+	BlocklessCombinatorialParsing_SequentialParser_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_BlocklessCombinatorialParsing 
+			nestedMixins at: #BlocklessCombinatorialParsing_SequentialParser.
+		myNested := (nestedClass mixin |>  (MixinMetadata_BlocklessCombinatorialParsing Mirror on: self  SuperSequentialParser)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_BlocklessCombinatorialParsing size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_BlocklessCombinatorialParsing at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		BlocklessCombinatorialParsing_SequentialParser_slot := myNested.
+		].
+	^BlocklessCombinatorialParsing_SequentialParser_slot! 
+AlternatingParser
+	| nestedClass enclosingObjectArray myNested depth |
+	BlocklessCombinatorialParsing_AlternatingParser_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_BlocklessCombinatorialParsing 
+			nestedMixins at: #BlocklessCombinatorialParsing_AlternatingParser.
+		myNested := (nestedClass mixin |>  (MixinMetadata_BlocklessCombinatorialParsing Mirror on: self  SuperAlternatingParser)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_BlocklessCombinatorialParsing size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_BlocklessCombinatorialParsing at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		BlocklessCombinatorialParsing_AlternatingParser_slot := myNested.
+		].
+	^BlocklessCombinatorialParsing_AlternatingParser_slot! 
+Dictionary ^Dictionary! 
+SuperAlternatingParser: SuperAlternatingParser_val SuperAlternatingParser := SuperAlternatingParser_val! 
+Dictionary: Dictionary_val Dictionary := Dictionary_val! 
+SuperSequentialParser: SuperSequentialParser_val SuperSequentialParser := SuperSequentialParser_val! 
+ BlocklessCombinatorialParsing_superInit_usingLib: platform 
+
+super  usingLib: platform.
+
+^ self.
+
+
+
+! 
+ BlocklessCombinatorialParsing_1_init: platform 
+
+ self SuperCombinatorialParser:super  CombinatorialParser.
+
+ self SuperSequentialParser:super  SequentialParser.
+
+ self SuperAlternatingParser:super  AlternatingParser.
+
+ self Dictionary: platform Collections Dictionary.
+
+ self List: platform Collections OrderedCollection.
+
+ self ObjectMirror:( platform NewspeakMirrors usingLib: platform) ObjectMirror.
+
+^ self.
+
+
+
+! 
+ForwardReferenceParser
+	| nestedClass enclosingObjectArray myNested depth |
+	BlocklessCombinatorialParsing_ForwardReferenceParser_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_BlocklessCombinatorialParsing 
+			nestedMixins at: #BlocklessCombinatorialParsing_ForwardReferenceParser.
+		myNested := (nestedClass mixin |>  (MixinMetadata_BlocklessCombinatorialParsing Mirror on: self  CombinatorialParser)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_BlocklessCombinatorialParsing size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_BlocklessCombinatorialParsing at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		BlocklessCombinatorialParsing_ForwardReferenceParser_slot := myNested.
+		].
+	^BlocklessCombinatorialParsing_ForwardReferenceParser_slot! 
+SuperCombinatorialParser: SuperCombinatorialParser_val SuperCombinatorialParser := SuperCombinatorialParser_val! 
+ForwardingWrappingParser
+	| nestedClass enclosingObjectArray myNested depth |
+	BlocklessCombinatorialParsing_ForwardingWrappingParser_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_BlocklessCombinatorialParsing 
+			nestedMixins at: #BlocklessCombinatorialParsing_ForwardingWrappingParser.
+		myNested := (nestedClass mixin |>  (MixinMetadata_BlocklessCombinatorialParsing Mirror on: self WrappingParser)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_BlocklessCombinatorialParsing size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_BlocklessCombinatorialParsing at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		BlocklessCombinatorialParsing_ForwardingWrappingParser_slot := myNested.
+		].
+	^BlocklessCombinatorialParsing_ForwardingWrappingParser_slot! 
+ usingLib: platform 
+
+ self BlocklessCombinatorialParsing_superInit_usingLib: platform.
+
+ self BlocklessCombinatorialParsing_1_init: platform.
+
+^ self.
+
+
+
+! 
+ObjectMirror ^ObjectMirror! 
+SuperSequentialParser ^SuperSequentialParser! 
+List: List_val List := List_val! 
+ObjectMirror: ObjectMirror_val ObjectMirror := ObjectMirror_val! 
+ !
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_BlocklessCombinatorialParsing := eos !
+	mixinMetadata: mmd MixinMetadata_BlocklessCombinatorialParsing := mmd !
+	 usingLib: platform 
+
+^ self basicNew usingLib: platform.
+
+
+
+! 
+		 !
+	BlocklessCombinatorialParsing enclosingObjects: (Array with: nil)!
+		BlocklessCombinatorialParsing metadata enclosingMixin: nil !
+		BlocklessCombinatorialParsing mixinMetadata: BlocklessCombinatorialParsing metadata !
+		Delta define: #BlocklessCombinatorialParsing_ExecutableGrammar as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' forwardReferenceTable selfMirror')
+	 classVariables: 'MixinMetadata_BlocklessCombinatorialParsing_ExecutableGrammar EnclosingObjects_BlocklessCombinatorialParsing_ExecutableGrammar')!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ExecutableGrammar) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ExecutableGrammar) group: 'newspeak'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ExecutableGrammar) comment: 'This class is intended to implement Parser
+Combinators. A ExecutableGrammar[T]
+returns a value of type T after successful
+parsing.
+
+The class is abstract. It does not implement
+ the parsing routine parse:ifError: .
+ 
+If parsing fails, parse:ifError: should call the error handling block
+passed to it.
+
+Concrete subclasses should implement specific grammars.
+
+Parsing is initiated by calling parse:ifError:. This routine takes a ReadStream[Object] as input.
+If parsing fails, it is the caller''''s responsibility to set the input stream back to its original position
+(Q: is this a good idea?).
+If an error occurs, the error block passed in is called.'!
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_ExecutableGrammar) methodsFor: 'unclassified'!
+	forwardReferenceTable ^forwardReferenceTable! 
+ finalBindForwardReferences 
+
+ self forwardReferenceTable keysAndValuesDo:[ : k : v | 
+
+|  p |
+
+ p :=( self  selfMirror  getSlot: k asSymbol ifFail:[ 
+
+nil.
+
+]) reflecteeIfFail:[ 
+
+nil.
+
+].
+
+ v bind: p.
+
+ p name: k.
+
+].
+
+^ self.
+
+
+
+! 
+ bindForwardReferences 
+
+ self  forwardReferenceTable values do:[ : v | 
+
+ v bindingRoutine:[ 
+
+ self  finalBindForwardReferences.
+
+].
+
+].
+
+^ self.
+
+
+
+! 
+selfMirror ^selfMirror! 
+ BlocklessCombinatorialParsing_ExecutableGrammar_1_init 
+
+ self forwardReferenceTable: (EnclosingObjects_BlocklessCombinatorialParsing_ExecutableGrammar at: 1)  Dictionary new.
+
+ self selfMirror:( (EnclosingObjects_BlocklessCombinatorialParsing_ExecutableGrammar at: 1)  ObjectMirror reflecting: self).
+
+^ self.
+
+
+
+! 
+ setupForwardReferences 
+
+( self  selfMirror getClassIfFail:[ 
+
+nil.
+
+]) slots do:[ : slot | 
+
+|  fref  iv |
+
+ iv := slot name.
+
+ fref := (EnclosingObjects_BlocklessCombinatorialParsing_ExecutableGrammar at: 1)  ForwardReferenceParser new.
+
+( self  selfMirror  getSlot: iv asSymbol ifFail:[ 
+
+nil.
+
+]) reflectee isNil ifTrue:[ 
+
+ self forwardReferenceTable  at: iv put: fref.
+
+ self  selfMirror  setSlot: iv asSymbol to: fref ifFail:[ 
+
+nil.
+
+].
+
+].
+
+].
+
+^ self.
+
+
+
+! 
+forwardReferenceTable: forwardReferenceTable_val forwardReferenceTable := forwardReferenceTable_val! 
+ BlocklessCombinatorialParsing_ExecutableGrammar_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+selfMirror: selfMirror_val selfMirror := selfMirror_val! 
+ new 
+
+ self BlocklessCombinatorialParsing_ExecutableGrammar_superInit_new.
+
+ self BlocklessCombinatorialParsing_ExecutableGrammar_1_init.
+
+ self setupForwardReferences.
+
+ self bindForwardReferences.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_ExecutableGrammar) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_BlocklessCombinatorialParsing_ExecutableGrammar := eos !
+	mixinMetadata: mmd MixinMetadata_BlocklessCombinatorialParsing_ExecutableGrammar := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	BlocklessCombinatorialParsing metadata addNestedClass: BlocklessCombinatorialParsing_ExecutableGrammar. ! 
+	BlocklessCombinatorialParsing_ExecutableGrammar metadata enclosingMixin: BlocklessCombinatorialParsing !
+	Delta define: #BlocklessCombinatorialParsing_ForwardReferenceParser as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' forwardee bindingRoutine')
+	 classVariables: 'MixinMetadata_BlocklessCombinatorialParsing_ForwardReferenceParser EnclosingObjects_BlocklessCombinatorialParsing_ForwardReferenceParser')!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardReferenceParser) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardReferenceParser) group: 'newspeak'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardReferenceParser) comment: #''!
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardReferenceParser) methodsFor: 'unclassified'!
+	 & p 
+
+^ self  forwardee isNil  ifTrue:[ 
+
+super  & p.
+
+] ifFalse:[ 
+
+ self  forwardee & p.
+
+].
+
+
+
+! 
+bindingRoutine: bindingRoutine_val bindingRoutine := bindingRoutine_val! 
+ ultimateParser 
+
+^ self  parserToForwardTo ultimateParser.
+
+
+
+! 
+ bind: p 
+
+( p isKindOf: (EnclosingObjects_BlocklessCombinatorialParsing_ForwardReferenceParser at: 1)  CombinatorialParser) ifTrue:[ 
+
+ self  forwardee: p.
+
+].
+
+^ self.
+
+
+
+! 
+ opt 
+
+^ self  forwardee isNil  ifTrue:[ 
+
+super  opt.
+
+] ifFalse:[ 
+
+ self  forwardee opt.
+
+].
+
+
+
+! 
+forwardee ^forwardee! 
+ | p 
+
+^ self  forwardee isNil  ifTrue:[ 
+
+super  | p.
+
+] ifFalse:[ 
+
+ self  forwardee | p.
+
+].
+
+
+
+! 
+bindingRoutine ^bindingRoutine! 
+ parserToForwardTo 
+
+ self  forwardee isNil ifTrue:[ 
+
+ self  bindingRoutine value.
+
+].
+
+^ self  forwardee.
+
+
+
+! 
+ new 
+
+ self BlocklessCombinatorialParsing_ForwardReferenceParser_superInit_new.
+
+ self BlocklessCombinatorialParsing_ForwardReferenceParser_1_init.
+
+^ self.
+
+
+
+! 
+ BlocklessCombinatorialParsing_ForwardReferenceParser_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+  parse: input inContext: context ifError: blk 
+
+^ self  parserToForwardTo  parse: input inContext: context ifError: blk.
+
+
+
+! 
+ wrapper: blk 
+
+^ (EnclosingObjects_BlocklessCombinatorialParsing_ForwardReferenceParser at: 1)  ForwardingWrappingParser new  wrapParser: self withWrapper: blk.
+
+
+
+! 
+forwardee: forwardee_val forwardee := forwardee_val! 
+ BlocklessCombinatorialParsing_ForwardReferenceParser_1_init 
+
+ self forwardee:nil.
+
+ self bindingRoutine:nil.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardReferenceParser) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_BlocklessCombinatorialParsing_ForwardReferenceParser := eos !
+	mixinMetadata: mmd MixinMetadata_BlocklessCombinatorialParsing_ForwardReferenceParser := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	BlocklessCombinatorialParsing metadata addNestedClass: BlocklessCombinatorialParsing_ForwardReferenceParser. ! 
+	BlocklessCombinatorialParsing_ForwardReferenceParser metadata enclosingMixin: BlocklessCombinatorialParsing !
+	Delta define: #BlocklessCombinatorialParsing_SequentialParser as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_BlocklessCombinatorialParsing_SequentialParser EnclosingObjects_BlocklessCombinatorialParsing_SequentialParser')!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_SequentialParser) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_SequentialParser) group: 'newspeak'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_SequentialParser) comment: #''!
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_SequentialParser) methodsFor: 'unclassified'!
+	 BlocklessCombinatorialParsing_SequentialParser_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ parsers 
+
+ self subparsers isNil ifTrue:[ 
+
+ self subparsers:( self parserFuns collect:[ : pf | 
+
+ pf value.
+
+]).
+
+].
+
+^ self subparsers.
+
+
+
+! 
+ BlocklessCombinatorialParsing_SequentialParser_1_init 
+
+^ self.
+
+
+
+! 
+ , p 
+
+|  o |
+
+ o := (EnclosingObjects_BlocklessCombinatorialParsing_SequentialParser at: 1)  List new addAll: self parserFuns; 
+
+ add: p; 
+
+ yourself.
+
+^ (EnclosingObjects_BlocklessCombinatorialParsing_SequentialParser at: 1)  SequentialParser new on: o.
+
+
+
+! 
+ new 
+
+ self BlocklessCombinatorialParsing_SequentialParser_superInit_new.
+
+ self BlocklessCombinatorialParsing_SequentialParser_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_SequentialParser) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_BlocklessCombinatorialParsing_SequentialParser := eos !
+	mixinMetadata: mmd MixinMetadata_BlocklessCombinatorialParsing_SequentialParser := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	BlocklessCombinatorialParsing metadata addNestedClass: BlocklessCombinatorialParsing_SequentialParser. ! 
+	BlocklessCombinatorialParsing_SequentialParser metadata enclosingMixin: BlocklessCombinatorialParsing !
+	Delta define: #BlocklessCombinatorialParsing_ForwardingWrappingParser as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' wrappingParser')
+	 classVariables: 'MixinMetadata_BlocklessCombinatorialParsing_ForwardingWrappingParser EnclosingObjects_BlocklessCombinatorialParsing_ForwardingWrappingParser')!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardingWrappingParser) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardingWrappingParser) group: 'newspeak'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardingWrappingParser) comment: 'When a ForwardingReferenceParser is wrapped using the wrapper:  combinator, we don''t know what the  arity the wrapping block should have - it will depend on the arity of the parser we forward to.  We cannot determine whether to use the implementation of wrapper: given in ordinary parsers, which forwards to the wrap: combinator (designed for block with arity 1) or the implementation used in SequentialParsers, (designed for n-ary blocks, where n is the length of the list of parsers the SequentialParser sequences). Instead, we must defer the decision on how to handle the situation until the parser tree is complete. This is accomplished by using this class as the result of the wrapper: combinator for ForwardReferenceParser.  
+
+Instances of this class determiine how to act when asked to parse. At that time, the parse tree must be complete, and they can ask the ultimate parser for a wrappin parser that is suitable configured, and forward requests to it. '!
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardingWrappingParser) methodsFor: 'unclassified'!
+	 trueWrappingParser 
+
+ self  wrappingParser isNil ifTrue:[ 
+
+ self  wrappingParser:( self parser ultimateParser wrapper: self wrapperBlock).
+
+].
+
+^ self  wrappingParser.
+
+
+
+! 
+wrappingParser: wrappingParser_val wrappingParser := wrappingParser_val! 
+ BlocklessCombinatorialParsing_ForwardingWrappingParser_1_init 
+
+ self wrappingParser:nil.
+
+^ self.
+
+
+
+! 
+ BlocklessCombinatorialParsing_ForwardingWrappingParser_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+wrappingParser ^wrappingParser! 
+  parse: input inContext: context ifError: blk 
+
+^ self  trueWrappingParser  parse: input inContext: context ifError: blk.
+
+
+
+! 
+ new 
+
+ self BlocklessCombinatorialParsing_ForwardingWrappingParser_superInit_new.
+
+ self BlocklessCombinatorialParsing_ForwardingWrappingParser_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_ForwardingWrappingParser) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_BlocklessCombinatorialParsing_ForwardingWrappingParser := eos !
+	mixinMetadata: mmd MixinMetadata_BlocklessCombinatorialParsing_ForwardingWrappingParser := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	BlocklessCombinatorialParsing metadata addNestedClass: BlocklessCombinatorialParsing_ForwardingWrappingParser. ! 
+	BlocklessCombinatorialParsing_ForwardingWrappingParser metadata enclosingMixin: BlocklessCombinatorialParsing !
+	Delta define: #BlocklessCombinatorialParsing_CombinatorialParser as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' name')
+	 classVariables: 'MixinMetadata_BlocklessCombinatorialParsing_CombinatorialParser EnclosingObjects_BlocklessCombinatorialParsing_CombinatorialParser')!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_CombinatorialParser) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_CombinatorialParser) group: 'newspeak'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_CombinatorialParser) comment: #''!
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_CombinatorialParser) methodsFor: 'unclassified'!
+	name: name_val name := name_val! 
+ BlocklessCombinatorialParsing_CombinatorialParser_1_init 
+
+ self name:nil.
+
+^ self.
+
+
+
+! 
+ ultimateParser 
+
+^ self.
+
+
+
+! 
+ & p 
+
+|  o |
+
+ o := (EnclosingObjects_BlocklessCombinatorialParsing_CombinatorialParser at: 1)  List new add: self; 
+
+ add: p; 
+
+ yourself.
+
+^ (EnclosingObjects_BlocklessCombinatorialParsing_CombinatorialParser at: 1)  SequentialParser new on: o.
+
+
+
+! 
+ BlocklessCombinatorialParsing_CombinatorialParser_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+name ^name! 
+ new 
+
+ self BlocklessCombinatorialParsing_CombinatorialParser_superInit_new.
+
+ self BlocklessCombinatorialParsing_CombinatorialParser_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_CombinatorialParser) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_BlocklessCombinatorialParsing_CombinatorialParser := eos !
+	mixinMetadata: mmd MixinMetadata_BlocklessCombinatorialParsing_CombinatorialParser := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	BlocklessCombinatorialParsing metadata addNestedClass: BlocklessCombinatorialParsing_CombinatorialParser. ! 
+	BlocklessCombinatorialParsing_CombinatorialParser metadata enclosingMixin: BlocklessCombinatorialParsing !
+	Delta define: #BlocklessCombinatorialParsing_AlternatingParser as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_BlocklessCombinatorialParsing_AlternatingParser EnclosingObjects_BlocklessCombinatorialParsing_AlternatingParser')!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_AlternatingParser) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_AlternatingParser) group: 'newspeak'!
+	(Delta mirrorFor: #BlocklessCombinatorialParsing_AlternatingParser) comment: #''!
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_AlternatingParser) methodsFor: 'unclassified'!
+	 BlocklessCombinatorialParsing_AlternatingParser_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ BlocklessCombinatorialParsing_AlternatingParser_1_init 
+
+^ self.
+
+
+
+! 
+  either: pf1 or: pf2 
+
+ self pfun: pf1.
+
+ self qfun: pf2.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self BlocklessCombinatorialParsing_AlternatingParser_superInit_new.
+
+ self BlocklessCombinatorialParsing_AlternatingParser_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #BlocklessCombinatorialParsing_AlternatingParser) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_BlocklessCombinatorialParsing_AlternatingParser := eos !
+	mixinMetadata: mmd MixinMetadata_BlocklessCombinatorialParsing_AlternatingParser := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	BlocklessCombinatorialParsing metadata addNestedClass: BlocklessCombinatorialParsing_AlternatingParser. ! 
+	BlocklessCombinatorialParsing_AlternatingParser metadata enclosingMixin: BlocklessCombinatorialParsing !
+	

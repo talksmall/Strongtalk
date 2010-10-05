@@ -1,0 +1,111 @@
+Delta define: #Win32apiMSG as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiMSG EnclosingObjects_Win32apiMSG')!
+	(Delta mirrorFor: #Win32apiMSG) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiMSG) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiMSG) comment: 'typedef struct {
+    HWND hwnd;
+    UINT message;
+    WPARAM wParam;
+    LPARAM lParam;
+    DWORD time;
+    POINT pt;
+} MSG, *PMSG;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiMSG) methodsFor: 'unclassified'!
+	 Win32apiMSG_1_init 
+
+^ self.
+
+
+
+! 
+ message 
+
+^ self unsignedLongAt:5.
+
+
+
+! 
+ wParam 
+
+^ self unsignedLongAt:9.
+
+
+
+! 
+ hwnd 
+
+^ self unsignedLongAt:1.
+
+
+
+! 
+ lParam 
+
+^ self unsignedLongAt:13.
+
+
+
+! 
+ pt 
+
+^ self unsignedLongAt:21.
+
+
+
+! 
+ time 
+
+^ self unsignedLongAt:17.
+
+
+
+! 
+ Win32apiMSG_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiMSG_superInit_new.
+
+ self Win32apiMSG_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiMSG) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiMSG := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiMSG := mmd !
+	 dataSize 
+
+^28.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiMSG enclosingObjects: (Array with: nil)!
+		Win32apiMSG metadata enclosingMixin: nil !
+		Win32apiMSG mixinMetadata: Win32apiMSG metadata !
+		

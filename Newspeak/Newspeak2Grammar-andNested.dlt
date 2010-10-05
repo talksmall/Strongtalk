@@ -1,0 +1,1075 @@
+Delta define: #Newspeak2Grammar as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' CombinatorialParser CollectingCommentParser Newspeak2Grammar_TypedNS2Grammar_slot ParserError PredicateTokenParser Newspeak2Grammar_NS2Grammar_slot Newspeak2Grammar_UnarySelectorParser_slot ExecutableGrammar')
+	 classVariables: 'MixinMetadata_Newspeak2Grammar EnclosingObjects_Newspeak2Grammar')!
+	(Delta mirrorFor: #Newspeak2Grammar) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2Grammar) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2Grammar) comment: #''!
+	! (Delta mirrorFor: #Newspeak2Grammar) methodsFor: 'unclassified'!
+	CombinatorialParser ^CombinatorialParser! 
+TypedNS2Grammar
+	| nestedClass enclosingObjectArray myNested depth |
+	Newspeak2Grammar_TypedNS2Grammar_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_Newspeak2Grammar 
+			nestedMixins at: #Newspeak2Grammar_TypedNS2Grammar.
+		myNested := (nestedClass mixin |>  (MixinMetadata_Newspeak2Grammar Mirror on: self  NS2Grammar)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_Newspeak2Grammar size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_Newspeak2Grammar at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		Newspeak2Grammar_TypedNS2Grammar_slot := myNested.
+		].
+	^Newspeak2Grammar_TypedNS2Grammar_slot! 
+PredicateTokenParser ^PredicateTokenParser! 
+CollectingCommentParser: CollectingCommentParser_val CollectingCommentParser := CollectingCommentParser_val! 
+ Newspeak2Grammar_superInit_parserLib: parsers 
+
+super  new.
+
+^ self.
+
+
+
+! 
+NS2Grammar
+	| nestedClass enclosingObjectArray myNested depth |
+	Newspeak2Grammar_NS2Grammar_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_Newspeak2Grammar 
+			nestedMixins at: #Newspeak2Grammar_NS2Grammar.
+		myNested := (nestedClass mixin |>  (MixinMetadata_Newspeak2Grammar Mirror on: self  ExecutableGrammar)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_Newspeak2Grammar size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_Newspeak2Grammar at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		Newspeak2Grammar_NS2Grammar_slot := myNested.
+		].
+	^Newspeak2Grammar_NS2Grammar_slot! 
+PredicateTokenParser: PredicateTokenParser_val PredicateTokenParser := PredicateTokenParser_val! 
+ExecutableGrammar ^ExecutableGrammar! 
+ parserLib: parsers 
+
+ self Newspeak2Grammar_superInit_parserLib: parsers.
+
+ self Newspeak2Grammar_1_init: parsers.
+
+^ self.
+
+
+
+! 
+ExecutableGrammar: ExecutableGrammar_val ExecutableGrammar := ExecutableGrammar_val! 
+CollectingCommentParser ^CollectingCommentParser! 
+ParserError ^ParserError! 
+ Newspeak2Grammar_1_init: parsers 
+
+ self ExecutableGrammar: parsers ExecutableGrammar.
+
+ self CollectingCommentParser: parsers CollectingCommentParser.
+
+ self PredicateTokenParser: parsers PredicateTokenParser.
+
+ self CombinatorialParser: parsers CombinatorialParser.
+
+ self ParserError: parsers ParserError.
+
+^ self.
+
+
+
+! 
+CombinatorialParser: CombinatorialParser_val CombinatorialParser := CombinatorialParser_val! 
+UnarySelectorParser
+	| nestedClass enclosingObjectArray myNested depth |
+	Newspeak2Grammar_UnarySelectorParser_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_Newspeak2Grammar 
+			nestedMixins at: #Newspeak2Grammar_UnarySelectorParser.
+		myNested := (nestedClass mixin |>  (MixinMetadata_Newspeak2Grammar Mirror on: self  CombinatorialParser)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_Newspeak2Grammar size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_Newspeak2Grammar at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		Newspeak2Grammar_UnarySelectorParser_slot := myNested.
+		].
+	^Newspeak2Grammar_UnarySelectorParser_slot! 
+ParserError: ParserError_val ParserError := ParserError_val! 
+ !
+	! (Delta mirrorFor: #Newspeak2Grammar) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2Grammar := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2Grammar := mmd !
+	 parserLib: parsers 
+
+^ self basicNew parserLib: parsers.
+
+
+
+! 
+		 !
+	Newspeak2Grammar enclosingObjects: (Array with: nil)!
+		Newspeak2Grammar metadata enclosingMixin: nil !
+		Newspeak2Grammar mixinMetadata: Newspeak2Grammar metadata !
+		Delta define: #Newspeak2Grammar_UnarySelectorParser as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' p')
+	 classVariables: 'MixinMetadata_Newspeak2Grammar_UnarySelectorParser EnclosingObjects_Newspeak2Grammar_UnarySelectorParser')!
+	(Delta mirrorFor: #Newspeak2Grammar_UnarySelectorParser) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2Grammar_UnarySelectorParser) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2Grammar_UnarySelectorParser) comment: 'In the absence of a separate lexer, an ambiguity arises, which this parser deals with.
+ The problem is that when parsing a unary expression that is an argument to a keyword
+ message, one expects a unary selector, which is an identifer.  However, it may be that the next
+ token is actually a keyword, part of the surrounding message. If we aren''t actually tokenizing,
+ the prefix of the keyword will be misinterpreted as an identifier and hence as another unary
+ message being sent to the argument.
+ 
+ Using a lexer solves this but introduces a subtlety around the assignment operator :=. In that case
+ if there is no whitespace between a variable name and the assignment, the variable name will
+ be tokenized as a keyword rather than as an identifier. The Strongtalk parser, DeltaParser, deals
+ with this specially. In the longterm, that is probably the way to go.'!
+	! (Delta mirrorFor: #Newspeak2Grammar_UnarySelectorParser) methodsFor: 'unclassified'!
+	 on: s 
+
+ self  p: s.
+
+^ self.
+
+
+
+! 
+ Newspeak2Grammar_UnarySelectorParser_1_init 
+
+ self p:nil.
+
+^ self.
+
+
+
+! 
+p ^p! 
+p: p_val p := p_val! 
+  parse: input inContext: context ifError: blk 
+
+|  pos |
+
+ pos := input position.
+
+ self  p keyword  parse: input inContext: context ifError:[ : msg : position | 
+
+ input position: pos.
+
+^ self  p identifier  parse: input inContext: context ifError: blk.
+
+].
+
+ input position: pos.
+
+ blk  value:'should not print' value: pos.
+
+^ self.
+
+
+
+! 
+ Newspeak2Grammar_UnarySelectorParser_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Newspeak2Grammar_UnarySelectorParser_superInit_new.
+
+ self Newspeak2Grammar_UnarySelectorParser_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Newspeak2Grammar_UnarySelectorParser) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2Grammar_UnarySelectorParser := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2Grammar_UnarySelectorParser := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Newspeak2Grammar metadata addNestedClass: Newspeak2Grammar_UnarySelectorParser. ! 
+	Newspeak2Grammar_UnarySelectorParser metadata enclosingMixin: Newspeak2Grammar !
+	Delta define: #Newspeak2Grammar_TypedNS2Grammar as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' typeFactor inferenceClause typeArg where arg tupleType typeFormal typeArguments typeBoundQualifier typePattern blockTypeArgList mssg blockReturnType is type msgSelector nonEmptyBlockTypeArgList newBlockTypeArgList typePrimary parenthesizedTypeExpression receiverType inheritedTypeOf blockType typeExpr of typeParamConstraint for generic typeTerm typeArgInferenceClause returnType returnTypeInferenceClause subtypeOf')
+	 classVariables: 'MixinMetadata_Newspeak2Grammar_TypedNS2Grammar EnclosingObjects_Newspeak2Grammar_TypedNS2Grammar')!
+	(Delta mirrorFor: #Newspeak2Grammar_TypedNS2Grammar) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2Grammar_TypedNS2Grammar) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2Grammar_TypedNS2Grammar) comment: 'A parser for Strongtalk syntax. Adds productions for the Strongtalk type expression sublanguage, and the changes needed to use types in Newsqueak code.'!
+	! (Delta mirrorFor: #Newspeak2Grammar_TypedNS2Grammar) methodsFor: 'unclassified'!
+	typeFactor ^typeFactor! 
+where: where_val where := where_val! 
+tupleType: tupleType_val tupleType := tupleType_val! 
+parenthesizedTypeExpression: parenthesizedTypeExpression_val parenthesizedTypeExpression := parenthesizedTypeExpression_val! 
+typeArgInferenceClause: typeArgInferenceClause_val typeArgInferenceClause := typeArgInferenceClause_val! 
+generic: generic_val generic := generic_val! 
+ new 
+
+ self Newspeak2Grammar_TypedNS2Grammar_superInit_new.
+
+ self Newspeak2Grammar_TypedNS2Grammar_1_init.
+
+^ self.
+
+
+
+! 
+typeArg: typeArg_val typeArg := typeArg_val! 
+blockTypeArgList ^blockTypeArgList! 
+inheritedTypeOf: inheritedTypeOf_val inheritedTypeOf := inheritedTypeOf_val! 
+nonEmptyBlockTypeArgList ^nonEmptyBlockTypeArgList! 
+typeArguments: typeArguments_val typeArguments := typeArguments_val! 
+ slotDecl 
+
+^super  slotDecl , self  type opt.
+
+
+
+! 
+nonEmptyBlockTypeArgList: nonEmptyBlockTypeArgList_val nonEmptyBlockTypeArgList := nonEmptyBlockTypeArgList_val! 
+blockType: blockType_val blockType := blockType_val! 
+typePrimary ^typePrimary! 
+typeBoundQualifier ^typeBoundQualifier! 
+typeExpr: typeExpr_val typeExpr := typeExpr_val! 
+receiverType ^receiverType! 
+inheritedTypeOf ^inheritedTypeOf! 
+mssg: mssg_val mssg := mssg_val! 
+typeFactor: typeFactor_val typeFactor := typeFactor_val! 
+blockType ^blockType! 
+of ^of! 
+inferenceClause: inferenceClause_val inferenceClause := inferenceClause_val! 
+is: is_val is := is_val! 
+ Newspeak2Grammar_TypedNS2Grammar_1_init 
+
+ self arg:( self tokenFromSymbol:#'arg').
+
+ self for:( self tokenFromSymbol:#'for').
+
+ self generic:( self tokenFromSymbol:#'generic').
+
+ self inheritedTypeOf:( self tokenFromSymbol:#'inheritedTypeOf').
+
+ self is:( self tokenFromSymbol:#'is').
+
+ self mssg:( self tokenFromSymbol:#'message').
+
+ self of:( self tokenFromSymbol:#'of').
+
+ self receiverType:( self tokenFromSymbol:#'receiverType').
+
+ self subtypeOf:( self tokenFromSymbol:#'subtypeOf').
+
+ self typeArg:( self tokenFromSymbol:#'typeArg').
+
+ self where:( self tokenFromSymbol:#'where').
+
+ self returnType:( self hat , self  type).
+
+ self type:( self langleBracket , self  typeExpr , self rangleBracket).
+
+ self typePrimary:( self identifier , self  typeArguments opt).
+
+ self typeFactor:( self  typePrimary | self  blockType | self  tupleType | self  parenthesizedTypeExpression).
+
+ self parenthesizedTypeExpression:( self lparen , self  typeExpr , self rparen).
+
+ self typeTerm:( self  typeFactor , self identifier star).
+
+ self typeExpr:( self  typeTerm ,( self vbar | self semicolon | self slash , self  typeExpr) opt).
+
+ self typeArguments:( self lbracket ,( self  typeExpr plusSeparatedBy: self comma) , self rbracket).
+
+ self blockType:( self lbracket , self  blockTypeArgList , self rbracket).
+
+ self tupleType:( self lcurly ,( self  typeExpr starSeparatedBy: self dot) , self rcurly).
+
+ self nonEmptyBlockTypeArgList:(( self  typeExpr plusSeparatedBy: self comma) ,( self comma , self  blockReturnType) opt).
+
+ self blockTypeArgList:( self  nonEmptyBlockTypeArgList | self  blockReturnType opt).
+
+ self newBlockTypeArgList:(( self colon , self  typeExpr) star , self  typeExpr opt).
+
+ self blockReturnType:( self hat , self  typeExpr).
+
+ self typePattern:( self langleBracket , self  typeFormal ,( self semicolon , self  typeFormal) star , self rangleBracket).
+
+ self typeFormal:( self  where , self identifier , self  typeParamConstraint opt , self  is , self  inferenceClause).
+
+ self typeParamConstraint:( self langleBracket , self  typeBoundQualifier opt , self  typeExpr , self rangleBracket).
+
+ self typeBoundQualifier:( self  subtypeOf | self  inheritedTypeOf).
+
+ self inferenceClause:( self  receiverType |( self  returnType , self  returnTypeInferenceClause) | self  typeArgInferenceClause |( self  arg , self number ,( self  of , self  msgSelector) opt)).
+
+ self returnTypeInferenceClause:( self  of , self  msgSelector).
+
+ self msgSelector:( self symbolConstant , self  mssg , self  of , self  inferenceClause).
+
+ self typeArgInferenceClause:( self  typeArg , self number , self  for , self  generic , self symbolConstant , self  of , self  inferenceClause).
+
+^ self.
+
+
+
+! 
+returnTypeInferenceClause ^returnTypeInferenceClause! 
+parenthesizedTypeExpression ^parenthesizedTypeExpression! 
+subtypeOf ^subtypeOf! 
+newBlockTypeArgList: newBlockTypeArgList_val newBlockTypeArgList := newBlockTypeArgList_val! 
+inferenceClause ^inferenceClause! 
+receiverType: receiverType_val receiverType := receiverType_val! 
+typeArg ^typeArg! 
+arg: arg_val arg := arg_val! 
+ Newspeak2Grammar_TypedNS2Grammar_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+arg ^arg! 
+tupleType ^tupleType! 
+blockReturnType: blockReturnType_val blockReturnType := blockReturnType_val! 
+typeFormal ^typeFormal! 
+returnTypeInferenceClause: returnTypeInferenceClause_val returnTypeInferenceClause := returnTypeInferenceClause_val! 
+typeArguments ^typeArguments! 
+typePattern ^typePattern! 
+where ^where! 
+of: of_val of := of_val! 
+type: type_val type := type_val! 
+msgSelector: msgSelector_val msgSelector := msgSelector_val! 
+typeParamConstraint: typeParamConstraint_val typeParamConstraint := typeParamConstraint_val! 
+mssg ^mssg! 
+typeFormal: typeFormal_val typeFormal := typeFormal_val! 
+blockReturnType ^blockReturnType! 
+is ^is! 
+type ^type! 
+msgSelector ^msgSelector! 
+newBlockTypeArgList ^newBlockTypeArgList! 
+ messagePattern 
+
+^super  messagePattern , self  returnType opt , self  typePattern opt.
+
+
+
+! 
+typePrimary: typePrimary_val typePrimary := typePrimary_val! 
+typeExpr ^typeExpr! 
+typeTerm: typeTerm_val typeTerm := typeTerm_val! 
+returnType: returnType_val returnType := returnType_val! 
+for: for_val for := for_val! 
+typeParamConstraint ^typeParamConstraint! 
+for ^for! 
+generic ^generic! 
+typeTerm ^typeTerm! 
+typeArgInferenceClause ^typeArgInferenceClause! 
+subtypeOf: subtypeOf_val subtypeOf := subtypeOf_val! 
+returnType ^returnType! 
+typePattern: typePattern_val typePattern := typePattern_val! 
+blockTypeArgList: blockTypeArgList_val blockTypeArgList := blockTypeArgList_val! 
+typeBoundQualifier: typeBoundQualifier_val typeBoundQualifier := typeBoundQualifier_val! 
+ !
+	! (Delta mirrorFor: #Newspeak2Grammar_TypedNS2Grammar) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2Grammar_TypedNS2Grammar := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2Grammar_TypedNS2Grammar := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Newspeak2Grammar metadata addNestedClass: Newspeak2Grammar_TypedNS2Grammar. ! 
+	Newspeak2Grammar_TypedNS2Grammar metadata enclosingMixin: Newspeak2Grammar !
+	Delta define: #Newspeak2Grammar_NS2Grammar as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' equalSign rbracket classCategory slotDecls uppercaseLetter cascadeMsg comma endComment classHeader exponent extendedDigits digit lparen setterKeyword keyword identifier blockParameters comment rangleBracket decimalNum character tuple beginComment slotDecl binaryMsgPattern classDeclaration method unarySelector sideDecl radixNum dot symbol nonEmptyMessages kwds category setterKw radix accessModifier digits temporaries classComment number langleBracket cascadedMessageExpression sym str string dollar toplevelClass semicolon superclassClause returnStatement id slash languageId keywordMessages nontrivialUnaryMessages twoDblQuotes twoQuotes unaryExpression methodDecl primary vbar methodDef unaryMsgPattern slotName keywordMsg classSideDecl binarySelector literal codeBody commentDelimiter nontrivialBinaryMessages lcurly symbolConstant blockParameter furtherStatements methodHeader message keywordMsgPattern colon kw num fraction binaryExpression rparen keywordExpression statements messagePattern slotDef hat nestedClassDecl characterConstant aChar binaryMsg specialCharacter expression whitespace sendExpression lbracket pound initExprs block statementSequence compilationUnit rcurly extendedFraction parenthesizedExpression keywordHereSend letter msgCascade binSel')
+	 classVariables: 'MixinMetadata_Newspeak2Grammar_NS2Grammar EnclosingObjects_Newspeak2Grammar_NS2Grammar')!
+	(Delta mirrorFor: #Newspeak2Grammar_NS2Grammar) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2Grammar_NS2Grammar) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2Grammar_NS2Grammar) comment: 'Grammar for Newspeak2 (without types).'!
+	! (Delta mirrorFor: #Newspeak2Grammar_NS2Grammar) methodsFor: 'unclassified'!
+	languageId: languageId_val languageId := languageId_val! 
+literal ^literal! 
+decimalNum: decimalNum_val decimalNum := decimalNum_val! 
+keywordHereSend: keywordHereSend_val keywordHereSend := keywordHereSend_val! 
+classCategory ^classCategory! 
+whitespace: whitespace_val whitespace := whitespace_val! 
+keywordMessages ^keywordMessages! 
+id: id_val id := id_val! 
+uppercaseLetter ^uppercaseLetter! 
+comma ^comma! 
+beginComment: beginComment_val beginComment := beginComment_val! 
+digit: digit_val digit := digit_val! 
+lcurly ^lcurly! 
+setterKw: setterKw_val setterKw := setterKw_val! 
+kw: kw_val kw := kw_val! 
+codeBody: codeBody_val codeBody := codeBody_val! 
+lparen: lparen_val lparen := lparen_val! 
+extendedDigits ^extendedDigits! 
+vbar ^vbar! 
+keyword ^keyword! 
+identifier ^identifier! 
+superclassClause: superclassClause_val superclassClause := superclassClause_val! 
+rangleBracket ^rangleBracket! 
+keywordExpression: keywordExpression_val keywordExpression := keywordExpression_val! 
+compilationUnit ^compilationUnit! 
+endComment: endComment_val endComment := endComment_val! 
+character ^character! 
+aChar ^aChar! 
+binaryMsgPattern ^binaryMsgPattern! 
+compilationUnit: compilationUnit_val compilationUnit := compilationUnit_val! 
+exponent: exponent_val exponent := exponent_val! 
+unarySelector ^unarySelector! 
+method: method_val method := method_val! 
+languageId ^languageId! 
+sendExpression ^sendExpression! 
+keyword: keyword_val keyword := keyword_val! 
+parenthesizedExpression: parenthesizedExpression_val parenthesizedExpression := parenthesizedExpression_val! 
+kwds ^kwds! 
+category: category_val category := category_val! 
+message: message_val message := message_val! 
+comment: comment_val comment := comment_val! 
+expression: expression_val expression := expression_val! 
+accessModifier ^accessModifier! 
+digits ^digits! 
+temporaries ^temporaries! 
+number ^number! 
+msgCascade ^msgCascade! 
+classSideDecl: classSideDecl_val classSideDecl := classSideDecl_val! 
+sym ^sym! 
+str ^str! 
+ _ 
+
+^ self char:$_.
+
+
+
+! 
+fraction ^fraction! 
+extendedFraction ^extendedFraction! 
+classComment ^classComment! 
+keywordExpression ^keywordExpression! 
+binSel: binSel_val binSel := binSel_val! 
+digits: digits_val digits := digits_val! 
+binaryMsg: binaryMsg_val binaryMsg := binaryMsg_val! 
+id ^id! 
+lcurly: lcurly_val lcurly := lcurly_val! 
+rangleBracket: rangleBracket_val rangleBracket := rangleBracket_val! 
+keywordMsg: keywordMsg_val keywordMsg := keywordMsg_val! 
+kwds: kwds_val kwds := kwds_val! 
+string: string_val string := string_val! 
+radixNum: radixNum_val radixNum := radixNum_val! 
+nontrivialUnaryMessages ^nontrivialUnaryMessages! 
+cascadeMsg ^cascadeMsg! 
+twoQuotes ^twoQuotes! 
+fraction: fraction_val fraction := fraction_val! 
+binaryExpression: binaryExpression_val binaryExpression := binaryExpression_val! 
+methodDecl ^methodDecl! 
+lbracket ^lbracket! 
+hat: hat_val hat := hat_val! 
+literal: literal_val literal := literal_val! 
+digit ^digit! 
+classDeclaration: classDeclaration_val classDeclaration := classDeclaration_val! 
+unaryMsgPattern ^unaryMsgPattern! 
+slotName ^slotName! 
+keywordMsg ^keywordMsg! 
+ commentBody 
+
+^ (EnclosingObjects_Newspeak2Grammar_NS2Grammar at: 1)  CollectingCommentParser new termBlock:[ : input | 
+
+|  c |
+
+ c := input peek.
+
+ c isNil  ifTrue:[ 
+
+false.
+
+] ifFalse:[ 
+
+ c =$"  ifFalse:[ 
+
+false.
+
+] ifTrue:[ 
+
+|  pos |
+
+ pos := input position.
+
+ input next.
+
+ input peek =$"  ifTrue:[ 
+
+false.
+
+] ifFalse:[ 
+
+ input position: pos.
+
+true.
+
+].
+
+].
+
+].
+
+].
+
+
+
+! 
+binarySelector ^binarySelector! 
+slotName: slotName_val slotName := slotName_val! 
+cascadeMsg: cascadeMsg_val cascadeMsg := cascadeMsg_val! 
+lbracket: lbracket_val lbracket := lbracket_val! 
+nestedClassDecl: nestedClassDecl_val nestedClassDecl := nestedClassDecl_val! 
+nonEmptyMessages: nonEmptyMessages_val nonEmptyMessages := nonEmptyMessages_val! 
+langleBracket: langleBracket_val langleBracket := langleBracket_val! 
+methodDef: methodDef_val methodDef := methodDef_val! 
+commentDelimiter ^commentDelimiter! 
+classComment: classComment_val classComment := classComment_val! 
+twoDblQuotes: twoDblQuotes_val twoDblQuotes := twoDblQuotes_val! 
+blockParameter ^blockParameter! 
+furtherStatements ^furtherStatements! 
+ Newspeak2Grammar_NS2Grammar_2_init 
+
+ self binaryMsg:( self  binarySelector , self  unaryExpression).
+
+ self binaryExpression:( self  unaryExpression , self  binaryMsg star).
+
+ self keywordMsg:( self  keyword , self  binaryExpression) plus.
+
+ self message:( self  keywordMsg | self  unarySelector | self  binaryMsg).
+
+ self nontrivialUnaryMessages:( self  unarySelector plus , self  binaryMsg star , self  keywordMsg opt).
+
+ self nontrivialBinaryMessages:( self  binaryMsg plus , self  keywordMsg opt).
+
+ self keywordMessages: self  keywordMsg.
+
+ self nonEmptyMessages:( self  nontrivialUnaryMessages | self  nontrivialBinaryMessages | self  keywordMessages).
+
+ self keywordExpression:( self  binaryExpression , self  keywordMsg opt).
+
+ self keywordHereSend: self  keywordMsg.
+
+ self cascadeMsg:( self  semicolon ,( self  keywordMsg | self  binaryMsg | self  unarySelector)).
+
+ self msgCascade:( self  nonEmptyMessages , self  cascadeMsg star).
+
+ self cascadedMessageExpression:( self  primary , self  msgCascade opt).
+
+ self sendExpression:( self  keywordHereSend | self  cascadedMessageExpression).
+
+ self expression:( self  setterKeyword opt , self  sendExpression).
+
+ self returnStatement:( self  hat , self  expression , self  dot opt).
+
+ self furtherStatements:( self  dot , self  statements).
+
+ self statementSequence:( self  expression , self  furtherStatements opt).
+
+ self statements:( self  returnStatement | self  statementSequence | self empty).
+
+ self blockParameter:( self  colon , self  slotDecl).
+
+ self blockParameters:( self  blockParameter plus , self  vbar).
+
+ self slotDecls:( self  vbar , self  slotDef star , self  vbar).
+
+ self temporaries: self  slotDecls.
+
+ self codeBody:( self  temporaries opt , self  statements).
+
+ self block:( self  lbracket , self  blockParameters opt , self  codeBody , self  rbracket).
+
+ self slotDecl: self  identifier.
+
+ self accessModifier:(( self tokenFromSymbol:#'private') |( self tokenFromSymbol:#'public') |( self tokenFromSymbol:#'protected') , self  whitespace).
+
+ self slotDef:( self  accessModifier opt , self  slotDecl ,(( self tokenFromSymbol:#'=') |( self tokenFromSymbol:#'::=') , self  expression , self  dot) opt).
+
+ self initExprs:( self  expression starSeparatedOrTerminatedBy: self  dot).
+
+ self unaryMsgPattern: self  unarySelector.
+
+ self binaryMsgPattern:( self  binarySelector , self  slotDecl).
+
+ self keywordMsgPattern:( self  keyword , self  slotDecl) plus.
+
+ self messagePattern:( self  unaryMsgPattern | self  binaryMsgPattern | self  keywordMsgPattern).
+
+ self method:( self  messagePattern , self  codeBody , self eoi).
+
+ self methodHeader:( self  accessModifier opt ,[ 
+
+ self  messagePattern.
+
+]).
+
+ self methodDecl:( self  accessModifier opt , self  messagePattern , self  equalSign , self  lparen , self  codeBody , self  rparen).
+
+ self methodDef:( self  methodDecl | self  method).
+
+ self nestedClassDecl:( self  accessModifier opt , self  classDeclaration).
+
+ self category:( self  string , self  methodDecl star).
+
+ self classComment:( self  whitespace , self  comment).
+
+ self sideDecl:( self  lparen , self  nestedClassDecl star , self  category star , self  rparen).
+
+ self classSideDecl:( self  colon , self  lparen , self  category star , self  rparen).
+
+ self languageId: self  identifier.
+
+ self classCategory: self  string opt.
+
+ self superclassClause:( self  slotName , self  message opt).
+
+ self classHeader:( self  identifier , self  messagePattern , self  equalSign , self  superclassClause opt , self  lparen , self  classComment opt , self  slotDecls opt , self  initExprs , self  rparen |( self  identifier , self empty , self  equalSign , self  superclassClause opt , self  lparen , self  classComment opt , self  slotDecls opt , self  initExprs , self  rparen)).
+
+ self classDeclaration:(( self tokenFromSymbol:#'class') , self  classHeader , self  sideDecl , self  classSideDecl opt).
+
+ self toplevelClass:( self  classCategory , self  classDeclaration).
+
+ self compilationUnit:( self  languageId , self  toplevelClass , self eoi).
+
+^ self.
+
+
+
+! 
+methodDecl: methodDecl_val methodDecl := methodDecl_val! 
+langleBracket ^langleBracket! 
+kw ^kw! 
+unaryExpression: unaryExpression_val unaryExpression := unaryExpression_val! 
+statementSequence: statementSequence_val statementSequence := statementSequence_val! 
+statements ^statements! 
+binaryMsgPattern: binaryMsgPattern_val binaryMsgPattern := binaryMsgPattern_val! 
+sym: sym_val sym := sym_val! 
+slotDef ^slotDef! 
+hat ^hat! 
+nestedClassDecl ^nestedClassDecl! 
+msgCascade: msgCascade_val msgCascade := msgCascade_val! 
+superclassClause ^superclassClause! 
+binaryMsg ^binaryMsg! 
+primary: primary_val primary := primary_val! 
+returnStatement: returnStatement_val returnStatement := returnStatement_val! 
+symbol: symbol_val symbol := symbol_val! 
+tuple: tuple_val tuple := tuple_val! 
+dot: dot_val dot := dot_val! 
+setterKw ^setterKw! 
+sendExpression: sendExpression_val sendExpression := sendExpression_val! 
+whitespace ^whitespace! 
+rbracket: rbracket_val rbracket := rbracket_val! 
+initExprs ^initExprs! 
+rparen: rparen_val rparen := rparen_val! 
+statementSequence ^statementSequence! 
+ stringBody 
+
+^ (EnclosingObjects_Newspeak2Grammar_NS2Grammar at: 1)  CollectingCommentParser new termBlock:[ : input | 
+
+|  c |
+
+ c := input peek.
+
+ c isNil  ifTrue:[ 
+
+false.
+
+] ifFalse:[ 
+
+ c =$'  ifFalse:[ 
+
+false.
+
+] ifTrue:[ 
+
+|  pos |
+
+ pos := input position.
+
+ input next.
+
+ input peek =$'  ifTrue:[ 
+
+false.
+
+] ifFalse:[ 
+
+ input position: pos.
+
+true.
+
+].
+
+].
+
+].
+
+].
+
+
+
+! 
+rcurly ^rcurly! 
+keywordMsgPattern: keywordMsgPattern_val keywordMsgPattern := keywordMsgPattern_val! 
+letter ^letter! 
+methodHeader: methodHeader_val methodHeader := methodHeader_val! 
+binSel ^binSel! 
+equalSign ^equalSign! 
+rbracket ^rbracket! 
+codeBody ^codeBody! 
+temporaries: temporaries_val temporaries := temporaries_val! 
+nontrivialBinaryMessages ^nontrivialBinaryMessages! 
+endComment ^endComment! 
+colon: colon_val colon := colon_val! 
+exponent ^exponent! 
+ new 
+
+ self Newspeak2Grammar_NS2Grammar_superInit_new.
+
+ self Newspeak2Grammar_NS2Grammar_1_init.
+
+ self Newspeak2Grammar_NS2Grammar_2_init.
+
+^ self.
+
+
+
+! 
+pound: pound_val pound := pound_val! 
+letter: letter_val letter := letter_val! 
+lparen ^lparen! 
+initExprs: initExprs_val initExprs := initExprs_val! 
+unaryMsgPattern: unaryMsgPattern_val unaryMsgPattern := unaryMsgPattern_val! 
+setterKeyword ^setterKeyword! 
+ Newspeak2Grammar_NS2Grammar_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+parenthesizedExpression ^parenthesizedExpression! 
+unarySelector: unarySelector_val unarySelector := unarySelector_val! 
+blockParameters ^blockParameters! 
+classSideDecl ^classSideDecl! 
+comment ^comment! 
+decimalNum ^decimalNum! 
+tuple ^tuple! 
+beginComment ^beginComment! 
+rcurly: rcurly_val rcurly := rcurly_val! 
+classDeclaration ^classDeclaration! 
+messagePattern: messagePattern_val messagePattern := messagePattern_val! 
+sideDecl ^sideDecl! 
+radixNum ^radixNum! 
+slotDecl ^slotDecl! 
+symbol ^symbol! 
+statements: statements_val statements := statements_val! 
+nonEmptyMessages ^nonEmptyMessages! 
+category ^category! 
+vbar: vbar_val vbar := vbar_val! 
+ Newspeak2Grammar_NS2Grammar_1_init 
+
+ self whitespace:super  whitespace.
+
+ self colon:( self tokenFromChar:$:).
+
+ self comma:( self tokenFromChar:$,).
+
+ self dollar:( self tokenFromChar:$$).
+
+ self dot:( self tokenFromChar:$.).
+
+ self equalSign:( self tokenFromChar:$=).
+
+ self hat:( self tokenFromChar:$^).
+
+ self lbracket:( self tokenFromChar:$[).
+
+ self lcurly:( self tokenFromChar:${).
+
+ self lparen:( self tokenFromChar:$().
+
+ self langleBracket:( self tokenFromChar:$<).
+
+ self pound:( self tokenFromChar:$#).
+
+ self rangleBracket:( self tokenFromChar:$>).
+
+ self rbracket:( self tokenFromChar:$]).
+
+ self rcurly:( self tokenFromChar:$}).
+
+ self rparen:( self tokenFromChar:$)).
+
+ self semicolon:( self tokenFromChar:$;).
+
+ self slash:( self tokenFromChar:$/).
+
+ self vbar:( self tokenFromChar:$|).
+
+ self digit:( self  charBetween:$0 and:$9).
+
+ self digits: self  digit plus.
+
+ self uppercaseLetter:( self  charBetween:$A and:$Z).
+
+ self extendedDigits:( self  digit | self  uppercaseLetter) plus.
+
+ self radix:( self  digits ,( self char:$r)).
+
+ self fraction:( self  dot , self  digits).
+
+ self extendedFraction:( self  dot , self  extendedDigits).
+
+ self exponent:(( self char:$e) ,( self char:$-) opt , self  digits).
+
+ self decimalNum:(( self char:$-) opt , self  digits , self  fraction opt , self  exponent opt).
+
+ self radixNum:( self  radix ,( self char:$-) opt , self  extendedDigits , self  extendedFraction opt , self  exponent opt).
+
+ self num:( self  radixNum | self  decimalNum).
+
+ self number:( self tokenFor: self  num).
+
+ self letter:( (EnclosingObjects_Newspeak2Grammar_NS2Grammar at: 1)  PredicateTokenParser new  accept:[ : c | 
+
+ c isLetter.
+
+] errorMsg:'letter expected').
+
+ self specialCharacter:(( self char:$+) |( self char:$/) |( self char:$\) |( self char:$*) |( self char:$~) |( self char:$<) |( self char:$>) |( self char:$=) |( self char:$@) |( self char:$%) |( self char:$|) |( self char:$&) |( self char:$?) |( self char:$!!) |( self char:$,)).
+
+ self character:( self  digit | self  letter | self  specialCharacter |( self char:$[) |( self char:$]) |( self char:${) |( self char:$}) |( self char:$() |( self char:$)) |( self char:$^) |( self char:$;) |( self char:$$) |( self char:$#) |( self char:$:) |( self char:$.) |( self char:$-) |( self char:$_) |( self char:$`)).
+
+ self id:( self  letter |( self  _) ,( self  letter | self  digit |( self  _)) star wrapper:[ : fst : snd | 
+
+ fst asString ,( self String withAll: snd).
+
+]).
+
+ self identifier:( self tokenFor: self  id).
+
+ self aChar:(( self char:$$) ,( self  character |( self char:$') |( self char:$") |( self char:Character space))).
+
+ self characterConstant:( self tokenFor: self  aChar).
+
+ self twoQuotes:(( self char:$') ,( self char:$') wrapper:[ : q1 : q2 | 
+
+''''.
+
+]).
+
+ self str:(( self char:$') , self  stringBody ,( self char:$') wrapper:[ : oq : es : eq | 
+
+ es  inject:#'' into:[ : s : e | 
+
+ s , e asString.
+
+].
+
+]).
+
+ self string:( self tokenFor: self  str).
+
+ self kw:( self  id ,( self char:$:) wrapper:[ : i : c | 
+
+ i ,$: asString.
+
+]).
+
+ self kwds:( self  kw plus wrap:[ : c | 
+
+ c  inject:#'' into:[ : s : e | 
+
+ s , e.
+
+].
+
+]).
+
+ self keyword:( self tokenFor: self  kw).
+
+ self setterKw:( self  kw ,( self char:$:) wrapper:[ : i : c | 
+
+ i ,$: asString.
+
+]).
+
+ self setterKeyword:( self tokenFor: self  setterKw).
+
+ self sym:( self  str | self  kwds | self  binSel | self  id).
+
+ self symbol:( self tokenFor: self  sym).
+
+ self commentDelimiter:( self char:$").
+
+ self beginComment: self  commentDelimiter.
+
+ self endComment: self  commentDelimiter.
+
+ self twoDblQuotes:(( self char:$") ,( self char:$") wrapper:[ : q1 : q2 | 
+
+'"'.
+
+]).
+
+ self comment:( self  beginComment , self  commentBody , self  endComment).
+
+ self binSel:( self  specialCharacter |( self char:$-) , self  specialCharacter star wrapper:[ : c1 : c2 | 
+
+ c2 isEmpty  ifTrue:[ 
+
+ c1 asString asSymbol.
+
+] ifFalse:[ 
+
+( c1 asString ,( c2  inject:#'' into:[ : s : e | 
+
+ s , e asString.
+
+])) asSymbol.
+
+].
+
+]).
+
+ self binarySelector:( self tokenFor: self  binSel).
+
+ self symbolConstant:( self  pound , self  symbol).
+
+ self tuple:( self  lcurly ,( self  expression starSeparatedOrTerminatedBy: self  dot) , self  rcurly).
+
+ self literal:( self  number | self  symbolConstant | self  characterConstant | self  string | self  tuple).
+
+ self slotName: self  identifier.
+
+ self unarySelector:( (EnclosingObjects_Newspeak2Grammar_NS2Grammar at: 1)  UnarySelectorParser new on: self).
+
+ self parenthesizedExpression:( self  lparen , self  expression , self  rparen).
+
+ self primary:( self  slotName | self  literal | self  block | self  parenthesizedExpression).
+
+ self unaryExpression:( self  primary , self  unarySelector star).
+
+^ self.
+
+
+
+! 
+classHeader ^classHeader! 
+keywordMsgPattern ^keywordMsgPattern! 
+setterKeyword: setterKeyword_val setterKeyword := setterKeyword_val! 
+cascadedMessageExpression ^cascadedMessageExpression! 
+comma: comma_val comma := comma_val! 
+toplevelClass: toplevelClass_val toplevelClass := toplevelClass_val! 
+dollar ^dollar! 
+toplevelClass ^toplevelClass! 
+returnStatement ^returnStatement! 
+twoQuotes: twoQuotes_val twoQuotes := twoQuotes_val! 
+uppercaseLetter: uppercaseLetter_val uppercaseLetter := uppercaseLetter_val! 
+blockParameter: blockParameter_val blockParameter := blockParameter_val! 
+slash ^slash! 
+cascadedMessageExpression: cascadedMessageExpression_val cascadedMessageExpression := cascadedMessageExpression_val! 
+twoDblQuotes ^twoDblQuotes! 
+equalSign: equalSign_val equalSign := equalSign_val! 
+specialCharacter ^specialCharacter! 
+unaryExpression ^unaryExpression! 
+furtherStatements: furtherStatements_val furtherStatements := furtherStatements_val! 
+primary ^primary! 
+number: number_val number := number_val! 
+accessModifier: accessModifier_val accessModifier := accessModifier_val! 
+methodDef ^methodDef! 
+rparen ^rparen! 
+messagePattern ^messagePattern! 
+classCategory: classCategory_val classCategory := classCategory_val! 
+characterConstant: characterConstant_val characterConstant := characterConstant_val! 
+block: block_val block := block_val! 
+method ^method! 
+extendedDigits: extendedDigits_val extendedDigits := extendedDigits_val! 
+slotDecls ^slotDecls! 
+nontrivialBinaryMessages: nontrivialBinaryMessages_val nontrivialBinaryMessages := nontrivialBinaryMessages_val! 
+slotDecls: slotDecls_val slotDecls := slotDecls_val! 
+symbolConstant ^symbolConstant! 
+radix: radix_val radix := radix_val! 
+dollar: dollar_val dollar := dollar_val! 
+methodHeader ^methodHeader! 
+message ^message! 
+blockParameters: blockParameters_val blockParameters := blockParameters_val! 
+binarySelector: binarySelector_val binarySelector := binarySelector_val! 
+symbolConstant: symbolConstant_val symbolConstant := symbolConstant_val! 
+colon ^colon! 
+num ^num! 
+string ^string! 
+binaryExpression ^binaryExpression! 
+semicolon ^semicolon! 
+classHeader: classHeader_val classHeader := classHeader_val! 
+commentDelimiter: commentDelimiter_val commentDelimiter := commentDelimiter_val! 
+specialCharacter: specialCharacter_val specialCharacter := specialCharacter_val! 
+keywordMessages: keywordMessages_val keywordMessages := keywordMessages_val! 
+extendedFraction: extendedFraction_val extendedFraction := extendedFraction_val! 
+nontrivialUnaryMessages: nontrivialUnaryMessages_val nontrivialUnaryMessages := nontrivialUnaryMessages_val! 
+characterConstant ^characterConstant! 
+dot ^dot! 
+semicolon: semicolon_val semicolon := semicolon_val! 
+aChar: aChar_val aChar := aChar_val! 
+str: str_val str := str_val! 
+expression ^expression! 
+sideDecl: sideDecl_val sideDecl := sideDecl_val! 
+radix ^radix! 
+slotDecl: slotDecl_val slotDecl := slotDecl_val! 
+pound ^pound! 
+keywordHereSend ^keywordHereSend! 
+num: num_val num := num_val! 
+block ^block! 
+identifier: identifier_val identifier := identifier_val! 
+character: character_val character := character_val! 
+slotDef: slotDef_val slotDef := slotDef_val! 
+slash: slash_val slash := slash_val! 
+ !
+	! (Delta mirrorFor: #Newspeak2Grammar_NS2Grammar) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2Grammar_NS2Grammar := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2Grammar_NS2Grammar := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Newspeak2Grammar metadata addNestedClass: Newspeak2Grammar_NS2Grammar. ! 
+	Newspeak2Grammar_NS2Grammar metadata enclosingMixin: Newspeak2Grammar !
+	

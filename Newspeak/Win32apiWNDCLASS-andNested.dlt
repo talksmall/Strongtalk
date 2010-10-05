@@ -1,0 +1,206 @@
+Delta define: #Win32apiWNDCLASS as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiWNDCLASS EnclosingObjects_Win32apiWNDCLASS')!
+	(Delta mirrorFor: #Win32apiWNDCLASS) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiWNDCLASS) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiWNDCLASS) comment: 'typedef struct {
+    UINT style;
+    WNDPROC lpfnWndProc;
+    int cbClsExtra;
+    int cbWndExtra;
+    HINSTANCE hInstance;
+    HICON hIcon;
+    HCURSOR hCursor;
+    HBRUSH hbrBackground;
+    LPCTSTR lpszMenuName;
+    LPCTSTR lpszClassName;
+} WNDCLASS, *PWNDCLASS;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiWNDCLASS) methodsFor: 'unclassified'!
+	 hCursor 
+
+^ self unsignedLongAt:25.
+
+
+
+! 
+ style 
+
+^ self unsignedLongAt:1.
+
+
+
+! 
+ cbClsExtra: newValue 
+
+^ self  signedLongAt:9 put: newValue.
+
+
+
+! 
+ hInstance: newValue 
+
+^ self  unsignedLongAt:17 put: newValue.
+
+
+
+! 
+ lpszMenuName 
+
+^ self unsignedLongAt:33.
+
+
+
+! 
+ hCursor: newValue 
+
+^ self  unsignedLongAt:25 put: newValue.
+
+
+
+! 
+ hInstance 
+
+^ self unsignedLongAt:17.
+
+
+
+! 
+ lpfnWndProc 
+
+^ self unsignedLongAt:5.
+
+
+
+! 
+ hbrBackground: newValue 
+
+^ self  unsignedLongAt:29 put: newValue.
+
+
+
+! 
+ lpszClassName: newValue 
+
+^ self  unsignedLongAt:37 put: newValue.
+
+
+
+! 
+ style: value 
+
+^ self  unsignedLongAt:1 put: value.
+
+
+
+! 
+ hbrBackground 
+
+^ self unsignedLongAt:29.
+
+
+
+! 
+ new 
+
+ self Win32apiWNDCLASS_superInit_new.
+
+ self Win32apiWNDCLASS_1_init.
+
+^ self.
+
+
+
+! 
+ lpszMenuName: newValue 
+
+^ self  unsignedLongAt:33 put: newValue.
+
+
+
+! 
+ cbClsExtra 
+
+^ self signedLongAt:9.
+
+
+
+! 
+ hIcon 
+
+^ self unsignedLongAt:21.
+
+
+
+! 
+ hIcon: newValue 
+
+^ self  unsignedLongAt:21 put: newValue.
+
+
+
+! 
+ Win32apiWNDCLASS_1_init 
+
+^ self.
+
+
+
+! 
+ lpszClassName 
+
+^ self unsignedLongAt:37.
+
+
+
+! 
+ Win32apiWNDCLASS_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ cbWndExtra 
+
+^ self signedLongAt:13.
+
+
+
+! 
+ lpfnWndProc: value 
+
+^ self  unsignedLongAt:5 put: value.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiWNDCLASS) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiWNDCLASS := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiWNDCLASS := mmd !
+	 dataSize 
+
+^40.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiWNDCLASS enclosingObjects: (Array with: nil)!
+		Win32apiWNDCLASS metadata enclosingMixin: nil !
+		Win32apiWNDCLASS mixinMetadata: Win32apiWNDCLASS metadata !
+		

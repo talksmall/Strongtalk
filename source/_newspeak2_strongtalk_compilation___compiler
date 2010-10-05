@@ -1,0 +1,391 @@
+Class
+#categories!
+unclassified! !
+currentDepth:!
+86655719!
+unclassified!
+0:! !
+nestedMixinWrapperFor:in:!
+86618849!
+unclassified!
+0::! !
+enclosingObjectMsgFromName:!
+86619216!
+unclassified!
+0:! !
+currentMixinUID:!
+86619440!
+unclassified!
+0:! !
+hereNode!
+86619647!
+unclassified!
+0! !
+saveInput:!
+86639352!
+unclassified!
+0:! !
+hereSendFrom:!
+86620784!
+unclassified!
+0:! !
+sendForSub:!
+86621252!
+unclassified!
+0:! !
+scopeMap!
+86621800!
+unclassified!
+0! !
+new!
+86621950!
+unclassified!
+0! !
+input!
+86648377!
+unclassified!
+0! !
+AST2SmalltalkCompiler!
+86622403!
+unclassified!
+0! !
+outputRep:to:within:!
+86623618!
+unclassified!
+0:::! !
+literalTable:!
+86623986!
+unclassified!
+0:! !
+scope:!
+86624181!
+unclassified!
+0:! !
+outputNestingHookupForRep:to:within:!
+86624348!
+unclassified!
+0:::! !
+makePrimaryFactoryFor:!
+86642800!
+unclassified!
+0:! !
+rewriter:!
+86625664!
+unclassified!
+0:! !
+fullyQualifySimpleName:with:!
+86625843!
+unclassified!
+0::! !
+syntheticNameSeparatorCharacter!
+86626170!
+unclassified!
+0! !
+processClassSideOf:ofMixin:!
+86626344!
+unclassified!
+0::! !
+allInitializersFor:in:!
+86626680!
+unclassified!
+0::! !
+ScopeBuilder!
+86628596!
+unclassified!
+0! !
+compileMethodSource:within:!
+86629766!
+unclassified!
+0::! !
+MixinClassNode!
+86630283!
+unclassified!
+0! !
+nestScope:!
+86631459!
+unclassified!
+0:! !
+selectorForMethodAST:!
+86631675!
+unclassified!
+0:! !
+setScopeFor:in:!
+86631876!
+unclassified!
+0::! !
+currentMixinUID!
+86632451!
+unclassified!
+0! !
+syntheticNameSeparator!
+86632615!
+unclassified!
+0! !
+#revision!
+$Revision: 0.0 $! !
+pushScope:!
+86650836!
+unclassified!
+0:! !
+#classVariableString!
+MixinMetadata_Newspeak2StrongtalkCompilation_Compiler EnclosingObjects_Newspeak2StrongtalkCompilation_Compiler! !
+computeMethod:inScope:!
+86633336!
+unclassified!
+0::! !
+processMethod:inScope:in:!
+86633659!
+unclassified!
+0:::! !
+compileClassHeader:within:!
+86633985!
+unclassified!
+0::! !
+processSide:ofMixin:!
+86634507!
+unclassified!
+0::! !
+methodNode:!
+86634880!
+unclassified!
+0:! !
+computeMixinFrom:!
+86635186!
+unclassified!
+0:! !
+superConstructorNameFor:!
+86636081!
+unclassified!
+0:! !
+compileNestedClass:within:!
+86654448!
+unclassified!
+0::! !
+createNestedClassAccessorFrom:within:!
+86655005!
+unclassified!
+0::! !
+classNode:!
+86637035!
+unclassified!
+0:! !
+scopeMap:!
+86655914!
+unclassified!
+0:! !
+#comment!
+The compiler has three main entry points: compileClassSource:Within:, compileClassHeader: within: and compileMethodSource:within:. These compile an entire class declaration, a class header, and a method, respectively. 
+
+The compiler produces a .dlt file that contains the Strongtalk code. Internally, the compiler manufactures low-level mirror representing the results of compilation. These mirrors are then used to produce the output file.
+
+Compilation begins with parsing, followed by a pass on the resulting AST to compute the scope. The scope is stored as a shadow tree of the AST. Specifically, the slot scopeMap stores a dictionary mapping AST nodes to scopes. This mapping is computed by ScopeBuilder.
+
+Optimization note: 
+This can be optimized, so that we only compute the scope of a class side, and then use it as a basis for computing the scope of each method. This would prevent us from holding onto the scopes for all methods when compiling a class. Likewise, we can avoid holding onto the scopes of all nested classes. 
+** end note
+
+When compiling an individual method, we also rewrite its AST into a lower level AST, and submit that to the AST2SmalltalkCompiler, which produces Smalltalk code.  If we are compiling a class declaration or a class header, we compute the overall structure of the resulting mixin, including any required synthetic members.
+
+The NS2 implementation involves a considerable amount of synthetic code, dealing with accessors, nested classes, slot initialization, superclass initialization and the primary constructor. 
+
+The primary constructor induces a synthetic class method of the same name, which calls a synthetic  instance method of the same name on a freshly created instance. Within that instance method is the code for all the slot initializers, as well as the superclass constructor call. See processConstructorFor:inClass:.
+
+Once a mirror has been produced, the output* routines convert it into a .dlt file suitable as input to Strongtalk. Each class declaration is converted into a  subclass of NewspeakObject. NewspeakObject provides a class instance variable named metadata; in a defining class, the metadata holds information such as the enclosing mixin and nested mixins. 
+The output sets up this metadata to connect the different classes produced in accordance with the original nesting structure given by NS2.
+
+Nested classes are distinct for every instance of an outer class. Hence, every outer class has synthetic fields that hold the class objects for its nested classes. These fields are always accessed by a getter method which lazily initializes the field. The name of the getter method is the simple name of the inner class. The field, in contrast, is named X_slot, where X is the fully qualified name of the inner class' mixin. This is necessary to prevent it from clashing with nested classes with the same simple name elsewhere in the hierarchy. See accessorStringForNestedClassNamed:fullName:superName: .
+
+Classes have a class variable named EnclosingObjects_N, where N is the fully qualified name of the class. This variable holds an array of the classes enclosing objects wrt to its lexically enclosing class declaration D. The first element is the immediately enclosing object, the second, the 2nd enclosing object wrt D, etc. In general, the kth entry is the kth enclosing object wrt D.  The n+1st entry is nil.
+
+Classes also have a class variable named MixinMetadata_N (where, again, N is the fully qualified class name).  This variable points at the metadata of the mixin corresponding to the class. This metadata includes the nested mixins, which are needed to produce the nested classes of a given class. The accessors for nested classes produce these nested classes lazily, and make use of both class variables just described - the metadata to find the mixin they need to invoke, and the enclosing object array in order to set up the new class' enclosing objects.
+
+See AST2SmalltalkCompiler for more details.
+
+Limitations:
+
+The use of $_ as a synthtic name separator is problematic, as it can occur in legal Newspeak identifiers, and so clashes can occur. 
+
+We rely on access to the Strongtalk Mirror class. If a Newspeak class has a slot named Mirror, the scheme breaks down. We should access Mirror via a synthetic name.
+! !
+subInitializersFor:!
+86656262!
+unclassified!
+0:! !
+processInitializerFor:in:!
+86638077!
+unclassified!
+0::! !
+parserClass!
+86656652!
+unclassified!
+0! !
+slotNameForNestedClassNamed:within:!
+86638834!
+unclassified!
+0::! !
+compileNestedClassesOf:within:!
+86656827!
+unclassified!
+0::! !
+compileNestedClasses:within:!
+86619914!
+unclassified!
+0::! !
+accessorForNestedClassNamed:in:superName:!
+86639550!
+unclassified!
+0:::! !
+#group!
+newspeak! !
+scopeStack:!
+86622216!
+unclassified!
+0:! !
+currentDepth!
+86641436!
+unclassified!
+0! !
+Newspeak2StrongtalkCompilation_Compiler_superInit_new!
+86641594!
+unclassified!
+0! !
+popScope!
+86641806!
+unclassified!
+0! !
+ensureEnclosingObjectAccessFor:!
+86641983!
+unclassified!
+0:! !
+enclosingObjectMsgFor:!
+86642426!
+unclassified!
+0:! !
+literalTable!
+86642642!
+unclassified!
+0! !
+outputMethodsOf:to:!
+86625232!
+unclassified!
+0::! !
+compileClassSource:within:!
+86644863!
+unclassified!
+0::! !
+classHeaderNode:!
+86645866!
+unclassified!
+0:! !
+outputClass:to:!
+86646277!
+unclassified!
+0::! !
+Newspeak2StrongtalkCompilation_Compiler_1_init!
+86646565!
+unclassified!
+0! !
+currentScope!
+86647171!
+unclassified!
+0! !
+getInstanceVariables:!
+86657086!
+unclassified!
+0:! !
+scopeStack!
+86637923!
+unclassified!
+0! !
+generateSlotAccessorsFor:!
+86657340!
+unclassified!
+0:! !
+input:!
+86648521!
+unclassified!
+0:! !
+accessorForSuperclass:inScope:!
+86648688!
+unclassified!
+0::! !
+superAccessorStringFor:inClass:!
+86649994!
+unclassified!
+0::! !
+subinitializer:nameFor:!
+86632781!
+unclassified!
+0::! !
+#superclassTypeString!
+NewspeakObject! !
+superConstructorMethodFor:!
+86651426!
+unclassified!
+0:! !
+Rewriter!
+86652821!
+unclassified!
+0! !
+processConstructorFor:inMixin:!
+86653971!
+unclassified!
+0::! !
+selfNode!
+86636378!
+unclassified!
+0! !
+sourceForNode:!
+86654775!
+unclassified!
+0:! !
+processInstanceSideOf:ofMixin:!
+86636644!
+unclassified!
+0::! !
+methodCompiler!
+86618687!
+unclassified!
+0! !
+#instanceVariableString!
+ currentMixinUID Newspeak2StrongtalkCompilation_Compiler_Rewriter_slot literalTable Newspeak2StrongtalkCompilation_Compiler_MixinClassNode_slot scope rewriter currentDepth Newspeak2StrongtalkCompilation_Compiler_ScopeBuilder_slot Newspeak2StrongtalkCompilation_Compiler_AST2SmalltalkCompiler_slot scopeStack input scopeMap methodCompiler! !
+language!
+86656093!
+unclassified!
+0! !
+subInitializer:for:!
+86647496!
+unclassified!
+0::! !
+methodCompiler:!
+86638631!
+unclassified!
+0:! !
+scope!
+86639208!
+unclassified!
+0! !
+rewriter!
+86647346!
+unclassified!
+0! !
+outputClassMethodsOf:to:!
+86640804!
+unclassified!
+0::! !
+processFactoryFor:in:!
+86651025!
+unclassified!
+0::! !
+outputClassDecl:to:!
+86658198!
+unclassified!
+0::! !
+initializerFor:!
+86659316!
+unclassified!
+0:! !
+superConstructorCallFor:!
+86661122!
+unclassified!
+0:! !

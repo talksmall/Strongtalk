@@ -1,0 +1,231 @@
+Delta define: #Win32apiPROCESSINFORMATION as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiPROCESSINFORMATION EnclosingObjects_Win32apiPROCESSINFORMATION')!
+	(Delta mirrorFor: #Win32apiPROCESSINFORMATION) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiPROCESSINFORMATION) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiPROCESSINFORMATION) comment: 'http://msdn.microsoft.com/en-us/library/ms684873(VS.85).aspx
+
+typedef struct _PROCESS_INFORMATION {
+  HANDLE hProcess;
+  HANDLE hThread;
+  DWORD dwProcessId;
+  DWORD dwThreadId;
+} PROCESS_INFORMATION, 
+ *LPPROCESS_INFORMATION;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+	! (Delta mirrorFor: #Win32apiPROCESSINFORMATION) methodsFor: 'unclassified'!
+	 dwThreadIdOffset 
+
+^13.
+
+
+
+! 
+ hThreadOffset 
+
+^5.
+
+
+
+! 
+ dwProcessId 
+
+^ self unsignedLongAt: self dwProcessIdOffset.
+
+
+
+! 
+ hProcess 
+
+^ self unsignedLongAt: self hProcessOffset.
+
+
+
+! 
+ dwProcessId: newValue 
+
+ self  unsignedLongAt: self dwProcessIdOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ printOn: stream 
+
+super  printOn: stream.
+
+ stream cr.
+
+ stream nextPutAll:'typedef struct _PROCESS_INFORMATION {' stream crtab; 
+
+ nextPutAll:('hProcess: ' , self  hProcess printString).
+
+ stream crtab; 
+
+ nextPutAll:('hThread: ' , self  hThread printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwProcessId: ' , self  dwProcessId printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwThreadId: ' , self  dwThreadId printString).
+
+ stream cr; 
+
+ nextPutAll:'} PROCESS_INFORMATION;'.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiPROCESSINFORMATION_superInit_new.
+
+ self Win32apiPROCESSINFORMATION_1_init.
+
+^ self.
+
+
+
+! 
+ Win32apiPROCESSINFORMATION_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ Win32apiPROCESSINFORMATION_1_init 
+
+^ self.
+
+
+
+! 
+ hProcess: newValue 
+
+ self  unsignedLongAt: self hProcessOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ hProcessOffset 
+
+^1.
+
+
+
+! 
+ closeHandles 
+
+|  closeHandle  result |
+
+ closeHandle := self Alien  lookup:'CloseHandle' inLibrary:'kernel32.dll'.
+
+ result := self Alien new:4.
+
+ closeHandle  primFFICallResult: result with: self  hProcess.
+
+ closeHandle  primFFICallResult: result with: self  hThread.
+
+^ self.
+
+
+
+! 
+ hThread: newValue 
+
+ self  unsignedLongAt: self hThreadOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ dwProcessIdOffset 
+
+^9.
+
+
+
+! 
+ dwThreadId 
+
+^ self unsignedLongAt: self dwThreadIdOffset.
+
+
+
+! 
+ dwThreadId: newValue 
+
+ self  unsignedLongAt: self dwThreadIdOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ hThread 
+
+^ self unsignedLongAt: self hThreadOffset.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiPROCESSINFORMATION) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiPROCESSINFORMATION := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiPROCESSINFORMATION := mmd !
+	 dataSize 
+
+^16.
+
+
+
+! 
+		 fields 
+
+^( self Array new:4)  at:1 put:'hProcess'; 
+
+  at:2 put:'hThread'; 
+
+  at:3 put:'dwProcessId'; 
+
+  at:4 put:'dwThreadId'; 
+
+ yourself.
+
+
+
+! 
+		 typedefName 
+
+^'PROCESS_INFORMATION'.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiPROCESSINFORMATION enclosingObjects: (Array with: nil)!
+		Win32apiPROCESSINFORMATION metadata enclosingMixin: nil !
+		Win32apiPROCESSINFORMATION mixinMetadata: Win32apiPROCESSINFORMATION metadata !
+		

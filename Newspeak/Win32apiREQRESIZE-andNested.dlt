@@ -1,0 +1,102 @@
+Delta define: #Win32apiREQRESIZE as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiREQRESIZE EnclosingObjects_Win32apiREQRESIZE')!
+	(Delta mirrorFor: #Win32apiREQRESIZE) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiREQRESIZE) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiREQRESIZE) comment: 'The REQRESIZE structure contains the requested size of a rich edit control. A rich edit control sends this structure to its parent window as part of an EN_REQUESTRESIZE notification message.
+
+typedef struct _reqresize {
+    NMHDR nmhdr;
+    RECT rc;
+} REQRESIZE;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiREQRESIZE) methodsFor: 'unclassified'!
+	 asRectangle 
+
+^ self Rectangle  left: self  rcLeft right: self  rcRight top: self  rcTop bottom: self  rcBottom.
+
+
+
+! 
+ rcTop 
+
+^ self signedLongAt:17.
+
+
+
+! 
+ rcBottom 
+
+^ self signedLongAt:25.
+
+
+
+! 
+ rcLeft 
+
+^ self signedLongAt:13.
+
+
+
+! 
+ Win32apiREQRESIZE_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ rcRight 
+
+^ self signedLongAt:21.
+
+
+
+! 
+ Win32apiREQRESIZE_1_init 
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiREQRESIZE_superInit_new.
+
+ self Win32apiREQRESIZE_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiREQRESIZE) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiREQRESIZE := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiREQRESIZE := mmd !
+	 dataSize 
+
+^super  dataSize +16.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiREQRESIZE enclosingObjects: (Array with: nil)!
+		Win32apiREQRESIZE metadata enclosingMixin: nil !
+		Win32apiREQRESIZE mixinMetadata: Win32apiREQRESIZE metadata !
+		

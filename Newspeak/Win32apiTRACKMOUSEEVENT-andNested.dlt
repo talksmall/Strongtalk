@@ -1,0 +1,134 @@
+Delta define: #Win32apiTRACKMOUSEEVENT as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiTRACKMOUSEEVENT EnclosingObjects_Win32apiTRACKMOUSEEVENT')!
+	(Delta mirrorFor: #Win32apiTRACKMOUSEEVENT) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiTRACKMOUSEEVENT) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiTRACKMOUSEEVENT) comment: 'typedef struct tagTRACKMOUSEEVENT {
+    DWORD cbSize;
+    DWORD dwFlags;
+    HWND  hwndTrack;
+    DWORD dwHoverTime;
+} TRACKMOUSEEVENT, *LPTRACKMOUSEEVENT;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiTRACKMOUSEEVENT) methodsFor: 'unclassified'!
+	 hwndTrack 
+
+^ self unsignedLongAt:9.
+
+
+
+! 
+ Win32apiTRACKMOUSEEVENT_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ cbSize 
+
+^ self unsignedLongAt:1.
+
+
+
+! 
+ dwFlags: flags 
+
+^ self  unsignedLongAt:5 put: flags.
+
+
+
+! 
+ cbSize: size 
+
+^ self  unsignedLongAt:1 put: size.
+
+
+
+! 
+ dwHoverTime: time 
+
+^ self  unsignedLongAt:13 put: time.
+
+
+
+! 
+ dwFlags 
+
+^ self unsignedLongAt:5.
+
+
+
+! 
+ dwHoverTime 
+
+^ self unsignedLongAt:13.
+
+
+
+! 
+ hwndTrack: hwnd 
+
+^ self  unsignedLongAt:9 put: hwnd.
+
+
+
+! 
+ Win32apiTRACKMOUSEEVENT_1_init 
+
+^ self.
+
+
+
+! 
+ initialize 
+
+super  initialize.
+
+ self  cbSize: self class dataSize.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiTRACKMOUSEEVENT_superInit_new.
+
+ self Win32apiTRACKMOUSEEVENT_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiTRACKMOUSEEVENT) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiTRACKMOUSEEVENT := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiTRACKMOUSEEVENT := mmd !
+	 dataSize 
+
+^16.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiTRACKMOUSEEVENT enclosingObjects: (Array with: nil)!
+		Win32apiTRACKMOUSEEVENT metadata enclosingMixin: nil !
+		Win32apiTRACKMOUSEEVENT mixinMetadata: Win32apiTRACKMOUSEEVENT metadata !
+		

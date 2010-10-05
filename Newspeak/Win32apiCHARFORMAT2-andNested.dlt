@@ -1,0 +1,106 @@
+Delta define: #Win32apiCHARFORMAT2 as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiCHARFORMAT2 EnclosingObjects_Win32apiCHARFORMAT2')!
+	(Delta mirrorFor: #Win32apiCHARFORMAT2) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiCHARFORMAT2) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiCHARFORMAT2) comment: 'typedef struct _charformat2 {
+    UINT cbSize;
+    DWORD dwMask;
+    DWORD dwEffects;
+    LONG yHeight;
+    LONG yOffset;
+    COLORREF crTextColor;
+    BYTE bCharSet;
+    BYTE bPitchAndFamily;
+    TCHAR szFaceName[LF_FACESIZE];
+    WORD wWeight;
+    SHORT sSpacing;
+    COLORREF crBackColor;
+    LCID lcid;
+    DWORD dwReserved;
+    SHORT sStyle;
+    WORD wKerning;
+    BYTE bUnderlineType;
+    BYTE bAnimation;
+    BYTE bRevAuthor;
+    BYTE bReserved1;
+} CHARFORMAT2;'!
+	! (Delta mirrorFor: #Win32apiCHARFORMAT2) methodsFor: 'unclassified'!
+	 wWeight 
+
+^ self unsignedShortAt:59.
+
+
+
+! 
+ Win32apiCHARFORMAT2_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ crBackColor: newValue 
+
+^ self  unsignedLongAt:63 put: newValue.
+
+
+
+! 
+ sSpacing 
+
+^ self signedShortAt:61.
+
+
+
+! 
+ crBackColor 
+
+^ self unsignedLongAt:63.
+
+
+
+! 
+ Win32apiCHARFORMAT2_1_init 
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiCHARFORMAT2_superInit_new.
+
+ self Win32apiCHARFORMAT2_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiCHARFORMAT2) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiCHARFORMAT2 := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiCHARFORMAT2 := mmd !
+	 dataSize 
+
+^super  dataSize +24.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiCHARFORMAT2 enclosingObjects: (Array with: nil)!
+		Win32apiCHARFORMAT2 metadata enclosingMixin: nil !
+		Win32apiCHARFORMAT2 mixinMetadata: Win32apiCHARFORMAT2 metadata !
+		

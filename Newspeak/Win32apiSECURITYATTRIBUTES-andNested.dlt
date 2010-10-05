@@ -1,0 +1,198 @@
+Delta define: #Win32apiSECURITYATTRIBUTES as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiSECURITYATTRIBUTES EnclosingObjects_Win32apiSECURITYATTRIBUTES')!
+	(Delta mirrorFor: #Win32apiSECURITYATTRIBUTES) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiSECURITYATTRIBUTES) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiSECURITYATTRIBUTES) comment: 'http://msdn.microsoft.com/en-us/library/aa379560(VS.85).aspx
+
+typedef struct _SECURITY_ATTRIBUTES {
+  DWORD nLength;
+  LPVOID lpSecurityDescriptor;
+  BOOL bInheritHandle;
+} SECURITY_ATTRIBUTES, 
+ *PSECURITY_ATTRIBUTES, 
+ *LPSECURITY_ATTRIBUTES;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+	! (Delta mirrorFor: #Win32apiSECURITYATTRIBUTES) methodsFor: 'unclassified'!
+	 bInheritHandleOffset 
+
+^9.
+
+
+
+! 
+ lpSecurityDescriptor 
+
+^ self unsignedLongAt: self lpSecurityDescriptorOffset.
+
+
+
+! 
+ Win32apiSECURITYATTRIBUTES_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ nLengthOffset 
+
+^1.
+
+
+
+! 
+ nLength: newValue 
+
+ self  unsignedLongAt: self nLengthOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpSecurityDescriptorOffset 
+
+^5.
+
+
+
+! 
+ nLength 
+
+^ self unsignedLongAt: self nLengthOffset.
+
+
+
+! 
+ bInheritHandle: newValue 
+
+ self  boolAt: self bInheritHandleOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ Win32apiSECURITYATTRIBUTES_1_init 
+
+^ self.
+
+
+
+! 
+ lpSecurityDescriptor: newValue 
+
+ self  unsignedLongAt: self lpSecurityDescriptorOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ bInheritHandle 
+
+^ self boolAt: self bInheritHandleOffset.
+
+
+
+! 
+ printOn: stream 
+
+super  printOn: stream.
+
+ stream cr.
+
+ stream nextPutAll:'typedef struct _SECURITY_ATTRIBUTES {'.
+
+ stream crtab; 
+
+ nextPutAll:('nLength: ' , self  nLength printString).
+
+ stream crtab; 
+
+ nextPutAll:('lpSecurityDescriptor: ' , self  lpSecurityDescriptor printString).
+
+ stream crtab; 
+
+ nextPutAll:('bInheritHandle: ' , self  bInheritHandle printString).
+
+ stream cr; 
+
+ nextPutAll:'} SECURITY_ATTRIBUTES;'.
+
+^ self.
+
+
+
+! 
+ initialize 
+
+super  initialize.
+
+ self  nLength: self class dataSize.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiSECURITYATTRIBUTES_superInit_new.
+
+ self Win32apiSECURITYATTRIBUTES_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiSECURITYATTRIBUTES) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiSECURITYATTRIBUTES := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiSECURITYATTRIBUTES := mmd !
+	 dataSize 
+
+^12.
+
+
+
+! 
+		 fields 
+
+^( self Array new:3)  at:1 put:'nLength'; 
+
+  at:2 put:'lpSecurityDescriptor'; 
+
+  at:3 put:'bInheritHandle'; 
+
+ yourself.
+
+
+
+! 
+		 typedefName 
+
+^'SECURITY_ATTRIBUTES'.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiSECURITYATTRIBUTES enclosingObjects: (Array with: nil)!
+		Win32apiSECURITYATTRIBUTES metadata enclosingMixin: nil !
+		Win32apiSECURITYATTRIBUTES mixinMetadata: Win32apiSECURITYATTRIBUTES metadata !
+		

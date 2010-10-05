@@ -1,0 +1,356 @@
+Delta define: #MirrorGroups as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' MirrorGroups_ImmutableMirrorGroup_slot Collection Error Dictionary MirrorGroups_MirrorGroup_slot')
+	 classVariables: 'MixinMetadata_MirrorGroups EnclosingObjects_MirrorGroups')!
+	(Delta mirrorFor: #MirrorGroups) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #MirrorGroups) group: 'newspeak'!
+	(Delta mirrorFor: #MirrorGroups) comment: 'Mirror groups are designed to aggregate mirrors of any kind.
+They make the mirror API compositional and not too
+heavyweight.  Consider the API of an immutable mixin mirror:
+
+
+name
+methods
+slots
+classes
+
+the latter three all return mirror groups, which all share a common protocol:
+
+findMirrorNamed: #foo
+includesMirrorNamed: #foo
+do: blk
+
+In a more traditional API, we would need to support methods like:
+
+findMethodNamed: #foo
+findSlotNamed: #foo
+findClassNamed: #foo
+
+includesMethodNamed: #foo
+includesSlotNamed: #foo
+includesClassNamed: #foo
+
+methodsDo: blk
+slotsDo: blk
+classesDo: blk
+
+This means 3 times as many methods, which need to be kept consistent.
+When the mirror is mutable, the actual mixin API does not change much. The 
+implementation returns mutable mirror groups, which support:
+
+addMirror: aMirror
+addFromSource: aSourceString
+
+instead of having the mutable mixin support:
+
+addMethodMirror:
+addMethodFromSource:
+addSlotMirror:
+addSlotFromSource:
+addClassStencilMirror:
+addClassFromSource:
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+	! (Delta mirrorFor: #MirrorGroups) methodsFor: 'unclassified'!
+	MirrorGroup
+	| nestedClass enclosingObjectArray myNested depth |
+	MirrorGroups_MirrorGroup_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_MirrorGroups 
+			nestedMixins at: #MirrorGroups_MirrorGroup.
+		myNested := (nestedClass mixin |>  (MixinMetadata_MirrorGroups Mirror on: self  ImmutableMirrorGroup)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_MirrorGroups size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_MirrorGroups at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		MirrorGroups_MirrorGroup_slot := myNested.
+		].
+	^MirrorGroups_MirrorGroup_slot! 
+Dictionary: Dictionary_val Dictionary := Dictionary_val! 
+ MirrorGroups_superInit_usingLib: platform 
+
+super  new.
+
+^ self.
+
+
+
+! 
+Error: Error_val Error := Error_val! 
+ usingLib: platform 
+
+ self MirrorGroups_superInit_usingLib: platform.
+
+ self MirrorGroups_1_init: platform.
+
+^ self.
+
+
+
+! 
+Dictionary ^Dictionary! 
+Collection ^Collection! 
+Error ^Error! 
+ MirrorGroups_1_init: platform 
+
+ self Collection: platform Collections OrderedCollection.
+
+ self Dictionary: platform Collections Dictionary.
+
+ self Error: platform Exceptions Error.
+
+^ self.
+
+
+
+! 
+Collection: Collection_val Collection := Collection_val! 
+ImmutableMirrorGroup
+	| nestedClass enclosingObjectArray myNested depth |
+	MirrorGroups_ImmutableMirrorGroup_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_MirrorGroups 
+			nestedMixins at: #MirrorGroups_ImmutableMirrorGroup.
+		myNested := (nestedClass mixin |>  (MixinMetadata_MirrorGroups Mirror on: self Object)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_MirrorGroups size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_MirrorGroups at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		MirrorGroups_ImmutableMirrorGroup_slot := myNested.
+		].
+	^MirrorGroups_ImmutableMirrorGroup_slot! 
+ !
+	! (Delta mirrorFor: #MirrorGroups) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_MirrorGroups := eos !
+	mixinMetadata: mmd MixinMetadata_MirrorGroups := mmd !
+	 usingLib: platform 
+
+^ self basicNew usingLib: platform.
+
+
+
+! 
+		 !
+	MirrorGroups enclosingObjects: (Array with: nil)!
+		MirrorGroups metadata enclosingMixin: nil !
+		MirrorGroups mixinMetadata: MirrorGroups metadata !
+		Delta define: #MirrorGroups_ImmutableMirrorGroup as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' mirrors')
+	 classVariables: 'MixinMetadata_MirrorGroups_ImmutableMirrorGroup EnclosingObjects_MirrorGroups_ImmutableMirrorGroup')!
+	(Delta mirrorFor: #MirrorGroups_ImmutableMirrorGroup) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #MirrorGroups_ImmutableMirrorGroup) group: 'newspeak'!
+	(Delta mirrorFor: #MirrorGroups_ImmutableMirrorGroup) comment: 'Immutable mirror groups do not support adding or removing mirrors. They are created from an initial set of mirrors passed to the factory method.
+
+However, the API does include mutators, which all fail if called.  This allows them to provide good error messages when used in a context that might attempt to mutate them. An example would be a mutable mixin mirror that does not allow changes to its representation; it includes immutable mirror groups for its slots and classes, and a mutable mirror group for its methods.'!
+	! (Delta mirrorFor: #MirrorGroups_ImmutableMirrorGroup) methodsFor: 'unclassified'!
+	 removeMirror: m 
+
+^ (EnclosingObjects_MirrorGroups_ImmutableMirrorGroup at: 1)  Error signal:'Removng mirrors not allowed on an immutable mirror group!!'.
+
+
+
+! 
+ MirrorGroups_ImmutableMirrorGroup_superInit_group: ms 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ addFromSource: s 
+
+^ (EnclosingObjects_MirrorGroups_ImmutableMirrorGroup at: 1)  Error signal:'Adding mirrors not allowed on an immutable mirror group!!'.
+
+
+
+! 
+mirrors: mirrors_val mirrors := mirrors_val! 
+ group: ms 
+
+ self MirrorGroups_ImmutableMirrorGroup_superInit_group: ms.
+
+ self MirrorGroups_ImmutableMirrorGroup_1_init: ms.
+
+ ms do:[ : m | 
+
+ self  mirrors  at: m name put: m.
+
+].
+
+^ self.
+
+
+
+! 
+ includesMirrorNamed: n 
+
+^ self  mirrors includesKey: n.
+
+
+
+! 
+ collect: blk 
+
+^ self  mirrors values collect: blk.
+
+
+
+! 
+mirrors ^mirrors! 
+ select: blk 
+
+^ self  mirrors values select: blk.
+
+
+
+! 
+ detect: blk 
+
+^ self  mirrors values detect: blk.
+
+
+
+! 
+ findMirrorNamed: n 
+
+^ self  mirrors  at: n ifAbsent:[ 
+
+nil.
+
+].
+
+
+
+! 
+ MirrorGroups_ImmutableMirrorGroup_1_init: ms 
+
+ self mirrors: (EnclosingObjects_MirrorGroups_ImmutableMirrorGroup at: 1)  Dictionary new.
+
+^ self.
+
+
+
+! 
+ do: blk 
+
+ self  mirrors values do: blk.
+
+^ self.
+
+
+
+! 
+ addMirror: m 
+
+^ (EnclosingObjects_MirrorGroups_ImmutableMirrorGroup at: 1)  Error signal:'Adding mirrors not allowed on an immutable mirror group!!'.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #MirrorGroups_ImmutableMirrorGroup) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_MirrorGroups_ImmutableMirrorGroup := eos !
+	mixinMetadata: mmd MixinMetadata_MirrorGroups_ImmutableMirrorGroup := mmd !
+	 group: ms 
+
+^ self basicNew group: ms.
+
+
+
+! 
+		 !
+	MirrorGroups metadata addNestedClass: MirrorGroups_ImmutableMirrorGroup. ! 
+	MirrorGroups_ImmutableMirrorGroup metadata enclosingMixin: MirrorGroups !
+	Delta define: #MirrorGroups_MirrorGroup as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' parser')
+	 classVariables: 'MixinMetadata_MirrorGroups_MirrorGroup EnclosingObjects_MirrorGroups_MirrorGroup')!
+	(Delta mirrorFor: #MirrorGroups_MirrorGroup) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #MirrorGroups_MirrorGroup) group: 'newspeak'!
+	(Delta mirrorFor: #MirrorGroups_MirrorGroup) comment: 'A mutable mirror group; mirrors can be added or removed after its creation.'!
+	! (Delta mirrorFor: #MirrorGroups_MirrorGroup) methodsFor: 'unclassified'!
+	 MirrorGroups_MirrorGroup_1_init: ms 
+
+ self parser:nil.
+
+^ self.
+
+
+
+! 
+ MirrorGroups_MirrorGroup_superInit_group: ms 
+
+super  group: ms.
+
+^ self.
+
+
+
+! 
+parser: parser_val parser := parser_val! 
+ addFromSource: s 
+
+ self  addMirror:( self  parser parse: s).
+
+^ self.
+
+
+
+! 
+parser ^parser! 
+ group: ms 
+
+ self MirrorGroups_MirrorGroup_superInit_group: ms.
+
+ self MirrorGroups_MirrorGroup_1_init: ms.
+
+^ self.
+
+
+
+! 
+ addMirror: m 
+
+ self mirrors  at: m name put: m.
+
+^ self.
+
+
+
+! 
+ removeMirror: n 
+
+ self mirrors  removeKey: n asSymbol ifAbsent:[ 
+
+nil.
+
+].
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #MirrorGroups_MirrorGroup) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_MirrorGroups_MirrorGroup := eos !
+	mixinMetadata: mmd MixinMetadata_MirrorGroups_MirrorGroup := mmd !
+	 group: ms 
+
+^ self basicNew group: ms.
+
+
+
+! 
+		 !
+	MirrorGroups metadata addNestedClass: MirrorGroups_MirrorGroup. ! 
+	MirrorGroups_MirrorGroup metadata enclosingMixin: MirrorGroups !
+	

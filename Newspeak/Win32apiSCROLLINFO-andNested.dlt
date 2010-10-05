@@ -1,0 +1,184 @@
+Delta define: #Win32apiSCROLLINFO as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiSCROLLINFO EnclosingObjects_Win32apiSCROLLINFO')!
+	(Delta mirrorFor: #Win32apiSCROLLINFO) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiSCROLLINFO) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiSCROLLINFO) comment: 'typedef struct tagSCROLLINFO { 
+    UINT cbSize; 
+    UINT fMask; 
+    int  nMin; 
+    int  nMax; 
+    UINT nPage; 
+    int  nPos; 
+    int  nTrackPos; 
+}   SCROLLINFO, *LPSCROLLINFO;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiSCROLLINFO) methodsFor: 'unclassified'!
+	 nMin 
+
+^ self signedLongAt:9.
+
+
+
+! 
+ nPos: value 
+
+ self  signedLongAt:21 put: value.
+
+^ self.
+
+
+
+! 
+ nPage 
+
+^ self unsignedLongAt:17.
+
+
+
+! 
+ Win32apiSCROLLINFO_1_init 
+
+^ self.
+
+
+
+! 
+ nPage: value 
+
+ self  unsignedLongAt:17 put: value.
+
+^ self.
+
+
+
+! 
+ nPos 
+
+^ self signedLongAt:21.
+
+
+
+! 
+ initialize 
+
+ self  cbSize: self class dataSize.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiSCROLLINFO_superInit_new.
+
+ self Win32apiSCROLLINFO_1_init.
+
+^ self.
+
+
+
+! 
+ fMask: value 
+
+ self  unsignedLongAt:5 put: value.
+
+^ self.
+
+
+
+! 
+ nMax 
+
+^ self signedLongAt:13.
+
+
+
+! 
+ nTrackPos: value 
+
+ self  signedLongAt:25 put: value.
+
+^ self.
+
+
+
+! 
+ nMax: value 
+
+ self  signedLongAt:13 put: value.
+
+^ self.
+
+
+
+! 
+ cbSize: value 
+
+ self  unsignedLongAt:1 put: value.
+
+^ self.
+
+
+
+! 
+ nMin: value 
+
+ self  signedLongAt:9 put: value.
+
+^ self.
+
+
+
+! 
+ fMask 
+
+^ self unsignedLongAt:5.
+
+
+
+! 
+ Win32apiSCROLLINFO_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ nTrackPos 
+
+^ self signedLongAt:25.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiSCROLLINFO) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiSCROLLINFO := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiSCROLLINFO := mmd !
+	 dataSize 
+
+^28.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiSCROLLINFO enclosingObjects: (Array with: nil)!
+		Win32apiSCROLLINFO metadata enclosingMixin: nil !
+		Win32apiSCROLLINFO mixinMetadata: Win32apiSCROLLINFO metadata !
+		

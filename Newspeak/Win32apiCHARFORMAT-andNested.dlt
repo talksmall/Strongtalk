@@ -1,0 +1,218 @@
+Delta define: #Win32apiCHARFORMAT as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiCHARFORMAT EnclosingObjects_Win32apiCHARFORMAT')!
+	(Delta mirrorFor: #Win32apiCHARFORMAT) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiCHARFORMAT) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiCHARFORMAT) comment: 'typedef struct _charformat {
+    UINT cbSize;
+    DWORD dwMask;
+    DWORD dwEffects;
+    LONG yHeight;
+    LONG yOffset;
+    COLORREF crTextColor;
+    BYTE bCharSet;
+    BYTE bPitchAndFamily;
+    TCHAR szFaceName[LF_FACESIZE];
+} CHARFORMAT;
+#define LF_FACESIZE 32
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiCHARFORMAT) methodsFor: 'unclassified'!
+	 yOffset: newValue 
+
+^ self  signedLongAt:17 put: newValue.
+
+
+
+! 
+ bCharSet: newValue 
+
+^ self  unsignedByteAt:25 put: newValue.
+
+
+
+! 
+ Win32apiCHARFORMAT_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ crTextColor: newValue 
+
+^ self  unsignedLongAt:21 put: newValue.
+
+
+
+! 
+ cbSize: theSize 
+
+^ self  signedLongAt:1 put: theSize.
+
+
+
+! 
+ cbSize 
+
+^ self signedLongAt:1.
+
+
+
+! 
+ dwMask: newValue 
+
+ self  unsignedLongAt:5 put: newValue.
+
+^ self.
+
+
+
+! 
+ setDwEffectsBits: bits 
+
+ self  dwEffects:( self  dwEffects | bits).
+
+^ self.
+
+
+
+! 
+ Win32apiCHARFORMAT_1_init 
+
+^ self.
+
+
+
+! 
+ crTextColor 
+
+^ self unsignedLongAt:21.
+
+
+
+! 
+ dwMask 
+
+^ self unsignedLongAt:5.
+
+
+
+! 
+ yOffset 
+
+^ self signedLongAt:17.
+
+
+
+! 
+ new 
+
+ self Win32apiCHARFORMAT_superInit_new.
+
+ self Win32apiCHARFORMAT_1_init.
+
+^ self.
+
+
+
+! 
+ setDwMaskBits: bits 
+
+ self  dwMask:( self  dwMask | bits).
+
+^ self.
+
+
+
+! 
+ yHeight 
+
+^ self signedLongAt:13.
+
+
+
+! 
+ bPitchAndFamily: newValue 
+
+^ self  unsignedByteAt:26 put: newValue.
+
+
+
+! 
+ bCharSet 
+
+^ self unsignedByteAt:25.
+
+
+
+! 
+ dwEffects: newValue 
+
+ self  unsignedLongAt:9 put: newValue.
+
+^ self.
+
+
+
+! 
+ bPitchAndFamily 
+
+^ self unsignedByteAt:26.
+
+
+
+! 
+ yHeight: newValue 
+
+^ self  signedLongAt:13 put: newValue.
+
+
+
+! 
+ initialize 
+
+super  initialize.
+
+ self  cbSize: self class dataSize.
+
+^ self.
+
+
+
+! 
+ dwEffects 
+
+^ self unsignedLongAt:9.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiCHARFORMAT) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiCHARFORMAT := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiCHARFORMAT := mmd !
+	 dataSize 
+
+^6 *4 +4 +32.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiCHARFORMAT enclosingObjects: (Array with: nil)!
+		Win32apiCHARFORMAT metadata enclosingMixin: nil !
+		Win32apiCHARFORMAT mixinMetadata: Win32apiCHARFORMAT metadata !
+		

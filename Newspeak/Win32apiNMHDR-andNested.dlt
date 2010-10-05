@@ -1,0 +1,87 @@
+Delta define: #Win32apiNMHDR as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiNMHDR EnclosingObjects_Win32apiNMHDR')!
+	(Delta mirrorFor: #Win32apiNMHDR) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiNMHDR) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiNMHDR) comment: 'typedef struct tagNMHDR {
+    HWND hwndFrom;
+    UINT_PTR idFrom;
+    UINT code;
+} NMHDR;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiNMHDR) methodsFor: 'unclassified'!
+	 Win32apiNMHDR_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ idFrom 
+
+^ self unsignedLongAt:5.
+
+
+
+! 
+ Win32apiNMHDR_1_init 
+
+^ self.
+
+
+
+! 
+ hwndFrom 
+
+^ self unsignedLongAt:1.
+
+
+
+! 
+ code 
+
+^ self unsignedLongAt:9.
+
+
+
+! 
+ new 
+
+ self Win32apiNMHDR_superInit_new.
+
+ self Win32apiNMHDR_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiNMHDR) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiNMHDR := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiNMHDR := mmd !
+	 dataSize 
+
+^12.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiNMHDR enclosingObjects: (Array with: nil)!
+		Win32apiNMHDR metadata enclosingMixin: nil !
+		Win32apiNMHDR mixinMetadata: Win32apiNMHDR metadata !
+		

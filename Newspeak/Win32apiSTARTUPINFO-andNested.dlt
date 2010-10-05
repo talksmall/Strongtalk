@@ -1,0 +1,639 @@
+Delta define: #Win32apiSTARTUPINFO as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiSTARTUPINFO EnclosingObjects_Win32apiSTARTUPINFO')!
+	(Delta mirrorFor: #Win32apiSTARTUPINFO) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiSTARTUPINFO) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiSTARTUPINFO) comment: 'http://msdn.microsoft.com/en-us/library/ms686331(VS.85).aspx
+
+typedef struct _STARTUPINFO {
+  DWORD cb;
+  LPTSTR lpReserved;
+  LPTSTR lpDesktop;
+  LPTSTR lpTitle;
+  DWORD dwX;
+  DWORD dwY;
+  DWORD dwXSize;
+  DWORD dwYSize;
+  DWORD dwXCountChars;
+  DWORD dwYCountChars;
+  DWORD dwFillAttribute;
+  DWORD dwFlags;
+  WORD wShowWindow;
+  WORD cbReserved2;
+  LPBYTE lpReserved2;
+  HANDLE hStdInput;
+  HANDLE hStdOutput;
+  HANDLE hStdError;
+} STARTUPINFO, 
+ *LPSTARTUPINFO;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+	! (Delta mirrorFor: #Win32apiSTARTUPINFO) methodsFor: 'unclassified'!
+	 dwXSizeOffset 
+
+^25.
+
+
+
+! 
+ dwYCountChars 
+
+^ self unsignedLongAt: self dwYCountCharsOffset.
+
+
+
+! 
+ wShowWindow 
+
+^ self unsignedLongAt: self wShowWindowOffset.
+
+
+
+! 
+ dwXSize 
+
+^ self unsignedLongAt: self dwXSizeOffset.
+
+
+
+! 
+ dwFlags: newValue 
+
+ self  unsignedLongAt: self dwFlagsOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ dwYCountChars: newValue 
+
+ self  unsignedLongAt: self dwYCountCharsOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ dwXCountChars 
+
+^ self unsignedLongAt: self dwXCountCharsOffset.
+
+
+
+! 
+ dwFillAttribute 
+
+^ self unsignedLongAt: self dwFillAttributeOffset.
+
+
+
+! 
+ hStdErrorOffset 
+
+^65.
+
+
+
+! 
+ lpDesktopOffset 
+
+^9.
+
+
+
+! 
+ dwYSizeOffset 
+
+^29.
+
+
+
+! 
+ dwYSize: newValue 
+
+ self  unsignedLongAt: self dwYSizeOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ Win32apiSTARTUPINFO_1_init 
+
+^ self.
+
+
+
+! 
+ dwX: newValue 
+
+ self  unsignedLongAt: self dwXOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiSTARTUPINFO_superInit_new.
+
+ self Win32apiSTARTUPINFO_1_init.
+
+^ self.
+
+
+
+! 
+ hStdError: newValue 
+
+ self  unsignedLongAt: self hStdErrorOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ dwFlagsOffset 
+
+^45.
+
+
+
+! 
+ cbReserved2Offset 
+
+^51.
+
+
+
+! 
+ hStdInput 
+
+^ self unsignedLongAt: self hStdInputOffset.
+
+
+
+! 
+ cbReserved2: newValue 
+
+ self  unsignedLongAt: self cbReserved2Offset put: newValue.
+
+^ self.
+
+
+
+! 
+ dwXCountChars: newValue 
+
+ self  unsignedLongAt: self dwXCountCharsOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpReserved: newValue 
+
+ self  unsignedLongAt: self lpReservedOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ Win32apiSTARTUPINFO_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ dwXOffset 
+
+^17.
+
+
+
+! 
+ cbOffset 
+
+^1.
+
+
+
+! 
+ cb 
+
+^ self unsignedLongAt: self cbOffset.
+
+
+
+! 
+ lpTitle 
+
+^ self unsignedLongAt: self lpTitleOffset.
+
+
+
+! 
+ dwYCountCharsOffset 
+
+^37.
+
+
+
+! 
+ printOn: stream 
+
+super  printOn: stream.
+
+ stream cr.
+
+ stream nextPutAll:'typedef struct _STARTUPINFO {' stream crtab; 
+
+ nextPutAll:('cb: ' , self  cb printString).
+
+ stream crtab; 
+
+ nextPutAll:('lpReserved: ' , self  lpReserved printString).
+
+ stream crtab; 
+
+ nextPutAll:('lpDesktop: ' , self  lpDesktop printString).
+
+ stream crtab; 
+
+ nextPutAll:('lpTitle: ' , self  lpTitle printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwX: ' , self  dwX printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwY: ' , self  dwY printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwXSize: ' , self  dwXSize printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwYSize: ' , self  dwYSize printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwXCountChars: ' , self  dwXCountChars printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwYCountChars: ' , self  dwYCountChars printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwFillAttribute: ' , self  dwFillAttribute printString).
+
+ stream crtab; 
+
+ nextPutAll:('dwFlags: ' , self  dwFlags printString).
+
+ stream crtab; 
+
+ nextPutAll:('wShowWindow: ' , self  wShowWindow printString).
+
+ stream crtab; 
+
+ nextPutAll:('lpReserved2: ' , self  lpReserved2 printString).
+
+ stream crtab; 
+
+ nextPutAll:('hStdInput: ' , self  hStdInput printString).
+
+ stream crtab; 
+
+ nextPutAll:('hStdOutput: ' , self  hStdOutput printString).
+
+ stream crtab; 
+
+ nextPutAll:('hStdError: ' , self  hStdError printString).
+
+ stream cr; 
+
+ nextPutAll:'} STARTUPINFO;'.
+
+^ self.
+
+
+
+! 
+ lpDesktop 
+
+^ self unsignedLongAt: self lpDesktopOffset.
+
+
+
+! 
+ hStdOutputOffset 
+
+^61.
+
+
+
+! 
+ wShowWindow: newValue 
+
+ self  unsignedLongAt: self wShowWindowOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ hStdOutput: newValue 
+
+ self  unsignedLongAt: self hStdOutputOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ dwYOffset 
+
+^21.
+
+
+
+! 
+ lpTitleOffset 
+
+^13.
+
+
+
+! 
+ dwFillAttribute: newValue 
+
+ self  unsignedLongAt: self dwFillAttributeOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpReservedOffset 
+
+^5.
+
+
+
+! 
+ lpReserved2Offset 
+
+^53.
+
+
+
+! 
+ hStdError 
+
+^ self unsignedLongAt: self hStdErrorOffset.
+
+
+
+! 
+ dwXSize: newValue 
+
+ self  unsignedLongAt: self dwXSizeOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ hStdInputOffset 
+
+^57.
+
+
+
+! 
+ lpReserved 
+
+^ self unsignedLongAt: self lpReservedOffset.
+
+
+
+! 
+ initialize 
+
+super  initialize.
+
+ self  cb: self class dataSize.
+
+^ self.
+
+
+
+! 
+ cbReserved2 
+
+^ self unsignedLongAt: self cbReserved2Offset.
+
+
+
+! 
+ lpDesktop: newValue 
+
+ self  unsignedLongAt: self lpDesktopOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ cb: newValue 
+
+ self  unsignedLongAt: self cbOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpReserved2: newValue 
+
+ self  unsignedLongAt: self lpReserved2Offset put: newValue.
+
+^ self.
+
+
+
+! 
+ dwFlags 
+
+^ self unsignedLongAt: self dwFlagsOffset.
+
+
+
+! 
+ dwYSize 
+
+^ self unsignedLongAt: self dwYSizeOffset.
+
+
+
+! 
+ wShowWindowOffset 
+
+^49.
+
+
+
+! 
+ dwX 
+
+^ self unsignedLongAt: self dwXOffset.
+
+
+
+! 
+ dwY: newValue 
+
+ self  unsignedLongAt: self dwYOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpTitle: newValue 
+
+ self  unsignedLongAt: self lpTitleOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ hStdInput: newValue 
+
+ self  unsignedLongAt: self hStdInputOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ dwY 
+
+^ self unsignedLongAt: self dwYOffset.
+
+
+
+! 
+ dwFillAttributeOffset 
+
+^41.
+
+
+
+! 
+ dwXCountCharsOffset 
+
+^33.
+
+
+
+! 
+ hStdOutput 
+
+^ self unsignedLongAt: self hStdOutputOffset.
+
+
+
+! 
+ lpReserved2 
+
+^ self unsignedLongAt: self lpReserved2Offset.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiSTARTUPINFO) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiSTARTUPINFO := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiSTARTUPINFO := mmd !
+	 dataSize 
+
+^68.
+
+
+
+! 
+		 fields 
+
+^( self Array new:17)  at:1 put:'cb'; 
+
+  at:2 put:'lpReserved'; 
+
+  at:3 put:'lpDesktop'; 
+
+  at:4 put:'lpTitle'; 
+
+  at:5 put:'dwX'; 
+
+  at:6 put:'dwY'; 
+
+  at:7 put:'dwXSize'; 
+
+  at:8 put:'dwYSize'; 
+
+  at:9 put:'dwXCountChars'; 
+
+  at:10 put:'dwYCountChars'; 
+
+  at:11 put:'dwFillAttribute'; 
+
+  at:12 put:'dwFlags'; 
+
+  at:13 put:'wShowWindow'; 
+
+  at:14 put:'lpReserved2'; 
+
+  at:15 put:'hStdInput'; 
+
+  at:16 put:'hStdOutput'; 
+
+  at:17 put:'hStdError'; 
+
+ yourself.
+
+
+
+! 
+		 typedefName 
+
+^'STARTUPINFO'.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiSTARTUPINFO enclosingObjects: (Array with: nil)!
+		Win32apiSTARTUPINFO metadata enclosingMixin: nil !
+		Win32apiSTARTUPINFO mixinMetadata: Win32apiSTARTUPINFO metadata !
+		

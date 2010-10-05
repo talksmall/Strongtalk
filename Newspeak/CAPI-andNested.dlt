@@ -1,0 +1,1059 @@
+Delta define: #CAPI as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' CAPI_CFunction_slot CAPI_CMacro_slot libraries Callback CAPI_CLibrary_slot OrderedCollection Dictionary exportedFunctions Alien')
+	 classVariables: 'MixinMetadata_CAPI EnclosingObjects_CAPI')!
+	(Delta mirrorFor: #CAPI) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #CAPI) group: 'newspeak'!
+	(Delta mirrorFor: #CAPI) comment: 'The generic C language API module. Defines classes for modeling C language artifacts and the facilities for accessing the artifacts.
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #CAPI) methodsFor: 'unclassified'!
+	Callback: Callback_val Callback := Callback_val! 
+Alien: Alien_val Alien := Alien_val! 
+Dictionary: Dictionary_val Dictionary := Dictionary_val! 
+ platform: platform 
+
+ self CAPI_superInit_platform: platform.
+
+ self CAPI_1_init: platform.
+
+^ self.
+
+
+
+! 
+  exportFunction: function as: name 
+
+ self  exportedFunctions  at: name put: function.
+
+^ self.
+
+
+
+! 
+libraries ^libraries! 
+CMacro
+	| nestedClass enclosingObjectArray myNested depth |
+	CAPI_CMacro_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_CAPI 
+			nestedMixins at: #CAPI_CMacro.
+		myNested := (nestedClass mixin |>  (MixinMetadata_CAPI Mirror on: self Object)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_CAPI size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_CAPI at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		CAPI_CMacro_slot := myNested.
+		].
+	^CAPI_CMacro_slot! 
+Callback ^Callback! 
+Alien ^Alien! 
+ bits: selectors 
+
+^ selectors  inject:0 into:[ : mask : each | 
+
+ mask bitOr:( self perform: each).
+
+].
+
+
+
+! 
+libraries: libraries_val libraries := libraries_val! 
+exportedFunctions ^exportedFunctions! 
+CFunction
+	| nestedClass enclosingObjectArray myNested depth |
+	CAPI_CFunction_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_CAPI 
+			nestedMixins at: #CAPI_CFunction.
+		myNested := (nestedClass mixin |>  (MixinMetadata_CAPI Mirror on: self Object)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_CAPI size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_CAPI at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		CAPI_CFunction_slot := myNested.
+		].
+	^CAPI_CFunction_slot! 
+OrderedCollection: OrderedCollection_val OrderedCollection := OrderedCollection_val! 
+ resetForNewImageSession 
+
+ self  libraries do:[ : each | 
+
+ each resetForNewImageSession.
+
+].
+
+^ self.
+
+
+
+! 
+ exportFunction: function 
+
+ self   exportFunction: function as: function name.
+
+^ self.
+
+
+
+! 
+ CAPI_superInit_platform: platform 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ addLibrary: library 
+
+ self  libraries add: library.
+
+ library exportFunctionsTo: self.
+
+^ self.
+
+
+
+! 
+Dictionary ^Dictionary! 
+ CAPI_1_init: platform 
+
+ self Alien: platform NsFFI Alien.
+
+ self Callback: platform NsFFI Callback.
+
+ self Dictionary: platform Collections Dictionary.
+
+ self OrderedCollection: platform Collections OrderedCollection.
+
+ self libraries: self  OrderedCollection new.
+
+ self exportedFunctions:( self  Dictionary new:100).
+
+^ self.
+
+
+
+! 
+ addLibraryNoImport: library 
+
+ self  libraries add: library.
+
+^ self.
+
+
+
+! 
+OrderedCollection ^OrderedCollection! 
+ doesNotUnderstand: message 
+
+(( self  exportedFunctions includesKey: message selector) and:[ 
+
+ message arguments isEmpty.
+
+]) ifTrue:[ 
+
+^ self  exportedFunctions at: message selector.
+
+].
+
+^super  doesNotUnderstand: message.
+
+
+
+! 
+exportedFunctions: exportedFunctions_val exportedFunctions := exportedFunctions_val! 
+CLibrary
+	| nestedClass enclosingObjectArray myNested depth |
+	CAPI_CLibrary_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_CAPI 
+			nestedMixins at: #CAPI_CLibrary.
+		myNested := (nestedClass mixin |>  (MixinMetadata_CAPI Mirror on: self Object)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_CAPI size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_CAPI at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		CAPI_CLibrary_slot := myNested.
+		].
+	^CAPI_CLibrary_slot! 
+ !
+	! (Delta mirrorFor: #CAPI) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_CAPI := eos !
+	mixinMetadata: mmd MixinMetadata_CAPI := mmd !
+	 platform: platform 
+
+^ self basicNew platform: platform.
+
+
+
+! 
+		 !
+	CAPI enclosingObjects: (Array with: nil)!
+		CAPI metadata enclosingMixin: nil !
+		CAPI mixinMetadata: CAPI metadata !
+		Delta define: #CAPI_CLibrary as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' dllName alien functions')
+	 classVariables: 'MixinMetadata_CAPI_CLibrary EnclosingObjects_CAPI_CLibrary')!
+	(Delta mirrorFor: #CAPI_CLibrary) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #CAPI_CLibrary) group: 'newspeak'!
+	(Delta mirrorFor: #CAPI_CLibrary) comment: 'Represents an external dynamically linked library.'!
+	! (Delta mirrorFor: #CAPI_CLibrary) methodsFor: 'unclassified'!
+	dllName: dllName_val dllName := dllName_val! 
+ unlink 
+
+ self  alien notNil ifTrue:[ 
+
+ self  alien free.
+
+ self  alien:nil.
+
+].
+
+^ self.
+
+
+
+! 
+alien: alien_val alien := alien_val! 
+  functionNamed: functionName argc: argc 
+
+^ self  functions  at: functionName ifAbsentPut:[ 
+
+ self  functionClass  library: self name: functionName argc: argc.
+
+].
+
+
+
+! 
+functions: functions_val functions := functions_val! 
+functions ^functions! 
+ exportFunctionsTo: capi 
+
+^ self.
+
+
+
+! 
+alien ^alien! 
+ resetForNewImageSession 
+
+ self  alien:nil.
+
+ self  functions do:[ : each | 
+
+ each resetForNewImageSession.
+
+].
+
+^ self.
+
+
+
+! 
+ functionClass 
+
+^ (EnclosingObjects_CAPI_CLibrary at: 1)  CFunction.
+
+
+
+! 
+ CAPI_CLibrary_superInit_name: theName 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ isLinked 
+
+^ self  alien notNil.
+
+
+
+! 
+ ensureLinkage 
+
+ self  alien ifNil:[ 
+
+ self  alien: self  createAlien.
+
+].
+
+^ self.
+
+
+
+! 
+ name: theName 
+
+ self CAPI_CLibrary_superInit_name: theName.
+
+ self CAPI_CLibrary_1_init: theName.
+
+^ self.
+
+
+
+! 
+dllName ^dllName! 
+ linkFunction: symbol 
+
+ self  ensureLinkage.
+
+^( (EnclosingObjects_CAPI_CLibrary at: 1)  Alien new:4)  unsignedLongAt:1 put:( self  alien primFindSymbol: symbol); 
+
+ yourself.
+
+
+
+! 
+ createAlien 
+
+^( (EnclosingObjects_CAPI_CLibrary at: 1)  Alien new:4)  unsignedLongAt:1 put:( (EnclosingObjects_CAPI_CLibrary at: 1)  Alien primLoadLibrary: self  dllName); 
+
+ yourself.
+
+
+
+! 
+ CAPI_CLibrary_1_init: theName 
+
+ self dllName: theName.
+
+ self functions: (EnclosingObjects_CAPI_CLibrary at: 1)  Dictionary new.
+
+ self alien:nil.
+
+^ self.
+
+
+
+! 
+ api 
+
+^ (EnclosingObjects_CAPI_CLibrary at: 1) .
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #CAPI_CLibrary) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_CAPI_CLibrary := eos !
+	mixinMetadata: mmd MixinMetadata_CAPI_CLibrary := mmd !
+	 name: theName 
+
+^ self basicNew name: theName.
+
+
+
+! 
+		 !
+	CAPI metadata addNestedClass: CAPI_CLibrary. ! 
+	CAPI_CLibrary metadata enclosingMixin: CAPI !
+	Delta define: #CAPI_CMacro as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' expansion name')
+	 classVariables: 'MixinMetadata_CAPI_CMacro EnclosingObjects_CAPI_CMacro')!
+	(Delta mirrorFor: #CAPI_CMacro) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #CAPI_CMacro) group: 'newspeak'!
+	(Delta mirrorFor: #CAPI_CMacro) comment: 'Represents a C macro. For now, we expect that expansion is a single Integer value.'!
+	! (Delta mirrorFor: #CAPI_CMacro) methodsFor: 'unclassified'!
+	  name: theName expansion: tokens 
+
+ self  CAPI_CMacro_superInit_name: theName expansion: tokens.
+
+ self  CAPI_CMacro_1_init_name: theName expansion: tokens.
+
+^ self.
+
+
+
+! 
+  CAPI_CMacro_superInit_name: theName expansion: tokens 
+
+super  new.
+
+^ self.
+
+
+
+! 
+name: name_val name := name_val! 
+  CAPI_CMacro_1_init_name: theName expansion: tokens 
+
+ self name: theName.
+
+ self expansion: tokens.
+
+^ self.
+
+
+
+! 
+expansion: expansion_val expansion := expansion_val! 
+expansion ^expansion! 
+ value 
+
+|  head |
+
+ head := self  expansion first.
+
+ head isNumber ifFalse:[ 
+
+ self error:'expansion is not a number'.
+
+].
+
+^ head.
+
+
+
+! 
+ api 
+
+^ (EnclosingObjects_CAPI_CMacro at: 1) .
+
+
+
+! 
+name ^name! 
+ !
+	! (Delta mirrorFor: #CAPI_CMacro) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_CAPI_CMacro := eos !
+	mixinMetadata: mmd MixinMetadata_CAPI_CMacro := mmd !
+	  name: theName expansion: tokens 
+
+^ self basicNew  name: theName expansion: tokens.
+
+
+
+! 
+		  name: name value: value 
+
+^ self  name: name expansion:(( self Array new:1)  at:1 put: value; 
+
+ yourself).
+
+
+
+! 
+		 !
+	CAPI metadata addNestedClass: CAPI_CMacro. ! 
+	CAPI_CMacro metadata enclosingMixin: CAPI !
+	Delta define: #CAPI_CFunction as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' alien library argc name')
+	 classVariables: 'MixinMetadata_CAPI_CFunction EnclosingObjects_CAPI_CFunction')!
+	(Delta mirrorFor: #CAPI_CFunction) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #CAPI_CFunction) group: 'newspeak'!
+	(Delta mirrorFor: #CAPI_CFunction) comment: 'Represents a C function.'!
+	! (Delta mirrorFor: #CAPI_CFunction) methodsFor: 'unclassified'!
+	  signedValue: arg1 value: arg2 
+
+^( self   value: arg1 value: arg2) asSignedLong.
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 
+
+|  result |
+
+ self  argc =9 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:9.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4 with: arg5 with: arg6 with: arg7 with: arg8 with: arg9.
+
+^ result.
+
+
+
+! 
+argc: argc_val argc := argc_val! 
+  value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 
+
+|  result |
+
+ self  argc =6 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:6.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4 with: arg5 with: arg6.
+
+^ result.
+
+
+
+! 
+  unsignedValue: arg1 value: arg2 value: arg3 
+
+^( self   value: arg1 value: arg2 value: arg3) asUnsignedLong.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4) asSignedLong.
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 
+
+|  result |
+
+ self  argc =10 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:10.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4 with: arg5 with: arg6 with: arg7 with: arg8 with: arg9 with: arg10.
+
+^ result.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 
+
+^( self   value: arg1 value: arg2 value: arg3) asSignedLong.
+
+
+
+! 
+ value 
+
+|  result |
+
+ self  argc =0 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:0.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien primFFICallResult: result.
+
+^ result.
+
+
+
+! 
+alien ^alien! 
+ unsignedValueWithArguments: args 
+
+^( self  valueWithArguments: args) asUnsignedLong.
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 
+
+|  result |
+
+ self  argc =7 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:7.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4 with: arg5 with: arg6 with: arg7.
+
+^ result.
+
+
+
+! 
+ resetForNewImageSession 
+
+ self  alien:nil.
+
+^ self.
+
+
+
+! 
+argc ^argc! 
+ reportIncorrectNumberOfArguments: argumentsGiven 
+
+ self error:( self  name ,': incorrect number of arguments (' , argumentsGiven printString ,' instead of ' , self  argc printString ,')').
+
+^ self.
+
+
+
+! 
+name ^name! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7) asUnsignedLong.
+
+
+
+! 
+ isLinked 
+
+^ self alen notNil.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8) asSignedLong.
+
+
+
+! 
+ signedValue: arg 
+
+^( self  value: arg) asSignedLong.
+
+
+
+! 
+ ensureLinkage 
+
+ self  alien ifNil:[ 
+
+ self  alien:( self  library linkFunction: self  name).
+
+].
+
+^ self.
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 
+
+|  result |
+
+ self  argc =5 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:5.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4 with: arg5.
+
+^ result.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5) asSignedLong.
+
+
+
+! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5) asUnsignedLong.
+
+
+
+! 
+library ^library! 
+ value: arg 
+
+|  result |
+
+ self  argc =1 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:1.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg.
+
+^ result.
+
+
+
+! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10) asUnsignedLong.
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 
+
+|  result |
+
+ self  argc =8 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:8.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4 with: arg5 with: arg6 with: arg7 with: arg8.
+
+^ result.
+
+
+
+! 
+ unsignedValue: arg 
+
+^( self  value: arg) asUnsignedLong.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9) asSignedLong.
+
+
+
+! 
+  value: arg1 value: arg2 
+
+|  result |
+
+ self  argc =2 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:2.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2.
+
+^ result.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6) asSignedLong.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7) asSignedLong.
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 
+
+|  result |
+
+ self  argc =3 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:3.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3.
+
+^ result.
+
+
+
+! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9) asUnsignedLong.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11) asSignedLong.
+
+
+
+! 
+  CAPI_CFunction_1_init_library: theLibrary name: theName argc: numArgs 
+
+ self library: theLibrary.
+
+ self name: theName.
+
+ self argc: numArgs.
+
+ self alien:nil.
+
+^ self.
+
+
+
+! 
+name: name_val name := name_val! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8) asUnsignedLong.
+
+
+
+! 
+alien: alien_val alien := alien_val! 
+ unsignedValue 
+
+^ self  value asUnsignedLong.
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 value: arg4 
+
+|  result |
+
+ self  argc =4 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:4.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4.
+
+^ result.
+
+
+
+! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11 value: arg12 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11 value: arg12) asUnsignedLong.
+
+
+
+! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4) asUnsignedLong.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10) asSignedLong.
+
+
+
+! 
+  library: theLibrary name: theName argc: numArgs 
+
+ self  CAPI_CFunction_superInit_library: theLibrary name: theName argc: numArgs.
+
+ self  CAPI_CFunction_1_init_library: theLibrary name: theName argc: numArgs.
+
+^ self.
+
+
+
+! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6) asUnsignedLong.
+
+
+
+! 
+  signedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11 value: arg12 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11 value: arg12) asSignedLong.
+
+
+
+! 
+ signedValueWithArguments: args 
+
+^( self  valueWithArguments: args) asSignedLong.
+
+
+
+! 
+  unsignedValue: arg1 value: arg2 
+
+^( self   value: arg1 value: arg2) asUnsignedLong.
+
+
+
+! 
+  CAPI_CFunction_superInit_library: theLibrary name: theName argc: numArgs 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ valueWithArguments: args 
+
+|  result |
+
+ self  argc = args size ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments: args size.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result withArguments: args.
+
+^ result.
+
+
+
+! 
+library: library_val library := library_val! 
+  unsignedValue: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11 
+
+^( self   value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11) asUnsignedLong.
+
+
+
+! 
+ signedValue 
+
+^ self  value asSignedLong.
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11 
+
+|  result |
+
+ self  argc =11 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:11.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4 with: arg5 with: arg6 with: arg7 with: arg8 with: arg9 with: arg10 with: arg11.
+
+^ result.
+
+
+
+! 
+ api 
+
+^ (EnclosingObjects_CAPI_CFunction at: 1) .
+
+
+
+! 
+  value: arg1 value: arg2 value: arg3 value: arg4 value: arg5 value: arg6 value: arg7 value: arg8 value: arg9 value: arg10 value: arg11 value: arg12 
+
+|  result |
+
+ self  argc =12 ifFalse:[ 
+
+^ self  reportIncorrectNumberOfArguments:12.
+
+].
+
+ self  ensureLinkage.
+
+ result := (EnclosingObjects_CAPI_CFunction at: 1)  Alien new:4.
+
+ self  alien  primFFICallResult: result with: arg1 with: arg2 with: arg3 with: arg4 with: arg5 with: arg6 with: arg7 with: arg8 with: arg9 with: arg10 with: arg11 with: arg12.
+
+^ result.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #CAPI_CFunction) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_CAPI_CFunction := eos !
+	mixinMetadata: mmd MixinMetadata_CAPI_CFunction := mmd !
+	  library: theLibrary name: theName argc: numArgs 
+
+^ self basicNew  library: theLibrary name: theName argc: numArgs.
+
+
+
+! 
+		 !
+	CAPI metadata addNestedClass: CAPI_CFunction. ! 
+	CAPI_CFunction metadata enclosingMixin: CAPI !
+	

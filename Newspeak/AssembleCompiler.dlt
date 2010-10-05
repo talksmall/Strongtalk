@@ -1,0 +1,55 @@
+Delta define: #AssembleCompiler as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #AssembleCompiler) revision: '$Revision:$'!
+
+(Delta mirrorFor: #AssembleCompiler) group: 'Unclassified'!
+
+(Delta mirrorFor: #AssembleCompiler)
+comment: 
+''!
+
+! (Delta mirrorFor: #AssembleCompiler) classSide methodsFor: 'compiler creation' !
+
+
+compileFile: fn <String>
+	^self newCompiler compileClassSource: (FilePath for: fn ) charInputStream contentsRemaining readStream within: nil!
+
+newCompiler
+^ self new main: NsPlatform new! !
+
+! (Delta mirrorFor: #AssembleCompiler) methodsFor: 'main' !
+
+
+main: platform <Platform> ^ <Newspeak2StrongtalkCompilation Compiler>
+|
+parserLibMirror
+parserLibClass
+parserLib
+ns2grammar
+astModule
+parsingModule
+mirrors
+compilationModule
+ns2compiler
+|
+
+parserLibMirror := (Mirror on: BlocklessCombinatorialParsing) mixin |> (Mirror on: CombinatorialParsing).
+parserLibClass := parserLibMirror reflectee.
+parserLibClass  mixinMetadata: BlocklessCombinatorialParsing metadata.
+parserLibClass enclosingObjects: (Array with: nil).
+parserLib := parserLibClass usingLib: platform.
+ns2grammar := Newspeak2Grammar parserLib: parserLib.
+astModule := Newspeak2AST usingLib: platform.
+parsingModule := Newspeak2Parsing usingLib: platform
+                                                       ast: astModule
+                                                       grammar: ns2grammar.
+
+mirrors := Newspeak2StrongtalkMirrors usingLib: platform.
+compilationModule := Newspeak2StrongtalkCompilation usingPlatform: platform 
+                                           newspeakParser: parsingModule
+                                           mirrorLib: mirrors.
+
+ns2compiler := compilationModule Compiler new.
+^ns2compiler! !
+

@@ -1,0 +1,116 @@
+Class
+Newspeak2StrongtalkCompilation_Scope_superInit_new!
+86594508!
+unclassified!
+0! !
+#categories!
+unclassified! !
+#superclassTypeString!
+NewspeakObject! !
+depth!
+86593739!
+unclassified!
+0! !
+within:!
+86592750!
+unclassified!
+0:! !
+#revision!
+$Revision: 0.0 $! !
+superScope:!
+86592932!
+unclassified!
+0:! !
+removeKey:!
+86593116!
+unclassified!
+0:! !
+at:!
+86593305!
+unclassified!
+0:! !
+#instanceVariableString!
+ superScope end bindings! !
+end!
+86594714!
+unclassified!
+0! !
+clear!
+86593524!
+unclassified!
+0! !
+#group!
+newspeak! !
+removeKey:ifAbsent:!
+86593945!
+unclassified!
+0::! !
+superScope!
+86594163!
+unclassified!
+0! !
+includesIndexLocally:!
+86594314!
+unclassified!
+0:! !
+bindings:!
+86592245!
+unclassified!
+0:! !
+#classVariableString!
+MixinMetadata_Newspeak2StrongtalkCompilation_Scope EnclosingObjects_Newspeak2StrongtalkCompilation_Scope! !
+end:!
+86594851!
+unclassified!
+0:! !
+#comment!
+A generic scope facility.
+
+The text below describes the intended scheme for handling closures using the Cog VM's closure support. It is not yet implemented.
+
+To support efficient compilation of closures, each scope tracks how many temporary variables need to ''remote''. 
+
+A remote temporary is one that is closed over by a nested closure, and cannot reliably be copied down into the closure upon closure creation.  Any temporary that might be written to after closure creation is necessarily remote.
+
+Remote temps are allocated in an array rather than directly in their activation. All the remote temps in a given scope are alllocated in a single array, the remote temp vector. Each remote temp is uniquely identified by an index into th eremote temp vector.
+
+Closures nested within the scope get a reference to the remote temp vector. They can and read and write a temporary by modifying the vector using the index associated with the temporary.
+
+Typically, the first instruction in the code of a closure or method allocates the remote temp vector (if one is needed). This is supported by a special byte code, pushArray.
+
+Reads and writes to a remote temp take the form of at: i and at: i put: v sends where i is the index of the remote temp and v is the value being written to it.
+
+A temporary variable is considered remote iff:
+
+a. It is written to in a closure nested within its defining method or closure.
+b. It is read in in a closure c nested within its defining method or closure, and written to after the end of c.
+
+! !
+at:put:!
+86595007!
+unclassified!
+0::! !
+Newspeak2StrongtalkCompilation_Scope_1_init!
+86592421!
+unclassified!
+0! !
+includesIndex:!
+86595458!
+unclassified!
+0:! !
+new!
+86595201!
+unclassified!
+0! !
+at:put:ifThere:!
+86595645!
+unclassified!
+0:::! !
+at:ifAbsent:!
+86596141!
+unclassified!
+0::! !
+bindings!
+86596542!
+unclassified!
+0! !

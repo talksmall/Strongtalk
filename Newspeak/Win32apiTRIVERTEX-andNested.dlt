@@ -1,0 +1,124 @@
+Delta define: #Win32apiTRIVERTEX as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiTRIVERTEX EnclosingObjects_Win32apiTRIVERTEX')!
+	(Delta mirrorFor: #Win32apiTRIVERTEX) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiTRIVERTEX) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiTRIVERTEX) comment: 'typedef struct _TRIVERTEX
+{
+    LONG    x;
+    LONG    y;
+    COLOR16 Red;
+    COLOR16 Green;
+    COLOR16 Blue;
+    COLOR16 Alpha;
+}TRIVERTEX,*PTRIVERTEX,*LPTRIVERTEX;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiTRIVERTEX) methodsFor: 'unclassified'!
+	 alpha: value 
+
+ self  unsignedShortAt:15 put: value.
+
+^ self.
+
+
+
+! 
+ green: value 
+
+ self  unsignedShortAt:11 put: value.
+
+^ self.
+
+
+
+! 
+ red: value 
+
+ self  unsignedShortAt:9 put: value.
+
+^ self.
+
+
+
+! 
+ Win32apiTRIVERTEX_1_init 
+
+^ self.
+
+
+
+! 
+ y: value 
+
+ self  signedLongAt:5 put: value.
+
+^ self.
+
+
+
+! 
+ blue: value 
+
+ self  unsignedShortAt:13 put: value.
+
+^ self.
+
+
+
+! 
+ x: value 
+
+ self  signedLongAt:1 put: value.
+
+^ self.
+
+
+
+! 
+ Win32apiTRIVERTEX_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiTRIVERTEX_superInit_new.
+
+ self Win32apiTRIVERTEX_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiTRIVERTEX) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiTRIVERTEX := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiTRIVERTEX := mmd !
+	 dataSize 
+
+^16.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiTRIVERTEX enclosingObjects: (Array with: nil)!
+		Win32apiTRIVERTEX metadata enclosingMixin: nil !
+		Win32apiTRIVERTEX mixinMetadata: Win32apiTRIVERTEX metadata !
+		

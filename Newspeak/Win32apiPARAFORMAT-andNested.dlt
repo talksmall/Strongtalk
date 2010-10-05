@@ -1,0 +1,198 @@
+Delta define: #Win32apiPARAFORMAT as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiPARAFORMAT EnclosingObjects_Win32apiPARAFORMAT')!
+	(Delta mirrorFor: #Win32apiPARAFORMAT) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiPARAFORMAT) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiPARAFORMAT) comment: 'typedef struct _paraformat {
+    UINT cbSize;
+    DWORD dwMask;
+    WORD wNumbering;
+    WORD wReserved;
+    LONG dxStartIndent;
+    LONG dxRightIndent;
+    LONG dxOffset;
+    WORD wAlignment;
+    SHORT cTabCount;
+    LONG rgxTabs[MAX_TAB_STOPS];
+} PARAFORMAT;
+
+#define MAX_TAB_STOPS 32
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+	! (Delta mirrorFor: #Win32apiPARAFORMAT) methodsFor: 'unclassified'!
+	 Win32apiPARAFORMAT_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ cTabCount 
+
+^ self signedShortAt:27.
+
+
+
+! 
+ cbSize 
+
+^ self unsignedLongAt:1.
+
+
+
+! 
+  rgxTabsAt: index1based put: newValue 
+
+ self  signedLongAt:29 +( index1based - 1 *4) put: newValue.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiPARAFORMAT_superInit_new.
+
+ self Win32apiPARAFORMAT_1_init.
+
+^ self.
+
+
+
+! 
+ dxOffset 
+
+^ self unsignedLongAt:21.
+
+
+
+! 
+ Win32apiPARAFORMAT_1_init 
+
+^ self.
+
+
+
+! 
+ initialize 
+
+super  initialize.
+
+ self  cbSize: self class dataSize.
+
+^ self.
+
+
+
+! 
+ dwMask: newValue 
+
+ self  unsignedLongAt:5 put: newValue.
+
+^ self.
+
+
+
+! 
+ dxStartIndent 
+
+^ self unsignedLongAt:13.
+
+
+
+! 
+ wAlignment 
+
+^ self unsignedShortAt:25.
+
+
+
+! 
+ rgxTabsAt: index1based 
+
+^ self signedLongAt:(29 +( index1based - 1 *4)).
+
+
+
+! 
+ cTabCount: newTabCount 
+
+ self  signedShortAt:27 put: newTabCount.
+
+^ self.
+
+
+
+! 
+ cbSize: anInteger 
+
+ self  unsignedLongAt:1 put: anInteger.
+
+^ self.
+
+
+
+! 
+ dwMask 
+
+^ self unsignedLongAt:5.
+
+
+
+! 
+ dxRightIndent 
+
+^ self unsignedLongAt:17.
+
+
+
+! 
+ wNumbering 
+
+^ self unsignedShortAt:9.
+
+
+
+! 
+ wReserved 
+
+^ self unsignedShortAt:11.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiPARAFORMAT) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiPARAFORMAT := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiPARAFORMAT := mmd !
+	 MAX_TAB_STOPS 
+
+^32.
+
+
+
+! 
+		 dataSize 
+
+^28 +(32 *4).
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiPARAFORMAT enclosingObjects: (Array with: nil)!
+		Win32apiPARAFORMAT metadata enclosingMixin: nil !
+		Win32apiPARAFORMAT mixinMetadata: Win32apiPARAFORMAT metadata !
+		

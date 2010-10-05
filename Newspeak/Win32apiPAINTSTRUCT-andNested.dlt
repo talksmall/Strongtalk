@@ -1,0 +1,83 @@
+Delta define: #Win32apiPAINTSTRUCT as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiPAINTSTRUCT EnclosingObjects_Win32apiPAINTSTRUCT')!
+	(Delta mirrorFor: #Win32apiPAINTSTRUCT) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiPAINTSTRUCT) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiPAINTSTRUCT) comment: 'typedef struct tagPAINTSTRUCT { 
+  HDC  hdc; 
+  BOOL fErase; 
+  RECT rcPaint; 
+  BOOL fRestore; 
+  BOOL fIncUpdate; 
+  BYTE rgbReserved[32]; 
+} PAINTSTRUCT, *PPAINTSTRUCT;
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiPAINTSTRUCT) methodsFor: 'unclassified'!
+	 Win32apiPAINTSTRUCT_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ hdc 
+
+^ self unsignedLongAt:1.
+
+
+
+! 
+ paintRectangle 
+
+^( self signedLongAt:9) @( self signedLongAt:13) corner:(( self signedLongAt:17) @( self signedLongAt:21)).
+
+
+
+! 
+ Win32apiPAINTSTRUCT_1_init 
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiPAINTSTRUCT_superInit_new.
+
+ self Win32apiPAINTSTRUCT_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiPAINTSTRUCT) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiPAINTSTRUCT := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiPAINTSTRUCT := mmd !
+	 dataSize 
+
+^64.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiPAINTSTRUCT enclosingObjects: (Array with: nil)!
+		Win32apiPAINTSTRUCT metadata enclosingMixin: nil !
+		Win32apiPAINTSTRUCT mixinMetadata: Win32apiPAINTSTRUCT metadata !
+		

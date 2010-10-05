@@ -1,0 +1,45 @@
+Class
+#categories!
+unclassified! !
+#superclassTypeString!
+NewspeakObject! !
+#group!
+newspeak! !
+wrappingParser!
+84895796!
+unclassified!
+0! !
+new!
+84896244!
+unclassified!
+0! !
+#comment!
+When a ForwardingReferenceParser is wrapped using the wrapper:  combinator, we don't know what the  arity the wrapping block should have - it will depend on the arity of the parser we forward to.  We cannot determine whether to use the implementation of wrapper: given in ordinary parsers, which forwards to the wrap: combinator (designed for block with arity 1) or the implementation used in SequentialParsers, (designed for n-ary blocks, where n is the length of the list of parsers the SequentialParser sequences). Instead, we must defer the decision on how to handle the situation until the parser tree is complete. This is accomplished by using this class as the result of the wrapper: combinator for ForwardReferenceParser.  
+
+Instances of this class determiine how to act when asked to parse. At that time, the parse tree must be complete, and they can ask the ultimate parser for a wrappin parser that is suitable configured, and forward requests to it. ! !
+#revision!
+$Revision: 0.0 $! !
+trueWrappingParser!
+84894768!
+unclassified!
+0! !
+#classVariableString!
+MixinMetadata_BlocklessCombinatorialParsing_ForwardingWrappingParser EnclosingObjects_BlocklessCombinatorialParsing_ForwardingWrappingParser! !
+wrappingParser:!
+84895087!
+unclassified!
+0:! !
+#instanceVariableString!
+ wrappingParser! !
+BlocklessCombinatorialParsing_ForwardingWrappingParser_superInit_new!
+84895554!
+unclassified!
+0! !
+parse:inContext:ifError:!
+84895973!
+unclassified!
+0:::! !
+BlocklessCombinatorialParsing_ForwardingWrappingParser_1_init!
+84895305!
+unclassified!
+0! !

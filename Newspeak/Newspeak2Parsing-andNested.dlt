@@ -1,0 +1,2046 @@
+Delta define: #Newspeak2Parsing as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' ReturnStatAST MessageAST UnaryTypeOpAST SideAST TypeIdAST VarDeclAST ParserError CascadedSendAST MixinApplicationAST Newspeak2Parsing_Parser_slot TupleAST ClassDeclarationAST VariableAST CharAST ClassHeaderAST MethodAST CategoryAST NSSideAST SymbolAST CodeBodyAST ImmutableSlotDefAST MutableSlotDefAST MessagePatternAST BinaryTypeOpAST TypedNS2Grammar ASTModule StringAST NumberAST NormalSendAST OrderedCollection Number BlockAST GenericInvocationAST')
+	 classVariables: 'MixinMetadata_Newspeak2Parsing EnclosingObjects_Newspeak2Parsing')!
+	(Delta mirrorFor: #Newspeak2Parsing) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2Parsing) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2Parsing) comment: #''!
+	! (Delta mirrorFor: #Newspeak2Parsing) methodsFor: 'unclassified'!
+	ReturnStatAST ^ReturnStatAST! 
+MessageAST ^MessageAST! 
+UnaryTypeOpAST ^UnaryTypeOpAST! 
+NSSideAST: NSSideAST_val NSSideAST := NSSideAST_val! 
+CascadedSendAST ^CascadedSendAST! 
+MixinApplicationAST ^MixinApplicationAST! 
+Parser
+	| nestedClass enclosingObjectArray myNested depth |
+	Newspeak2Parsing_Parser_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_Newspeak2Parsing 
+			nestedMixins at: #Newspeak2Parsing_Parser.
+		myNested := (nestedClass mixin |>  (MixinMetadata_Newspeak2Parsing Mirror on: self  TypedNS2Grammar)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_Newspeak2Parsing size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_Newspeak2Parsing at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		Newspeak2Parsing_Parser_slot := myNested.
+		].
+	^Newspeak2Parsing_Parser_slot! 
+MixinApplicationAST: MixinApplicationAST_val MixinApplicationAST := MixinApplicationAST_val! 
+GenericInvocationAST: GenericInvocationAST_val GenericInvocationAST := GenericInvocationAST_val! 
+ClassDeclarationAST ^ClassDeclarationAST! 
+NormalSendAST: NormalSendAST_val NormalSendAST := NormalSendAST_val! 
+MethodAST: MethodAST_val MethodAST := MethodAST_val! 
+ClassHeaderAST ^ClassHeaderAST! 
+MethodAST ^MethodAST! 
+  Newspeak2Parsing_1_init_usingLib: platform ast: astModule grammar: ns2Grammar 
+
+ self OrderedCollection: platform Collections OrderedCollection.
+
+ self Number: platform Numbers Number.
+
+ self ASTModule: astModule.
+
+ self TypedNS2Grammar: ns2Grammar TypedNS2Grammar.
+
+ self ParserError: ns2Grammar ParserError.
+
+ self BinaryTypeOpAST: astModule BinaryTypeOpAST.
+
+ self BlockAST: astModule BlockAST.
+
+ self CascadedSendAST: astModule CascadedSendAST.
+
+ self CategoryAST: astModule CategoryAST.
+
+ self CharAST: astModule CharAST.
+
+ self ClassHeaderAST: astModule ClassHeaderAST.
+
+ self CodeBodyAST: astModule CodeBodyAST.
+
+ self GenericInvocationAST: astModule GenericInvocationAST.
+
+ self MessageAST: astModule MessageAST.
+
+ self MessagePatternAST: astModule MessagePatternAST.
+
+ self MethodAST: astModule MethodAST.
+
+ self NormalSendAST: astModule NormalSendAST.
+
+ self NumberAST: astModule NumberAST.
+
+ self ReturnStatAST: astModule ReturnStatAST.
+
+ self SideAST: astModule SideAST.
+
+ self StringAST: astModule StringAST.
+
+ self SymbolAST: astModule SymbolAST.
+
+ self TupleAST: astModule TupleAST.
+
+ self TypeIdAST: astModule TypeIdAST.
+
+ self UnaryTypeOpAST: astModule UnaryTypeOpAST.
+
+ self VarDeclAST: astModule VarDeclAST.
+
+ self VariableAST: astModule VariableAST.
+
+ self ImmutableSlotDefAST: astModule ImmutableSlotDefAST.
+
+ self MixinApplicationAST: astModule MixinApplicationAST.
+
+ self MutableSlotDefAST: astModule MutableSlotDefAST.
+
+ self NSSideAST: astModule NSSideAST.
+
+ self ClassDeclarationAST: astModule ClassDeclarationAST.
+
+^ self.
+
+
+
+! 
+CategoryAST ^CategoryAST! 
+CodeBodyAST: CodeBodyAST_val CodeBodyAST := CodeBodyAST_val! 
+ReturnStatAST: ReturnStatAST_val ReturnStatAST := ReturnStatAST_val! 
+NSSideAST ^NSSideAST! 
+ParserError: ParserError_val ParserError := ParserError_val! 
+ImmutableSlotDefAST: ImmutableSlotDefAST_val ImmutableSlotDefAST := ImmutableSlotDefAST_val! 
+CharAST: CharAST_val CharAST := CharAST_val! 
+CodeBodyAST ^CodeBodyAST! 
+UnaryTypeOpAST: UnaryTypeOpAST_val UnaryTypeOpAST := UnaryTypeOpAST_val! 
+MessageAST: MessageAST_val MessageAST := MessageAST_val! 
+MessagePatternAST ^MessagePatternAST! 
+BlockAST ^BlockAST! 
+TypedNS2Grammar ^TypedNS2Grammar! 
+ASTModule ^ASTModule! 
+NumberAST ^NumberAST! 
+MutableSlotDefAST: MutableSlotDefAST_val MutableSlotDefAST := MutableSlotDefAST_val! 
+ClassHeaderAST: ClassHeaderAST_val ClassHeaderAST := ClassHeaderAST_val! 
+OrderedCollection ^OrderedCollection! 
+CascadedSendAST: CascadedSendAST_val CascadedSendAST := CascadedSendAST_val! 
+Number ^Number! 
+BinaryTypeOpAST ^BinaryTypeOpAST! 
+TypedNS2Grammar: TypedNS2Grammar_val TypedNS2Grammar := TypedNS2Grammar_val! 
+GenericInvocationAST ^GenericInvocationAST! 
+SymbolAST: SymbolAST_val SymbolAST := SymbolAST_val! 
+SideAST ^SideAST! 
+VarDeclAST ^VarDeclAST! 
+ParserError ^ParserError! 
+VariableAST ^VariableAST! 
+NumberAST: NumberAST_val NumberAST := NumberAST_val! 
+TupleAST ^TupleAST! 
+Number: Number_val Number := Number_val! 
+CharAST ^CharAST! 
+ASTModule: ASTModule_val ASTModule := ASTModule_val! 
+MessagePatternAST: MessagePatternAST_val MessagePatternAST := MessagePatternAST_val! 
+VariableAST: VariableAST_val VariableAST := VariableAST_val! 
+MutableSlotDefAST ^MutableSlotDefAST! 
+  usingLib: platform ast: astModule grammar: ns2Grammar 
+
+ self  Newspeak2Parsing_superInit_usingLib: platform ast: astModule grammar: ns2Grammar.
+
+ self  Newspeak2Parsing_1_init_usingLib: platform ast: astModule grammar: ns2Grammar.
+
+^ self.
+
+
+
+! 
+VarDeclAST: VarDeclAST_val VarDeclAST := VarDeclAST_val! 
+SymbolAST ^SymbolAST! 
+StringAST ^StringAST! 
+BlockAST: BlockAST_val BlockAST := BlockAST_val! 
+  Newspeak2Parsing_superInit_usingLib: platform ast: astModule grammar: ns2Grammar 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ImmutableSlotDefAST ^ImmutableSlotDefAST! 
+StringAST: StringAST_val StringAST := StringAST_val! 
+SideAST: SideAST_val SideAST := SideAST_val! 
+OrderedCollection: OrderedCollection_val OrderedCollection := OrderedCollection_val! 
+TypeIdAST ^TypeIdAST! 
+BinaryTypeOpAST: BinaryTypeOpAST_val BinaryTypeOpAST := BinaryTypeOpAST_val! 
+CategoryAST: CategoryAST_val CategoryAST := CategoryAST_val! 
+NormalSendAST ^NormalSendAST! 
+TupleAST: TupleAST_val TupleAST := TupleAST_val! 
+TypeIdAST: TypeIdAST_val TypeIdAST := TypeIdAST_val! 
+ClassDeclarationAST: ClassDeclarationAST_val ClassDeclarationAST := ClassDeclarationAST_val! 
+ !
+	! (Delta mirrorFor: #Newspeak2Parsing) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2Parsing := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2Parsing := mmd !
+	  usingLib: platform ast: astModule grammar: ns2Grammar 
+
+^ self basicNew  usingLib: platform ast: astModule grammar: ns2Grammar.
+
+
+
+! 
+		 !
+	Newspeak2Parsing enclosingObjects: (Array with: nil)!
+		Newspeak2Parsing metadata enclosingMixin: nil !
+		Newspeak2Parsing mixinMetadata: Newspeak2Parsing metadata !
+		Delta define: #Newspeak2Parsing_Parser as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Newspeak2Parsing_Parser EnclosingObjects_Newspeak2Parsing_Parser')!
+	(Delta mirrorFor: #Newspeak2Parsing_Parser) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2Parsing_Parser) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2Parsing_Parser) comment: 'Parser for Newsqueak2. Produces a Newsqueak AST. This tree represents syntax only. No attribution information such as scopes/symbol tables, types etc. is present in the tree. The tree  only gives its structure and the source code positions of the nodes.
+
+The parser works by overridding the accessors for most grammar productions in its superclasses. The superclass methods deal with the grammar alone; each production defines a parser that will parse the syntax and return the corresponding set of tokens. The methods here process the output of the superclass methods to yield parsers that will construct ASTs. Hence, the typical method for a production foo is something like
+
+foo
+
+^super foo wrapper:[:w :x :y :z | FooAST new from: x and: y; start: w start; end: z end]
+
+This example assumes that the semantic content of foo is given by x and y. Typically, x and y will be the results of  productions that have also been overridden, to provide  ASTs that will be subtrees of the Foo node. In contarst, w and z are likely to be tokens used in the concrete syntax to delimit the Foo construct. They may (or may not) be used to extract source code position information, and then discarded.'!
+	! (Delta mirrorFor: #Newspeak2Parsing_Parser) methodsFor: 'unclassified'!
+	 keywordMessages 
+
+^super  keywordMessages wrapper:[ : kwMsg | 
+
+( self Array new:3)  at:1 put:( self Array new:0); 
+
+  at:2 put:( self Array new:0); 
+
+  at:3 put: kwMsg; 
+
+ yourself.
+
+].
+
+
+
+! 
+ hereNode 
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  VariableAST new name:#'_here'; 
+
+ start:0; 
+
+ end:0.
+
+
+
+! 
+ unaryExpression 
+
+^super  unaryExpression wrapper:[ : o : s | 
+
+ self assert:[ 
+
+ s isNil not.
+
+].
+
+ s  inject: o into:[ : e : umsg | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NormalSendAST new  to: e send: umsg; 
+
+ start: e start; 
+
+ end: umsg end.
+
+].
+
+].
+
+
+
+! 
+ exponent 
+
+|  exp |
+
+^super  exponent wrapper:[ : e : sgn : ds | 
+
+ exp := self  computeDigits: ds.
+
+ sgn isNil  ifTrue:[ 
+
+ exp.
+
+] ifFalse:[ 
+
+-1 * exp.
+
+].
+
+].
+
+
+
+! 
+ charsToString: cs 
+
+^ cs  inject:#'' into:[ : s : c | 
+
+ s , c asString.
+
+].
+
+
+
+! 
+ new 
+
+ self Newspeak2Parsing_Parser_superInit_new.
+
+ self Newspeak2Parsing_Parser_1_init.
+
+^ self.
+
+
+
+! 
+ type 
+
+^super  type wrapper:[ : lb : te : rb | 
+
+ te concreteStart: lb start; 
+
+ concreteEnd: rb end.
+
+ te.
+
+].
+
+
+
+! 
+ blockParameters 
+
+^super  blockParameters wrapper:[ : params : vb | 
+
+ self assert:[ 
+
+ params isEmpty not.
+
+].
+
+ params last concreteEnd: vb end.
+
+ params.
+
+].
+
+
+
+! 
+ defaultConstructorSelector 
+
+^#'new'.
+
+
+
+! 
+ moduleDeclaration 
+
+^ self.
+
+
+
+! 
+ compilationUnit 
+
+^super  compilationUnit wrapper:[ : lid : u : e | 
+
+ u.
+
+].
+
+
+
+! 
+ tuple 
+
+^super  tuple wrapper:[ : lc : es : rc | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  TupleAST new elements: es; 
+
+ start: lc start; 
+
+ end: rc end.
+
+].
+
+
+
+! 
+ classComment 
+
+^super  classComment wrapper:[ : ws : c | 
+
+( c at:2)  inject:#'' into:[ : s : ch | 
+
+ s , ch asString.
+
+].
+
+].
+
+
+
+! 
+ binaryMsgPattern 
+
+^super  binaryMsgPattern wrapper:[ : sel : p | 
+
+|  params |
+
+ params := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new add: p; 
+
+ yourself.
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessagePatternAST new  selector: sel token parameters: params; 
+
+ start: sel start; 
+
+ right: p.
+
+].
+
+
+
+! 
+ classDeclaration 
+
+^super  classDeclaration wrapper:[ : ckw : hdr : instSide : classSide | 
+
+|  klassSide  kat |
+
+ klassSide := classSide isNil  ifTrue:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  SideAST new  vars: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new cats: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+] ifFalse:[ 
+
+ classSide.
+
+].
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  ClassDeclarationAST new hdr: hdr; 
+
+ instanceSide: instSide; 
+
+ classSide: klassSide; 
+
+ start: ckw start; 
+
+ end:( classSide isNil  ifTrue:[ 
+
+ instSide end.
+
+] ifFalse:[ 
+
+ classSide end.
+
+]).
+
+].
+
+
+
+! 
+ nonEmptyBlockTypeArgList 
+
+^super  nonEmptyBlockTypeArgList wrapper:[ : tas : rt | 
+
+|  targs |
+
+ targs := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new addAll: tas; 
+
+ yourself.
+
+ rt isNil  ifTrue:[ 
+
+ targs addLast:( (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  TypeIdAST new name:#'Object').
+
+] ifFalse:[ 
+
+ targs add: rt last.
+
+].
+
+ targs.
+
+].
+
+
+
+! 
+ unarySelector 
+
+^super  unarySelector wrap:[ : u | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessageAST new  send: u token asSymbol with: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new; 
+
+ start: u start; 
+
+ end: u end.
+
+].
+
+
+
+! 
+ sideDecl 
+
+^super  sideDecl wrapper:[ : lp : classes : categories : rp | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NSSideAST new  vars: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new cats: categories; 
+
+ nestedClasses: classes; 
+
+ start: lp start; 
+
+ end: rp end.
+
+].
+
+
+
+! 
+ radixNum 
+
+^super  radixNum wrapper:[ : r : sgn : ip : fp : ep | 
+
+|  sum  power  exp  fs |
+
+ self  assert:[ 
+
+ ip isEmpty not.
+
+] message:'internal error: integer part is empty'.
+
+ fs := fp isNil  ifTrue:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+] ifFalse:[ 
+
+ fp.
+
+].
+
+ power := ip size.
+
+ sum :=( ip concatenate: fs)  inject:0 into:[ : s : c | 
+
+|  d0  d |
+
+ d0 := c asciiValue.
+
+( d0 >47 and:[ 
+
+ d0 <58.
+
+])  ifTrue:[ 
+
+ d := d0 - 48.
+
+] ifFalse:[ 
+
+( d0 >64 and:[ 
+
+ d0 <71.
+
+])  ifTrue:[ 
+
+ d := d0 - 55.
+
+] ifFalse:[ 
+
+ self  assert:[ 
+
+ d0 >96 and:[ 
+
+ d0 <123.
+
+].
+
+] message:'Internal error - illegal character in radix number'.
+
+ d := d0 - 87.
+
+].
+
+].
+
+ self  assert:[ 
+
+ d < r.
+
+] message:'Malformed number: digit exceeds radix'.
+
+ power := power - 1.
+
+ d *( r ** power) + s.
+
+].
+
+ sgn isNil ifFalse:[ 
+
+ sum :=-1 * sum.
+
+].
+
+ exp := ep isNil  ifTrue:[ 
+
+0.
+
+] ifFalse:[ 
+
+ ep.
+
+].
+
+ sum *(10 ** exp).
+
+].
+
+
+
+! 
+ slotDecl 
+
+^super  slotDecl wrapper:[ : n : t | 
+
+|  end |
+
+ end := t isNil  ifTrue:[ 
+
+ n end.
+
+] ifFalse:[ 
+
+ t concreteEnd.
+
+].
+
+( (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  VarDeclAST  name: n token asSymbol type: t) start: n start; 
+
+ end: end.
+
+].
+
+
+
+! 
+ symbol 
+
+^super  symbol wrap:[ : t | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  SymbolAST new val: t token asSymbol; 
+
+ start: t start; 
+
+ end: t end.
+
+].
+
+
+
+! 
+ typePrimary 
+
+^super  typePrimary wrapper:[ : g : tas | 
+
+|  tid |
+
+ tid := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  TypeIdAST new name: g token; 
+
+ start: g start; 
+
+ end: g end.
+
+ tas isNil  ifTrue:[ 
+
+ tid.
+
+] ifFalse:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  GenericInvocationAST new generic: tid; 
+
+ arguments: tas first; 
+
+ start: g start; 
+
+ end: tas last end.
+
+].
+
+].
+
+
+
+! 
+ category 
+
+^super  category wrapper:[ : cn : ms | 
+
+|  end |
+
+ end := ms isEmpty  ifTrue:[ 
+
+ cn end.
+
+] ifFalse:[ 
+
+ ms last end.
+
+].
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  CategoryAST new name: cn val asSymbol; 
+
+ methods: ms; 
+
+ start: cn start; 
+
+ end: end.
+
+].
+
+
+
+! 
+ blockReturnType 
+
+^super  blockReturnType wrapper:[ : h : rt | 
+
+ rt.
+
+].
+
+
+
+! 
+ classHeader 
+
+^super  classHeader wrapper:[ : klassName : cons : eq : superClause : lp : cmnt : instVars : inits : rp | 
+
+|  vs  kat  start  konstruktor  superCall |
+
+ kat :=nil.
+
+ start := klassName start.
+
+ konstruktor := cons isNil  ifTrue:[ 
+
+ self  defaultConstructorPattern start:( klassName end +1); 
+
+ end: klassName end.
+
+] ifFalse:[ 
+
+ cons.
+
+].
+
+ superCall := superClause isNil  ifTrue:[ 
+
+ self   defaultSuperCallAt: eq end +1 ending: eq end.
+
+] ifFalse:[ 
+
+ superClause.
+
+].
+
+ vs := instVars isNil  ifTrue:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+] ifFalse:[ 
+
+ instVars.
+
+].
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  ClassHeaderAST new name: klassName snd asSymbol; 
+
+ constructor: konstruktor; 
+
+ superclassName: superCall recv msg sel; 
+
+ superConstructorCall: superCall msg; 
+
+ slots: vs; 
+
+ initExprs: inits; 
+
+ category: kat; 
+
+ classComment: cmnt; 
+
+ start: start; 
+
+ end: rp end.
+
+].
+
+
+
+! 
+ number 
+
+^super  number wrap:[ : t | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NumberAST new val: t token; 
+
+ start: t start; 
+
+ end: t end.
+
+].
+
+
+
+! 
+ blockType 
+
+^super  blockType wrapper:[ : lb : tas : rb | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  GenericInvocationAST new generic:( (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  TypeIdAST new name:#'Block'); 
+
+ arguments: tas; 
+
+ start: lb start; 
+
+ end: rb end.
+
+].
+
+
+
+! 
+ cascadedMessageExpression 
+
+^super  cascadedMessageExpression wrapper:[ : p : msgs | 
+
+|  se  unaries  binaries  kwMsg  cascade  unarySend  binarySend |
+
+ msgs isNil  ifTrue:[ 
+
+ p.
+
+] ifFalse:[ 
+
+ unaries := msgs first first.
+
+ binaries := msgs first at:2.
+
+ kwMsg := msgs first last.
+
+ cascade := msgs last.
+
+ unarySend := self   sendMessages: unaries to: p.
+
+ binarySend := self   sendMessages: binaries to: unarySend.
+
+ se := kwMsg isNil  ifTrue:[ 
+
+ binarySend.
+
+] ifFalse:[ 
+
+ self   sendMessages:(( self Array new:1)  at:1 put: kwMsg; 
+
+ yourself) to: binarySend.
+
+].
+
+ cascade  inject: se into:[ : e : m | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  CascadedSendAST new  to: e cascade: m; 
+
+ left: e; 
+
+ right: m.
+
+].
+
+].
+
+].
+
+
+
+! 
+ block 
+
+^super  block wrapper:[ : lb : params : cb : rb | 
+
+|  ps |
+
+ ps := params isNil  ifTrue:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+] ifFalse:[ 
+
+ params.
+
+].
+
+ cb parameters: ps.
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  BlockAST new body: cb; 
+
+ start: lb start; 
+
+ end: rb end.
+
+].
+
+
+
+! 
+ fraction 
+
+^super  fraction wrapper:[ : period : ds | 
+
+ self  computeFraction: ds.
+
+].
+
+
+
+! 
+ computeFraction: ds 
+
+|  power |
+
+ power :=0.
+
+^ ds  inject:0 into:[ : s : c | 
+
+ power := power - 1.
+
+ s +( c asciiValue - 48 *(10 ** power)).
+
+].
+
+
+
+! 
+ toplevelClass 
+
+^super  toplevelClass wrapper:[ : cat : cd | 
+
+|  kat |
+
+ cat isNil ifFalse:[ 
+
+ cd hdr category: cat val.
+
+ cd start: cat start.
+
+].
+
+ cd.
+
+].
+
+
+
+! 
+ returnStatement 
+
+^super  returnStatement wrapper:[ : r : e : od | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new add:( (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  ReturnStatAST new expr: e; 
+
+ start: r start; 
+
+ right: e); 
+
+ yourself.
+
+].
+
+
+
+! 
+ characterConstant 
+
+^super  characterConstant wrap:[ : t | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  CharAST new val: t token last; 
+
+ start: t start; 
+
+ end: t end.
+
+].
+
+
+
+! 
+ codeBody 
+
+^super  codeBody wrapper:[ : tmps : stmts | 
+
+|  ts  ss  start  end  cstart  cend |
+
+ end :=nil.
+
+ start := end.
+
+ ts := tmps isNil  ifTrue:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+] ifFalse:[ 
+
+ tmps.
+
+].
+
+ ss := stmts isNil  ifTrue:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+] ifFalse:[ 
+
+ stmts.
+
+].
+
+ ts isEmpty ifFalse:[ 
+
+ cstart := ts first concreteStart.
+
+ start := ts first start.
+
+ cend := ts last concreteEnd.
+
+ end := ts last end.
+
+].
+
+ ss isEmpty ifFalse:[ 
+
+ start isNil ifTrue:[ 
+
+ start := ss first start.
+
+].
+
+ end := ss last end.
+
+ cend := ss last concreteEnd.
+
+].
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  CodeBodyAST new  temporaries: ts statements: ss; 
+
+ start: start; 
+
+ end: end; 
+
+ concreteStart: cstart; 
+
+ concreteEnd: cend.
+
+].
+
+
+
+! 
+ cascadeMsg 
+
+^super  cascadeMsg wrapper:[ : sm : msg | 
+
+ msg.
+
+].
+
+
+
+! 
+ nontrivialBinaryMessages 
+
+^super  nontrivialBinaryMessages wrapper:[ : bmsgs : kwMsg | 
+
+ self assert:[ 
+
+ bmsgs isEmpty not.
+
+].
+
+( self Array new:3)  at:1 put:( self Array new:0); 
+
+  at:2 put: bmsgs; 
+
+  at:3 put: kwMsg; 
+
+ yourself.
+
+].
+
+
+
+! 
+ typeTerm 
+
+^super  typeTerm wrapper:[ : operand : operators | 
+
+ operators  inject: operand into:[ : te : op | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  UnaryTypeOpAST new operand: te; 
+
+ operator: op token; 
+
+ start: te start; 
+
+ end: op end.
+
+].
+
+].
+
+
+
+! 
+ classDefinition 
+
+^ self  compilationUnit.
+
+
+
+! 
+ methodDecl 
+
+^super  methodDecl wrapper:[ : am : msg : eq : lp : cb : rp | 
+
+ cb parameters: msg parameters.
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MethodAST new  pattern: msg body: cb visibility:#'public'; 
+
+ start: msg start; 
+
+ end: rp end.
+
+].
+
+
+
+! 
+ defaultConstructorCall 
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessageAST new  send: self  defaultConstructorSelector with:( self Array new:0).
+
+
+
+! 
+  sendMessages: msgs to: receiver 
+
+^ msgs  inject: receiver into:[ : r : msg | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NormalSendAST new  to: r send: msg; 
+
+ left: r; 
+
+ right: msg.
+
+].
+
+
+
+! 
+ unaryMsgPattern 
+
+^super  unaryMsgPattern wrap:[ : sel | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessagePatternAST new  selector: sel sel parameters: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new; 
+
+ start: sel start; 
+
+ end: sel end.
+
+].
+
+
+
+! 
+ slotName 
+
+^super  slotName wrap:[ : n | 
+
+|  msg  sn |
+
+ sn := n token asSymbol.
+
+( sn =#'self' or:[ 
+
+ sn =#'super' or:[ 
+
+ sn =#'outer' or:[ 
+
+ sn =#'thisContext'.
+
+].
+
+].
+
+])  ifTrue:[ 
+
+( self pseudoVariableNode: sn) start: n start; 
+
+ end: n end.
+
+] ifFalse:[ 
+
+ msg := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessageAST new  send: sn with: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new; 
+
+ start: n start; 
+
+ end: n end.
+
+ self hereSendFromMsg: msg.
+
+].
+
+].
+
+
+
+! 
+ keywordMsg 
+
+^super  keywordMsg wrap:[ : kws | 
+
+|  sel  args |
+
+ args := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+ sel := kws  inject:#'' into:[ : s : kwd | 
+
+ args add:( kwd at:2).
+
+ s ,( kwd at:1) token.
+
+].
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessageAST new  send: sel asSymbol with: args; 
+
+ start: kws first first start; 
+
+ right: args last.
+
+].
+
+
+
+! 
+ classSideDecl 
+
+^super  classSideDecl wrapper:[ : cn : lp : cats : rp | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  SideAST new  vars: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new cats: cats; 
+
+ start: cn start; 
+
+ end: rp end.
+
+].
+
+
+
+! 
+  mixinApplicationOf: mixinExpr on: superclassExpr 
+
+ mixinExpr isNormalSendNode ifFalse:[ 
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  ParserError new message:'Expected send expression'; 
+
+ position: mixinExpr start; 
+
+ signal.
+
+].
+
+ mixinExpr msg isMessageNode ifFalse:[ 
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  ParserError new message:'Expected message expression'; 
+
+ position: mixinExpr msg start; 
+
+ signal.
+
+].
+
+ mixinExpr msg sel =#'mixin' ifFalse:[ 
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  ParserError new message:'Expected #mixin'; 
+
+ position: mixinExpr msg start; 
+
+ signal.
+
+].
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MixinApplicationAST new mixinExpr: mixinExpr; 
+
+ superclassExpr: superclassExpr; 
+
+ left: mixinExpr; 
+
+ right: superclassExpr.
+
+
+
+! 
+ tupleType 
+
+^super  tupleType wrapper:[ : lc : es : rc | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  GenericInvocationAST new generic:( (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  TypeIdAST new name:#'Tuple'); 
+
+ arguments: es; 
+
+ start: lc start; 
+
+ end: rc end.
+
+].
+
+
+
+! 
+  defaultSuperCallAt: start ending: end 
+
+|  objId |
+
+ objId := self  hereSendFromMsg:( (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessageAST new  send:#'Object' with:( self Array new:0); 
+
+ start: start; 
+
+ end: end).
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NormalSendAST new recv: objId; 
+
+ msg:( self  defaultConstructorCall start: start; 
+
+ end: end).
+
+
+
+! 
+ typeArguments 
+
+^super  typeArguments wrapper:[ : lb : tas : rb | 
+
+( self Array new:2)  at:1 put: tas; 
+
+  at:2 put: rb; 
+
+ yourself.
+
+].
+
+
+
+! 
+ method 
+
+^super  method wrapper:[ : msg : cb : ei | 
+
+ cb parameters: msg parameters.
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MethodAST new  pattern: msg body: cb visibility:#'public'; 
+
+ start: msg start; 
+
+ right: cb.
+
+].
+
+
+
+! 
+ slotDef 
+
+^super  slotDef wrapper:[ : am : sd : init | 
+
+|  end  slotClass  expr  msg |
+
+ init isNil  ifTrue:[ 
+
+ end := sd end.
+
+ slotClass := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MutableSlotDefAST.
+
+ msg := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessageAST new  send:#'nil' with: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new; 
+
+ start: sd start; 
+
+ end: sd end.
+
+ expr := self  hereSendFromMsg: msg.
+
+] ifFalse:[ 
+
+ end := init last concreteEnd.
+
+ expr := init at:2.
+
+ slotClass :=( init at:1) token =#'::='  ifTrue:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MutableSlotDefAST.
+
+] ifFalse:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  ImmutableSlotDefAST.
+
+].
+
+].
+
+ slotClass new slotDecl: sd; 
+
+ initializer: expr; 
+
+ start: sd start; 
+
+ end: end.
+
+].
+
+
+
+! 
+ hereSendFromMsg: msg 
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NormalSendAST new  to: self hereNode send: msg; 
+
+ start: msg start; 
+
+ end: msg end.
+
+
+
+! 
+ slotDecls 
+
+^super  slotDecls wrapper:[ : vb1 : sds : vb2 | 
+
+ sds isEmpty ifFalse:[ 
+
+ sds first concreteStart: vb1 start.
+
+ sds last concreteEnd: vb2 end.
+
+].
+
+ sds.
+
+].
+
+
+
+! 
+ symbolConstant 
+
+^super  symbolConstant wrapper:[ : h : s | 
+
+ s start: h start.
+
+].
+
+
+
+! 
+ blockParameter 
+
+^super  blockParameter wrapper:[ : c : v | 
+
+ v concreteStart: c start.
+
+ v.
+
+].
+
+
+
+! 
+ defaultConstructorPattern 
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessagePatternAST new  selector: self  defaultConstructorSelector parameters:( self Array new:0).
+
+
+
+! 
+ moduleBody 
+
+^ self.
+
+
+
+! 
+ furtherStatements 
+
+^super  furtherStatements wrapper:[ : d : stmts | 
+
+ stmts.
+
+].
+
+
+
+! 
+ blockTypeArgList 
+
+^super  blockTypeArgList wrap:[ : bta | 
+
+ bta isNil  ifTrue:[ 
+
+ self Array new:0.
+
+] ifFalse:[ 
+
+( bta isKindOf: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection)  ifFalse:[ 
+
+( self Array new:1)  at:1 put: bta; 
+
+ yourself.
+
+] ifTrue:[ 
+
+ bta.
+
+].
+
+].
+
+].
+
+
+
+! 
+ newBlockTypeArgList 
+
+^super  newBlockTypeArgList wrapper:[ : tas : rt | 
+
+|  targs |
+
+ targs := tas collect:[ : p | 
+
+ p last.
+
+].
+
+ rt isNil  ifTrue:[ 
+
+ targs addLast:( (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  TypeIdAST new name:#'Object').
+
+] ifFalse:[ 
+
+ targs add: rt.
+
+].
+
+ targs.
+
+].
+
+
+
+! 
+ keywordMsgPattern 
+
+^super  keywordMsgPattern wrap:[ : kws | 
+
+|  sel  params |
+
+ params := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+ self assert:[ 
+
+ kws isEmpty not.
+
+].
+
+ sel := kws  inject:#'' into:[ : s : kwp | 
+
+ params add: kwp last.
+
+ s , kwp first token.
+
+].
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessagePatternAST new  selector: sel asSymbol parameters: params; 
+
+ start: kws first first start; 
+
+ right: params last.
+
+].
+
+
+
+! 
+ decimalNum 
+
+^super  decimalNum wrapper:[ : sgn : ip : fp : ep | 
+
+|  sum  exp  f |
+
+ f := fp isNil  ifTrue:[ 
+
+0.
+
+] ifFalse:[ 
+
+ fp.
+
+].
+
+ sum :=( self  computeDigits: ip) + f.
+
+ sgn isNil ifFalse:[ 
+
+ sum :=-1 * sum.
+
+].
+
+ exp := ep isNil  ifTrue:[ 
+
+0.
+
+] ifFalse:[ 
+
+ ep.
+
+].
+
+ sum *(10 ** exp).
+
+].
+
+
+
+! 
+ binaryExpression 
+
+^super  binaryExpression wrapper:[ : ue : bmsgs | 
+
+ bmsgs  inject: ue into:[ : receiverExpr : b | 
+
+ b sel =#'|>'  ifTrue:[ 
+
+ self   mixinApplicationOf: receiverExpr on: b args first.
+
+] ifFalse:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NormalSendAST new  to: receiverExpr send: b; 
+
+ left: receiverExpr; 
+
+ right: b.
+
+].
+
+].
+
+].
+
+
+
+! 
+ keywordExpression 
+
+^super  keywordExpression wrapper:[ : bo : msg | 
+
+ msg isNil  ifTrue:[ 
+
+ bo.
+
+] ifFalse:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NormalSendAST new  to: bo send: msg; 
+
+ left: bo; 
+
+ right: msg.
+
+].
+
+].
+
+
+
+! 
+ messagePattern 
+
+^super  messagePattern wrapper:[ : pt : rt : tp | 
+
+ tp isNil  ifTrue:[ 
+
+ rt isNil ifFalse:[ 
+
+ pt end: rt concreteEnd.
+
+].
+
+] ifFalse:[ 
+
+ pt end: tp concreteEnd.
+
+].
+
+ pt returnType: rt; 
+
+ typePattern: tp.
+
+].
+
+
+
+! 
+ Newspeak2Parsing_Parser_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ computeDigits: ds 
+
+|  power |
+
+ power := ds size.
+
+^ ds  inject:0 into:[ : s : c | 
+
+ power := power - 1.
+
+ s +( c asciiValue - 48 *(10 ** power)).
+
+].
+
+
+
+! 
+ nestedClassDecl 
+
+^super  nestedClassDecl wrapper:[ : am : cd | 
+
+ cd.
+
+].
+
+
+
+! 
+ typeExpr 
+
+^super  typeExpr wrapper:[ : lOperand : msg | 
+
+|  operator  rOperand |
+
+ msg isNil  ifTrue:[ 
+
+ lOperand.
+
+] ifFalse:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  BinaryTypeOpAST new lOperand: lOperand; 
+
+ operator: msg first token; 
+
+ rOperand: msg last; 
+
+ start: lOperand start; 
+
+ end: msg last end.
+
+].
+
+].
+
+
+
+! 
+ superclassClause 
+
+^super  superclassClause wrapper:[ : sn : msg | 
+
+|  constructorCall |
+
+ constructorCall := msg isNil  ifTrue:[ 
+
+ self  defaultConstructorCall start: sn start; 
+
+ end: sn end.
+
+] ifFalse:[ 
+
+ msg.
+
+].
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  NormalSendAST new recv: sn; 
+
+ msg: constructorCall; 
+
+ start: sn start; 
+
+ end: constructorCall end.
+
+].
+
+
+
+! 
+ binaryMsg 
+
+^super  binaryMsg wrapper:[ : b : e | 
+
+|  args |
+
+ args := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new.
+
+ args add: e.
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessageAST new  send: b token with: args; 
+
+ start: b start; 
+
+ right: e.
+
+].
+
+
+
+! 
+ expression 
+
+^super  expression wrapper:[ : setter : msg | 
+
+|  e  setSend  args  setSelector |
+
+ e := msg.
+
+ setter isNil ifFalse:[ 
+
+ args := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new add: e; 
+
+ yourself.
+
+ setSelector := setter token asString.
+
+ setSend := (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  MessageAST new  send:( setSelector copyWithSize:( setSelector size - 1)) asSymbol with: args; 
+
+ start: setter start; 
+
+ right: e.
+
+ e := self hereSendFromMsg: setSend.
+
+].
+
+ e.
+
+].
+
+
+
+! 
+ parenthesizedTypeExpression 
+
+^super  parenthesizedTypeExpression wrapper:[ : lp : te : rp | 
+
+ te concreteStart: lp start; 
+
+ concreteEnd: rp end.
+
+ te.
+
+].
+
+
+
+! 
+ Newspeak2Parsing_Parser_1_init 
+
+^ self.
+
+
+
+! 
+ radix 
+
+|  exp |
+
+^super  radix wrapper:[ : ds : r | 
+
+ self  computeDigits: ds.
+
+].
+
+
+
+! 
+ returnType 
+
+^super  returnType wrapper:[ : h : rt | 
+
+ rt concreteStart: h start.
+
+ rt.
+
+].
+
+
+
+! 
+  parse: input inContext: context ifError: blk 
+
+[ 
+
+super   parse: input inContext: context ifError: blk.
+
+]  on: (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  ParserError do:[ : ex | 
+
+^ blk  value: ex message with: ex position.
+
+].
+
+^ self.
+
+
+
+! 
+ statementSequence 
+
+^super  statementSequence wrapper:[ : e : rst | 
+
+ rst isNil  ifTrue:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new add: e; 
+
+ yourself.
+
+] ifFalse:[ 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  OrderedCollection new add: e; 
+
+ addAll: rst; 
+
+ yourself.
+
+].
+
+].
+
+
+
+! 
+ string 
+
+^super  string wrap:[ : t | 
+
+ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  StringAST new val: t token; 
+
+ start: t start; 
+
+ end: t end.
+
+].
+
+
+
+! 
+ extendedFraction 
+
+^super  extendedFraction wrapper:[ : period : ds | 
+
+ ds.
+
+].
+
+
+
+! 
+ parenthesizedExpression 
+
+^super  parenthesizedExpression wrapper:[ : l : e : r | 
+
+ e concreteStart: l start; 
+
+ concreteEnd: r end.
+
+ e.
+
+].
+
+
+
+! 
+ keywordHereSend 
+
+^super  keywordHereSend wrap:[ : msg | 
+
+ self hereSendFromMsg: msg.
+
+].
+
+
+
+! 
+ pseudoVariableNode: psvName 
+
+ self assert:[ 
+
+(( self Array new:4)  at:1 put:#'self'; 
+
+  at:2 put:#'super'; 
+
+  at:3 put:#'outer'; 
+
+  at:4 put:#'thisContext'; 
+
+ yourself) includes: psvName.
+
+].
+
+^ (EnclosingObjects_Newspeak2Parsing_Parser at: 1)  VariableAST new name: psvName asSymbol; 
+
+ start:0; 
+
+ end:0.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Newspeak2Parsing_Parser) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2Parsing_Parser := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2Parsing_Parser := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Newspeak2Parsing metadata addNestedClass: Newspeak2Parsing_Parser. ! 
+	Newspeak2Parsing_Parser metadata enclosingMixin: Newspeak2Parsing !
+	

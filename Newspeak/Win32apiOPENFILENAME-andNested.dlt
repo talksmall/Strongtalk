@@ -1,0 +1,703 @@
+Delta define: #Win32apiOPENFILENAME as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:'')
+	 classVariables: 'MixinMetadata_Win32apiOPENFILENAME EnclosingObjects_Win32apiOPENFILENAME')!
+	(Delta mirrorFor: #Win32apiOPENFILENAME) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Win32apiOPENFILENAME) group: 'newspeak'!
+	(Delta mirrorFor: #Win32apiOPENFILENAME) comment: 'http://msdn.microsoft.com/en-us/library/ms646839.aspx
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+	! (Delta mirrorFor: #Win32apiOPENFILENAME) methodsFor: 'unclassified'!
+	 hwndOwner: newValue 
+
+ self  unsignedLongAt: self hwndOwnerOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ nFileExtension: newValue 
+
+ self  unsignedLongAt: self nFileExtensionOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ nMaxCustFilter: newValue 
+
+ self  unsignedLongAt: self nMaxCustFilterOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ hInstance 
+
+^ self unsignedLongAt: self hInstanceOffset.
+
+
+
+! 
+ dwReserved 
+
+^ self unsignedLongAt: self dwReservedOffset.
+
+
+
+! 
+ lpstrInitialDir 
+
+^ self unsignedLongAt: self lpstrInitialDirOffset.
+
+
+
+! 
+ nFileOffset: newValue 
+
+ self  unsignedLongAt: self nFileOffsetOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Win32apiOPENFILENAME_superInit_new.
+
+ self Win32apiOPENFILENAME_1_init.
+
+^ self.
+
+
+
+! 
+ lpfnHook 
+
+^ self unsignedLongAt: self lpfnHookOffset.
+
+
+
+! 
+ lpstrDefExt: newValue 
+
+ self  unsignedLongAt: self lpstrDefExtOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ hwndOwner 
+
+^ self unsignedLongAt: self hwndOwnerOffset.
+
+
+
+! 
+ fileName 
+
+^( self Alien forPointer:( self unsignedLongAt: self lpstrFileOffset)) strcpyUTF8.
+
+
+
+! 
+ pvReservedOffset 
+
+^81.
+
+
+
+! 
+ nFilterIndex 
+
+^ self unsignedLongAt: self nFilterIndexOffset.
+
+
+
+! 
+ lpstrFileTitle: newValue 
+
+ self  unsignedLongAt: self lpstrFileTitleOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ nMaxFileTitle 
+
+^ self unsignedLongAt: self nMaxFileTitleOffset.
+
+
+
+! 
+ lpTemplateName 
+
+^ self unsignedLongAt: self lpTemplateNameOffset.
+
+
+
+! 
+ free 
+
+ self class primFree:( self unsignedLongAt: self lpstrFileOffset).
+
+super  free.
+
+^ self.
+
+
+
+! 
+ lpstrFilter 
+
+^ self unsignedLongAt: self lpstrFilterOffset.
+
+
+
+! 
+ lpstrFilterOffset 
+
+^13.
+
+
+
+! 
+ nMaxFile 
+
+^ self unsignedLongAt: self nMaxFileOffset.
+
+
+
+! 
+ hInstance: newValue 
+
+ self  unsignedLongAt: self hInstanceOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpstrFile: newValue 
+
+ self  unsignedLongAt: self lpstrFileOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ nFileOffsetOffset 
+
+^57.
+
+
+
+! 
+ lpTemplateName: newValue 
+
+ self  unsignedLongAt: self lpTemplateNameOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ nFileExtensionOffset 
+
+^61.
+
+
+
+! 
+ FlagsExOffset 
+
+^89.
+
+
+
+! 
+ nMaxFileTitle: newValue 
+
+ self  unsignedLongAt: self nMaxFileTitleOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ Win32apiOPENFILENAME_1_init 
+
+^ self.
+
+
+
+! 
+ nMaxFile: newValue 
+
+ self  unsignedLongAt: self nMaxFileOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lCustDataOffset 
+
+^69.
+
+
+
+! 
+ lCustData: newValue 
+
+ self  unsignedLongAt: self lCustDataOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ nMaxFileOffset 
+
+^33.
+
+
+
+! 
+ dwReserved: newValue 
+
+ self  unsignedLongAt: self dwReservedOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ hwndOwnerOffset 
+
+^5.
+
+
+
+! 
+ lpstrDefExtOffset 
+
+^65.
+
+
+
+! 
+ lpstrFileOffset 
+
+^29.
+
+
+
+! 
+ nMaxFileTitleOffset 
+
+^41.
+
+
+
+! 
+ lpstrTitleOffset 
+
+^49.
+
+
+
+! 
+ nFileOffset 
+
+^ self unsignedLongAt: self nFileOffsetOffset.
+
+
+
+! 
+ nFilterIndexOffset 
+
+^25.
+
+
+
+! 
+ Flags: newValue 
+
+ self  unsignedLongAt: self FlagsOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lStructSizeOffset 
+
+^1.
+
+
+
+! 
+ dwReservedOffset 
+
+^85.
+
+
+
+! 
+ pvReserved 
+
+^ self unsignedLongAt: self pvReservedOffset.
+
+
+
+! 
+ nFilterIndex: newValue 
+
+ self  unsignedLongAt: self nFilterIndexOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpTemplateNameOffset 
+
+^77.
+
+
+
+! 
+ lpfnHookOffset 
+
+^73.
+
+
+
+! 
+ nFileExtension 
+
+^ self unsignedLongAt: self nFileExtensionOffset.
+
+
+
+! 
+ lpstrFileTitle 
+
+^ self unsignedLongAt: self lpstrFileTitleOffset.
+
+
+
+! 
+ lpstrInitialDir: newValue 
+
+ self  unsignedLongAt: self lpstrInitialDirOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpstrFileTitleOffset 
+
+^37.
+
+
+
+! 
+ nMaxCustFilterOffset 
+
+^21.
+
+
+
+! 
+ lpfnHook: newValue 
+
+ self  unsignedLongAt: self lpfnHookOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpstrDefExt 
+
+^ self unsignedLongAt: self lpstrDefExtOffset.
+
+
+
+! 
+ Win32apiOPENFILENAME_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ lStructSize: newValue 
+
+ self  unsignedLongAt: self lStructSizeOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpstrFilter: newValue 
+
+ self  unsignedLongAt: self lpstrFilterOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpstrTitle: newValue 
+
+ self  unsignedLongAt: self lpstrTitleOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ nMaxCustFilter 
+
+^ self unsignedLongAt: self nMaxCustFilterOffset.
+
+
+
+! 
+ lCustData 
+
+^ self unsignedLongAt: self lCustDataOffset.
+
+
+
+! 
+ FlagsOffset 
+
+^53.
+
+
+
+! 
+ lStructSize 
+
+^ self unsignedLongAt: self lStructSizeOffset.
+
+
+
+! 
+ initialize 
+
+ self  unsignedLongAt: self lStructSizeOffset put: self class dataSize; 
+
+  unsignedLongAt: self lpstrFileOffset put:( self class Ccalloc: self MAXPATH); 
+
+  unsignedLongAt: self nMaxFileOffset put: self MAXPATH.
+
+^ self.
+
+
+
+! 
+ lpstrCustomFilter: newValue 
+
+ self  unsignedLongAt: self lpstrCustomFilterOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpstrTitle 
+
+^ self unsignedLongAt: self lpstrTitleOffset.
+
+
+
+! 
+ hInstanceOffset 
+
+^9.
+
+
+
+! 
+ FlagsEx: newValue 
+
+ self  unsignedLongAt: self FlagsExOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpstrCustomFilterOffset 
+
+^17.
+
+
+
+! 
+ MAXPATH 
+
+^260.
+
+
+
+! 
+ lpstrInitialDirOffset 
+
+^45.
+
+
+
+! 
+ lpstrFile 
+
+^ self unsignedLongAt: self lpstrFileOffset.
+
+
+
+! 
+ Flags 
+
+^ self unsignedLongAt: self FlagsOffset.
+
+
+
+! 
+ pvReserved: newValue 
+
+ self  unsignedLongAt: self pvReservedOffset put: newValue.
+
+^ self.
+
+
+
+! 
+ lpstrCustomFilter 
+
+^ self unsignedLongAt: self lpstrCustomFilterOffset.
+
+
+
+! 
+ FlagsEx 
+
+^ self unsignedLongAt: self FlagsExOffset.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Win32apiOPENFILENAME) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Win32apiOPENFILENAME := eos !
+	mixinMetadata: mmd MixinMetadata_Win32apiOPENFILENAME := mmd !
+	 dataSize 
+
+^88.
+
+
+
+! 
+		 addAccessors 
+
+|  fields |
+
+ fields :=( self Array new:23)  at:1 put:'lStructSize'; 
+
+  at:2 put:'hwndOwner'; 
+
+  at:3 put:'hInstance'; 
+
+  at:4 put:'lpstrFilter'; 
+
+  at:5 put:'lpstrCustomFilter'; 
+
+  at:6 put:'nMaxCustFilter'; 
+
+  at:7 put:'nFilterIndex'; 
+
+  at:8 put:'lpstrFile'; 
+
+  at:9 put:'nMaxFile'; 
+
+  at:10 put:'lpstrFileTitle'; 
+
+  at:11 put:'nMaxFileTitle'; 
+
+  at:12 put:'lpstrInitialDir'; 
+
+  at:13 put:'lpstrTitle'; 
+
+  at:14 put:'Flags'; 
+
+  at:15 put:'nFileOffset'; 
+
+  at:16 put:'nFileExtension'; 
+
+  at:17 put:'lpstrDefExt'; 
+
+  at:18 put:'lCustData'; 
+
+  at:19 put:'lpfnHook'; 
+
+  at:20 put:'lpTemplateName'; 
+
+  at:21 put:'pvReserved'; 
+
+  at:22 put:'dwReserved'; 
+
+  at:23 put:'FlagsEx'; 
+
+ yourself.
+
+ fields withIndexDo:[ : ea : i | 
+
+|  offset |
+
+ offset := i - 1 *4 +1.
+
+ self  compile: ea ,'Offset 
+	^' , offset asString classified:'field offsets' withStamp:nil notifying:nil.
+
+ self  compile: ea ,': newValue
+	self unsignedLongAt: self ' , ea ,'Offset put: newValue' classified:'accessing' withStamp:nil notifying:nil.
+
+ self  compile: ea ,'
+	^self unsignedLongAt: self ' , ea ,'Offset' classified:'accessing' withStamp:nil notifying:nil.
+
+].
+
+^ self.
+
+
+
+! 
+		 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Win32apiOPENFILENAME enclosingObjects: (Array with: nil)!
+		Win32apiOPENFILENAME metadata enclosingMixin: nil !
+		Win32apiOPENFILENAME mixinMetadata: Win32apiOPENFILENAME metadata !
+		

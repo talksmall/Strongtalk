@@ -1,3 +1,115 @@
 Class
+MirrorGroups_superInit_usingLib:!
+86246938!
+unclassified!
+0:! !
+#categories!
+unclassified! !
+usingLib:!
+86247251!
+unclassified!
+0:! !
+#group!
+newspeak! !
+#extensionsAreSubtypes!
+true! !
+#revision!
+$Revision: 0.0 $! !
+Dictionary!
+86247476!
+unclassified!
+0! !
+#classVariableString!
+MixinMetadata_MirrorGroups EnclosingObjects_MirrorGroups! !
+Error:!
+86247111!
+unclassified!
+0:! !
+Collection:!
+86248147!
+unclassified!
+0:! !
+Dictionary:!
+86246778!
+unclassified!
+0:! !
+ImmutableMirrorGroup!
+86248307!
+unclassified!
+0! !
 #superclassTypeString!
-Object! !
+NewspeakObject! !
+MirrorGroup!
+86245903!
+unclassified!
+0! !
+#subtype!
+true! !
+#instanceVariableString!
+ MirrorGroups_ImmutableMirrorGroup_slot Collection Error Dictionary MirrorGroups_MirrorGroup_slot! !
+#branded!
+true! !
+#comment!
+Mirror groups are designed to aggregate mirrors of any kind.
+They make the mirror API compositional and not too
+heavyweight.  Consider the API of an immutable mixin mirror:
+
+
+name
+methods
+slots
+classes
+
+the latter three all return mirror groups, which all share a common protocol:
+
+findMirrorNamed: #foo
+includesMirrorNamed: #foo
+do: blk
+
+In a more traditional API, we would need to support methods like:
+
+findMethodNamed: #foo
+findSlotNamed: #foo
+findClassNamed: #foo
+
+includesMethodNamed: #foo
+includesSlotNamed: #foo
+includesClassNamed: #foo
+
+methodsDo: blk
+slotsDo: blk
+classesDo: blk
+
+This means 3 times as many methods, which need to be kept consistent.
+When the mirror is mutable, the actual mixin API does not change much. The 
+implementation returns mutable mirror groups, which support:
+
+addMirror: aMirror
+addFromSource: aSourceString
+
+instead of having the mutable mixin support:
+
+addMethodMirror:
+addMethodFromSource:
+addSlotMirror:
+addSlotFromSource:
+addClassStencilMirror:
+addClassFromSource:
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''License''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0! !
+#abstract!
+false! !
+Collection!
+86247603!
+unclassified!
+0! !
+Error!
+86247730!
+unclassified!
+0! !
+MirrorGroups_1_init:!
+86247847!
+unclassified!
+0:! !

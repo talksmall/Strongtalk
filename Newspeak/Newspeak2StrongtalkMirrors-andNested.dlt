@@ -1,0 +1,328 @@
+Delta define: #Newspeak2StrongtalkMirrors as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' MirrorGroup OrderedCollection Dictionary Newspeak2StrongtalkMirrors_InstanceVariableMirror_slot ReadWriteStream Newspeak2StrongtalkMirrors_LowLevelMirror_slot SystemMetadata Newspeak2StrongtalkMirrors_LowLevelMixinMirror_slot')
+	 classVariables: 'MixinMetadata_Newspeak2StrongtalkMirrors EnclosingObjects_Newspeak2StrongtalkMirrors')!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors) comment: '
+   Derived from the LowLevelMirrors class in Newspeak.
+   Copyright 2009-2010 Gilad Bracha.
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0'!
+	! (Delta mirrorFor: #Newspeak2StrongtalkMirrors) methodsFor: 'unclassified'!
+	Dictionary: Dictionary_val Dictionary := Dictionary_val! 
+LowLevelMirror
+	| nestedClass enclosingObjectArray myNested depth |
+	Newspeak2StrongtalkMirrors_LowLevelMirror_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_Newspeak2StrongtalkMirrors 
+			nestedMixins at: #Newspeak2StrongtalkMirrors_LowLevelMirror.
+		myNested := (nestedClass mixin |>  (MixinMetadata_Newspeak2StrongtalkMirrors Mirror on: self Object)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_Newspeak2StrongtalkMirrors size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_Newspeak2StrongtalkMirrors at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		Newspeak2StrongtalkMirrors_LowLevelMirror_slot := myNested.
+		].
+	^Newspeak2StrongtalkMirrors_LowLevelMirror_slot! 
+ mirrors 
+
+^ self.
+
+
+
+! 
+Dictionary ^Dictionary! 
+InstanceVariableMirror
+	| nestedClass enclosingObjectArray myNested depth |
+	Newspeak2StrongtalkMirrors_InstanceVariableMirror_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_Newspeak2StrongtalkMirrors 
+			nestedMixins at: #Newspeak2StrongtalkMirrors_InstanceVariableMirror.
+		myNested := (nestedClass mixin |>  (MixinMetadata_Newspeak2StrongtalkMirrors Mirror on: self  LowLevelMirror)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_Newspeak2StrongtalkMirrors size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_Newspeak2StrongtalkMirrors at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		Newspeak2StrongtalkMirrors_InstanceVariableMirror_slot := myNested.
+		].
+	^Newspeak2StrongtalkMirrors_InstanceVariableMirror_slot! 
+ReadWriteStream ^ReadWriteStream! 
+OrderedCollection: OrderedCollection_val OrderedCollection := OrderedCollection_val! 
+MirrorGroup ^MirrorGroup! 
+MirrorGroup: MirrorGroup_val MirrorGroup := MirrorGroup_val! 
+ Newspeak2StrongtalkMirrors_superInit_usingLib: platform 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ Newspeak2StrongtalkMirrors_1_init: platform 
+
+ self OrderedCollection: platform Collections OrderedCollection.
+
+ self Dictionary: platform Collections Dictionary.
+
+ self ReadWriteStream: platform Collections ReadWriteStream.
+
+ self SystemMetadata: platform Mirrors SystemMetadata.
+
+ self MirrorGroup:( platform Newspeak2 MirrorGroups usingLib: platform) MirrorGroup.
+
+^ self.
+
+
+
+! 
+SystemMetadata ^SystemMetadata! 
+ usingLib: platform 
+
+ self Newspeak2StrongtalkMirrors_superInit_usingLib: platform.
+
+ self Newspeak2StrongtalkMirrors_1_init: platform.
+
+^ self.
+
+
+
+! 
+OrderedCollection ^OrderedCollection! 
+SystemMetadata: SystemMetadata_val SystemMetadata := SystemMetadata_val! 
+LowLevelMixinMirror
+	| nestedClass enclosingObjectArray myNested depth |
+	Newspeak2StrongtalkMirrors_LowLevelMixinMirror_slot isNil ifTrue:[ 
+		nestedClass := 	MixinMetadata_Newspeak2StrongtalkMirrors 
+			nestedMixins at: #Newspeak2StrongtalkMirrors_LowLevelMixinMirror.
+		myNested := (nestedClass mixin |>  (MixinMetadata_Newspeak2StrongtalkMirrors Mirror on: self  LowLevelMirror)) reflectee.
+		myNested mixinMetadata: nestedClass reflectee metadata.
+		depth := EnclosingObjects_Newspeak2StrongtalkMirrors size + 1.
+		enclosingObjectArray :=  Array new: depth. 
+		enclosingObjectArray at:1 put: self. 
+		2 to: depth do:[:i | 
+			enclosingObjectArray at:i put:(EnclosingObjects_Newspeak2StrongtalkMirrors at: i - 1)
+			].
+		 myNested enclosingObjects: enclosingObjectArray.
+		Newspeak2StrongtalkMirrors_LowLevelMixinMirror_slot := myNested.
+		].
+	^Newspeak2StrongtalkMirrors_LowLevelMixinMirror_slot! 
+ReadWriteStream: ReadWriteStream_val ReadWriteStream := ReadWriteStream_val! 
+ !
+	! (Delta mirrorFor: #Newspeak2StrongtalkMirrors) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2StrongtalkMirrors := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2StrongtalkMirrors := mmd !
+	 usingLib: platform 
+
+^ self basicNew usingLib: platform.
+
+
+
+! 
+		 !
+	Newspeak2StrongtalkMirrors enclosingObjects: (Array with: nil)!
+		Newspeak2StrongtalkMirrors metadata enclosingMixin: nil !
+		Newspeak2StrongtalkMirrors mixinMetadata: Newspeak2StrongtalkMirrors metadata !
+		Delta define: #Newspeak2StrongtalkMirrors_LowLevelMixinMirror as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' methods cachedClassMixin name instVars isMeta category')
+	 classVariables: 'MixinMetadata_Newspeak2StrongtalkMirrors_LowLevelMixinMirror EnclosingObjects_Newspeak2StrongtalkMirrors_LowLevelMixinMirror')!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMixinMirror) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMixinMirror) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMixinMirror) comment: 'Represents a Squeak Class.'!
+	! (Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMixinMirror) methodsFor: 'unclassified'!
+	methods ^methods! 
+isMeta ^isMeta! 
+methods: methods_val methods := methods_val! 
+isMeta: isMeta_val isMeta := isMeta_val! 
+instVars ^instVars! 
+category ^category! 
+ classMixin 
+
+ self assert:[ 
+
+ self  isMeta not.
+
+].
+
+ self  cachedClassMixin isNil ifTrue:[ 
+
+ self  cachedClassMixin:( self class  named:( self  name ,' class') asSymbol isMeta:true).
+
+].
+
+^ self  cachedClassMixin.
+
+
+
+! 
+name: name_val name := name_val! 
+  Newspeak2StrongtalkMirrors_LowLevelMixinMirror_superInit_named: n isMeta: b 
+
+super  new.
+
+^ self.
+
+
+
+! 
+cachedClassMixin ^cachedClassMixin! 
+  Newspeak2StrongtalkMirrors_LowLevelMixinMirror_1_init_named: n isMeta: b 
+
+ self name: n.
+
+ self instVars:( (EnclosingObjects_Newspeak2StrongtalkMirrors_LowLevelMixinMirror at: 1)  MirrorGroup group:( self Array new:0)).
+
+ self methods:( (EnclosingObjects_Newspeak2StrongtalkMirrors_LowLevelMixinMirror at: 1)  MirrorGroup group:( self Array new:0)).
+
+ self category:nil.
+
+ self cachedClassMixin:nil.
+
+ self isMeta: b.
+
+^ self.
+
+
+
+! 
+  named: n isMeta: b 
+
+ self  Newspeak2StrongtalkMirrors_LowLevelMixinMirror_superInit_named: n isMeta: b.
+
+ self  Newspeak2StrongtalkMirrors_LowLevelMixinMirror_1_init_named: n isMeta: b.
+
+^ self.
+
+
+
+! 
+instVars: instVars_val instVars := instVars_val! 
+cachedClassMixin: cachedClassMixin_val cachedClassMixin := cachedClassMixin_val! 
+name ^name! 
+category: category_val category := category_val! 
+ !
+	! (Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMixinMirror) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2StrongtalkMirrors_LowLevelMixinMirror := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2StrongtalkMirrors_LowLevelMixinMirror := mmd !
+	  named: n isMeta: b 
+
+^ self basicNew  named: n isMeta: b.
+
+
+
+! 
+		 !
+	Newspeak2StrongtalkMirrors metadata addNestedClass: Newspeak2StrongtalkMirrors_LowLevelMixinMirror. ! 
+	Newspeak2StrongtalkMirrors_LowLevelMixinMirror metadata enclosingMixin: Newspeak2StrongtalkMirrors !
+	Delta define: #Newspeak2StrongtalkMirrors_InstanceVariableMirror as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' name')
+	 classVariables: 'MixinMetadata_Newspeak2StrongtalkMirrors_InstanceVariableMirror EnclosingObjects_Newspeak2StrongtalkMirrors_InstanceVariableMirror')!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_InstanceVariableMirror) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_InstanceVariableMirror) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_InstanceVariableMirror) comment: 'A mirror on an instance variable'!
+	! (Delta mirrorFor: #Newspeak2StrongtalkMirrors_InstanceVariableMirror) methodsFor: 'unclassified'!
+	name: name_val name := name_val! 
+ Newspeak2StrongtalkMirrors_InstanceVariableMirror_1_init: n 
+
+ self name: n.
+
+^ self.
+
+
+
+! 
+ named: n 
+
+ self Newspeak2StrongtalkMirrors_InstanceVariableMirror_superInit_named: n.
+
+ self Newspeak2StrongtalkMirrors_InstanceVariableMirror_1_init: n.
+
+^ self.
+
+
+
+! 
+ Newspeak2StrongtalkMirrors_InstanceVariableMirror_superInit_named: n 
+
+super  new.
+
+^ self.
+
+
+
+! 
+name ^name! 
+ !
+	! (Delta mirrorFor: #Newspeak2StrongtalkMirrors_InstanceVariableMirror) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2StrongtalkMirrors_InstanceVariableMirror := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2StrongtalkMirrors_InstanceVariableMirror := mmd !
+	 named: n 
+
+^ self basicNew named: n.
+
+
+
+! 
+		 !
+	Newspeak2StrongtalkMirrors metadata addNestedClass: Newspeak2StrongtalkMirrors_InstanceVariableMirror. ! 
+	Newspeak2StrongtalkMirrors_InstanceVariableMirror metadata enclosingMixin: Newspeak2StrongtalkMirrors !
+	Delta define: #Newspeak2StrongtalkMirrors_LowLevelMirror as: (
+	(Class subclassOf: 'NewspeakObject' instanceVariables:' metadata')
+	 classVariables: 'MixinMetadata_Newspeak2StrongtalkMirrors_LowLevelMirror EnclosingObjects_Newspeak2StrongtalkMirrors_LowLevelMirror')!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMirror) revision: '$Revision: 0.0 $'!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMirror) group: 'newspeak'!
+	(Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMirror) comment: 'Common base class for low level mirrors'!
+	! (Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMirror) methodsFor: 'unclassified'!
+	metadata ^metadata! 
+ Newspeak2StrongtalkMirrors_LowLevelMirror_1_init 
+
+ self metadata: (EnclosingObjects_Newspeak2StrongtalkMirrors_LowLevelMirror at: 1)  Dictionary new.
+
+^ self.
+
+
+
+! 
+metadata: metadata_val metadata := metadata_val! 
+ Newspeak2StrongtalkMirrors_LowLevelMirror_superInit_new 
+
+super  new.
+
+^ self.
+
+
+
+! 
+ new 
+
+ self Newspeak2StrongtalkMirrors_LowLevelMirror_superInit_new.
+
+ self Newspeak2StrongtalkMirrors_LowLevelMirror_1_init.
+
+^ self.
+
+
+
+! 
+ !
+	! (Delta mirrorFor: #Newspeak2StrongtalkMirrors_LowLevelMirror) classSide methodsFor: 'unclassified'!
+	enclosingObjects: eos EnclosingObjects_Newspeak2StrongtalkMirrors_LowLevelMirror := eos !
+	mixinMetadata: mmd MixinMetadata_Newspeak2StrongtalkMirrors_LowLevelMirror := mmd !
+	 new 
+
+^ self basicNew new.
+
+
+
+! 
+		 !
+	Newspeak2StrongtalkMirrors metadata addNestedClass: Newspeak2StrongtalkMirrors_LowLevelMirror. ! 
+	Newspeak2StrongtalkMirrors_LowLevelMirror metadata enclosingMixin: Newspeak2StrongtalkMirrors !
+	
