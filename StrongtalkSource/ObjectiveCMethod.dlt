@@ -35,9 +35,21 @@ initialize
 		after: ObjectiveCAlien.
 	Platform == MacOSXPlatform ifFalse: [^self].
 	MethodGetReturnType := self lookup: 'method_getReturnType' inLibrary: '/usr/lib/libobjc.dylib'.
-	NSMethodSignature := ObjectiveCClassAlien
+	"Following moved to lazy initializer - must run on main thread after Processor initialized"
+	"NSMethodSignature := ObjectiveCClassAlien
           											lookup: 'NSMethodSignature'
-            										inFramework: 'Foundation'! !
+            										inFramework: 'Foundation'"!
+
+initializeNSMethodSignature
+
+	| sem |
+	sem := Semaphore new.
+	MainProcess soleInstance schedule: [
+		NSMethodSignature := ObjectiveCClassAlien
+    		      											lookup: 'NSMethodSignature'
+            												inFramework: 'Foundation'.
+		sem signal].
+	sem wait! !
 
 ! (Delta mirrorFor: #ObjectiveCMethod) classSide methodsFor: 'instance creation' !
 
@@ -52,6 +64,15 @@ dataSize
 	};"
 
 	^12! !
+
+! (Delta mirrorFor: #ObjectiveCMethod) classSide methodsFor: 'restricted' !
+
+
+NSMethodSignature
+
+	NSMethodSignature isNil
+		ifTrue: [self initializeNSMethodSignature].
+	^NSMethodSignature! !
 
 ! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
 
@@ -82,7 +103,7 @@ selector
 signature ^<Alien>
 
 	^(ObjectiveCMethodSignature new)
-		unsignedLongAt: 1 put: ((NSMethodSignature signatureWithObjCTypes: self methodTypes) asUnsignedLong);
+		unsignedLongAt: 1 put: ((self NSMethodSignature signatureWithObjCTypes: self methodTypes) asUnsignedLong);
 		yourself! !
 
 ! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'instance initalization' !
@@ -92,4 +113,11 @@ selector: selector "<ObjectiveCAlien>" methodTypes: string "<char * Alien>" impl
 	self unsignedLongAt: 1 put: (selector unsignedLongAt: 1).
 	self unsignedLongAt: 5 put: string address.
 	self unsignedLongAt: 9 put: (functionPointer unsignedLongAt: 1)! !
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'private ' !
+
+
+NSMethodSignature
+
+	^self class NSMethodSignature! !
 

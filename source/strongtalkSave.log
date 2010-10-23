@@ -131381,3 +131381,225 @@ Delta define: #ClassTestIvars123 as: (
 "September 29, 2010 -> 19:27:33"!
 
 "System saved" !
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+Delta define: #ObjectiveCMethod as: (
+(Class subclassOf: 'Alien' instanceVariables: '') classVariables: 'MethodGetReturnType
+NSMethodSignature') !
+
+
+"October 23, 2010 -> 21:49:15"!
+
+(Delta mirrorFor: #ObjectiveCMethod)
+comment: 
+'/*
+ *  Method Template
+ */
+typedef struct objc_method *Method;
+
+struct objc_method {
+    SEL method_name;
+    char *method_types;
+    IMP method_imp;
+};
+
+
+   Copyright 2008 Cadence Design Systems, Inc.
+   
+   Licensed under the Apache License, Version 2.0 (the ''''License''''); you may not use this file except in compliance with the License.  You may obtain a copy of the License at  http://www.apache.org/licenses/LICENSE-2.0
+'!
+
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) classSide methodsFor: 'initialization' !
+initialize
+
+	SystemInitializer
+		addInitializer: self
+		after: ObjectiveCAlien.
+	Platform == MacOSXPlatform ifFalse: [^self].
+	MethodGetReturnType := self lookup: 'method_getReturnType' inLibrary: '/usr/lib/libobjc.dylib'.
+	"Following moved to lazy initializer - must run on main thread after Processor initialized"
+	"NSMethodSignature := ObjectiveCClassAlien
+          											lookup: 'NSMethodSignature'
+            										inFramework: 'Foundation'"! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) classSide methodsFor: 'initialization' !
+initializeNSMethodSignature
+
+	| sem |
+	sem := Semaphore new.
+	MainProcess soleInstance schedule: [
+		NSMethodSignature := ObjectiveCClassAlien
+    		      											lookup: 'NSMethodSignature'
+            												inFramework: 'Foundation'.
+		sem signal].
+	sem wait! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) classSide methodsFor: 'instance creation' !
+dataSize
+	"typedef struct objc_method *Method;
+
+	struct objc_method {
+	    SEL method_name;
+	    char *method_types;
+	    IMP method_imp;
+	};"
+
+	^12! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) classSide methodsFor: 'restricted' !
+NSMethodSignature
+
+	NSMethodSignature isNil
+		ifTrue: [self initializeNSMethodSignature].
+	^NSMethodSignature! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+implementation
+	^Alien forPointer: (self unsignedLongAt: 9)! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+methodTypes
+	^Alien forPointer: (self unsignedLongAt: 5)! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+methodTypesString
+	^(Alien forPointer: (self unsignedLongAt: 5)) strcpy! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+rawSelector
+	^Alien forPointer: (self unsignedLongAt: 1)! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+returnLength
+
+	^self signature methodReturnLength! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+returnType
+
+	^self signature methodReturnType! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+selector
+	^ObjectiveCAlien forPointer: (self unsignedLongAt: 1)! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'accessing' !
+signature ^<Alien>
+
+	^(ObjectiveCMethodSignature new)
+		unsignedLongAt: 1 put: ((self NSMethodSignature signatureWithObjCTypes: self methodTypes) asUnsignedLong);
+		yourself! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'instance initalization' !
+selector: selector "<ObjectiveCAlien>" methodTypes: string "<char * Alien>" implementation: functionPointer "<id (*IMP)(id, SEL, ...) Alien> ^<self>"
+	self unsignedLongAt: 1 put: (selector unsignedLongAt: 1).
+	self unsignedLongAt: 5 put: string address.
+	self unsignedLongAt: 9 put: (functionPointer unsignedLongAt: 1)! !
+
+"October 23, 2010 -> 21:49:15"!
+
+! (Delta mirrorFor: #ObjectiveCMethod) methodsFor: 'private ' !
+NSMethodSignature
+
+	^self class NSMethodSignature! !
+
+"October 23, 2010 -> 21:49:41"!
+
+"System saved" !
