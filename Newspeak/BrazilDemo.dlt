@@ -1,0 +1,100 @@
+Delta define: #BrazilDemo as: (
+(Class subclassOf: 'Object' instanceVariables: '')) !
+
+(Delta mirrorFor: #BrazilDemo) revision: '$Revision:$'!
+
+(Delta mirrorFor: #BrazilDemo) group: 'Unclassified'!
+
+(Delta mirrorFor: #BrazilDemo)
+comment: 
+''!
+
+! (Delta mirrorFor: #BrazilDemo) classSide methodsFor: 'demo' !
+
+
+launchDirectoryPicker
+
+	|brazil picker|
+
+	brazil := self createNewDesktop.
+	picker := brazil ToolClasses new DirectoryPicker new.
+	brazil theDesktopS scheduleUIInstallment: [[picker open]
+																							on: Error
+																							do: [:ex| nil error: ex messageText]].!
+
+launchFilePicker
+
+	|brazil picker|
+
+	brazil := self createNewDesktop.
+	picker := brazil ToolClasses new FilePicker new.
+	brazil theDesktopS scheduleUIInstallment: [[picker open]
+																							on: Error
+																							do: [:ex| nil error: ex messageText]].!
+
+launchMessageBox
+
+	|brazil messageBox|
+
+	brazil := self createNewDesktop.
+	messageBox := brazil ToolClasses new MessageBox new.
+	brazil theDesktopS scheduleUIInstallment: [[messageBox message: 'Hello World!!'; open]
+																							on: Error
+																							do: [:ex| nil error: ex messageText]].!
+
+launchNewFilePicker
+
+	|brazil picker|
+
+	brazil := self createNewDesktop.
+	picker := brazil ToolClasses new NewFilePicker new.
+	brazil theDesktopS scheduleUIInstallment: [[picker open]
+																							on: Error
+																							do: [:ex| nil error: ex messageText]].!
+
+launchPrompter
+
+	|brazil prompter|
+
+	brazil := self createNewDesktop.
+	prompter := brazil ToolClasses new Prompter new.
+	brazil theDesktopS scheduleUIInstallment: [[prompter initialText: 'Prompter message'; open]
+																							on: Error
+																							do: [:ex| nil error: ex messageText]].!
+
+reset
+
+self prepareTopLevelClasses.
+NsFFISessionManager soleInstance processIoEvents: false.
+NsFFISessionManager reset.
+NsPlatform reset! !
+
+! (Delta mirrorFor: #BrazilDemo) classSide methodsFor: 'private' !
+
+
+createNewDesktop
+
+	|brazil|
+	self
+		reset;
+		prepareTopLevelClasses;
+		initializeSessionManager.
+	brazil := NsPlatform new brazil.
+	brazil theDesktopS: brazil newWindowsDesktop.
+	^brazil!
+
+initializeSessionManager
+
+	NsFFISessionManager soleInstance
+		processIoEvents: false;
+		takeOverTheWorld!
+
+prepareTopLevelClasses
+
+	Brazil mixinMetadata: Brazil metadata.
+	Brazil enclosingObjects: (Array with: nil).
+	CAPI mixinMetadata: CAPI metadata.
+	CAPI enclosingObjects: (Array with: nil).
+	BrazilMappingForWin32 mixinMetadata: BrazilMappingForWin32 metadata.
+	BrazilMappingForWin32 enclosingObjects: (Array with: nil)! !
+
