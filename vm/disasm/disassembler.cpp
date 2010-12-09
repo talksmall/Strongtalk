@@ -25,12 +25,81 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 #ifdef DELTA_COMPILER
 #include "incls/_disassembler.cpp.incl"
 
+#include <inttypes.h>
 
-// excluded - provide empty methods
+#define DISASM_LIBRARY  "libnasm.dylib"
+#define DISASM_FUNCTION "disasm"
 
-void Disassembler::decode(nmethod* nm,            outputStream* st) {}
-void Disassembler::decode(char* begin, char* end, outputStream* st) {}
+typedef int32_t (*disasm_f) (uint8_t *, char *, int, int, int32_t, int, uint32_t);
+static disasm_f disassemble;
+
+static bool library_loaded;
+
+/* parameters for the NASM disassembler */
+static int32_t   offset    = 0;
+static int       autosync  = 0;
+static uint32_t  prefer    = 0;    // select instruction set; 0 = Intel (default)  
+
+static char outbuf[256];
+
+static void initialize(void) {
+  DLL* library_handle;
+  library_handle = os::dll_load(DISASM_LIBRARY);
+  if (library_handle == NULL) {
+    return;
+  }
+  disassemble = (disasm_f) os::dll_lookup(DISASM_FUNCTION, library_handle);
+  if (disassemble == NULL) {
+    return;
+  }
+  library_loaded = true;
+}
+
+static char tohex(unsigned char c) {
+  switch (c) {
+    case 0x0: return '0'; case 0x1: return '1'; case 0x2: return '2'; case 0x3: return '3';
+    case 0x4: return '4'; case 0x5: return '5'; case 0x6: return '6'; case 0x7: return '7';
+    case 0x8: return '8'; case 0x9: return '9'; case 0xA: return 'A'; case 0xB: return 'B';
+    case 0xC: return 'C'; case 0xD: return 'D'; case 0xE: return 'E'; case 0xF: return 'F';
+    default:  return '?';
+  }
+}
+
+static void disasm(char* begin, char* end, outputStream* st) {
+  char* pos;
+  char ch, hexcode[256];
+  int lendis, i;      
+  
+  if (!library_loaded) {
+    initialize();
+  }
+  if (disassemble) {
+    pos = begin;
+    while (pos < end) {
+      lendis = disassemble((uint8_t*) pos, outbuf, sizeof(outbuf), 32, offset, autosync, prefer);
+      if (lendis) {
+        for (i = 0; i < lendis; i++) {
+          ch = *(pos+i);
+          hexcode[2*i]   = tohex((ch & 0xF0) >> 4);
+          hexcode[2*i+1] = tohex(ch & 0x0F);
+        }
+        hexcode[2*i] = '\0';
+        st->print_cr("    %p %-20s    %s", pos, hexcode, outbuf);
+      }
+      pos += lendis;
+    }
+  } else {
+    st->print_cr("INFO: no disassemble() function available!");
+  }  
+}
 
 
+void Disassembler::decode(nmethod* nm, outputStream* st) {
+  disasm(nm->insts(), nm->instsEnd(), st);
+}
+
+void Disassembler::decode(char* begin, char* end, outputStream* st) {
+  disasm(begin, end, st);
+}
 
 #endif
