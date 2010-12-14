@@ -71,7 +71,7 @@ class VM_GarbageCollect : public VM_Operation {
   VM_GarbageCollect(oop* addr) 		{ this->addr = addr; }
   void doit();
 
-  char* name() { return "terminate process"; }
+  char* name() { return "garbage collect"; }
 };
 
 class VM_TerminateProcess : public VM_Operation {
