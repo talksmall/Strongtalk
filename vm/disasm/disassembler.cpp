@@ -39,11 +39,13 @@ static void initialize(void);
 static char tohex(unsigned char c);
 static char* bintohex(char *data, int bytes);
 
-static void printRelocInfo(relocIterator* iter, outputStream* st);
-static void printRelocInfo(nmethod* nm, char* pc, int lendis, outputStream* st);
+static void printCode(char* pc, int lendis, char* buf, outputStream* st);
+static void printRelocInfo(relocIterator& iter, outputStream* st);
+static void printRelocInfo(relocIterator& iter, char* pc, int lendis, outputStream* st);
 static void printPcDescInfo(nmethod* nm, char* pc, outputStream* st);
 
-static void disasm(char* begin, char* end, nmethod* nm, outputStream* st);
+static void disasm(char* begin, char* end, outputStream* st);
+static void disasm(nmethod* nm, outputStream* st);
 
 static disasm_f disassemble;
 static bool library_loaded = false;
@@ -92,19 +94,20 @@ static char* bintohex(char *data, int bytes) {
   return buf;
 }
 
-static void printRelocInfo(relocIterator* iter, outputStream* st) {
+static void printRelocInfo(relocIterator& iter, outputStream* st) {
   primitive_desc* pd;
   char* target;
   int* addr;
   
-  st->print("[reloc @ ");
-  addr = iter->word_addr();
-  switch (iter->type()) {
+  st->print("; reloc @ ");
+  addr = iter.word_addr();
+  switch (iter.type()) {
     case relocInfo::none:
       st->print("none");
       break;
       
     case relocInfo::oop_type:
+      assert(oop(*addr)->verify(), "bad oop");
       st->print("%p, embedded oop, ", addr);
       oop(*addr)->print_value();
       break;
@@ -138,10 +141,10 @@ static void printRelocInfo(relocIterator* iter, outputStream* st) {
       
     case relocInfo::uncommon_type:
       st->print("%p, uncommon trap ", addr);
-      if (iter->wasUncommonTrapExecuted())
-        st->print(" (taken)");
+      if (iter.wasUncommonTrapExecuted())
+        st->print("(taken)");
       else
-        st->print(" (not taken)");
+        st->print("(not taken)");
       break;
       
     case relocInfo::dll_type:
@@ -152,38 +155,54 @@ static void printRelocInfo(relocIterator* iter, outputStream* st) {
       st->print("???");
       break;
   }
-  st->print("]");
 }
 
-static void printRelocInfo(nmethod* nm, char* pc, int lendis, outputStream* st) {
-  relocIterator iter(nm);
-  char *addr;
-  
-  while (iter.next()) {
-    addr = (char*) iter.word_addr();
-    if (addr > pc && addr < (pc + lendis)) {
-      printRelocInfo(&iter, st);
-      break;
-    }
+static void printRelocInfo(relocIterator &iter, char* pc, int lendis, outputStream* st) {
+  // Note: 2 relocation information within one instruction is possible!
+  char* i = (char*) iter.word_addr();
+  while (i >= pc && i < (pc + lendis)) { // reloc pointer must be in instructions's bytes (opcode + data)
+    printRelocInfo(iter, st);
+    iter.next();
+    i = (char*) iter.word_addr();
   }
 }
 
 static void printPcDescInfo(nmethod* nm, char* pc, outputStream* st) {
   PcDesc* pcs;
-
+    
   pcs = nm->containingPcDesc(pc, NULL);
   if (pcs) {
-    st->print("bc = %03ld ", pcs->byteCode);
-    if (pcs->is_prologue()) {
-      st->print("prologue "); 
+    if (pcs->is_prologue() && pcs->pc == 0 && pcs->scope == 0) {
+      st->print("    prologue "); 
     } else if (pcs->is_epilogue()) {
-      st->print("epilogue ");
+      st->print("    epilogue ");
+    } else if (pcs->byteCode == IllegalBCI) {
+      st->print("    illegal ");
+    } else {
+      Bytecodes::Code code = Bytecodes::Code(pcs->byteCode);
+      if (Bytecodes::is_defined(code)) {
+        st->print("    %s %ld", Bytecodes::name(code), code);
+        if (Bytecodes::argument_spec(code) != Bytecodes::no_args) {
+          st->print(" %s ", Bytecodes::argument_spec_as_string(Bytecodes::argument_spec(code)));
+        }
+#if 0
+        st->print(" %s ", Bytecodes::code_type_as_string(Bytecodes::code_type(code)));
+        st->print(" %s ", Bytecodes::send_type_as_string(Bytecodes::send_type(code)));
+        st->print(" %s ", Bytecodes::argument_spec_as_string(Bytecodes::argument_spec(code)));
+#endif
+      } else {
+        st->print("    ??? %d", pcs->byteCode);
+      }
     }
+    st->cr();
   }
 }
 
+static void printCode(char* pc, int lendis, char* buf, outputStream* st) {
+  st->print("%p %-20s    %-40s", pc, bintohex(pc, lendis), buf);
+}
 
-static void disasm(char* begin, char* end, nmethod* nm, outputStream* st) {
+static void disasm(char* begin, char* end, outputStream* st) {
   static char buf[MAX_OUTBUF_SIZE];
   int lendis;      
   
@@ -194,12 +213,29 @@ static void disasm(char* begin, char* end, nmethod* nm, outputStream* st) {
     for (char* pc = begin; pc < end; pc += lendis) {
       lendis = disassemble((uint8_t*) pc, buf, sizeof(buf), 32, offset, autosync, prefer);
       if (lendis) {
-        st->print("%p %-20s    %-40s", pc, bintohex(pc, lendis), buf);
-        if (nm) {
-          st->print("; ");
-          printPcDescInfo(nm, pc, st);
-          printRelocInfo(nm, pc, lendis, st);
-        }
+        st->print_cr("%p %-20s    %-40s", pc, bintohex(pc, lendis), buf);
+      }
+    }
+  } else {
+    st->print_cr("INFO: no disassemble() function available!");
+  }    
+}
+
+static void disasm(nmethod* nm, outputStream* st) {
+  static char buf[MAX_OUTBUF_SIZE];
+  int lendis;      
+  
+  if (!library_loaded) {
+    initialize();
+  }
+  if (disassemble) {
+    relocIterator iter(nm);
+    for (char* pc = nm->insts(); pc < nm->instsEnd(); pc += lendis) {
+      lendis = disassemble((uint8_t*) pc, buf, sizeof(buf), 32, offset, autosync, prefer);
+      if (lendis) {
+        printPcDescInfo(nm, pc, st);
+        printCode(pc, lendis, buf, st);
+        printRelocInfo(iter, pc, lendis, st);
       }
       st->cr();
     }
@@ -209,11 +245,11 @@ static void disasm(char* begin, char* end, nmethod* nm, outputStream* st) {
 }
 
 void Disassembler::decode(nmethod* nm, outputStream* st) {
-  disasm(nm->insts(), nm->instsEnd(), nm, st);
+  disasm(nm, st);
 }
 
 void Disassembler::decode(char* begin, char* end, outputStream* st) {
-  disasm(begin, end, NULL, st);
+  disasm(begin, end, st);
 }
 
 #endif
