@@ -976,32 +976,30 @@ ScopeDescRecorder::ScopeDescRecorder(int byte_size, int pcDesc_size) {
 }
 
 void ScopeDescRecorder::copyTo(nmethod* nm) {
-  { nmethodScopes* d = (nmethodScopes*) nm->scopes();
-    bool update = false;
+  nmethodScopes* d = (nmethodScopes*) nm->scopes();
 
-    // Copy the body part of the nmethodScopes
-    int* start = (int*)(d+1);
-    int* p     = start;
+  // Copy the body part of the nmethodScopes
+  int* start = (int*)(d+1);
+  int* p     = start;
 
-    d->set_nmethod_offset((char*) d - (char*) nm);
+  d->set_nmethod_offset((char*) d - (char*) nm);
 
-    codes->copy_to( p);
+  codes->copy_to( p);
 
-    d->set_oops_offset((char*) p - (char*) start);
-    oops->copy_to( p);
+  d->set_oops_offset((char*) p - (char*) start);
+  oops->copy_to( p);
 
-    d->set_value_offset((char*) p - (char*) start);
-    values->copy_to( p);
+  d->set_value_offset((char*) p - (char*) start);
+  values->copy_to( p);
 
-    d->set_pcs_offset((char*) p - (char*) start);
-    pcs->copy_to( p);
+  d->set_pcs_offset((char*) p - (char*) start);
+  pcs->copy_to( p);
 
-    d->set_length((char*) p - (char*) start);
+  d->set_length((char*) p - (char*) start);
 
-    d->set_dependants_end(dependants_end);
+  d->set_dependants_end(dependants_end);
 
-    assert( (char*) d + size() == (char*) p, "wrong size of nmethodScopes");
-  }
+  assert( (char*) d + size() == (char*) p, "wrong size of nmethodScopes");
 }
 
 void ScopeDescRecorder::addPcDesc(int pcOffset, ScopeInfo scope, int bci) {
