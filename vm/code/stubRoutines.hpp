@@ -38,7 +38,8 @@ class StubRoutines: AllStatic {
  private:
   enum { _code_size = 12000 };			// simply increase if too small (assembler will crash if too small)
   static bool _is_initialized;			// true if StubRoutines has been initialized
-  static char _code[_code_size];		// the code buffer for the stub routines
+//  static char _code[_code_size];		// the code buffer for the stub routines
+  static char* _code;		// the code buffer for the stub routines
   static void (*single_step_fn)();              // pointer to the current single step function (used by evaluator and ST debugger)
 
   // add entry points here

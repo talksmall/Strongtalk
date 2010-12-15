@@ -287,6 +287,9 @@ bool os::dll_unload(DLL* library) {
 	return FreeLibrary((HINSTANCE) library) ? true : false;
 }
 
+char* os::dll_extension() {
+  return ".dll";
+}
 char* exception_name(int code) {
   switch(code) {
     case EXCEPTION_ACCESS_VIOLATION:         return "Access violation";
@@ -424,6 +427,10 @@ bool os::release_memory(char* addr, int size) {
 bool os::guard_memory(char* addr, int size) {
   DWORD old_status;
   return VirtualProtect(addr, size, PAGE_READWRITE | PAGE_GUARD, &old_status) ? true : false;
+}
+
+char* os::exec_memory(int size) {
+  return (char*) VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 }
 
 void* os::malloc(int size) {

@@ -169,6 +169,20 @@ StatBuffer
 
     ^StatBuffer!
 
+W_OK
+
+	^2!
+
+access: mode ifFail: block
+
+	| name result |
+	name := CString for: self name.
+	[result := {{<libc ExternalProxy access>
+						name: name
+						mode: mode}}.
+	^result isAllOnes not]
+		ensure: [name free]!
+
 createValueFor: mode <Symbol>  ^<ExternalData>
 
     mode = #read
@@ -232,7 +246,7 @@ modeFor: mode <Symbol> ^<SmallInt>
     mode = #read
         ifTrue: [ ^self O_RDONLY ].
     mode = #write
-        ifTrue: [ ^(self O_WRONLY bitOr: self O_CREAT) bitOr: self O_TRUNC ].
+        ifTrue: [ ^(self O_RDWR bitOr: self O_CREAT) bitOr: self O_TRUNC ].
     mode = #readWrite
         ifTrue: [ ^self O_RDWR bitOr: self O_CREAT ].
     self error: 'Unrecognised mode: ' , mode!
@@ -352,9 +366,10 @@ isSyntaxValid ^<Boolean>
 
 isWriteable
 
-    ^self stat: [:stat| 
+    "^self stat: [:stat| 
     				(stat uid == self geteuid and: [(stat mode bitAnd: self S_IWUSR) == self S_IWUSR])
     					or: [(stat gid == self getegid and: [(stat mode bitAnd: self S_IWGRP) == self S_IWGRP])
     					or: [(stat mode bitAnd: self S_IWOTH) == self S_IWOTH]]]
-    	ifFail: [ self statFailed ]! !
+    	ifFail: [ self statFailed ]"
+    ^self access: self W_OK ifFail: []! !
 

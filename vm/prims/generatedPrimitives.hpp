@@ -89,7 +89,8 @@ class GeneratedPrimitives: AllStatic {
  private:
   enum { _code_size = 8192 };			// simply increase if too small (assembler will crash if too small)
   static bool _is_initialized;			// true if GeneratedPrimitives has been initialized
-  static char _code[_code_size];		// the code buffer for the primitives
+//  static char _code[_code_size];		// the code buffer for the primitives
+  static char* _code;		// the code buffer for the primitives
 
   // add entry points here
   static char* _allocateContext_var;

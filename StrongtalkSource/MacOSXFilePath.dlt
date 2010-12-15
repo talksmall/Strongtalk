@@ -35,6 +35,16 @@ fileDescriptorClass ^<FileDescriptor class>
 "%TODO delegate to Platform"
     ^MacOSXFileDescriptor!
 
+modeFor: mode <Symbol> ^<SmallInt>
+
+    mode = #read
+        ifTrue: [ ^self O_RDONLY ].
+    mode = #write
+        ifTrue: [ ^(self O_WRONLY bitOr: self O_CREAT) bitOr: self O_TRUNC ].
+    mode = #readWrite
+        ifTrue: [ ^self O_RDWR bitOr: self O_CREAT ].
+    self error: 'Unrecognised mode: ' , mode!
+
 statName: name buffer: statBuffer
 
     ^{{<libc ExternalProxy stat>

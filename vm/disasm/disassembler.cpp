@@ -25,9 +25,9 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 #ifdef DELTA_COMPILER
 #include "incls/_disassembler.cpp.incl"
 
-#include <inttypes.h>
+//#include <inttypes.h>
 
-#define DISASM_LIBRARY  "libnasm.dylib"
+#define DISASM_LIBRARY  "libnasm"
 #define DISASM_FUNCTION "disasm"
 
 typedef int32_t (*disasm_f) (uint8_t *, char *, int, int, int32_t, int, uint32_t);
@@ -44,7 +44,13 @@ static char outbuf[256];
 
 static void initialize(void) {
   DLL* library_handle;
-  library_handle = os::dll_load(DISASM_LIBRARY);
+  char libname[13];
+  char* extension = os::dll_extension();
+  strcpy(libname, DISASM_LIBRARY);
+  strcpy(libname+7, extension);
+  libname[7+strlen(extension)] = '\0';
+          
+  library_handle = os::dll_load(libname);
   if (library_handle == NULL) {
     return;
   }

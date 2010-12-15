@@ -28,6 +28,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 # include <unistd.h>
 # include <semaphore.h>
 # include <sys/times.h>
+# include <sys/mman.h>
 # include <time.h>
 # include <stdio.h>
 # include <dlfcn.h>
@@ -138,13 +139,14 @@ class Thread : CHeapObj {
         pthread_t _threadId;
         clockid_t _clockId;
         int _thread_index;
+        void* stackLimit;
         
         static void init() {
           ThreadCritical lock;
           _threads = new(true) GrowableArray<Thread*>(10, true);
           
         }
-        Thread(pthread_t threadId) : _threadId(threadId), suspendEvent(false) {
+	    Thread(pthread_t threadId, void* stackLimit) : _threadId(threadId), suspendEvent(false), stackLimit(stackLimit) {
           ThreadCritical lock;
           pthread_getcpuclockid(_threadId, &_clockId);
           _thread_index = _threads->length();
@@ -194,31 +196,61 @@ Thread* os::starting_thread(int* id_addr) {
 }
 
 typedef struct {
-  int (*main)(void* parameter);
-  void* parameter;
+	int (*main)(void* parameter);
+	void* parameter;
+  char* stackLimit;
 } thread_args_t;
+
+static Event* threadCreated = NULL;
+
+#define STACK_SIZE ThreadStackSize * K
+
+char* calcStackLimit() {
+  char* stackptr;
+  asm("movl %%esp, %0;" : "=a"(stackptr));
+  stackptr = (char*) align(stackptr, os::vm_page_size());
   
+  int stackHeadroom = 2 * os::vm_page_size();
+  return stackptr - STACK_SIZE + stackHeadroom;
+}
 void* mainWrapper(void* args) {
-  thread_args_t* wrapperArgs = (thread_args_t*) args;
+  thread_args_t * targs = (thread_args_t*) args;
+  targs->stackLimit = calcStackLimit();
+	
+  int (*threadMain)(void*) = targs->main;
+  void* parameter = targs->parameter;
   int* result = (int*) malloc(sizeof(int));
-  *result = wrapperArgs->main(wrapperArgs->parameter);
-  free(args);
+  threadCreated->signal();
+  *result = threadMain(parameter);
   return (void *) result; 
 }
 
-// 1 reference process.cpp
 Thread* os::create_thread(int threadStart(void* parameter), void* parameter, int* id_addr) {
-  pthread_t threadId;
-  thread_args_t* threadArgs = (thread_args_t*) malloc(sizeof(thread_args_t));
-  threadArgs->main = threadStart;
-  threadArgs->parameter = parameter;
-  int status = pthread_create(&threadId, NULL, &mainWrapper, threadArgs);
-  if (status != 0) {
-    fatal("Unable to create thread");
+	pthread_t threadId;
+  thread_args_t threadArgs;
+  {
+    ThreadCritical tc;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, STACK_SIZE);
+    
+    threadCreated->reset();
+    threadArgs.main = threadStart;
+    threadArgs.parameter = parameter;
+    
+    int status = pthread_create(&threadId, &attr, &mainWrapper, &threadArgs);
+    if (status != 0) {
+      fatal1("Unable to create thread. status = %d", status);
+    }
   }
-  Thread* thread = new Thread(threadId);
-  *id_addr = thread->_thread_index;
-  return thread;
+  threadCreated->waitFor();
+	Thread* thread = new Thread(threadId, threadArgs.stackLimit);
+	*id_addr = thread->_thread_index;
+	return thread;
+}
+
+void* os::stack_limit(Thread* thread) {
+  return thread->stackLimit;
 }
 
 // 1 reference process.cpp
@@ -329,6 +361,10 @@ bool os::dll_unload(DLL* library) {
   return true;
 }
 
+char* os::dll_extension() {
+  return ".so";
+}
+
 int       nCmdShow      = 0;
 
 // 1 reference - prims/system_prims.cpp
@@ -349,103 +385,20 @@ void os::timerStop() {}
 // 1 reference - prims/debug_prims.cpp
 void os::timerPrintBuffer() {}
 
-// Virtual Memory
-class Allocations {
-  private:
-    int allocationSize;
-    char** allocations;
-    char** reallocBoundary;
-    char** next;
-    bool released;
-    
-    void checkCapacity() {
-      if (next == reallocBoundary) {
-        reallocate();
-      }
-    }
-    void reallocate() {
-        char** oldAllocations = allocations;
-        int oldSize = allocationSize;
-        allocationSize *= 2;
-        allocations = (char**)malloc(sizeof(char*) * allocationSize);
-        memcpy(allocations, oldAllocations, oldSize * sizeof(char*));
-        next = allocations + oldSize;
-        reallocBoundary = allocations + allocationSize;
-        free(oldAllocations);
-    }
-    void initialize() {
-      allocationSize = 10;
-      allocations = (char**)malloc(sizeof(char*) * allocationSize);
-      reallocBoundary = allocations + allocationSize;
-      next = allocations;
-    }
-    void release() {
-      if (released) return;
-      for (char** current = allocations; current < next; current++)
-        free(*current);
-      free(allocations);
-      allocations = next = reallocBoundary = NULL;
-      released = true;
-    }
-  public:
-    Allocations() {
-      initialize();
-    }
-    ~Allocations() {
-      release();
-    }
-    void remove(char* allocation) {
-      if (released) return;
-      for (char** current = allocations; current < next; current++)
-        if (*current == allocation) {
-          for (char** to_move = current; to_move < next; to_move++)
-            to_move[0] = to_move[1];
-          next--;
-          return;
-        }
-    }
-    void add(char* allocation) {
-      if (released) return;
-      checkCapacity();
-      *next = allocation;
-      next++;
-    }
-    bool contains(char* allocation) {
-      if (released) return false;
-      for (char** current = allocations; current < (allocations + allocationSize); current++)
-        if (*current == allocation) return true;
-      return false;
-    }
-};
-
-Allocations allocations;
-
-// 1 reference - virtualspace.cpp
 char* os::reserve_memory(int size) {
-  ThreadCritical tc;
-  char* allocation = (char*) valloc(size);
-  allocations.add(allocation);
-  return allocation;
+  return (char*) mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
 }
   
-// 1 reference - virtualspace.cpp
 bool os::commit_memory(char* addr, int size) {
-  return true;
+  return !mprotect(addr, size, PROT_READ | PROT_WRITE);
 }
 
-// 1 reference - virtualspace.cpp
 bool os::uncommit_memory(char* addr, int size) {
-  return true;
+  return !mprotect(addr, size, PROT_NONE);
 }
 
-// 1 reference - virtualspace.cpp
 bool os::release_memory(char* addr, int size) {
-  ThreadCritical tc;
-  if (allocations.contains(addr)) {
-      allocations.remove(addr);
-      free(addr);
-  }
-  return true;
+  return !munmap(addr, size);
 }
 
 // No references
@@ -455,6 +408,10 @@ bool os::guard_memory(char* addr, int size) {
 
 void* os::malloc(int size) {
   return ::malloc(size);
+}
+
+char* os::exec_memory(int size) {
+  return (char*) mmap(0, size, PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
 }
 
 void* os::calloc(int size, char filler) {
@@ -581,7 +538,7 @@ static void initialize_performance_counter() {
 // No references
 void os::initialize_system_info() {
     Thread::init();
-    main_thread = new Thread(pthread_self());
+    main_thread = new Thread(pthread_self(), calcStackLimit());
     initialize_performance_counter();
 }
 
@@ -643,13 +600,25 @@ void install_dummy_handler() {
 }
 
 void trace_stack(int thread_id);
+void (*userHandler)(void* fp, void* sp, void* pc) = NULL;
 
 static void handler(int signum, siginfo_t* info, void* context) {
 //	install_dummy_handler();
 //	trace_stack(os::current_thread_id());
-    printf("\nsignal: %d\ninfo: %x\ncontext: %x", signum, (int) info, (int) context);
-	os_dump_context2((ucontext_t*) context);
+    if (!userHandler) {
+        printf("\nsignal: %d\ninfo: %x\ncontext: %x", signum, (int) info, (int) context);
+	    os_dump_context2((ucontext_t*) context);
+    } else {
+        mcontext_t mcontext = ((ucontext_t*) context)->uc_mcontext;
+        userHandler((void*) mcontext.gregs[REG_EBP], 
+                    (void*) mcontext.gregs[REG_ESP], 
+                    (void*) mcontext.gregs[REG_EIP]);
+    }
     exit(-1);
+}
+
+void os::add_exception_handler(void newHandler(void* fp, void* sp, void* pc)) {
+    userHandler = newHandler;
 }
 
 void install_signal_handlers() {
@@ -672,6 +641,10 @@ void os_init() {
 
   install_signal_handlers();
   os::initialize_system_info();
+	
+  pthread_setconcurrency(1);
+
+  threadCreated = new Event(false);
   
   if (EnableTasks) {
     pthread_t watcherThread;

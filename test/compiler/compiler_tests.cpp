@@ -2,7 +2,7 @@
 # include "incls/_blockOop.cpp.incl"
 # include "incls/_vmOperations.cpp.incl"
 # include "incls/_delta.cpp.incl"
-# include "recompile.hpp"
+//# include "recompile.hpp"
 //#include "handle.hpp"
 #include "test.h"
 #include "testProcess.hpp"

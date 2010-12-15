@@ -266,7 +266,8 @@ Heap::Heap(int s, int bs) {
   log2BS = 0;
   while (bs > 1) { bs >>= 1; log2BS++; }
   nfree = 30;
-  _base = AllocateHeap(size + blockSize, "zone");
+//  _base = AllocateHeap(size + blockSize, "zone");
+  _base = os::exec_memory(size + blockSize); //, "zone");
   base = (char*)((int(_base) + blockSize - 1) / blockSize * blockSize);
   assert(int(base) % blockSize == 0, "base not aligned to blockSize");
   heapKlass = (ChunkKlass*)(AllocateHeap(mapSize() + 2, "zone free map") + 1);

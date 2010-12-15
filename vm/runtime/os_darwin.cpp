@@ -30,6 +30,7 @@
 # include <semaphore.h>
 # include <sys/time.h>
 # include <sys/times.h>
+# include <sys/mman.h>
 # include <time.h>
 # include <stdio.h>
 # include <dlfcn.h>
@@ -391,7 +392,9 @@ bool os::dll_unload(DLL* library) {
 	delete library;
 	return true;
 }
-
+char* os::dll_extension() {
+  return ".dylib";
+}
 int       nCmdShow      = 0;
 
 // 1 reference - prims/system_prims.cpp
@@ -412,103 +415,24 @@ void os::timerStop() {}
 // 1 reference - prims/debug_prims.cpp
 void os::timerPrintBuffer() {}
 
-// Virtual Memory
-class Allocations {
-private:
-    int allocationSize;
-    char** allocations;
-    char** reallocBoundary;
-    char** next;
-    bool released;
-    
-    void checkCapacity() {
-		if (next == reallocBoundary) {
-			reallocate();
-		}
-    }
-    void reallocate() {
-        char** oldAllocations = allocations;
-        int oldSize = allocationSize;
-        allocationSize *= 2;
-        allocations = (char**)malloc(sizeof(char*) * allocationSize);
-        memcpy(allocations, oldAllocations, oldSize * sizeof(char*));
-        next = allocations + oldSize;
-        reallocBoundary = allocations + allocationSize;
-        free(oldAllocations);
-    }
-    void initialize() {
-		allocationSize = 10;
-		allocations = (char**)malloc(sizeof(char*) * allocationSize);
-		reallocBoundary = allocations + allocationSize;
-		next = allocations;
-    }
-    void release() {
-		if (released) return;
-		for (char** current = allocations; current < next; current++)
-			free(*current);
-		free(allocations);
-		allocations = next = reallocBoundary = NULL;
-		released = true;
-    }
-public:
-    Allocations() {
-		initialize();
-    }
-    ~Allocations() {
-		release();
-    }
-    void remove(char* allocation) {
-		if (released) return;
-		for (char** current = allocations; current < next; current++)
-			if (*current == allocation) {
-				for (char** to_move = current; to_move < next; to_move++)
-					to_move[0] = to_move[1];
-				next--;
-				return;
-			}
-    }
-    void add(char* allocation) {
-		if (released) return;
-		checkCapacity();
-		*next = allocation;
-		next++;
-    }
-    bool contains(char* allocation) {
-		if (released) return false;
-		for (char** current = allocations; current < (allocations + allocationSize); current++)
-			if (*current == allocation) return true;
-		return false;
-    }
-};
-
-Allocations allocations;
-
-// 1 reference - virtualspace.cpp
 char* os::reserve_memory(int size) {
-	ThreadCritical tc;
-	char* allocation = (char*) valloc(size);
-	allocations.add(allocation);
-	return allocation;
+  return (char*) mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANON, 0, 0);
 }
 
-// 1 reference - virtualspace.cpp
 bool os::commit_memory(char* addr, int size) {
-	return true;
+  return !mprotect(addr, size, PROT_READ | PROT_WRITE);
 }
 
-// 1 reference - virtualspace.cpp
 bool os::uncommit_memory(char* addr, int size) {
-	return true;
+  return !mprotect(addr, size, PROT_NONE);
 }
 
-// 1 reference - virtualspace.cpp
 bool os::release_memory(char* addr, int size) {
-	ThreadCritical tc;
-	if (allocations.contains(addr)) {
-		allocations.remove(addr);
-		free(addr);
-	}
-	return true;
+  return !munmap(addr, size);
+}
+
+char* os::exec_memory(int size) {
+  return (char*) mmap(0, size, PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, 0, 0);
 }
 
 // No references

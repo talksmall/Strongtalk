@@ -131603,3 +131603,67 @@ NSMethodSignature
 "October 23, 2010 -> 21:49:41"!
 
 "System saved" !
+"December 12, 2010 -> 16:41:59"!
+
+! (Delta mirrorFor: #MacOSXFilePath) methodsFor: 'private' !
+modeFor: mode <Symbol> ^<SmallInt>
+
+    mode = #read
+        ifTrue: [ ^self O_RDONLY ].
+    mode = #write
+        ifTrue: [ ^(self O_WRONLY bitOr: self O_CREAT) bitOr: self O_TRUNC ].
+    mode = #readWrite
+        ifTrue: [ ^self O_RDWR bitOr: self O_CREAT ].
+    self error: 'Unrecognised mode: ' , mode! !
+
+"December 12, 2010 -> 16:42:43"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+modeFor: mode <Symbol> ^<SmallInt>
+
+    mode = #read
+        ifTrue: [ ^self O_RDONLY ].
+    mode = #write
+        ifTrue: [ ^(self O_RDWR bitOr: self O_CREAT) bitOr: self O_TRUNC ].
+    mode = #readWrite
+        ifTrue: [ ^self O_RDWR bitOr: self O_CREAT ].
+    self error: 'Unrecognised mode: ' , mode! !
+
+"December 12, 2010 -> 16:43:44"!
+
+"System saved" !
+"December 12, 2010 -> 17:35:29"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+W_OK
+
+	^2! !
+
+"December 12, 2010 -> 17:40:31"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'private' !
+access: mode ifFail: block
+
+	| name result |
+	name := CString for: self name.
+	[result := {{<libc ExternalProxy access>
+						name: name
+						mode: mode}}.
+	^result isAllOnes not]
+		ensure: [name free]! !
+
+"December 12, 2010 -> 17:42:12"!
+
+! (Delta mirrorFor: #UnixFilePath) methodsFor: 'testing' !
+isWriteable
+
+    "^self stat: [:stat| 
+    				(stat uid == self geteuid and: [(stat mode bitAnd: self S_IWUSR) == self S_IWUSR])
+    					or: [(stat gid == self getegid and: [(stat mode bitAnd: self S_IWGRP) == self S_IWGRP])
+    					or: [(stat mode bitAnd: self S_IWOTH) == self S_IWOTH]]]
+    	ifFail: [ self statFailed ]"
+    ^self access: self W_OK ifFail: []! !
+
+"December 12, 2010 -> 17:43:8"!
+
+"System saved" !

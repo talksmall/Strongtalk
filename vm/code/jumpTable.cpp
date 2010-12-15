@@ -32,7 +32,8 @@ static const char jump_instruction = '\xE9';
 
 
 char* jumpTable::allocate_jump_entries(int size) {
-  return AllocateHeap(size * jumpTableEntry::size(), "jump table");
+//  return AllocateHeap(size * jumpTableEntry::size(), "jump table");
+  return os::exec_memory(size * jumpTableEntry::size()); //, "jump table");
 }
 
 jumpTableEntry* jumpTable::jump_entry_for_at(char* entries, int index) {

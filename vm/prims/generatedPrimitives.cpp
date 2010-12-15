@@ -212,7 +212,8 @@ char* GeneratedPrimitives::allocateContext(int n) {
 // Initialization
 
 bool GeneratedPrimitives::_is_initialized = false;
-char GeneratedPrimitives::_code[GeneratedPrimitives::_code_size];
+//char GeneratedPrimitives::_code[GeneratedPrimitives::_code_size];
+char* GeneratedPrimitives::_code = NULL;
 
 char* GeneratedPrimitives::patch(char* name, char* entry_point) {
   primitives::patch(name, entry_point);
@@ -233,6 +234,8 @@ void GeneratedPrimitives::init() {
 
   int n;
   ResourceMark rm;
+  _code = os::exec_memory(_code_size);
+  
   CodeBuffer* code = new CodeBuffer(_code, _code_size);
   MacroAssembler* masm = new MacroAssembler(code);
   PrimitivesGenerator gen(masm);

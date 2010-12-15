@@ -10,9 +10,11 @@ MAKE_DIR	= $(ROOT_DIR)/build.linux
 BUILD_DIR	= $(ROOT_DIR)/build
 BIN_DIR		= $(ROOT_DIR)/bin
 OPT=
-C++OPTIONS= -fno-rtti -Wno-write-strings -fno-for-scope -fno-operator-names -fms-extensions -ffriend-injection
+C++OPTIONS= -m32 -fno-rtti -Wno-write-strings -fno-for-scope -fno-operator-names -fms-extensions -ffriend-injection
+LDOPTIONS= -m32 
+#-m elf_i386 -A i386 --oformat=elf32-i386
 
-INCL_PATH	= -I$(BUILD_DIR) -I$(VM_SRC_DIR)/asm -I$(VM_SRC_DIR)/code -I$(VM_SRC_DIR)/compiler -I$(VM_SRC_DIR)/disasm -I$(VM_SRC_DIR)/interpreter -I$(VM_SRC_DIR)/lookup -I$(VM_SRC_DIR)/memory -I$(VM_SRC_DIR)/oops -I$(VM_SRC_DIR)/prims -I$(VM_SRC_DIR)/recompiler -I$(VM_SRC_DIR)/runtime -I$(VM_SRC_DIR)/topIncludes -I$(VM_SRC_DIR)/utilities -I$(EASYUNIT_DIR)/easyunit
+INCL_PATH	= -I$(BUILD_DIR) -I$(VM_SRC_DIR)/asm -I$(VM_SRC_DIR)/code -I$(VM_SRC_DIR)/compiler -I$(VM_SRC_DIR)/disasm -I$(VM_SRC_DIR)/interpreter -I$(VM_SRC_DIR)/lookup -I$(VM_SRC_DIR)/memory -I$(VM_SRC_DIR)/oops -I$(VM_SRC_DIR)/prims -I$(VM_SRC_DIR)/recompiler -I$(VM_SRC_DIR)/runtime -I$(VM_SRC_DIR)/topIncludes -I$(VM_SRC_DIR)/utilities -I$(EASYUNIT_DIR)/easyunit -I$(TEST_SRC_DIR)/runtime
 
 INCL_DIR	= $(BUILD_DIR)/incls
 

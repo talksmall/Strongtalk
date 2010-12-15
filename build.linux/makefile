@@ -44,10 +44,10 @@ test:
 	$(TEST-EXECUTABLE) -b ../strongtalk.bst
 
 link:
-	g++ -v $(OPT) -shared -o $(SHARED_LIB) -L/usr/lib `find $(VM_SRC_DIR) -name "*.o"|grep -v main.o` -lpthread -ldl -lrt 
-	g++ -v $(OPT) -o $(EXECUTABLE) -L/usr/lib $(VM_SRC_DIR)/*/main.o $(SHARED_LIB)
-	g++ -v $(OPT) -shared -o $(TEST_SHARED_LIB) -L/usr/lib `find $(TEST_SRC_DIR) -name "*.o"|grep -v main.o` $(EASYUNIT_DIR)/src/*.o
-	g++ -v $(OPT) -o $(TEST-EXECUTABLE) $(SHARED_LIB) $(TEST_SHARED_LIB) $(TEST_SRC_DIR)/main/main.o
+	g++ -v $(OPT) $(LDOPTIONS)-shared -o $(SHARED_LIB) -L/usr/lib32 `find $(VM_SRC_DIR) -name "*.o"|grep -v main.o` -lpthread -ldl -lrt 
+	g++ -v $(OPT) $(LDOPTIONS) -o $(EXECUTABLE) -L/usr/lib32 $(VM_SRC_DIR)/*/main.o $(SHARED_LIB)
+	g++ -v $(OPT) $(LDOPTIONS) -shared -o $(TEST_SHARED_LIB) -L/usr/lib32 `find $(TEST_SRC_DIR) -name "*.o"|grep -v main.o` $(EASYUNIT_DIR)/src/*.o
+	g++ -v $(OPT) $(LDOPTIONS) -o $(TEST-EXECUTABLE) $(SHARED_LIB) $(TEST_SHARED_LIB) $(TEST_SRC_DIR)/main/main.o
 
 objects: incls/_precompiled.incl.gch
 	for i in $(DIRECTORIES);\
@@ -59,7 +59,7 @@ incls/_precompiled.incl.gch: includeDB.all
 	$(C++) -c -x c++-header -o $(BUILD_DIR)/incls/_precompiled.incl.gch -g $(OPT) $(C++OPTIONS) $(DEFINES) $(INCL_PATH) incls/_precompiled.incl
 
 $(BUILD_DIR)/makedeps: $(TOOLS_SRC_DIR)/makedeps/makeDeps.cpp
-	$(C++) -fno-write-strings -o $@ $^
+	$(C++) -m32 -Wno-write-strings -o $@ $^
 
 dependencies: $(BUILD_DIR)/makedeps $(INCL_PLATFORM) $(BUILD_DIR)/includeDB.all
 	$(BUILD_DIR)/makedeps $(INCL_PLATFORM) $(BUILD_DIR)/includeDB.all

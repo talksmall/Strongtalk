@@ -3582,7 +3582,8 @@ InterpreterGenerator::InterpreterGenerator(CodeBuffer* code, bool debug) {
 // Interpreter initialization
 
 static const int interpreter_size = 40000;
-static char interpreter_code[interpreter_size];
+//static char interpreter_code[interpreter_size];
+static char* interpreter_code;
 
 
 void interpreter_init() {
@@ -3591,6 +3592,8 @@ void interpreter_init() {
     std->print("\nBytecode Interpreter\n\n");
   }
 
+  interpreter_code = os::exec_memory(interpreter_size);
+  
   CodeBuffer* code = new CodeBuffer(&interpreter_code[0], interpreter_size);
   InterpreterGenerator g(code, debug);
 

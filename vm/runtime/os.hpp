@@ -74,6 +74,7 @@ class os {
   static bool  uncommit_memory(char* addr, int size);
   static bool  release_memory(char* addr, int size);
   static bool  guard_memory(char* addr, int size);
+  static char* exec_memory(int size);
   
   // OS interface to C memory routines - used for small allocations
   static void* malloc(int size);
@@ -117,6 +118,7 @@ class os {
   static dll_func dll_lookup(char* name, DLL* library);
   static DLL*     dll_load(char* name);
   static bool     dll_unload(DLL* library);
+  static char*    dll_extension();
 
   // Platform
   static char*	  platform_class_name();

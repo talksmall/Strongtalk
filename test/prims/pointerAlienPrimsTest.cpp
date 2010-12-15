@@ -1,7 +1,7 @@
 # include "incls/_precompiled.incl"
 # include "incls/_byteArray_prims.cpp.incl"
 #include "test.h"
-#include "delta.hpp"
+//#include "delta.hpp"
 #include "testUtils.hpp"
 
 using namespace easyunit;

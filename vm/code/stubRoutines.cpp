@@ -1753,8 +1753,8 @@ char* StubRoutines::alien_call_entry(int args) {
 // Initialization
 
 bool StubRoutines::_is_initialized = false;
-char StubRoutines::_code[StubRoutines::_code_size];
-
+//char StubRoutines::_code[StubRoutines::_code_size];
+char* StubRoutines::_code = NULL;
 char* StubRoutines::generate(MacroAssembler* masm, char* title, char* gen(MacroAssembler*)) {
   char* old_pc = masm->pc();
   char* entry_point = gen(masm);
@@ -1786,6 +1786,8 @@ char* StubRoutines::generate(MacroAssembler* masm, char* title, char* gen(MacroA
 void StubRoutines::init() {
   if (_is_initialized) return;
 
+  _code = os::exec_memory(_code_size);
+  
   ResourceMark rm;
   CodeBuffer* code = new CodeBuffer(_code, _code_size);
   MacroAssembler* masm = new MacroAssembler(code);
