@@ -40,8 +40,8 @@ static char tohex(unsigned char c);
 static char* bintohex(char *data, int bytes);
 
 static void printCode(char* pc, int lendis, char* buf, outputStream* st);
-static void printRelocInfo(relocIterator& iter, outputStream* st);
-static void printRelocInfo(relocIterator& iter, char* pc, int lendis, outputStream* st);
+static void printRelocInfo(int reloc_type, int* addr, outputStream* st);
+static void printRelocInfo(relocInfo** current_reloc, nmethod* nm, int* last_reloc_offset, char* pc, int lendis, outputStream* st);
 static void printPcDescInfo(nmethod* nm, char* pc, outputStream* st);
 
 static void disasm(char* begin, char* end, outputStream* st);
@@ -94,14 +94,12 @@ static char* bintohex(char *data, int bytes) {
   return buf;
 }
 
-static void printRelocInfo(relocIterator& iter, outputStream* st) {
+static void printRelocInfo(int reloc_type, int* addr, outputStream* st) {
   primitive_desc* pd;
   char* target;
-  int* addr;
   
   st->print("; reloc @ ");
-  addr = iter.word_addr();
-  switch (iter.type()) {
+  switch (reloc_type) {
     case relocInfo::none:
       st->print("none");
       break;
@@ -141,10 +139,6 @@ static void printRelocInfo(relocIterator& iter, outputStream* st) {
       
     case relocInfo::uncommon_type:
       st->print("%p, uncommon trap ", addr);
-      if (iter.wasUncommonTrapExecuted())
-        st->print("(taken)");
-      else
-        st->print("(not taken)");
       break;
       
     case relocInfo::dll_type:
@@ -157,13 +151,33 @@ static void printRelocInfo(relocIterator& iter, outputStream* st) {
   }
 }
 
-static void printRelocInfo(relocIterator &iter, char* pc, int lendis, outputStream* st) {
-  // Note: 2 relocation information within one instruction is possible!
-  char* i = (char*) iter.word_addr();
-  while (i >= pc && i < (pc + lendis)) { // reloc pointer must be in instructions's bytes (opcode + data)
-    printRelocInfo(iter, st);
-    iter.next();
-    i = (char*) iter.word_addr();
+static void printRelocInfo(relocInfo** current_reloc, nmethod* nm, int* last_reloc_offset, char* pc, int lendis, outputStream* st) {
+  relocInfo* reloc;
+  char* reloc_addr;
+  int offset;
+  
+  reloc = *current_reloc;
+  if (reloc == nm->locsEnd())
+    return;
+
+  if (!reloc->isValid()) {
+    // NB: The size of the instruction, location and scope
+    // buffer is rounded to oopSize, hence we must expect
+    // zeroed, i.e. non-valid elements at the end of a buffer
+    // as padding. Skip a non-valid location!
+    // assert(reloc->isValid(), "invalid relocation info");
+    (*current_reloc)++;
+    return;
+  }
+      
+  offset = *last_reloc_offset + reloc->offset();
+  reloc_addr = nm->insts() + offset;
+  
+  if (reloc_addr >= pc && reloc_addr < (pc + lendis)) {
+    // relocation is within instruction (opcode + data)
+    printRelocInfo(reloc->type(), (int*) reloc_addr, st);
+    (*current_reloc)++;
+    *last_reloc_offset = offset;
   }
 }
 
@@ -223,19 +237,21 @@ static void disasm(char* begin, char* end, outputStream* st) {
 
 static void disasm(nmethod* nm, outputStream* st) {
   static char buf[MAX_OUTBUF_SIZE];
-  int lendis;      
+  int lendis, last_reloc_offset;      
+  relocInfo* current_reloc;
   
   if (!library_loaded) {
     initialize();
   }
   if (disassemble) {
-    relocIterator iter(nm);
+    last_reloc_offset = 0;
+    current_reloc = (relocInfo*) nm->locs();
     for (char* pc = nm->insts(); pc < nm->instsEnd(); pc += lendis) {
       lendis = disassemble((uint8_t*) pc, buf, sizeof(buf), 32, offset, autosync, prefer);
       if (lendis) {
         printPcDescInfo(nm, pc, st);
         printCode(pc, lendis, buf, st);
-        printRelocInfo(iter, pc, lendis, st);
+        printRelocInfo(&current_reloc, nm, &last_reloc_offset, pc, lendis, st);
       }
       st->cr();
     }
