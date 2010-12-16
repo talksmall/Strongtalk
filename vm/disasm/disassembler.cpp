@@ -243,7 +243,11 @@ static void disasm(nmethod* nm, outputStream* st) {
   if (!library_loaded) {
     initialize();
   }
+
   if (disassemble) {
+    // dump method source code before beginning native method disassembly
+    prettyPrinter::print(nm->method(), nm->receiver_klass(), 0);
+        
     last_reloc_offset = 0;
     current_reloc = (relocInfo*) nm->locs();
     for (char* pc = nm->insts(); pc < nm->instsEnd(); pc += lendis) {
