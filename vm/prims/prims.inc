@@ -1582,7 +1582,7 @@ static char* signature_158[] = { "Float"};
 static char* errors_158[] = {NULL};
 static primitive_desc primitive_158 = {
 	"primitiveFloatMaxValue", 
-	fntype(&doubleOopPrimitives::min_positive_value), 
+	fntype(&doubleOopPrimitives::max_value), 
 	524288, 
 	signature_158, 
 	errors_158
