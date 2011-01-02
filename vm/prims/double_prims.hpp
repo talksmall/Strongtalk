@@ -323,7 +323,7 @@ class doubleOopPrimitives : AllStatic {
   // <NoReceiver> primitiveFloatMaxValue ^<Float> =
   //   Internal { doc   = 'Returns the maximum Float value'
   //              flags = #(Pure)
-  //              name  = 'doubleOopPrimitives::min_positive_value' }
+  //              name  = 'doubleOopPrimitives::max_value' }
   //%
   static PRIM_DECL_0(max_value);
 
