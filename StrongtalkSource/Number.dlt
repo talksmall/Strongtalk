@@ -71,12 +71,10 @@ asInteger ^<Integer>
 	self subclassResponsibility!
 
 degreesToRadians ^<Number>
-
-	self unimplemented!
+	^self asFloat degreesToRadians!
 
 radiansToDegrees ^<Number>
-
-	self unimplemented! !
+	^self asFloat radiansToDegrees! !
 
 ! (Delta mirrorFor: #Number) methodsFor: 'copying' !
 
@@ -107,28 +105,31 @@ to: stop <Number> by: step <Number> ^<Interval>
 
 arcCos ^<Number>
 
-	self unimplemented!
+	^self asFloat arcCos!
 
 arcSin ^<Number>
 
-	self unimplemented!
+	^self asFloat arcSin!
 
 arcTan ^<Number>
 
-	self unimplemented!
+	^self asFloat arcTan!
 
 cos ^<Number>
 
-	self unimplemented!
+	^self asFloat cos!
 
 exp ^<Number>
-	self unimplemented!
+
+	^self asFloat exp!
 
 floorLog: radix <Number> ^<Int>
-	self unimplemented!
+
+	^self asFloat floorLog: radix!
 
 ln ^<Number>
-	self unimplemented!
+
+	^self asFloat ln!
 
 log: o <Number> ^<Number>
 	self unimplemented!
@@ -137,11 +138,21 @@ raisedTo: power <Number> ^<Number>
 	self unimplemented!
 
 raisedToInteger: power <Int> ^<Number>
-	self unimplemented!
+	"HACK HACK: A quick hack to implement this method for other stuff (al)"
+	| pow <Integer> result <Integer> |
+	pow := power abs.
+	result := 1.
+	[pow > 0] whileTrue: [
+		result := result * self.
+		pow := pow - 1.
+	].
+	^(power < 0)
+		ifTrue: [result reciprocol]
+		ifFalse: [result].!
 
 sin ^<Number>
 
-	self unimplemented!
+	^self asFloat sin!
 
 sqrt ^<Number>
 	
@@ -149,7 +160,7 @@ sqrt ^<Number>
 
 tan ^<Number>
 
-	self unimplemented! !
+	^self asFloat tan! !
 
 ! (Delta mirrorFor: #Number) methodsFor: 'operations' !
 
