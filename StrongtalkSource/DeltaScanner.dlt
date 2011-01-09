@@ -234,7 +234,7 @@ number ^ <Number>
     $ number = ['-'] digits ['r' digits
                                              | '.' digits [('E'|'e') ['-'] digits] ['D'|'d']].
     "
-    | neg <Boolean> x <Number> y <Number>  e <Int> |
+    | neg <Boolean> x <Number> y <Number>  e <Int> eneg <Boolean> |
     (neg := char = $-) ifTrue: [self nextChar].
     x := self digits: 10.
     char = $r
@@ -252,9 +252,12 @@ number ^ <Number>
                 x := (x + y) asFloat.
 
                 ((char = $E) or: [char = $e]) ifTrue: [
+                	eneg := false.
                     self nextChar.
-                    char = $- ifTrue: [self nextChar].
-                    e := self digits: 10
+                    char = $- ifTrue: [eneg := true. self nextChar].
+                    e := self digits: 10.
+                    eneg ifTrue: [ e := e negated].
+                    x :=  x * (10 raisedToInteger: e).
                 ].
 
 				"Remove this at some point - not allowed anymore"
