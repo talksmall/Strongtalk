@@ -1,0 +1,121 @@
+Delta define: #FloatCharacterization as: (
+Protocol superProtocol: '<Object>') !
+
+(Delta mirrorFor: #FloatCharacterization) revision: '$Revision:$'!
+
+(Delta mirrorFor: #FloatCharacterization) group: 'base'!
+
+(Delta mirrorFor: #FloatCharacterization)
+comment: 
+'Float characterization protocol defined by ANSI Smalltalk.
+
+Coypright (c) 2010 Dual BSD / MIT license
+
+Objects supporting this protocol characterize a floating
+point representation for real numbers. These characterizations
+are required by ISO/IEC 10967 for each precision of floating
+point numbers provided by an implementation.
+
+(Source: ANSI Smalltalk Standard,  revison 1.9, NCITS J20 DRAFT)'!
+
+! (Delta mirrorFor: #FloatCharacterization) classSide methodsFor: 'constants' !
+
+
+denormalized ^ <Boolean>
+"Report a boolean indicating whether the characterized
+floating point object representation contains denormalized
+values. This satisfies the ISO/IEC 10967 floating point
+characterization requirement denorm."
+!
+
+e ^ <Float>
+"Return the closest floating point approximation
+of the irrational number e for the characterized
+floating point object representation."
+!
+
+emax ^ <Integer>
+"Report the largest exponent allowed by the
+characterized floating point object representation,
+providing the upper bound of the range of representable
+floating point numbers. This satisfies the ISO/IEC 10967
+floating point characterization requirement emax."
+!
+
+emin ^ <Integer>
+"Report the smallest exponent allowed by the
+characterized floating point object representation,
+providing the lower bound of the range of representable
+floating point numbers. This satisfies the ISO/IEC 10967
+floating point characterization requirement emin."
+!
+
+epsilon ^ <Float>
+"Report the maximum relative spacing in the characterized
+floating point object representation, satisfying the ISO/IEC 10967
+floating point characterization requirement epsilon. The return
+value is equal to
+
+	self radix raisedTo: (1 - self precision)
+"!
+
+fmax ^ <Float>
+"Report the largest value allowed by the characterized
+floating point object representation. This satisfies the
+ISO/IEC 10967 floating point characterization requirement
+fmax, and is equal to
+
+(1 - (self radix raisedTo: self precision negated)) * self radix raisedTo: self emax
+"!
+
+fmin ^ <Float>
+"Report the minimum value allowed by the characterized
+floating point object representation. This satisfies the
+ISO/IEC 10967 floating point characterization requirement fmin.
+If the described representation contains normalized values,
+then the result is equal to the result of sending #fminNormalized
+to the receiver, otherwise the result is equal to the result of
+sending #fminDenormalized to the receiver.
+"!
+
+fminDenormalized ^ <Float>
+"Report the minimum denormalized value allowed by
+the characterized floating point object representation.
+This satisfies the ISO/IEC 10967 floating point characterization
+requirement fminD, and is equal to
+
+	self radix raisedTo: (self emin - self precision)
+
+The result is unspecified if denormalized values are
+not allowed by the characterized representation."
+!
+
+fminNormalized ^ <Float>
+"Report the minimum normalized value allowed by
+the characterized floating point object representation.
+This satisfies the ISO/IEC 10967 floating point characterization
+requirement fminN, and is equal to
+
+	self radix raisedTo: (self emin - 1).
+"
+!
+
+pi ^ <Float>
+"Return the closest floating point approximation
+to Pi for the characterized floating point object
+representation."!
+
+precision ^ <Integer>
+"Report the precision, the number of radix digits,
+of floating point objects of the characterized floating
+point object representation. This satisfies the ISO/IEC 10967
+floating point characterization requirement p.
+The result must be greater than or equal to two."!
+
+radix ^ <Integer>
+"Report the base, or radix, of the characterized
+floating point object representation. This satisfies
+the ISO/IEC 10967 floating point characterization
+requirement r. The result must be an even number
+greater than or equal to two."! !
+
