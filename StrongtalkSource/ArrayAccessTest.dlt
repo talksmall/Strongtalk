@@ -1,0 +1,119 @@
+Delta define: #ArrayAccessTest as: (
+(Class subclassOf: 'TestCase' instanceVariables: '')) !
+
+(Delta mirrorFor: #ArrayAccessTest) revision: '$Revision:$'!
+
+(Delta mirrorFor: #ArrayAccessTest) group: 'Unclassified'!
+
+(Delta mirrorFor: #ArrayAccessTest)
+comment: 
+'test the methods of the array access protocol'!
+
+! (Delta mirrorFor: #ArrayAccessTest) methodsFor: 'tests' !
+
+
+testNewNoElement
+	| array indices |
+	array := Array new.
+	indices := #(-1 0 1) asSortedCollection.
+
+	self
+		assert: array size = 0.
+
+	"test  at: "
+	indices do: [:index |
+		self
+			should: [array at: index]
+			raise: Error.
+	].
+		
+	"test at: ifAbsent:"
+	indices do: [:index |
+		self
+			assert: [array at: index ifAbsent: [true]].
+	].
+	
+	"test at: ifNil:"
+	indices do: [:index |
+		self
+			should: [array at: index ifNil: []]
+			raise: Error.
+	].
+
+	"test at: put:"
+	indices do: [:index |
+		self
+			should: [array at: index put: 42]
+			raise: Error.
+	].
+	
+	"test atAllPut:"
+	array atAllPut: 42.
+	
+	"test putNilAt:"
+	indices do: [:index |
+		self
+			should: [array putNilAt: index]
+			raise: Error.
+	].
+
+	"test size at test end"
+	self
+		assert: array size = 0.
+	!
+
+testNewOneElement
+	| array  |
+	array := Array new: 1.
+
+	self
+		assert: array size = 1.
+
+	"test  at: "
+	self
+		should: [array at: 0]
+		raise: Error.
+	self
+		assert: [(array at: 1) = nil].
+	
+	"test at: ifAbsent:"
+	self
+		assert: [array at: 0 ifAbsent: [true]].
+	self
+		assert: [(array at: 1 ifAbsent: [false]) = nil].
+	
+	"test at: ifNil:"
+	self
+		should: [array at: 0 ifNil: []]
+		raise: Error.
+	self
+		assert: [array at: 1 ifNil: [true]].
+		
+	"test at: put:"
+	self
+		should: [array at: 0 put: 42]
+		raise: Error.
+		
+	array at: 1 put: 42.
+	self
+		assert: [(array at: 1) = 42].
+	
+	"test atAllPut:"
+	array atAllPut: 1001.
+	self
+		assert: [(array at: 1) = 1001].
+	
+	"test putNilAt:"
+	self
+		should: [array putNilAt: 0]
+		raise: Error.
+	
+	array putNilAt: 1.
+	self
+		assert: [(array at: 1) = nil].
+		
+	"test size at test end"
+	self
+		assert: array size = 1.
+	! !
+
