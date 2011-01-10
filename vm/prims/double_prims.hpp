@@ -352,6 +352,32 @@ class doubleOopPrimitives : AllStatic {
   //              name  = 'doubleOopPrimitives::mandelbrot' }
   //%
   static PRIM_DECL_3(mandelbrot, oop re, oop im, oop n);
+  
+  //%prim
+  // <Float> primitiveFloatIsInfinity ^<Boolean> =
+  //   Internal { doc   = 'Returns whether the receiver is +-Infinity'
+  //              flags = #(Pure DoubleArith)
+  //              name  = 'doubleOopPrimitives::isInfinity' }
+  //%
+  static PRIM_DECL_1(isInfinity, oop receiver);
+
+  //%prim
+  // <Float> primitiveFloatIsNormal ^<Boolean> =
+  //   Internal { doc   = 'Returns whether the receiver has a normal value and not a Infinity, NaN or a non-zero normalized number)'
+  //              flags = #(Pure DoubleArith)
+  //              name  = 'doubleOopPrimitives::isNormal' }
+  //%
+  static PRIM_DECL_1(isNormal, oop receiver);
+
+  //%prim
+  // <Float> primitiveFloatSign ^<Float> =
+  //   Internal { doc   = 'Returns whether the receiver is negative positive, zero or a NaN(-1,1,0, NaN)'
+  //              flags = #(Pure DoubleArith)
+  //              name  = 'doubleOopPrimitives::sign' }
+  //%
+  static PRIM_DECL_1(sign, oop receiver);
+
+
 };
 
 //%prim

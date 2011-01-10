@@ -320,12 +320,88 @@ PRIM_DECL_2(doubleOopPrimitives::printFormat, oop receiver, oop argument) {
   return receiver;
 }
 
+static int doubleToPrintString(char* buf, double x){
+#ifdef WIN32
+
+#define IS_NAN(x)		(x == _FPCLASS_SNAN || x == _FPCLASS_QNAN)
+#define IS_NEGATIVE(x)	(x == _FPCLASS_NINF || x == _FPCLASS_NN || x == _FPCLASS_ND || x == _FPCLASS_NZ)
+#define IS_INFINITY(x)	(x == _FPCLASS_NINF || x == _FPCLASS_PINF)
+#define IS_ZERO(x)		(x == _FPCLASS_NZ	|| x == _FPCLASS_PZ)
+
+  (void) _set_output_format(_TWO_DIGIT_EXPONENT);
+
+  int i, fpclass;
+
+  i = 0;
+  fpclass = _fpclass(x);
+  if (IS_NAN(fpclass)) {
+    i += sprintf(buf+i, "%s", "NaN");
+  } else {
+    if (IS_NEGATIVE(fpclass)) {
+	  i += sprintf(buf+i, "%c", '-');
+    }
+	if (IS_INFINITY(fpclass)){
+      i += sprintf(buf+i, "Infinity");
+    } else if (IS_ZERO(fpclass)){
+      i += sprintf(buf+i, "%s", "0.0");
+    } else {
+      double x_abs;
+      x_abs = fabs(x);
+      if (x_abs >= 0.001 && x_abs < 10000000) {
+        i += sprintf(buf+i, "%f", x_abs);
+      } else {
+        i += sprintf(buf+i, "%e", x_abs);
+      }
+    }
+  }
+  (void) _set_output_format(0);
+
+  return i;
+
+#undef IS_NAN
+#undef IS_NEGATIVE
+#undef IS_INFINITY
+#undef IS_ZERO
+
+#else
+  int i, fpclass;
+
+  i = 0;
+  fpclass = fpclassify(x);
+  if (fpclass == FP_NAN) {
+    i += sprintf(buf+i, "%s", "NaN");
+  } else {
+    if (signbit(x)) {
+      i += sprintf(buf+i, "%c", '-');
+    }
+    if (fpclass == FP_INFINITE) {
+      i += sprintf(buf+i, "Infinity");
+    } else if (fpclass == FP_ZERO) {
+      i += sprintf(buf+i, "%s", "0.0");
+    } else {
+      double x_abs;
+      x_abs = fabs(x);
+      if (x_abs >= 0.001 && x_abs < 10000000) {
+        i += sprintf(buf+i, "%f", x_abs);
+      } else {
+        i += sprintf(buf+i, "%e", x_abs);
+      }
+    }
+  }
+  return i;
+#endif
+}
+
 PRIM_DECL_1(doubleOopPrimitives::printString, oop receiver) {
   PROLOGUE_1("printString", receiver);
   ASSERT_RECEIVER;
   ResourceMark rm;
   char* result = NEW_RESOURCE_ARRAY(char, 4*K);
+
+  int len = doubleToPrintString(result, doubleOop(receiver)->value());
+#if 0
   int len = sprintf(result, "%1.6f", doubleOop(receiver)->value());
+#endif
   while (len > 1 && result[len-1] == '0' && result[len-2] != '.') len--;
   result[len] = '\0';
 
@@ -397,3 +473,61 @@ extern "C" oop PRIM_API double_divide(oop receiver, oop argument) 	{ trap(); ret
 extern "C" oop PRIM_API double_add(oop receiver, oop argument) 		{ trap(); return markSymbol(vmSymbols::primitive_trap()); };
 extern "C" oop PRIM_API double_multiply(oop receiver, oop argument) 	{ trap(); return markSymbol(vmSymbols::primitive_trap()); };
 extern "C" oop PRIM_API double_from_smi(oop receiver) 			{ trap(); return markSymbol(vmSymbols::primitive_trap()); };
+
+PRIM_DECL_1(doubleOopPrimitives::isInfinity, oop receiver) {
+  PROLOGUE_1("isInfinity", receiver);
+  ASSERT_RECEIVER;
+#ifdef WIN32
+  int status = _fpclass(doubleOop(receiver)->value());
+  bool isInfinite = (status == _FPCLASS_NINF || status == _FPCLASS_PINF);
+#else
+  bool isInfinite = isinf(doubleOop(receiver)->value()) != 0;
+#endif
+  return isInfinite ? trueObj : falseObj;
+}
+
+PRIM_DECL_1(doubleOopPrimitives::isNormal, oop receiver){
+  PROLOGUE_1("isFinite", receiver);
+  ASSERT_RECEIVER;
+#ifdef WIN32
+  int status = _fpclass(doubleOop(receiver)->value());
+  bool isNormal = (status == _FPCLASS_NN || status == _FPCLASS_PN);
+#else
+  bool isNormal = isnormal(doubleOop(receiver)->value()) != 0;
+#endif
+  return isNormal ? trueObj : falseObj;
+}
+
+
+PRIM_DECL_1(doubleOopPrimitives::sign, oop receiver) {
+  PROLOGUE_1("sign", receiver);
+  ASSERT_RECEIVER;
+#ifdef WIN32
+  double signum = 0.0;
+  double value = doubleOop(receiver)->value();
+  int status = _fpclass(value);
+  if (status == _FPCLASS_SNAN || status == _FPCLASS_QNAN) {	// sign(NaN) => NaN
+    signum = value;
+  } else {
+	if (status == _FPCLASS_NZ || status == _FPCLASS_PZ) {
+	  signum = value;										// sign(+0) => +0.0  and	sign(-0) => -0.0
+	} else {
+	  signum = value < 0 ? -1.0 : 1.0;						// sign(<0) => -1.0  and	sign(>0) => 1.0
+	}
+  }
+#else
+  double signum = 0.0;
+  double value = doubleOop(receiver)->value();
+  int status = fpclassify(value);
+  if (status == FP_NAN) {									// sign(NaN) => NaN
+    signum = value;
+  } else {
+    if (status == FP_ZERO) {
+	  signum = value;										// sign(+0) => +0.0  and	sign(-0) => -0.0
+    } else {
+	  signum = value < 0 ? -1.0 : 1.0;						// sign(<0) => -1.0  and	sign(>0) => 1.0
+    }
+  }
+#endif
+  return new_double(signum);
+}
