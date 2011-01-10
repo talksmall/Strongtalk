@@ -1,5 +1,17 @@
 Delta define: #FloatTest as: (
-(Class subclassOf: 'TestCase' instanceVariables: '')) !
+(Class subclassOf: 'TestCase' instanceVariables: '"Infinity"
+PlusInfinity <Float>
+MinusInfinity <Float>
+"Zeroes"
+PlusZero <Float>
+MinusZero <Float>
+"Nan''s"
+QNaN <Float>
+SNaN <Float>
+"Normal"
+Normal1 <Float>
+"Subnormal"
+Subnormal1 <Float>')) !
 
 (Delta mirrorFor: #FloatTest) revision: '$Revision:$'!
 
@@ -7,12 +19,326 @@ Delta define: #FloatTest as: (
 
 (Delta mirrorFor: #FloatTest)
 comment: 
-''!
+'Test suite for the corresponding Float class. Test cases defined here
+try to check for IEEE-754 conformance and behaviour.'!
+
+! (Delta mirrorFor: #FloatTest) methodsFor: 'fixture' !
+
+
+setUp
+"
+add more IEEE-754 constants according to:
+	http://steve.hollasch.net/cgindex/coding/ieeefloat.html
+"
+	"NaNs"
+	QNaN := 0.0/0.0.
+	"SNaNs"
+	SNaN := 0.0/0.0.
+	"Infinities"
+	PlusInfinity := 1.0 / 0.0.
+	MinusInfinity := -1.0 / 0.0.
+	"Normals"
+	Normal1 := 1.24.
+	"Subnormals"
+	Subnormal1 := 0.0.				"TODO: Float fminDenormalized"
+	"Zeros constants"
+	PlusZero := (0.0/1.0).
+	MinusZero := (0.0/-1.0)
+! !
 
 ! (Delta mirrorFor: #FloatTest) methodsFor: 'tests' !
 
 
+testConstants
+	self
+		    assert: [Float nan isNan]
+		  ; deny: (Float nan isFinite)
+		  ; deny: (Float nan isInfinity)
+		  ; deny: (Float nan isNormal)
+		  
+		  ; assert: [Float maxVal =Float fmax ]
+		  ; assert: [Float minValLogBase2 = -1074 ]!
+
+testCopySign
+	self
+		  assert: [(1.0 copySign: 1.0) = 1.0]
+		; assert: [(1.0 copySign: -1.0) = -1.0]
+		; assert: [(-1.0 copySign: 1.0) = 1.0]
+		; assert: [(-1.0 copySign: -1.0) = -1.0]
+		
+		; assert: [(1.23e10 copySign: -1.0) = -1.23e10]
+		; assert: [(-1.23e10 copySign: 1.0) = 1.23e10]
+		
+		; assert: [(QNaN copySign: 1.0) isNaN]
+		; assert: [(QNaN copySign: -1.0) isNaN]
+		
+		"TODO: copySign: 
+		 TODO: copySign: NaN"
+!
+
+testDivideByFloatZero
+
+	"check for exceptions"
+	self shouldnt: [1.0 / 0.0] raise: ZeroDivide.
+	self shouldnt: [-1.0 / 0.0] raise: ZeroDivide.
+	self shouldnt: [0.0 / 0.0] raise: ZeroDivide.
+	
+	"0.0 / 0.0 is a NaN but not Infinity!!"
+	self assert: [(0.0 / 0.0) isNan].
+    self assert: [(0.0 / 0.0) isInfinity not].
+	
+	"test for +-Infinity"
+	self assert: [(1.0 / 0.0) isInfinity].
+	self assert: [(-1.0 / 0.0) isInfinity].
+!
+
 testDivideByIntegerZero
 
-	self should: [1.0 / 0] raise: ZeroDivide! !
+	"divisor is an integer"
+	self
+		should: [1.0 / 0] raise: ZeroDivide
+
+	!
+
+testDivisionByZero
+"test division-by-zero behaviour as defined by
+ the IEEE-754 standard, ie.
+ 
+ 	dividend / +0  => +Infinity when dividend > 0
+ 									 - Infinity when dividend < 0
+ 									NaN      when dividend = 0
+ 									
+  	dividend / -0  => - Infinity when dividend > 0
+ 									+Infinity when dividend < 0
+ 									NaN      when dividend = 0
+  "
+| dividend  <Float> |
+
+	"TODO: Is this correct? How do we generate of +/-0?"
+	
+	"
+	self assert: [(1.0 / +0.0) isPosInf]; 
+	self assert: [(-1.0 / +0.0) isNegInf]; 
+	self assert: [(0.0 / +0.0) isNaN];
+	
+	self assert: [(1.0 / -0.0) isNegInf];  
+	self assert: [(-1.0 / -0.0) isPosInf];  
+	self assert: [(0.0 / -0.0) isNaN];
+"
+
+!
+
+testFloatCharacterizationProtocol
+	"Verify IEEE-754 constants for a double precision float (64 bit)"
+	"(see: Protocol  FloatCharacterization)"
+	|  mirror protocolSupported  |
+	mirror := Mirror on: Float.
+	
+	"NB: There might be a better way to check for a procotol?"
+	"protocolSupported := mirror supportedProtocolString = 'FloatCharacterization'.
+	self
+		assert: [protocolSupported].
+"
+
+	self
+		  assert: [Float denormalized = true]
+		; assert: [Float e = 2.718281828459045235360287471353]
+		; assert: [Float emax = 1023 ]
+		; assert: [Float emin = -1022 ]
+		; assert: [1.0 + Float epsilon > 1.0]
+		; deny: (1.0 + Float epsilon = 1.0)
+		; assert: [1.0 + (Float epsilon asFloat / Float radix asFloat) = 1.0]
+		; assert: [Float fmax exponent = Float emax]
+	    ; assert: [Float fminNormalized exponent = Float emin]
+	    ; assert: [Float fminDenormalized exponent = (Float emin + 1 - Float precision)]
+		; assert: [Float pi = 3.14159265358979323846264338327950288]
+		; assert: [Float precision = 53 ]
+		; assert: [Float radix = 2]
+		
+!
+
+testIsFinite
+	"test is float instance zero, subnormal, or normal"
+	self
+		  assert: [MinusZero isFinite]
+		; assert: [PlusZero isFinite]
+		; assert: [Subnormal1 isFinite]
+		; assert: [-1.0 isFinite]
+		; assert: [1.0 isFinite]
+		; deny: (QNaN isFinite)
+		; deny: (SNaN isFinite)
+		; deny: (PlusInfinity isFinite)
+		; deny: (MinusInfinity isFinite)
+!
+
+testIsInfinity
+	self
+		  assert: [MinusInfinity isInfinity]
+		; assert: [PlusInfinity isInfinity]
+		
+		; deny: (-100.0 isInfinity)
+		; deny: (-1.0 isInfinity)
+		; deny: (MinusZero isInfinity)
+		; deny: (PlusZero isInfinity)
+		; deny: (Subnormal1 isInfinity)
+		; deny: (1.0 isInfinity)
+		; deny: (100.0 isInfinity)
+		; deny: (QNaN isInfinity)
+		; deny: (SNaN isInfinity)
+!
+
+testIsNaN
+	self
+		  assert: [QNaN isNaN]
+		; assert: [SNaN isNaN]
+		
+		; deny: (MinusInfinity isNaN)
+		; deny: (-100.0 isNaN)
+		; deny: (-1.0 isNaN)
+		; deny: (Subnormal1 isNaN)
+		; deny: (MinusZero isNaN)
+		; deny: (PlusZero isNaN)
+		; deny: (1.0 isNaN)
+		; deny: (100.0 isNaN)
+		; deny: (PlusInfinity isNaN)
+!
+
+testIsNormal
+	self
+		  assert: [Float fmax isNormal]
+		; assert: [Float fminNormalized isNormal]
+		
+		; deny: (MinusInfinity isNormal)
+		; deny: (Float fminDenormalized isNormal)
+		; deny: (Subnormal1 isNormal)
+		; deny: (MinusZero isNormal)
+		; deny: (PlusZero isNormal)
+		; deny: (PlusInfinity isNormal)
+		; deny: (QNaN isNormal)
+		; deny: (SNaN isNormal)
+		
+!
+
+testMathConstants
+!
+
+testNextAfter
+	self
+		  deny: (MinusInfinity isFinite)
+		; assert: [(MinusInfinity nextAfter: 0.0) isFinite]
+		
+		; assert: [(0.0 nextAfter: 1.0) > 0.0]
+		; assert: [(0.0 nextAfter: -1.0) < 0.0]		
+		; assert: [(0.0 nextAfter: 0.0) = 0.0]		
+		
+		; assert: [Float fmax isFinite]
+		; deny: ((Float fmax nextAfter: PlusInfinity) isFinite)
+		
+		; assert: [Float fminNormalized isNormal]
+		; deny: ((Float fminNormalized nextAfter: 0.0) isNormal)
+		
+		; deny: (PlusInfinity isFinite)
+		; assert: [(PlusInfinity nextAfter: 0.0) isFinite]
+!
+
+testOperationsThatProduceNaNs
+	"The following 7 arithmetic operations shall deliver a NaN.
+ 	This is defined by the IEEE-754 standard."
+ 	
+ 	
+ 	
+ 	
+	"
+	5) REMAINDER(Anything, 0.0)
+	6) REMAINDER(inf, Anything)
+	"
+	
+	"1.) real sqrt(Negative)"
+	self assert: [-1.0 sqrt isNaN].
+	self assert: [-999.00 sqrt isNaN].
+	"2.) 0 * infinity"
+	self assert: [(0.0 * PlusInfinity) isNaN].
+	self assert: [(0.0 * MinusInfinity) isNaN].
+	self assert: [(PlusInfinity * 0.0) isNaN].
+	self assert: [(MinusInfinity * 0.0) isNaN].
+	"3.) 0.0 / 0.0"
+	self assert: [(0.0 / 0.0) isNaN].
+	"4.) infinity / infinity"
+	self assert: [(PlusInfinity / PlusInfinity) isNaN].
+	self assert: [(MinusInfinity / MinusInfinity) isNaN].
+	self assert: [(PlusInfinity / MinusInfinity) isNaN].
+	self assert: [(MinusInfinity / PlusInfinity) isNaN].
+	"
+	5. and 6. here
+	"
+	"7.) Infinity-Infinity = NaN when signs agree, but Infinity+Infinity = Infinity"
+	self assert: [(MinusInfinity - MinusInfinity) isNaN].
+	self assert: [(PlusInfinity - PlusInfinity) isNaN].
+	
+	"
+	Operation 			NaN Produced By
+			+								8 + (- 8)
+			×								0×8
+			/								0/0, 8/8
+			REM						x REM 0, 8 REM y
+			sqrt x						sqrt x (when x <0)
+	
+	"
+	!
+
+testPrintString
+	self
+		  assert: [MinusInfinity printString = '-Infinity']
+		; assert: [-1000.0 printString = '-1000.0']
+		; assert: [-1.00000000 printString = '-1.0']
+		; assert: [-1.2345 printString = '-1.2345']
+		; assert: [-1.00000000 printString = '-1.0']
+		; assert: [-0.001 printString = '-0.001']
+		; assert: [-0.0009 printString = '-9.000000e-04']
+		; assert: [MinusZero printString = '-0.0']
+		; assert: [PlusZero printString = '0.0']
+		; assert: [0.0009 printString = '9.000000e-04']
+		; assert: [0.001 printString = '0.001']
+		; assert: [1.00000000 printString = '1.0']
+		; assert: [1000.0 printString = '1000.0']
+		; assert: [PlusInfinity printString = 'Infinity']
+		; assert: [SNaN printString = 'NaN' ]
+		; assert: [QNaN printString = 'NaN' ]
+
+		!
+
+testSign
+	"test the signum function"
+	self
+		  assert: [-1.0 sign = -1.0]
+		; assert: [1.0 sign = 1.0]
+		; assert: [MinusZero sign = -0.0]
+		; assert: [PlusZero sign = 0.0]
+		; assert: [-100.0 sign = -1.0]
+		; assert: [100.0 sign = 1.0]
+		; assert: [PlusInfinity sign = 1.0]
+		; assert: [MinusInfinity sign = -1.0]
+		; assert: [QNaN sign isNaN]
+		; assert: [SNaN sign isNaN]!
+
+testSpecialOperations
+	"Operations on special numbers are well-defined by IEEE.
+	In the simplest case, any operation with a NaN yields a
+	NaN result. Other operations are as follows:
+
+	Operation	Result
+	n ÷ ±Infinity	0
+	±Infinity × ±Infinity	±Infinity
+	±nonzero ÷ 0	±Infinity
+	Infinity + Infinity	Infinity
+	±0 ÷ ±0	NaN
+	Infinity - Infinity	NaN
+	±Infinity ÷ ±Infinity	NaN
+	±Infinity × 0	NaN
+"
+!
+
+testTypeCheckProtocol
+	self assert: [1 = 1].
+! !
 
