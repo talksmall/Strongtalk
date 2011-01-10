@@ -47,7 +47,7 @@ char* PrimitivesGenerator::double_op(arith_op op) {
   // 
   // 	op   QWORD PTR [ebx+07]
 
- masm->bind(fill_object);
+  masm->bind(fill_object);
   masm->movl(ecx, Address(esp, +2*oopSize));
 
   masm->movl(edx, doubleKlass_addr());
@@ -60,7 +60,16 @@ char* PrimitivesGenerator::double_op(arith_op op) {
     case op_add: masm->fadd_d(Address(ebx,  (2 * oopSize) - 1)); break;
     case op_sub: masm->fsub_d(Address(ebx,  (2 * oopSize) - 1)); break;
     case op_mul: masm->fmul_d(Address(ebx,  (2 * oopSize) - 1)); break;
-    case op_div: masm->fdiv_d(Address(ebx,  (2 * oopSize) - 1)); break;
+    case op_div: masm->fdiv_d(Address(ebx,  (2 * oopSize) - 1));
+#if 0
+    masm->movl(edx, eax);                 // save result oop in temporary register
+    masm->fnstsw_ax();                    // store x87 FPU status word in eax
+    masm->testb(eax, 0x4);                // check Z-flag for Division-By-Zero
+    masm->movl(eax, edx);                 // restore result oop in eax (no effect on EFLAGS)
+    masm->movl(edx, doubleKlass_addr());  // restore klass oop (no effect on EFLAGS)
+    masm->jcc(Assembler::notZero, error_division_by_zero); // if Division-By-Zero, jump to error Label
+#endif
+		break;
   }
 
   masm->subl(eax, (4 * oopSize) - 1);
