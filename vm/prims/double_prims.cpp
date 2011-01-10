@@ -531,3 +531,23 @@ PRIM_DECL_1(doubleOopPrimitives::sign, oop receiver) {
 #endif
   return new_double(signum);
 }
+
+PRIM_DECL_2(doubleOopPrimitives::copySign, oop receiver, oop argument) {
+  PROLOGUE_2("copySign", receiver, argument);
+  ASSERT_RECEIVER;
+  if (!argument->is_double())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  double x = doubleOop(receiver)->value();
+  double y = doubleOop(argument)->value();
+  return new_double(_copysign(x, y));
+}
+
+PRIM_DECL_2(doubleOopPrimitives::nextAfter, oop receiver, oop argument) {
+  PROLOGUE_2("nextAfter", receiver, argument);
+  ASSERT_RECEIVER;
+  if (!argument->is_double())
+    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  double x = doubleOop(receiver)->value();
+  double y = doubleOop(argument)->value();
+  return new_double(_nextafter(x, y));
+}

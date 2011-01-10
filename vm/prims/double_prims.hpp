@@ -377,6 +377,21 @@ class doubleOopPrimitives : AllStatic {
   //%
   static PRIM_DECL_1(sign, oop receiver);
 
+  //%prim
+  // <Float> primitiveFloatCopySign: aNumber <Float> ^<Float> =
+  //   Internal { doc   = 'Returns the receiver magnitude with the sign of aNumber'
+  //              flags = #(Pure DoubleArith)
+  //              name  = 'doubleOopPrimitives::copySign' }
+  //%
+  static PRIM_DECL_2(copySign, oop receiver, oop argument);
+
+  //%prim
+  // <Float> primitiveFloatNextAfter: aNumber <Float> ^<Float> =
+  //   Internal { doc   = 'Returns the next representable number of the receiver in the direction of aNumber'
+  //              flags = #(Pure DoubleArith)
+  //              name  = 'doubleOopPrimitives::nextAfter' }
+  //%
+  static PRIM_DECL_2(nextAfter, oop receiver, oop argument);
 
 };
 
