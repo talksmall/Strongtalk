@@ -506,26 +506,26 @@ PRIM_DECL_1(doubleOopPrimitives::sign, oop receiver) {
   double signum = 0.0;
   double value = doubleOop(receiver)->value();
   int status = _fpclass(value);
-  if (status == _FPCLASS_SNAN || status == _FPCLASS_QNAN) {	// sign(NaN) => NaN
+  if (status == _FPCLASS_SNAN || status == _FPCLASS_QNAN) { // sign(NaN) => NaN
     signum = value;
   } else {
 	if (status == _FPCLASS_NZ || status == _FPCLASS_PZ) {
-	  signum = value;										// sign(+0) => +0.0  and	sign(-0) => -0.0
+	  signum = value;                                       // sign(+0) => +0.0  and	sign(-0) => -0.0
 	} else {
-	  signum = value < 0 ? -1.0 : 1.0;						// sign(<0) => -1.0  and	sign(>0) => 1.0
+	  signum = value < 0 ? -1.0 : 1.0;                      // sign(<0) => -1.0  and	sign(>0) => 1.0
 	}
   }
 #else
   double signum = 0.0;
   double value = doubleOop(receiver)->value();
   int status = fpclassify(value);
-  if (status == FP_NAN) {									// sign(NaN) => NaN
+  if (status == FP_NAN) {                                   // sign(NaN) => NaN
     signum = value;
   } else {
     if (status == FP_ZERO) {
-	  signum = value;										// sign(+0) => +0.0  and	sign(-0) => -0.0
+	  signum = value;                                       // sign(+0) => +0.0  and	sign(-0) => -0.0
     } else {
-	  signum = value < 0 ? -1.0 : 1.0;						// sign(<0) => -1.0  and	sign(>0) => 1.0
+	  signum = value < 0 ? -1.0 : 1.0;                      // sign(<0) => -1.0  and	sign(>0) => 1.0
     }
   }
 #endif
@@ -535,19 +535,27 @@ PRIM_DECL_1(doubleOopPrimitives::sign, oop receiver) {
 PRIM_DECL_2(doubleOopPrimitives::copySign, oop receiver, oop argument) {
   PROLOGUE_2("copySign", receiver, argument);
   ASSERT_RECEIVER;
-  if (!argument->is_double())
-    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (!argument->is_double()) return markSymbol(vmSymbols::first_argument_has_wrong_type());
+
   double x = doubleOop(receiver)->value();
   double y = doubleOop(argument)->value();
+#ifdef WIN32
   return new_double(_copysign(x, y));
+#else
+  return new_double(copysign(x, y));
+#endif
 }
 
 PRIM_DECL_2(doubleOopPrimitives::nextAfter, oop receiver, oop argument) {
   PROLOGUE_2("nextAfter", receiver, argument);
   ASSERT_RECEIVER;
-  if (!argument->is_double())
-    return markSymbol(vmSymbols::first_argument_has_wrong_type());
+  if (!argument->is_double()) return markSymbol(vmSymbols::first_argument_has_wrong_type());
+
   double x = doubleOop(receiver)->value();
   double y = doubleOop(argument)->value();
+#ifdef WIN32
   return new_double(_nextafter(x, y));
+#else
+  return new_double(nextafter(x, y));
+#endif
 }
