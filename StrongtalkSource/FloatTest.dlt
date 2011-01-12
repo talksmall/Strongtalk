@@ -62,6 +62,24 @@ testAbs
 		; assert: [PlusInfinity abs = PlusInfinity]
 !
 
+testCeiling
+	self
+		  assert: [-2.0 ceiling = -2.0]
+		; assert: [-1.9 ceiling = -1.0]
+		; assert: [-1.0 ceiling = -1.0]
+		; assert: [-0.9 ceiling = 0.0]
+
+		; assert: [0.1 ceiling = 1.0]
+		; assert: [1.0 ceiling = 1.0]
+		; assert: [1.1 ceiling = 2.0]
+
+		"special values"
+		; assert: [MinusZero ceiling = MinusZero]
+		; assert: [PlusZero ceiling = PlusZero]
+		; assert: [MinusInfinity ceiling = MinusInfinity]
+		; assert: [PlusInfinity ceiling = PlusInfinity]
+		!
+
 testConstants
 	self
 		    assert: [Float nan isNaN]
