@@ -34,7 +34,7 @@ denormalized ^ <Boolean>
 ^true!
 
 e ^<Float>
-	^2.71828182845904523536028747135266250!
+	^ 2.718281828459045!
 
 emax ^ <Integer>
 	^1023!
@@ -65,7 +65,7 @@ fminNormalized ^ <Float>
 	"^2.2250738585072014e-308  TODO: replace"!
 
 pi ^ <Float>
-	^3.14159265358979323846264338327950288!
+	^3.141592653589793!
 
 precision ^ <Integer>
 	^53!
@@ -502,6 +502,9 @@ isNil ^<Boolean>
 	^guaranteed <X> {{self primitiveFloatDivide: a
 		ifFail: [ :err <Symbol> |
 				self nonPrimitiveDivide: a error: err	]}}!
+
+abs ^ <Float>
+	^{{self primitiveFloatAbs}}!
 
 copySign: sign <Float> ^ <Float>
 	"answer the value equal in magnitude to
