@@ -49,9 +49,22 @@ add more IEEE-754 constants according to:
 ! (Delta mirrorFor: #FloatTest) methodsFor: 'tests' !
 
 
+testAbs
+	self
+		  assert: [-1.0 abs = 1.0]
+		; assert: [0.0 abs = 0.0]
+		; assert: [1.0 abs = 1.0]
+
+		"special values"
+		; assert: [MinusZero abs = 0.0]
+		; assert: [PlusZero abs = 0.0]
+		; assert: [MinusInfinity abs = PlusInfinity]
+		; assert: [PlusInfinity abs = PlusInfinity]
+!
+
 testConstants
 	self
-		    assert: [Float nan isNan]
+		    assert: [Float nan isNaN]
 		  ; deny: (Float nan isFinite)
 		  ; deny: (Float nan isInfinity)
 		  ; deny: (Float nan isNormal)
@@ -157,7 +170,31 @@ testFloatCharacterizationProtocol
 		
 !
 
-testFloor!
+testFloor
+	self
+		  assert: [1.123 floor = 1.0]
+		; assert: [1.0 floor = 1.0]
+		; assert: [0.9 floor = 0.0]
+		
+		; assert: [0.0 floor = 0.0]
+		
+		; assert: [-0.1 floor = -1.0]
+		; assert: [-1.0 floor = -1.0]
+		; assert: [-1.1 floor = -2.0]
+
+		; assert: [(PlusZero nextAfter: -1.0) floor = -1.0]
+		; assert: [(MinusZero nextAfter: -1.0) floor = -1.0]
+		; assert: [(PlusZero nextAfter: 1.0) floor = 0.0]
+		; assert: [(MinusZero nextAfter: 1.0) floor = 0.0]
+		
+		"special values"
+		; assert: [MinusZero floor = MinusZero]
+		; assert: [PlusZero floor = PlusZero]
+		; assert: [MinusInfinity floor = MinusInfinity]
+		; assert: [PlusInfinity floor = PlusInfinity]
+
+
+!
 
 testIsFinite
 	"test is float instance zero, subnormal, or normal"
