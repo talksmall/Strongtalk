@@ -393,6 +393,15 @@ class doubleOopPrimitives : AllStatic {
   //%
   static PRIM_DECL_2(nextAfter, oop receiver, oop argument);
 
+  
+  //%prim
+  // <Float> primitiveFloatAbs ^<Float> =
+  //   Internal { doc   = 'Returns the absolut value of the receiver'
+  //              flags = #(Pure DoubleArith)
+  //              name  = 'doubleOopPrimitives::abs' }
+  //%
+  static PRIM_DECL_1(abs, oop receiver);
+
 };
 
 //%prim

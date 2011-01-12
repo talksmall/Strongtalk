@@ -559,3 +559,9 @@ PRIM_DECL_2(doubleOopPrimitives::nextAfter, oop receiver, oop argument) {
   return new_double(nextafter(x, y));
 #endif
 }
+
+PRIM_DECL_1(doubleOopPrimitives::abs, oop receiver) {
+  PROLOGUE_1("abs", receiver);
+  ASSERT_RECEIVER;
+  return new_double(fabs(doubleOop(receiver)->value()));
+}
