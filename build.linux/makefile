@@ -58,7 +58,7 @@ objects: incls/_precompiled.incl.gch
 incls/_precompiled.incl.gch: includeDB.all
 	$(C++) -c -x c++-header -o $(BUILD_DIR)/incls/_precompiled.incl.gch -g $(OPT) $(C++OPTIONS) $(DEFINES) $(INCL_PATH) incls/_precompiled.incl
 
-$(BUILD_DIR)/makedeps: $(TOOLS_SRC_DIR)/makedeps/makeDeps.cpp
+$(BUILD_DIR)/makedeps: $(TOOLS_SRC_DIR)/makedeps/makedeps.cpp
 	$(C++) -m32 -Wno-write-strings -o $@ $^
 
 dependencies: $(BUILD_DIR)/makedeps $(INCL_PLATFORM) $(BUILD_DIR)/includeDB.all
